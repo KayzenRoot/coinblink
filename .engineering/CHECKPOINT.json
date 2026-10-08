@@ -1,12 +1,11 @@
 {
   "schemaVersion": 2,
   "project": "CoinBlink",
-  "status": "M00_ADMISSION_CANDIDATE",
-  "phase": "FORMAL_ADMISSION_REVIEW",
-  "stopState": "WAITING_FOR_CB_GOV_005_EXACT_HEAD_REVIEW_AND_MERGE",
+  "status": "M00_ADMITTED",
+  "phase": "IMPLEMENTATION_NOT_STARTED",
   "completedThroughModule": "NONE",
   "overallCompletionPercent": 0,
-  "nextLegalStage": "AFTER_REVIEWED_CB_GOV_005_MERGE_START_CB_M00_WO_001",
+  "nextLegalStage": "START_CB_M00_WO_001_FROM_CURRENT_CANONICAL_MAIN",
   "checkpointFacts": {
     "sourceMainSha": "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f",
     "scopeApproval": {
@@ -21,7 +20,8 @@
       "status": "ADMITTED",
       "change": "CB-GOV-005",
       "effectiveOnMerge": true,
-      "implementationBranchBase": "PENDING_CB_GOV_005_MERGE_SHA"
+      "candidateBranchCodeAuthority": "NOT_AUTHORIZED_BEFORE_MERGE",
+      "requiredBeforeEffective": "EXACT_HEAD_CHECKS_INDEPENDENT_REVIEW_OWNER_AUDIT_AND_MERGE"
     },
     "activeWorkOrder": "CB-M00-WO-001",
     "moduleAdmission": {

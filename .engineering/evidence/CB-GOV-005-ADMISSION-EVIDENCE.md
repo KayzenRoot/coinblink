@@ -1,6 +1,6 @@
-# Evidence Bundle · CB-GOV-005 M00 formal admission candidate
+# Evidence Bundle · CB-GOV-005 M00 admission correction
 
-**Verdict:** `ADMISSION_CANDIDATE / NOT_YET_EFFECTIVE / APP_NOT_STARTED`.
+**Verdict:** `CORRECTION_CANDIDATE / NOT_YET_EFFECTIVE / APP_NOT_STARTED`.
 **Repository:** `KayzenRoot/coinblink`; Issue #7.
 **Governance base:** `cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f` (current `origin/main` at task start; CB-GOV-004 / PR #31).
 **Candidate branch:** `codex/cb-gov-005-m00-admission`.
@@ -13,7 +13,11 @@
 - Audited all 26 fingerprint rows from the canonical main Context Lock against current Git blob IDs; all 26 matched. Twenty tracked checkout files differed from their canonical blobs only by Windows CRLF conversion. After verifying those exact files, normalized them to canonical LF bytes; raw-file SHA-256 then matched the locked values. No hard reset or content overwrite was used. `.gitattributes` remains the LF policy source.
 - The project dependency tree was already present. No GEF package installation or local `npm ci` was run. The locked `npm ci` validation remains part of the GitHub workflow.
 
-## Local toolchain and validation
+## Original candidate validation · HEAD `4efb6022e841ce0babeea1e43ba8c983cd30a679`
+
+The following results are historical and apply to the pre-correction candidate HEAD only. They do not validate the correction below.
+
+## Prior local toolchain and validation
 
 | Check | Result | Evidence |
 |---|---|---|
@@ -28,13 +32,38 @@
 
 The local `doctor`/`status` runs were read-only and were performed while the candidate source files were modified. Their output does not claim exact-head GitHub CI or independent review.
 
-## Candidate-only checkpoint facts
+## Prior candidate checkpoint facts
 
 - Proposed formal Work Order: `CB-M00-WO-001`, effective only on a reviewed/Owner-audited merge.
 - Application implementation: `NOT_STARTED`; completion: `0%`; preview: `NOT_DEPLOYED`; production weights omitted.
 - Candidate admission covers M00 only. M01–M17 remain `NOT_ADMITTED`, M18 remains `FUTURE_NOT_ADMITTED`, and global Issue #6 stays open.
 - No application source, dependency change, provider secret, Cloudflare resource or deployment was added by this governance candidate.
 
-## Pending exact-head evidence
+## Correction delta · CB-GOV-005-CD-001
+
+- **Correction base:** `4efb6022e841ce0babeea1e43ba8c983cd30a679`; PR #32, branch `codex/cb-gov-005-m00-admission`.
+- **Review addressed:** GitHub review `#5463530567`, finding CR-01; checkpoint status/phase/stop state contradicted the proposed admitted state because GEF does not promote fields during merge.
+- **Checkpoint target:** `status=M00_ADMITTED`, `phase=IMPLEMENTATION_NOT_STARTED`, `overallCompletionPercent=0`, no `stopState`; only M00 is admitted. `applicationImplementation=NOT_STARTED`; preview remains `NOT_DEPLOYED`; production weights remain omitted.
+- **Candidate authority boundary:** `candidateBranchCodeAuthority=NOT_AUTHORIZED_BEFORE_MERGE`; exact-head checks, independent review, Owner audit and merge are required. While the PR is open, canonical `main` remains M00-not-admitted and application code remains prohibited.
+- **Implementation base:** no future merge SHA is fabricated. After admission, the implementation must use a fresh branch from the actual resulting `main` SHA and record it in that execution's Context Lock and evidence.
+- **Files:** checkpoint JSON/narrative; Source Hierarchy; Work Order; Context Lock; admission and DoD; root agent contract; admission test; this Evidence Bundle.
+
+## Correction validation · final candidate HEAD recorded in PR #32 and the Issue #7 correction comment
+
+| Check | Result | Evidence |
+|---|---|---|
+| GEF 1.1.2 `doctor --json` | PASS / REVIEW | Exit 0; checkpoint present/valid, repository observable healthy; dependency provenance remains `unverified` / `REVIEW`. No finding was suppressed. |
+| GEF 1.1.2 `status --json` | PASS checkpoint / REVIEW repository subprojection | Exit 0; checkpoint valid, `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, `stale=false`. The separate repository verdict reports `BLOCKED / MISSING_HEAD` although Git resolves the local HEAD; this subprojection remains visible for audit. |
+| GEF `init` preflight | PASS plan / REVIEW drift | Read-only `effect=NONE`, install plan `READY`; drift is `UNEXPECTED` after candidate edits. No repository `init --apply`, `adopt`, or installation was run. |
+| Context Lock fingerprints | PASS | 27/27 locked Git blob SHA-1 values and raw-file SHA-256 values match; self-excluded payload tree `51b80fb6be68b2094f90471a9749feed9a49fe13` matches. |
+| `npm test` | PASS | Node `v22.17.0`, npm `10.9.2`; 8 passed, 0 failed. The official Node.js archive was SHA-256 checked against its release manifest (`721ab118a3aac8584348b132767eadf51379e0616f0db802cc1e66d7f0d98f85`) and used from a temporary path. |
+| Security | PASS / REVIEW | `npm audit --audit-level=high`: 0 vulnerabilities. `npm audit signatures`: E404 for `@gef-bootstrap/kernel@0.0.0`; GEF dependency provenance remains `REVIEW`. No bypass or signature-check disablement. |
+| Diff / secret scan | PASS | `git diff --cached --check`; credential/token signature scan of the staged diff returned 0 matches; 10 changed files, with no application/runtime/deployment paths. |
+| GitHub Ubuntu / Windows CI | Exact-head evidence to be attached | Workflow check links will be recorded in the Issue #7 correction evidence comment for the final PR #32 HEAD. |
+| CodeRabbit | Exact-head evidence to be attached | A new review will be requested on the final PR #32 HEAD; no stale review will be reused. |
+
+No application code, runtime dependency, provider secret, Cloudflare resource or deployment is included. The candidate is not executable while PR #32 is open; do not start M00 implementation from this branch.
+
+## Prior pending exact-head evidence
 
 The candidate is not executable while its PR is open. After push, attach the exact base/HEAD, Ubuntu and Windows workflow results, final-head CodeRabbit review, secret-scan/lock verification and Owner audit state to the PR and Issue #7. Do not start app code before the Owner-authorized merge; the implementation branch must use that actual merge SHA.

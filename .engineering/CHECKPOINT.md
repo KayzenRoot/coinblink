@@ -1,17 +1,21 @@
 # CoinBlink checkpoint · pre-bootstrap
 
-Status: **BOOTSTRAP_IN_PROGRESS / NOT_APPROVED**.
+Status: **BLOCKED / CODEX_CLOUD_ENVIRONMENT_MISSING** (2026-10-08). This is **not** a promoted product checkpoint.
 
 - Repository: `KayzenRoot/coinblink` (public).
-- Bootstrap branch: `chore/cb-boot-001-gef-112`.
 - Initialization main SHA: `6efd4d9c8fd8f23e59ae572bd0dddc1c7c959bac`.
-- Active Work Order: `CB-BOOT-001` (Issue #1).
-- GEF 1.1.2 installed: **NOT VERIFIED**.
-- Matt Pocock skills installed: **NOT VERIFIED**.
-- Docs / visual image import: **NOT STARTED** (intentional phase order).
+- Active branch: `chore/cb-boot-001-gef-112`.
+- Active Work Order: `CB-BOOT-001` · Issue https://github.com/KayzenRoot/coinblink/issues/1.
+- PR: https://github.com/KayzenRoot/coinblink/pull/2 (draft).
+- Codex execution request: https://github.com/KayzenRoot/coinblink/pull/2#issuecomment-6061924313.
+- Observed Codex response: https://github.com/KayzenRoot/coinblink/pull/2#issuecomment-6061930878: `To use Codex here, create an environment for this repo`.
+- Missing capability: repository environment in Codex Cloud at https://chatgpt.com/codex/cloud/settings/environments.
+- GEF `@gef-bootstrap/cli@1.1.2` installed: **NO** (not attempted by Codex).
+- Matt Pocock skills installed: **NO** (GEF-first gate).
+- Visual Design Bible, images, previous planning imported: **NO** (intentionally held until previous gates APPROVED).
 - Product implementation, tests, deployment: **NOT STARTED**.
-- Architecture/scope/DoD approval: **OPEN**.
-- Named brand `CoinBlink` and dark screenshot are user-selected; trademark/domain clearance remains open.
-- Next necessary action: run and validate CB-BOOT-001 via Codex. Do not advance until APPROVED.
+- Architecture, Scope and DoD: **OPEN**.
+- Approved user-selected brand: `CoinBlink`; domain/trademark clearance remains open.
+- Next necessary action: enable/connect Codex Cloud environment for repo (operator-controlled), then re-trigger same Work Order / PR; alternatively execute locally using Codex Desktop against the same branch. **No successor WO**.
 
-This file is a bootstrap status declaration. Do not claim it is a promoted product checkpoint.
+Never report GEF installation, skill installation, CI passing or documentation import until verified by exact-head evidence.

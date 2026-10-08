@@ -45,27 +45,36 @@ test("the pinned GEF CLI exposes its verified version and command surface", () =
   }
 });
 
-test("preflight is read-only and keeps the missing canonical checkpoint unknown", () => {
+test("preflight is read-only and validates the conservative M00 checkpoint", () => {
   const preview = runJson(["init", "--target", root]);
   assert.equal(preview.value.effect, "NONE");
   assert.equal(preview.value.plan.install.state, "READY");
 
+  const checkpoint = JSON.parse(readFileSync(join(root, ".engineering", "CHECKPOINT.json"), "utf8"));
+  assert.equal(checkpoint.schemaVersion, 2);
+  assert.equal(checkpoint.overallCompletionPercent, 0);
+  assert.equal(checkpoint.checkpointFacts.applicationImplementation, "NOT_STARTED");
+  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "NOT_ADMITTED");
+  assert.equal(Object.hasOwn(checkpoint, "mainProductionDenominatorWeight"), false);
+  assert.equal(Object.hasOwn(checkpoint, "earnedProductionWeight"), false);
+
   const doctor = runJson(["doctor", "--target", root]);
   assert.equal(doctor.value.effect, "NONE");
   assert.equal(doctor.value.doctor.readOnly, true);
-  assert.equal(doctor.value.doctor.governance.present, false);
-  assert.equal(doctor.value.doctor.governance.valid, false);
-  assert.ok(doctor.value.doctor.governance.observationLimits.includes("GOVERNANCE_SOURCE_ABSENT"));
+  assert.equal(doctor.value.doctor.governance.present, true);
+  assert.equal(doctor.value.doctor.governance.valid, true);
+  assert.equal(doctor.value.doctor.governance.source, ".engineering/CHECKPOINT.json");
+  assert.deepEqual(doctor.value.doctor.governance.observationLimits, []);
   assert.notEqual(doctor.value.doctor.security.dependency.state, "PASS");
 
   const status = runJson(["status", "--target", root]);
   assert.equal(status.value.effect, "NONE");
   assert.equal(status.value.status.readOnly, true);
-  assert.equal(status.value.status.release.valid, false);
-  assert.equal(status.value.status.release.production, null);
-  assert.equal(status.value.status.operator.progress, null);
-  assert.equal(status.value.status.operator.stale, true);
-  assert.ok(status.value.status.observationLimits.includes("GOVERNANCE_SOURCE_ABSENT"));
+  assert.equal(status.value.status.release.valid, true);
+  assert.equal(status.value.status.release.production.overallCompletionPercent, 0);
+  assert.equal(status.value.status.operator.progress, 0);
+  assert.equal(typeof status.value.status.operator.stale, "boolean");
+  assert.equal(status.value.status.observationLimits.includes("GOVERNANCE_SOURCE_ABSENT"), false);
 });
 
 test("governed init apply succeeds in a disposable target and refuses clobber", (t) => {

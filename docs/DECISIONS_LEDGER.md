@@ -11,14 +11,14 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-005 | Brand mood | VISUALLY APPROVED | Premium graphite/dark, restrained neon-lime green, dense editorial dashboard, glassmorphism, cinematic Bitcoin hero |
 | CB-DEC-006 | Fidelity acceptance | USER REQUIREMENT | Visual diff / overlays against immutable source files; deterministic 1536×864 screenshot first; no 100% claim until measured |
 | CB-DEC-007 | Light theme | USER REQUIREMENT | Dark baseline plus accessible light alternative; final light design not yet visually approved |
-| CB-DEC-008 | Product operating model | USER SELECTED | Codex Cloud + GitHub + Cloudflare previews as development direction; local Docker alternative. Preview infrastructure NOT DEPLOYED |
+| CB-DEC-008 | Product operating model | USER UPDATED, 2026-10-08 | **Codex Desktop LOCAL + Git/GitHub** is primary implementation workflow to conserve ChatGPT Plus allowance; Docker is local. Cloudflare previews remain a separate future deployment target after authorized account access. Codex Cloud implementation is not the current workflow; no preview deployed. |
 | CB-DEC-009 | Engineering bootstrap | IMPLEMENTED | GEF `@gef-bootstrap/cli@1.1.2` + three pinned Matt Pocock Codex skills, audited in CB-BOOT-001 / PR #2 |
 | CB-DEC-010 | Front-end stack | PROPOSED; ADR OPEN | Astro + React + TypeScript + Tailwind, selected Radix/shadcn, lightweight charts and Motion; validate with implementation constraints before ADR |
 | CB-DEC-011 | Hosting/data stack | PROPOSED; ADR OPEN | Cloudflare Workers, D1, R2, caches, static/SSR hybrid; costs, quotas, deployment and security pending |
 | CB-DEC-012 | Editorial AI | PRODUCT DIRECTION, CONTRACT OPEN | DeepSeek/AI-assisted research, primary-source evidence, fact-checking and original reporting. Exact JEV integration and decision gates require review |
 | CB-DEC-013 | News distribution / monetization | PRODUCT DIRECTION, POLICY OPEN | Multisource news, X/Twitter distribution, paid banners/sponsor spaces; provider licenses, costs, user permissions unresolved |
 | CB-DEC-014 | Master screenshot's headlines/prices | DEMO DATA ONLY | Do NOT publish screenshot mock numbers, dates or claims as factual/live news |
-| CB-DEC-015 | Full architecture, scope, DoD, API contracts | NOT APPROVED | Product planning is OPEN, and historical ideas remain exploratory |
+| CB-DEC-015 | Full product architecture, scope, DoD, API contracts | NOT APPROVED | Global product planning remains OPEN; the separate bounded M00-only source pack is Owner-approved in PR #30 and does not approve M01–M18 or production |
 | CB-DEC-016 | Golden image file presence in Git | BLOCKED / NOT IMPORTED | Binary masters are preserved outside Git; intended paths/hashes in `assets/reference/reference-manifest.json`. Do not claim visual-ready source pack yet |
 
 **Visual authority:** `docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md` explains the two Golden raster assets; if a sentence disagrees with the image, the **approved original image** is authoritative on visual appearance.
@@ -36,8 +36,8 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-021 | Paid external developer API | USER APPROVED PRODUCT DIRECTION | Third-party sites/apps should be able to subscribe to CoinBlink news, quotes and future insights. Recommendation: architecture from start, public metered API after source rights, billing activation later. Pricing/contract OPEN |
 | CB-DEC-022 | Administration-first detailed instrumentation | USER APPROVED PRODUCT DIRECTION | Per-story views, article clicks and channel attribution must be measurable and charted with privacy and honest metrics. Consent implementation/metric semantics OPEN |
 | CB-DEC-023 | Work Order timing / rapid implementation | USER PRIORITY | Finish soon through scoped long WOs, early previews, parallel test tooling and one coherent module per PR; no uncontrolled mega WOs or auto-merge bypass |
-| CB-DEC-024 | Cloudflare Worker Previews | RECOMMENDED, ADR OPEN | Current isolated Worker Previews using Wrangler 4.135.0+ suit full-stack per-PR pre-production; Pages alternative if needed. No deployments yet |
-| CB-DEC-025 | Product module catalog (17 units) | PROPOSED IMPLEMENTATION STRUCTURE | All CB-M00..CB-M16 files in `.engineering/planned-work-orders/` are NOT ADMITTED/EXECUTABLE until Context Lock and architecture approval |
+| CB-DEC-024 | Cloudflare Worker Previews | OWNER-APPROVED M00 DIRECTION / DEPLOYMENT NOT AUTHORIZED | M00 architecture baseline is in the approved PR #30 source pack; exact Worker compatibility, plan/cost, account authority and deployment remain unverified. Preview credentials and production resources are not authorized |
+| CB-DEC-025 | Product module catalog (17 units) | PROPOSED IMPLEMENTATION STRUCTURE | `.engineering/planned-work-orders/` remains non-executable. M00 has a bounded source approval, but still requires a canonical GEF checkpoint, current Context Lock, exact-head checks/review and separate formal admission; M01–M18 remain NOT ADMITTED |
 | CB-DEC-026 | Revenue streams | RECOMMENDED, NOT FINANCIALLY APPROVED | Sponsors/ads, newsletter, affiliate disclosures, developer API, embeddable widgets, premium insight reports (future) |
 
 ## Owner direction · Advertising and promotions (2026-10-08)
@@ -64,4 +64,5 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-039 | Exact settings database/vault/auth design | PROPOSED / ADR OPEN | Cloudflare Secrets Store vs AES-GCM envelope + external KEK, OAuth provider scopes, schema, consent and rates pending admission |
 | CB-DEC-040 | New inner-page visual composition and typography | PROPOSED / VISUAL SIGNOFF OPEN | 38 public + 48 admin page layouts, grids and motion targets require screenshot review; Home v1.0 remains visual authority |
 | CB-DEC-041 | Editorial media engine M17 and token dashboard M18 | PROPOSED LONG MODULE WOs | M17 after CMS/source providers; M18 indefinite FUTURE until legal/token technical go/no-go |
+| CB-DEC-042 | Bounded CoinBlink M00 source pack | USER APPROVED M00 ONLY / GEF ADMISSION PENDING | Owner approval at PR #30 comment `6067708856`, for source HEAD `84f6c02a119259806d230470efc115162d733855`; approval covers the bounded M00 Scope/Requirements/Architecture/Security/DoD only. GEF checkpoint, active Context Lock and implementation admission remain separate gates |
 

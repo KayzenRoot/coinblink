@@ -4,7 +4,7 @@
 **Status:** PROPOSED / NOT ADMITTED  
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
 **Preview route(s):** `/preview-status and /admin/preview-status`  
-**Dependencies:** CB-BOOT-001; CB-PLAN-001 stack ADR.
+**Dependencies:** CB-BOOT-001; the Owner-approved M00-only source pack merged in PR #30; a valid canonical GEF checkpoint and separate formal M00 admission.
 
 ## Objective
 Reproducible monorepo/app delivery, secure PR previews on Cloudflare, local Docker parity and visual test harness.
@@ -13,7 +13,7 @@ Reproducible monorepo/app delivery, secure PR previews on Cloudflare, local Dock
 Read `AGENTS.md`, `.engineering/SOURCE-HIERARCHY.md`, current admitted GEF Checkpoint and Context Lock, full owner-approved Visual Bible and image manifest, `docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md`, `docs/product/CONTINUOUS_VISUAL_DELIVERY_PROTOCOL_v0.1.md`, the active Decision Ledger, and the specific module's contracts. Never use historical brainstorm as approved scope.
 
 ## Admitted boundary
-ADMISSION STATUS: PROPOSED, NOT EXECUTABLE until CB-PLAN-001 architecture/product scopes are approved, active module Context Lock compiled, exact base HEAD pinned, dependency review and GEF preflight passed.
+ADMISSION STATUS: PROPOSED, NOT EXECUTABLE. The M00-only Scope/Requirements/Architecture/Security/DoD source pack was Owner-approved and merged in PR #30. Global Issue #6 remains open, and its broader product decisions are not approved. M00 code still requires the CB-GOV-004 checkpoint, exact post-merge Context Lock, exact-head review/checks and a separate formal GEF admission before execution.
 
 ## End-to-end implementation deliverables
 1. Select the Cloudflare deployment target via ADR; prefer Workers Previews using pinned Wrangler 4.135.0+; keep Pages Git integration as a documented alternative if the selected runtime is incompatible.

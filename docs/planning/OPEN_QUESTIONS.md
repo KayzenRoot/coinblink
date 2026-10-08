@@ -57,3 +57,9 @@ Product planning is deliberately **OPEN**. Do not convert a candidate technology
 - **Token future:** no selected network, contract, ticker, utility, supply, vesting, legal structure or custody. Token issuance is OUT OF SCOPE; monitoring design stays disabled until independently approved.
 - **Scope and module order:** M17 media production integrates M05 and M08; M18 future is not scheduled. Product Scope/Architecture/DoD not yet frozen.
 
+## M00 active execution prerequisites
+
+- Verify M00-only Astro/adapter/Wrangler strict version compatibility with latest official Cloudflare integration and limits, without freezing unrelated product modules.
+- Cloudflare Account access: scoped Workers script edit token, account ID, Workers Builds/Git integration and (later) Zero Trust Access. **NOT YET CONNECTED**; use GitHub Actions secret manager / provider account only, never paste tokens in chat.
+- Local app shell must be real in Codex/CI, not just a planning PR. Cloudflare preview with responsive screenshots is required before module DONE.
+- GEF product Source Pack/checkpoint JSON still absent, check policy before declaring active admission; do not manufacture missing approved product contracts.

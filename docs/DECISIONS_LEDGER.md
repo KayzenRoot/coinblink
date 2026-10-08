@@ -65,3 +65,11 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-040 | New inner-page visual composition and typography | PROPOSED / VISUAL SIGNOFF OPEN | 38 public + 48 admin page layouts, grids and motion targets require screenshot review; Home v1.0 remains visual authority |
 | CB-DEC-041 | Editorial media engine M17 and token dashboard M18 | PROPOSED LONG MODULE WOs | M17 after CMS/source providers; M18 indefinite FUTURE until legal/token technical go/no-go |
 
+## Owner start request and M00 platform direction · 2026-10-08
+
+| ID | Item | Status | Boundary |
+|---|---|---|---|
+| CB-DEC-042 | Begin coding in the agreed next module CB-M00 | USER APPROVED DIRECTION | Immediate focus preview first, not token/news/paid API; GEF admission and exact-head evidence required |
+| CB-DEC-043 | Astro/TypeScript/React islands Cloudflare Worker stack | M00-SCOPED PROPOSED ADR | docs/architecture/ADR-CB-0001-M00-PREVIEWS-STACK.md; real version/compatibility and Cloudflare account still to verify |
+| CB-DEC-044 | Initial local skeleton before Cloudflare provision | PROPOSED LOW-RISK EXECUTION STRATEGY | Implement stateless honest preview page, Docker localhost 3000, tests; never claim Cloudflare deployed without URL proof |
+| CB-DEC-045 | Golden source binary current location | LOCALLY VERIFIED / NOT IN GIT | Original 1536x864 Home SHA256 82cb... and 1179x1040 Logo SHA256 126c... available in runtime; issue #5 still required for source transfer |

@@ -1,14 +1,17 @@
-# CoinBlink · Engineering narrative checkpoint (NOT promoted product JSON)
+# CoinBlink · Engineering checkpoint (informational, NOT a promoted GEF product CHECKPOINT.json)
 
-**As of 2026-10-08:** BOOTSTRAP_COMPLETE, DESIGN_V1_FROZEN, PRODUCT_PLAN_DRAFT_MERGED, INTERNAL_DESIGN_V2_DRAFT_IN_REVIEW, GOLDEN_IMAGE_BYTES_NOT_IN_GIT, PREVIEW/PORTAL_NOT_DEPLOYED.
+**Current state 2026-10-08:** GEF_BOOTSTRAP_VERIFIED / FULL_DESIGN_BIBLE_DRAFT_MERGED / M00_CODEX_PREPARATION_IN_PR / GOLDEN_MASTERS_VERIFIED_LOCAL_BUT_NOT_IN_GIT / CLOUDFARE_ACCOUNT_NOT_CONNECTED / NO_LIVE_PREVIEW / NO_APP_RUNNING_VERIFIED.
 
-- CB-BOOT-001 v1.1.2 and 3 Matt Pocock skills merged PR #2. Exact-head Linux/Windows CI, provenance and documented owner-authorized narrow correction.
-- CB-DOCS-001 source files and original unmodified 1,013-line Golden Home Visual Bible merged PR #4; 1,268-line historical ideas master. Two Golden image JPG bytes still absent in Git, manifest presentInGit=false; CB-ASSETS-001 Issue #5.
-- CB-PLAN-001 initial planning packet and 17 long WOs plus Advertising Studio merged PR #24 at a783a90c87b212123aeb23ce57036424e87d233c. Issue #6 remains OPEN for final Scope/Architecture/DoD decisions.
-- CB-DESIGN-002 Issue #25 is active documentation-only branch review, 38 public + 48 admin pages in draft v2 specs; exact owner approved Golden Home v1 remains canonical and unchanged.
-- Owner direction: one human OWNER admin only in V1, first-run account activation and MFA; all ordinary integration keys through protected Settings (encrypted/vault and masked, root external). CMS/news articles receive evidence-grounded AI illustrations/diagrams/charts/animation via separate planned M17.
-- CB-M17 planned Image/Video Editorial Pipeline (Issue #27); CB-M18 FUTURE CoinBlink Token and read-only dashboard research (Issue #26); no chain/ticker/contract/tokenomics or issuance.
-- All M00..M18 remain PLANNED/NOT ADMITTED. Site/front end/admin/auth/data-provider connection/real artwork generation/Cloudflare previews and token **NOT IMPLEMENTED**.
-- Product approved Scope/Architecture/DoD/checkpoint JSON still OPEN. No secrets, new media, token issuance or live ad/account integrations have been created.
+## Complete and verified
+- CB-BOOT-001: GEF v1.1.2, pinned node/npm/provenance and 3 Matt Pocock skills, PR #2 merged.
+- CB-DOCS-001: original full Golden Home Visual Bible v1 and historic ideas master, PR #4 merged. Screenshot hash/source manifest unchanged.
+- CB-PLAN-001: product draft modular roadmap/Advertising, PR #24 merged; Issue #6 stays OPEN for final frozen product Scope/Architecture/DoD.
+- CB-DESIGN-002: full 38 public/48 owner admin page contracts and 18 layouts, secure Settings/sole Owner, M17 media, M18 future token, PR #28 merged at 72302dd2ada7be5be7a8b43c558c2a3a799a4240. New internal visual designs remain DRAFT.
+- Original Golden Home and Logo JPEGs were reverified in model runtime on 2026-10-08 with exact SHA-256 and sizes but are NOT yet committed to Git. CB-ASSETS-001 Issue #5 still OPEN.
 
-**Next legal action:** audit CB-DESIGN-002 docs, merge if green as DRAFT source, then accept internal visual samples via preview and separately admit M00. Exact Golden JPG import and secure Cloudflare account secrets remain future external gates.
+## Current increment
+- CB-M00-WO-001: user explicitly asked to START the development. Branch `feat/cb-m00-preview-foundation`, Issue #7. Proposed M00 bounded Astro Worker Previews/Docker ADR + module scope. GEF admission/checkpoint still subject to exact preflight, and implementation must be written by Codex. No code, app screenshots, Docker proof or actual Cloudflare URL has yet been shown. Cloudflare account scope and secrets have not been connected by the GitHub integration.
+- All other CB-M01..CB-M17 modules are planned, NOT ADMITTED. CB-M18 token is FUTURE/no chain or token issued.
+
+## STOP and next action
+Submit prepared M00 PR to Codex for true tool execution. Build/test a local app shell as first demonstrable milestone, without claimed Golden Home parity or unknown provider secrets. The M00 finish gate is a verified Cloudflare Worker Preview URL with safe settings, Docker localhost parity, exact-head CI and owner screenshots. If absent, label PROVIDER_SETUP_REQUIRED; never merge/claim DONE. Do not fake .engineering/CHECKPOINT.json to silence GEF doctor.

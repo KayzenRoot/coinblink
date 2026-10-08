@@ -36,3 +36,7 @@ A missing product `.engineering/CHECKPOINT.json` may be reported by GEF doctor w
 The owner has selected an admin-first, continuously viewable build process: module-wide lengthy Work Orders, in-PR Cloudflare previews, faithful Golden design, comprehensive private Mission Control, X/Instagram/TikTok Social Studio and a rights-cleared paid developer API when ready.
 
 See [Product Blueprint](docs/product/PRODUCT_BLUEPRINT_v0.1.md), [Module Roadmap](docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md) and [Engineering Planned Work Orders](.engineering/planned-work-orders/). These are proposed module specifications and are **not an app release, active Cloudflare environment, or finished product architecture**.
+
+## Started implementation candidate · CB-M00
+
+Owner has requested development begin with a **preview platform**. [Issue #7](https://github.com/KayzenRoot/coinblink/issues/7) tracks it. Scoped [M00 ADR](docs/architecture/ADR-CB-0001-M00-PREVIEWS-STACK.md), [implementation contract](docs/product/CB-M00-IMPLEMENTATION-SCOPE.md) and [Codex long WO](.engineering/work-orders/CB-M00-WO-001.md) are being reviewed. No deployed website or Cloudflare Preview URL is claimed. Golden Home visual source is untouched.

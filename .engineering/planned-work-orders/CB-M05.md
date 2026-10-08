@@ -3,7 +3,7 @@
 **Stage:** P0 · admin foundation  
 **Status:** PROPOSED / NOT ADMITTED  
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
-**Preview route(s):** `/admin/login`, `/admin/setup`, `/admin/articles`, `/admin/articles/new`, `/admin/media` (placeholder for M17), `/admin/settings` and `/admin/settings/integrations`  
+**Preview route(s):** `/admin/login`, `/admin/setup`, `/admin/recovery` (three pre-session, separately protected flows); `/admin/articles`, `/admin/articles/new`, `/admin/articles/[id]/edit`, `/admin/media` (M17 placeholder), `/admin/settings`, `/admin/settings/integrations` (the latter require an authenticated Owner session)  
 **Dependencies:** CB-M00.
 
 ## Objective

@@ -36,7 +36,7 @@ Define the module's database entities/schema migrations, normalized events, role
 ## Module-specific acceptance criteria
 1. Per-article view counts reproducibly tested.
 2. Explicit metric definitions and source provenance.
-3. Owner vs Viewer RBAC enforced.
+3. Owner-only session and server-side permissions enforced; unauthenticated users, public readers, Developer API customers and service agents cannot view protected Owner analytics. No human Viewer, Analyst or Editor role in V1.
 4. No unsafe PII or third party tracking without consent.
 5. Working charts on preview, not decorative dummy stats.
 

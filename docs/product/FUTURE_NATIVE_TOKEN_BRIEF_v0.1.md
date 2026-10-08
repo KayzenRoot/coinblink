@@ -9,10 +9,10 @@ STATE: FUTURE IDEA ONLY / NO NETWORK / NO TICKER / NO CONTRACT / NO OFFERING / N
 4. Legal and compliance by jurisdiction: financial/token regulation, taxes, disclosures, consumer marketing, AML/KYC where required, risk of security token classification and market integrity.
 5. Security: smart contract independent audit, owner/team custody, multisig, timelocks, emergency restrictions, upgrade and pause governance, key recovery and incident playbook.
 6. Exchange/liquidity/revenue models only after checks, no guaranteed listings, organic volume or returns. Public data rights and wallet privacy rules.
-7. Explicit owner approval of every issuance, deployment, mint or token-holder transaction; no Codex agent automatic onchain spending.
+7. Explicit owner approval of every issuance, deployment, mint or token-holder transaction; no Codex agent automatic on-chain spending.
 
 ## Reserved dashboard /admin/token (disabled until activation)
-Overview: verified chain/network, contract address+explorer, token metadata/decimals, deployment block, audit state and verified holder count. Show 'Not launched' now, not $0 priced charts.
+Overview: verified chain/network, contract address+explorer, token metadata/decimals, deployment block, audit state and verified holder count. Show 'Not launched' now, not $0-priced charts.
 Transfers: actual confirmed token movements (tx id, from/to, block, amount, timestamp, chain finality, USD conversion only if licensed data), top whale transfers with careful context and bot/reorg handling.
 Token supply: total/minted/burned/circulating/locked supply with vesting and methodology; show uncertainties.
 Liquidity and market: pair volume 24h/7d, DEX venues, pool reserves, order/depth liquidity and price changes only with named, legitimate sources; identify wash trading and missing venues.

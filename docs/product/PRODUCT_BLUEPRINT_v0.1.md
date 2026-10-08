@@ -22,11 +22,13 @@ CoinBlink is **not** a trading exchange, guaranteed signal service, unlicensed d
 
 ## Roles / security boundaries
 
+**Active human V1 contract:** exactly ONE immutable human Owner/Administrator account. The other human role types below are explicitly FUTURE proposals, disabled and not issuable in V1; third-party API customers and readers never become owner-equivalent. Server-side service agents remain least-privilege identities without human admin sessions.
+
 - **Owner:** all configuration, billing, revenue, provider spend, publish approvals, incident controls and irreversible operations; strong authentication.
-- **Admin / Managing Editor:** editorial workflows, permissions limited by owner, schedules, approvals and trend analytics.
-- **Editor / Reporter:** create drafts and suggest social posts, manage own content, no unreviewed production deploy or secrets access.
-- **Social Publisher:** prepare creative, queue and only publish to authorized connected accounts after explicit approval gate.
-- **Data Analyst:** read aggregated stats, export entitled aggregated data, never auth secrets/user PII.
+- **Admin / Managing Editor (FUTURE ONLY, NOT V1):** potential editorial workflows if the sole Owner separately approves team accounts and a new role/security design.
+- **Editor / Reporter (FUTURE ONLY, NOT V1):** possible future contributor accounts after approved multi-human security migration; no such role in V1.
+- **Social Publisher (FUTURE ONLY, NOT V1):** possible separate human social operator only after explicit future Owner authorization; Owner alone approves posts in V1.
+- **Data Analyst (FUTURE ONLY, NOT V1):** possible restricted reporting role after separate multi-user security approval; no analyst login in V1.
 - **API Customer:** only their own keys, usage, bills and allowed public API contract; isolated tenant.
 - **Reader:** public content, authorized newsletter and optional personalization.
 - **Service Agent:** least-privilege automated editorial and provider tasks, denied unilateral irreversible publication until gated.

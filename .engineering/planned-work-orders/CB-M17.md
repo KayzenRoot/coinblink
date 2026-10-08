@@ -24,4 +24,7 @@ Provider/key absence and cost-limit safe fallback; step-up user approval before 
 7. Unit/integration/E2E and adversarial safety tests, Cloudflare binding isolation, exact-head CI, third-party review and evidence bundle green.
 
 ## STOP CONDITION
-Only merge after secure working Preview, producer/storage integration, costs/licensing, editorial proof and owner approval; otherwise BLOCKED with accurate staged UI. One WO, one PR, no fake external provider success or live generated imagery claim.
+Only merge after secure working Preview, producer/storage integration, costs/licensing, editorial proof and owner approval; otherwise BLOCKED with accurate staged UI. One WO, one PR. Report provider success only after a provider returns a verifiable asset, with receipt or artifact evidence; claim live generation only when it actually occurred. Sandbox mock output is labeled DEMO and never reported as a real external generation.
+
+## Outbound provider credential transport (security acceptance)
+Every credential-bearing outbound inference request MUST use authenticated HTTPS/TLS with valid certificate-chain and hostname validation. Reject HTTP/insecure/non-allowlisted endpoints, credentials in URL strings, redirects to an untrusted origin, TLS downgrade, expired certificates and attempts to forward Authorization headers, keys, query params or bearer cookies to a different origin. If permitted provider redirect changes origin, strip secrets, fail closed and require a separately reviewed approved endpoint. Optional local GPU workers require strong authenticated private connectivity, origin/identity pinning and equivalent encryption. Negative tests cover cross-origin 30x redirect, downgrade and certificate mismatch, with no logs/telemetry containing secret bytes.

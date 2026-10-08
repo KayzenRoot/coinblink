@@ -23,3 +23,4 @@
 
 **Authority:** only the original 1536×864 Golden Home and original logo are visually APPROVED; all new internal-page layout parameters and mock preview plans are PROPOSED. Golden JPGs are not yet present in Git (see reference manifest), so screenshots cannot prove visual parity. No page code, token or cloud integrations are implemented by documentation.
 
+- [18 critical internal page layout sketches in text](COINBLINK_INTERNAL_LAYOUT_ATLAS_v2.0_DRAFT.md) with proposed width, gutters, proportions, content flow, states and QA.

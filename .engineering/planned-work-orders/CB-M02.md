@@ -56,3 +56,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 ## In-article sponsored units (owner-approved direction)
 
 Reserve dormant responsive, clearly labelled ad placement seams after the lead, between substantive article sections, in wide desktop rail and below article body. Never disguise them as news, interleave excessively or initialize third-party scripts. M13 owns activation/consent/billing. All locations require responsive visual review and article readability tests.
+
+## v2 rich news article design contract
+
+Use docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md P03 and docs/design/COINBLINK_EDITORIAL_MEDIA_ENGINE_v2.0_DRAFT.md. Implement accurate 16:9 cover, 720–760px reading column, fact/source links, figure captions, related stories, optional default-off ad slots, sticky context rail, inline diagrams/video poster and accessibility. Source-backed charts use actual timestamped series; M17 produces approved assets later. Initial missing generative API is not permission to fabricate artwork or claim generator live.

@@ -52,3 +52,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M08 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Creative media collaboration
+
+CB-M08 owns factual brief, claim IDs, evidence validation, research model cost and factual review. CB-M17 owns image/illustration/animation renderer, provenance/rights of generated media, and all rich creative UI. Do not duplicate M17 inside M08 or allow hallucinated diagrams/data charts. Even with automated story drafting, the sole Owner approves final factual article and creative before publication.

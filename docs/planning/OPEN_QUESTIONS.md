@@ -38,3 +38,11 @@ Product planning is deliberately **OPEN**. Do not convert a candidate technology
 - **CB-ASSETS-001 (proposed):** upload immutable original Golden image bytes, SHA-256 verify in Git and promote visible visual reference index.
 - **CB-PLAN-001 (active planning):** draft modular blueprint, large GEF WOs, continuous preview protocol and owner decision rounds; module scope/architecture remain unapproved until accepted.
 - **CB-CI-002 (proposed):** governed preview deployment to Cloudflare after scope and security architecture approval.
+
+## Advertising planning decisions pending
+
+- Pick exact banner positions by comparing home layout against Golden screenshot; ad slots must remain optional until visual approval.
+- Choose AdSense sign-up timing after quality original articles, site ownership, privacy/CMP and ads.txt configuration; do not guarantee acceptance or earnings.
+- Decide sponsor pricing, category exclusivity, minimum booking, invoice/payment processor and prohibited crypto-finance advertisers; first rate card can remain draft.
+- Future course scope (landing page/syllabus, qualified instructors, checkout, refunds and consumer terms) requires separate product acceptance; ad campaigns can precede actual products.
+- Privacy for Brazil/international audience and Google-certified CMP for personalized publisher ads where required, honest advertiser reporting and bot-resistant measurement.

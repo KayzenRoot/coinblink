@@ -53,3 +53,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M01 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Advertising placement seam (owner-approved direction)
+
+Build reusable accessible, responsive, default-OFF AdSlot presentation seams only at visually owner-approved positions such as home_after_trending and approved existing sponsor card. No live AdSense scripts, no sponsor placement that disrupts Golden fidelity; M13 owns advertising campaigns and scripts. See docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.

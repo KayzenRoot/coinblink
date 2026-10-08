@@ -24,3 +24,5 @@ Treat Golden visuals as exact aesthetic authority **only after the original byte
 - [Planned module Work Orders](../.engineering/planned-work-orders/): CB-M00 through CB-M16; all PROPOSED/NOT ADMITTED.
 
 **This material is a detailed planning deliverable, not proof that module code, previews, admin analytics, social posting or billing exist.**
+
+- **Advertising and revenue:** [Advertising & Monetization v0.1](product/ADVERTISING_AND_MONETIZATION_v0.1.md) with owner-selected Google AdSense/direct sponsors/course promotions and pending live provider approvals.

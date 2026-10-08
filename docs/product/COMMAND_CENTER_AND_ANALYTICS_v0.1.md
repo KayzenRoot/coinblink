@@ -49,3 +49,7 @@ Dashboard layout visually aligned to CoinBlink dark graphite/lime brand (not a g
 ## Audit and Definition of Done
 
 M05 must establish auth and admin shell before data cards. M06 must prove per-news page view counting with reproducible fixtures and real aggregation tests, filtering by article/period, bots excluded and unauthorized access denied. M07 plugs into the same cockpit using distinct platform result states. No claiming "full analytics" if provider APIs omit restricted post-level reach metrics.
+
+## Advertising command metrics
+
+Add protected Advertising navigation with inventory heatmap, booking conflicts, advertiser CRM, creative approval, campaign calendar, eligible slot occupancy and owner kill switch. Revenue cards separate Google provider-reported estimated earnings/payouts from direct sponsor invoices/collected funds and house/course attributed signups. Provide article and section ad yield, campaign CTR where verifiable, fill, cost and policy errors; state measured, estimated, unavailable or demo on every metric. M13 owns paid delivery and reporting, M06 hosts source-labelled dashboard feeds.

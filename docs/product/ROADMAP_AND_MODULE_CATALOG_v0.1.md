@@ -71,3 +71,9 @@ All planned module Issues exist, but **NONE is admitted for execution**. They ar
 - [CB-M16 · Issue #23](https://github.com/KayzenRoot/coinblink/issues/23) · [long planned WO](../../.engineering/planned-work-orders/CB-M16.md)
 
 **Existing prerequisites:** [CB-ASSETS-001 · Issue #5](https://github.com/KayzenRoot/coinblink/issues/5) is still blocked on actual Golden JPEG binary transfer. [CB-PLAN-001 · Issue #6](https://github.com/KayzenRoot/coinblink/issues/6) owns this draft roadmap/admission decisions.
+
+## Advertising priorities and review dependency corrections
+
+Advertising is **an approved product direction**, not a new unrelated work order. CB-M13 (Issue #20) now implements complete Advertising Studio, including Google AdSense publisher ads, directly booked business banners, and CoinBlink/newsletter/future course house campaigns. First M01/M02 leave dormant approved layout slots; M05 protected admin navigation and M06 honest revenue cards. M13 may be advanced in sequence to follow M02+M06 if ad revenue becomes a commercial priority, without delaying the first working site for a Google approval. All live ads remain blocked until account and legal privacy review.
+
+Review corrections: CB-M04 now depends on CB-M05 secure admin base. CB-M15 now depends explicitly on CB-M09 international SEO and CB-M10 newsletter consent. CB-M03 preview Queue events are simulated; an isolated nonproduction consumer is required for integration tests. Visual fidelity, safe ads density and honest ad revenue status are mandatory.

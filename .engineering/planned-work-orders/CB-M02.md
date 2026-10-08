@@ -52,3 +52,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M02 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## In-article sponsored units (owner-approved direction)
+
+Reserve dormant responsive, clearly labelled ad placement seams after the lead, between substantive article sections, in wide desktop rail and below article body. Never disguise them as news, interleave excessively or initialize third-party scripts. M13 owns activation/consent/billing. All locations require responsive visual review and article readability tests.

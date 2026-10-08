@@ -30,3 +30,5 @@ The candidate modules have comprehensive planned Work Orders in `.engineering/pl
 First implementation admission after planning review should be CB-M00 preview infrastructure; admin foundation CB-M05 may be prioritized before Golden Home CB-M01 while original image bytes remain missing. CB-M01 is asset-gated by CB-ASSETS-001.
 
 Live externally billable API, social posting or public production deployment requires separate legal/provider permissions and explicit signoff.
+
+- **Advertising module contract:** docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md / planned CB-M13 / Issue #20. User-approved direction, proposed provider/privacy details. No actual ad network or course checkout integrated.

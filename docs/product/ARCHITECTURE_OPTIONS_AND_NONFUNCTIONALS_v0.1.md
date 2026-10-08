@@ -40,3 +40,7 @@ Paid API clients -> API key scope & tenant -> quotas/metering -> license-filtere
 ADR-A app/runtime, ADR-B previews and Cloudflare resource isolation, ADR-C database/queues/media, ADR-D auth/RBAC/privacy analytics, ADR-E provider licenses/caching, ADR-F CMS editorial workflow, ADR-G social official APIs/access audits, ADR-H public API metering and Stripe/other billing, ADR-I model/provider routing/JEV budget and approvals, ADR-J accessibility/visual regression acceptance.
 
 Unresolved names are *decision opportunities*, not requests to provision paid accounts right now.
+
+## Required Advertising / Monetization ADR (proposed)
+
+Consider slot registry and responsive AdSlot with reserved sizes, direct/house campaign booking scheduler, separate AdSense adapter with real publisher account review, verified ads.txt and geographic consent/CMP integration. Apply role checks, anti-scam creative moderation, click/impression validation and bot filtering for first-party direct ads. Do NOT infer AdSense revenue from local clicks. Store provider-reported network revenue separately from sponsor invoices. No real ads in public PR previews. Detailed contract in docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.

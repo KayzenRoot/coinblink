@@ -64,3 +64,7 @@ Critical launch prioritization: an editorially functioning portal + actionable o
 ## Product-level stop conditions
 
 No production marketing/claims while historical ideas remain merely proposed. No unlicensed article copying or unlicensed market data resale. No social publication on unapproved accounts or unaudited TikTok client as public direct post. No production deployment with demo figures. No billing until provider cost/rights have been verified. No whole-product frozen status before approved Scope, Architecture, Security/Test Plan, DoD and GEF checkpoint are promoted through owner governance.
+
+## Owner-approved Advertising Studio direction · 2026-10-08
+
+Reserve tasteful, clearly labelled banner inventory on homepage, news articles, category lists and eligible promotional locations. Admin advertising management handles Google AdSense (publisher network, only after approval), direct contracted sponsor campaigns, house campaigns for CoinBlink and future courses. CB-M01/CB-M02 create only visually approved slots; M05/M06 reserve admin/metric contracts; one comprehensive M13 work order manages campaign creation/scheduling/measurement/rights/consent. Keep Golden home faithful. Refer to docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.

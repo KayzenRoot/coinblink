@@ -52,3 +52,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M05 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Advertising section foundation
+
+Provide locked-down /admin/advertising navigation stub with RBAC and not-connected status for future CB-M13. This foundational CMS/auth module does not send paid ads or invoice sponsors.

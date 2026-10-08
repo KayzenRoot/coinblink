@@ -39,3 +39,15 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-024 | Cloudflare Worker Previews | RECOMMENDED, ADR OPEN | Current isolated Worker Previews using Wrangler 4.135.0+ suit full-stack per-PR pre-production; Pages alternative if needed. No deployments yet |
 | CB-DEC-025 | Product module catalog (17 units) | PROPOSED IMPLEMENTATION STRUCTURE | All CB-M00..CB-M16 files in `.engineering/planned-work-orders/` are NOT ADMITTED/EXECUTABLE until Context Lock and architecture approval |
 | CB-DEC-026 | Revenue streams | RECOMMENDED, NOT FINANCIALLY APPROVED | Sponsors/ads, newsletter, affiliate disclosures, developer API, embeddable widgets, premium insight reports (future) |
+
+## Owner direction · Advertising and promotions (2026-10-08)
+
+| ID | Decision | Status | Boundary |
+|---|---|---|---|
+| CB-DEC-027 | Ad spaces on homepage and article pages | USER APPROVED DIRECTION | New Golden screenshot placement details require visual review |
+| CB-DEC-028 | Monetize publisher ads from Google | USER APPROVED DIRECTION | Google AdSense, NOT the Google Ads advertiser product; publisher account and site review OPEN |
+| CB-DEC-029 | Sell direct sponsor banners to companies | USER APPROVED DIRECTION | Rate cards, contractual terms, moderation and invoicing OPEN |
+| CB-DEC-030 | Promote future courses / house products | USER APPROVED DIRECTION | Actual course storefront, sales/fulfillment, prices and refund terms OPEN |
+| CB-DEC-031 | Full advertising admin controls | USER APPROVED DIRECTION | Campaigns, creative, inventory, reports, dates, earnings and owner kill switch, implementation contract proposed in M13 |
+| CB-DEC-032 | Consent, visual ad placement and vendor billing methods | PROPOSED | Govern via dedicated monetization ADR, Google approval and privacy gates before live ads |
+

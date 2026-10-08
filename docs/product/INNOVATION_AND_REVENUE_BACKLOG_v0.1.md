@@ -33,3 +33,7 @@ Protect scarce time and capital: (1) preview infrastructure first, (2) approved 
 **Near-term** (after audience): direct sponsor spots, newsletter placements with explicit disclosures, compliant affiliation where relevant; **medium-term**: API subscription tiers, embeddable widgets and event digests; **later**: premium verified insights, partner syndication with licensed contracts, white-label widgets.
 
 Unvalidated example financial targets must be modeled, not presented as forecasts. Prioritize revenue per authorized source and gross margin, not superficial API request volumes.
+
+## Owner-approved advertising extension
+
+Prioritize sponsor packages, AdSense publisher inventory (subject to Google approval), in-article ad slots, advertising analytics and house promos for CoinBlink newsletters and future courses. Candidate extras: vertical crypto category sponsorships, native newsletter sponsor units, seasonal brand campaigns, sponsor self-service proposals and media kits. All must have editorial labelling, advertiser financial/claims compliance, audience consent and no invented income. Detailed contract: docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.

@@ -53,3 +53,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M06 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Advertising revenue integration seam
+
+Show future advertising integration in Owner Command Center: qualified impressions (direct), sponsor bookings/receivables, AdSense provider-reported revenue, house/course click-through, per-article yield and campaign drill-down. Initial cards say not connected. Never fabricate revenue or equate analytics clicks to billed Google earnings.

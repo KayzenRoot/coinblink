@@ -30,3 +30,9 @@ npm exec -- gef doctor --target . --json
 A missing product `.engineering/CHECKPOINT.json` may be reported by GEF doctor while scope/architecture are still unapproved. Do not override that finding with fabricated green status.
 
 **No financial advice:** draft and screenshot market prices/headlines are illustrative, not live factual claims. The product editorial verification and provider licensing gates are still under design.
+
+## Proposed implementation roadmap (planning round, not shipped code)
+
+The owner has selected an admin-first, continuously viewable build process: module-wide lengthy Work Orders, in-PR Cloudflare previews, faithful Golden design, comprehensive private Mission Control, X/Instagram/TikTok Social Studio and a rights-cleared paid developer API when ready.
+
+See [Product Blueprint](docs/product/PRODUCT_BLUEPRINT_v0.1.md), [Module Roadmap](docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md) and [Engineering Planned Work Orders](.engineering/planned-work-orders/). These are proposed module specifications and are **not an app release, active Cloudflare environment, or finished product architecture**.

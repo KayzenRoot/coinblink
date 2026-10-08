@@ -10,3 +10,17 @@
 
 ## Reading rule
 Treat Golden visuals as exact aesthetic authority **only after the original bytes are available**; historical brainstorming is non-binding. Engineering Scope, DoD and Architecture remain to be approved. See `.engineering/SOURCE-HIERARCHY.md` and repository `AGENTS.md` for rule precedence.
+
+## Modular implementation planning (2026-10-08)
+
+- [Product Blueprint v0.1](product/PRODUCT_BLUEPRINT_v0.1.md): product surfaces and owner/user workflows.
+- [17-module roadmap and catalog](product/ROADMAP_AND_MODULE_CATALOG_v0.1.md): implementation order and dependencies.
+- [Visual Delivery Protocol](product/CONTINUOUS_VISUAL_DELIVERY_PROTOCOL_v0.1.md): Cloudflare live PR previews, screenshot evidence and Docker backup.
+- [Owner Command Center](product/COMMAND_CENTER_AND_ANALYTICS_v0.1.md): required admin panels and article-level metrics.
+- [Social Studio](product/SOCIAL_STUDIO_AND_PUBLISHING_v0.1.md): X, Instagram, TikTok.
+- [Paid Data API](product/PAID_API_AND_DATA_PLATFORM_v0.1.md): B2B API product and rights gates.
+- [Candidate Architecture](product/ARCHITECTURE_OPTIONS_AND_NONFUNCTIONALS_v0.1.md): proposed only; architecture ADRs OPEN.
+- [Differentiation / Revenue Ideas](product/INNOVATION_AND_REVENUE_BACKLOG_v0.1.md): suggested enhancements, not owner approved.
+- [Planned module Work Orders](../.engineering/planned-work-orders/): CB-M00 through CB-M16; all PROPOSED/NOT ADMITTED.
+
+**This material is a detailed planning deliverable, not proof that module code, previews, admin analytics, social posting or billing exist.**

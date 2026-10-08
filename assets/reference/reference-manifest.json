@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "project": "CoinBlink",
+  "goldenImageAuthority": "user-selected source originals, immutable; no screenshots as functional backgrounds",
+  "status": "BYTES_NOT_IMPORTED",
+  "assets": [
+    {
+      "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+      "role": "golden-home",
+      "mediaType": "image/jpeg",
+      "width": 1536,
+      "height": 864,
+      "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8",
+      "presentInGit": false
+    },
+    {
+      "path": "assets/reference/coinblink-logo-approved-original-1179x1040.jpg",
+      "role": "golden-logo",
+      "mediaType": "image/jpeg",
+      "width": 1179,
+      "height": 1040,
+      "sha256": "126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0",
+      "presentInGit": false
+    }
+  ],
+  "related": "docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md",
+  "transfer": "Original raster image bytes are retained in conversation artifacts but current authenticated GitHub tooling cannot read local files as binary payload. Follow-up work must transfer byte-identical images, check digests, then flip presentInGit only after verification."
+}

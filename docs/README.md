@@ -1,6 +1,6 @@
 # CoinBlink · Documentation Map
 
-- **Approved Visual Design Bible:** [Full v1.0 document](design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md).
+- **Approved Visual Design Bible:** first read [import-status disclaimer](design/README.md), then [full frozen v1.0 document](design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md).
 - **User selections, open proposals and legal constraints:** [Decisions Ledger](DECISIONS_LEDGER.md).
 - **Historical full Ideas Master v0.6 (not frozen):** [Ideas Master](planning/history/PORTAL_CRIPTO_MASTER_IDEIAS_v0.6.md).
 - **Questions requiring owner decisions:** [Open Questions](planning/OPEN_QUESTIONS.md).

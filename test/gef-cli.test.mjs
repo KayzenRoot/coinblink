@@ -45,16 +45,30 @@ test("the pinned GEF CLI exposes its verified version and command surface", () =
   }
 });
 
-test("preflight is read-only and validates the conservative M00 checkpoint", () => {
+test("preflight validates only the conditional M00 admission candidate", () => {
   const preview = runJson(["init", "--target", root]);
   assert.equal(preview.value.effect, "NONE");
   assert.equal(preview.value.plan.install.state, "READY");
 
   const checkpoint = JSON.parse(readFileSync(join(root, ".engineering", "CHECKPOINT.json"), "utf8"));
   assert.equal(checkpoint.schemaVersion, 2);
+  assert.equal(checkpoint.status, "M00_ADMISSION_CANDIDATE");
+  assert.equal(checkpoint.phase, "FORMAL_ADMISSION_REVIEW");
+  assert.equal(checkpoint.checkpointFacts.sourceMainSha, "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f");
   assert.equal(checkpoint.overallCompletionPercent, 0);
   assert.equal(checkpoint.checkpointFacts.applicationImplementation, "NOT_STARTED");
-  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "NOT_ADMITTED");
+  assert.equal(checkpoint.checkpointFacts.previewDeployment, "NOT_DEPLOYED");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.workOrder, "CB-M00-WO-001");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.status, "ADMITTED");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.change, "CB-GOV-005");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.effectiveOnMerge, true);
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.implementationBranchBase, "PENDING_CB_GOV_005_MERGE_SHA");
+  assert.equal(checkpoint.checkpointFacts.activeWorkOrder, "CB-M00-WO-001");
+  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "ADMITTED");
+  for (let module = 1; module <= 17; module += 1) {
+    assert.equal(checkpoint.checkpointFacts.moduleAdmission[`CB-M${String(module).padStart(2, "0")}`], "NOT_ADMITTED");
+  }
+  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M18"], "FUTURE_NOT_ADMITTED");
   assert.equal(Object.hasOwn(checkpoint, "mainProductionDenominatorWeight"), false);
   assert.equal(Object.hasOwn(checkpoint, "earnedProductionWeight"), false);
 
@@ -71,7 +85,9 @@ test("preflight is read-only and validates the conservative M00 checkpoint", () 
   assert.equal(status.value.effect, "NONE");
   assert.equal(status.value.status.readOnly, true);
   assert.equal(status.value.status.release.valid, true);
+  assert.equal(status.value.status.release.production.status, "M00_ADMISSION_CANDIDATE");
   assert.equal(status.value.status.release.production.overallCompletionPercent, 0);
+  assert.equal(status.value.status.operator.state, "M00_ADMISSION_CANDIDATE");
   assert.equal(status.value.status.operator.progress, 0);
   assert.equal(typeof status.value.status.operator.stale, "boolean");
   assert.equal(status.value.status.observationLimits.includes("GOVERNANCE_SOURCE_ABSENT"), false);

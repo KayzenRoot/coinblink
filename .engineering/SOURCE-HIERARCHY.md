@@ -17,12 +17,16 @@
 - Owner-approved dark Golden visuals outrank style suggestions from frameworks, themes or generators. Never substitute remote reference images.
 - Product legal/platform policies, license and app account approvals outrank desired convenience (social posting, paid data/API and market facts).
 - All meaningful changes have one work order, context lock, exact SHA CI, independent review, checkpoint delta and traceable merge.
-- If current GEF doctor reports absent `.engineering/CHECKPOINT.json`, do not fake a healthy production checkpoint to silence it; resolve approved Source Pack first.
+- If current GEF doctor reports absent `.engineering/CHECKPOINT.json`, do not fake a healthy production checkpoint to silence it. Once the bounded source authority is approved, a conservative initial checkpoint may be proposed from verified facts and must pass the pinned GEF observer before it can become canonical by merge.
+- The M00-only source pack is Owner-approved at PR #30, but that decision is not GEF admission. The initial project checkpoint must describe only verified CoinBlink state and remain `M00_NOT_ADMITTED` until the governance source is merged, revalidated on exact `main`, and bound to a fresh Context Lock and admission record.
+- GEF CLI 1.1.2 `doctor`/`status` are read-only checkpoint observers. Their project checkpoint projection is schema v2; the separate `packages/checkpoint-engine` continuation capsule is schema v1 for M17 continuity and is not the project checkpoint or an admission mechanism.
 - A GitHub comment that mentions `@codex` is not proof that Codex Cloud accepted a coding task; confirm provider execution and evidence.
 
-**As of October 8 2026:** bootstrap and source-document import are merged; CB-PLAN-001 product module plan is in review, the portal has NO implemented interface or Cloudflare preview, and the Golden JPEG binary import is a separate open issue.
+**As of October 8 2026:** CB-PLAN-001 merged in PR #24 at `a783a90c87b212123aeb23ce57036424e87d233c`; CB-DESIGN-002 merged in PR #28 at `72302dd2ada7be5be7a8b43c558c2a3a799a4240` and its v2 page designs remain drafts; the bounded M00-only source pack merged in PR #30 at `97ac1d0d08685cb5012eca6a6b08734d7f2e57e0`. Issue #6 remains OPEN for global product Scope/Architecture/DoD. The portal has NO implemented interface or Cloudflare preview, and Golden JPEG binary import remains a separate open issue.
+
+CB-GOV-004 is the current governance candidate based on main `97ac1d0d08685cb5012eca6a6b08734d7f2e57e0`. Its checkpoint and refreshed M00 documents are proposals until merged and rechecked on the resulting exact main SHA. No product implementation is admitted by this candidate alone.
 
 ## 2026-10-08 draft design/source extension
 
-Frozen v1.0 Golden Home and original logo remain above all new v2 page sketches in visual authority. Draft v2 visual docs, page coverage matrix, settings/security and media engine proposals live under docs/design/; future token research under docs/product/. They are **not approved screenshots, product Scope/DoD or code instructions**. Current active documentation-only design WO is CB-DESIGN-002 (Issue #25), while CB-M17 and CB-M18 remain NOT ADMITTED. One Owner V1 security directive supersedes any proposed multi-human admin RBAC found in earlier planning docs. Root encryption/bootstrap material never saved in ordinary site Settings DB.
+Frozen v1.0 Golden Home and original logo remain above all new v2 page sketches in visual authority. Draft v2 visual docs, page coverage matrix, settings/security and media engine proposals merged under docs/design/ in PR #28; they are **not approved screenshots, product Scope/DoD or code instructions**. CB-M17 and CB-M18 remain NOT ADMITTED. One Owner V1 security directive supersedes any proposed multi-human admin RBAC found in earlier planning docs. Root encryption/bootstrap material is never saved in ordinary site Settings DB.
 

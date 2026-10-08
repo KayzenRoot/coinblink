@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 2,
+  "project": "CoinBlink",
+  "status": "M00_SCOPE_OWNER_APPROVED_GEF_ADMISSION_PENDING",
+  "phase": "PRE_IMPLEMENTATION_GOVERNANCE",
+  "stopState": "CHECKPOINT_CANONICALIZATION_AND_M00_ADMISSION_PENDING",
+  "completedThroughModule": "NONE",
+  "overallCompletionPercent": 0,
+  "nextLegalStage": "VALIDATE_M00_ADMISSION_ON_POST_MERGE_MAIN",
+  "checkpointFacts": {
+    "sourceMainSha": "97ac1d0d08685cb5012eca6a6b08734d7f2e57e0",
+    "scopeApproval": {
+      "pullRequest": 30,
+      "ownerComment": "6067708856",
+      "scope": "M00_ONLY"
+    },
+    "applicationImplementation": "NOT_STARTED",
+    "previewDeployment": "NOT_DEPLOYED",
+    "activeWorkOrder": "NONE",
+    "moduleAdmission": {
+      "CB-M00": "NOT_ADMITTED",
+      "CB-M01": "NOT_ADMITTED",
+      "CB-M02": "NOT_ADMITTED",
+      "CB-M03": "NOT_ADMITTED",
+      "CB-M04": "NOT_ADMITTED",
+      "CB-M05": "NOT_ADMITTED",
+      "CB-M06": "NOT_ADMITTED",
+      "CB-M07": "NOT_ADMITTED",
+      "CB-M08": "NOT_ADMITTED",
+      "CB-M09": "NOT_ADMITTED",
+      "CB-M10": "NOT_ADMITTED",
+      "CB-M11": "NOT_ADMITTED",
+      "CB-M12": "NOT_ADMITTED",
+      "CB-M13": "NOT_ADMITTED",
+      "CB-M14": "NOT_ADMITTED",
+      "CB-M15": "NOT_ADMITTED",
+      "CB-M16": "NOT_ADMITTED",
+      "CB-M17": "NOT_ADMITTED",
+      "CB-M18": "FUTURE_NOT_ADMITTED"
+    }
+  },
+  "progressBasis": {
+    "measure": "implemented_application_modules",
+    "overallCompletionPercent": 0,
+    "productionWeights": "OMITTED_UNDEFINED",
+    "reason": "No approved production-weight denominator exists for CoinBlink; neither denominator nor earned weight is fabricated."
+  }
+}

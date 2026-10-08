@@ -45,16 +45,36 @@ test("the pinned GEF CLI exposes its verified version and command surface", () =
   }
 });
 
-test("preflight is read-only and validates the conservative M00 checkpoint", () => {
+test("preflight validates the post-merge M00 checkpoint target without authorizing the open candidate", () => {
   const preview = runJson(["init", "--target", root]);
   assert.equal(preview.value.effect, "NONE");
   assert.equal(preview.value.plan.install.state, "READY");
 
   const checkpoint = JSON.parse(readFileSync(join(root, ".engineering", "CHECKPOINT.json"), "utf8"));
+  const admission = readFileSync(join(root, ".engineering", "CB-M00-ADMISSION.md"), "utf8");
   assert.equal(checkpoint.schemaVersion, 2);
+  assert.equal(checkpoint.status, "M00_ADMITTED");
+  assert.equal(checkpoint.phase, "IMPLEMENTATION_NOT_STARTED");
+  assert.equal(Object.hasOwn(checkpoint, "stopState"), false);
+  assert.equal(checkpoint.nextLegalStage, "START_CB_M00_WO_001_FROM_CURRENT_CANONICAL_MAIN");
+  assert.equal(checkpoint.checkpointFacts.sourceMainSha, "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f");
   assert.equal(checkpoint.overallCompletionPercent, 0);
   assert.equal(checkpoint.checkpointFacts.applicationImplementation, "NOT_STARTED");
-  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "NOT_ADMITTED");
+  assert.equal(checkpoint.checkpointFacts.previewDeployment, "NOT_DEPLOYED");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.workOrder, "CB-M00-WO-001");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.status, "ADMITTED");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.change, "CB-GOV-005");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.effectiveOnMerge, true);
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.candidateBranchCodeAuthority, "NOT_AUTHORIZED_BEFORE_MERGE");
+  assert.equal(checkpoint.checkpointFacts.formalAdmission.requiredBeforeEffective, "EXACT_HEAD_CHECKS_INDEPENDENT_REVIEW_OWNER_AUDIT_AND_MERGE");
+  assert.match(admission, /That target is not active while the PR is open: the candidate branch has no code authority/);
+  assert.match(admission, /exact candidate passes all required checks and independent review[\s\S]*Owner's exact-head audit, and merges/);
+  assert.equal(checkpoint.checkpointFacts.activeWorkOrder, "CB-M00-WO-001");
+  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "ADMITTED");
+  for (let module = 1; module <= 17; module += 1) {
+    assert.equal(checkpoint.checkpointFacts.moduleAdmission[`CB-M${String(module).padStart(2, "0")}`], "NOT_ADMITTED");
+  }
+  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M18"], "FUTURE_NOT_ADMITTED");
   assert.equal(Object.hasOwn(checkpoint, "mainProductionDenominatorWeight"), false);
   assert.equal(Object.hasOwn(checkpoint, "earnedProductionWeight"), false);
 
@@ -71,7 +91,9 @@ test("preflight is read-only and validates the conservative M00 checkpoint", () 
   assert.equal(status.value.effect, "NONE");
   assert.equal(status.value.status.readOnly, true);
   assert.equal(status.value.status.release.valid, true);
+  assert.equal(status.value.status.release.production.status, "M00_ADMITTED");
   assert.equal(status.value.status.release.production.overallCompletionPercent, 0);
+  assert.equal(status.value.status.operator.state, "M00_ADMITTED");
   assert.equal(status.value.status.operator.progress, 0);
   assert.equal(typeof status.value.status.operator.stale, "boolean");
   assert.equal(status.value.status.observationLimits.includes("GOVERNANCE_SOURCE_ABSENT"), false);

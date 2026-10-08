@@ -1,14 +1,13 @@
 {
   "schemaVersion": 2,
   "project": "CoinBlink",
-  "status": "M00_SCOPE_OWNER_APPROVED_GEF_ADMISSION_PENDING",
-  "phase": "PRE_IMPLEMENTATION_GOVERNANCE",
-  "stopState": "CHECKPOINT_CANONICALIZATION_AND_M00_ADMISSION_PENDING",
+  "status": "M00_ADMITTED",
+  "phase": "IMPLEMENTATION_NOT_STARTED",
   "completedThroughModule": "NONE",
   "overallCompletionPercent": 0,
-  "nextLegalStage": "VALIDATE_M00_ADMISSION_ON_POST_MERGE_MAIN",
+  "nextLegalStage": "START_CB_M00_WO_001_FROM_CURRENT_CANONICAL_MAIN",
   "checkpointFacts": {
-    "sourceMainSha": "97ac1d0d08685cb5012eca6a6b08734d7f2e57e0",
+    "sourceMainSha": "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f",
     "scopeApproval": {
       "pullRequest": 30,
       "ownerComment": "6067708856",
@@ -16,9 +15,17 @@
     },
     "applicationImplementation": "NOT_STARTED",
     "previewDeployment": "NOT_DEPLOYED",
-    "activeWorkOrder": "NONE",
+    "formalAdmission": {
+      "workOrder": "CB-M00-WO-001",
+      "status": "ADMITTED",
+      "change": "CB-GOV-005",
+      "effectiveOnMerge": true,
+      "candidateBranchCodeAuthority": "NOT_AUTHORIZED_BEFORE_MERGE",
+      "requiredBeforeEffective": "EXACT_HEAD_CHECKS_INDEPENDENT_REVIEW_OWNER_AUDIT_AND_MERGE"
+    },
+    "activeWorkOrder": "CB-M00-WO-001",
     "moduleAdmission": {
-      "CB-M00": "NOT_ADMITTED",
+      "CB-M00": "ADMITTED",
       "CB-M01": "NOT_ADMITTED",
       "CB-M02": "NOT_ADMITTED",
       "CB-M03": "NOT_ADMITTED",

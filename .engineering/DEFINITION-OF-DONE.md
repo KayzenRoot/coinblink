@@ -1,11 +1,11 @@
 # CoinBlink · Definition of Done: M00 Preview Foundation
 
-**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18.
+**Status: OWNER_APPROVED_M00_ONLY / CB-GOV-005_ADMISSION_CANDIDATE; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. While PR #32 is open, canonical main remains M00-not-admitted and the candidate grants no code authority. Its checkpoint records the intended post-merge state: M00 admitted, implementation not started, 0%, with no pending stop state.
 
 ## Admission gate
 - [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). Full GEF technical gate remains separately pending.
-- [ ] CB-GOV-004 checkpoint candidate passes the pinned GEF v1.1.2 schema-v2 projection on its PR head; post-merge `doctor`/`status` pass on the exact canonical main SHA. This records verified zero application implementation progress and does not mark a module done.
-- [ ] After the governance merge, WO M00 and Context Lock are refreshed to the actual merge SHA, every source fingerprint is present and current, exact-head checks/review pass, and a separate formal admission records `ADMITTED`. The old PR #29 base is not reusable.
+- [x] CB-GOV-004 checkpoint is canonical on main `cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f`; its post-merge Ubuntu and Windows GEF validation passed on that SHA. This records verified zero application implementation progress and does not mark a module done.
+- [ ] CB-GOV-005 admission candidate passes pinned GEF 1.1.2, exact Context Lock, secret scan, Linux/Windows exact-head checks and independent review; the Owner audits and merges that same HEAD. Only the resulting main SHA makes the checkpoint target canonical and admits M00. The open candidate is not executable. The old PR #29 base is not reusable.
 
 ## P0: Working local foundation
 - [ ] Code authored by Codex on authorized execution branch; npm ci, Node engine, typecheck, GEF and app build all pass.

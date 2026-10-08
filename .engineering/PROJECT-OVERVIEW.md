@@ -1,6 +1,6 @@
 # CoinBlink · Project Overview (source pack candidate)
 
-**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** This records already stated product intentions, not an approval of the entire product architecture or any token offering.
+**Status: OWNER_APPROVED_M00_ONLY / CB-GOV-005_ADMISSION_CANDIDATE.** The candidate does not make M00 executable until exact-head checks, independent review, Owner audit and merge. This records already stated product intentions, not an approval of the entire product architecture or any token offering.
 
 CoinBlink is an English-first international crypto-news publication, with pt-BR and es secondary editions. Original owner-approved Home 1536×864 and logo are visually authoritative; media must not be substituted. Product directions: sourced article publishing, contextual rich media, trustworthy market data, private single-human Owner Command Center, X/Instagram/TikTok draft/social Studio, transparent advertising, a future rights-licensed paid Data API, and a future (not scheduled) potential token.
 

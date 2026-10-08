@@ -52,3 +52,11 @@ These local results validate the candidate projection, not a canonical main chec
 - A post-merge Context Lock must be refreshed with the actual merge SHA. The current lock is candidate-only and expressly not executable.
 - Exact-head GitHub checks, independent review and separate formal admission remain pending.
 - No app source, dependencies, Cloudflare resources or production secrets are added by this remediation. M00 local implementation remains stopped until the formal admission gate passes.
+
+## 2026-10-08 CodeRabbit fingerprint investigation and cross-platform fix
+
+CodeRabbit's ready-for-review audit on initial HEAD `a410e608f9028fe1d2387585c427a8ddff35ee16` found raw-file SHA-256 mismatch on 22/25 source files although all 25 Git blob SHA-1 values matched. Independent inspection compared GitHub canonical UTF-8 bytes to SHA-256 of LF vs CRLF sequences: `AGENTS.md`, `.engineering/CHECKPOINT.md`, and `package.json` original stored SHA-256 values exactly equal the **CRLF Windows working-tree bytes**, not the canonical **LF Git blob bytes**. Root cause is inconsistent checkout end-of-line normalization, not source replacement.
+
+Fix: use `.gitattributes` to require LF for the relevant tracked source and configuration types on future Windows/Linux checkouts; normalize current working files via safe checkout/attribute-aware configuration when required without destructive reset or changing the content's meaning. Pin **raw-file SHA-256 of canonical UTF-8 LF Git blob content** in the Context Lock, with the matching Git blob SHA-1 from current exact Git tree. Existing local CRLF worktree SHA-256 values are replaced; no fake evidence or digest bypass. The final evidence is the updated lock plus reverified exact-head hashes and GitHub CI/review after this commit. `npm audit signatures` remains `REVIEW` due the bundled internal package registry E404; this fingerprint fix does not resolve or waive it.
+
+Also update `AGENTS.md` to reflect CB-DESIGN-002 as historical and update `CB-DEC-008` to the Owner's Codex Desktop Local + GitHub workflow (Cloudflare only for later preview deployment). This is a documentation consistency repair, not a new module admission, app implementation or production authorization.

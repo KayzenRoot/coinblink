@@ -1,1 +1,21 @@
-.agents/skills/** text eol=lf
+# CoinBlink · canonical source bytes across Windows/Linux
+# Prevent Context Lock raw-file SHA-256 drift caused by Windows CRLF checkout.
+# Git blob SHA-1 and sha256sum must describe identical LF bytes.
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.mjs text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.astro text eol=lf
+*.css text eol=lf
+*.toml text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.zip binary

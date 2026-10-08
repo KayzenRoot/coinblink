@@ -11,7 +11,7 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-005 | Brand mood | VISUALLY APPROVED | Premium graphite/dark, restrained neon-lime green, dense editorial dashboard, glassmorphism, cinematic Bitcoin hero |
 | CB-DEC-006 | Fidelity acceptance | USER REQUIREMENT | Visual diff / overlays against immutable source files; deterministic 1536×864 screenshot first; no 100% claim until measured |
 | CB-DEC-007 | Light theme | USER REQUIREMENT | Dark baseline plus accessible light alternative; final light design not yet visually approved |
-| CB-DEC-008 | Product operating model | USER SELECTED | Codex Cloud + GitHub + Cloudflare previews as development direction; local Docker alternative. Preview infrastructure NOT DEPLOYED |
+| CB-DEC-008 | Product operating model | USER UPDATED, 2026-10-08 | **Codex Desktop LOCAL + Git/GitHub** is primary implementation workflow to conserve ChatGPT Plus allowance; Docker is local. Cloudflare previews remain a separate future deployment target after authorized account access. Codex Cloud implementation is not the current workflow; no preview deployed. |
 | CB-DEC-009 | Engineering bootstrap | IMPLEMENTED | GEF `@gef-bootstrap/cli@1.1.2` + three pinned Matt Pocock Codex skills, audited in CB-BOOT-001 / PR #2 |
 | CB-DEC-010 | Front-end stack | PROPOSED; ADR OPEN | Astro + React + TypeScript + Tailwind, selected Radix/shadcn, lightweight charts and Motion; validate with implementation constraints before ADR |
 | CB-DEC-011 | Hosting/data stack | PROPOSED; ADR OPEN | Cloudflare Workers, D1, R2, caches, static/SSR hybrid; costs, quotas, deployment and security pending |

@@ -46,7 +46,7 @@ Runtime: Linux x64, Node.js `22.17.0`, npm `10.9.2`.
 | Command / check | Result |
 | --- | --- |
 | `npm ci` | PASS |
-| `npm test` | PASS, 5 tests / 0 failures |
+| `npm test` | PASS, 8 tests / 0 failures after the P1 exact-head regression tests were added |
 | `npm audit --json` | PASS, 0 vulnerabilities after upgrading the test verifier to `sigstore@4.1.1` |
 | `gef --help` | PASS, JSON command index emitted |
 | `gef --version` | PASS, version `1.1.2`, Node `22.17.0` |
@@ -70,12 +70,20 @@ One GEF v1.1.2 behavior is surfaced for owner audit: its pre-apply `init` plan (
 
 `.github/workflows/gef-validation.yml` runs the same `npm ci` and `npm test` commands on Ubuntu 24.04 and Windows 2022 with Node.js `22.17.0`. Ubuntu passed on initial head `4279ed0fac737149052ee20957bf2c372757a269`; Windows first failed on the fingerprint mismatch described above. Both jobs passed after the correction on `42cb42f725e7953a426e215f8869f333d1f824f8`. Later commits trigger the same matrix; review the checks attached to the current PR head before approval.
 
+## P1 exact-head CI correction
+
+Issue #1's canonical handoff identified that `actions/checkout` had no explicit `ref`; on `pull_request`, GitHub therefore checked out the synthetic merge commit instead of the PR head. Earlier runner logs confirmed the mismatch (`51233ba967954dbdf48be4a74c5ac17e13fa3c25` checked out while the tested PR head was `4279ed0fac737149052ee20957bf2c372757a269`). The workflow now selects `github.event.pull_request.head.sha` for `pull_request` and `github.sha` for `push`, then runs `scripts/verify-exact-head.mjs` before dependency installation. The verifier fails on an invalid expected SHA, unavailable Git HEAD, or mismatch; it prints success only when `git rev-parse HEAD` equals the event SHA.
+
+The added `test/exact-head-ci.test.mjs` checks both workflow SHA expressions, verifies that the guard accepts the current commit and rejects a different SHA, and covers CRLF workflow contents. TDD evidence: before the workflow change, the new contract tests failed because the checkout had no `ref` and the guard script was absent; after the initial fix, the first Windows run confirmed the exact SHA guard but exposed an LF-only assumption in the test parser. The parser now normalizes CRLF. The full suite passes **8/8** locally.
+
+The corrected exact-head matrix passed on commit `66f31c06a3f596af15179048334f84cd985cf69b`: [Ubuntu 24.04](https://github.com/KayzenRoot/coinblink/actions/runs/37803833632/job/113402769790) and [Windows 2022](https://github.com/KayzenRoot/coinblink/actions/runs/37803833632/job/113402769686). Logs for both show `HEAD is now at 66f31c0`, `EXPECTED_SHA=66f31c06a3f596af15179048334f84cd985cf69b`, `Verified exact commit 66f31c06a3f596af15179048334f84cd985cf69b`, and 8 tests passed / 0 failed. The intervening Windows failure on `a357f951a7709125d88ceafb0bd688a7d32d81f1` was the CRLF parser issue and was corrected in `66f31c0`; it is not reported as a pass.
+
 ## Third-party licensing review (owner audit correction)
 
 The selected Matt Pocock skills are MIT licensed. This repository now preserves the complete original copyright and permission notice at `.agents/skills/LICENSE` alongside the copied skills, pointing to the pinned Matt Pocock source revision. The MIT notice applies to that third-party material only and does not grant a license over other CoinBlink materials.
 
 ## Proposed checkpoint delta
 
-Keep the project in `IN PROGRESS / CB-BOOT-001 OWNER AUDIT PENDING`. Record GEF and the three pinned skills as installed, retain the missing product checkpoint/Source Pack and open planning status, and promote nothing until owner exact-head audit. This is a proposal only.
+Keep the project in `IN PROGRESS / CB-BOOT-001 OWNER AUDIT PENDING`. Record GEF and the three pinned skills as installed, the P1 exact-head checkout guard as implemented and green on `66f31c0`, retain the missing product checkpoint/Source Pack and open planning status, and promote nothing until owner exact-head audit. This is a proposal only; it does not update the canonical checkpoint.
 
-**Next legal action:** after the current PR head's Linux and Windows checks pass, request the owner's exact-head audit. Do not merge or begin portal implementation.
+**Next legal action:** ensure Linux and Windows checks pass on the current PR head, then request the owner's exact-head audit. Do not merge or begin portal implementation.

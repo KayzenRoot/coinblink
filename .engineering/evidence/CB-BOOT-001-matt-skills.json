@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "https://github.com/mattpocock/skills",
+  "sourceCommit": "b0618bc436ad893b3c5e84e55fba86586d34a404",
+  "installMethod": "pinned repository-local snapshot under the Codex project skills convention (.agents/skills/<name>/SKILL.md)",
+  "updates": "manual; update only through a reviewed commit that replaces the source commit and file fingerprints",
+  "authority": "advisory only; repository AGENTS.md, GEF v1.1.2, source hierarchy, admitted Work Order and owner approvals take precedence",
+  "securityReview": {
+    "reviewed": "Each selected SKILL.md, referenced local document, agents/openai.yaml and linked template script was read from the pinned checkout before copying.",
+    "scripts": "No external skill script was executed. The included HITL template only prints instructions and reads terminal input; its example must be edited before use and it must not capture secrets.",
+    "limitations": "Skills remain untrusted third-party guidance. No plugin auto-update or catalogue installer is enabled."
+  },
+  "excluded": [
+    {
+      "name": "code-review",
+      "reason": "Its documented parallel-subagent workflow conflicts with this execution environment and the repository owner-audit model."
+    },
+    {
+      "name": "research",
+      "reason": "The skill routes work to a background agent, which is outside this Work Order execution contract."
+    },
+    {
+      "name": "grill-with-docs",
+      "reason": "Would expand open product planning beyond this bootstrap Work Order."
+    },
+    {
+      "name": "setup-matt-pocock-skills",
+      "reason": "Prompts for tracker, labels and documentation layout that are outside this admitted scope."
+    }
+  ],
+  "skills": [
+    {
+      "name": "tdd",
+      "sourcePath": "skills/engineering/tdd",
+      "localPath": ".agents/skills/tdd",
+      "rationale": "Builds on the repository Work Order test seams and supports the admitted CLI test scope.",
+      "files": [
+        {
+          "path": ".agents/skills/tdd/agents/openai.yaml",
+          "sourcePath": "skills/engineering/tdd/agents/openai.yaml",
+          "sha256": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b"
+        },
+        {
+          "path": ".agents/skills/tdd/mocking.md",
+          "sourcePath": "skills/engineering/tdd/mocking.md",
+          "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef"
+        },
+        {
+          "path": ".agents/skills/tdd/SKILL.md",
+          "sourcePath": "skills/engineering/tdd/SKILL.md",
+          "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0"
+        },
+        {
+          "path": ".agents/skills/tdd/tests.md",
+          "sourcePath": "skills/engineering/tdd/tests.md",
+          "sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a"
+        }
+      ]
+    },
+    {
+      "name": "diagnosing-bugs",
+      "sourcePath": "skills/engineering/diagnosing-bugs",
+      "localPath": ".agents/skills/diagnosing-bugs",
+      "rationale": "Supports reproducible diagnosis of package, CLI and CI failures.",
+      "files": [
+        {
+          "path": ".agents/skills/diagnosing-bugs/agents/openai.yaml",
+          "sourcePath": "skills/engineering/diagnosing-bugs/agents/openai.yaml",
+          "sha256": "3e430dbe4334a87597488c060cb3dc3786bb00c9182877d6f5ec41f62490e90b"
+        },
+        {
+          "path": ".agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh",
+          "sourcePath": "skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh",
+          "sha256": "35103539fc36873eea36074769ad454f9379d6fc8b2dc0e26ce987fd3bfe5503"
+        },
+        {
+          "path": ".agents/skills/diagnosing-bugs/SKILL.md",
+          "sourcePath": "skills/engineering/diagnosing-bugs/SKILL.md",
+          "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d"
+        }
+      ]
+    },
+    {
+      "name": "writing-for-agents",
+      "sourcePath": "skills/productivity/writing-for-agents",
+      "localPath": ".agents/skills/writing-for-agents",
+      "rationale": "Applies directly to repository-local AGENTS, skill and evidence documents.",
+      "files": [
+        {
+          "path": ".agents/skills/writing-for-agents/agents/openai.yaml",
+          "sourcePath": "skills/productivity/writing-for-agents/agents/openai.yaml",
+          "sha256": "eacb24b2a618cfb81dacb0416f4fdd75ddf3a8060f8ddb99aae1b1e301907e4b"
+        },
+        {
+          "path": ".agents/skills/writing-for-agents/SKILL-MECHANICS.md",
+          "sourcePath": "skills/productivity/writing-for-agents/SKILL-MECHANICS.md",
+          "sha256": "c768e6307c7c10728c401c213f2c4ba71c542127eeb7ad2956aabd15a0fa0059"
+        },
+        {
+          "path": ".agents/skills/writing-for-agents/SKILL.md",
+          "sourcePath": "skills/productivity/writing-for-agents/SKILL.md",
+          "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a"
+        }
+      ]
+    }
+  ]
+}

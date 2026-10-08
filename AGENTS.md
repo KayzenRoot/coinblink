@@ -3,7 +3,7 @@
 GEF Bootstrap v1.1.2 is the target engineering framework. **Do not claim installation until objective receipts and fresh checkout tests exist.**
 
 1. Read `.engineering/SOURCE-HIERARCHY.md`, `.engineering/CHECKPOINT.md`, and the admitted Work Order before any change.
-2. GEF's [ADR-0008](https://github.com/KayzenRoot/gef-bootstrap/blob/main/.engineering/decisions/ADR-0008-CODEX-ONLY-GITHUB-FIRST.md) delegates code/tests/CI/migrations to **Codex**. ChatGPT prepares governance, GitHub coordination and owner exact-head audit. Matt Pocock skills are advisory, never above GEF sources.
+2. GEF's [ADR-0008 at the admitted v1.1.2 source commit](https://github.com/KayzenRoot/gef-bootstrap/blob/af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82/.engineering/decisions/ADR-0008-CODEX-ONLY-GITHUB-FIRST.md) delegates code/tests/CI/migrations to **Codex**. ChatGPT prepares governance, GitHub coordination and owner exact-head audit. Matt Pocock skills are advisory, never above GEF sources.
 3. The active Work Order is `CB-BOOT-001`. Do **not** start product implementation, site design work, unrelated dependencies, or broad cleanup.
 4. Every Work Order must have stable ID, base HEAD, file fingerprints, tests, Evidence Bundle, owner audit, and checkpoint delta (proposed, not self-promoted).
 5. No force push, history rewrite, secret disclosure, speculative completion, or skip of a failing gate.

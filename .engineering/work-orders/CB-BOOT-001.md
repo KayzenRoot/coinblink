@@ -32,9 +32,9 @@ GEF `AGENTS.md` and ADR-0008 reserve implementation, test and CI authorship to C
 
 ## FILES/SOURCES TO READ
 1. `AGENTS.md`, `.engineering/SOURCE-HIERARCHY.md`, `.engineering/CHECKPOINT.md`, `.engineering/context-locks/CB-BOOT-001.md`.
-2. https://github.com/KayzenRoot/gef-bootstrap/blob/main/AGENTS.md and ADR-0008 and `packages/cli/README.md` from exact `v1.1.2`.
+2. `AGENTS.md`, ADR-0008 and `packages/cli/README.md` pinned to GEF source commit `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`: https://github.com/KayzenRoot/gef-bootstrap/blob/af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82/AGENTS.md, https://github.com/KayzenRoot/gef-bootstrap/blob/af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82/.engineering/decisions/ADR-0008-CODEX-ONLY-GITHUB-FIRST.md, and https://github.com/KayzenRoot/gef-bootstrap/blob/af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82/packages/cli/README.md.
 3. https://github.com/KayzenRoot/gef-bootstrap/releases/tag/v1.1.2 and verified published package.
-4. https://github.com/mattpocock/skills README and individual selected `SKILL.md` files; inspect linked scripts and references.
+4. Matt Pocock's README and selected skill files pinned to commit `b0618bc436ad893b3c5e84e55fba86586d34a404`: https://github.com/mattpocock/skills/blob/b0618bc436ad893b3c5e84e55fba86586d34a404/README.md, plus the selected `SKILL.md` files, referenced documents and scripts. Inspect linked scripts and references.
 
 ## REQUIREMENTS
 - Reproducible npm package, exact version, verified provenance and lock.

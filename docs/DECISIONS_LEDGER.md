@@ -24,3 +24,30 @@ This register **preserves the exact distinction between owner-approved direction
 **Visual authority:** `docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md` explains the two Golden raster assets; if a sentence disagrees with the image, the **approved original image** is authoritative on visual appearance.
 
 **Governance:** Owner future approvals must promote individual decisions via GEF rules; this ledger captures observed directions only. The past ideas Master is preserved intact for traceability, not promoted to engineering requirements.
+
+## Owner-approved product and delivery directions · 2026-10-08
+
+| ID | Topic | State | Evidence / boundary |
+|---|---|---|---|
+| CB-DEC-017 | Large module-wide Work Orders | USER APPROVED DELIVERY STYLE | Prefer one comprehensive implementation WO per cohesive module, with internal milestones/commits, corrections in same PR and GEF exact-head review. Do not remove DoD/gates to accelerate |
+| CB-DEC-018 | Continuous visual progress | USER APPROVED DELIVERY TARGET | Every implementation module must produce accessible preview with screenshot/health; Codex Cloud+GitHub+Cloudflare direction, Docker localhost alternative. Preview infrastructure still NOT CONNECTED |
+| CB-DEC-019 | Owner Command Center | USER APPROVED PRODUCT DIRECTION | Comprehensive private admin cockpit for live/period analytics, every article's views, editorial operations, provider health, social, budgets, monetization and API customers. Metric/storage designs await ADR |
+| CB-DEC-020 | X + Instagram + TikTok | USER APPROVED CHANNELS | Admin creation/editing/scheduling/approval/metrics. Actual account access, app audits, API costs and permissions OPEN; no automatic publication authorized |
+| CB-DEC-021 | Paid external developer API | USER APPROVED PRODUCT DIRECTION | Third-party sites/apps should be able to subscribe to CoinBlink news, quotes and future insights. Recommendation: architecture from start, public metered API after source rights, billing activation later. Pricing/contract OPEN |
+| CB-DEC-022 | Administration-first detailed instrumentation | USER APPROVED PRODUCT DIRECTION | Per-story views, article clicks and channel attribution must be measurable and charted with privacy and honest metrics. Consent implementation/metric semantics OPEN |
+| CB-DEC-023 | Work Order timing / rapid implementation | USER PRIORITY | Finish soon through scoped long WOs, early previews, parallel test tooling and one coherent module per PR; no uncontrolled mega WOs or auto-merge bypass |
+| CB-DEC-024 | Cloudflare Worker Previews | RECOMMENDED, ADR OPEN | Current isolated Worker Previews using Wrangler 4.135.0+ suit full-stack per-PR pre-production; Pages alternative if needed. No deployments yet |
+| CB-DEC-025 | Product module catalog (17 units) | PROPOSED IMPLEMENTATION STRUCTURE | All CB-M00..CB-M16 files in `.engineering/planned-work-orders/` are NOT ADMITTED/EXECUTABLE until Context Lock and architecture approval |
+| CB-DEC-026 | Revenue streams | RECOMMENDED, NOT FINANCIALLY APPROVED | Sponsors/ads, newsletter, affiliate disclosures, developer API, embeddable widgets, premium insight reports (future) |
+
+## Owner direction · Advertising and promotions (2026-10-08)
+
+| ID | Decision | Status | Boundary |
+|---|---|---|---|
+| CB-DEC-027 | Ad spaces on homepage and article pages | USER APPROVED DIRECTION | New Golden screenshot placement details require visual review |
+| CB-DEC-028 | Monetize publisher ads from Google | USER APPROVED DIRECTION | Google AdSense, NOT the Google Ads advertiser product; publisher account and site review OPEN |
+| CB-DEC-029 | Sell direct sponsor banners to companies | USER APPROVED DIRECTION | Rate cards, contractual terms, moderation and invoicing OPEN |
+| CB-DEC-030 | Promote future courses / house products | USER APPROVED DIRECTION | Actual course storefront, sales/fulfillment, prices and refund terms OPEN |
+| CB-DEC-031 | Full advertising admin controls | USER APPROVED DIRECTION | Campaigns, creative, inventory, reports, dates, earnings and owner kill switch, implementation contract proposed in M13 |
+| CB-DEC-032 | Consent, visual ad placement and vendor billing methods | PROPOSED | Govern via dedicated monetization ADR, Google approval and privacy gates before live ads |
+

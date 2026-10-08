@@ -1,20 +1,26 @@
-# CoinBlink · Engineering checkpoint (human-readable, not promoted product checkpoint)
+# CoinBlink · Engineering checkpoint (human-readable, not promoted product JSON)
 
-**As of 2026-10-08: BOOTSTRAP_COMPLETE / DOCUMENTATION_IMPORT_IN_REVIEW / PRODUCT_PLANNING_OPEN.**
+**2026-10-08 state:** `BOOTSTRAP_COMPLETE / DESIGN_DOCUMENTATION_MERGED / PRODUCT_MODULE_PLANNING_IN_REVIEW / IMAGES_NOT_IN_GIT / NO_APP_DEPLOYMENT`.
 
-- Repository: `KayzenRoot/coinblink`, public.
-- Bootstrap authority: CB-BOOT-001, GitHub PR #2 merged to main at `0d2f114818e9f72db06d3c51d17c5189d395a0a0`.
-- GEF CLI exact version: `@gef-bootstrap/cli@1.1.2` with pinned lockfile, provenance and verified GitHub Actions matrix.
-- Three Matt Pocock skills present and pinned: `tdd`, `diagnosing-bugs`, `writing-for-agents`.
-- Bootstrap exception: source `.engineering/evidence/CB-BOOT-001-EVIDENCE.md` records limited owner-authorized ChatGPT GitHub direct-write for Sigstore security correction. This did not permanently amend Codex-only execution policy.
-- Active documentation Work Order: CB-DOCS-001; Issue #3; branch `docs/cb-docs-001-source-of-truth`. Historical `CB-BOOT-001` Context Lock is archival, not the live active scope.
-- Visual Design Bible v1.0, historical Ideas Master v0.6, decisions and open questions: **imported for review on documentation branch**; do not claim merged before PR approval.
-- Golden Home and Golden Logo original JPEG bytes in Git: **NO**, exact expected SHA-256 values in `assets/reference/reference-manifest.json`. This **blocks pixel-fidelity verification** until byte-exact import.
-- Product `.engineering/CHECKPOINT.json`: **ABSENT**; product Scope, Requirements, Architecture, DoD: **NOT APPROVED**. This does not retroactively invalidate the bootstrap install but prevents claims of a finished governed product.
-- Portal app, live articles, APIs, Cloudflare previews and deployment: **NOT STARTED**.
-- Project language: English canonical, `pt-BR`/`es` secondary; naming/domain trademark clearance open.
+## Accepted historical increments
+
+- CB-BOOT-001: merged PR #2 to main at `0d2f114818e9f72db06d3c51d17c5189d395a0a0`. GEF CLI `@gef-bootstrap/cli@1.1.2` and three pinned Matt Pocock skills are installed. Original Sigstore exception and exact-head evidence are recorded in `.engineering/evidence/CB-BOOT-001-EVIDENCE.md`. No broad change to GEF Codex-only policy.
+- CB-DOCS-001: merged PR #4 to main at `1c1257871b9d2ee9c3b2943f07f05dfeaa1410b0`. Full Visual Bible (1013 lines), historic Ideas Master (1268 lines), source hierarchy and image byte manifests are preserved in Git.
+
+## Current planning increment
+
+- CB-PLAN-001: Issue #6, branch `docs/cb-plan-001-modular-product-roadmap`, planning packet and 17 proposed long work orders awaiting review/owner module/stack decisions. Product `Scope/Requirements/Architecture/DoD` remain OPEN.
+- The 17 files in `.engineering/planned-work-orders/` are NOT ADMITTED GEF execution WOs. Do not spawn Codex implementation just because a file exists.
+- User-approved direction: one large coherent WO per module, interactive PR preview visible on phone, owner Mission Control admin analytics, social studio X/IG/TikTok and future paid API.
+- Only selected visuals are approved. Astro/Cloudflare implementation contracts, account permissions, provider rights, billing/pricing, multi-agent routing, analytics consent and exact architectural choices are proposed.
+
+## Blockers / dependencies
+
+- CB-ASSETS-001 Issue #5: two Golden JPEG binaries **not in Git**. Exact SHA-256 values and dimensions in `assets/reference/reference-manifest.json`; prevents claiming Golden Homepage screenshot fidelity.
+- Cloudflare account/previews: NOT provisioned/connected; first M00 module needs account authorization and security boundaries.
+- Product `.engineering/CHECKPOINT.json`: intentionally ABSENT until complete Source Pack/DoD is approved.
+- No website implemented, no live market, no CMS, no admin portal, no social account integrations, no public paid API, no Stripe billing, no newsletter, no published articles, no deployment.
 
 ## Next legal action
-Review and merge CB-DOCS-001 once documentary import checks are satisfied, while keeping the original JPEG import as a separate explicit blocker. Then plan asset byte-transfer and product decision rounds under GEF governance. **No silent transition into website implementation.**
 
-This Markdown is a current-status narrative; it is not a replacement for the missing GEF canonical JSON checkpoint or the owner-approved full product Source Pack.
+Review CB-PLAN-001, resolve owner MVP/architecture choices with ranked discussion, then admit CB-M00 from planned to active Work Order with exact HEAD Context Lock/DoD. Run Preview provisioning and CI. Proceed to M05 admin and M01 Golden Home as images allow; do not merge/release a module missing live preview or required security check. No prompts to be copied manually for GitHub planning updates.

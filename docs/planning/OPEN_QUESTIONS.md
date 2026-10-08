@@ -23,9 +23,26 @@ Product planning is deliberately **OPEN**. Do not convert a candidate technology
 - No claim of trademark clearance or professional production readiness without checks.
 - Source Pack (Scope, Architecture, DoD, Requirements, policies) remains draft until individually approved.
 
+## Newly prioritized owner questions (October 2026)
+
+- **MVP cut:** exact Golden homepage + one end-to-end article + real article analytics + admin CMS, or more of the live market/social panel before first public beta?
+- **Admin command:** choose count definitions (unique visitor estimated vs page views, engagement) and consent jurisdiction, admin login provider/MFA.
+- **Social account authorization:** registered X developer app, eligible professional Instagram account, TikTok audit status, media rights. Launch editor and calendar first; keep actual social POST sandbox until approval.
+- **Paid API:** which fields are owned or legally redistributable; release the docs/read API earlier, billing after verified demand and unit economics?
+- **Preview release:** connect Cloudflare Account with authorized token and isolated bindings, as a separately gated platform setup. Worker Previews or Pages based on accepted stack ADR.
+- **Module schedule:** accept or adjust 17 proposed module-wide WOs and release order in `docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md`.
+
 ## Next controlled Work Orders
 
-- **CB-DOCS-001:** preserve source documents, scope/decision classification, reference image hashes and any documented image transfer blocker.
+- **CB-DOCS-001: COMPLETED** (PR #4 merged). Full source text preserved, JPG originals not yet committed.
 - **CB-ASSETS-001 (proposed):** upload immutable original Golden image bytes, SHA-256 verify in Git and promote visible visual reference index.
-- **CB-PLAN-001 (proposed):** approve V1 scope and governed architecture, deterministic QA, exact deployment plan; no application implementation until then.
+- **CB-PLAN-001 (active planning):** draft modular blueprint, large GEF WOs, continuous preview protocol and owner decision rounds; module scope/architecture remain unapproved until accepted.
 - **CB-CI-002 (proposed):** governed preview deployment to Cloudflare after scope and security architecture approval.
+
+## Advertising planning decisions pending
+
+- Pick exact banner positions by comparing home layout against Golden screenshot; ad slots must remain optional until visual approval.
+- Choose AdSense sign-up timing after quality original articles, site ownership, privacy/CMP and ads.txt configuration; do not guarantee acceptance or earnings.
+- Decide sponsor pricing, category exclusivity, minimum booking, invoice/payment processor and prohibited crypto-finance advertisers; first rate card can remain draft.
+- Future course scope (landing page/syllabus, qualified instructors, checkout, refunds and consumer terms) requires separate product acceptance; ad campaigns can precede actual products.
+- Privacy for Brazil/international audience and Google-certified CMP for personalized publisher ads where required, honest advertiser reporting and bot-resistant measurement.

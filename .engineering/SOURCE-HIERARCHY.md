@@ -1,14 +1,23 @@
-# CoinBlink source hierarchy · bootstrap phase
+# CoinBlink · GEF Source Hierarchy and Decision Authority
 
-1. Git and live provider state (observed SHA, branch, tests, exact CI).
-2. This project's accepted CHECKPOINT + approved Decisions Ledger/ADRs (as created and promoted).
-3. Approved Scope and Definition of Done (not yet frozen).
-4. Approved Architecture / Requirements / Security and Test Plan (not yet frozen).
-5. The active admitted Work Order and its Context Lock.
-6. Approved CoinBlink **Visual Design Bible v1.0** and **Home Master**, strictly for visual design authority (import after bootstrap).
-7. Historical Ideas Master v0.6 (planning input; not all proposals approved).
-8. Chat history, screenshots, external docs, and speculative suggestions are non-canonical supporting material.
+## Canonical authority order
 
-In this pre-Source-Pack bootstrap, missing canonical files are **known gaps**, never assumed approved. The bootstrap is a prerequisite, not authorization to build the portal.
+1. Actual live GitHub state: branch/base/HEAD, current exact-head CI, artifacts, provider approvals, and verified persisted deployment state.
+2. Accepted GEF policies and promoted checkpoints/ADRs; GEF CLI `v1.1.2` official release pinned to source `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`.
+3. Owner-approved Scope, Requirements, Security and Definition of Done **when promoted**. Until then these are **explicitly absent/draft** and cannot be presumed accepted.
+4. Accepted Decisions Ledger entries; every row has explicit USER APPROVED, RECOMMENDED, PROPOSED, PENDING or IMPLEMENTED status.
+5. Admitted **active** Work Order plus current verified Context Lock (its SHA and critical file fingerprints), never a candidate draft.
+6. Approved visual source: exact owner-provided Golden Home and Logo image bytes and SHA-256, plus frozen 1013-line `docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md` as visual contract. **Original JPGs are not yet in Git**; see `assets/reference/reference-manifest.json`.
+7. `docs/product/` module blueprints, architecture options, roadmap, command-center, social/API, revenue ideas and `.engineering/planned-work-orders/CB-Mxx.md` are **planning proposals**, NOT executable until separately admitted.
+8. `docs/planning/history/PORTAL_CRIPTO_MASTER_IDEIAS_v0.6.md` is complete historical brainstorming, not approved code scope; chat history and other external documents are supporting noncanonical context.
 
-The GEF release tag `v1.1.2` is implementation authority for GEF CLI semantics; consult the exact release, not contradictory legacy installation sections.
+## How to resolve conflicts
+
+- Never treat a suggested stack or an unadmitted planned WO as authorization for code changes.
+- Owner-approved dark Golden visuals outrank style suggestions from frameworks, themes or generators. Never substitute remote reference images.
+- Product legal/platform policies, license and app account approvals outrank desired convenience (social posting, paid data/API and market facts).
+- All meaningful changes have one work order, context lock, exact SHA CI, independent review, checkpoint delta and traceable merge.
+- If current GEF doctor reports absent `.engineering/CHECKPOINT.json`, do not fake a healthy production checkpoint to silence it; resolve approved Source Pack first.
+- A GitHub comment that mentions `@codex` is not proof that Codex Cloud accepted a coding task; confirm provider execution and evidence.
+
+**As of October 8 2026:** bootstrap and source-document import are merged; CB-PLAN-001 product module plan is in review, the portal has NO implemented interface or Cloudflare preview, and the Golden JPEG binary import is a separate open issue.

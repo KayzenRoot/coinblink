@@ -53,7 +53,7 @@ The local `doctor`/`status` runs were read-only and were performed while the can
 | Check | Result | Evidence |
 |---|---|---|
 | GEF 1.1.2 `doctor --json` | PASS / REVIEW | Exit 0; checkpoint present/valid, repository observable healthy; dependency provenance remains `unverified` / `REVIEW`. No finding was suppressed. |
-| GEF 1.1.2 `status --json` | PASS checkpoint / REVIEW repository subprojection | Exit 0; checkpoint valid, `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, `stale=false`. The separate repository verdict reports `BLOCKED / MISSING_HEAD` although Git resolves the local HEAD; this subprojection remains visible for audit. |
+| GEF 1.1.2 `status --json` | PASS | Exit 0; checkpoint valid, `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, `stale=false`; repository verdict `CLEAN`. |
 | GEF `init` preflight | PASS plan / REVIEW drift | Read-only `effect=NONE`, install plan `READY`; drift is `UNEXPECTED` after candidate edits. No repository `init --apply`, `adopt`, or installation was run. |
 | Context Lock fingerprints | PASS | 27/27 locked Git blob SHA-1 values and raw-file SHA-256 values match. The payload tree was recomputed from the staged index with only the Context Lock excluded and matched the value stored in that lock. Its digest is not duplicated here: this Evidence Bundle is itself included in that tree, and repeating the digest here would change the tree. The exact recalculated value is recorded in the current Issue #7 correction comment. |
 | `npm test` | PASS | Node `v22.17.0`, npm `10.9.2`; 8 passed, 0 failed. The official Node.js archive was SHA-256 checked against its release manifest (`721ab118a3aac8584348b132767eadf51379e0616f0db802cc1e66d7f0d98f85`) and used from a temporary path. |

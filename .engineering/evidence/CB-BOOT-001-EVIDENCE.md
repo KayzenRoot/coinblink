@@ -70,6 +70,10 @@ One GEF v1.1.2 behavior is surfaced for owner audit: its pre-apply `init` plan (
 
 `.github/workflows/gef-validation.yml` runs the same `npm ci` and `npm test` commands on Ubuntu 24.04 and Windows 2022 with Node.js `22.17.0`. Ubuntu passed on initial head `4279ed0fac737149052ee20957bf2c372757a269`; Windows first failed on the fingerprint mismatch described above. Both jobs passed after the correction on `42cb42f725e7953a426e215f8869f333d1f824f8`. Later commits trigger the same matrix; review the checks attached to the current PR head before approval.
 
+## Third-party licensing review (owner audit correction)
+
+The selected Matt Pocock skills are MIT licensed. This repository now preserves the complete original copyright and permission notice at `.agents/skills/LICENSE` alongside the copied skills, pointing to the pinned Matt Pocock source revision. The MIT notice applies to that third-party material only and does not grant a license over other CoinBlink materials.
+
 ## Proposed checkpoint delta
 
 Keep the project in `IN PROGRESS / CB-BOOT-001 OWNER AUDIT PENDING`. Record GEF and the three pinned skills as installed, retain the missing product checkpoint/Source Pack and open planning status, and promote nothing until owner exact-head audit. This is a proposal only.

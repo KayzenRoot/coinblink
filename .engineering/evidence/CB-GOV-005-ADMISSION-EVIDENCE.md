@@ -48,7 +48,7 @@ The local `doctor`/`status` runs were read-only and were performed while the can
 - **Implementation base:** no future merge SHA is fabricated. After admission, the implementation must use a fresh branch from the actual resulting `main` SHA and record it in that execution's Context Lock and evidence.
 - **Files:** checkpoint JSON/narrative; Source Hierarchy; Work Order; Context Lock; admission and DoD; root agent contract; admission test; this Evidence Bundle.
 
-## Correction validation · final candidate HEAD recorded in PR #32 and the Issue #7 correction comment
+## Correction validation · reviewed candidate HEAD `55fe48a24ba494eb0628a3fc1a9faf9beb4e40d6`
 
 | Check | Result | Evidence |
 |---|---|---|
@@ -59,13 +59,11 @@ The local `doctor`/`status` runs were read-only and were performed while the can
 | `npm test` | PASS | Node `v22.17.0`, npm `10.9.2`; 8 passed, 0 failed. The official Node.js archive was SHA-256 checked against its release manifest (`721ab118a3aac8584348b132767eadf51379e0616f0db802cc1e66d7f0d98f85`) and used from a temporary path. |
 | Security | PASS / REVIEW | `npm audit --audit-level=high`: 0 vulnerabilities. `npm audit signatures`: E404 for `@gef-bootstrap/kernel@0.0.0`; GEF dependency provenance remains `REVIEW`. No bypass or signature-check disablement. |
 | Diff / secret scan | PASS | `git diff --cached --check`; credential/token signature scan of the staged diff returned 0 matches; 10 changed files, with no application/runtime/deployment paths. |
-| GitHub Ubuntu / Windows CI | Exact-head evidence to be attached | Workflow check links will be recorded in the Issue #7 correction evidence comment for the final PR #32 HEAD. |
-| CodeRabbit | Exact-head evidence to be attached | A new review will be requested on the final PR #32 HEAD; no stale review will be reused. |
+| GitHub Ubuntu / Windows CI | PASS on `55fe48a24ba494eb0628a3fc1a9faf9beb4e40d6` | [GEF Ubuntu](https://github.com/KayzenRoot/coinblink/actions/runs/37856416889/job/113581560292), [GEF Windows](https://github.com/KayzenRoot/coinblink/actions/runs/37856416889/job/113581560531), [Socket Project Report](https://github.com/KayzenRoot/coinblink/runs/113581552535), [Socket PR Alerts](https://github.com/KayzenRoot/coinblink/runs/113581568322), [SonarCloud](https://github.com/KayzenRoot/coinblink/runs/113581673532). |
+| CodeRabbit independent review | PASS with no actionable comments on `55fe48a24ba494eb0628a3fc1a9faf9beb4e40d6` | [Final review summary](https://github.com/KayzenRoot/coinblink/pull/32#issuecomment-6069762899) identifies the reviewed commit and reports no actionable comments. |
 
 No application code, runtime dependency, provider secret, Cloudflare resource or deployment is included. The candidate is not executable while PR #32 is open; do not start M00 implementation from this branch.
 
 The CodeRabbit CLI review on pre-fix candidate HEAD `564f8daf27332047bd63c5b236b9cc594310d995` identified one major evidence mismatch: this bundle repeated an earlier payload-tree digest instead of the then-current value. This correction removes that stale duplicate and keeps the digest in the Context Lock and external exact-head evidence, avoiding a self-referential payload-tree value.
 
-## Prior-head pending exact-head evidence
-
-The original candidate was not executable while its PR was open. Its exact-head evidence is superseded by the correction evidence above and the linked Issue #7 comment. The candidate still requires a new final-head review and Owner audit; do not start app code before the Owner-authorized merge. The implementation branch must use that actual merge SHA.
+The evidence synchronization that records the final review result changes this bundle and its Context Lock fingerprint, producing a new candidate HEAD. Remote checks and CodeRabbit must therefore be revalidated on that exact HEAD; their final URLs and results, together with the new payload-tree digest, are recorded in the Issue #7 correction evidence comment and PR #32. Owner audit remains outstanding. The candidate is not executable while PR #32 is open; do not merge or start M00 implementation before the Owner's exact-head audit and authorized merge. The implementation branch must use the actual resulting `main` SHA.

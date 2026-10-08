@@ -22,3 +22,5 @@ Exact commit and CI results must be inspected at final PR HEAD. Confirm 38 publi
 
 Cloudflare Secrets Store/Workers encrypted bindings and scoped account permissions: https://developers.cloudflare.com/secrets-store/integrations/workers/ and https://developers.cloudflare.com/secrets-store/access-control/
 OWASP Secrets Management guidance: https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+
+- Additional Layout Atlas provides 18 detailed high-priority page family visual anatomy guides, still DRAFT and not rendered screenshots.

@@ -40,3 +40,5 @@ Owner requests:
 ## STOP CONDITION
 
 Close this documentation WO only after files committed, independent review and exact-head checks pass. Do NOT implement site/auth/vault, call image APIs, connect social accounts, deploy token contracts, transfer tokens, assume cloud privileges or claim full visual approval. Next implementation admission remains M00 preview infrastructure; owner visual samples and full scope/ADR/DoD require separate decisions.
+
+- docs/design/COINBLINK_INTERNAL_LAYOUT_ATLAS_v2.0_DRAFT.md, 18 extra detailed page family layout plans and responsive/screenshot acceptance notes.

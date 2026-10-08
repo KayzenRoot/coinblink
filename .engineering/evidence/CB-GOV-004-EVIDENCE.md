@@ -34,15 +34,17 @@ Sources: [GEF v1.1.2 CLI README](https://github.com/KayzenRoot/gef-bootstrap/blo
 
 `.engineering/CHECKPOINT.json` records source main `97ac1d0...`, PR #30's bounded M00-only Owner approval, no started application implementation, no deployed Preview, no admitted/done modules, and `overallCompletionPercent: 0` for application implementation. It omits weighted fields because no CoinBlink production-weight denominator has been approved. It does not claim M00 admission.
 
-Precommit candidate checks on 2026-10-08:
+Local correction-candidate checks on 2026-10-08 used Node.js `v22.23.3`, exact npm `10.9.2`, and GEF CLI `1.1.2`:
 
-- `npm test`: exit `0`, 8/8 passed, including conservative checkpoint facts, GEF doctor/status validation, official package integrity/SLSA provenance check, and existing workflow/tooling tests.
-- GEF `doctor --json`: exit `0`; checkpoint `present=true`, `readable=true`, `valid=true`; no governance observation limits; repository observable `HEALTHY`; dependency provenance remains `unverified`.
-- GEF `status --json`: exit `0`; checkpoint `present=true`, `readable=true`, `valid=true`; progress `0`; operator `stale=false`. The worktree was `DIRTY` because the governance candidate was being edited; this is not represented as a clean-tree result.
-- `npm audit --audit-level=high`: exit `0`, zero vulnerabilities.
-- `npm audit signatures`: exit `1`, registry `E404` for bundled internal package `@gef-bootstrap/preflight@0.0.0`. No check was disabled. The repository's existing official GEF tarball/SLSA provenance test passes, while GEF's aggregate dependency provenance remains `REVIEW`; do not claim signature-audit PASS.
+- `npx --yes npm@10.9.2 test`: exit `0`, 8/8 passed, including conservative checkpoint facts, GEF doctor/status validation, official package integrity/SLSA provenance, and workflow/tooling tests.
+- Pinned GEF `doctor --json`: exit `0`; checkpoint `present=true`, `readable=true`, `valid=true`; no governance observation limits; repository observable `HEALTHY`; dependency provenance `unverified`; doctor digest `3a4e6a93228b8de2ac1ba4aa8d8ba2f370b5288d062ec51d9a24f5b7f6540445`.
+- Pinned GEF `status --json`: exit `0`; checkpoint valid; progress `0`; operator `stale=false` because this local checkout has its adoption baseline; repository `DIRTY` from candidate edits; status digest `91d72c3821a10b7e002e7300bf960d4e70204b75b160e0c8e4ccdd2d71a951cf`. A fresh CI checkout has no local `.gef/adopt-state.json` and may conservatively report `stale=true`; checkpoint validity and progress remain valid.
+- Pinned GEF `init --json` preview: exit `0`, effect `NONE`, install `READY` on `1.1.2`; drift preview `UNEXPECTED`. No apply flag was used.
+- Pinned GEF `adopt --json` preview: exit `0`, effect `NONE`, canonical checkpoint `READY`, backup verified, recovery `READY`. The preserved local `.gef/adopt-state.json` SHA-256 was unchanged at `825b582aaa2b0e1a265aea0e020f08e33731a06f7c2d1d4b03357fd688834b95`; the file remains untracked and excluded from Git.
+- `npx --yes npm@10.9.2 audit --audit-level=high`: exit `0`, zero vulnerabilities.
+- `npx --yes npm@10.9.2 audit signatures`: exit `1`, registry `E404` for an internal bundled `@gef-bootstrap/*@0.0.0` package (this run observed `@gef-bootstrap/config@0.0.0`). No check was disabled. The existing official GEF tarball/SLSA provenance test passes, while GEF aggregate dependency provenance remains `REVIEW`; do not claim signature-audit PASS.
 
-These precommit command results prove the candidate parser projection, not a canonical main checkpoint. Exact final-head results and GitHub checks must be recorded against the pushed candidate SHA. After an authorized governance merge, rerun the GEF observer on the resulting exact `main` SHA and refresh the Context Lock before formal admission.
+These local results validate the candidate projection, not a canonical main checkpoint. Exact final-head results and GitHub checks must be recorded against the pushed candidate SHA. After an authorized governance merge, rerun the GEF observer on the resulting exact `main` SHA and refresh the Context Lock before formal admission.
 
 ## Remaining gates
 

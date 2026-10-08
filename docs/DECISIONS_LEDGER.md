@@ -51,3 +51,17 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-031 | Full advertising admin controls | USER APPROVED DIRECTION | Campaigns, creative, inventory, reports, dates, earnings and owner kill switch, implementation contract proposed in M13 |
 | CB-DEC-032 | Consent, visual ad placement and vendor billing methods | PROPOSED | Govern via dedicated monetization ADR, Google approval and privacy gates before live ads |
 
+## Owner directions 2026-10-08 · full internal Design Bible, settings, media and future token
+
+| ID | Requirement | State | Decision boundary |
+|---|---|---|---|
+| CB-DEC-033 | Specify every internal/public/admin page with detail comparable to approved Home | USER APPROVED DIRECTION | v2.0 textual internal page designs are DRAFT, NOT visually owner-approved screenshot designs |
+| CB-DEC-034 | Rich newsroom articles with original image and animated/graphic illustrations | USER APPROVED DIRECTION | Automatic **draft** creative generation with source evidence, chart correctness, rights, captions, human approval and cost cap |
+| CB-DEC-035 | Native CoinBlink token eventually | FUTURE USER IDEA | NO network, ticker, tokenomics, contract or issuance; plan only M18/disabled admin monitoring |
+| CB-DEC-036 | Only one human administrator | USER APPROVED SECURITY REQUIREMENT | Exactly one Owner human account; no public privileged signup or multi-admin; initial activation is secure one-time ceremony |
+| CB-DEC-037 | Fully configurable admin Settings, API keys saved for site operation | USER APPROVED PRODUCT DIRECTION | Owner enters ordinary service keys within protected UI; secrets encrypted or held in secure vault, root encryption/bootstrap outside same database |
+| CB-DEC-038 | Initial owner email/password account | USER APPROVED DIRECTION | Verified email, strong password+MFA/passkeys, server-side session auth, secure recovery; tech selection TBD |
+| CB-DEC-039 | Exact settings database/vault/auth design | PROPOSED / ADR OPEN | Cloudflare Secrets Store vs AES-GCM envelope + external KEK, OAuth provider scopes, schema, consent and rates pending admission |
+| CB-DEC-040 | New inner-page visual composition and typography | PROPOSED / VISUAL SIGNOFF OPEN | 38 public + 48 admin page layouts, grids and motion targets require screenshot review; Home v1.0 remains visual authority |
+| CB-DEC-041 | Editorial media engine M17 and token dashboard M18 | PROPOSED LONG MODULE WOs | M17 after CMS/source providers; M18 indefinite FUTURE until legal/token technical go/no-go |
+

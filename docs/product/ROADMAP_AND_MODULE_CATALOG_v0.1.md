@@ -77,3 +77,19 @@ All planned module Issues exist, but **NONE is admitted for execution**. They ar
 Advertising is **an approved product direction**, not a new unrelated work order. CB-M13 (Issue #20) now implements complete Advertising Studio, including Google AdSense publisher ads, directly booked business banners, and CoinBlink/newsletter/future course house campaigns. First M01/M02 leave dormant approved layout slots; M05 protected admin navigation and M06 honest revenue cards. M13 may be advanced in sequence to follow M02+M06 if ad revenue becomes a commercial priority, without delaying the first working site for a Google approval. All live ads remain blocked until account and legal privacy review.
 
 Review corrections: CB-M04 now depends on CB-M05 secure admin base. CB-M15 now depends explicitly on CB-M09 international SEO and CB-M10 newsletter consent. CB-M03 preview Queue events are simulated; an isolated nonproduction consumer is required for integration tests. Visual fidelity, safe ads density and honest ad revenue status are mandatory.
+
+## 2026-10-08 new Owner requirements and added planned modules
+
+Design Bible v2.0 DRAFT now covers 38 public/reader routes and 48 Admin routes. The original v1.0 Golden Home and Logo remain frozen and are NOT in Git as JPG originals. Each page design proposal needs later screenshot approval in a preview.
+
+- **Owner Admin V1:** EXACTLY ONE human Owner/Administrator, created by one-time out-of-band activation. No public privileged signup; no other Admin or Editor human roles in V1. CB-M05 now owns full settings navigation, encrypted API key vault, MFA, password recovery, source/provider configuration and editorial CMS.
+- **CB-M17 (Issue #27):** rich editorial image, animation, infographic, verified-data chart and short vertical story artwork production. Plan as one complete media generator WO following M00+M05+M03, integrating M08 evidence and M07 social exports. Never auto-publish an illustration or real event photo without final Owner review.
+- **CB-M18 (Issue #26):** FUTURE token research/analytics, no chain, ticker, contract, supply or deployment selected. DO NOT schedule implementation now. Reserve disabled admin token monitor and settings route; legal/tokenomics/custody approval essential.
+- **Design WO CB-DESIGN-002 (Issue #25):** draft high-fidelity specs of *all* reader and owner pages. Text drafts do not automatically approve visual composition.
+- **New implementation compatibility:** M02 owns rich article layout; M05 owns only Owner human auth, Settings and manual editorial final publish; M17 media generator supplies visual story artifacts; M08 fact engine provides evidence; M06 analytics dashboard is visible only behind owner auth.
+- **Existing WO count:** 17 prior module contracts plus 2 new planned future/creative modules = **19 total**. Only M00..M17 are candidates for near/medium-term implementation (subject to source pack and ADR). M18 is explicitly FUTURE/NOT ADMITTED.
+
+
+## Canonical admin routing reconciliation after Codex review
+
+The V2 Page Coverage Matrix is canonical for NEW internal route templates. M05 uses /admin/articles/new and /admin/articles/[id]/edit, never /admin/editor; M08 uses /admin/editorial/review, not /admin/fact-check; M06 uses /admin for overview, /admin/analytics, /admin/analytics/articles and /admin/ops for operations, rather than legacy /admin/overview, /admin/live or /admin/operations. Only /admin/login, /admin/setup and /admin/recovery are purposefully pre-session guarded flows; remaining 45 admin routes require Owner authentication.

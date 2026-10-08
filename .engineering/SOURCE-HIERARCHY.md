@@ -21,3 +21,8 @@
 - A GitHub comment that mentions `@codex` is not proof that Codex Cloud accepted a coding task; confirm provider execution and evidence.
 
 **As of October 8 2026:** bootstrap and source-document import are merged; CB-PLAN-001 product module plan is in review, the portal has NO implemented interface or Cloudflare preview, and the Golden JPEG binary import is a separate open issue.
+
+## 2026-10-08 draft design/source extension
+
+Frozen v1.0 Golden Home and original logo remain above all new v2 page sketches in visual authority. Draft v2 visual docs, page coverage matrix, settings/security and media engine proposals live under docs/design/; future token research under docs/product/. They are **not approved screenshots, product Scope/DoD or code instructions**. Current active documentation-only design WO is CB-DESIGN-002 (Issue #25), while CB-M17 and CB-M18 remain NOT ADMITTED. One Owner V1 security directive supersedes any proposed multi-human admin RBAC found in earlier planning docs. Root encryption/bootstrap material never saved in ordinary site Settings DB.
+

@@ -22,11 +22,13 @@ CoinBlink is **not** a trading exchange, guaranteed signal service, unlicensed d
 
 ## Roles / security boundaries
 
+**Active human V1 contract:** exactly ONE immutable human Owner/Administrator account. The other human role types below are explicitly FUTURE proposals, disabled and not issuable in V1; third-party API customers and readers never become owner-equivalent. Server-side service agents remain least-privilege identities without human admin sessions.
+
 - **Owner:** all configuration, billing, revenue, provider spend, publish approvals, incident controls and irreversible operations; strong authentication.
-- **Admin / Managing Editor:** editorial workflows, permissions limited by owner, schedules, approvals and trend analytics.
-- **Editor / Reporter:** create drafts and suggest social posts, manage own content, no unreviewed production deploy or secrets access.
-- **Social Publisher:** prepare creative, queue and only publish to authorized connected accounts after explicit approval gate.
-- **Data Analyst:** read aggregated stats, export entitled aggregated data, never auth secrets/user PII.
+- **Admin / Managing Editor (FUTURE ONLY, NOT V1):** potential editorial workflows if the sole Owner separately approves team accounts and a new role/security design.
+- **Editor / Reporter (FUTURE ONLY, NOT V1):** possible future contributor accounts after approved multi-human security migration; no such role in V1.
+- **Social Publisher (FUTURE ONLY, NOT V1):** possible separate human social operator only after explicit future Owner authorization; Owner alone approves posts in V1.
+- **Data Analyst (FUTURE ONLY, NOT V1):** possible restricted reporting role after separate multi-user security approval; no analyst login in V1.
 - **API Customer:** only their own keys, usage, bills and allowed public API contract; isolated tenant.
 - **Reader:** public content, authorized newsletter and optional personalization.
 - **Service Agent:** least-privilege automated editorial and provider tasks, denied unilateral irreversible publication until gated.
@@ -68,3 +70,14 @@ No production marketing/claims while historical ideas remain merely proposed. No
 ## Owner-approved Advertising Studio direction · 2026-10-08
 
 Reserve tasteful, clearly labelled banner inventory on homepage, news articles, category lists and eligible promotional locations. Admin advertising management handles Google AdSense (publisher network, only after approval), direct contracted sponsor campaigns, house campaigns for CoinBlink and future courses. CB-M01/CB-M02 create only visually approved slots; M05/M06 reserve admin/metric contracts; one comprehensive M13 work order manages campaign creation/scheduling/measurement/rights/consent. Keep Golden home faithful. Refer to docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.
+
+## Additional owner directions · Design v2 and platform settings
+
+The reader experience now has an extensive proposed public-page Design Bible, including **rich illustrated news articles** with sourced concept covers, charts and subtle controlled animations. AI generated editorial media remains a draft until the sole Owner approves its factual relevance/rights. CB-M17 is proposed as one comprehensive media production WO.
+
+**V1 owner model supersedes past multi-human admin roles:** exactly one Owner human admin. Admin/editorial/social/financial responsibilities are all carried by that Owner in V1, while machine jobs are narrowly authorized service principals. API customers and readers are not administrators. CB-M05 handles first-run one-time account activation, verified email/password/MFA, sessions and protected Settings for ordinary API keys and provider toggles; encrypted secrets remain outside raw DB and root bootstrap outside the UI.
+
+**Future token:** record possible native CoinBlink token and read-only future onchain analytics without choosing a network/ticker/tokenomics. No token deployment or selling scheduled. Full dashboard future brief under docs/product/FUTURE_NATIVE_TOKEN_BRIEF_v0.1.md.
+
+**New screen spec:** 38 public and 48 Owner-admin page contracts, all DRAFT for visual signoff except frozen v1 Golden Home. Link docs/design/COINBLINK_PAGE_COVERAGE_MATRIX_v2.0_DRAFT.md.
+

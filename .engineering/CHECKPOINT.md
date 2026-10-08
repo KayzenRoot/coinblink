@@ -1,26 +1,14 @@
-# CoinBlink · Engineering checkpoint (human-readable, not promoted product JSON)
+# CoinBlink · Engineering narrative checkpoint (NOT promoted product JSON)
 
-**2026-10-08 state:** `BOOTSTRAP_COMPLETE / DESIGN_DOCUMENTATION_MERGED / PRODUCT_MODULE_PLANNING_IN_REVIEW / IMAGES_NOT_IN_GIT / NO_APP_DEPLOYMENT`.
+**As of 2026-10-08:** BOOTSTRAP_COMPLETE, DESIGN_V1_FROZEN, PRODUCT_PLAN_DRAFT_MERGED, INTERNAL_DESIGN_V2_DRAFT_IN_REVIEW, GOLDEN_IMAGE_BYTES_NOT_IN_GIT, PREVIEW/PORTAL_NOT_DEPLOYED.
 
-## Accepted historical increments
+- CB-BOOT-001 v1.1.2 and 3 Matt Pocock skills merged PR #2. Exact-head Linux/Windows CI, provenance and documented owner-authorized narrow correction.
+- CB-DOCS-001 source files and original unmodified 1,013-line Golden Home Visual Bible merged PR #4; 1,268-line historical ideas master. Two Golden image JPG bytes still absent in Git, manifest presentInGit=false; CB-ASSETS-001 Issue #5.
+- CB-PLAN-001 initial planning packet and 17 long WOs plus Advertising Studio merged PR #24 at a783a90c87b212123aeb23ce57036424e87d233c. Issue #6 remains OPEN for final Scope/Architecture/DoD decisions.
+- CB-DESIGN-002 Issue #25 is active documentation-only branch review, 38 public + 48 admin pages in draft v2 specs; exact owner approved Golden Home v1 remains canonical and unchanged.
+- Owner direction: one human OWNER admin only in V1, first-run account activation and MFA; all ordinary integration keys through protected Settings (encrypted/vault and masked, root external). CMS/news articles receive evidence-grounded AI illustrations/diagrams/charts/animation via separate planned M17.
+- CB-M17 planned Image/Video Editorial Pipeline (Issue #27); CB-M18 FUTURE CoinBlink Token and read-only dashboard research (Issue #26); no chain/ticker/contract/tokenomics or issuance.
+- All M00..M18 remain PLANNED/NOT ADMITTED. Site/front end/admin/auth/data-provider connection/real artwork generation/Cloudflare previews and token **NOT IMPLEMENTED**.
+- Product approved Scope/Architecture/DoD/checkpoint JSON still OPEN. No secrets, new media, token issuance or live ad/account integrations have been created.
 
-- CB-BOOT-001: merged PR #2 to main at `0d2f114818e9f72db06d3c51d17c5189d395a0a0`. GEF CLI `@gef-bootstrap/cli@1.1.2` and three pinned Matt Pocock skills are installed. Original Sigstore exception and exact-head evidence are recorded in `.engineering/evidence/CB-BOOT-001-EVIDENCE.md`. No broad change to GEF Codex-only policy.
-- CB-DOCS-001: merged PR #4 to main at `1c1257871b9d2ee9c3b2943f07f05dfeaa1410b0`. Full Visual Bible (1013 lines), historic Ideas Master (1268 lines), source hierarchy and image byte manifests are preserved in Git.
-
-## Current planning increment
-
-- CB-PLAN-001: Issue #6, branch `docs/cb-plan-001-modular-product-roadmap`, planning packet and 17 proposed long work orders awaiting review/owner module/stack decisions. Product `Scope/Requirements/Architecture/DoD` remain OPEN.
-- The 17 files in `.engineering/planned-work-orders/` are NOT ADMITTED GEF execution WOs. Do not spawn Codex implementation just because a file exists.
-- User-approved direction: one large coherent WO per module, interactive PR preview visible on phone, owner Mission Control admin analytics, social studio X/IG/TikTok and future paid API.
-- Only selected visuals are approved. Astro/Cloudflare implementation contracts, account permissions, provider rights, billing/pricing, multi-agent routing, analytics consent and exact architectural choices are proposed.
-
-## Blockers / dependencies
-
-- CB-ASSETS-001 Issue #5: two Golden JPEG binaries **not in Git**. Exact SHA-256 values and dimensions in `assets/reference/reference-manifest.json`; prevents claiming Golden Homepage screenshot fidelity.
-- Cloudflare account/previews: NOT provisioned/connected; first M00 module needs account authorization and security boundaries.
-- Product `.engineering/CHECKPOINT.json`: intentionally ABSENT until complete Source Pack/DoD is approved.
-- No website implemented, no live market, no CMS, no admin portal, no social account integrations, no public paid API, no Stripe billing, no newsletter, no published articles, no deployment.
-
-## Next legal action
-
-Review CB-PLAN-001, resolve owner MVP/architecture choices with ranked discussion, then admit CB-M00 from planned to active Work Order with exact HEAD Context Lock/DoD. Run Preview provisioning and CI. Proceed to M05 admin and M01 Golden Home as images allow; do not merge/release a module missing live preview or required security check. No prompts to be copied manually for GitHub planning updates.
+**Next legal action:** audit CB-DESIGN-002 docs, merge if green as DRAFT source, then accept internal visual samples via preview and separately admit M00. Exact Golden JPG import and secure Cloudflare account secrets remain future external gates.

@@ -44,3 +44,14 @@ Unresolved names are *decision opportunities*, not requests to provision paid ac
 ## Required Advertising / Monetization ADR (proposed)
 
 Consider slot registry and responsive AdSlot with reserved sizes, direct/house campaign booking scheduler, separate AdSense adapter with real publisher account review, verified ads.txt and geographic consent/CMP integration. Apply role checks, anti-scam creative moderation, click/impression validation and bot filtering for first-party direct ads. Do NOT infer AdSense revenue from local clicks. Store provider-reported network revenue separately from sponsor invoices. No real ads in public PR previews. Detailed contract in docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.
+
+## Auth & secret-management architecture delta (Owner directive, ADR required)
+
+V1 requires one and only one human Owner account, not the multi-role admin/editor/team model originally proposed. No public privileged registration; one-time owner activation, email proof, password + MFA/passkey, recovery ceremony and hard database uniqueness constraint. Tenant Developer API credentials are isolated, workers use least-privilege machine principals.
+
+Owner must configure routine service API credentials in /admin/settings; store ciphertext+wrapped key with KMS/KEK outside DB or use approved Cloudflare Secrets Store via carefully scoped secret-manager service. Secrets Store account-level permissions are more powerful than a normal app session; NEVER grant the public web Worker unrestricted account-admin access. A raw-DB-only master encryption key is unacceptable. Use masked metadata, write-only endpoints, rotate/revoke, safe Test Connection and audit.
+
+## Media and token ADR status
+
+CB-M17 image/graphics/video generation: provider price/copyright/data consent, queue and storage, optional authenticated local GPU worker, fact-grounded charts, manual media approval, reduced-motion and responsive performance budgets are unapproved ADR decisions. CB-M18 token dashboard is FUTURE with no network/contract and legally gated issuance. The proposed Worker Preview lane must remain isolated from paid generation and source credentials.
+

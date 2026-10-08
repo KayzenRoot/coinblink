@@ -11,3 +11,16 @@
 - The frozen Bible intentionally remains unchanged so the source-text import matches the exact owner-approved original. Future clarified canonical versions must be independently approved and versioned, not silently edited.
 
 **Product Source Pack status:** incomplete. Source text imported; Golden JPG binaries blocked by current authenticated tool transfer path; visual implementation not authorized. See [Source Pack staging index](../source-pack/README.md).
+
+## New v2.0 internal-page design expansion (ALL DRAFT, not frozen visual approval)
+
+- [Visual Design Bible v2.0 DRAFT, 38 public pages](COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md), retaining this frozen v1.0 homepage/brand as higher visual authority.
+- [Owner Admin Design Bible DRAFT, 48 protected screens](COINBLINK_ADMIN_DESIGN_v2.0_DRAFT.md).
+- [Full 86-screen Page Coverage Matrix](COINBLINK_PAGE_COVERAGE_MATRIX_v2.0_DRAFT.md).
+- [Single Owner and Settings API Vault](COINBLINK_SETTINGS_AND_SINGLE_OWNER_v2.0_DRAFT.md).
+- [Editorial AI Rich Media Engine](COINBLINK_EDITORIAL_MEDIA_ENGINE_v2.0_DRAFT.md).
+- [Future Token Research Brief](../product/FUTURE_NATIVE_TOKEN_BRIEF_v0.1.md).
+
+**Authority:** only the original 1536×864 Golden Home and original logo are visually APPROVED; all new internal-page layout parameters and mock preview plans are PROPOSED. Golden JPGs are not yet present in Git (see reference manifest), so screenshots cannot prove visual parity. No page code, token or cloud integrations are implemented by documentation.
+
+- [18 critical internal page layout sketches in text](COINBLINK_INTERNAL_LAYOUT_ATLAS_v2.0_DRAFT.md) with proposed width, gutters, proportions, content flow, states and QA.

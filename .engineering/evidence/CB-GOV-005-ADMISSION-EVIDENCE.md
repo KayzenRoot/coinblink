@@ -4,7 +4,7 @@
 **Repository:** `KayzenRoot/coinblink`; Issue #7.
 **Governance base:** `cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f` (current `origin/main` at task start; CB-GOV-004 / PR #31).
 **Candidate branch:** `codex/cb-gov-005-m00-admission`.
-**Exact PR HEAD and remote check/review run URLs:** recorded in PR and the CB-GOV-005 Issue #7 evidence comment after push. No exact candidate HEAD is asserted here before commit.
+**Exact PR HEAD and remote check/review run URLs:** see PR #32 and the current CB-GOV-005 Issue #7 correction evidence comment. This file is part of the candidate commit, so its own commit SHA is recorded externally rather than self-referenced here.
 
 ## Preserved local state and base audit
 
@@ -55,7 +55,7 @@ The local `doctor`/`status` runs were read-only and were performed while the can
 | GEF 1.1.2 `doctor --json` | PASS / REVIEW | Exit 0; checkpoint present/valid, repository observable healthy; dependency provenance remains `unverified` / `REVIEW`. No finding was suppressed. |
 | GEF 1.1.2 `status --json` | PASS checkpoint / REVIEW repository subprojection | Exit 0; checkpoint valid, `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, `stale=false`. The separate repository verdict reports `BLOCKED / MISSING_HEAD` although Git resolves the local HEAD; this subprojection remains visible for audit. |
 | GEF `init` preflight | PASS plan / REVIEW drift | Read-only `effect=NONE`, install plan `READY`; drift is `UNEXPECTED` after candidate edits. No repository `init --apply`, `adopt`, or installation was run. |
-| Context Lock fingerprints | PASS | 27/27 locked Git blob SHA-1 values and raw-file SHA-256 values match; self-excluded payload tree `51b80fb6be68b2094f90471a9749feed9a49fe13` matches. |
+| Context Lock fingerprints | PASS | 27/27 locked Git blob SHA-1 values and raw-file SHA-256 values match. The payload tree was recomputed from the staged index with only the Context Lock excluded and matched the value stored in that lock. Its digest is not duplicated here: this Evidence Bundle is itself included in that tree, and repeating the digest here would change the tree. The exact recalculated value is recorded in the current Issue #7 correction comment. |
 | `npm test` | PASS | Node `v22.17.0`, npm `10.9.2`; 8 passed, 0 failed. The official Node.js archive was SHA-256 checked against its release manifest (`721ab118a3aac8584348b132767eadf51379e0616f0db802cc1e66d7f0d98f85`) and used from a temporary path. |
 | Security | PASS / REVIEW | `npm audit --audit-level=high`: 0 vulnerabilities. `npm audit signatures`: E404 for `@gef-bootstrap/kernel@0.0.0`; GEF dependency provenance remains `REVIEW`. No bypass or signature-check disablement. |
 | Diff / secret scan | PASS | `git diff --cached --check`; credential/token signature scan of the staged diff returned 0 matches; 10 changed files, with no application/runtime/deployment paths. |
@@ -64,6 +64,8 @@ The local `doctor`/`status` runs were read-only and were performed while the can
 
 No application code, runtime dependency, provider secret, Cloudflare resource or deployment is included. The candidate is not executable while PR #32 is open; do not start M00 implementation from this branch.
 
-## Prior pending exact-head evidence
+The CodeRabbit CLI review on pre-fix candidate HEAD `564f8daf27332047bd63c5b236b9cc594310d995` identified one major evidence mismatch: this bundle repeated an earlier payload-tree digest instead of the then-current value. This correction removes that stale duplicate and keeps the digest in the Context Lock and external exact-head evidence, avoiding a self-referential payload-tree value.
 
-The candidate is not executable while its PR is open. After push, attach the exact base/HEAD, Ubuntu and Windows workflow results, final-head CodeRabbit review, secret-scan/lock verification and Owner audit state to the PR and Issue #7. Do not start app code before the Owner-authorized merge; the implementation branch must use that actual merge SHA.
+## Prior-head pending exact-head evidence
+
+The original candidate was not executable while its PR was open. Its exact-head evidence is superseded by the correction evidence above and the linked Issue #7 comment. The candidate still requires a new final-head review and Owner audit; do not start app code before the Owner-authorized merge. The implementation branch must use that actual merge SHA.

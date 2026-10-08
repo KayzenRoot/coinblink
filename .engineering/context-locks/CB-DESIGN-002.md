@@ -1,21 +1,23 @@
-# CB-DESIGN-002 · Exact Planning Context Lock
+# CB-DESIGN-002 · Planning Context Lock revision 2
 
-**State:** Documentation-only lock for Design Bible v2.0 DRAFT.
-**Base main:** a783a90c87b212123aeb23ce57036424e87d233c
+**Status:** Design-documentation lock, no module implementation approved.
+**Repository:** KayzenRoot/coinblink
 **Branch:** docs/cb-design-002-internal-pages-owner-control
-**Source snapshot commit before this lock:** 78d305307776e4647c51c9ea33dd65431fd4a9bb
-**Source tree Git SHA:** 443290ed620f3ec42d2212d92c5151a2ab0c8063
-**GEF:** CLI 1.1.2 pinned official source commit af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82.
+**Base main:** a783a90c87b212123aeb23ce57036424e87d233c
+**Exact source snapshot commit (before this context lock update):** 0cf37e5fe6855c9fade873455af27bc4a6441102
+**Exact tree snapshot:** 01d119671ae0416d8e369cb2f33a36c91151d70d
 **Issue:** https://github.com/KayzenRoot/coinblink/issues/25
+**PR:** https://github.com/KayzenRoot/coinblink/pull/28
+**GEF v1.1.2 source:** af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82
 
-## Visual golden reference (original SHA-256 hashes, bytes not in Git)
+## Frozen visual Golden image SHA-256 source (not in Git)
 
-- Golden Home 1536x864: 82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8
-- Golden Logo 1179x1040: 126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0
+Home original 1536×864: 82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8
+Logo original 1179×1040: 126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0
 
-These binary SHA-256 values are distinct from the Git blob object SHA-1 identifiers listed below. There is **no new approved screenshot** of internal pages. Original v1 Bible kept frozen.
+## Live immutable Git blob object IDs (SHA-1, not SHA-256)
 
-## Pinned source Git blob IDs (SHA-1 object names; NOT SHA-256)
+These Git object IDs pin every critical document as currently committed at the source snapshot SHA. They are distinct from Golden JPEG SHA-256. Updating this Context Lock changes its own SHA only, not the target locked documents.
 
 - .engineering/CHECKPOINT.md: 94bb2140cbeaf32ad01d942879443d67ce31d5cd
 - .engineering/SOURCE-HIERARCHY.md: f5a11cb94800044d1034710b83814d5ed188eeee
@@ -31,16 +33,17 @@ These binary SHA-256 values are distinct from the Git blob object SHA-1 identifi
 - .engineering/planned-work-orders/CB-M09.md: 4db2161e212fa6840407941530ff75f1373be4d6
 - .engineering/planned-work-orders/CB-M17.md: 0081e298ba704f82830a63cf7d491eccd1138adc
 - .engineering/planned-work-orders/CB-M18.md: 591bdc08cfb81fc7dd19862f1487bf06ac814053
-- .engineering/work-orders/CB-DESIGN-002.md: 9eac23c98059fa2ac063747050b71e65cb9b6a5c
+- .engineering/work-orders/CB-DESIGN-002.md: 04b136af336298d6e2a3a20bf71a9362e28687af
 - AGENTS.md: d4ae02668f5dd4bb32f429e0d6810a7f333a4819
 - docs/DECISIONS_LEDGER.md: 4c0dafee33487a904663027b6b58bcc654ef95eb
 - docs/design/COINBLINK_ADMIN_DESIGN_v2.0_DRAFT.md: 22d327f05dcc72240c348e7a2d40987d3cfbd526
 - docs/design/COINBLINK_EDITORIAL_MEDIA_ENGINE_v2.0_DRAFT.md: ce16434c597665a63125e2e8a0dcac2217ae5ca5
+- docs/design/COINBLINK_INTERNAL_LAYOUT_ATLAS_v2.0_DRAFT.md: 9dbfd9a5e52ec355dff0ec32063e82b3e6141d67
 - docs/design/COINBLINK_PAGE_COVERAGE_MATRIX_v2.0_DRAFT.md: bda9512a31ef215fce27f985dcc5f9664532888d
 - docs/design/COINBLINK_SETTINGS_AND_SINGLE_OWNER_v2.0_DRAFT.md: 3f21b25dd30647f0c9f4cf101d6ca7b55437fdfb
 - docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md: 69af2cfaccbd74fce08ef14e2c75f59ccd7053e9
-- docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md: 96d6424641a353a3cb55e897099eafbd0edfba17
-- docs/design/README.md: 29a17ca30e226b52b8a150861802d286e7ad0606
+- docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md: 3ab02858657781f89ab1a9ff6d691d43023804b8
+- docs/design/README.md: 68f0c2c314dcdbabe07be42e3755d8906beafbca
 - docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md: 563e55103803b40858b285016652648c59ff56fe
 - docs/product/ARCHITECTURE_OPTIONS_AND_NONFUNCTIONALS_v0.1.md: 84ca079bd853556044b98173a4d69c8cd87292cc
 - docs/product/COMMAND_CENTER_AND_ANALYTICS_v0.1.md: cb04011e9464036758ca44c29387e6bf41103551
@@ -53,12 +56,14 @@ These binary SHA-256 values are distinct from the Git blob object SHA-1 identifi
 - docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md: d4b26c492f94dc0486326f7d8c06a7f8b1b55e32
 - docs/product/SOCIAL_STUDIO_AND_PUBLISHING_v0.1.md: 9be686bf661106bb62a9a8858863fc1903d2f6c0
 
-## Owner product directions / gates
+## Scope and acceptance
 
-Approved directions: comprehensive design of internal pages, article images/animation based on verifiable claims, one human Owner admin only, first-run secure account with verified email/password/MFA, Settings for ordinary integration API keys safely persisted, future token analytical plans only. No actual media generation, token issuance, chain, contract, account creation, secrets, backend implementation, or Cloudflare deployment authorized by this planning WO.
+User approved the goal: all page-level design contracts, rich article illustrations/charts/motion, a one-human-Owner Admin V1 (no multi-human admin signup), safe Settings for all ordinary API providers with vault/envelope+external KEK, and a FUTURE token monitoring plan with no selected chain/contract/issuance.
 
-Page design inventory: 38 public routes and 48 admin screens, as defined in the v2 matrix. All new inner page designs DRAFT until owner visual signoff. AI renderer M17 and native token monitoring M18 are separate planned WOs NOT ADMITTED; M18 indefinitely FUTURE. Roots of trust and KEK remain external to web Settings and their metadata DB.
+Design Bible v2 P01–P38 (38 public routes), Owner Admin A01–A48 (48 protected view routes) and 18 high-priority Layout Atlas families are **DRAFT** visual contracts. Frozen v1.0 Golden Home and logo are the only owner-approved actual visual images. Original golden JPG bytes remain missing from repo. No new art has been generated.
+
+CB-M17 creative media generator and CB-M18 future native token are long PROPOSED WOs, NOT ADMITTED. The root encryption key and deployment trust cannot be held in the same DB and editable through ordinary Settings. No app code, token deployment, social publishing or preview cloud resources authorized by docs-only WO.
 
 ## STOP
 
-Run exact HEAD documentation PR checks and independent review, then merge v2 as DRAFT only if green. Original frozen v1 homepage, master binary status, open Scope/DoD, Source Pack and all implementation work order admission remain unaffected. Future site and token coding requires new GEF context lock.
+Review exact PR HEAD after lock update, source integrity, tests and independent findings; merge document planning only if all required CI and actionable reviews clean. Product Scope/Architecture/DoD and page-specific visual approvals remain OPEN; only later admit M00 preview infrastructure under new GEF lock.

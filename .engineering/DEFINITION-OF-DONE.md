@@ -1,9 +1,9 @@
 # CoinBlink · Definition of Done: M00 Preview Foundation
 
-**Status: PROPOSED_FOR_OWNER_APPROVAL; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18.
+**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18.
 
 ## Admission gate
-- [ ] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded with reviewed Git SHA.
+- [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). Full GEF technical gate remains separately pending.
 - [ ] Legitimate planning source pack closes at exact HEAD; GEF doctor/preflight verifies a real canonical initial checkpoint and rejects invalid fields. **No handwritten fake checkpoint**.
 - [ ] WO M00 and Context Lock have nonstale approved source fingerprints and legal implementation base created after the governance merge, rather than borrowing the earlier draft PR source SHA.
 

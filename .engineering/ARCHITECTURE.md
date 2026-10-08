@@ -1,6 +1,6 @@
 # CoinBlink · Architecture Decisions Boundary
 
-**Status: PROPOSED_FOR_OWNER_APPROVAL / M00-ONLY.** **Do not** interpret as full product architecture approval.
+**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** **Do not** interpret as full product architecture approval.
 
 ## M00 baseline recommended
 - TypeScript strict; Node.js 22 per existing `package.json` with pinned npm. Preserve installed GEF 1.1.2 and verified dependency provenance.

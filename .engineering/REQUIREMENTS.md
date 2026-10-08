@@ -1,6 +1,6 @@
 # CoinBlink · M00 Requirements and Acceptance Inputs
 
-**Status: PROPOSED_FOR_OWNER_APPROVAL.** Specific to M00 only. The full product Requirements for future modules are not yet frozen.
+**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** Specific to M00 only. The full product Requirements for future modules are not yet frozen.
 
 | ID | Requirement | Verification |
 |---|---|---|

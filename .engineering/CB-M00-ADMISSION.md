@@ -1,6 +1,6 @@
 # CB-M00-WO-001 · Module Admission Gate Proposal
 
-**Current status:** `AWAITING_OWNER_SOURCE_PACK_APPROVAL`; **NOT_ADMITTED**.
+**Current status:** `OWNER_APPROVED_M00_SCOPE / WAITING_EXACT_HEAD_REVIEW_AND_GEF_VALIDATION`; **NOT_ADMITTED**.
 **Repository:** KayzenRoot/coinblink.
 **Canonical GEF:** CLI 1.1.2 with upstream governance, no bypass.
 **Planning Issue:** #6; **Execution candidate:** Issue #7 / planning PR #29.
@@ -8,7 +8,7 @@
 
 ## Required gate order
 1. Independent review the full proposed M00-only product source pack in this planning PR against owner directions and source hierarchy, with exact HEAD and no high blockers.
-2. Owner explicitly confirms that this document approves **only the M00 bounded scope, architecture, security and DoD**, NOT the design/Scope/DoD for the entire portal, not Cloudflare payment authorization.
+2. **OWNER APPROVAL RECORDED** at PR #30 comment 6067708856 on 2026-10-08 for source HEAD `84f6c02a119259806d230470efc115162d733855`: only M00 bounded scope, architecture, security and DoD. No approval of the full portal, Cloudflare paid deployment or other modules. Any material change to approved scope requires new owner decision.
 3. Merge the owner-approved planning source pack into `main` with checks green.
 4. Run `gef doctor` and any official GEF v1.1.2 init/adoption/checkpoint procedure on this exact post-merge baseline. If product-level required sources remain missing, mark BLOCKED and record exact doctor output; do not invent or handwrite `.engineering/CHECKPOINT.json` or say admission succeeded.
 5. After real checkpoint is initialized and validated, compile a *new current Context Lock* to the legal execution base, promote a reviewed admission record from `NOT_ADMITTED` to `ADMITTED` only with evidence of Steps 1–4.

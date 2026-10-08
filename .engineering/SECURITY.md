@@ -1,6 +1,6 @@
 # CoinBlink · Security Baseline (M00 stage)
 
-**Status: PROPOSED_FOR_OWNER_APPROVAL / M00-ONLY.** Future security for real CMS, paid API and token custody is out of scope until separately admitted.
+**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** Future security for real CMS, paid API and token custody is out of scope until separately admitted.
 
 - M00 has no authenticated owner, real analytics, raw publisher API credentials, account sessions, payments or wallet functionality.
 - Cloudflare Worker Previews are **public by default**. No secret content or real credentials in preview; future private admin requires Cloudflare Access or equivalent and M05 owner authentication. Use benign demo content only.

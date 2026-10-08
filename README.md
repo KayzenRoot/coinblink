@@ -1,18 +1,32 @@
 # CoinBlink
 
-International cryptocurrency news and intelligence portal.
+**Crypto news in a blink.** An international crypto news and research publication under active planning.
 
-> **Status:** repository bootstrap in progress. The canonical design, scope, architecture, and implementation plan have not yet been promoted. Do not interpret this repository initialization as a functioning website.
+> **Status (2026-10-08):** GEF Bootstrap 1.1.2 installed and CI validated in CB-BOOT-001. Documentation preservation underway in CB-DOCS-001. **Portal NOT implemented or deployed; product planning OPEN; original Golden image binaries are not yet in Git.**
 
-- Canonical product language: English (`en`).
-- Secondary planned locales: Brazilian Portuguese (`pt-BR`) and Spanish (`es`).
-- Selected dark visual reference: CoinBlink Home Master (approved).
-- Engineering framework target: GEF Bootstrap CLI `1.1.2`.
+## Product decisions already selected
 
-The project follows GitHub-first governed engineering. Requirements, architectural contracts, Definition of Done and checkpoints will be committed only as they are compiled, reviewed and accepted.
+- English (`en`) is the canonical product language; Brazilian Portuguese (`pt-BR`) and Spanish (`es`) are planned from the beginning.
+- User-approved **dark 1536×864 homepage visual reference** and metallic eye/coin/lightning logo are the visual source of truth. Textual visual specifications are in [the full Design Bible](docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md).
+- Faithful interface reconstruction is required with screenshot comparison/visual QA; no screenshot-as-fake-UI shortcuts.
+- Working global brand **CoinBlink** and provisional tagline **Crypto news in a blink.** Commercial trademark/domain clearance pending.
+- Codex Cloud + GitHub + Cloudflare preview deployments is the intended development workflow; local Docker remains an alternative. **No preview is live yet**.
 
-## Engineering toolchain
+## Documentation and engineering
 
-The governed bootstrap uses Node.js `22.17.0`, npm `10.9.2`, and the exact local dependency `@gef-bootstrap/cli@1.1.2`. From a clean checkout, run `npm ci` and `npm test`. The test suite validates the installed CLI, the fail-closed status for the not-yet-promoted canonical checkpoint, a disposable governed `init --apply`, and the pinned npm SLSA provenance.
+Read [Documentation Map](docs/README.md) then [Decisions Ledger](docs/DECISIONS_LEDGER.md). The full historical [Ideas Master v0.6](docs/planning/history/PORTAL_CRIPTO_MASTER_IDEIAS_v0.6.md) is preserved for traceability and is **not** an approved Scope/Architecture.
 
-Read-only local diagnostics are available through `npm run gef -- --version`, `npm run gef -- init --target . --json`, `npm run gef -- doctor --target . --json`, and `npm run gef -- status --target . --json`. Product implementation remains outside this bootstrap.
+The [Source Pack staging index](docs/source-pack/README.md) tracks product governance gaps. Golden reference filenames and SHA-256 digests are recorded at [Reference Manifest](assets/reference/reference-manifest.json); the original JPG bytes are still awaiting exact-byte repository import.
+
+This repository uses **GEF CLI v1.1.2** and three pinned Matt Pocock skills. Existing bootstrap CI uses Node 22.17.0 and verifies Linux/Windows exact-head test execution.
+
+```sh
+npm ci
+npm test
+npm exec -- gef --version
+npm exec -- gef doctor --target . --json
+```
+
+A missing product `.engineering/CHECKPOINT.json` may be reported by GEF doctor while scope/architecture are still unapproved. Do not override that finding with fabricated green status.
+
+**No financial advice:** draft and screenshot market prices/headlines are illustrative, not live factual claims. The product editorial verification and provider licensing gates are still under design.

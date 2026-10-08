@@ -57,3 +57,8 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 ## Advertising revenue integration seam
 
 Show future advertising integration in Owner Command Center: qualified impressions (direct), sponsor bookings/receivables, AdSense provider-reported revenue, house/course click-through, per-article yield and campaign drill-down. Initial cards say not connected. Never fabricate revenue or equate analytics clicks to billed Google earnings.
+
+## One human Owner authority
+
+The full Command Center uses one Owner session only in V1. All article view metrics, revenue, social, media and provider spend are aggregated into Owner-only charts. Do not create extra human Analyst/Editor administrator roles under the earlier provisional RBAC plan. Machine events and external Developer API customers remain independently scoped and never gain Owner privileges.
+

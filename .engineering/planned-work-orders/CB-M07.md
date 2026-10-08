@@ -56,3 +56,8 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M07 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Single-owner social final approval
+
+Only the registered human Owner may configure provider account connections and authorize real social posts in V1; service jobs may prepare drafts/schedules with scoped service permission but cannot bypass Owner's content/platform approval. No additional Social Publisher account should be provisioned until a later owner-approved multi-user migration.
+

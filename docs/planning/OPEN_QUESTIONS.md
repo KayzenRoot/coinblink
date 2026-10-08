@@ -46,3 +46,14 @@ Product planning is deliberately **OPEN**. Do not convert a candidate technology
 - Decide sponsor pricing, category exclusivity, minimum booking, invoice/payment processor and prohibited crypto-finance advertisers; first rate card can remain draft.
 - Future course scope (landing page/syllabus, qualified instructors, checkout, refunds and consumer terms) requires separate product acceptance; ad campaigns can precede actual products.
 - Privacy for Brazil/international audience and Google-certified CMP for personalized publisher ads where required, honest advertiser reporting and bot-resistant measurement.
+
+## Owner-only Settings, internal design and token questions
+
+- **Authentication architecture:** one-time owner activation with out-of-band bootstrap, verified email, MFA/passkey, recovery; choose authorized provider, session lifetime and tenant separation. No public admin signup or second privileged user.
+- **API key vault design:** choose Cloudflare Secrets Store scoped manager vs application-encrypted DB with separate KMS/KEK; budget, provider scope, rotation, secret provenance and exit/recovery. Bootstrap root key cannot be editable through web Settings.
+- **Editorial media generation:** which image/video providers and terms, allowed local ComfyUI worker (not always-on), rights/likeness policy, cost cap, attribution and factual media acceptance, animation formats and performance limits.
+- **Inner page aesthetics:** approve screenshots for article rich cover/inline media, contact, markets, search, developer, Advertising and high-priority admin/Settings; 38+48 DRAFT textual designs do not replace actual Golden approval.
+- **Publishing automation:** choose default generate draft vs source-grounded draft approval only; Owner remains last publish decision.
+- **Token future:** no selected network, contract, ticker, utility, supply, vesting, legal structure or custody. Token issuance is OUT OF SCOPE; monitoring design stays disabled until independently approved.
+- **Scope and module order:** M17 media production integrates M05 and M08; M18 future is not scheduled. Product Scope/Architecture/DoD not yet frozen.
+

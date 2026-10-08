@@ -68,3 +68,14 @@ No production marketing/claims while historical ideas remain merely proposed. No
 ## Owner-approved Advertising Studio direction · 2026-10-08
 
 Reserve tasteful, clearly labelled banner inventory on homepage, news articles, category lists and eligible promotional locations. Admin advertising management handles Google AdSense (publisher network, only after approval), direct contracted sponsor campaigns, house campaigns for CoinBlink and future courses. CB-M01/CB-M02 create only visually approved slots; M05/M06 reserve admin/metric contracts; one comprehensive M13 work order manages campaign creation/scheduling/measurement/rights/consent. Keep Golden home faithful. Refer to docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md.
+
+## Additional owner directions · Design v2 and platform settings
+
+The reader experience now has an extensive proposed public-page Design Bible, including **rich illustrated news articles** with sourced concept covers, charts and subtle controlled animations. AI generated editorial media remains a draft until the sole Owner approves its factual relevance/rights. CB-M17 is proposed as one comprehensive media production WO.
+
+**V1 owner model supersedes past multi-human admin roles:** exactly one Owner human admin. Admin/editorial/social/financial responsibilities are all carried by that Owner in V1, while machine jobs are narrowly authorized service principals. API customers and readers are not administrators. CB-M05 handles first-run one-time account activation, verified email/password/MFA, sessions and protected Settings for ordinary API keys and provider toggles; encrypted secrets remain outside raw DB and root bootstrap outside the UI.
+
+**Future token:** record possible native CoinBlink token and read-only future onchain analytics without choosing a network/ticker/tokenomics. No token deployment or selling scheduled. Full dashboard future brief under docs/product/FUTURE_NATIVE_TOKEN_BRIEF_v0.1.md.
+
+**New screen spec:** 38 public and 48 Owner-admin page contracts, all DRAFT for visual signoff except frozen v1 Golden Home. Link docs/design/COINBLINK_PAGE_COVERAGE_MATRIX_v2.0_DRAFT.md.
+

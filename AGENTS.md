@@ -12,3 +12,8 @@ GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2; prod
 8. Planning is **OPEN**. Proposed modules and tools do not authorize implementation.
 
 **Immediate next step:** resolve CB-PLAN-001 review, preserve open product scope/ADRs and Golden image asset blocker, then individually admit CB-M00 preview infrastructure when GEF and architecture gates allow.
+
+## Active design planning · CB-DESIGN-002
+
+The owner has requested a full v2 INTERNAL/PUBLIC/ADMIN Design Bible, media pipeline, a single-owner secure admin model and a FUTURE token note. This increment is **documentation only**, Issue #25, branch docs/cb-design-002-internal-pages-owner-control. Old Bootstrap and planning PRs are merged; no CB-Mxx code work order is admitted. Earlier descriptions of multiple human Owner/Admin/Editor roles are superseded in V1 by ONE human Owner; future staff roles require new explicit owner consent. Do not accidentally provision social keys, publish images, generate token code or import substitute Golden references.
+

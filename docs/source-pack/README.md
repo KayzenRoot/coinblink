@@ -32,3 +32,8 @@ First implementation admission after planning review should be CB-M00 preview in
 Live externally billable API, social posting or public production deployment requires separate legal/provider permissions and explicit signoff.
 
 - **Advertising module contract:** docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md / planned CB-M13 / Issue #20. User-approved direction, proposed provider/privacy details. No actual ad network or course checkout integrated.
+
+## CB-DESIGN-002 v2.0 page/source proposals
+
+A new **draft** design bundle expands the design source to 38 public view contracts and 48 Owner admin views, Settings Vault, AI editorial illustration/animation pipeline, a fully disabled future native token dashboard, plus 2 planned long modules M17 and M18. See docs/design/README.md. These files are NOT frozen approved internal-page screenshots, and do not fill missing Architecture/Scope/DoD or original Golden JPEG binary bytes.
+

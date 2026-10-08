@@ -26,3 +26,15 @@ Treat Golden visuals as exact aesthetic authority **only after the original byte
 **This material is a detailed planning deliverable, not proof that module code, previews, admin analytics, social posting or billing exist.**
 
 - **Advertising and revenue:** [Advertising & Monetization v0.1](product/ADVERTISING_AND_MONETIZATION_v0.1.md) with owner-selected Google AdSense/direct sponsors/course promotions and pending live provider approvals.
+
+## Full internal-page design planning · CB-DESIGN-002 (DRAFT)
+
+- [Design Bible v2 public pages](design/COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md) (38 reader/public page contracts).
+- [Admin design](design/COINBLINK_ADMIN_DESIGN_v2.0_DRAFT.md) (48 Owner-only view contracts).
+- [Full 86-view inventory](design/COINBLINK_PAGE_COVERAGE_MATRIX_v2.0_DRAFT.md).
+- [Settings/sole human owner/API vault design](design/COINBLINK_SETTINGS_AND_SINGLE_OWNER_v2.0_DRAFT.md).
+- [Automated editorial graphics/video pipeline](design/COINBLINK_EDITORIAL_MEDIA_ENGINE_v2.0_DRAFT.md).
+- [Future native token](product/FUTURE_NATIVE_TOKEN_BRIEF_v0.1.md): NO network/token created and no planned current deploy.
+
+Old approved Golden Home v1.0 is frozen; new internal designs are unapproved proposals pending browser screenshot/owner review.
+

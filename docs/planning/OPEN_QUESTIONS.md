@@ -30,7 +30,7 @@ Product planning is deliberately **OPEN**. Do not convert a candidate technology
 - **Social account authorization:** registered X developer app, eligible professional Instagram account, TikTok audit status, media rights. Launch editor and calendar first; keep actual social POST sandbox until approval.
 - **Paid API:** which fields are owned or legally redistributable; release the docs/read API earlier, billing after verified demand and unit economics?
 - **Preview release:** connect Cloudflare Account with authorized token and isolated bindings, as a separately gated platform setup. Worker Previews or Pages based on accepted stack ADR.
-- **Module schedule:** accept or adjust 17 proposed module-wide WOs and release order in `docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md`.
+- **Module schedule:** accept or adjust 19 proposed module-wide WOs (M18 future only) and release order in `docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md`.
 
 ## Next controlled Work Orders
 

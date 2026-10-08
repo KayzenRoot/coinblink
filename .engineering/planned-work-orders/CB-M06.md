@@ -3,7 +3,7 @@
 **Stage:** P0 · administrator priority  
 **Status:** PROPOSED / NOT ADMITTED  
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
-**Preview route(s):** `/admin/overview, /admin/analytics, /admin/live, /admin/operations`  
+**Preview route(s):** `/admin, /admin/analytics, /admin/analytics/articles, /admin/ops`  
 **Dependencies:** CB-M05; CB-M02.
 
 ## Objective
@@ -28,7 +28,7 @@ ADMISSION STATUS: PROPOSED, NOT EXECUTABLE until CB-PLAN-001 architecture/produc
 Define the module's database entities/schema migrations, normalized events, role permissions, public/internal API contracts (if applicable), fixture strategy, latency/cache behavior, accessibility treatment, copyright/licensing provenance, data retention, error observability and secret boundaries. No new external paid services or posting/revenue side effects without approved ADR and explicit owner permission. Integrations start sandbox/mock and promote by a separated, documented external verification gate.
 
 ## Long Work Order execution and milestones
-- **P0 · Vertical visual shell:** concrete navigation, route(s) /admin/overview, /admin/analytics, /admin/live, /admin/operations; fixture data clearly labeled; compare with current design system. Commit and publish Preview, collect screenshot/health evidence.
+- **P0 · Vertical visual shell:** concrete navigation, route(s) /admin, /admin/analytics, /admin/analytics/articles, /admin/ops; fixture data clearly labeled; compare with current design system. Commit and publish Preview, collect screenshot/health evidence.
 - **P1 · Functional complete slice:** functional persistence/API/validations/workflows/permissions, provider fallbacks, meaningful content and action states. Add E2E and contract tests, update screenshots; debug in this same WO, not an unrelated WO.
 - **P2 · Quality/production gates:** roles, privacy, abuse, performance, cost budget, a11y, import/export and rollback as relevant; collect owner feedback, resolve all actionable P1/P2, assert exact HEAD and repeat CI/Preview.
 - **Milestone discipline:** one module PR with intermediate commits and screenshot links; STOP when a failed gate cannot be responsibly corrected within this same scope. Don't artificially split one coherent module across many repetitive WOs; also avoid massive cross-module PRs.

@@ -49,7 +49,7 @@
 
 ## Owner/Admin (48 view contracts)
 
-All require session and server-side owner authentication. No public admin registration, no multi-human admins in V1. Platform API clients cannot access them.
+The 48 owner/admin screen routes are **not all session-gated before login**: A01 /admin/login, A02 /admin/setup and A03 /admin/recovery must work prior to normal session, each under its own strict password/MFA, expiring out-of-band bootstrap invitation, or verified recovery challenge respectively. All other 45 admin routes require an authenticated Owner session and server-side authorization. No public admin registration, no multi-human admins in V1. Platform API clients cannot access privileged admin routes.
 
 | ID | Route template | Screen | Approval |
 |---|---|---|---|

@@ -88,3 +88,8 @@ Design Bible v2.0 DRAFT now covers 38 public/reader routes and 48 Admin routes. 
 - **Design WO CB-DESIGN-002 (Issue #25):** draft high-fidelity specs of *all* reader and owner pages. Text drafts do not automatically approve visual composition.
 - **New implementation compatibility:** M02 owns rich article layout; M05 owns only Owner human auth, Settings and manual editorial final publish; M17 media generator supplies visual story artifacts; M08 fact engine provides evidence; M06 analytics dashboard is visible only behind owner auth.
 - **Existing WO count:** 17 prior module contracts plus 2 new planned future/creative modules = **19 total**. Only M00..M17 are candidates for near/medium-term implementation (subject to source pack and ADR). M18 is explicitly FUTURE/NOT ADMITTED.
+
+
+## Canonical admin routing reconciliation after Codex review
+
+The V2 Page Coverage Matrix is canonical for NEW internal route templates. M05 uses /admin/articles/new and /admin/articles/[id]/edit, never /admin/editor; M08 uses /admin/editorial/review, not /admin/fact-check; M06 uses /admin for overview, /admin/analytics, /admin/analytics/articles and /admin/ops for operations, rather than legacy /admin/overview, /admin/live or /admin/operations. Only /admin/login, /admin/setup and /admin/recovery are purposefully pre-session guarded flows; remaining 45 admin routes require Owner authentication.

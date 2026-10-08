@@ -408,3 +408,5 @@ The page IDs below are individually specified **design directions**, not screens
 - [Future Token Intelligence brief](../product/FUTURE_NATIVE_TOKEN_BRIEF_v0.1.md): explicitly no chain, ticker, contract or launch.
 - [Cross-route completeness ledger](COINBLINK_PAGE_COVERAGE_MATRIX_v2.0_DRAFT.md): pages by module, evidence and owner approval.
 - [Original frozen Design Bible v1.0](COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md): immutable Golden Home design source.
+
+- [18 detailed internal layout families](COINBLINK_INTERNAL_LAYOUT_ATLAS_v2.0_DRAFT.md): grid anatomy, visual reading order, reader/admin breakpoints, acceptance tests and source constraints for the most important page types.

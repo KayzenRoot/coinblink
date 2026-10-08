@@ -31,11 +31,13 @@
 | SLSA subject digest | Matches the lockfile SRI and fetched registry tarball |
 | Provenance source | `KayzenRoot/gef-bootstrap`, tag `v1.1.2`, commit `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82` |
 | Publisher workflow | `.github/workflows/v11-publish.yml`, ref `refs/tags/v1.1.2` |
-| Sigstore verification | npm publish and SLSA bundles both verified using `sigstore@4.1.0`; bundles and the matching public npm key are retained beside this file |
+| Sigstore verification | npm publish and SLSA bundles verified using `sigstore@4.1.1`; bundles and the matching public npm key are retained beside this file |
 
 The package tarball, lockfile digest and attested SLSA subject were checked against one another. `npm ci` completed using the committed lockfile. `npm audit signatures` itself returned `E404` because npm attempted to fetch GEF's private, bundled `@gef-bootstrap/*@0.0.0` runtime packages from the public registry. The signed npm publish and SLSA attestations were therefore verified directly with the Sigstore verifier and the npm registry key; the failed npm subcommand is retained as a limitation, not reported as a pass.
 
 Corrections during validation: the first doctor assertion looked for `GOVERNANCE_SOURCE_ABSENT` at the envelope's top level; the observed CLI schema places it under `doctor.governance.observationLimits`, and the test now checks that exact field. Direct Node `fetch()` could not use this environment's registry proxy, so the provenance test retrieves the same pinned tarball through `npm pack` and hashes its bytes. Both corrected checks pass.
+
+The first Windows CI run exposed two additional issues, both corrected before requesting owner review. Windows checkout converted a pinned skill YAML file to CRLF, so its byte fingerprint differed from the source manifest; `.gitattributes` now forces LF for `.agents/skills/**`. Also, the first `npm audit` found GHSA-52v5-jr5w-gjxr in the test-only `sigstore@4.1.0` verifier; the pin and lockfile now use `4.1.1`, and the repeat audit reports zero vulnerabilities. The initial Windows failure is retained in [workflow run 37800110770](https://github.com/KayzenRoot/coinblink/actions/runs/37800110770); the corrected exact-head run is pending on the next pushed commit.
 
 ## Local validation
 
@@ -45,6 +47,7 @@ Runtime: Linux x64, Node.js `22.17.0`, npm `10.9.2`.
 | --- | --- |
 | `npm ci` | PASS |
 | `npm test` | PASS, 5 tests / 0 failures |
+| `npm audit --json` | PASS, 0 vulnerabilities after upgrading the test verifier to `sigstore@4.1.1` |
 | `gef --help` | PASS, JSON command index emitted |
 | `gef --version` | PASS, version `1.1.2`, Node `22.17.0` |
 | `gef init --target . --json` | PASS, read-only plan; no apply effect |
@@ -57,7 +60,7 @@ The absent checkpoint JSON is an intentional known gap because product planning 
 
 ## CI, evidence and review gate
 
-`.github/workflows/gef-validation.yml` runs the same `npm ci` and `npm test` commands on Ubuntu 24.04 and Windows 2022 with Node.js `22.17.0`. The live PR #2 checks page is authoritative for current run IDs and exact-head SHA; no check is represented as green here before it completes.
+`.github/workflows/gef-validation.yml` runs the same `npm ci` and `npm test` commands on Ubuntu 24.04 and Windows 2022 with Node.js `22.17.0`. Ubuntu passed on initial head `4279ed0fac737149052ee20957bf2c372757a269`; Windows first failed on the fingerprint mismatch described above. A corrected workflow run will be linked here after it completes on the updated exact head.
 
 ## Proposed checkpoint delta
 

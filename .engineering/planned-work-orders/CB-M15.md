@@ -4,7 +4,7 @@
 **Status:** PROPOSED / NOT ADMITTED  
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
 **Preview route(s):** `/admin/launch-readiness and public staging site`  
-**Dependencies:** CB-M01; CB-M02; CB-M03; CB-M04; CB-M05; CB-M06; CB-M14.
+**Dependencies:** CB-M01; CB-M02; CB-M03; CB-M04; CB-M05; CB-M06; CB-M09 (international SEO); CB-M10 (newsletter consent); CB-M14. Require M13 policy checks if ads enabled at launch.
 
 ## Objective
 Make live launch safe, measurable and reversible rather than prematurely publishing a skeleton.

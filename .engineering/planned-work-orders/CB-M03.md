@@ -53,3 +53,7 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M03 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Cloudflare Queue Preview safety
+
+Worker Previews may PRODUCE Queue messages but do NOT become the Queue consumer. Production Queues could route test events into a production consumer. M03 Preview ingestion must be labeled SIMULATED; no preview binds a production Queue. Consumer integration tests run against a dedicated non-production Queue and separately deployed non-production consumer Worker, or invoke a controlled local test consumer directly. Verify Queue isolation, producer permissions and no production side effects before M03 admission. Document in M00 Cloudflare resource ADR. Source: https://developers.cloudflare.com/workers/previews/resources/ .

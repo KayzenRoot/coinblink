@@ -4,7 +4,7 @@
 **Status:** PROPOSED / NOT ADMITTED  
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
 **Preview route(s):** `/en/markets and /admin/market-providers`  
-**Dependencies:** CB-M00; CB-M01.
+**Dependencies:** CB-M00; CB-M01; CB-M05 (secured admin shell and RBAC).
 
 ## Objective
 Trusted market quotes/graphs, radar, source freshness and informative market context.

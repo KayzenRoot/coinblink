@@ -1,13 +1,13 @@
 # Planned Work Order CB-M13 · Advertising, Sponsorship & Revenue Operations
 
-**Stage:** P2 · monetize  
+**Stage:** P1 layout/readiness; P2 activation and revenue monetization  
 **Status:** PROPOSED / NOT ADMITTED  
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
-**Preview route(s):** `/admin/revenue, /admin/sponsors, /en/advertise`  
+**Preview route(s):** /admin/advertising; /admin/advertising/inventory; /admin/advertising/campaigns; /admin/advertising/creatives; /admin/advertising/analytics; /en/advertise  
 **Dependencies:** CB-M02; CB-M06.
 
 ## Objective
-Revenue manager for labeled sponsors, campaigns, inventory and measurable conversions.
+Provide CoinBlink Advertising Studio: owner-managed network Google AdSense ads (when approved), direct company sponsor banners, internal newsletter and future course promotions, booking/inventory/campaigns/creatives and truthful revenue analytics, preserving approved Golden visuals. Read docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md. No live paid campaigns, Google scripts or course sales are authorized by this plan.
 
 ## Source hierarchy / context
 Read `AGENTS.md`, `.engineering/SOURCE-HIERARCHY.md`, current admitted GEF Checkpoint and Context Lock, full owner-approved Visual Bible and image manifest, `docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md`, `docs/product/CONTINUOUS_VISUAL_DELIVERY_PROTOCOL_v0.1.md`, the active Decision Ledger, and the specific module's contracts. Never use historical brainstorm as approved scope.
@@ -51,3 +51,11 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 `CB-M13 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
 > This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+
+## Expanded owner-authorized advertising contract
+
+The full detailed Advertising Studio / slot registry and trust, AdSense, direct sponsors, course promotions, priority, consent, analytics and revenue contract are specified in docs/product/ADVERTISING_AND_MONETIZATION_v0.1.md. It is an integral M13 acceptance input. M01/M02 must create only visually approved dormant slots before M13; M05 adds protected admin navigation, M06 connects verified metrics only once ready.
+
+P0: working operator UI preview, typed ad models, inventoried desktop/mobile slot visualizations, mock sponsor, approvals and campaign calendar. P1: actual direct advertiser contracts, time/slot exclusive booking conflict checks, creative safety, moderated scheduled delivery, auditable first-party direct impression/click accounting, ownership and privacy. P2: conditional AdSense readiness adapter, certified CMP regional requirements, validated ads.txt, reporting (do not infer Google payouts from first-party clicks), idempotence, fraud controls, failsafe network/house fill, owner kill switch, exact-head CI and E2E. Course promotion slots do not create a course store. Do not claim revenue before provider approval and verified transactions.
+
+Hard STOP: no real network scripts on PR previews, no public sponsor approval without signed contract/moderation, no ad covering main content, no nonconsensual tracking, no fabricated money.

@@ -10,9 +10,13 @@ const workflowPath = join(root, ".github", "workflows", "gef-validation.yml");
 const verifierPath = join(root, "scripts", "verify-exact-head.mjs");
 const expectedShaExpression = String.raw`\$\{\{\s*github\.event_name\s*==\s*'pull_request'\s*&&\s*github\.event\.pull_request\.head\.sha\s*\|\|\s*github\.sha\s*\}\}`;
 
+function workflowSteps(contents) {
+  return contents.replace(/\r\n/g, "\n").split(/^      - name: /m).slice(1);
+}
+
 test("CI checks out the event's exact commit and verifies HEAD", () => {
   const workflow = readFileSync(workflowPath, "utf8");
-  const steps = workflow.split(/^      - name: /m).slice(1);
+  const steps = workflowSteps(workflow);
   const checkout = steps.find((step) => step.startsWith("Check out exact commit\n"));
   const verification = steps.find((step) => step.startsWith("Verify exact checked-out commit\n"));
 
@@ -21,6 +25,13 @@ test("CI checks out the event's exact commit and verifies HEAD", () => {
   assert.ok(verification, "workflow must verify the selected commit after checkout");
   assert.match(verification, new RegExp(`EXPECTED_SHA:\\s*${expectedShaExpression}`));
   assert.match(verification, /run: node scripts\/verify-exact-head\.mjs/);
+});
+
+test("the workflow contract test locates steps in a CRLF checkout", () => {
+  const workflow = readFileSync(workflowPath, "utf8").replace(/\r?\n/g, "\r\n");
+  const steps = workflowSteps(workflow);
+  const checkout = steps.find((step) => step.startsWith("Check out exact commit\n"));
+  assert.ok(checkout, "CRLF input must still expose the exact-commit checkout step");
 });
 
 test("the exact-head verifier accepts matching HEAD and rejects a mismatch", () => {

@@ -82,6 +82,16 @@ The corrected exact-head matrix passed on commit `66f31c06a3f596af15179048334f84
 
 The selected Matt Pocock skills are MIT licensed. This repository now preserves the complete original copyright and permission notice at `.agents/skills/LICENSE` alongside the copied skills, pointing to the pinned Matt Pocock source revision. The MIT notice applies to that third-party material only and does not grant a license over other CoinBlink materials.
 
+## Owner-authorized execution exception · GitHub direct-write
+
+**Documented:** 2026-10-08. **Scope limited to PR #2 / CB-BOOT-001.**
+
+The default GEF v1.1.2 ADR-0008 execution authority is **Codex-only for code/tests/CI**. Codex Cloud completed the GEF bootstrap and exact-head checkout work. Later, the `@codex address that feedback` GitHub invocation twice returned `To use Codex here, create an environment for this repo`, despite a previously running Cloud task. The owner then expressly requested that the assistant perform the corrections directly without further manual prompt transfers; this is a one-off, **owner-authorized exception, not a permanent amendment to GEF**.
+
+An assistant acting through the authenticated GitHub connection authored the bounded change to `test/gef-provenance.test.mjs`, specifically adding `certificateIssuer` / anchored `certificateIdentityURI` constraints to the Sigstore SLSA verification and negative controls for mismatched issuer and workflow. GitHub direct-write commits: `0ae34830f15231874b2e0cea8476868e8b22d721` (superseded by correction) and `8549ddf963d572ceef51665750fcbf746ed92d05` (corrected). No app code, CI YAML, secrets or product Source Pack was changed by these two commits. The initial attempt failed CI because malformed JavaScript was committed; it was replaced with a tested, well-formed file in the second commit. Both attempts remain in immutable Git history and are not represented as Codex-authored. The second commit's exact-head CI run [37805790016](https://github.com/KayzenRoot/coinblink/actions/runs/37805790016) verified the commit SHA and passed 8/8 tests on each of Ubuntu/Windows; both Socket checks passed.
+
+The original Sigstore review P1 was resolved after code inspection and passing CI; this **does not** mean the separate independent review and exact-head owner approval are automatic. The exceptional authorship must be assessed and accepted explicitly at final review. Future coding still follows GEF ADR-0008 unless the owner formally changes the policy.
+
 ## Proposed checkpoint delta
 
 Keep the project in `IN PROGRESS / CB-BOOT-001 OWNER AUDIT PENDING`. Record GEF and the three pinned skills as installed, the P1 exact-head checkout guard as implemented and green on `66f31c0`, retain the missing product checkpoint/Source Pack and open planning status, and promote nothing until owner exact-head audit. This is a proposal only; it does not update the canonical checkpoint.

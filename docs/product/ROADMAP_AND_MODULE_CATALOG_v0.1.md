@@ -47,3 +47,27 @@ Each `CB-Mxx` contract is stored in `.engineering/planned-work-orders/CB-Mxx.md`
 ## Explicit exclusions / risk
 
 Not a promise of a fully automated Codex Cloud dispatch: this ChatGPT-GitHub connection currently supports direct GitHub authoring and review, but has no reliable first-party create-task action for Codex Cloud. Reserve Codex-only source-writing according to GEF unless an owner-authorized documented exception applies. No live customer charges, X/IG/TikTok posting, or real news publication without credentials, permissions and explicit human approval.
+
+## Tracked module backlog on GitHub
+
+All planned module Issues exist, but **NONE is admitted for execution**. They are planning inventory, not concurrent work in progress. Activate only one critical path WO at a time after its product contract and context lock are approved.
+
+- [CB-M00 · Issue #7](https://github.com/KayzenRoot/coinblink/issues/7) · [long planned WO](../../.engineering/planned-work-orders/CB-M00.md)
+- [CB-M01 · Issue #8](https://github.com/KayzenRoot/coinblink/issues/8) · [long planned WO](../../.engineering/planned-work-orders/CB-M01.md)
+- [CB-M02 · Issue #9](https://github.com/KayzenRoot/coinblink/issues/9) · [long planned WO](../../.engineering/planned-work-orders/CB-M02.md)
+- [CB-M03 · Issue #10](https://github.com/KayzenRoot/coinblink/issues/10) · [long planned WO](../../.engineering/planned-work-orders/CB-M03.md)
+- [CB-M04 · Issue #11](https://github.com/KayzenRoot/coinblink/issues/11) · [long planned WO](../../.engineering/planned-work-orders/CB-M04.md)
+- [CB-M05 · Issue #12](https://github.com/KayzenRoot/coinblink/issues/12) · [long planned WO](../../.engineering/planned-work-orders/CB-M05.md)
+- [CB-M06 · Issue #13](https://github.com/KayzenRoot/coinblink/issues/13) · [long planned WO](../../.engineering/planned-work-orders/CB-M06.md)
+- [CB-M07 · Issue #14](https://github.com/KayzenRoot/coinblink/issues/14) · [long planned WO](../../.engineering/planned-work-orders/CB-M07.md)
+- [CB-M08 · Issue #15](https://github.com/KayzenRoot/coinblink/issues/15) · [long planned WO](../../.engineering/planned-work-orders/CB-M08.md)
+- [CB-M09 · Issue #16](https://github.com/KayzenRoot/coinblink/issues/16) · [long planned WO](../../.engineering/planned-work-orders/CB-M09.md)
+- [CB-M10 · Issue #17](https://github.com/KayzenRoot/coinblink/issues/17) · [long planned WO](../../.engineering/planned-work-orders/CB-M10.md)
+- [CB-M11 · Issue #18](https://github.com/KayzenRoot/coinblink/issues/18) · [long planned WO](../../.engineering/planned-work-orders/CB-M11.md)
+- [CB-M12 · Issue #19](https://github.com/KayzenRoot/coinblink/issues/19) · [long planned WO](../../.engineering/planned-work-orders/CB-M12.md)
+- [CB-M13 · Issue #20](https://github.com/KayzenRoot/coinblink/issues/20) · [long planned WO](../../.engineering/planned-work-orders/CB-M13.md)
+- [CB-M14 · Issue #21](https://github.com/KayzenRoot/coinblink/issues/21) · [long planned WO](../../.engineering/planned-work-orders/CB-M14.md)
+- [CB-M15 · Issue #22](https://github.com/KayzenRoot/coinblink/issues/22) · [long planned WO](../../.engineering/planned-work-orders/CB-M15.md)
+- [CB-M16 · Issue #23](https://github.com/KayzenRoot/coinblink/issues/23) · [long planned WO](../../.engineering/planned-work-orders/CB-M16.md)
+
+**Existing prerequisites:** [CB-ASSETS-001 · Issue #5](https://github.com/KayzenRoot/coinblink/issues/5) is still blocked on actual Golden JPEG binary transfer. [CB-PLAN-001 · Issue #6](https://github.com/KayzenRoot/coinblink/issues/6) owns this draft roadmap/admission decisions.

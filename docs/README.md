@@ -38,3 +38,4 @@ Treat Golden visuals as exact aesthetic authority **only after the original byte
 
 Old approved Golden Home v1.0 is frozen; new internal designs are unapproved proposals pending browser screenshot/owner review.
 
+- [Detailed layout atlas for key internal screens](design/COINBLINK_INTERNAL_LAYOUT_ATLAS_v2.0_DRAFT.md), 18 page families with desk/mobile rules.

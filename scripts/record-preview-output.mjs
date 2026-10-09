@@ -4,18 +4,32 @@ import { pathToFileURL } from "node:url";
 import { CLOUDFLARE_PREVIEW_WORKER_NAME } from "./cloudflare-preview-policy.mjs";
 
 export function validatePreviewOutput(result, expectedName) {
-  if (result?.type !== "preview" || result.version !== 1) {
-    throw new Error("Wrangler output is not a supported Worker Preview result.");
-  }
-  if (result.worker_name !== CLOUDFLARE_PREVIEW_WORKER_NAME) {
-    throw new Error("Wrangler targeted a Worker other than the dedicated CoinBlink M00 Preview Worker.");
-  }
-  if (result.preview_name !== expectedName) {
-    throw new Error("Wrangler returned a Preview name that does not match this workflow run.");
+  const preview = result?.preview;
+  const deployment = result?.deployment;
+  if (!preview || !deployment || typeof preview !== "object" || typeof deployment !== "object") {
+    throw new Error("Wrangler output does not contain nested Preview and deployment resources.");
   }
 
-  const previewUrl = validateCloudflareUrl(result.preview_urls, "stable Preview URL");
-  const deploymentUrl = validateCloudflareUrl(result.deployment_urls, "immutable Deployment URL");
+  if (typeof preview.id !== "string" || !preview.id || typeof deployment.id !== "string" || !deployment.id) {
+    throw new Error("Wrangler must return Preview and deployment identities.");
+  }
+  if (preview.name !== expectedName || deployment.preview_name !== expectedName) {
+    throw new Error("Wrangler returned a Preview name that does not match this workflow run.");
+  }
+  if (deployment.preview_id !== preview.id) {
+    throw new Error("Wrangler returned a deployment that does not belong to the returned Preview.");
+  }
+
+  const previewUrl = validateCloudflareUrl(
+    preview.urls,
+    "stable Preview URL",
+    `${expectedName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+  );
+  const deploymentUrl = validateCloudflareUrl(
+    deployment.urls,
+    "immutable Deployment URL",
+    `${deployment.id}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+  );
   if (previewUrl === deploymentUrl) {
     throw new Error("Stable Preview and immutable Deployment URLs must be distinct.");
   }
@@ -23,7 +37,11 @@ export function validatePreviewOutput(result, expectedName) {
   return { previewUrl, deploymentUrl };
 }
 
-function validateCloudflareUrl(values, label) {
+export function parsePreviewOutput(output, expectedName) {
+  return validatePreviewOutput(JSON.parse(output), expectedName);
+}
+
+function validateCloudflareUrl(values, label, expectedHostnameLabel) {
   if (!Array.isArray(values) || values.length !== 1) {
     throw new Error(`Wrangler must return exactly one ${label}.`);
   }
@@ -40,13 +58,20 @@ function validateCloudflareUrl(values, label) {
   ) {
     throw new Error(`${label} must be an HTTPS workers.dev origin without credentials, path, query, or fragment.`);
   }
+  const hostnameLabel = url.hostname.split(".")[0];
+  if (!hostnameLabel.endsWith(`-${CLOUDFLARE_PREVIEW_WORKER_NAME}`)) {
+    throw new Error(`${label} must target the dedicated CoinBlink M00 Preview Worker.`);
+  }
+  if (hostnameLabel !== expectedHostnameLabel) {
+    throw new Error(`${label} hostname does not match the returned Preview or deployment identity.`);
+  }
   return url.origin;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     const [resultPath, expectedName] = process.argv.slice(2);
-    const urls = validatePreviewOutput(JSON.parse(readFileSync(resultPath, "utf8")), expectedName);
+    const urls = parsePreviewOutput(readFileSync(resultPath, "utf8"), expectedName);
     appendFileSync(process.env.GITHUB_OUTPUT, `stable_url=${urls.previewUrl}\ndeployment_url=${urls.deploymentUrl}\n`, "utf8");
     appendFileSync(
       process.env.GITHUB_STEP_SUMMARY,

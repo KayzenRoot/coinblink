@@ -35,6 +35,13 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 - Added deterministic policy, config, workflow, Wrangler-output, smoke-contract, and Context Lock tests.
 - The canonical-main guard logs only fixed success/failure messages and never forwards API or error text; deterministic regressions verify both paths without network access and ensure malformed multiline identity input cannot enter CLI output.
 
+## Owner review corrections · PR #37
+
+- Corrected `scripts/record-preview-output.mjs` to consume the nested stdout JSON emitted by the pinned Wrangler `4.149.0` CLI: `runPreview` logs `{ preview, deployment }` for `--json`, while the separate `writeOutput` event is a flattened output-file format. The pinned source and [Cloudflare's Preview automation example](https://developers.cloudflare.com/workers/previews/examples/) agree on this distinction. The parser verifies the returned Preview ID/name, deployment ID/Preview linkage/name, the dedicated Worker identity encoded in each `workers.dev` hostname, exactly one URL per resource, HTTPS-only origins, and distinct stable/deployment URLs.
+- Replaced the flattened mock with a representative Wrangler 4.149.0 nested CLI-response fixture. Regressions cover wrong Worker, wrong Preview name, mismatched Preview linkage/deployment ID, duplicate URLs, malformed or unsafe origins, and rejection of the unrelated flattened output-file event.
+- Inspected local `wrangler preview --help` and `wrangler preview delete --help` at the pinned `4.149.0`, with metrics disabled and no provider credentials or API calls. The CLI help exposes `--ignore-base-config` as an inherited Preview option, but the delete implementation only declares `--name`, `--worker-name`, and `--skip-confirmation`; the workflow no longer passes the inapplicable base-config option when deleting. The regression test checks each workflow command's option set separately and invokes only the two local `--help` commands.
+- No Cloudflare login, API request, Preview create/delete, deployment, billing change, credential read, or remote resource operation occurred.
+
 ## Local validation
 
 | Check | Result |
@@ -44,12 +51,14 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 | `npm audit --audit-level=high` | PASS; 0 vulnerabilities |
 | `npm run lint` | PASS; ESLint with zero warnings allowed |
 | `npm run typecheck` | PASS; 34 files, 0 errors, 0 warnings, 0 hints |
-| `npm test` | PASS; 41/41 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
+| `npm test` | PASS on Windows; 44/44 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
 | Playwright views | PASS at 1536×864, 768×1024, and 390×844; accessibility assertions included |
 | Docker Compose localhost smoke | PASS on verified free `127.0.0.1:3010` using unique project `coinblink-m00-p1-sanitizer-local-20261009`; Linux adapter build, health/buildSha, local `not-deployed` status, robots/noindex and true 404 passed. Only that temporary Compose project was removed. |
 | GEF `doctor --target . --json` | Exit 0, effect `NONE`; checkpoint present/valid; toolchain healthy. This linked-worktree observer reports `repository.observable=FINDING` because `.git` is a worktree file, with `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`; this limitation is retained, not suppressed. Dependency provenance is `unverified` / `REVIEW`. |
 | GEF `status --target . --json` | Exit 0, effect `NONE`; valid checkpoint says `M00_ADMITTED`, `IMPLEMENTATION_IN_PROGRESS`, 0%, next stage is P1 Owner authorization and Preview evidence. Dirtiness is `UNKNOWN` because of the linked-worktree observation limit; absent drift baseline is conservatively `stale=true`. No baseline was fabricated. |
 | `git diff --check` | PASS after removing one extra trailing blank line |
+
+Correction-specific local validation on this candidate: `npm run lint` PASS; `npm run typecheck` PASS (34 files, 0 errors/warnings/hints); `npm audit --audit-level=high` PASS (0 vulnerabilities); the two Wrangler parser/workflow suites PASS (10/10), including local `preview --help` and `preview delete --help` against installed `wrangler@4.149.0` only.
 
 Local `docker ps` confirmed unrelated `nexlabs-website-web-1` owns `127.0.0.1:3000`; it was left running. The local Docker smoke used port 3010 and an isolated Compose project. The PR CI Docker Compose smoke remains the exact-head remote check for this candidate.
 

@@ -20,16 +20,16 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "fbb4b7d432841265ceacc05f1b08d3ed7084f99f",
-        "rawBlobSha256": "175a00ac605ca14511600a1080e9ab7aeb5bd2418b6fff34969f5dccb3dd626b"
+        "gitBlobSha1": "492dd36ae22175ae4a64c5602760396a8c64ebc7",
+        "rawBlobSha256": "abd176671a48d02ce1c30b76ac1a6d125a4a7802d1f8faff4c4d6d323d826707"
       }
     },
     {
       "path": ".github/workflows/cloudflare-worker-preview.yml",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "e320ff507ddfaf374877a812c6f925a95f1171e7",
-        "rawBlobSha256": "c649424b1534f3420e58cb4db10a2e631e1a5af483e36a32dae87c147326322d"
+        "gitBlobSha1": "6bb635d9aa90db5063013ad62e294fe1ec9ddf14",
+        "rawBlobSha256": "965c24844092f9af29a1e742780fae6e994692950e91dc7fea1c9ff1b09c8ecb"
       }
     },
     {
@@ -98,8 +98,8 @@
       "path": "scripts/record-preview-output.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "1f0ee23bb26d070942980aeeefacd34ec9a8b309",
-        "rawBlobSha256": "bed6052e404fcb81acfb679dfeb46c86bfc084402be74743ffb2647a0361d13d"
+        "gitBlobSha1": "a233d5c3803797cdb54745809ce0b3987a7371d7",
+        "rawBlobSha256": "b255b9abc78ee37d583bb8d677812107f232a598b8accecbb54eadbfdda4714f"
       }
     },
     {
@@ -187,8 +187,8 @@
       "path": "test/cloudflare-preview-output.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "b8c5034c1dd2cb3fc79c681e3269d924b16ac2de",
-        "rawBlobSha256": "354154eb2c3bd7fd0f62dc1a741562efb8ad7e3701dd6c771530c174a0f18f29"
+        "gitBlobSha1": "1e7e4523adb745b9b09e97377f249779c3c765a1",
+        "rawBlobSha256": "23b805b4677d91b5a6dfb0b166bac4e8e9d001adcd920b51cc8b836085c1fd15"
       }
     },
     {
@@ -203,8 +203,8 @@
       "path": "test/cloudflare-preview-workflow.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "7ba79a00ec7befd228ccf37a0f5121eb86c5beb5",
-        "rawBlobSha256": "3c3c3174223c68664001650dc3e31f4a9e4f76d10bb5567e2c58188bb209d074"
+        "gitBlobSha1": "b17ccabeb042947ec41030219a130f2aa7163ba3",
+        "rawBlobSha256": "aff8b848501634842d1b48a98f1250c705d0e82f1890b5a8e6b305ddf1029b6b"
       }
     },
     {

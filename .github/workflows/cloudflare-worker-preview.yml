@@ -194,7 +194,6 @@ jobs:
             --config ./wrangler.jsonc \
             --name "$PREVIEW_NAME" \
             --worker-name "$COINBLINK_CF_WORKER_NAME" \
-            --ignore-base-config \
             --skip-confirmation
           echo "Deleted only managed Preview $PREVIEW_NAME on $COINBLINK_CF_WORKER_NAME." >> "$GITHUB_STEP_SUMMARY"
         shell: bash

@@ -1,32 +1,105 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validatePreviewOutput } from "../scripts/record-preview-output.mjs";
+import { parsePreviewOutput } from "../scripts/record-preview-output.mjs";
 import { CLOUDFLARE_PREVIEW_WORKER_NAME } from "../scripts/cloudflare-preview-policy.mjs";
 
+const previewName = "coinblink-m00-run-123-1";
 const validOutput = {
-  type: "preview",
-  version: 1,
-  worker_name: CLOUDFLARE_PREVIEW_WORKER_NAME,
-  preview_id: "preview-id",
-  preview_name: "coinblink-m00-run-123-1",
-  preview_slug: "preview-slug",
-  preview_urls: ["https://preview-slug.account.workers.dev"],
-  deployment_id: "deployment-id",
-  deployment_urls: ["https://immutable-preview.account.workers.dev"],
+  preview: {
+    id: "preview-id",
+    name: previewName,
+    slug: "preview-slug",
+    urls: [`https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`],
+  },
+  deployment: {
+    id: "deployment-id",
+    preview_id: "preview-id",
+    preview_name: previewName,
+    urls: [`https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`],
+  },
 };
 
-test("accepts actual-shaped Wrangler stable and immutable Preview URLs", () => {
-  assert.deepEqual(validatePreviewOutput(validOutput, validOutput.preview_name), {
-    previewUrl: "https://preview-slug.account.workers.dev",
-    deploymentUrl: "https://immutable-preview.account.workers.dev",
+function parseMockCliOutput(output, expected = previewName) {
+  return parsePreviewOutput(JSON.stringify(output, null, 2), expected);
+}
+
+test("accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resources", () => {
+  assert.deepEqual(parseMockCliOutput(validOutput), {
+    previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+    deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
   });
 });
 
-test("rejects wrong Worker, fabricated Preview name, duplicate, and unsafe URLs", () => {
-  assert.throws(() => validatePreviewOutput({ ...validOutput, worker_name: "coinblink-production" }, validOutput.preview_name), /other than the dedicated/);
-  assert.throws(() => validatePreviewOutput(validOutput, "coinblink-m00-run-999-9"), /does not match/);
-  assert.throws(() => validatePreviewOutput({ ...validOutput, deployment_urls: validOutput.preview_urls }, validOutput.preview_name), /must be distinct/);
-  assert.throws(() => validatePreviewOutput({ ...validOutput, preview_urls: ["http://example.com"] }, validOutput.preview_name), /HTTPS workers.dev/);
-  assert.throws(() => validatePreviewOutput({ ...validOutput, deployment_urls: ["https://example.workers.dev/path"] }, validOutput.preview_name), /HTTPS workers.dev/);
-  assert.throws(() => validatePreviewOutput({ ...validOutput, deployment_urls: ["https://user:pass@example.workers.dev"] }, validOutput.preview_name), /HTTPS workers.dev/);
+test("rejects output targeting a different Worker or Preview name", () => {
+  const otherWorker = "coinblink-production";
+  assert.throws(
+    () => parseMockCliOutput({
+      ...validOutput,
+      preview: { ...validOutput.preview, urls: [`https://${previewName}-${otherWorker}.account.workers.dev`] },
+    }),
+    /dedicated CoinBlink M00 Preview Worker/,
+  );
+  assert.throws(
+    () => parseMockCliOutput({
+      ...validOutput,
+      deployment: { ...validOutput.deployment, urls: [`https://deployment-id-${otherWorker}.account.workers.dev`] },
+    }),
+    /dedicated CoinBlink M00 Preview Worker/,
+  );
+  assert.throws(() => parseMockCliOutput(validOutput, "coinblink-m00-run-999-9"), /Preview name/);
+  assert.throws(
+    () => parseMockCliOutput({
+      ...validOutput,
+      preview: { ...validOutput.preview, urls: [`https://coinblink-m00-run-999-9-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`] },
+    }),
+    /hostname does not match the returned/,
+  );
+  assert.throws(
+    () => parseMockCliOutput({
+      ...validOutput,
+      deployment: { ...validOutput.deployment, preview_name: "coinblink-m00-run-999-9" },
+    }),
+    /Preview name/,
+  );
+  assert.throws(
+    () => parseMockCliOutput({
+      ...validOutput,
+      deployment: { ...validOutput.deployment, preview_id: "another-preview-id" },
+    }),
+    /does not belong to the returned Preview/,
+  );
+});
+
+test("rejects duplicate, unsafe, or identity-mismatched Preview URLs", () => {
+  assert.throws(() => parseMockCliOutput({
+    ...validOutput,
+    deployment: { ...validOutput.deployment, id: previewName, urls: validOutput.preview.urls },
+  }), /must be distinct/);
+  assert.throws(() => parseMockCliOutput({
+    ...validOutput,
+    preview: { ...validOutput.preview, urls: ["http://example.com"] },
+  }), /HTTPS workers.dev/);
+  assert.throws(() => parseMockCliOutput({
+    ...validOutput,
+    deployment: { ...validOutput.deployment, urls: ["https://example.workers.dev/path"] },
+  }), /HTTPS workers.dev/);
+  assert.throws(() => parseMockCliOutput({
+    ...validOutput,
+    deployment: { ...validOutput.deployment, urls: ["https://user:pass@example.workers.dev"] },
+  }), /HTTPS workers.dev/);
+  assert.throws(() => parseMockCliOutput({
+    ...validOutput,
+    deployment: { ...validOutput.deployment, urls: [`https://another-deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`] },
+  }), /hostname does not match the returned/);
+});
+
+test("rejects the unrelated flattened output-file event format", () => {
+  assert.throws(() => parseMockCliOutput({
+    type: "preview",
+    version: 1,
+    worker_name: CLOUDFLARE_PREVIEW_WORKER_NAME,
+    preview_name: previewName,
+    preview_urls: validOutput.preview.urls,
+    deployment_urls: validOutput.deployment.urls,
+  }), /nested Preview and deployment resources/);
 });

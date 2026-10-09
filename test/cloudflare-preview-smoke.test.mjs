@@ -29,7 +29,7 @@ function fakeFetch(url) {
       environment: "preview",
     }), { status: 200, headers });
   }
-  if (path === "/robots.txt") return new Response("User-agent: *\nDisallow: /\n", { status: 200, headers });
+  if (path === "/robots.txt") return new Response("User-agent: *\nAllow: /\n", { status: 200, headers });
   return new Response("Not found", { status: 404, headers });
 }
 
@@ -58,6 +58,22 @@ test("checks exact SHA, preview environment, noindex, robots, and 404 on both re
     immutable: "https://immutable.account.workers.dev",
     sha,
   });
+});
+
+test("rejects robots directives that block crawlers from reading noindex signals", async () => {
+  const disallowingFetch = async (url) => {
+    if (new URL(url).pathname === "/robots.txt") {
+      return new Response("User-agent: *\nDisallow: /\n", { status: 200, headers });
+    }
+    return fakeFetch(url);
+  };
+
+  await assert.rejects(verifyWorkerPreview({
+    stableUrl: "https://preview.account.workers.dev",
+    deploymentUrl: "https://immutable.account.workers.dev",
+    expectedSha: sha,
+    fetchImpl: disallowingFetch,
+  }), /must allow crawling so crawlers can read the noindex signals/);
 });
 
 test("rejects a stale health SHA and non-404 unknown routes", async () => {

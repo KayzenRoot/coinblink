@@ -8,7 +8,7 @@ This is an operational contract for the optional P1 lane of the already-admitted
 - The source Worker remains named `coinblink-m00-local`. The deployment command explicitly targets the separate Worker `coinblink-m00-preview`; the Owner must verify that exact Worker name is dedicated and will not overwrite another service.
 - `wrangler.jsonc` declares an empty `previews` block. The workflow passes `--ignore-base-config`, rejects any data/service binding, and uses only the static `ASSETS` binding. There are no production IDs, secrets, databases, queues, services, or storage resources in either configuration.
 - `PUBLIC_BUILD_SHA` is set to the exact dispatch commit. `PUBLIC_BUILD_ENV=preview` is compiled only in the gated deployment job; local/CI builds continue to report `cloudflarePreview: not-deployed`.
-- Dynamic Worker responses set `X-Robots-Tag`; static assets use `public/_headers`; HTML includes `noindex`; `public/robots.txt` disallows crawling. Noindex does not provide access control: the preview contains public demo content only.
+- Dynamic Worker responses set `X-Robots-Tag`; static assets use `public/_headers`; HTML includes `noindex`; `public/robots.txt` allows crawlers to fetch the public demo and read those noindex signals. Noindex does not provide access control: the preview contains public demo content only.
 
 ## Required Owner setup before any dispatch
 

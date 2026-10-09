@@ -101,9 +101,12 @@ test.describe("CoinBlink M00 local shell", () => {
     }
   });
 
-  test("robots.txt disallows indexing without claiming privacy", async ({ request }) => {
+  test("robots.txt allows crawlers to read noindex signals without claiming privacy", async ({ request }) => {
     const response = await request.get("/robots.txt");
     expect(response.status()).toBe(200);
-    expect(await response.text()).toContain("Disallow: /");
+    const body = await response.text();
+    expect(body).toContain("User-agent: *");
+    expect(body).toContain("Allow: /");
+    expect(body).not.toMatch(/^Disallow:\s*\/\s*$/m);
   });
 });

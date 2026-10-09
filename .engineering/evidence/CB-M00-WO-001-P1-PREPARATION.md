@@ -27,7 +27,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 ## Implemented preparation controls
 
 - Added a separate P1 Context Lock bound to the exact main SHA and raw source fingerprints; a test validates all frozen base fingerprints.
-- Added explicit noindex metadata, `X-Robots-Tag`, and a crawler-disallowing `robots.txt`. Noindex is not access control; only public demonstration content is in scope.
+- Added explicit noindex metadata and `X-Robots-Tag`; `robots.txt` permits crawling so crawlers can read those noindex signals. Noindex is not access control; only public demonstration content is in scope.
 - `/preview-status` reports `cloudflarePreview: "preview"` only in the exact preview build environment; local and ordinary CI builds report `not-deployed`.
 - Added configuration safety checks against both source Wrangler config and Astro-generated Worker config, including the adapter's normalized empty defaults. Windows `127.0.0.1` and Linux `localhost` are accepted as loopback; wildcard binds are rejected.
 - Added a manual-only GitHub Actions workflow, exact-current-main guard immediately before each provider operation, Owner/environment/plan/zero-cost/IAM/dedicated-Worker/isolation/credential gate, run-derived Preview names, output validation, exact-SHA health and preview-status smoke contract, and name-scoped rollback. It uses the locked Wrangler binary already installed by npm ci.
@@ -42,6 +42,8 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 - Inspected local `wrangler preview --help` and `wrangler preview delete --help` at the pinned `4.149.0`, with metrics disabled and no provider credentials or API calls. The CLI help exposes `--ignore-base-config` as an inherited Preview option, but the delete implementation only declares `--name`, `--worker-name`, and `--skip-confirmation`; the workflow no longer passes the inapplicable base-config option when deleting. The regression test checks each workflow command's option set separately and invokes only the two local `--help` commands.
 - Corrected the credential-boundary description: the read-only preflight job has no Cloudflare secrets; the protected job passes them to its authorization step and the conditional Wrangler Preview create/delete steps. Updated the rollback instructions to list only the supported delete options.
 - Strengthened fingerprint verification to compare the exact changed Git path set against the frozen base, excluding only the fingerprint manifest, and to reject missing, extra, duplicate, and deleted paths. SHA-1/SHA-256 still verify staged Git blobs; every manifest path must also have a clean Git index-to-working-tree diff. Regressions prove omissions and real tracked deletions fail, unstaged edits fail, and Git-normalized line endings remain portable.
+- Addressed Owner audit continuation #5468234422: Preview `robots.txt` now permits crawling so crawlers can read the existing HTML, response-header, and static-asset noindex controls. Browser/config tests and the exact-SHA remote-smoke contract reject `Disallow: /`; this is not access control and Preview content remains public demo data.
+- Addressed the final-head CodeRabbit deletion regression: a manifest entry with `candidate: null` now also requires the worktree path to be absent. The isolated Git test stages a deletion, recreates the path as untracked, and verifies that the index/worktree diff alone misses it while fingerprint validation rejects it.
 - No Cloudflare login, API request, Preview create/delete, deployment, billing change, credential read, or remote resource operation occurred.
 
 ## Local validation
@@ -53,7 +55,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 | `npm audit --audit-level=high` | PASS; 0 vulnerabilities |
 | `npm run lint` | PASS; ESLint with zero warnings allowed |
 | `npm run typecheck` | PASS; 34 files, 0 errors, 0 warnings, 0 hints |
-| `npm test` | PASS on Windows with Node.js `22.19.0`; 49/49 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
+| `npm test` | PASS on Windows with Node.js `22.19.0`; 50/50 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
 | `npm run build` | PASS independently with Node.js `22.19.0`; Astro Cloudflare build completed and generated-config guard found no SESSION/data/service/production bindings |
 | Playwright views | PASS at 1536×864, 768×1024, and 390×844; accessibility assertions included |
 | Docker Compose localhost smoke | PASS on verified free `127.0.0.1:3010` using unique project `coinblink-m00-p1-sanitizer-local-20261009`; Linux adapter build, health/buildSha, local `not-deployed` status, robots/noindex and true 404 passed. Only that temporary Compose project was removed. |
@@ -61,7 +63,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 | GEF `status --target . --json` | Exit 0, effect `NONE`; checkpoint is `M00_ADMITTED`, `IMPLEMENTATION_IN_PROGRESS`, 0%, with P1 Owner authorization and Preview evidence as next stage. Dirtiness is `UNKNOWN`; absent drift baseline is conservatively `stale=true`. No baseline was fabricated. |
 | `git diff --check` | PASS after removing one extra trailing blank line |
 
-Correction-specific validation on Node.js `22.19.0`: `npm run lint` PASS; `npm run typecheck` PASS (34 files, 0 errors/warnings/hints); `npm test` PASS (49/49 unit, build/session guard, 7/7 Playwright); standalone `npm run build` PASS; `npm audit --audit-level=high` PASS (0 vulnerabilities). The fingerprint regressions verify exact path equality, omitted/extra/duplicate paths, tracked deletions, unstaged mutations, and Git EOL normalization. The delete documentation test and local Wrangler help tests use installed `wrangler@4.149.0` only. The system-default Node.js `24.19.0` initially failed the repository's intentional GEF Node-major-22 assertion; rerunning the suite with the CI-pinned Node.js `22.19.0` passed.
+Correction-specific validation on Node.js `22.19.0`: `npm run lint` PASS; `npm run typecheck` PASS (34 files, 0 errors/warnings/hints); `npm test` PASS (50/50 unit, build/session guard, 7/7 Playwright); standalone `npm run build` PASS; `npm audit --audit-level=high` PASS (0 vulnerabilities). The fingerprint regressions verify exact path equality, omitted/extra/duplicate paths, tracked deletions including a recreated untracked path, unstaged mutations, and Git EOL normalization. Robots tests verify that crawlers can read noindex signals without removing the noindex headers/meta. The delete documentation test and local Wrangler help tests use installed `wrangler@4.149.0` only. The system-default Node.js `24.19.0` initially failed the repository's intentional GEF Node-major-22 assertion; rerunning the suite with the CI-pinned Node.js `22.19.0` passed.
 
 Local `docker ps` confirmed unrelated `nexlabs-website-web-1` owns `127.0.0.1:3000`; it was left running. The local Docker smoke used port 3010 and an isolated Compose project. The PR CI Docker Compose smoke remains the exact-head remote check for this candidate.
 

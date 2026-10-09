@@ -46,5 +46,6 @@ test("static and Worker responses carry noindex controls without treating them a
   assert.match(middleware, /X-Robots-Tag.*noindex, nofollow, noarchive/);
   assert.match(layout, /name="robots" content="noindex, nofollow, noarchive"/);
   assert.match(headers, /X-Robots-Tag: noindex, nofollow, noarchive/);
-  assert.match(robots, /Disallow: \/\s*$/);
+  assert.match(robots, /^User-agent:\s*\*\s*\r?\nAllow:\s*\/\s*$/m);
+  assert.doesNotMatch(robots, /^Disallow:\s*\/\s*$/m);
 });

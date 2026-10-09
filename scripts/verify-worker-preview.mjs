@@ -105,7 +105,10 @@ async function verifyPreviewStatus(baseUrl, expectedSha, fetchImpl) {
 async function verifyRobots(baseUrl, fetchImpl) {
   const response = await fetchPreviewPath(baseUrl, "/robots.txt", fetchImpl);
   if (response.status !== 200) throw new Error("/robots.txt must return HTTP 200.");
-  if (!(await response.text()).includes("Disallow: /")) throw new Error("/robots.txt must disallow crawler indexing.");
+  const robots = await response.text();
+  if (!/^\s*Allow:\s*\/\s*$/im.test(robots) || /^\s*Disallow:\s*\/\s*$/im.test(robots)) {
+    throw new Error("/robots.txt must allow crawling so crawlers can read the noindex signals.");
+  }
 }
 
 async function verifyMissingRoute(baseUrl, fetchImpl) {

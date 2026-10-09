@@ -18,6 +18,8 @@ The first PR analysis reported SonarCloud `javascript:S3776` as CRITICAL because
 
 CodeRabbit's review of the first PR candidate reported one MAJOR issue: this correction's fixed-snapshot fingerprint assertion must not remain in the permanent `npm test` suite, where future changes to these files would fail against this historical manifest. The test is now a candidate-only validator under `scripts/`, with a dedicated CI step gated to this exact PR branch; the normal `npm test` suite no longer discovers it. The candidate validator still checks exact changed-path coverage, Git-index SHA-1/SHA-256, working-tree consistency, and deleted paths. The review did not cover this latest refactor, so a new final-HEAD review is required.
 
+The CodeRabbit CLI review of candidate `a967115e9efd7dec0a91d019aacfdde74f808e54` returned 0 issues. SonarCloud then failed that candidate with critical deterministic-sort warnings and minor PATH-resolution security warnings in the dedicated validator. The candidate validator now uses an explicit code-point comparator and fixed absolute Git executable paths for the supported Ubuntu and Windows runners. Fresh SonarCloud and CodeRabbit results for this final adjustment remain required.
+
 ## Existing Preview evidence (base SHA only)
 
 - Stable Preview: [https://coinblink-m00-run-37968696916-1-coinblink-m00-preview.kayzendev.workers.dev/](https://coinblink-m00-run-37968696916-1-coinblink-m00-preview.kayzendev.workers.dev/)
@@ -51,6 +53,7 @@ This Preview belongs to the base main SHA, not this correction candidate. It is 
 | Local Docker Compose smoke | BLOCKED: Docker Desktop Linux engine is unavailable (`dockerDesktopLinuxEngine` named pipe not found). Read-only port check found no listener on 3000, 3010, or 3011. No container was stopped or altered. Exact-head GitHub Docker validation is still required. |
 | Earlier PR candidate `789b57760cf97e2d9e748a95247086b6c93ba6cd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. SonarCloud reported the CRITICAL code smell described above. |
 | Parser-refactored PR candidate `295846a6c42edc5bea177cdac004acfc62e5debd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate (0 new issues), Socket Alerts, and Socket Project Report. These checks predate the candidate-only fingerprint-validator adjustment. |
+| Candidate `a967115e9efd7dec0a91d019aacfdde74f808e54` exact-head CI and review | Ubuntu, Windows, Docker Compose, and both Socket checks passed; SonarCloud failed on the dedicated validator issues described above. CodeRabbit CLI reviewed this SHA and returned 0 issues. These results predate the latest validator hardening. |
 | Final candidate exact-head CI and CodeRabbit | Pending a new commit and fresh checks/review. |
 | Cloudflare action for corrected HEAD | Not run. Requires correction PR review/merge and the existing protected Environment approval; no Cloudflare API, resource, billing, secret, production, or R2 operation was performed for this correction. |
 

@@ -12,8 +12,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "785cfc488a7b2c66212dcf63e16d7654cc0cea2c",
-        "rawBlobSha256": "2401abf9e8ffda70770ad6fe781aa229b71dc247a47c3c8af34a3c82d408d210"
+        "gitBlobSha1": "06888360c8c1910b5717c61776953952578c887e",
+        "rawBlobSha256": "86851b4a94be6de7828e946eeb798a6b7a0be776941af010d95473ca9e863660"
       }
     },
     {
@@ -88,8 +88,8 @@
       "path": "scripts/verify-p1-wrangler-output-fingerprints.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "8a7b2051098b117ef2d7c47684a192c546068b39",
-        "rawBlobSha256": "db365aba8babd495534083ffcd0efa41588bd8a0ea4ec3b9d40d241032814e43"
+        "gitBlobSha1": "609ed221eed0abd920a46fe9df632ca73ac95c55",
+        "rawBlobSha256": "e99353ed440639237acbbc8a2156b605264ecd2ac3eb9eebb431c5c6942b8164"
       }
     },
     {

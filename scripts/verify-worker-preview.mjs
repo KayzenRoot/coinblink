@@ -44,61 +44,82 @@ function assertWorkerSecurityHeaders(response, label) {
   }
 }
 
-async function fetchWithBoundedRetry(url, fetchImpl) {
-  let lastError;
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try {
-      const response = await fetchImpl(url, { redirect: "manual", signal: AbortSignal.timeout(10_000) });
-      if (response.status < 500) return response;
-      lastError = new Error(`HTTP ${response.status}`);
-    } catch (error) {
-      lastError = error;
-    }
-    if (attempt + 1 < attempts) await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+async function fetchAttempt(url, fetchImpl, attempt) {
+  let nextError;
+  try {
+    const response = await fetchImpl(url, { redirect: "manual", signal: AbortSignal.timeout(10_000) });
+    if (response.status < 500) return response;
+    nextError = new Error(`HTTP ${response.status}`);
+  } catch (error) {
+    nextError = error;
   }
-  throw new Error(`Preview endpoint did not become available after bounded retries (${lastError?.name ?? "unknown error"}).`);
+
+  if (attempt + 1 >= attempts) {
+    throw new Error(`Preview endpoint did not become available after bounded retries (${nextError?.name ?? "unknown error"}).`);
+  }
+  await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+  return fetchAttempt(url, fetchImpl, attempt + 1);
+}
+
+function fetchWithBoundedRetry(url, fetchImpl) {
+  return fetchAttempt(url, fetchImpl, 0);
+}
+
+async function fetchPreviewPath(baseUrl, path, fetchImpl) {
+  const response = await fetchWithBoundedRetry(new URL(path, baseUrl), fetchImpl);
+  assertNoindex(response, path);
+  if (path !== "/robots.txt") assertWorkerSecurityHeaders(response, path);
+  return response;
+}
+
+async function verifyHealth(baseUrl, expectedSha, fetchImpl) {
+  const response = await fetchPreviewPath(baseUrl, "/health", fetchImpl);
+  if (response.status !== 200) throw new Error("/health must return HTTP 200.");
+  if (response.headers.get("cache-control") !== "no-store") throw new Error("/health must be no-store.");
+  const health = await response.json();
+  if (health.status !== "ok" || health.service !== "coinblink") throw new Error("/health returned an unexpected service status.");
+  if (health.buildSha !== expectedSha || health.environment !== "preview") {
+    throw new Error("/health does not match the exact Preview build SHA and environment.");
+  }
+}
+
+async function verifyPreviewStatus(baseUrl, expectedSha, fetchImpl) {
+  const response = await fetchPreviewPath(baseUrl, "/preview-status", fetchImpl);
+  if (response.status !== 200) throw new Error("/preview-status must return HTTP 200.");
+  if (response.headers.get("cache-control") !== "no-store") throw new Error("/preview-status must be no-store.");
+  const status = await response.json();
+  const matchesContract =
+    status.status === "demo" &&
+    status.dataMode === "demonstration-only" &&
+    status.cloudflarePreview === "preview" &&
+    status.buildSha === expectedSha &&
+    status.environment === "preview" &&
+    status.editorialFeed === "not-connected" &&
+    status.marketData === "not-connected";
+  if (!matchesContract) throw new Error("/preview-status does not match the exact isolated Preview contract.");
+  if (Object.keys(status).some((key) => /secret|token|password|api.?key/i.test(key))) {
+    throw new Error("/preview-status exposes a prohibited credential-shaped field.");
+  }
+}
+
+async function verifyRobots(baseUrl, fetchImpl) {
+  const response = await fetchPreviewPath(baseUrl, "/robots.txt", fetchImpl);
+  if (response.status !== 200) throw new Error("/robots.txt must return HTTP 200.");
+  if (!(await response.text()).includes("Disallow: /")) throw new Error("/robots.txt must disallow crawler indexing.");
+}
+
+async function verifyMissingRoute(baseUrl, fetchImpl) {
+  const response = await fetchPreviewPath(baseUrl, "/missing-route", fetchImpl);
+  if (response.status !== 404) throw new Error("Unknown Preview routes must return HTTP 404.");
 }
 
 async function verifyOnePreview(baseUrl, expectedSha, fetchImpl) {
-  for (const path of ["/health", "/preview-status", "/robots.txt", "/missing-route"]) {
-    const url = new URL(path, baseUrl);
-    const response = await fetchWithBoundedRetry(url, fetchImpl);
-    assertNoindex(response, path);
-    if (path !== "/robots.txt") assertWorkerSecurityHeaders(response, path);
-
-    if (path === "/health") {
-      if (response.status !== 200) throw new Error("/health must return HTTP 200.");
-      if (response.headers.get("cache-control") !== "no-store") throw new Error("/health must be no-store.");
-      const health = await response.json();
-      if (health.status !== "ok" || health.service !== "coinblink") throw new Error("/health returned an unexpected service status.");
-      if (health.buildSha !== expectedSha || health.environment !== "preview") {
-        throw new Error("/health does not match the exact Preview build SHA and environment.");
-      }
-    } else if (path === "/preview-status") {
-      if (response.status !== 200) throw new Error("/preview-status must return HTTP 200.");
-      if (response.headers.get("cache-control") !== "no-store") throw new Error("/preview-status must be no-store.");
-      const status = await response.json();
-      if (
-        status.status !== "demo" ||
-        status.dataMode !== "demonstration-only" ||
-        status.cloudflarePreview !== "preview" ||
-        status.buildSha !== expectedSha ||
-        status.environment !== "preview" ||
-        status.editorialFeed !== "not-connected" ||
-        status.marketData !== "not-connected"
-      ) {
-        throw new Error("/preview-status does not match the exact isolated Preview contract.");
-      }
-      if (Object.keys(status).some((key) => /secret|token|password|api.?key/i.test(key))) {
-        throw new Error("/preview-status exposes a prohibited credential-shaped field.");
-      }
-    } else if (path === "/robots.txt") {
-      if (response.status !== 200) throw new Error("/robots.txt must return HTTP 200.");
-      if (!(await response.text()).includes("Disallow: /")) throw new Error("/robots.txt must disallow crawler indexing.");
-    } else if (response.status !== 404) {
-      throw new Error("Unknown Preview routes must return HTTP 404.");
-    }
-  }
+  await Promise.all([
+    verifyHealth(baseUrl, expectedSha, fetchImpl),
+    verifyPreviewStatus(baseUrl, expectedSha, fetchImpl),
+    verifyRobots(baseUrl, fetchImpl),
+    verifyMissingRoute(baseUrl, fetchImpl),
+  ]);
 }
 
 export async function verifyWorkerPreview({ stableUrl, deploymentUrl, expectedSha, fetchImpl = fetch }) {
@@ -106,8 +127,10 @@ export async function verifyWorkerPreview({ stableUrl, deploymentUrl, expectedSh
   const stable = validateWorkerPreviewUrl(stableUrl);
   const immutable = validateWorkerPreviewUrl(deploymentUrl);
   if (stable === immutable) throw new Error("Stable and immutable Preview URLs must be distinct.");
-  await verifyOnePreview(stable, expectedSha, fetchImpl);
-  await verifyOnePreview(immutable, expectedSha, fetchImpl);
+  await Promise.all([
+    verifyOnePreview(stable, expectedSha, fetchImpl),
+    verifyOnePreview(immutable, expectedSha, fetchImpl),
+  ]);
   return { worker: CLOUDFLARE_PREVIEW_WORKER_NAME, stable, immutable, sha: expectedSha };
 }
 

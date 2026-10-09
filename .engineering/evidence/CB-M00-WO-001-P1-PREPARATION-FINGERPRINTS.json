@@ -20,16 +20,16 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "d9cff66c95607d9aaf270322a6d4950de8593da7",
-        "rawBlobSha256": "b9f8081ccbd6cef4b692645fdca5c9ae74cca3529d212b8372d9a635f229121c"
+        "gitBlobSha1": "f147351bb2efb65f79c43d10ca010038308a2149",
+        "rawBlobSha256": "1e17a250dcd03a7cc470d802670a3e2d991473ba422d3d46c13102d8f4388016"
       }
     },
     {
       "path": ".github/workflows/cloudflare-worker-preview.yml",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "22ddf418e27e3411d4a9445c55c955603e1b92d7",
-        "rawBlobSha256": "38a83286510e8e33f976644f6d25b8d39022b1357e90f7b9c29d8bb88965816f"
+        "gitBlobSha1": "e320ff507ddfaf374877a812c6f925a95f1171e7",
+        "rawBlobSha256": "c649424b1534f3420e58cb4db10a2e631e1a5af483e36a32dae87c147326322d"
       }
     },
     {
@@ -114,24 +114,24 @@
       "path": "scripts/verify-preview-main.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "3e02321b51edbcc8047957663fda1f306d690c70",
-        "rawBlobSha256": "3b960253a443247359fe6777835fe551f5a1d8d5998a4d7102cf2399247e8b18"
+        "gitBlobSha1": "c3476ea9f0073b13dc9944ad2437eb0f79f1eb25",
+        "rawBlobSha256": "f53dad91563c42c55275d1024f7427fe6ffdeb9263d1ccb57b6de0102426b1ae"
       }
     },
     {
       "path": "scripts/verify-worker-preview.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "b65b0b6634c0e00e68663885290e710474305953",
-        "rawBlobSha256": "7b91508d479913dad58de87135eef1b2742d7a7be66c89a8bf0545b4bd17fd2f"
+        "gitBlobSha1": "897b7fac0386d625961ed3d610497f8a47c3d833",
+        "rawBlobSha256": "ec034acbf060a9f0f914b92b9f393a26979df8d3eecf49bce4a6113fd31fab92"
       }
     },
     {
       "path": "scripts/worker-preview-config-safety.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "9c79d528d63ab358ab3c444f78c76458abbd9ea3",
-        "rawBlobSha256": "9e1df8b60d1267aab57f3c64fa95d25cbd6ce369e5cb293fb308e9fdfeb9cdb1"
+        "gitBlobSha1": "8de11f8425f0f98393b4de0560219b9f8b7c86ff",
+        "rawBlobSha256": "514818cb58a0f27f807d427a0443033ff708fc78eefbd224d478c6c9036115d1"
       }
     },
     {
@@ -171,8 +171,8 @@
       "path": "test/cloudflare-preview-authorization.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "01dfb5d9c8ab63af895c4b29924476cbffe5e4b8",
-        "rawBlobSha256": "725922ac9e12e3fdfab261af96e20ff7401ab8bc3cce2333f5d16c4f55e3fb9b"
+        "gitBlobSha1": "6613f08f2fa594063ad8da9cdeeddb7e1120969a",
+        "rawBlobSha256": "2fb3b0bb6ca9cc5b43d62e99415d78d2b63574a2dbd24f78db9ffec069ffdf49"
       }
     },
     {
@@ -203,8 +203,8 @@
       "path": "test/cloudflare-preview-workflow.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "6d50f0c491f8a5f4da21c6047c85e16249863f5c",
-        "rawBlobSha256": "f2038d56f36747eee23b039bc6cacb95f416ed17786c04319fe6f733f66ded7b"
+        "gitBlobSha1": "7ba79a00ec7befd228ccf37a0f5121eb86c5beb5",
+        "rawBlobSha256": "3c3c3174223c68664001650dc3e31f4a9e4f76d10bb5567e2c58188bb209d074"
       }
     },
     {

@@ -52,6 +52,9 @@ jobs:
           node-version: 22.19.0
           cache: npm
 
+      - name: Verify exact checked-out commit
+        run: node scripts/verify-exact-head.mjs
+
       - name: Verify exact current main
         run: node scripts/verify-preview-main.mjs
 
@@ -119,6 +122,9 @@ jobs:
           node-version: 22.19.0
           cache: npm
 
+      - name: Verify exact checked-out commit before gated action
+        run: node scripts/verify-exact-head.mjs
+
       - name: Recheck exact current main before gated action
         run: node scripts/verify-preview-main.mjs
 
@@ -154,8 +160,9 @@ jobs:
         id: preview-output
         if: inputs.action == 'deploy'
         run: |
+          node scripts/verify-exact-head.mjs
           node scripts/verify-preview-main.mjs
-          npm exec -- wrangler preview \
+          ./node_modules/.bin/wrangler preview \
             --config ./dist/server/wrangler.json \
             --json \
             --name "$PREVIEW_NAME" \
@@ -181,8 +188,9 @@ jobs:
       - name: Delete only the selected managed Preview and its deployments
         if: inputs.action == 'delete'
         run: |
+          node scripts/verify-exact-head.mjs
           node scripts/verify-preview-main.mjs
-          npm exec -- wrangler preview delete \
+          ./node_modules/.bin/wrangler preview delete \
             --config ./wrangler.jsonc \
             --name "$PREVIEW_NAME" \
             --worker-name "$COINBLINK_CF_WORKER_NAME" \

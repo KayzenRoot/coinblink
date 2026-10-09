@@ -20,6 +20,7 @@ test("preflight has read-only repository access and receives no Cloudflare crede
   assert.match(preflight, /permissions:\s*\r?\n\s+contents: read/);
   assert.doesNotMatch(preflight, /CLOUDFLARE_(API_TOKEN|ACCOUNT_ID)/);
   assert.match(preflight, /scripts\/verify-preview-main\.mjs/);
+  assert.match(preflight, /scripts\/verify-exact-head\.mjs/);
   assert.match(preflight, /npm test/);
 });
 
@@ -28,18 +29,22 @@ test("Cloudflare commands sit behind Owner/environment gates and ignore dashboar
   assert.match(gatedJob, /scripts\/assert-preview-deployment-authorization\.mjs/);
   assert.match(gatedJob, /GITHUB_ACTOR: \$\{\{ github\.actor \}\}/);
   assert.match(gatedJob, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
-  assert.match(gatedJob, /wrangler preview \\\r?\n[\s\S]*--ignore-base-config/);
-  assert.match(gatedJob, /wrangler preview delete \\\r?\n[\s\S]*--ignore-base-config/);
+  assert.match(gatedJob, /\.\/node_modules\/\.bin\/wrangler preview \\\r?\n[\s\S]*--ignore-base-config/);
+  assert.match(gatedJob, /\.\/node_modules\/\.bin\/wrangler preview delete \\\r?\n[\s\S]*--ignore-base-config/);
   assert.doesNotMatch(gatedJob, /\bwrangler\s+(deploy|versions\s+upload)\b/);
+  assert.doesNotMatch(gatedJob, /npm exec/);
 });
 
 test("rechecks the exact current main immediately before each provider operation", () => {
-  for (const command of ["npm exec -- wrangler preview \\", "npm exec -- wrangler preview delete \\"]) {
+  for (const command of ["./node_modules/.bin/wrangler preview \\", "./node_modules/.bin/wrangler preview delete \\"]) {
     const commandIndex = gatedJob.indexOf(command);
     assert.notEqual(commandIndex, -1, `${command} is present`);
-    const guardIndex = gatedJob.lastIndexOf("node scripts/verify-preview-main.mjs", commandIndex);
-    assert.notEqual(guardIndex, -1, `${command} has an immediately preceding current-main check`);
-    assert.ok(commandIndex - guardIndex < 200, `${command} is kept adjacent to its current-main check`);
+    const mainGuardIndex = gatedJob.lastIndexOf("node scripts/verify-preview-main.mjs", commandIndex);
+    const headGuardIndex = gatedJob.lastIndexOf("node scripts/verify-exact-head.mjs", commandIndex);
+    assert.notEqual(mainGuardIndex, -1, `${command} has a current-main check`);
+    assert.notEqual(headGuardIndex, -1, `${command} has an exact checked-out HEAD check`);
+    assert.ok(commandIndex - mainGuardIndex < 200, `${command} is kept adjacent to its current-main check`);
+    assert.ok(commandIndex - headGuardIndex < 260, `${command} is kept adjacent to its exact checked-out HEAD check`);
   }
 });
 

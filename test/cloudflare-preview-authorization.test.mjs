@@ -8,6 +8,7 @@ import {
   validatePreviewAuthorization,
   validatePreviewMainIdentity,
 } from "../scripts/cloudflare-preview-policy.mjs";
+import { fetchCurrentMainSha, verifyPreviewMain } from "../scripts/verify-preview-main.mjs";
 
 const validAuthorization = {
   GITHUB_REPOSITORY: "KayzenRoot/coinblink",
@@ -107,4 +108,34 @@ test("canonical-main identity requires the exact current repository SHA", () => 
     headSha: "b".repeat(40),
     currentMainSha: "c".repeat(40),
   }).length >= 4);
+});
+
+test("current-main guard checks GitHub's public branch tip and fails closed on unavailable or invalid data", async () => {
+  const currentSha = "c".repeat(40);
+  let requestedUrl;
+  let requestOptions;
+  const verifiedSha = await verifyPreviewMain({
+    repository: "KayzenRoot/coinblink",
+    ref: "refs/heads/main",
+    sha: currentSha,
+    fetchImpl: async (url, options) => {
+      requestedUrl = url;
+      requestOptions = options;
+      return new Response(JSON.stringify({ sha: currentSha }), { status: 200 });
+    },
+  });
+  assert.equal(verifiedSha, currentSha);
+  assert.equal(requestedUrl, "https://api.github.com/repos/KayzenRoot/coinblink/commits/main");
+  assert.equal(requestOptions.redirect, "error");
+  assert.equal(requestOptions.headers.accept, "application/vnd.github+json");
+  assert.equal(Object.hasOwn(requestOptions.headers, "authorization"), false);
+
+  await assert.rejects(fetchCurrentMainSha(async () => new Response("unavailable", { status: 503 })), /HTTP 503/);
+  await assert.rejects(fetchCurrentMainSha(async () => new Response(JSON.stringify({ sha: "short" }), { status: 200 })), /full commit SHA/);
+  await assert.rejects(verifyPreviewMain({
+    repository: "KayzenRoot/coinblink",
+    ref: "refs/heads/main",
+    sha: "a".repeat(40),
+    fetchImpl: async () => new Response(JSON.stringify({ sha: "b".repeat(40) }), { status: 200 }),
+  }), /current origin\/main tip/);
 });

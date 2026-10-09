@@ -131,6 +131,10 @@ function isRecursivelyEmpty(value) {
   return false;
 }
 
+function assertExactKeys(value, expectedKeys, message) {
+  assert.deepEqual(new Set(Object.keys(value ?? {})), new Set(expectedKeys), message);
+}
+
 function findSessionBindings(value, path = "") {
   if (Array.isArray(value)) {
     return value.flatMap((entry, index) => findSessionBindings(entry, `${path}[${index}]`));
@@ -173,7 +177,7 @@ export function assertWorkerPreviewConfig(config, source = "Worker config", { ge
     assert.deepEqual(config.triggers, {}, `${source} must not schedule external work`);
     assert.deepEqual(config.exports, {}, `${source} must not declare unreviewed Worker exports`);
     assert.deepEqual(config.python_modules, { exclude: ["**/*.pyc"] }, `${source} must not enable extra Worker module sources`);
-    assert.deepEqual(Object.keys(config.dev ?? {}).sort(), [
+    assertExactKeys(config.dev, [
       "enable_containers",
       "generate_types",
       "ip",
@@ -198,7 +202,7 @@ export function assertWorkerPreviewConfig(config, source = "Worker config", { ge
   assert.equal(typeof config.compatibility_date, "string", `${source} must pin a compatibility date`);
   assert.ok(Array.isArray(config.compatibility_flags), `${source} must include compatibility flags`);
   assert.equal(config.assets?.binding, "ASSETS", `${source} must use the approved static-assets binding`);
-  assert.deepEqual(Object.keys(config.assets ?? {}).sort(), ["binding", "directory", "not_found_handling"], `${source} assets config must stay minimal`);
+  assertExactKeys(config.assets, ["binding", "directory", "not_found_handling"], `${source} assets config must stay minimal`);
   assert.equal(typeof config.assets.directory, "string", `${source} assets directory must be explicit`);
   assert.equal(config.assets.not_found_handling, "404-page", `${source} must preserve the real 404 page`);
   assert.deepEqual(config.vars ?? {}, {}, `${source} must not contain unchecked production plaintext variables`);

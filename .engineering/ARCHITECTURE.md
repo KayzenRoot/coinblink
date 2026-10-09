@@ -1,9 +1,9 @@
 # CoinBlink · Architecture Decisions Boundary
 
-**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** **Do not** interpret as full product architecture approval.
+**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED.** PR #32 admitted this bounded M00 architecture at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. **Do not** interpret this as full product architecture approval.
 
 ## M00 baseline recommended
-- TypeScript strict; Node.js 22 per existing `package.json` with pinned npm. Preserve installed GEF 1.1.2 and verified dependency provenance.
+- TypeScript strict; Node.js 22 per `package.json` with pinned npm. Preserve installed GEF 1.1.2 and dependency-provenance gates; retain REVIEW when provenance is unverified.
 - Astro SSR/hybrid with official `@astrojs/cloudflare` adapter for public editorial routes and future React islands where needed; select compatible verified package versions on execution.
 - Stateless **single** Cloudflare Worker for M00; no D1, KV, R2, Queues, Durable Objects, production service bindings, remote provider APIs, or secrets needed to build local P0.
 - Explicitly disable Astro automatic session storage for this stateless module, `session: false` or verified selected-version equivalent. Validate deployed Wrangler has no SESSION KV binding.
@@ -17,4 +17,4 @@
 Database choice (D1 vs other), single-owner auth/secret vault, social provider adapters, licensed market data/API, editorial AI/media, token chain and custody, and production hosting costs are unapproved at this source pack stage. Full product scope remains open at Issue #6. Consult `docs/product/ARCHITECTURE_OPTIONS_AND_NONFUNCTIONALS_v0.1.md` as proposal only.
 
 ## Admission binding
-The detailed scoped ADR already proposed in PR #29 (`docs/architecture/ADR-CB-0001-M00-PREVIEWS-STACK.md`) must be reconciled with this canonical document after admission. GEF source lineage and exact allowed baseline must be recorded; no coder may treat proposed docs as automatically admitted.
+The detailed scoped ADR is `docs/architecture/ADR-CB-0001-M00-PREVIEWS-STACK.md`; its M00 status was reconciled after the PR #32 admission. GEF source lineage and the exact allowed baseline are recorded in the execution Context Lock; no proposed docs beyond the admitted Work Order become executable by implication.

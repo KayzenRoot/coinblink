@@ -1,10 +1,10 @@
 # Planned Work Order CB-M00 · Delivery Platform & Live Previews
 
 **Stage:** P0 · critical prerequisite  
-**Status:** PROPOSED / NOT ADMITTED  
+**Status:** HISTORICAL PROPOSAL / SUPERSEDED FOR EXECUTION by admitted `.engineering/work-orders/CB-M00-WO-001.md` from `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`.
 **Execution model:** GEF Bootstrap v1.1.2; Codex authoring when available; no execution claim from planning artifact.  
 **Preview route(s):** `/preview-status and /admin/preview-status`  
-**Dependencies:** CB-BOOT-001; the Owner-approved M00-only source pack merged in PR #30; the canonical GEF checkpoint; and the CB-GOV-005 formal admission, effective only after exact-head checks, independent review, Owner audit and merge.
+**Dependencies:** CB-BOOT-001; the Owner-approved M00-only source pack merged in PR #30; the canonical GEF checkpoint; and the CB-GOV-005 formal admission, satisfied by PR #32 at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. This planning artifact remains non-executable; follow the admitted Work Order for current scope.
 
 ## Objective
 Reproducible monorepo/app delivery, secure PR previews on Cloudflare, local Docker parity and visual test harness.
@@ -13,7 +13,7 @@ Reproducible monorepo/app delivery, secure PR previews on Cloudflare, local Dock
 Read `AGENTS.md`, `.engineering/SOURCE-HIERARCHY.md`, current admitted GEF Checkpoint and Context Lock, full owner-approved Visual Bible and image manifest, `docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md`, `docs/product/CONTINUOUS_VISUAL_DELIVERY_PROTOCOL_v0.1.md`, the active Decision Ledger, and the specific module's contracts. Never use historical brainstorm as approved scope.
 
 ## Admitted boundary
-ADMISSION STATUS: PROPOSED, NOT EXECUTABLE ON CANONICAL MAIN. The M00-only Scope/Requirements/Architecture/Security/DoD source pack was Owner-approved and merged in PR #30. The canonical checkpoint was merged by CB-GOV-004 / PR #31. Global Issue #6 remains open, and its broader product decisions are not approved. M00 code remains stopped until CB-GOV-005 passes the exact-head Context Lock, GEF, Linux/Windows CI, independent review and Owner audit and is merged.
+ADMISSION STATUS: M00 was admitted by CB-GOV-005 / PR #32. This broad planning document remains a proposal and does not expand the narrower active Work Order. Global Issue #6 remains open, and its broader product decisions are not approved.
 
 ## End-to-end implementation deliverables
 1. Select the Cloudflare deployment target via ADR; prefer Workers Previews using pinned Wrangler 4.135.0+; keep Pages Git integration as a documented alternative if the selected runtime is incompatible.
@@ -52,4 +52,4 @@ STOP CONDITION: code and UI actually running in PR preview, acceptance validated
 ## Review payload template
 `CB-M00 | BASE_SHA | HEAD_SHA | P0_PREVIEW | P1_FUNCTIONAL | P2_TESTS | EVIDENCE_BUNDLE | LIVE_VS_MOCK | PRIVACY/LICENSING | RISKS | EXACT_HEAD_CI | VERDICT | CHECKPOINT_DELTA | NEXT_ACTION`
 
-> This planned WO is intentionally long and module-wide. It becomes executable only after freezing its contract/ADR/dependencies and fingerprinted Context Lock. No blanket self-approval.
+> Historical planning proposal. Its module-wide scope was not admitted; follow only the bounded active CB-M00-WO-001. No blanket self-approval.

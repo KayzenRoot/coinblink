@@ -1,15 +1,15 @@
 # CoinBlink · M00 Requirements and Acceptance Inputs
 
-**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** Specific to M00 only. The full product Requirements for future modules are not yet frozen.
+**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED.** Specific to M00 only. PR #32 admitted this bounded Work Order at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. The full product Requirements for future modules are not yet frozen.
 
 | ID | Requirement | Verification |
 |---|---|---|
 | M00-R01 | Preserve existing npm GEF 1.1.2, Node engine and CI; do not disable safety gates | `npm ci`, current GEF checks remain green |
 | M00-R02 | Functional branded but honest build-preview shell `/en`, no false live site | browser and screenshot test |
 | M00-R03 | `/health` JSON and `/preview-status` disclose build SHA/environment, not secrets | contract test, output redaction |
-| M00-R04 | Local app available at http://localhost:3000 via Docker Compose | actual docker run + HTTP smoke; if Docker unavailable, transparently BLOCKED |
+| M00-R04 | Local app available at http://localhost:3000 via Docker Compose | Compose build/HTTP smoke on an isolated CI host; if the local host port is occupied, record the owner and test on a free port without stopping unrelated containers |
 | M00-R05 | Browser smoke: desktop 1536×864, tablet 768×1024, mobile 390×844 | Playwright evidence and accessibility checks |
-| M00-R06 | Worker Preview config isolated from prod: no D1/KV/R2/Queues/SESSION KV by default | wrangler deploy dry-run/static binding inspect |
+| M00-R06 | Worker Preview config isolated from prod: no D1/KV/R2/Queues/SESSION KV by default | generated Wrangler config contract; do not run a remote deploy dry-run without provider authorization |
 | M00-R07 | Astro sessions disabled by `session: false` or **verified** supported equivalent; no accidental `SESSION` KV auto-binding | config test + generated Worker inspect |
 | M00-R08 | Cloudflare permission blocks **deployment only**; local P0 may execute without it once GEF admits WO | environment tests and explicit gate state |
 | M00-R09 | No production secrets in GH workflows, PR previews, browser/network/log, especially untrusted forks | static/negative checks |

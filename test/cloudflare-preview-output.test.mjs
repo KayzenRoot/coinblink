@@ -117,3 +117,20 @@ test("rejects unrecognized text around Wrangler Preview JSON", () => {
   assert.throws(() => parsePreviewOutput(`Debug output\n${json}`, previewName));
   assert.throws(() => parsePreviewOutput(`Attaching preview\n${json}\nFinished`, previewName));
 });
+
+test("rejects unrelated Wrangler progress lines before valid Preview JSON", () => {
+  const json = JSON.stringify(validOutput, null, 2);
+  const unrelatedProgressLines = [
+    "Attaching unrelated output",
+    `Attaching preview ${previewName}-other to ${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+    `Attaching preview ${previewName} to another-worker`,
+    `Attaching preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}...`,
+  ];
+  for (const progressLine of unrelatedProgressLines) {
+    assert.throws(
+      () => parsePreviewOutput(`${progressLine}\n${json}`, previewName),
+      /unexpected Preview progress line/,
+      progressLine,
+    );
+  }
+});

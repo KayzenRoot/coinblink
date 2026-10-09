@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,13 +11,19 @@ const integrationBaseSha = '27015adc87caacabbed0e318f892644ce0473f10';
 const planPath = '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json';
 const checkpointPath = '.engineering/CHECKPOINT.json';
 const manifestPath = '.engineering/evidence/CB-GOV-PARALLEL-001-FINGERPRINTS.json';
+const gitExecutableCandidates = process.platform === 'win32'
+  ? ['C:\\Program Files\\Git\\cmd\\git.exe', 'C:\\Program Files (x86)\\Git\\cmd\\git.exe']
+  : ['/usr/bin/git', '/usr/local/bin/git'];
+const gitExecutable = gitExecutableCandidates.find((candidate) => existsSync(candidate));
+
+assert.ok(gitExecutable, 'Git is installed in a fixed system directory for this supported runner.');
 
 if (process.env.COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT !== historicalMainSha) {
   throw new Error(`Set COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT=${historicalMainSha} to verify only the immutable merged snapshot.`);
 }
 
 function gitBuffer(args) {
-  return execFileSync('git', args, { cwd: repoRoot, encoding: null });
+  return execFileSync(gitExecutable, args, { cwd: repoRoot, encoding: null });
 }
 
 function gitText(args) {
@@ -47,7 +54,9 @@ function normalizedPath(filePath) {
 }
 
 function assertExactPathSet(actualPaths, manifestPaths) {
-  const normalizeAndSort = (paths) => paths.map(normalizedPath).sort();
+  const normalizeAndSort = (paths) => paths
+    .map(normalizedPath)
+    .toSorted((left, right) => left.localeCompare(right, 'en-US'));
   assert.equal(new Set(normalizeAndSort(actualPaths)).size, actualPaths.length, 'historical Git paths are unique case-insensitively');
   assert.equal(new Set(normalizeAndSort(manifestPaths)).size, manifestPaths.length, 'historical manifest paths are unique case-insensitively');
   assert.deepEqual(

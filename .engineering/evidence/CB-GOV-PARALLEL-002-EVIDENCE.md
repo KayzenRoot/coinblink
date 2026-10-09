@@ -23,6 +23,7 @@
 - Ownership negatives use only an explicit active-Work-Order fixture and still reject outside paths and unexplained deletions.
 - PR #42's one-time 11-path and SHA-1/SHA-256 evidence is checked by `scripts/verify-cb-gov-parallel-001-history.mjs` only when explicitly gated to immutable snapshot `e98d581...`; it never inspects the invoking worktree's current changed paths.
 - The regression fixture is created in and removed with a temporary clone. Its future checkpoint is marked synthetic in test code; no synthetic status is written to canonical files or presented as project evidence.
+- SonarCloud rejected the first evidence-synchronized head `ebae3607cc45a723207f3ff2604a4b35319a86e2` (B security / D reliability) with four findings in the new historical verifier: PATH-based Git lookup (`S4036`) and sorting rules (`S2871`, `S4043`). The verifier now invokes Git only from fixed system directories and sorts with `toSorted` plus an explicit `en-US` comparator. The corrected exact-head Sonar result is pending.
 
 ## Changed files
 
@@ -42,7 +43,7 @@ The final change set is limited to this Work Order, its Context Lock, no-op Chec
 | GEF in managed worktree | `npm run gef -- doctor --target . --json`; `npm run gef -- status --target . --json` | `REVIEW`; `ok=true` and checkpoint valid, but repository observation is `FINDING` / dirtiness `UNKNOWN` with `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED` |
 | Docker smoke | Isolated Compose project on free `127.0.0.1:3015`; app source unchanged from base SHA `e98d581...` | PASS; exact build SHA `e98d581...`; `/health` 200, `/preview-status` demo/NOT_DEPLOYED, `/en` 200 with `noindex`, missing route 404. Port 3000 owner and other containers were preserved; only this temporary project was removed. |
 | GEF in normal clone | `npm run gef -- doctor --target . --json`; `npm run gef -- status --target . --json` on ordinary clone at implementation commit `b930879...` | PASS; both `ok=true`, repository observable `HEALTHY` / `CLEAN`, checkpoint valid, no observation limits. GEF security advisory fields remain `REVIEW` for dependency provenance and mutable GitHub ref; status conservatively reports no drift baseline and stale operator metadata. |
-| Exact-head CI | Ubuntu, Windows, Docker, SonarCloud, Socket Project Report, Socket PR Alerts, CodeRabbit | Pending push; all results must match final PR HEAD |
+| Exact-head CI | Ubuntu, Windows, Docker, SonarCloud, Socket Project Report, Socket PR Alerts, CodeRabbit | Pending corrected push; all results must match final PR HEAD |
 | Context Lock | Inline verifier against base `e98d581...` plus GitHub Issue API body bytes | PASS; all 24 SHA-1/SHA-256 rows and Issue #43 body SHA-256 matched |
 | Fingerprints | `CB-GOV-PARALLEL-002-FINGERPRINTS.json` checked against staged diff and working tree | PASS; exact 9-path change set, 8 SHA-1/SHA-256 records, no omission or extra path |
 

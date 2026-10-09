@@ -33,7 +33,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 - Added a manual-only GitHub Actions workflow, exact-current-main guard immediately before each provider operation, Owner/environment/plan/zero-cost/IAM/dedicated-Worker/isolation/credential gate, run-derived Preview names, output validation, exact-SHA health and preview-status smoke contract, and name-scoped rollback. It uses the locked Wrangler binary already installed by npm ci.
 - Cloudflare credentials are absent from the read-only preflight job and only enter the gated Wrangler action step. The workflow never uses `pull_request_target`, `wrangler deploy`, or version upload.
 - Added deterministic policy, config, workflow, Wrangler-output, smoke-contract, and Context Lock tests.
-- The canonical-main guard flattens C0/C1 controls and Unicode line separators before logging, and caps failure text at 200 characters; a regression test covers line injection and truncation.
+- The canonical-main guard logs a fixed failure message and never forwards remote/error text; a CLI regression test supplies malformed multiline identity input and verifies it cannot enter the log output.
 
 ## Local validation
 

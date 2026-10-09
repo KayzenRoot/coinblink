@@ -21,17 +21,6 @@ export async function fetchCurrentMainSha(fetchImpl = fetch) {
   return result.sha;
 }
 
-export function sanitizePreviewGuardError(message) {
-  const source = String(message);
-  let sanitized = "";
-  for (let index = 0; index < source.length && sanitized.length < 200; index += 1) {
-    const code = source.charCodeAt(index);
-    const isControl = code < 0x20 || (code >= 0x7f && code <= 0x9f) || code === 0x2028 || code === 0x2029;
-    sanitized += isControl ? " " : source[index];
-  }
-  return sanitized;
-}
-
 export async function verifyPreviewMain({ repository, ref, sha, fetchImpl = fetch }) {
   const preflightErrors = validatePreviewMainIdentity({
     repository,
@@ -63,8 +52,8 @@ async function runPreviewMainGuard() {
       sha,
     });
     console.log(`Verified canonical main SHA ${currentMainSha}.`);
-  } catch (error) {
-    console.error(`Preview workflow stopped: ${sanitizePreviewGuardError(error.message)}.`);
+  } catch {
+    console.error("Preview workflow stopped: canonical main could not be verified.");
     process.exitCode = 1;
   }
 }

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
   CLOUDFLARE_PREVIEW_WORKER_NAME,
@@ -10,7 +12,6 @@ import {
 } from "../scripts/cloudflare-preview-policy.mjs";
 import {
   fetchCurrentMainSha,
-  sanitizePreviewGuardError,
   verifyPreviewMain,
 } from "../scripts/verify-preview-main.mjs";
 
@@ -114,9 +115,22 @@ test("canonical-main identity requires the exact current repository SHA", () => 
   }).length >= 4);
 });
 
-test("preview main guard errors are single-line and bounded before logging", () => {
-  assert.equal(sanitizePreviewGuardError("safe\r\nforged\u0007\u0085\u2028entry"), "safe  forged   entry");
-  assert.equal(sanitizePreviewGuardError("x".repeat(250)), "x".repeat(200));
+test("preview main guard logs a fixed message for malformed multiline identity input", () => {
+  const injectedText = "INJECTED_PREVIEW_GUARD_LOG_ENTRY";
+  const guardPath = fileURLToPath(new URL("../scripts/verify-preview-main.mjs", import.meta.url));
+  const result = spawnSync(process.execPath, [guardPath], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      GITHUB_REPOSITORY: "attacker/repo",
+      GITHUB_REF: "refs/heads/feature",
+      GITHUB_SHA: `${"a".repeat(40)}\r\n${injectedText}`,
+    },
+  });
+
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /Preview workflow stopped: canonical main could not be verified\./);
+  assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, new RegExp(injectedText));
 });
 
 test("current-main guard checks GitHub's public branch tip and fails closed on unavailable or invalid data", async () => {

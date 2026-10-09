@@ -50,10 +50,10 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "headGitBlobSha1": "4d8c054f266009a95680ce25c14bd3c29d133301",
-      "indexGitBlobSha1": "4d8c054f266009a95680ce25c14bd3c29d133301",
-      "workingTreeGitBlobSha1": "4d8c054f266009a95680ce25c14bd3c29d133301",
-      "workingTreeSha256": "a25f2ea4597b69bc45a4299c45d9f0a7f741980c2b51ce5de5d2c0cb9accbe73"
+      "headGitBlobSha1": "996dd1c9625c71c26cbd59aad0530255e500086e",
+      "indexGitBlobSha1": "996dd1c9625c71c26cbd59aad0530255e500086e",
+      "workingTreeGitBlobSha1": "996dd1c9625c71c26cbd59aad0530255e500086e",
+      "workingTreeSha256": "5c813533c21068d09b442bf763fca3d35e1d7e9bd7d8559581ec1ea95116a73d"
     },
     {
       "path": ".engineering/proposals/CB-GOV-PARALLEL-001-OPERATING-MODEL.md",
@@ -100,10 +100,10 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "headGitBlobSha1": "842352f067416f5399b992d55b08ca8dc4d55979",
-      "indexGitBlobSha1": "842352f067416f5399b992d55b08ca8dc4d55979",
-      "workingTreeGitBlobSha1": "842352f067416f5399b992d55b08ca8dc4d55979",
-      "workingTreeSha256": "f987ecb1752ccaa0ffe96fefc33994cd64f334a5cd0ff8b12eec80b8e4e784c8"
+      "headGitBlobSha1": "ac13e60b42ce218e6e9df61fab39ef76cd2feb66",
+      "indexGitBlobSha1": "ac13e60b42ce218e6e9df61fab39ef76cd2feb66",
+      "workingTreeGitBlobSha1": "ac13e60b42ce218e6e9df61fab39ef76cd2feb66",
+      "workingTreeSha256": "098e7f62ca4c3cd005f36acacaea440f11cce3b12ad25c92369b01690dbf0e9b"
     }
   ]
 }

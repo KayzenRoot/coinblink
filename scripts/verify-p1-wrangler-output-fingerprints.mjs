@@ -7,7 +7,7 @@ import { test } from "node:test";
 
 const baseSha = "27015adc87caacabbed0e318f892644ce0473f10";
 const gitExecutable = process.platform === "win32"
-  ? "C:\\Program Files\\Git\\cmd\\git.exe"
+  ? String.raw`C:\Program Files\Git\cmd\git.exe`
   : "/usr/bin/git";
 const manifestPath = ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX-FINGERPRINTS.json";
 const manifest = JSON.parse(readFileSync(resolve(manifestPath), "utf8"));

@@ -22,6 +22,7 @@ test("CI checks out the event's exact commit and verifies HEAD", () => {
 
   assert.ok(checkout, "workflow must have an exact-commit checkout step");
   assert.match(checkout, new RegExp(`ref:\\s*${expectedShaExpression}`));
+  assert.match(checkout, /fetch-depth:\s*0/, "checkout must include the admitted base for Context Lock validation");
   assert.ok(verification, "workflow must verify the selected commit after checkout");
   assert.match(verification, /run: node scripts\/verify-exact-head\.mjs/);
   assert.match(workflow, new RegExp(`EXPECTED_SHA:\\s*${expectedShaExpression}`));

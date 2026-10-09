@@ -31,9 +31,9 @@
       "baseGitBlobSha1": null,
       "baseSha256": null,
       "headGitBlobSha1": "639539db81bded72bd8c9afdbf743b503f5d78a4",
-      "indexGitBlobSha1": "639539db81bded72bd8c9afdbf743b503f5d78a4",
-      "workingTreeGitBlobSha1": "639539db81bded72bd8c9afdbf743b503f5d78a4",
-      "workingTreeSha256": "7daec3a17adb162a4decb0e988594e31c98597d93ec8a628d57b3731df398c37"
+      "indexGitBlobSha1": "86c187999922371a9ab12ad5838fed682b3a96dc",
+      "workingTreeGitBlobSha1": "86c187999922371a9ab12ad5838fed682b3a96dc",
+      "workingTreeSha256": "67dd26940ecd340934b2467935e493f038d7e2fa362cc0d9bfbd1fc6d898f1ec"
     },
     {
       "path": ".engineering/proposals/CB-GOV-PARALLEL-001-CONTRACT-REGISTER.json",
@@ -50,10 +50,10 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "headGitBlobSha1": "996dd1c9625c71c26cbd59aad0530255e500086e",
-      "indexGitBlobSha1": "996dd1c9625c71c26cbd59aad0530255e500086e",
-      "workingTreeGitBlobSha1": "996dd1c9625c71c26cbd59aad0530255e500086e",
-      "workingTreeSha256": "5c813533c21068d09b442bf763fca3d35e1d7e9bd7d8559581ec1ea95116a73d"
+      "headGitBlobSha1": "21001b9e9a62896f0847192c47d5ea7914a5c952",
+      "indexGitBlobSha1": "21001b9e9a62896f0847192c47d5ea7914a5c952",
+      "workingTreeGitBlobSha1": "21001b9e9a62896f0847192c47d5ea7914a5c952",
+      "workingTreeSha256": "0ddb29cc9cff5dcac91373433d28e1cf248fc011cf7a9899e48cb0d052c7acc0"
     },
     {
       "path": ".engineering/proposals/CB-GOV-PARALLEL-001-OPERATING-MODEL.md",

@@ -38,7 +38,7 @@ Commands below were run with Node 22.19.0 and npm 10.9.3 through the pinned loca
 | Typecheck | `npm run typecheck` | PASS | 35 files, zero errors/warnings/hints |
 | Build | `npm run build` | PASS | Astro server build and no-session/no-binding assertion succeeded |
 | Unit + build + Playwright | `npm test` | PENDING | waiting for committed exact path fingerprint manifest |
-| Docker smoke | Docker Compose smoke | BLOCKED_LOCAL | port 3000 had no listener, but Docker Desktop API/daemon was unavailable; no container was stopped or modified |
+| Docker smoke | `docker compose -p coinblink-cb-gov-parallel-001 up --build --detach --wait --wait-timeout 120`; smoke `/health`, `/preview-status`, `/en`, 404 and security/noindex headers on port `3015` | PASS | Docker Desktop was started locally. The daemon resumed pre-existing containers; none were stopped or modified. An unrelated project occupies port `3000`, so this isolated Compose project used `3015` and was then removed by its own project name. Health and preview JSON reported the candidate build SHA `7fd4e9a428cc97946e152bd7a24e9fdc87f40969`. |
 | Fingerprint manifest | `node --test test/governance-parallel-plan.test.mjs` | PENDING | checks exact path set, Work Order allowlist, deletion/rename representation, HEAD/index/worktree hashes and source-lock fingerprints |
 
 ## Security and scope

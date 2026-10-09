@@ -175,24 +175,28 @@ export function parsePreviewOutput(output, expectedName) {
   return validatePreviewOutput(parseWranglerJsonOutput(output, expectedName), expectedName);
 }
 
+function advanceJsonScanState(state, character) {
+  if (state.inString) {
+    if (state.escaped) state.escaped = false;
+    else if (character === "\\") state.escaped = true;
+    else if (character === '"') state.inString = false;
+    return;
+  }
+
+  switch (character) {
+    case '"': state.inString = true; break;
+    case "{": state.depth += 1; break;
+    case "}": state.depth -= 1; break;
+  }
+}
+
 function scanJsonObjectEnd(output, start) {
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
+  const state = { depth: 0, inString: false, escaped: false };
 
   for (let offset = start; offset < output.length; offset += 1) {
-    const character = output[offset];
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (character === "\\") escaped = true;
-      else if (character === '"') inString = false;
-    } else if (character === '"') inString = true;
-    else if (character === "{") depth += 1;
-    else if (character === "}") {
-      depth -= 1;
-      if (depth === 0) return offset + 1;
-      if (depth < 0) throw new Error("Wrangler output event stream contains malformed JSON.");
-    }
+    advanceJsonScanState(state, output[offset]);
+    if (state.depth === 0) return offset + 1;
+    if (state.depth < 0) throw new Error("Wrangler output event stream contains malformed JSON.");
   }
 
   throw new Error("Wrangler output event stream contains incomplete JSON.");

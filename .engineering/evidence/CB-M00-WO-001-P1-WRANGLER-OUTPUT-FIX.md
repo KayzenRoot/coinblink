@@ -14,7 +14,7 @@ Inspection of the locked Wrangler `4.149.0` package confirms two distinct machin
 
 The real base-Preview screenshot exposed stale M00 copy that claimed the provider deployment was still a separate gate and the environment was local. The shell now derives those labels and descriptions from the existing exact build environment (`local`, `ci`, or `preview`); tests cover each presentation. Demo-only and disconnected-data messaging remains intact.
 
-The first PR analysis reported SonarCloud `javascript:S3776` as CRITICAL because the JSON event-stream scanner exceeded the cognitive-complexity limit (35 versus 15). The scanner was extracted into a dedicated `scanJsonObjectEnd` helper without relaxing accepted JSON, event, Worker, Preview-name, or URL validation. The regression suite passes after this correction; SonarCloud must re-analyze the new exact PR HEAD before review is complete.
+The first PR analysis reported SonarCloud `javascript:S3776` as CRITICAL because the JSON event-stream scanner exceeded the cognitive-complexity limit (35 versus 15). After extracting `scanJsonObjectEnd`, Sonar's next candidate analysis still measured 17. A further refactor extracted string/brace transitions into `advanceJsonScanState`; this keeps the scanner behavior explicit and the regression suite passes without relaxing accepted JSON, event, Worker, Preview-name, or URL validation. SonarCloud must re-analyze the new exact PR HEAD before review is complete.
 
 ## Existing Preview evidence (base SHA only)
 

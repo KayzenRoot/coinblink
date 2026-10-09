@@ -8,7 +8,11 @@ import {
   validatePreviewAuthorization,
   validatePreviewMainIdentity,
 } from "../scripts/cloudflare-preview-policy.mjs";
-import { fetchCurrentMainSha, verifyPreviewMain } from "../scripts/verify-preview-main.mjs";
+import {
+  fetchCurrentMainSha,
+  sanitizePreviewGuardError,
+  verifyPreviewMain,
+} from "../scripts/verify-preview-main.mjs";
 
 const validAuthorization = {
   GITHUB_REPOSITORY: "KayzenRoot/coinblink",
@@ -108,6 +112,11 @@ test("canonical-main identity requires the exact current repository SHA", () => 
     headSha: "b".repeat(40),
     currentMainSha: "c".repeat(40),
   }).length >= 4);
+});
+
+test("preview main guard errors are single-line and bounded before logging", () => {
+  assert.equal(sanitizePreviewGuardError("safe\r\nforged\u0007\u0085\u2028entry"), "safe  forged   entry");
+  assert.equal(sanitizePreviewGuardError("x".repeat(250)), "x".repeat(200));
 });
 
 test("current-main guard checks GitHub's public branch tip and fails closed on unavailable or invalid data", async () => {

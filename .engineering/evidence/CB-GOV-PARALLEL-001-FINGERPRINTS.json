@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-GOV-PARALLEL-001",
+  "baseMainSha": "27015adc87caacabbed0e318f892644ce0473f10",
+  "integrationBaseSha": "27015adc87caacabbed0e318f892644ce0473f10",
+  "changedGitPathCountIncludingManifest": 11,
+  "files": [
+    {
+      "path": ".engineering/context-locks/CB-GOV-PARALLEL-001.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "d83d590ea0b00be0919d531c374732ea6ab0e7a9",
+      "indexGitBlobSha1": "d83d590ea0b00be0919d531c374732ea6ab0e7a9",
+      "workingTreeGitBlobSha1": "d83d590ea0b00be0919d531c374732ea6ab0e7a9",
+      "workingTreeSha256": "3f171657bc2100abc70cf4c22ddba728ab88cd53e458f91df32338fb80b27875"
+    },
+    {
+      "path": ".engineering/evidence/CB-GOV-PARALLEL-001-CHECKPOINT-DELTA.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "154e7ae599fb1fa43739817b1db3525001b0eb99",
+      "indexGitBlobSha1": "154e7ae599fb1fa43739817b1db3525001b0eb99",
+      "workingTreeGitBlobSha1": "154e7ae599fb1fa43739817b1db3525001b0eb99",
+      "workingTreeSha256": "c76def7e6e7138f87bae50340fa959f10cee2d8409a1806f371c8e26dce126a5"
+    },
+    {
+      "path": ".engineering/evidence/CB-GOV-PARALLEL-001-EVIDENCE.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "cf5e969fa6536b182bf12587162b7984ee0be99f",
+      "indexGitBlobSha1": "cf5e969fa6536b182bf12587162b7984ee0be99f",
+      "workingTreeGitBlobSha1": "cf5e969fa6536b182bf12587162b7984ee0be99f",
+      "workingTreeSha256": "7bf6f2e485940b5bf0fb515f31233574532d6dcb0b82b596bcd03445dea1c240"
+    },
+    {
+      "path": ".engineering/proposals/CB-GOV-PARALLEL-001-CONTRACT-REGISTER.json",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "ba4129398dc0002e0aae5a15e2b6acee73f81bcd",
+      "indexGitBlobSha1": "ba4129398dc0002e0aae5a15e2b6acee73f81bcd",
+      "workingTreeGitBlobSha1": "ba4129398dc0002e0aae5a15e2b6acee73f81bcd",
+      "workingTreeSha256": "07658c71be5ea29347fd87f96f0f2d57fac8d760bb8b421dd648c0a098c6d034"
+    },
+    {
+      "path": ".engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "0fec2fb7999ff0b3f41339340b56c073dbd0b809",
+      "indexGitBlobSha1": "0fec2fb7999ff0b3f41339340b56c073dbd0b809",
+      "workingTreeGitBlobSha1": "0fec2fb7999ff0b3f41339340b56c073dbd0b809",
+      "workingTreeSha256": "dfebbe8db340996f494377f50524badacfb7db9fd5af91bab8432f17b2cb9d76"
+    },
+    {
+      "path": ".engineering/proposals/CB-GOV-PARALLEL-001-OPERATING-MODEL.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "9e43c037bf4d83df2162304fd81b25c690f33e52",
+      "indexGitBlobSha1": "9e43c037bf4d83df2162304fd81b25c690f33e52",
+      "workingTreeGitBlobSha1": "9e43c037bf4d83df2162304fd81b25c690f33e52",
+      "workingTreeSha256": "94dd648f3b7b5dc00c53ec0e403505098107a89b10e47d671fb882f6ddb161e0"
+    },
+    {
+      "path": ".engineering/templates/CB-MODULE-CONTRACT.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "82ae5050e31498c7a62883ec9f6afd0b4f87ba67",
+      "indexGitBlobSha1": "82ae5050e31498c7a62883ec9f6afd0b4f87ba67",
+      "workingTreeGitBlobSha1": "82ae5050e31498c7a62883ec9f6afd0b4f87ba67",
+      "workingTreeSha256": "cb46775410dfb054eaa884e8d7e5fac787ae9cfa005733ce6eff8e6800a88ec0"
+    },
+    {
+      "path": ".engineering/work-orders/CB-GOV-PARALLEL-001.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "92991b7ff731b1854a0cf6dc9e59b8d08828b334",
+      "indexGitBlobSha1": "92991b7ff731b1854a0cf6dc9e59b8d08828b334",
+      "workingTreeGitBlobSha1": "92991b7ff731b1854a0cf6dc9e59b8d08828b334",
+      "workingTreeSha256": "486166b8a7841ec3566466c1a1099a916154539441d298a65c57a07bf089f847"
+    },
+    {
+      "path": "docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "07b8cde6542aef7ef4d4ddc2fe91cf8e5ba903d0",
+      "indexGitBlobSha1": "07b8cde6542aef7ef4d4ddc2fe91cf8e5ba903d0",
+      "workingTreeGitBlobSha1": "07b8cde6542aef7ef4d4ddc2fe91cf8e5ba903d0",
+      "workingTreeSha256": "59de022a38b31e96fca3ce4c94f8182ff34a8a70568518cad0a72af9c512343e"
+    },
+    {
+      "path": "test/governance-parallel-plan.test.mjs",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "headGitBlobSha1": "40eb3afb2c429b55a2754f0194794654c2d1c13e",
+      "indexGitBlobSha1": "40eb3afb2c429b55a2754f0194794654c2d1c13e",
+      "workingTreeGitBlobSha1": "40eb3afb2c429b55a2754f0194794654c2d1c13e",
+      "workingTreeSha256": "7ad000d7095df52e5b90218bf0586eaa91b970cc9b16e72c78d4f6a2b6ea0275"
+    }
+  ]
+}

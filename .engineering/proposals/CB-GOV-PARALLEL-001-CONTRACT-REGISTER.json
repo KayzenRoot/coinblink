@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-GOV-PARALLEL-001",
+  "baseMainSha": "27015adc87caacabbed0e318f892644ce0473f10",
+  "status": "PROPOSED_NOT_ADOPTED",
+  "moduleCount": 19,
+  "rules": {
+    "recordsDescribeCandidateSeamsOnly": true,
+    "noRuntimeSchemasOrSharedPackagesCreated": true,
+    "canonicalContractOwner": "the producer module named by each record; only after that module's Work Order is admitted",
+    "consumersCannotEditProducerContract": true,
+    "schemaApprovalGate": "Issue #6 global decisions, source-specific product decisions, and the producer's admitted Work Order must approve any versioned contract before runtime implementation",
+    "fixturePolicy": {
+      "kind": "deterministic synthetic local fixtures only",
+      "networkCalls": 0,
+      "providerCredentials": "not present in test jobs or fixtures",
+      "neverRepresentAs": ["live facts", "publishable facts", "provider evidence"],
+      "requiredCases": ["success", "empty", "invalid input", "unavailable or timeout", "retry/idempotency where applicable", "permission denied", "redaction/fallback"],
+      "evidenceLabels": ["MOCK", "LIVE"],
+      "mockAndLiveEvidenceMustRemainSeparate": true
+    },
+    "migrationGate": "no database migration without a separately approved database ADR and Work Order; one named owner for the shared migration history/manifest, unique IDs, and apply/rollback tests against an isolated database"
+  },
+  "openCrossModuleDecisions": [
+    "Canonical Article/Story/Source/Claim/Evidence/Correction/Translation identifiers, lifecycle, revision and read/write rules",
+    "Persistence and migration ownership; event and queue transport; global event identity, consent, dedupe and retention",
+    "Provider adapter, error, retry and secret boundaries",
+    "Market quote units, source, freshness, license and demo-versus-live envelope",
+    "Media task and asset schema, rights, approval, invalidation and storage",
+    "Public API DTOs, field rights, quotas, tenant model and pricing semantics",
+    "Single human Owner auth/session/recovery/MFA implementation and service-principal wire contracts",
+    "Reader identity, guest-vs-account persistence, locale identifiers and canonical URL rules",
+    "Ad placement/routes and revenue provenance for house ads, sponsorship invoices and provider reports"
+  ],
+  "modules": [
+    {
+      "id": "CB-M00",
+      "issue": 7,
+      "status": "EXISTING_M00_SCOPE_ONLY",
+      "producerSurfaces": ["exact build SHA", "local health response", "preview status", "isolated Worker Preview metadata"],
+      "consumers": [],
+      "mockSeam": "local deterministic shell/build metadata; existing M00 Work Order remains the only authority",
+      "unresolved": ["P1 corrected-main Preview is not verified; no future module authority is implied"]
+    },
+    {
+      "id": "CB-M01",
+      "issue": 8,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["home section model", "visual content slots", "disabled AdSlot placement"],
+      "consumers": ["CB-M02", "CB-M13"],
+      "mockSeam": "fixed-clock labelled synthetic home content and market cards; ads disabled",
+      "unresolved": ["original Golden image and logo bytes are missing; exact visual asset hashes required"]
+    },
+    {
+      "id": "CB-M02",
+      "issue": 9,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["public Article/Story read model", "search/category route query", "media reference", "disabled AdSlot placement"],
+      "consumers": ["CB-M09", "CB-M10", "CB-M11", "CB-M13", "CB-M15", "CB-M16"],
+      "mockSeam": "module-local synthetic article fixtures with source and DEMO labels; no live content feed",
+      "unresolved": ["wait for CB-M05 canonical editorial model and CB-M17 asset reference contract"]
+    },
+    {
+      "id": "CB-M03",
+      "issue": 10,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["source adapter result", "license/provenance record", "ingest idempotency key", "retry/error state"],
+      "consumers": ["CB-M05", "CB-M08", "CB-M11", "CB-M14", "CB-M17"],
+      "mockSeam": "local provider fakes with deterministic responses and unavailable/rate-limit cases; no credentialed calls",
+      "unresolved": ["source rights, normalized IDs, queue transport and evidence identity are not approved"]
+    },
+    {
+      "id": "CB-M04",
+      "issue": 11,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["asset/pair identifier", "market observation with unit/as-of/source/freshness/license", "sentiment provenance"],
+      "consumers": ["CB-M01", "CB-M06", "CB-M08", "CB-M11", "CB-M16", "CB-M17"],
+      "mockSeam": "deterministic synthetic observations marked SIMULATED; no exchange or market feed",
+      "unresolved": ["provider, data rights, units, stale-data and live-data cost gates"]
+    },
+    {
+      "id": "CB-M05",
+      "issue": 12,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["editorial Article lifecycle/revision", "single human Owner session boundary", "Settings/vault access interface"],
+      "consumers": ["CB-M02", "CB-M03", "CB-M07", "CB-M08", "CB-M09", "CB-M10", "CB-M11", "CB-M13", "CB-M17"],
+      "mockSeam": "local synthetic editorial lifecycle fixture; Owner auth/session and vault calls mocked behind interfaces",
+      "unresolved": ["article/source/claim IDs and correction states", "session/recovery/MFA and vault wire contracts", "reconcile multi-author locking language with one-human-Owner invariant"]
+    },
+    {
+      "id": "CB-M06",
+      "issue": 13,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["analytics event envelope", "deduplication identity", "measured/estimated/demo metric with provenance"],
+      "consumers": ["CB-M07", "CB-M10", "CB-M11", "CB-M12", "CB-M13", "CB-M14", "CB-M15"],
+      "mockSeam": "fixed-clock synthetic events; no personal data or analytics collection",
+      "unresolved": ["event identity, consent, grain, dedupe, retention and estimated-versus-measured semantics"]
+    },
+    {
+      "id": "CB-M07",
+      "issue": 14,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["social post variant", "queued/reviewed/published/failed state", "provider-reported outcome", "approved export reference"],
+      "consumers": ["CB-M06", "CB-M17"],
+      "mockSeam": "local provider simulators; queued is never represented as published; no publish calls",
+      "unresolved": ["provider-specific scopes, app review and post/result contracts require separate approval"]
+    },
+    {
+      "id": "CB-M08",
+      "issue": 15,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["claim/evidence reference", "contradictory source outcome", "review decision and provenance"],
+      "consumers": ["CB-M17"],
+      "mockSeam": "synthetic claims cite synthetic sources and carry SIMULATED labels; no unsupported factual preview",
+      "unresolved": ["evidence identity, model/provider, license, cost and publication review gates"]
+    },
+    {
+      "id": "CB-M09",
+      "issue": 16,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["locale identifier", "translation revision/status", "localized canonical URL and SEO metadata"],
+      "consumers": ["CB-M02", "CB-M10", "CB-M11"],
+      "mockSeam": "fixed synthetic translations with deterministic locale and fallback behavior",
+      "unresolved": ["canonical locale IDs, URL semantics, translation provenance and review state"]
+    },
+    {
+      "id": "CB-M10",
+      "issue": 17,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["subscriber consent/preference", "alert delivery state", "suppression/unsubscribe record"],
+      "consumers": ["CB-M06", "CB-M16"],
+      "mockSeam": "local synthetic recipient identifiers and a no-send transport fake",
+      "unresolved": ["identity, consent, retention, suppression and external-send authorization"]
+    },
+    {
+      "id": "CB-M11",
+      "issue": 18,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["public API DTO/error envelope", "pagination", "field-rights filter", "quota response"],
+      "consumers": ["CB-M12", "CB-M15"],
+      "mockSeam": "local synthetic API responses with deterministic denied/limit cases; no public API deployment",
+      "unresolved": ["data redistribution rights, API exposure, DTOs, pricing, tenant and quota semantics"]
+    },
+    {
+      "id": "CB-M12",
+      "issue": 19,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["API key scope", "usage meter event", "billing state/webhook"],
+      "consumers": ["CB-M06", "CB-M11", "CB-M15"],
+      "mockSeam": "payment provider fake in sandbox-shaped local tests; no charges, webhooks or real credentials",
+      "unresolved": ["pricing, legal terms, idempotent billing ledger, licensing and payment approval"]
+    },
+    {
+      "id": "CB-M13",
+      "issue": 20,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["campaign/inventory state", "AdSlot placement", "ad report and revenue source"],
+      "consumers": ["CB-M01", "CB-M02", "CB-M06", "CB-M15"],
+      "mockSeam": "local synthetic campaign fixtures with delivery disabled",
+      "unresolved": ["route inconsistency between /admin/advertising and /admin/revenue /admin/sponsors", "separate house, sponsor-invoice and provider-report provenance", "legal/privacy and live-ad approvals"]
+    },
+    {
+      "id": "CB-M14",
+      "issue": 21,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["operational event", "audit trail reference", "incident/restore state"],
+      "consumers": ["CB-M06", "CB-M15"],
+      "mockSeam": "local injected fault and restore simulations with deterministic audit entries",
+      "unresolved": ["audit retention, observability provider and production-control boundaries"]
+    },
+    {
+      "id": "CB-M15",
+      "issue": 22,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["launch readiness criterion", "evidence reference and freshness", "block/allow decision"],
+      "consumers": [],
+      "mockSeam": "fixed synthetic gate evidence; tests assert that missing or stale evidence blocks",
+      "unresolved": ["final predecessor set, weighting and policy if ads are enabled"]
+    },
+    {
+      "id": "CB-M16",
+      "issue": 23,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["watchlist identity", "preference/alert trigger", "delivery authorization"],
+      "consumers": [],
+      "mockSeam": "synthetic visitor IDs and local no-send alert fake",
+      "unresolved": ["guest-vs-account persistence, privacy/consent, retention and notification authorization"]
+    },
+    {
+      "id": "CB-M17",
+      "issue": 27,
+      "status": "PROPOSAL_ONLY",
+      "producerSurfaces": ["media generation task", "versioned asset reference", "rights/review/approval/invalidation status"],
+      "consumers": ["CB-M02", "CB-M05", "CB-M07", "CB-M08", "CB-M11"],
+      "mockSeam": "local media task simulator with fixed IDs; generated mock media is not evidence or publishable fact",
+      "unresolved": ["provider/model, storage/rights, asset schema, M08 evidence reference and M07 export interface"]
+    },
+    {
+      "id": "CB-M18",
+      "issue": 26,
+      "status": "FUTURE_REVIEW_ONLY_NO_CONTRACT",
+      "producerSurfaces": [],
+      "consumers": [],
+      "mockSeam": "no market/token fixture; only a disabled state that clearly says no token exists",
+      "unresolved": ["all legal, security, chain, custody, utility, economics and explicit Owner go/no-go decisions"]
+    }
+  ]
+}

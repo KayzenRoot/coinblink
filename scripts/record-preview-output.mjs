@@ -56,10 +56,10 @@ function isExpectedPreviewProgressLine(line, expectedName) {
   // Wrangler can colorize its single progress line even when stdout is redirected in hosted CI.
   // eslint-disable-next-line no-control-regex
   const normalizedLine = line.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "").trim();
-  const previewIdentifier = `(?:${escapeRegExp(expectedName)}|["']${escapeRegExp(expectedName)}["'])`;
-  const workerIdentifier = `(?:${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}|["']${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}["'])`;
+  const previewIdentifier = String.raw`(?:${escapeRegExp(expectedName)}|["']${escapeRegExp(expectedName)}["'])`;
+  const workerIdentifier = String.raw`(?:${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}|["']${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}["'])`;
   const progressPattern = new RegExp(
-    `^(?:attaching|creating|updating|deploying)\\s+preview\\s+${previewIdentifier}\\s+(?:to|on)\\s+(?:worker\\s+)?${workerIdentifier}[.!]?$`,
+    String.raw`^(?:attaching|creating|updating|deploying)\s+preview\s+${previewIdentifier}\s+(?:to|on)\s+(?:worker\s+)?${workerIdentifier}[.!]?$`,
     "i",
   );
   return progressPattern.test(normalizedLine) && containsExactIdentifier(normalizedLine, expectedName) && containsExactIdentifier(normalizedLine, CLOUDFLARE_PREVIEW_WORKER_NAME);
@@ -84,7 +84,7 @@ function containsExactIdentifier(text, identifier) {
 function redactProgressLine(line) {
   return line
     .replace(/https?:\/\/\S+/gi, "[url]")
-    .replace(/\b(bearer|token|secret|api[ _-]?key)\s+\S+/gi, "$1 [redacted]")
+    .replace(/\b((?:\w+[_-])*(?:TOKEN|SECRET|KEY|PASSWORD|BEARER))(\s*[:=]\s*|\s+)\S+/gi, "$1=[redacted]")
     .replace(/\b[0-9a-f]{32}\b/gi, "[redacted]")
     .replace(/[A-Za-z0-9._~+/-]{24,}/g, "[redacted]")
     .replace(/[\r\n\t]/g, " ")

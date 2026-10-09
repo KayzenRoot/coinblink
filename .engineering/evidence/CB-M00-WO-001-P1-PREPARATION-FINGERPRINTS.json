@@ -5,7 +5,7 @@
   "change": "P1_PREPARATION_ONLY",
   "baseCommitSha": "954b4db2d6dff3798e76fd4d75d6bccaf24b0876",
   "branch": "codex/cb-m00-p1-preparation",
-  "fingerprintSource": "Git blob IDs and SHA-256 over Git blob bytes from base commit and staged index; no checkout newline conversion",
+  "fingerprintSource": "Git blob IDs and SHA-256 over Git blob bytes from frozen base and staged index; Git diff verifies working-tree/index consistency using configured clean filters; no checkout newline conversion",
   "excludesSelf": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION-FINGERPRINTS.json",
   "files": [
     {
@@ -20,8 +20,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "492dd36ae22175ae4a64c5602760396a8c64ebc7",
-        "rawBlobSha256": "abd176671a48d02ce1c30b76ac1a6d125a4a7802d1f8faff4c4d6d323d826707"
+        "gitBlobSha1": "1c7a32730bdbf94361cf7a383a391b470b154c08",
+        "rawBlobSha256": "eec9f629acf6b895ffa8a08394efc62182a8e1492ccf7ac9be1e440e5deffc89"
       }
     },
     {
@@ -36,8 +36,8 @@
       "path": "docs/operations/CB-M00-CLOUDFLARE-PREVIEW.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "b8ed2ecce1a79ed291c77fa062a9d71e4a486871",
-        "rawBlobSha256": "e645ec99f9557f52b2fb08fe65f8216b34a7efb4bd115520f5b662d495ba7b8b"
+        "gitBlobSha1": "91e7d80bc71a8018ce9b5459ef4134db03b8a913",
+        "rawBlobSha256": "6dbdfc45395485172893d000e823f28edcc724e2208b813157fbd6123dd1560f"
       }
     },
     {
@@ -203,16 +203,16 @@
       "path": "test/cloudflare-preview-workflow.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "b17ccabeb042947ec41030219a130f2aa7163ba3",
-        "rawBlobSha256": "aff8b848501634842d1b48a98f1250c705d0e82f1890b5a8e6b305ddf1029b6b"
+        "gitBlobSha1": "5a5e28b1d2de27794d27dd616ad6a56e046e4f08",
+        "rawBlobSha256": "05054d02851d3bbc773ce12f048545eea5631d98590e09fe36ee3ae2c8ff7b9e"
       }
     },
     {
       "path": "test/p1-preparation-context-lock.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "f329ed35c2ef856d7e370adf7694204b6a556812",
-        "rawBlobSha256": "9d46591dd89f3ef4cb253a5000edb2eb94e5d32835e909bfa9b9e16eac26905d"
+        "gitBlobSha1": "3b92a6e5c387ff14d3ee771cc76d3f828d5cd45e",
+        "rawBlobSha256": "226f1371588cb0ced68b1935ce93276b6090bc07d7112e871239c70b43d61a94"
       }
     },
     {

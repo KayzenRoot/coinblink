@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const workflow = readFileSync(resolve(repoRoot, ".github/workflows/cloudflare-worker-preview.yml"), "utf8");
+const operations = readFileSync(resolve(repoRoot, "docs/operations/CB-M00-CLOUDFLARE-PREVIEW.md"), "utf8");
 const triggers = workflow.split(/^permissions:/m, 1)[0];
 const preflight = workflow.split(/^\x20\x20owner-gated-preview:/m, 1)[0];
 const gatedJob = workflow.split(/^\x20\x20owner-gated-preview:/m)[1] ?? "";
@@ -77,6 +78,15 @@ test("pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete fla
   assert.match(deleteHelp, /--name/);
   assert.match(deleteHelp, /--worker-name/);
   assert.match(deleteHelp, /--skip-confirmation/);
+});
+
+test("rollback documentation uses only supported Wrangler Preview delete options", () => {
+  const rollback = operations.split(/^## Bounded rollback\s*$/m)[1]?.split(/^## /m, 1)[0] ?? "";
+  assert.match(rollback, /wrangler preview delete/);
+  for (const option of ["--config", "--name", "--worker-name", "--skip-confirmation"]) {
+    assert.ok(rollback.includes(option), `rollback documentation includes ${option}`);
+  }
+  assert.doesNotMatch(rollback, /--ignore-base-config/);
 });
 
 test("rechecks the exact current main immediately before each provider operation", () => {

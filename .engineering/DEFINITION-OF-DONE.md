@@ -1,18 +1,20 @@
 # CoinBlink · Definition of Done: M00 Preview Foundation
 
-**Status: OWNER_APPROVED_M00_ONLY / CB-GOV-005_ADMISSION_CANDIDATE; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. While PR #32 is open, canonical main remains M00-not-admitted and the candidate grants no code authority. Its checkpoint records the intended post-merge state: M00 admitted, implementation not started, 0%, with no pending stop state.
+**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; its canonical checkpoint records implementation `NOT_STARTED`, 0%, with no pending `stopState`. This Work Order may implement M00 P0, but it does not mark M00 `DONE`.
+
+**Current candidate:** local P0 implementation and browser/build checks have passed on the execution branch; exact-head GitHub CI, independent review, Owner audit and merge remain pending. The canonical checkpoint JSON is unchanged. Port 3000 is occupied in the local host by an unrelated container; Compose passed at port 3010, and a dedicated CI smoke uses port 3000.
 
 ## Admission gate
-- [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). Full GEF technical gate remains separately pending.
+- [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). The separate GEF admission gate was completed in CB-GOV-005 / PR #32.
 - [x] CB-GOV-004 checkpoint is canonical on main `cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f`; its post-merge Ubuntu and Windows GEF validation passed on that SHA. This records verified zero application implementation progress and does not mark a module done.
-- [ ] CB-GOV-005 admission candidate passes pinned GEF 1.1.2, exact Context Lock, secret scan, Linux/Windows exact-head checks and independent review; the Owner audits and merges that same HEAD. Only the resulting main SHA makes the checkpoint target canonical and admits M00. The open candidate is not executable. The old PR #29 base is not reusable.
+- [x] CB-GOV-005 / PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d` after exact-head checks, independent review and the Owner's audit of `947cc330e2fb3ba41ee5ff66ff1bd7b980b9e0d0`. The merged checkpoint admits only M00, preserves 0%/`NOT_STARTED`, and has no pending `stopState`. The old PR #29 base is not reusable.
 
 ## P0: Working local foundation
-- [ ] Code authored by Codex on authorized execution branch; npm ci, Node engine, typecheck, GEF and app build all pass.
-- [ ] /en, /health, /preview-status, 404 actually work, with honest demo/under-construction states and no fabricated content.
-- [ ] Docker Compose localhost:3000 actually builds and serves, or remains explicitly BLOCKED with a testable reason.
-- [ ] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus and browser-console pass. Capture real artifact names/commit IDs.
-- [ ] Astro session auto-KV disabled and generated config has NO unrequested SESSION binding.
+- [x] Code authored by Codex on the admitted execution branch; local `npm ci`, Node engine, typecheck, GEF and app build pass. Exact-head GitHub CI remains a separate P2 gate.
+- [x] `/en`, `/health`, `/preview-status`, and 404 work with honest demo states and no fabricated content in local Playwright and Docker smoke.
+- [ ] Docker Compose default port 3000 is **BLOCKED locally** by unrelated container `d76127e8ff37` (`nexlabs-website-web-1`). The same build and health/routes passed on port 3010; do not stop or remove the unrelated container. Dedicated exact-head CI validation on 3000 is pending.
+- [x] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus, axe accessibility, overflow and browser-console checks pass locally. Exact-head CI artifacts remain pending.
+- [x] Astro session auto-KV is disabled and the generated Worker config has no unrequested `SESSION` binding.
 
 ## P1: Remote preview (external authorization gate)
 - [ ] Owner-scoped Cloudflare account/plan/access/cost gate and trusted GitHub secrets explicitly validated.

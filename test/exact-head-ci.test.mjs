@@ -29,6 +29,16 @@ test("CI checks out the event's exact commit and verifies HEAD", () => {
   assert.match(workflow, new RegExp(`PUBLIC_BUILD_SHA:\\s*${expectedShaExpression}`));
 });
 
+test("CI checkout does not persist credentials while pull request code runs", () => {
+  const workflow = readFileSync(workflowPath, "utf8");
+  const checkouts = workflowSteps(workflow).filter((step) => /^\s*uses:\s*actions\/checkout@/m.test(step));
+
+  assert.equal(checkouts.length, 2, "both CI jobs must use checkout");
+  for (const checkout of checkouts) {
+    assert.match(checkout, /persist-credentials:\s*false/i, "checkout must not persist its token in Git config");
+  }
+});
+
 test("the workflow contract test locates steps in a CRLF checkout", () => {
   const workflow = readFileSync(workflowPath, "utf8").replace(/\r?\n/g, "\r\n");
   const steps = workflowSteps(workflow);

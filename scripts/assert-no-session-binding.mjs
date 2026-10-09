@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { assertWorkerPreviewConfig } from "./worker-preview-config-safety.mjs";
 
 const outputDirectory = resolve("dist");
-const workerConfigs = [];
+const workerConfigs = [resolve("wrangler.jsonc")];
 
 function findWorkerConfigs(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -16,48 +17,11 @@ function findWorkerConfigs(directory) {
   }
 }
 
+assertWorkerPreviewConfig(JSON.parse(readFileSync(workerConfigs[0], "utf8")), "wrangler.jsonc");
 findWorkerConfigs(outputDirectory);
-assert.ok(workerConfigs.length > 0, "Astro build must emit a Worker Wrangler config");
+assert.ok(workerConfigs.length > 1, "Astro build must emit a Worker Wrangler config");
 
-function findSessionBindings(value, path = "") {
-  if (Array.isArray(value)) {
-    return value.flatMap((entry, index) => findSessionBindings(entry, `${path}[${index}]`));
-  }
-  if (value === null || typeof value !== "object") {
-    return [];
-  }
-
-  const matches = [];
-  for (const [key, child] of Object.entries(value)) {
-    const childPath = path ? `${path}.${key}` : key;
-    if (key.toLowerCase() === "binding" && typeof child === "string" && child.toUpperCase() === "SESSION") {
-      matches.push(childPath);
-    }
-    matches.push(...findSessionBindings(child, childPath));
-  }
-  return matches;
-}
-
-for (const configPath of workerConfigs) {
-  const config = JSON.parse(readFileSync(configPath, "utf8"));
-  const matches = findSessionBindings(config);
-  assert.deepEqual(matches, [], `${configPath} must not contain an unrequested SESSION binding`);
-
-  const forbiddenCollections = [
-    ["kv_namespaces", config.kv_namespaces ?? []],
-    ["d1_databases", config.d1_databases ?? []],
-    ["r2_buckets", config.r2_buckets ?? []],
-    ["durable_objects.bindings", config.durable_objects?.bindings ?? []],
-    ["queues.producers", config.queues?.producers ?? []],
-    ["queues.consumers", config.queues?.consumers ?? []],
-    ["services", config.services ?? []],
-  ];
-
-  for (const [name, bindings] of forbiddenCollections) {
-    assert.deepEqual(bindings, [], `${configPath} must not configure ${name}`);
-  }
-
-  assert.equal(config.assets?.binding, "ASSETS", `${configPath} must use only the approved static-assets binding`);
-  assert.deepEqual(config.vars ?? {}, {}, `${configPath} must not contain unchecked plaintext variables`);
-  process.stdout.write(`No SESSION or external data/service bindings in ${configPath}\n`);
+for (const configPath of workerConfigs.slice(1)) {
+  assertWorkerPreviewConfig(JSON.parse(readFileSync(configPath, "utf8")), configPath, { generated: true });
+  process.stdout.write(`No SESSION, data, service, or production bindings in ${configPath}\n`);
 }

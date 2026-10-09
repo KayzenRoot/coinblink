@@ -24,6 +24,7 @@ test.describe("CoinBlink M00 local shell", () => {
       const response = await page.goto("/en");
       expect(response?.status()).toBe(200);
       await expect(page).toHaveTitle(/CoinBlink/);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
       await expect(page.getByRole("heading", { level: 1, name: "Crypto news in a blink." })).toBeVisible();
       await expect(page.getByText("DEMO · NO LIVE DATA")).toBeVisible();
       await expect(page.getByText("Not connected · no values are shown")).toBeVisible();
@@ -73,7 +74,7 @@ test.describe("CoinBlink M00 local shell", () => {
       dataMode: "demonstration-only",
       editorialFeed: "not-connected",
       marketData: "not-connected",
-      cloudflarePreview: "not-deployed",
+      cloudflarePreview: process.env.PUBLIC_BUILD_ENV === "preview" ? "preview" : "not-deployed",
       buildSha: process.env.EXPECTED_SHA || "local",
       environment: process.env.PUBLIC_BUILD_ENV || "local",
     });
@@ -96,6 +97,13 @@ test.describe("CoinBlink M00 local shell", () => {
       expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
       expect(headers["x-content-type-options"]).toBe("nosniff");
       expect(headers["x-frame-options"]).toBe("DENY");
+      expect(headers["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
     }
+  });
+
+  test("robots.txt disallows indexing without claiming privacy", async ({ request }) => {
+    const response = await request.get("/robots.txt");
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain("Disallow: /");
   });
 });

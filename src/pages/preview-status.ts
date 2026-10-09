@@ -10,7 +10,7 @@ export const GET: APIRoute = () =>
       dataMode: "demonstration-only",
       editorialFeed: "not-connected",
       marketData: "not-connected",
-      cloudflarePreview: "not-deployed",
+      cloudflarePreview: buildInfo.environment === "preview" ? "preview" : "not-deployed",
       buildSha: buildInfo.sha,
       environment: buildInfo.environment,
     }),

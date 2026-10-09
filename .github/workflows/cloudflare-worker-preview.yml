@@ -1,0 +1,197 @@
+name: Cloudflare Worker Preview (Owner gated)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Create a new M00 Preview or delete one previously created by this workflow
+        required: true
+        type: choice
+        options: [delete, deploy]
+        default: delete
+      confirmation:
+        description: Explicit Owner confirmation; leave at the default to fail closed
+        required: true
+        type: choice
+        options: [not-authorized, authorize-preview]
+        default: not-authorized
+      preview_name:
+        description: Required only for delete; copy the managed name from its deployment run summary
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coinblink-m00-cloudflare-preview
+  cancel-in-progress: false
+
+jobs:
+  exact-main-preflight:
+    name: Exact-main local preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SHA: ${{ github.sha }}
+      PUBLIC_BUILD_SHA: ${{ github.sha }}
+      PUBLIC_BUILD_ENV: ci
+    steps:
+      - name: Check out exact dispatch commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pinned Node.js and npm
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.19.0
+          cache: npm
+
+      - name: Verify exact current main
+        run: node scripts/verify-preview-main.mjs
+
+      - name: Verify pinned runtime
+        run: |
+          test "$(node --version)" = "v22.19.0"
+          test "$(npm --version)" = "10.9.3"
+        shell: bash
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Check dependency advisories
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Install Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Run unit, build, browser, accessibility, and GEF checks
+        run: npm test
+
+  owner-gated-preview:
+    name: Owner-gated Worker Preview action
+    needs: exact-main-preflight
+    if: needs.exact-main-preflight.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    environment:
+      name: cloudflare-preview
+    env:
+      EXPECTED_SHA: ${{ github.sha }}
+      INPUT_ACTION: ${{ inputs.action }}
+      INPUT_CONFIRMATION: ${{ inputs.confirmation }}
+      INPUT_PREVIEW_NAME: ${{ inputs.preview_name }}
+      COINBLINK_PREVIEW_OWNER_GITHUB_LOGIN: ${{ vars.COINBLINK_PREVIEW_OWNER_GITHUB_LOGIN }}
+      COINBLINK_CF_OWNER_AUTHORIZED: ${{ vars.COINBLINK_CF_OWNER_AUTHORIZED }}
+      COINBLINK_CF_GITHUB_ENVIRONMENT_PROTECTED: ${{ vars.COINBLINK_CF_GITHUB_ENVIRONMENT_PROTECTED }}
+      COINBLINK_CF_PLAN: ${{ vars.COINBLINK_CF_PLAN }}
+      COINBLINK_CF_FREE_PLAN_CONFIRMED: ${{ vars.COINBLINK_CF_FREE_PLAN_CONFIRMED }}
+      COINBLINK_CF_MONTHLY_COST_CEILING_USD: ${{ vars.COINBLINK_CF_MONTHLY_COST_CEILING_USD }}
+      COINBLINK_CF_COST_CEILING_CONFIRMED: ${{ vars.COINBLINK_CF_COST_CEILING_CONFIRMED }}
+      COINBLINK_CF_IAM_SCOPE_CONFIRMED: ${{ vars.COINBLINK_CF_IAM_SCOPE_CONFIRMED }}
+      COINBLINK_CF_DEDICATED_WORKER_CONFIRMED: ${{ vars.COINBLINK_CF_DEDICATED_WORKER_CONFIRMED }}
+      COINBLINK_CF_ISOLATION_CONFIRMED: ${{ vars.COINBLINK_CF_ISOLATION_CONFIRMED }}
+      COINBLINK_CF_WORKER_NAME: ${{ vars.COINBLINK_CF_WORKER_NAME }}
+    steps:
+      - name: Check out exact dispatch commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pinned Node.js and npm
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.19.0
+          cache: npm
+
+      - name: Recheck exact current main before gated action
+        run: node scripts/verify-preview-main.mjs
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify Owner, account, plan, cost, IAM, isolation, and credentials
+        run: node scripts/assert-preview-deployment-authorization.mjs
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Select a managed Preview name
+        id: preview-name
+        run: node scripts/select-preview-name.mjs
+        env:
+          INPUT_ACTION: ${{ inputs.action }}
+          INPUT_PREVIEW_NAME: ${{ inputs.preview_name }}
+
+      - name: Build the exact Preview Worker
+        if: inputs.action == 'deploy'
+        run: npm run build
+        env:
+          PUBLIC_BUILD_SHA: ${{ github.sha }}
+          PUBLIC_BUILD_ENV: preview
+
+      - name: Create isolated Worker Preview
+        id: preview-output
+        if: inputs.action == 'deploy'
+        run: |
+          node scripts/verify-preview-main.mjs
+          npm exec -- wrangler preview \
+            --config ./dist/server/wrangler.json \
+            --json \
+            --name "$PREVIEW_NAME" \
+            --worker-name "$COINBLINK_CF_WORKER_NAME" \
+            --ignore-base-config > "$RUNNER_TEMP/wrangler-preview.json"
+          node scripts/record-preview-output.mjs "$RUNNER_TEMP/wrangler-preview.json" "$PREVIEW_NAME"
+        shell: bash
+        env:
+          PREVIEW_NAME: ${{ steps.preview-name.outputs.preview_name }}
+          COINBLINK_CF_WORKER_NAME: ${{ vars.COINBLINK_CF_WORKER_NAME }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          EXPECTED_SHA: ${{ github.sha }}
+
+      - name: Verify stable and immutable URLs at exact SHA
+        if: inputs.action == 'deploy'
+        run: node scripts/verify-worker-preview.mjs "$STABLE_URL" "$DEPLOYMENT_URL" "$EXPECTED_SHA"
+        env:
+          STABLE_URL: ${{ steps.preview-output.outputs.stable_url }}
+          DEPLOYMENT_URL: ${{ steps.preview-output.outputs.deployment_url }}
+          EXPECTED_SHA: ${{ github.sha }}
+
+      - name: Delete only the selected managed Preview and its deployments
+        if: inputs.action == 'delete'
+        run: |
+          node scripts/verify-preview-main.mjs
+          npm exec -- wrangler preview delete \
+            --config ./wrangler.jsonc \
+            --name "$PREVIEW_NAME" \
+            --worker-name "$COINBLINK_CF_WORKER_NAME" \
+            --ignore-base-config \
+            --skip-confirmation
+          echo "Deleted only managed Preview $PREVIEW_NAME on $COINBLINK_CF_WORKER_NAME." >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
+        env:
+          PREVIEW_NAME: ${{ steps.preview-name.outputs.preview_name }}
+          COINBLINK_CF_WORKER_NAME: ${{ vars.COINBLINK_CF_WORKER_NAME }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

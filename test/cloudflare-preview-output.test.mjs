@@ -103,3 +103,17 @@ test("rejects the unrelated flattened output-file event format", () => {
     deployment_urls: validOutput.deployment.urls,
   }), /nested Preview and deployment resources/);
 });
+
+test("accepts the Wrangler CLI progress line before its nested Preview JSON", () => {
+  const cliOutput = `Attaching preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}\n${JSON.stringify(validOutput, null, 2)}\n`;
+  assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
+    previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+    deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+  });
+});
+
+test("rejects unrecognized text around Wrangler Preview JSON", () => {
+  const json = JSON.stringify(validOutput);
+  assert.throws(() => parsePreviewOutput(`Debug output\n${json}`, previewName));
+  assert.throws(() => parsePreviewOutput(`Attaching preview\n${json}\nFinished`, previewName));
+});

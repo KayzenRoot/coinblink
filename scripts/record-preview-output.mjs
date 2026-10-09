@@ -37,8 +37,26 @@ export function validatePreviewOutput(result, expectedName) {
   return { previewUrl, deploymentUrl };
 }
 
+function parseWranglerJsonOutput(output) {
+  try {
+    return JSON.parse(output);
+  } catch (parseError) {
+    const lines = output.trim().split(/\r?\n/);
+    const jsonStart = lines.findIndex((line) => line.trimStart().startsWith("{"));
+    const progressLines = lines.slice(0, jsonStart).map((line) => line.trim()).filter(Boolean);
+    if (
+      jsonStart <= 0 ||
+      progressLines.length === 0 ||
+      !progressLines.every((line) => /^Attaching(?:\s|$)/.test(line))
+    ) {
+      throw parseError;
+    }
+    return JSON.parse(lines.slice(jsonStart).join("\n").trim());
+  }
+}
+
 export function parsePreviewOutput(output, expectedName) {
-  return validatePreviewOutput(JSON.parse(output), expectedName);
+  return validatePreviewOutput(parseWranglerJsonOutput(output), expectedName);
 }
 
 function validateCloudflareUrl(values, label, expectedHostnameLabel) {

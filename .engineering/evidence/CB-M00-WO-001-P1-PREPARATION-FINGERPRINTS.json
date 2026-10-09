@@ -4,7 +4,7 @@
   "workOrder": "CB-M00-WO-001",
   "change": "P1_PREPARATION_ONLY",
   "baseCommitSha": "954b4db2d6dff3798e76fd4d75d6bccaf24b0876",
-  "branch": "codex/cb-m00-p1-preparation",
+  "branch": "codex/cb-m00-preview-json-fix",
   "fingerprintSource": "Git blob IDs and SHA-256 over Git blob bytes from frozen base and staged index; Git diff verifies working-tree/index consistency using configured clean filters; no checkout newline conversion",
   "excludesSelf": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION-FINGERPRINTS.json",
   "files": [
@@ -20,8 +20,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "8f4b14a627d9c2899158d44b5731334c1b1608d4",
-        "rawBlobSha256": "eef14fdd21a9bb07867a257943caeced0c36762c74b54fc8bd10037f17c37c26"
+        "gitBlobSha1": "76b4fd7954330346d636235036395e3f50e55730",
+        "rawBlobSha256": "dc4643b5b9b972419a664d066e8bf99ce4b3f79193f059cf580c33b69f5e2fab"
       }
     },
     {
@@ -98,8 +98,8 @@
       "path": "scripts/record-preview-output.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "a233d5c3803797cdb54745809ce0b3987a7371d7",
-        "rawBlobSha256": "b255b9abc78ee37d583bb8d677812107f232a598b8accecbb54eadbfdda4714f"
+        "gitBlobSha1": "415fd8fd3a935dbd6304b765afbd7db2476ed1d4",
+        "rawBlobSha256": "18ac1df0b634d4e6c820fe5446a9f0cc7c420c982efe88f4f8fc80653ded8d81"
       }
     },
     {
@@ -187,8 +187,8 @@
       "path": "test/cloudflare-preview-output.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "1e7e4523adb745b9b09e97377f249779c3c765a1",
-        "rawBlobSha256": "23b805b4677d91b5a6dfb0b166bac4e8e9d001adcd920b51cc8b836085c1fd15"
+        "gitBlobSha1": "a0a3244d1bc71c3081258af8a6fc027bdb23c690",
+        "rawBlobSha256": "651dfaf36c5d996e67e0ff84610294ed347cfc7a891109e9594444a001a3d3a4"
       }
     },
     {

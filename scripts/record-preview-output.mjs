@@ -128,15 +128,10 @@ function splitDiagnosticParts(value) {
   let escaped = false;
 
   for (let index = 0; index < value.length; index += 1) {
+    if (index < partStart) continue;
     const character = value[index];
     if (activeQuote) {
-      if (escaped) {
-        escaped = false;
-      } else if (character === "\\") {
-        escaped = true;
-      } else if (character === activeQuote) {
-        activeQuote = "";
-      }
+      ({ activeQuote, escaped } = advanceQuoteState(character, activeQuote, escaped));
       continue;
     }
     const previousCharacter = value[index - 1];
@@ -150,15 +145,30 @@ function splitDiagnosticParts(value) {
     if (!/\s/.test(character)) continue;
 
     if (index > partStart) parts.push(value.slice(partStart, index));
-    let whitespaceEnd = index + 1;
-    while (whitespaceEnd < value.length && /\s/.test(value[whitespaceEnd])) whitespaceEnd += 1;
+    const whitespaceEnd = findWhitespaceEnd(value, index);
     parts.push(value.slice(index, whitespaceEnd));
-    index = whitespaceEnd - 1;
     partStart = whitespaceEnd;
+  }
+
+  if (activeQuote) {
+    parts.push("[redacted]");
+    return parts;
   }
 
   if (partStart < value.length) parts.push(value.slice(partStart));
   return parts;
+}
+
+function advanceQuoteState(character, activeQuote, escaped) {
+  if (escaped) return { activeQuote, escaped: false };
+  if (character === "\\") return { activeQuote, escaped: true };
+  return { activeQuote: character === activeQuote ? "" : activeQuote, escaped: false };
+}
+
+function findWhitespaceEnd(value, start) {
+  let end = start;
+  while (end < value.length && /\s/.test(value[end])) end += 1;
+  return end;
 }
 
 export function parsePreviewOutput(output, expectedName) {

@@ -133,10 +133,11 @@ test("redacts token-like values from rejected Wrangler progress diagnostics", ()
   const assignmentCredential = "short-assignment-secret";
   const cloudflareCredential = "short-cloudflare-secret";
   const apiKey = "short-api-key";
+  const spacedCredential = "spaced-assignment-secret";
   let capturedError;
   try {
     parsePreviewOutput(
-      `Unexpected output token ${whitespaceCredential} token=${assignmentCredential} CLOUDFLARE_API_TOKEN=${cloudflareCredential} api_key: ${apiKey}\n${json}`,
+      `Unexpected output token ${whitespaceCredential} token=${assignmentCredential} CLOUDFLARE_API_TOKEN=${cloudflareCredential} api_key: ${apiKey} API_SECRET = ${spacedCredential}\n${json}`,
       previewName,
     );
   } catch (error) {
@@ -148,6 +149,7 @@ test("redacts token-like values from rejected Wrangler progress diagnostics", ()
   assert.doesNotMatch(capturedError.message, /short-assignment-secret/);
   assert.doesNotMatch(capturedError.message, /short-cloudflare-secret/);
   assert.doesNotMatch(capturedError.message, /short-api-key/);
+  assert.doesNotMatch(capturedError.message, /spaced-assignment-secret/);
 });
 
 test("rejects unrelated Wrangler progress lines before valid Preview JSON", () => {

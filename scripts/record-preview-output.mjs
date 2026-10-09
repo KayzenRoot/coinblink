@@ -56,8 +56,8 @@ function isExpectedPreviewProgressLine(line, expectedName) {
   // Wrangler can colorize its single progress line even when stdout is redirected in hosted CI.
   // eslint-disable-next-line no-control-regex
   const normalizedLine = line.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "").trim();
-  const previewIdentifier = String.raw`(?:${escapeRegExp(expectedName)}|["']${escapeRegExp(expectedName)}["'])`;
-  const workerIdentifier = String.raw`(?:${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}|["']${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}["'])`;
+  const previewIdentifier = `(?:${escapeRegExp(expectedName)}|["']${escapeRegExp(expectedName)}["'])`;
+  const workerIdentifier = `(?:${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}|["']${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}["'])`;
   const progressPattern = new RegExp(
     String.raw`^(?:attaching|creating|updating|deploying)\s+preview\s+${previewIdentifier}\s+(?:to|on)\s+(?:worker\s+)?${workerIdentifier}[.!]?$`,
     "i",
@@ -66,7 +66,7 @@ function isExpectedPreviewProgressLine(line, expectedName) {
 }
 
 function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, (character) => String.fromCharCode(92) + character);
 }
 
 function containsExactIdentifier(text, identifier) {
@@ -82,13 +82,43 @@ function containsExactIdentifier(text, identifier) {
 }
 
 function redactProgressLine(line) {
-  return line
-    .replace(/https?:\/\/\S+/gi, "[url]")
-    .replace(/\b((?:\w+[_-])*(?:TOKEN|SECRET|KEY|PASSWORD|BEARER))(\s*[:=]\s*|\s+)\S+/gi, "$1=[redacted]")
+  return redactCredentialAssignments(line.replace(/https?:\/\/\S+/gi, "[url]"))
     .replace(/\b[0-9a-f]{32}\b/gi, "[redacted]")
     .replace(/[A-Za-z0-9._~+/-]{24,}/g, "[redacted]")
     .replace(/[\r\n\t]/g, " ")
     .slice(0, 160);
+}
+
+function redactCredentialAssignments(line) {
+  const parts = line.split(/(\s+)/);
+  let redactNextPart = false;
+
+  return parts.map((part) => {
+    if (/^\s+$/.test(part)) return part;
+    if (redactNextPart) {
+      if (part === "=" || part === ":") return part;
+      redactNextPart = false;
+      return "[redacted]";
+    }
+
+    const separatorIndex = part.search(/[=:]/);
+    if (separatorIndex !== -1 && isCredentialKey(part.slice(0, separatorIndex))) {
+      const valueStart = separatorIndex + 1;
+      if (valueStart < part.length) return `${part.slice(0, valueStart)}[redacted]`;
+      redactNextPart = true;
+      return part;
+    }
+
+    if (isCredentialKey(part)) redactNextPart = true;
+    return part;
+  }).join("");
+}
+
+function isCredentialKey(value) {
+  const key = value.toUpperCase().replace(/^-+/, "");
+  return ["TOKEN", "SECRET", "KEY", "PASSWORD", "BEARER"].some((suffix) =>
+    key === suffix || key.endsWith(`_${suffix}`) || key.endsWith(`-${suffix}`),
+  );
 }
 
 export function parsePreviewOutput(output, expectedName) {

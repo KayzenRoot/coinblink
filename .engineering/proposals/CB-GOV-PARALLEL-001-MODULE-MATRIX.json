@@ -117,7 +117,7 @@
     "noProviderCredentialsInTestJobs": true,
     "expectedProviderCallsInMockTests": 0,
     "separateMockAndLiveEvidence": true,
-    "migrationPolicy": "no migration unless a separately approved database ADR and Work Order name one owner for the shared migration history/manifest, use unique migration IDs, and test apply plus rollback against an isolated database; module-local folders do not isolate a global migration sequence",
+    "migrationPolicy": "no migration unless a separately approved database ADR and Work Order name one owner for the shared migration history/manifest, use unique migration IDs, and validate apply plus rollback tests against an isolated database; module-local folders do not isolate a global migration sequence",
     "mockRequirements": [
       "deterministic and local; fixtures clearly labeled synthetic",
       "exercise success, invalid input, timeout/failure, retry and idempotency behavior where applicable",

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -14,8 +15,8 @@ const fingerprintManifestPath = '.engineering/evidence/CB-GOV-PARALLEL-001-FINGE
 const plan = JSON.parse(readFileSync(path.join(repoRoot, moduleMatrixPath), 'utf8'));
 const contractRegister = JSON.parse(readFileSync(path.join(repoRoot, contractRegisterPath), 'utf8'));
 
-function git(args, encoding = 'utf8') {
-  return execFileSync('git', args, { cwd: repoRoot, encoding });
+function git(args, encoding = 'utf8', cwd = repoRoot) {
+  return execFileSync('git', args, { cwd, encoding });
 }
 
 function parseNameStatusZ(raw) {
@@ -114,14 +115,14 @@ function existingBranchNamesFromRefs(refRecords, remoteNames) {
 }
 
 /** Read every local and remote-tracking ref, excluding symbolic remote HEADs. */
-function readExistingBranchNames() {
-  const remoteNames = git(['remote']).split(/\r?\n/u).filter(Boolean);
+function readExistingBranchNames(cwd = repoRoot) {
+  const remoteNames = git(['remote'], 'utf8', cwd).split(/\r?\n/u).filter(Boolean);
   const refs = git([
     'for-each-ref',
     '--format=%(refname)%09%(symref)',
     'refs/heads',
     'refs/remotes',
-  ]).split(/\r?\n/u).filter(Boolean).map((record) => {
+  ], 'utf8', cwd).split(/\r?\n/u).filter(Boolean).map((record) => {
     const [refName, symref = ''] = record.split(/\t/u);
     assert.ok(refName, 'for-each-ref returns a full ref name');
     return { refName, symref };
@@ -326,7 +327,6 @@ test('future Work Order branch and worktree names are unique and refuse pre-exis
     /unique case-insensitively/u,
   );
 
-  assertNoExistingAllocation(branchNames, readExistingBranchNames(), 'future branch');
 });
 
 test('WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively', () => {
@@ -363,6 +363,43 @@ test('WO-002 allocation patterns are sequence-based and remote refs collide case
     /refuses an existing name/u,
   );
   assert.doesNotThrow(() => assertNoExistingAllocation(['main'], existingNames, 'branch'));
+});
+
+test('branch collision inspection reads local and all remote refs from the supplied Git worktree', (t) => {
+  const fixtureRepo = mkdtempSync(path.join(tmpdir(), 'coinblink-branch-refs-'));
+  t.after(() => rmSync(fixtureRepo, { recursive: true, force: true }));
+
+  execFileSync('git', ['init', '--quiet', '--initial-branch=main'], { cwd: fixtureRepo });
+  execFileSync('git', ['config', 'user.name', 'CoinBlink Test'], { cwd: fixtureRepo });
+  execFileSync('git', ['config', 'user.email', 'coinblink-test@example.invalid'], { cwd: fixtureRepo });
+  execFileSync('git', ['-c', 'commit.gpgsign=false', 'commit', '--quiet', '--allow-empty', '-m', 'fixture'], { cwd: fixtureRepo });
+  execFileSync('git', ['remote', 'add', 'origin', 'https://example.invalid/coinblink.git'], { cwd: fixtureRepo });
+  execFileSync('git', ['remote', 'add', 'upstream', 'https://example.invalid/upstream.git'], { cwd: fixtureRepo });
+
+  const headSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: fixtureRepo, encoding: 'utf8' }).trim();
+  for (const refName of [
+    'refs/heads/codex/cb-m02-wo-002',
+    'refs/remotes/origin/codex/cb-m01-wo-002',
+    'refs/remotes/origin/main',
+    'refs/remotes/upstream/codex/cb-m03-wo-002',
+  ]) {
+    execFileSync('git', ['update-ref', refName, headSha], { cwd: fixtureRepo });
+  }
+  execFileSync('git', ['symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main'], { cwd: fixtureRepo });
+
+  const existingNames = readExistingBranchNames(fixtureRepo);
+  assert.deepEqual(existingNames, [
+    'codex/cb-m02-wo-002',
+    'main',
+    'codex/cb-m01-wo-002',
+    'main',
+    'codex/cb-m03-wo-002',
+  ]);
+  assert.throws(
+    () => assertNoExistingAllocation(['CODEX/CB-M01-WO-002'], existingNames, 'branch'),
+    /refuses an existing name/u,
+  );
+  assert.doesNotThrow(() => assertNoExistingAllocation(['codex/cb-m04-wo-002'], existingNames, 'branch'));
 });
 
 test('deterministic fakes remain local and test jobs have no provider credentials', () => {

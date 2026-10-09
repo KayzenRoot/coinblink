@@ -34,11 +34,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "762e9076553a7946edab0257ecf7ff25cf91e478",
-      "candidateRawSha256": "1843cb8d17e55c7a0433091b893379cd3252eab1b3418a53e0d3f282e38f8b2e",
-      "indexGitBlobSha1": "762e9076553a7946edab0257ecf7ff25cf91e478",
-      "workingTreeGitBlobSha1": "762e9076553a7946edab0257ecf7ff25cf91e478",
-      "workingTreeSha256": "1843cb8d17e55c7a0433091b893379cd3252eab1b3418a53e0d3f282e38f8b2e"
+      "candidateGitBlobSha1": "efaff6ada351b23b8228e29bd95eb570d9850d46",
+      "candidateRawSha256": "a4f6768046f430ff22d62412e23021592f0a82bf2aa87ce52eb475fea6598994",
+      "indexGitBlobSha1": "efaff6ada351b23b8228e29bd95eb570d9850d46",
+      "workingTreeGitBlobSha1": "efaff6ada351b23b8228e29bd95eb570d9850d46",
+      "workingTreeSha256": "a4f6768046f430ff22d62412e23021592f0a82bf2aa87ce52eb475fea6598994"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-PARALLEL-002.md",
@@ -56,11 +56,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "eff458a81c90103ba1a7a5c264deeeb0be573e6e",
-      "candidateRawSha256": "172dbe28afde85cf51e1f558d6af9716e43fc18325731722e6eb297fc55dc475",
-      "indexGitBlobSha1": "eff458a81c90103ba1a7a5c264deeeb0be573e6e",
-      "workingTreeGitBlobSha1": "eff458a81c90103ba1a7a5c264deeeb0be573e6e",
-      "workingTreeSha256": "172dbe28afde85cf51e1f558d6af9716e43fc18325731722e6eb297fc55dc475"
+      "candidateGitBlobSha1": "7b4148be84beb23bbfad11124806ccbc57a3f8aa",
+      "candidateRawSha256": "2c8ab6b0755df1b2f09d68964bdf03226cbf8a38ef47d5c93ef00ce91e43f0dc",
+      "indexGitBlobSha1": "7b4148be84beb23bbfad11124806ccbc57a3f8aa",
+      "workingTreeGitBlobSha1": "7b4148be84beb23bbfad11124806ccbc57a3f8aa",
+      "workingTreeSha256": "2c8ab6b0755df1b2f09d68964bdf03226cbf8a38ef47d5c93ef00ce91e43f0dc"
     },
     {
       "path": "test/future-checkpoint-regression.test.mjs",

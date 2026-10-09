@@ -12,9 +12,10 @@ const planPath = '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json'
 const checkpointPath = '.engineering/CHECKPOINT.json';
 const manifestPath = '.engineering/evidence/CB-GOV-PARALLEL-001-FINGERPRINTS.json';
 const gitExecutableCandidates = process.platform === 'win32'
-  ? ['C:\\Program Files\\Git\\cmd\\git.exe', 'C:\\Program Files (x86)\\Git\\cmd\\git.exe']
+  ? [String.raw`C:\Program Files\Git\cmd\git.exe`, String.raw`C:\Program Files (x86)\Git\cmd\git.exe`]
   : ['/usr/bin/git', '/usr/local/bin/git'];
 const gitExecutable = gitExecutableCandidates.find((candidate) => existsSync(candidate));
+const compareEnglish = (left, right) => left.localeCompare(right, 'en-US');
 
 assert.ok(gitExecutable, 'Git is installed in a fixed system directory for this supported runner.');
 
@@ -56,7 +57,7 @@ function normalizedPath(filePath) {
 function assertExactPathSet(actualPaths, manifestPaths) {
   const normalizeAndSort = (paths) => paths
     .map(normalizedPath)
-    .toSorted((left, right) => left.localeCompare(right, 'en-US'));
+    .toSorted(compareEnglish);
   assert.equal(new Set(normalizeAndSort(actualPaths)).size, actualPaths.length, 'historical Git paths are unique case-insensitively');
   assert.equal(new Set(normalizeAndSort(manifestPaths)).size, manifestPaths.length, 'historical manifest paths are unique case-insensitively');
   assert.deepEqual(
@@ -97,7 +98,10 @@ assert.equal(checkpoint.phase, 'IMPLEMENTATION_IN_PROGRESS');
 assert.equal(checkpoint.overallCompletionPercent, 0);
 assert.equal(Object.hasOwn(checkpoint, 'stopState'), false);
 const moduleIds = Array.from({ length: 19 }, (_, index) => `CB-M${String(index).padStart(2, '0')}`);
-assert.deepEqual(Object.keys(checkpoint.checkpointFacts.moduleAdmission).sort(), moduleIds.sort());
+assert.deepEqual(
+  Object.keys(checkpoint.checkpointFacts.moduleAdmission).toSorted(compareEnglish),
+  moduleIds.toSorted(compareEnglish),
+);
 assert.equal(checkpoint.checkpointFacts.moduleAdmission['CB-M00'], 'ADMITTED');
 for (const moduleId of moduleIds.slice(1, -1)) {
   assert.equal(checkpoint.checkpointFacts.moduleAdmission[moduleId], 'NOT_ADMITTED');

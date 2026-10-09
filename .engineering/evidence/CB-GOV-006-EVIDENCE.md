@@ -1,6 +1,6 @@
 # Evidence Bundle · CB-GOV-006
 
-**Status:** `CANDIDATE / LOCAL_VALIDATION_PASS / EXACT_HEAD_CI_PENDING / OWNER_AUDIT_PENDING / M00_NOT_DONE`.
+**Evidence capture state:** `CANDIDATE / LOCAL_VALIDATION_PASS / EXACT_HEAD_CI_PENDING / OWNER_AUDIT_PENDING / M00_NOT_DONE` at initial candidate SHA `3796d419d692de535d49b0c6e9b86f56e7f819cd`.
 **Repository:** `KayzenRoot/coinblink`.
 **Change:** post-merge GEF checkpoint promotion after local M00 P0.
 **Issue:** #34.
@@ -46,7 +46,7 @@ Toolchain was pinned locally to Node `v22.19.0` and npm `10.9.3`. `npm ci --igno
 | `npm audit signatures` | REVIEW / E404 | npm returned E404 for unpublished transitive `@gef-bootstrap/kernel@0.0.0`; the check was not disabled. GEF dependency provenance remains `unverified` / `REVIEW`. |
 | GEF Bootstrap `1.1.2` doctor/status | PASS / REVIEW | Exit 0, read-only effects, checkpoint present/readable/valid, new phase/next legal stage projected, completion 0. The linked managed worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`; status also reports absent drift baseline and conservative `operator.stale=true`. These observation limits remain visible; no baseline was fabricated. |
 
-The initial local suite ran before this bundle was added. The full command set is rerun after adding this bundle so these results describe the final candidate tree. GitHub exact-head CI, CodeRabbit, SonarCloud, and Socket are pending for the final pushed SHA; the linked PR's Checks page and exact run URLs will be the authoritative remote evidence.
+At initial evidence capture, exact-head GitHub checks were pending. The first pushed candidate `3796d419d692de535d49b0c6e9b86f56e7f819cd` was validated by [Actions run 37878742004](https://github.com/KayzenRoot/coinblink/actions/runs/37878742004): Ubuntu, Windows, Docker, SonarCloud, and Socket passed; CodeRabbit skipped review because the PR was draft. This is historical evidence for that exact SHA, not for a subsequent commit. The live [PR #35 Checks page](https://github.com/KayzenRoot/coinblink/pull/35/checks) is authoritative for the current head and its exact-head results.
 
 ## Scope and gates
 

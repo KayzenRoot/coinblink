@@ -2,7 +2,7 @@
 
 **Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; its canonical checkpoint records implementation `NOT_STARTED`, 0%, with no pending `stopState`. This Work Order may implement M00 P0, but it does not mark M00 `DONE`.
 
-**Current candidate:** local P0 implementation and browser/build checks have passed on the execution branch; exact-head GitHub CI, independent review, Owner audit and merge remain pending. The canonical checkpoint JSON is unchanged. Port 3000 is occupied in the local host by an unrelated container; Compose passed at port 3010, and a dedicated CI smoke uses port 3000.
+**Current candidate:** the local P0 implementation and run `37870422086` passed on audited HEAD `ccbce66b216796012689869b9de17effd2327f5a`. That isolated Docker smoke used port 3000 on Ubuntu. The subsequent CodeRabbit review identified two M00 corrections; each candidate SHA requires its own exact-head CI result. The live PR checks identify the current candidate SHA and result. Independent audit, Owner audit and merge remain pending. The canonical checkpoint JSON is unchanged.
 
 ## Admission gate
 - [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). The separate GEF admission gate was completed in CB-GOV-005 / PR #32.
@@ -12,8 +12,9 @@
 ## P0: Working local foundation
 - [x] Code authored by Codex on the admitted execution branch; local `npm ci`, Node engine, typecheck, GEF and app build pass. Exact-head GitHub CI remains a separate P2 gate.
 - [x] `/en`, `/health`, `/preview-status`, and 404 work with honest demo states and no fabricated content in local Playwright and Docker smoke.
-- [ ] Docker Compose default port 3000 is **BLOCKED locally** by unrelated container `d76127e8ff37` (`nexlabs-website-web-1`). The same build and health/routes passed on port 3010; do not stop or remove the unrelated container. Dedicated exact-head CI validation on 3000 is pending.
-- [x] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus, axe accessibility, overflow and browser-console checks pass locally. Exact-head CI artifacts remain pending.
+- [ ] Docker Compose default port 3000 remains **BLOCKED locally** by unrelated container `d76127e8ff37` (`nexlabs-website-web-1`). Local smoke used port 3010; do not stop or remove the unrelated container.
+- [x] Exact-head run `37870422086` on `ccbce66b216796012689869b9de17effd2327f5a` passed the isolated Ubuntu Docker smoke on port 3000, including health, preview-status, exact build SHA and 404 checks. Any later candidate requires a fresh run.
+- [x] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus, axe accessibility, overflow and browser-console checks pass locally. Exact-head artifact `coinblink-m00-playwright-37870422086-1` was uploaded; current candidate artifacts are linked from PR #33 checks.
 - [x] Astro session auto-KV is disabled and the generated Worker config has no unrequested `SESSION` binding.
 
 ## P1: Remote preview (external authorization gate)
@@ -22,7 +23,7 @@
 - [ ] No preview deployed unless provider authorization/cost gate passed. If missing: `PROVIDER_SETUP_REQUIRED`, never describe as DONE.
 
 ## P2: Review and promotion
-- [ ] Existing Linux/Windows GEF and relevant new app CI jobs green at exact final SHA.
+Exact-head CI is SHA-specific: run `37870422086` passed on audited candidate `ccbce66b216796012689869b9de17effd2327f5a`; the live PR #33 checks are authoritative for any correction candidate that follows.
 - [ ] No unresolved critical/high security or CodeRabbit/Codex independent review items, no fake tests or provider claims.
 - [ ] Evidence Bundle shows actual logs, screenshots, URLs, build versions, isolation, local Docker proof, cost/rollback and Owner visual approval.
 - [ ] Gate-valid checkpoint delta promoted only after independent audit and merge approval, no force push.

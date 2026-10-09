@@ -11,7 +11,24 @@ const gitExecutable = process.platform === "win32"
   : "/usr/bin/git";
 const manifestPath = ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX-FINGERPRINTS.json";
 const manifest = JSON.parse(readFileSync(resolve(manifestPath), "utf8"));
-const currentBranch = process.env.GITHUB_HEAD_REF || execFileSync(gitExecutable, ["branch", "--show-current"], { encoding: "utf8" }).trim();
+
+function resolveCurrentBranch(environment, gitBranch) {
+  const branch = environment.GITHUB_HEAD_REF || gitBranch.trim();
+  assert.ok(branch || environment.GITHUB_ACTIONS === "true",
+    "Could not determine the current Git branch outside GitHub Actions");
+  return branch;
+}
+
+const currentBranch = resolveCurrentBranch(
+  process.env,
+  execFileSync(gitExecutable, ["branch", "--show-current"], { encoding: "utf8" }),
+);
+
+test("branch detection fails closed locally and preserves GitHub Actions behavior", () => {
+  assert.throws(() => resolveCurrentBranch({}, ""), /outside GitHub Actions/);
+  assert.equal(resolveCurrentBranch({ GITHUB_HEAD_REF: "main" }, ""), "main");
+  assert.equal(resolveCurrentBranch({ GITHUB_ACTIONS: "true" }, ""), "");
+});
 
 function gitDiffQuiet(path) {
   const result = spawnSync(gitExecutable, ["diff", "--quiet", "--", path], { encoding: "utf8" });

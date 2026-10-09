@@ -68,20 +68,22 @@ The current evidence/fingerprint-only commit requires a fresh exact-head CI roll
 
 ## Correction delta for Owner review
 
-The Owner and CodeRabbit reviewed PR #42 at `a893cb24ced93567eeea5e546c770b26924b793f`. The review identified five actionable documentation/test findings: remove the published machine-specific worktree path from the Context Lock, correct the PR identity above, align sequence-based branch/worktree patterns on `{woSuffix}`, make global migration-history ownership explicit, and normalize complete local/remote Git refs before allocation collision checks. The older path is removed from the current Context Lock; immutable Git history was not rewritten. The CodeRabbit docstring-coverage advisory is not backed by a configured ESLint, package, or CI gate; this delta adds concise JSDoc to the new branch-ref helpers where it explains their behavior.
+The Owner and CodeRabbit reviewed PR #42 at `a893cb24ced93567eeea5e546c770b26924b793f` ([CodeRabbit review](https://github.com/KayzenRoot/coinblink/pull/42#pullrequestreview-5475572142), [Owner audit](https://github.com/KayzenRoot/coinblink/pull/42#pullrequestreview-5475642010)). The review identified five actionable documentation/test findings: remove the published machine-specific worktree path from the Context Lock, correct the PR identity above, align sequence-based branch/worktree patterns on `{woSuffix}`, make global migration-history ownership explicit, and normalize complete local/remote Git refs before allocation collision checks. The older path is removed from the current Context Lock; immutable Git history was not rewritten. The CodeRabbit docstring-coverage advisory is not backed by a configured ESLint, package, or CI gate; this delta adds concise JSDoc to the new branch-ref helpers where it explains their behavior.
 
 At the reviewed HEAD, the exact-head Docker job [failed](https://github.com/KayzenRoot/coinblink/actions/runs/37993642014/job/114034761054) before building the image because Docker Hub token acquisition returned HTTP 504 for the existing pinned `node:22.19.0-bookworm-slim` image. Ubuntu and Windows passed on the same SHA. Docker image source, version, and verification policy remain unchanged; bounded retries are required after this correction is pushed. No check is disabled or weakened.
 
-Local validation of the correction source, before regenerating its fingerprint manifest, used Node `22.23.3` (within the declared `>=22.19.0 <23` engine range) and npm `10.9.3`:
+Local validation was completed on correction HEAD `fa3b6074bf938f5c604d453cbc6cbe09607e34eb`, using Node `22.23.3` (within the declared `>=22.19.0 <23` engine range) and npm `10.9.3`:
 
 | Check | Result | Evidence |
 |---|---|---|
 | `npm ci --ignore-scripts` | PASS | 437 packages installed; zero vulnerabilities |
+| `npm audit --audit-level=high` | PASS | Zero reported vulnerabilities |
 | `npm run lint` | PASS | ESLint exited 0 with no warnings |
 | `npm run typecheck` | PASS | 35 files; zero errors, warnings, or hints |
 | `npm run build` | PASS | Astro server build and no-session/no-binding assertion passed |
 | `npm run test:e2e` | PASS | 7/7 Playwright tests, including desktop, tablet, mobile, routes and security headers |
 | Focused correction regressions | PASS | 4/4 tests for sanitized Context Lock/PR identity, WO-002 patterns, local/remote collisions, case handling, multiple remotes, and remote HEAD symrefs |
-| GEF doctor/status in managed worktree | REVIEW | Read-only command returned `ok=true` and a valid checkpoint, but GEF could not observe the managed worktree Git directory (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`). Repeat in a normal clone for a trustworthy repository observation. |
-| Full `npm test` and fingerprint manifest | Final gate | Run after the correction commit and manifest refresh; report its exact result against the live PR #42 HEAD. |
-| Docker local smoke | Final gate | Run against the corrected source with a unique Compose project and an available local port; report the result in the live PR #42 summary. |
+| Full `npm test` and fingerprint manifest | PASS | 73/73 unit tests, Astro build and no-binding assertion passed, 7/7 Playwright tests; fingerprint HEAD/index/worktree assertions passed. |
+| GEF doctor/status | REVIEW | In a normal clone at this SHA, both commands returned `ok=true`, repository observation was `HEALTHY` / `CLEAN` / `OBSERVED`, and the checkpoint was valid. GEF security remains `REVIEW` for dependency provenance and non-immutable GitHub ref; status retains the stale operator narrative and absent drift baseline findings. |
+| Docker local smoke | PASS | Isolated Compose project on `127.0.0.1:3015`; exact build SHA matched; `/health`, `/preview-status`, `/en`, 404, `noindex` and `nosniff` passed. Docker pulled the unchanged pinned `node:22.19.0-bookworm-slim` digest `sha256:4a4884e8a44826194dff92ba316264f392056cbe243dcc9fd3551e71cea02b90`. Only this isolated project was removed; unrelated containers were left running. |
+| Exact-head GitHub checks for the final pushed HEAD | Live gate | Read the current PR #42 check rollup and CodeRabbit review from GitHub; this Evidence Bundle does not infer an unpublished or untested SHA. |

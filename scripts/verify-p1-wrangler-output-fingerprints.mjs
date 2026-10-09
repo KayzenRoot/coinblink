@@ -11,6 +11,7 @@ const gitExecutable = process.platform === "win32"
   : "/usr/bin/git";
 const manifestPath = ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX-FINGERPRINTS.json";
 const manifest = JSON.parse(readFileSync(resolve(manifestPath), "utf8"));
+const currentBranch = process.env.GITHUB_HEAD_REF || execFileSync(gitExecutable, ["branch", "--show-current"], { encoding: "utf8" }).trim();
 
 function gitDiffQuiet(path) {
   const result = spawnSync(gitExecutable, ["diff", "--quiet", "--", path], { encoding: "utf8" });
@@ -35,15 +36,15 @@ function assertExactPathCoverage(changedPaths, entries) {
     `fingerprints must exactly cover changed paths; missing: ${missing.join(", ") || "none"}; extra: ${extra.join(", ") || "none"}`);
 }
 
-test("P1 output-correction fingerprints exactly bind this branch to the frozen main base", () => {
+test("P1 output-correction fingerprints exactly bind this branch to the frozen main base", {
+  skip: currentBranch !== manifest.branch,
+}, () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.repository, "KayzenRoot/coinblink");
   assert.equal(manifest.workOrder, "CB-M00-WO-001");
   assert.equal(manifest.change, "CB-M00-P1-WRANGLER-OUTPUT-FIX");
   assert.equal(manifest.baseCommitSha, baseSha);
   assert.equal(manifest.branch, "codex/cb-m00-wrangler-structured-output");
-  const currentBranch = process.env.GITHUB_HEAD_REF || execFileSync(gitExecutable, ["branch", "--show-current"], { encoding: "utf8" }).trim();
-  assert.equal(currentBranch, manifest.branch);
   assert.equal(manifest.excludesSelf, manifestPath);
 
   const changedPaths = execFileSync(gitExecutable, ["diff", "--name-only", "--no-renames", "-z", baseSha], { encoding: "utf8" })

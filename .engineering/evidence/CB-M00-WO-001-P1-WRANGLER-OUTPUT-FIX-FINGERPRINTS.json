@@ -12,8 +12,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "d3b1b2ae8350d95d78177907d364008322d1bec4",
-        "rawBlobSha256": "792fc2d2b182e5705ead5120a64d5e07e1d5e0a781a945d59e1369e4f7639a50"
+        "gitBlobSha1": "403d4524dcd354dc3107ef487b6202f9d75bf1e8",
+        "rawBlobSha256": "46b1192e031dd4efc62b6c24ed5212a650c795125c3f23d6c0b889a5ff5fdcb6"
       }
     },
     {
@@ -69,8 +69,8 @@
         "rawBlobSha256": "7c5d5864841205cb5c3ac92c1b2f077df420fb8a330124ae7d696da01cba6bae"
       },
       "candidate": {
-        "gitBlobSha1": "f2a4a672abcea4dad3216820ca40147ec39ff446",
-        "rawBlobSha256": "ff38ded6f328a5ff52821331dd8e4933a869ea58c6244cfb8a111e04baab92fa"
+        "gitBlobSha1": "0a5961914237f22a56ad71924edc9e830f5fdae9",
+        "rawBlobSha256": "ebbd85d6c4391cdf1a6fc0440e17503db2ba7ea68a057efa3e247c65bdab1973"
       }
     },
     {
@@ -88,8 +88,8 @@
       "path": "scripts/verify-p1-wrangler-output-fingerprints.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "fcc28d4fa23f327d20dfed05f99065a82674eddb",
-        "rawBlobSha256": "e7787d29a71788d612704d954baa13bda7afe3cc4eaad9ecbf3592c05fbe02f7"
+        "gitBlobSha1": "b7ca559e169302a9032734cb56089b09ed5320db",
+        "rawBlobSha256": "ecec8ef0b426fe100fbc1ba5cb4f2e8ba9dcce96118dd411e7735abf32d7889a"
       }
     },
     {

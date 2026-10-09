@@ -10,7 +10,7 @@ const viewports = [
 ];
 const evidenceSha = (process.env.EXPECTED_SHA || "local").slice(0, 12);
 const screenshotDirectory = join(process.cwd(), "artifacts", "playwright", evidenceSha);
-const buildEnvironment = process.env.PUBLIC_BUILD_ENV || "local";
+const buildEnvironment = process.env.PUBLIC_BUILD_ENV?.trim() || "local";
 const expectedPresentation = buildEnvironment === "preview"
   ? {
     chip: "Cloudflare Worker Preview",
@@ -93,7 +93,7 @@ test.describe("CoinBlink M00 local shell", () => {
     expect(health).toMatchObject({
       status: "ok",
       service: "coinblink",
-      environment: process.env.PUBLIC_BUILD_ENV || "local",
+      environment: buildEnvironment,
     });
     expect(health.buildSha).toBe(process.env.EXPECTED_SHA || "local");
     expect(Object.keys(health).sort()).toEqual(["buildSha", "environment", "service", "status"]);
@@ -107,9 +107,9 @@ test.describe("CoinBlink M00 local shell", () => {
       dataMode: "demonstration-only",
       editorialFeed: "not-connected",
       marketData: "not-connected",
-      cloudflarePreview: process.env.PUBLIC_BUILD_ENV === "preview" ? "preview" : "not-deployed",
+      cloudflarePreview: buildEnvironment === "preview" ? "preview" : "not-deployed",
       buildSha: process.env.EXPECTED_SHA || "local",
-      environment: process.env.PUBLIC_BUILD_ENV || "local",
+      environment: buildEnvironment,
     });
     expect(JSON.stringify(previewStatus)).not.toMatch(/secret|password|api.?key/i);
   });

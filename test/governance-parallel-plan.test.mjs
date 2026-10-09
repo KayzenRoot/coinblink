@@ -397,10 +397,13 @@ test('fingerprint bundle exactly covers the current integration-base Git paths a
   const actualEntries = changedPathEntries(manifest.integrationBaseSha);
   const actualPaths = actualEntries.map((entry) => entry.path);
   assertExactChangedPathSet(actualPaths, manifestPaths, fingerprintManifestPath);
+  assert.equal(manifest.changedGitPathCountIncludingManifest, actualEntries.length);
+  assert.equal(existsSync(path.join(repoRoot, fingerprintManifestPath)), true, 'fingerprint manifest exists but is excluded from its own hashes');
 
   const entryByPath = new Map(manifestEntries.map((entry) => [normalizedPath(entry.path), entry]));
   for (const diffEntry of actualEntries) {
     const changedPath = diffEntry.path;
+    if (normalizedPath(changedPath) === normalizedPath(fingerprintManifestPath)) continue;
     const entry = entryByPath.get(normalizedPath(changedPath));
     assert.ok(entry, `${changedPath} is present in the manifest`);
     assert.equal(entry.status, diffEntry.status, `${changedPath} change status is recorded`);

@@ -4,10 +4,21 @@
   "workOrder": "CB-M00-WO-001",
   "change": "P1_PREPARATION_ONLY",
   "baseCommitSha": "954b4db2d6dff3798e76fd4d75d6bccaf24b0876",
-  "branch": "codex/cb-m00-p1-preparation",
+  "branch": "codex/cb-m00-preview-json-fix",
   "fingerprintSource": "Git blob IDs and SHA-256 over Git blob bytes from frozen base and staged index; Git diff verifies working-tree/index consistency using configured clean filters; no checkout newline conversion",
   "excludesSelf": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION-FINGERPRINTS.json",
   "files": [
+    {
+      "path": "AGENTS.md",
+      "base": {
+        "gitBlobSha1": "0cdce3e0cb86da828aef4f7a6a9e9947d2fe3ec8",
+        "rawBlobSha256": "8460bccdf60d56f29b484b90072c23c4946806f4469c384bea516d529b5be3a1"
+      },
+      "candidate": {
+        "gitBlobSha1": "ac48525e1a586c65766922539d420fb8d37caccb",
+        "rawBlobSha256": "2c899a0ee1fd4b72f36b4e6446a5ff79f7662aed9c1a2766feba5bcc5cb9f68e"
+      }
+    },
     {
       "path": ".engineering/context-locks/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
@@ -20,8 +31,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "8f4b14a627d9c2899158d44b5731334c1b1608d4",
-        "rawBlobSha256": "eef14fdd21a9bb07867a257943caeced0c36762c74b54fc8bd10037f17c37c26"
+        "gitBlobSha1": "abebd50cfd53d0621d34d9d02a0383436fb7d74d",
+        "rawBlobSha256": "8a1d9863a0c832f91b1b2ceff97d26d56c549ff2eeeeada0305c96326fd62e72"
       }
     },
     {
@@ -98,8 +109,8 @@
       "path": "scripts/record-preview-output.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "a233d5c3803797cdb54745809ce0b3987a7371d7",
-        "rawBlobSha256": "b255b9abc78ee37d583bb8d677812107f232a598b8accecbb54eadbfdda4714f"
+        "gitBlobSha1": "0ed303f047b9589301d8d245c8d0b25b43bab2a2",
+        "rawBlobSha256": "8b0dd12ed3536755bf934093f4db086c0a8a705a931d111cc8ab33e08d57a94a"
       }
     },
     {
@@ -187,8 +198,8 @@
       "path": "test/cloudflare-preview-output.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "1e7e4523adb745b9b09e97377f249779c3c765a1",
-        "rawBlobSha256": "23b805b4677d91b5a6dfb0b166bac4e8e9d001adcd920b51cc8b836085c1fd15"
+        "gitBlobSha1": "d21ba00999dc90c639864ef0a8c83874aca09227",
+        "rawBlobSha256": "c63513ee973ad943ee4aa65c0942b7bb7c0c77cce17a04f74dd38526bb989e53"
       }
     },
     {

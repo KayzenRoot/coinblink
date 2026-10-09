@@ -4,7 +4,7 @@
 
 **Base:** `954b4db2d6dff3798e76fd4d75d6bccaf24b0876` (`origin/main`)
 
-**Branch:** `codex/cb-m00-p1-preparation`
+**Branch:** `codex/cb-m00-preview-json-fix`
 
 **Candidate HEAD:** published in the PR description and exact-head check run links after commit; this file deliberately avoids a self-referential commit hash.
 
@@ -14,7 +14,7 @@
 
 ## Objective and boundary
 
-Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M00 P1, without invoking Cloudflare or changing provider state. The canonical checkpoint, admitted Work Order, original execution Context Lock, and M01–M18 governance are unchanged. P1 remains `PROVIDER_SETUP_REQUIRED / NOT_DEPLOYED / OWNER_AUTHORIZATION_REQUIRED`; M00 completion remains 0% and is not declared done.
+Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M00 P1. At the time of the original PR #37 preparation, no Cloudflare operation had been authorized or performed. A separate explicit Owner authorization was later provided on 2026-10-09; the provider actions and their current evidence are recorded below. The canonical checkpoint, admitted Work Order, original execution Context Lock, and M01–M18 governance remain unchanged. M00 completion remains 0% and is not declared done.
 
 ## Source and compatibility evidence
 
@@ -44,7 +44,19 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 - Strengthened fingerprint verification to compare the exact changed Git path set against the frozen base, excluding only the fingerprint manifest, and to reject missing, extra, duplicate, and deleted paths. SHA-1/SHA-256 still verify staged Git blobs; every manifest path must also have a clean Git index-to-working-tree diff. Regressions prove omissions and real tracked deletions fail, unstaged edits fail, and Git-normalized line endings remain portable.
 - Addressed Owner audit continuation #5468234422: Preview `robots.txt` now permits crawling so crawlers can read the existing HTML, response-header, and static-asset noindex controls. Browser/config tests and the exact-SHA remote-smoke contract reject `Disallow: /`; this is not access control and Preview content remains public demo data.
 - Addressed the final-head CodeRabbit deletion regression: a manifest entry with `candidate: null` now also requires the worktree path to be absent. The isolated Git test stages a deletion, recreates the path as untracked, and verifies that the index/worktree diff alone misses it while fingerprint validation rejects it.
-- No Cloudflare login, API request, Preview create/delete, deployment, billing change, credential read, or remote resource operation occurred.
+- The first Owner-authorized Preview attempt is documented in the provider evidence section below. Its CLI command created a real Preview successfully, then the output recorder rejected Wrangler's leading `Attaching ...` progress line before the nested JSON. The parser accepts only the single expected progress line with the exact run-derived Preview name and dedicated Worker name; regressions reject other names, Workers, suffixes, unknown prefixes, and trailing output.
+- Updated the root `AGENTS.md` status note to reflect the Owner-authorized Preview for the documented base SHA, while explicitly keeping corrected-head validation pending and leaving production/checkpoint claims unchanged.
+
+## Owner-authorized Cloudflare Preview evidence · 2026-10-09
+
+- GitHub CLI authentication was confirmed for `KayzenRoot`; Environment `cloudflare-preview` remains protected by required reviewer `KayzenRoot`, self-review allowed, admin bypass disabled, and a custom branch policy limited to `main`. The Account ID and API token were saved only as Environment secrets; values were not read back or logged.
+- Cloudflare Workers Free and the `kayzendev.workers.dev` subdomain were confirmed in the authenticated account. Workers reported 100,000 requests/day on Free and current-cycle billable usage of USD 0.00. The account has a pre-existing Paid R2 subscription unrelated to CoinBlink; no R2 binding or operation was used. The existing USD 10 alert is informational, not a hard account-wide spending cap, so the workflow's USD 0 internal ceiling is policy metadata rather than a provider-enforced billing guarantee.
+- Before provisioning, the Workers & Pages list contained no Worker resources. The dedicated Worker `coinblink-m00-preview` was then created through the protected workflow. The temporary account-level Workers Admin token was revoked after bootstrap. The active token `coinblink-github-preview` is limited to the Individual Workers Editor role for that single Worker, with a 90-day expiry; it grants no DNS, Billing, R2, KV, or D1 permissions. The final token has not yet completed a Wrangler Preview operation.
+- The manual workflow run [37930510285](https://github.com/KayzenRoot/coinblink/actions/runs/37930510285) used exact `main` SHA `ec3b5df6e477b349c0761fd46dec7c873ebd2cc5`. Its preflight and Owner Environment approval passed. Wrangler Preview creation returned success, but the job ended failed when the recorder parsed the CLI progress line as JSON. No `wrangler deploy` or production deployment was run.
+- The dashboard showed the created Preview as Ready and showed no active production deployment. The real Preview URLs were `https://coinblink-m00-run-37930510285-1-coinblink-m00-preview.kayzendev.workers.dev` (stable) and `https://562a6468-coinblink-m00-preview.kayzendev.workers.dev` (immutable deployment URL).
+- Direct HTTPS checks against both URLs returned `/en` 200 with `noindex`, `/health` 200 with exact build SHA `ec3b5df6e477b349c0761fd46dec7c873ebd2cc5` and `environment: preview`, `/preview-status` 200 with demonstration-only data and no connected editorial or market feeds, and a deliberately unknown route 404. `X-Robots-Tag` and the configured security headers were present. These checks validate the base SHA Preview only; the corrected workflow and least-privilege token still require a fresh exact-main run after this parser correction passes PR review and merges.
+- Headless Chromium checked both real Preview URLs at 1536×864, 768×1024, and 390×844: all six `/en` loads returned 200, had no horizontal overflow, zero axe violations, and zero console/page errors. On both URLs `/health` and `/preview-status` returned 200 and the unknown-route probe returned 404; `X-Robots-Tag: noindex` and `X-Frame-Options: DENY` were present. This validates the already-published base SHA, not the parser correction.
+- No Cloudflare production deployment, other project Worker modification, R2 use, billing change, or new paid service was performed. M00 remains in progress; this evidence does not promote the canonical checkpoint or declare P1/M00 complete.
 
 ## Local validation
 
@@ -55,26 +67,26 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 | `npm audit --audit-level=high` | PASS; 0 vulnerabilities |
 | `npm run lint` | PASS; ESLint with zero warnings allowed |
 | `npm run typecheck` | PASS; 34 files, 0 errors, 0 warnings, 0 hints |
-| `npm test` | PASS on Windows with Node.js `22.19.0`; 50/50 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
+| `npm test` | PASS on Windows with Node.js `22.19.0`; parser correction HEAD: 53/53 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
 | `npm run build` | PASS independently with Node.js `22.19.0`; Astro Cloudflare build completed and generated-config guard found no SESSION/data/service/production bindings |
 | Playwright views | PASS at 1536×864, 768×1024, and 390×844; accessibility assertions included |
 | Docker Compose localhost smoke | PASS on verified free `127.0.0.1:3010` using unique project `coinblink-m00-p1-sanitizer-local-20261009`; Linux adapter build, health/buildSha, local `not-deployed` status, robots/noindex and true 404 passed. Only that temporary Compose project was removed. |
 | GEF `doctor --target . --json` | Exit 0, effect `NONE`; checkpoint present/valid and toolchain healthy. Linked-worktree observation remains `repository.observable=FINDING` (`GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`); dependency provenance remains `unverified` / `REVIEW`. These limits are retained, not suppressed. |
-| GEF `status --target . --json` | Exit 0, effect `NONE`; checkpoint is `M00_ADMITTED`, `IMPLEMENTATION_IN_PROGRESS`, 0%, with P1 Owner authorization and Preview evidence as next stage. Dirtiness is `UNKNOWN`; absent drift baseline is conservatively `stale=true`. No baseline was fabricated. |
+| GEF `status --target . --json` | Exit 0, effect `NONE`; checkpoint is `M00_ADMITTED`, `IMPLEMENTATION_IN_PROGRESS`, 0%, with the canonical P1 authorization/evidence gate as next stage. Dirtiness is `UNKNOWN`; absent drift baseline is conservatively `stale=true`. No baseline was fabricated. |
 | `git diff --check` | PASS after removing one extra trailing blank line |
 
-Correction-specific validation on Node.js `22.19.0`: `npm run lint` PASS; `npm run typecheck` PASS (34 files, 0 errors/warnings/hints); `npm test` PASS (50/50 unit, build/session guard, 7/7 Playwright); standalone `npm run build` PASS; `npm audit --audit-level=high` PASS (0 vulnerabilities). The fingerprint regressions verify exact path equality, omitted/extra/duplicate paths, tracked deletions including a recreated untracked path, unstaged mutations, and Git EOL normalization. Robots tests verify that crawlers can read noindex signals without removing the noindex headers/meta. The delete documentation test and local Wrangler help tests use installed `wrangler@4.149.0` only. The system-default Node.js `24.19.0` initially failed the repository's intentional GEF Node-major-22 assertion; rerunning the suite with the CI-pinned Node.js `22.19.0` passed.
+Correction-specific validation on Node.js `22.19.0`: `npm run lint` PASS; `npm run typecheck` PASS (34 files, 0 errors/warnings/hints); `npm test` PASS (53/53 unit, build/session guard, 7/7 Playwright); `npm audit --audit-level=high` PASS (0 vulnerabilities); `GEF doctor` and `GEF status` exit 0 with the observation limits above. The parser accepts only the exact expected Wrangler progress line and nested JSON; regressions reject unrelated output, wrong Preview/Worker names, unexpected suffixes, unknown prefixes, and trailing text. Real Preview responsiveness and route checks passed for both URLs as recorded above. The preceding PR #38 candidate passed Ubuntu, Windows, Docker, SonarCloud, Socket, and CodeRabbit checks; use the live PR #38 checks for the final evidence commit because any correction creates a new HEAD. Owner audit and merge remain pending.
 
 Local `docker ps` confirmed unrelated `nexlabs-website-web-1` owns `127.0.0.1:3000`; it was left running. The local Docker smoke used port 3010 and an isolated Compose project. The PR CI Docker Compose smoke remains the exact-head remote check for this candidate.
 
 ## External and exact-head evidence boundary
 
-- No Cloudflare login, account API, Wrangler Preview command, resource creation/deletion, deployment, billing change, or credential read was performed. No actual stable or immutable Preview URL exists from this preparation.
-- The exact-SHA health and `/preview-status` contract is covered with deterministic fake-response tests. Real network health checks can run only after Owner setup and a separately authorized manual workflow dispatch; they are not claimed as complete here.
-- Exact-head Ubuntu, Windows, Docker, SonarCloud, Socket, and CodeRabbit results are published against the final candidate SHA in the PR. They were not available at local evidence authoring time.
-- Cloudflare account ownership, Workers Free plan, enforceable USD 0 cost ceiling, IAM token scope, dedicated Worker availability, GitHub environment protection, and credentials remain externally unverified. The workflow stops until the Owner configures and attests every required value.
-- No checkpoint delta is proposed: preparation does not deploy P1, alter canonical progress, or satisfy M00 completion.
+- A real Preview exists for the base `main` SHA as documented above. The corrected parser branch has not yet been deployed, and the final least-privilege token has not yet been exercised by Wrangler.
+- The exact-SHA health and `/preview-status` contract passed against the documented base Preview. Owner provider authorization is complete; the corrected code still requires its final exact-head checks, Owner audit and merge, followed by a fresh protected manual Preview run on the corrected `main` SHA before it can be called verified remotely.
+- The original PR #37 exact-head results apply to its merged base. The preceding PR #38 candidate passed Ubuntu, Windows, Docker, SonarCloud, Socket, and CodeRabbit checks; use the live PR #38 checks for the final evidence commit because any documentary correction creates a new HEAD. Owner audit and merge remain pending.
+- Cloudflare account and Free plan, scoped IAM token, dedicated Worker, GitHub Environment protection, and secret presence were verified as described above. An enforceable USD 0 account-wide cost ceiling is unavailable; the account alert is not a hard stop. No provider-enforced cost guarantee is claimed.
+- No checkpoint delta is proposed in this correction. The canonical checkpoint remains unchanged at 0%; this parser fix and the already-running base Preview do not satisfy the full M00 Definition of Done or authorize M01+.
 
 ## Result
 
-The local preparation is ready for independent review. Merge and external deployment remain outside this work's stop boundary. The Owner must audit the exact final HEAD, review the PR evidence and checks, and separately authorize provider setup before any Preview action can run.
+The original P1 preparation has since been followed by the separately Owner-authorized Preview operation documented above. That base-SHA Preview exists, but its first workflow run failed at output recording; this parser correction has not yet been deployed and the final least-privilege token has not yet been exercised by Wrangler. The next provider operation is a new protected Preview dispatch on corrected `main`, after PR #38's current HEAD passes exact-head validation and the Owner audit/merge gate; provider setup authorization is already complete. No checkpoint promotion, production deployment, or M00 completion is claimed.

@@ -37,8 +37,22 @@ export function validatePreviewOutput(result, expectedName) {
   return { previewUrl, deploymentUrl };
 }
 
+function parseWranglerJsonOutput(output, expectedName) {
+  try {
+    return JSON.parse(output);
+  } catch (parseError) {
+    const lines = output.trim().split(/\r?\n/);
+    const jsonStart = lines.findIndex((line) => line.trimStart().startsWith("{"));
+    const expectedProgressLine = `Attaching preview ${expectedName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}`;
+    if (jsonStart !== 1 || lines[0] !== expectedProgressLine) {
+      throw new Error("Wrangler output contains an unexpected Preview progress line.", { cause: parseError });
+    }
+    return JSON.parse(lines.slice(jsonStart).join("\n").trim());
+  }
+}
+
 export function parsePreviewOutput(output, expectedName) {
-  return validatePreviewOutput(JSON.parse(output), expectedName);
+  return validatePreviewOutput(parseWranglerJsonOutput(output, expectedName), expectedName);
 }
 
 function validateCloudflareUrl(values, label, expectedHostnameLabel) {

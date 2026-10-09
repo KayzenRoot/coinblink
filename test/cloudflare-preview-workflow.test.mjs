@@ -24,13 +24,26 @@ function commandLines(commandText) {
   return command.join("\n");
 }
 
-function stepBlockNamed(name) {
-  const lines = gatedJob.split(/\r?\n/);
+function stepBlockNamed(name, source = gatedJob) {
+  const lines = source.split(/\r?\n/);
   const start = lines.findIndex((line) => line.trim() === `- name: ${name}`);
   assert.notEqual(start, -1, `step ${name} is present`);
-  const end = lines.findIndex((line, index) => index > start && line.trim().startsWith("- name:"));
+  const stepPrefix = `${lines[start].match(/^\s*/)?.[0] ?? ""}- `;
+  const end = lines.findIndex((line, index) => index > start && line.startsWith(stepPrefix));
   return lines.slice(start, end === -1 ? lines.length : end).join("\n");
 }
+
+test("workflow step parser stops at unnamed YAML steps", () => {
+  const fixture = [
+    "      - name: Guard",
+    "        run: verify",
+    "      - run: echo intervening",
+    "      - name: Provider",
+    "        run: wrangler",
+  ].join("\n");
+
+  assert.equal(stepBlockNamed("Guard", fixture), "      - name: Guard\n        run: verify");
+});
 
 function optionsIn(command) {
   return [...command.matchAll(/--([a-z][a-z-]*)/g)].map(([, option]) => option).sort();

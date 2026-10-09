@@ -26,8 +26,8 @@
   "moduleExecutionPolicy": {
     "agent": "one dedicated Codex Desktop LOCAL agent per admitted module Work Order",
     "agentAssignment": "record the Codex task ID and assigned agent identity in the Work Order/Evidence Bundle; no assignment or code work exists for unadmitted modules",
-    "worktreePattern": "cb-m{nn}-wo-001",
-    "branchPattern": "codex/cb-m{nn}-wo-001",
+    "worktreePattern": "cb-m{nn}-{woSuffix}",
+    "branchPattern": "codex/cb-m{nn}-{woSuffix}",
     "prTitlePattern": "[{workOrderId}] {module scope}",
     "testsPathPattern": "test/modules/CB-M{nn}/** and e2e/modules/CB-M{nn}/**",
     "evidencePathPattern": ".engineering/evidence/{workOrderId}-*",

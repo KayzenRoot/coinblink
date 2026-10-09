@@ -4,7 +4,8 @@
 **Repository:** `KayzenRoot/coinblink`
 **Original canonical base / initial integration base:** `27015adc87caacabbed0e318f892644ce0473f10`
 **Verified remote main:** same SHA at capture time (2026-10-09 UTC).
-**Worktree:** `C:\Users\csn19\.codex\worktrees\cb-gov-parallel-001\CoinBlink`
+**Worktree:** `cb-gov-parallel-001` (logical worktree identifier; host path omitted).
+**Correction provenance:** An earlier PR #42 version exposed a host-specific absolute Windows path in this Context Lock. This correction removes that path without rewriting Git history.
 **Branch:** `codex/cb-gov-parallel-001`
 **GEF:** Bootstrap CLI `1.1.2`, source commit `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`.
 **Authority:** proposed parallel-delivery governance only; no module code authority.

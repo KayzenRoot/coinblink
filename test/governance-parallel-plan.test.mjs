@@ -95,6 +95,41 @@ function assertNoExistingAllocation(names, existingNames, label) {
   assert.equal(collision, undefined, `${label} allocation refuses an existing name`);
 }
 
+/** Normalize local and remote-tracking refs to branch names for collision checks. */
+function existingBranchNamesFromRefs(refRecords, remoteNames) {
+  const sortedRemoteNames = [...remoteNames].sort((left, right) => right.length - left.length);
+
+  return refRecords.flatMap(({ refName, symref }) => {
+    if (refName.startsWith('refs/heads/')) return [refName.slice('refs/heads/'.length)];
+    if (!refName.startsWith('refs/remotes/') || symref) return [];
+
+    const remoteRef = refName.slice('refs/remotes/'.length);
+    const remoteName = sortedRemoteNames.find((name) => remoteRef.startsWith(`${name}/`));
+    assert.ok(remoteName, `${refName} belongs to a configured remote`);
+
+    const branchName = remoteRef.slice(remoteName.length + 1);
+    assert.ok(branchName, `${refName} contains a branch after its remote name`);
+    return [branchName];
+  });
+}
+
+/** Read every local and remote-tracking ref, excluding symbolic remote HEADs. */
+function readExistingBranchNames() {
+  const remoteNames = git(['remote']).split(/\r?\n/u).filter(Boolean);
+  const refs = git([
+    'for-each-ref',
+    '--format=%(refname)%09%(symref)',
+    'refs/heads',
+    'refs/remotes',
+  ]).split(/\r?\n/u).filter(Boolean).map((record) => {
+    const [refName, symref = ''] = record.split(/\t/u);
+    assert.ok(refName, 'for-each-ref returns a full ref name');
+    return { refName, symref };
+  });
+
+  return existingBranchNamesFromRefs(refs, remoteNames);
+}
+
 function assertExactChangedPathSet(actualPaths, declaredPaths, manifestPath) {
   assertUniqueNames(actualPaths, 'Git changed-path');
   assertUniqueNames(declaredPaths, 'manifest');
@@ -260,6 +295,9 @@ test('module-exclusive ownership roots are pairwise disjoint across Windows and 
 });
 
 test('future Work Order branch and worktree names are unique and refuse pre-existing allocations', () => {
+  assert.equal(plan.moduleExecutionPolicy.branchPattern, plan.branchAllocation.branchPattern);
+  assert.equal(plan.moduleExecutionPolicy.worktreePattern, plan.branchAllocation.worktreePattern);
+
   const futureModules = plan.modules.filter((module) => typeof module.candidateWorkOrderId === 'string');
   const branchNames = futureModules.map((module) => {
     const woSuffix = module.candidateWorkOrderId.toLocaleLowerCase('en-US').replace(`${module.id.toLocaleLowerCase('en-US')}-`, '');
@@ -288,12 +326,48 @@ test('future Work Order branch and worktree names are unique and refuse pre-exis
     /unique case-insensitively/u,
   );
 
-  const existingBranches = git(['branch', '--all', '--format=%(refname:short)']).split(/\r?\n/u).filter(Boolean);
-  assertNoExistingAllocation(branchNames, existingBranches, 'future branch');
+  assertNoExistingAllocation(branchNames, readExistingBranchNames(), 'future branch');
+});
+
+test('WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively', () => {
+  const workOrderId = 'CB-M01-WO-002';
+  const woSuffix = workOrderId.toLocaleLowerCase('en-US').replace('cb-m01-', '');
+  const branchName = plan.moduleExecutionPolicy.branchPattern
+    .replace('{nn}', '01')
+    .replace('{woSuffix}', woSuffix);
+  const worktreeName = plan.moduleExecutionPolicy.worktreePattern
+    .replace('{nn}', '01')
+    .replace('{woSuffix}', woSuffix);
+
+  assert.equal(branchName, 'codex/cb-m01-wo-002');
+  assert.equal(worktreeName, 'cb-m01-wo-002');
+
+  const existingNames = existingBranchNamesFromRefs([
+    { refName: 'refs/heads/codex/cb-m02-wo-002', symref: '' },
+    { refName: 'refs/remotes/origin/codex/cb-m01-wo-002', symref: '' },
+    { refName: 'refs/remotes/upstream/codex/cb-m03-wo-002', symref: '' },
+    { refName: 'refs/remotes/origin/HEAD', symref: 'refs/remotes/origin/main' },
+  ], ['origin', 'upstream']);
+
+  assert.deepEqual(existingNames, [
+    'codex/cb-m02-wo-002',
+    'codex/cb-m01-wo-002',
+    'codex/cb-m03-wo-002',
+  ]);
+  assert.throws(
+    () => assertNoExistingAllocation([branchName.toLocaleUpperCase('en-US')], existingNames, 'branch'),
+    /refuses an existing name/u,
+  );
+  assert.throws(
+    () => assertNoExistingAllocation(['codex/cb-m03-wo-002'], existingNames, 'branch'),
+    /refuses an existing name/u,
+  );
+  assert.doesNotThrow(() => assertNoExistingAllocation(['main'], existingNames, 'branch'));
 });
 
 test('deterministic fakes remain local and test jobs have no provider credentials', () => {
   const policy = plan.contractAndMockPolicy;
+  const operatingModel = readFileSync(path.join(repoRoot, '.engineering/proposals/CB-GOV-PARALLEL-001-OPERATING-MODEL.md'), 'utf8');
   assert.equal(policy.noExternalNetworkInMockTests, true);
   assert.equal(policy.noProviderCredentialsInTestJobs, true);
   assert.equal(policy.expectedProviderCallsInMockTests, 0);
@@ -303,6 +377,8 @@ test('deterministic fakes remain local and test jobs have no provider credential
   assert.match(policy.migrationPolicy, /apply plus rollback tests against an isolated database/u);
   assert.ok(policy.mockRequirements.includes('never require or log provider secrets'));
   assert.ok(policy.mockRequirements.includes('never treat mock data as live or publishable factual data'));
+  assert.match(operatingModel, /Integration Steward owns the single global migration history, migration ID allocation and ordering, and canonical migration manifest/u);
+  assert.match(operatingModel, /module-private schema file may remain under its module root only when an approved database ADR explicitly permits it/u);
 });
 
 test('contract register records proposal-only producer seams for all 19 modules without inventing approved schemas', () => {
@@ -348,6 +424,16 @@ test('Context Lock source fingerprints and external Issue snapshots are complete
   assert.equal(issueRows.length, 22, 'all issue #5-23, #26, #27 and #36 snapshots are recorded');
   assertUniqueNames(issueNumbers.map(String), 'external Issue');
   assert.deepEqual(issueNumbers, [...Array.from({ length: 19 }, (_, index) => index + 5), 26, 27, 36]);
+});
+
+test('correction evidence keeps the worktree identity logical and identifies PR #42', () => {
+  const lock = readFileSync(path.join(repoRoot, contextLockPath), 'utf8');
+  const evidence = readFileSync(path.join(repoRoot, '.engineering/evidence/CB-GOV-PARALLEL-001-EVIDENCE.md'), 'utf8');
+
+  assert.match(lock, /^\*\*Worktree:\*\* `cb-gov-parallel-001` \(logical worktree identifier; host path omitted\)\.$/mu);
+  assert.doesNotMatch(lock, /[A-Z]:[\\/]Users[\\/]/iu);
+  assert.match(lock, /earlier PR #42 version exposed a host-specific absolute Windows path/u);
+  assert.match(evidence, /^\*\*PR:\*\* `#42`; head SHA will be read from GitHub and reported in the PR, not inferred from this file\.$/mu);
 });
 
 test('current governance PR paths obey this Work Order allowlist and protected sources remain untouched', () => {

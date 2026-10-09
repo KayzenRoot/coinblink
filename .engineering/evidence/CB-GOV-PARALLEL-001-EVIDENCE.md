@@ -1,10 +1,10 @@
 # Evidence Bundle · CB-GOV-PARALLEL-001
 
-**Status:** `GOVERNANCE_PROPOSAL / OWNER_REVIEW_PENDING / DOCKER_HUB_PULL_LIMIT`
+**Status:** `GOVERNANCE_PROPOSAL / OWNER_REAUDIT_PENDING`
 **Repository:** `KayzenRoot/coinblink`
 **Base SHA:** `27015adc87caacabbed0e318f892644ce0473f10`
 **Branch:** `codex/cb-gov-parallel-001`
-**PR:** pending creation; head SHA will be read from GitHub and reported in the PR, not inferred from this file.
+**PR:** `#42`; head SHA will be read from GitHub and reported in the PR, not inferred from this file.
 **GEF:** Bootstrap 1.1.2, source commit `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`.
 
 ## What this evidence covers
@@ -65,3 +65,23 @@ At candidate HEAD `a79e8ff74b3d831da048da0d5856f16c7077c7e5`, [run #37993107707]
 - CodeRabbit still had only an in-progress comment reviewing the initial head; no completed CodeRabbit or Owner review was recorded.
 
 The current evidence/fingerprint-only commit requires a fresh exact-head CI rollup. Keep the proposal `NOT_ADOPTED`; do not merge until the Docker pull constraint is resolved, all exact-head checks pass, and normal Owner audit/adoption occurs.
+
+## Correction delta for Owner review
+
+The Owner and CodeRabbit reviewed PR #42 at `a893cb24ced93567eeea5e546c770b26924b793f`. The review identified five actionable documentation/test findings: remove the published machine-specific worktree path from the Context Lock, correct the PR identity above, align sequence-based branch/worktree patterns on `{woSuffix}`, make global migration-history ownership explicit, and normalize complete local/remote Git refs before allocation collision checks. The older path is removed from the current Context Lock; immutable Git history was not rewritten. The CodeRabbit docstring-coverage advisory is not backed by a configured ESLint, package, or CI gate; this delta adds concise JSDoc to the new branch-ref helpers where it explains their behavior.
+
+At the reviewed HEAD, the exact-head Docker job [failed](https://github.com/KayzenRoot/coinblink/actions/runs/37993642014/job/114034761054) before building the image because Docker Hub token acquisition returned HTTP 504 for the existing pinned `node:22.19.0-bookworm-slim` image. Ubuntu and Windows passed on the same SHA. Docker image source, version, and verification policy remain unchanged; bounded retries are required after this correction is pushed. No check is disabled or weakened.
+
+Local validation of the correction source, before regenerating its fingerprint manifest, used Node `22.23.3` (within the declared `>=22.19.0 <23` engine range) and npm `10.9.3`:
+
+| Check | Result | Evidence |
+|---|---|---|
+| `npm ci --ignore-scripts` | PASS | 437 packages installed; zero vulnerabilities |
+| `npm run lint` | PASS | ESLint exited 0 with no warnings |
+| `npm run typecheck` | PASS | 35 files; zero errors, warnings, or hints |
+| `npm run build` | PASS | Astro server build and no-session/no-binding assertion passed |
+| `npm run test:e2e` | PASS | 7/7 Playwright tests, including desktop, tablet, mobile, routes and security headers |
+| Focused correction regressions | PASS | 4/4 tests for sanitized Context Lock/PR identity, WO-002 patterns, local/remote collisions, case handling, multiple remotes, and remote HEAD symrefs |
+| GEF doctor/status in managed worktree | REVIEW | Read-only command returned `ok=true` and a valid checkpoint, but GEF could not observe the managed worktree Git directory (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`). Repeat in a normal clone for a trustworthy repository observation. |
+| Full `npm test` and fingerprint manifest | Final gate | Run after the correction commit and manifest refresh; report its exact result against the live PR #42 HEAD. |
+| Docker local smoke | Final gate | Run against the corrected source with a unique Compose project and an available local port; report the result in the live PR #42 summary. |

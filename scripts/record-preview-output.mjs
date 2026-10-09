@@ -175,6 +175,103 @@ export function parsePreviewOutput(output, expectedName) {
   return validatePreviewOutput(parseWranglerJsonOutput(output, expectedName), expectedName);
 }
 
+function parseJsonValueStream(output) {
+  const values = [];
+  let offset = 0;
+
+  while (offset < output.length) {
+    while (/\s/.test(output[offset] ?? "")) offset += 1;
+    if (offset >= output.length) break;
+    if (output[offset] !== "{") throw new Error("Wrangler output event stream contains data outside JSON objects.");
+
+    const start = offset;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    let complete = false;
+
+    for (; offset < output.length; offset += 1) {
+      const character = output[offset];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (character === "\\") escaped = true;
+        else if (character === '"') inString = false;
+        continue;
+      }
+
+      if (character === '"') inString = true;
+      else if (character === "{") depth += 1;
+      else if (character === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          offset += 1;
+          complete = true;
+          break;
+        }
+        if (depth < 0) throw new Error("Wrangler output event stream contains malformed JSON.");
+      }
+    }
+
+    if (!complete) throw new Error("Wrangler output event stream contains incomplete JSON.");
+    try {
+      values.push(JSON.parse(output.slice(start, offset)));
+    } catch (error) {
+      throw new Error("Wrangler output event stream contains malformed JSON.", { cause: error });
+    }
+  }
+
+  return values;
+}
+
+function validatePreviewOutputEvent(event, expectedName) {
+  if (event.version !== 1 || event.type !== "preview") {
+    throw new Error("Wrangler output event is not a supported Preview record.");
+  }
+  if (event.worker_name !== CLOUDFLARE_PREVIEW_WORKER_NAME) {
+    throw new Error("Wrangler returned a Preview for a different Worker.");
+  }
+  if (event.preview_name !== expectedName) {
+    throw new Error("Wrangler returned a Preview name that does not match this workflow run.");
+  }
+  if (
+    typeof event.preview_id !== "string" || !event.preview_id ||
+    typeof event.deployment_id !== "string" || !event.deployment_id
+  ) {
+    throw new Error("Wrangler must return Preview and deployment identities.");
+  }
+
+  const previewUrl = validateCloudflareUrl(
+    event.preview_urls,
+    "stable Preview URL",
+    `${expectedName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+  );
+  const deploymentUrl = validateCloudflareUrl(
+    event.deployment_urls,
+    "immutable Deployment URL",
+    `${event.deployment_id}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+  );
+  if (previewUrl === deploymentUrl) {
+    throw new Error("Stable Preview and immutable Deployment URLs must be distinct.");
+  }
+  return { previewUrl, deploymentUrl };
+}
+
+export function parsePreviewOutputEvents(output, expectedName) {
+  const events = parseJsonValueStream(output);
+  const sessionEvents = events.filter((event) => event?.type === "wrangler-session");
+  const previewEvents = events.filter((event) => event?.type === "preview");
+  const unsupportedEvents = events.filter((event) => !["wrangler-session", "preview"].includes(event?.type));
+
+  if (events.length === 0) throw new Error("Wrangler did not write structured output events.");
+  if (sessionEvents.length > 1 || sessionEvents.some((event) => event.version !== 1)) {
+    throw new Error("Wrangler output contains an unsupported session event sequence.");
+  }
+  if (unsupportedEvents.length > 0) throw new Error("Wrangler output contains an unsupported event type.");
+  if (previewEvents.length !== 1) throw new Error("Wrangler must return exactly one Preview output event.");
+
+  return validatePreviewOutputEvent(previewEvents[0], expectedName);
+}
+
 function validateCloudflareUrl(values, label, expectedHostnameLabel) {
   if (!Array.isArray(values) || values.length !== 1) {
     throw new Error(`Wrangler must return exactly one ${label}.`);
@@ -205,7 +302,7 @@ function validateCloudflareUrl(values, label, expectedHostnameLabel) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     const [resultPath, expectedName] = process.argv.slice(2);
-    const urls = parsePreviewOutput(readFileSync(resultPath, "utf8"), expectedName);
+    const urls = parsePreviewOutputEvents(readFileSync(resultPath, "utf8"), expectedName);
     appendFileSync(process.env.GITHUB_OUTPUT, `stable_url=${urls.previewUrl}\ndeployment_url=${urls.deploymentUrl}\n`, "utf8");
     appendFileSync(
       process.env.GITHUB_STEP_SUMMARY,

@@ -1,12 +1,36 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildInfo } from "../lib/build-info";
 
 export const prerender = false;
+
+const isWorkerPreview = buildInfo.environment === "preview";
+const isCiBuild = buildInfo.environment === "ci";
+const environmentLabel = isWorkerPreview ? "Cloudflare Worker Preview" : isCiBuild ? "CI build" : "Local development";
+const previewChipLabel = isWorkerPreview ? "Cloudflare Worker Preview" : isCiBuild ? "CI build" : "Local preview";
+const statusTitle = isWorkerPreview ? "Isolated Worker Preview" : isCiBuild ? "CI foundation" : "Local foundation";
+const cloudflareStatusDescription = isWorkerPreview
+  ? "Dedicated non-production Worker Preview"
+  : isCiBuild
+    ? "Deployment is a separate Owner-gated step"
+    : "Provider deployment is a separate gate";
+const cloudflareStatusLabel = isWorkerPreview ? "Preview" : isCiBuild ? "CI only" : "Local only";
+const foundationCopy = isWorkerPreview
+  ? "The demonstration foundation is running in an isolated Worker Preview. Editorial stories and licensed market data are not connected."
+  : isCiBuild
+    ? "This CI build verifies the demonstration foundation. Editorial stories and licensed market data are not connected."
+    : "The local foundation is running. Editorial stories and licensed market data are not connected.";
+const pageDescription = isWorkerPreview
+  ? "An isolated, demonstration-only Worker Preview for the CoinBlink portal. No live news or market data is connected."
+  : isCiBuild
+    ? "A CI build of the demonstration-only CoinBlink foundation. No live news or market data is connected."
+    : "A local, demonstration-only foundation for the CoinBlink portal. No live news or market data is connected.";
+const footerLabel = isWorkerPreview ? "isolated M00 Worker Preview" : isCiBuild ? "CI M00 build" : "local M00 preview";
 ---
 
 <BaseLayout
   title="CoinBlink · Crypto news in a blink"
-  description="A local, demonstration-only foundation for the CoinBlink portal. No live news or market data is connected."
+  description={pageDescription}
 >
   <div class="site-shell">
     <header class="topbar">
@@ -22,7 +46,7 @@ export const prerender = false;
         <span aria-label="Analysis, not implemented in M00">Analysis</span>
       </nav>
 
-      <p class="preview-chip"><span class="preview-chip__dot" aria-hidden="true"></span>Local preview</p>
+      <p class="preview-chip"><span class="preview-chip__dot" aria-hidden="true"></span>{previewChipLabel}</p>
     </header>
 
     <main id="main" class="main-content">
@@ -34,7 +58,7 @@ export const prerender = false;
           </div>
           <h1 id="welcome-title">Crypto news<br />in a <span class="text-lime">blink.</span></h1>
           <p class="feature-panel__copy">
-            The local foundation is running. Editorial stories and licensed market data are not connected.
+            {foundationCopy}
           </p>
           <div class="feature-panel__actions">
             <a class="button button--primary" href="/preview-status">Preview status <span aria-hidden="true">→</span></a>
@@ -47,7 +71,7 @@ export const prerender = false;
           <div class="panel-heading">
             <div>
               <p class="eyebrow">SYSTEM STATUS</p>
-              <h2 id="status-title">Local foundation</h2>
+              <h2 id="status-title">{statusTitle}</h2>
             </div>
             <span class="status-pill"><span class="status-pill__dot" aria-hidden="true"></span>Available</span>
           </div>
@@ -72,9 +96,9 @@ export const prerender = false;
             <span class="status-row__marker" aria-hidden="true">03</span>
             <div>
               <h3>Cloudflare preview</h3>
-              <p>Provider deployment is a separate gate</p>
+              <p>{cloudflareStatusDescription}</p>
             </div>
-            <span class="status-row__state">Local only</span>
+            <span class="status-row__state">{cloudflareStatusLabel}</span>
           </div>
         </aside>
       </section>
@@ -94,7 +118,7 @@ export const prerender = false;
         </div>
         <div class="status-strip__item">
           <span class="status-strip__label">Environment</span>
-          <span class="status-strip__value">Local development</span>
+          <span class="status-strip__value">{environmentLabel}</span>
         </div>
       </section>
 
@@ -107,7 +131,7 @@ export const prerender = false;
             </div>
             <span class="panel-index" aria-hidden="true">P0</span>
           </div>
-          <p class="body-copy">This local shell verifies the route, health response, Worker build, and responsive structure.</p>
+          <p class="body-copy">This M00 shell verifies the route, health response, Worker build, and responsive structure.</p>
           <ul class="foundation-list">
             <li><span aria-hidden="true">✓</span>English route at <code>/en</code></li>
             <li><span aria-hidden="true">✓</span>Sanitized health and preview status</li>
@@ -130,7 +154,7 @@ export const prerender = false;
     </main>
 
     <footer class="footer">
-      <span>CoinBlink <span aria-hidden="true">·</span> local M00 preview</span>
+      <span>CoinBlink <span aria-hidden="true">·</span> {footerLabel}</span>
       <span>Demonstration only · no financial data</span>
     </footer>
   </div>

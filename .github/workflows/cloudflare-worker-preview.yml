@@ -174,13 +174,15 @@ jobs:
         id: preview-output
         if: inputs.action == 'deploy'
         run: |
+          : > "$RUNNER_TEMP/wrangler-preview-events.json"
+          WRANGLER_OUTPUT_FILE_PATH="$RUNNER_TEMP/wrangler-preview-events.json" \
           ./node_modules/.bin/wrangler preview \
             --config ./dist/server/wrangler.json \
             --json \
             --name "$PREVIEW_NAME" \
             --worker-name "$COINBLINK_CF_WORKER_NAME" \
-            --ignore-base-config > "$RUNNER_TEMP/wrangler-preview.json"
-          node scripts/record-preview-output.mjs "$RUNNER_TEMP/wrangler-preview.json" "$PREVIEW_NAME"
+            --ignore-base-config > "$RUNNER_TEMP/wrangler-preview-stdout.json"
+          node scripts/record-preview-output.mjs "$RUNNER_TEMP/wrangler-preview-events.json" "$PREVIEW_NAME"
         shell: bash
         env:
           PREVIEW_NAME: ${{ steps.preview-name.outputs.preview_name }}

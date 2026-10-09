@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "repository": "KayzenRoot/coinblink",
+  "workOrder": "CB-M00-WO-001",
+  "change": "CB-M00-P1-WRANGLER-OUTPUT-FIX",
+  "baseCommitSha": "27015adc87caacabbed0e318f892644ce0473f10",
+  "branch": "codex/cb-m00-wrangler-structured-output",
+  "fingerprintSource": "Git blob IDs and SHA-256 over Git blob bytes from frozen base and staged index; working-tree/index consistency is checked; no checkout newline conversion",
+  "excludesSelf": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX-FINGERPRINTS.json",
+  "files": [
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX.md",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "d8740683d5d7bea8b7edf7d66b450d59b885d2e3",
+        "rawBlobSha256": "143ed111dd6ff7a4884296dec8495e07b49f740e8fdd18499a4217ab55415e35"
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-base-27015adc/stable-desktop-1536x864.png",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "d2e0b39c139d03fcf4115af63bcca520ad2f5292",
+        "rawBlobSha256": "31d2429e642ef59a8adb07f408361400e0a019e7ae5ade39794274e8b89d5a5c"
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-base-27015adc/stable-mobile-390x844.png",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "5ada432e121d1a9e675a5dcde5d9da9ce63d299e",
+        "rawBlobSha256": "7a008f713a5612fcb5c28508b83ae39d74c3bb002cd022f3e67da6fa5f992549"
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-base-27015adc/stable-tablet-768x1024.png",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "65acfb6ddb3d5c9c7d92cbb2d58bdedc8454c5cc",
+        "rawBlobSha256": "ad40e3c899c8bf52bc843e308fca86c93b8f2a9994d7566fbd091995f8e424f8"
+      }
+    },
+    {
+      "path": ".github/workflows/cloudflare-worker-preview.yml",
+      "base": {
+        "gitBlobSha1": "5b30c9fc2fa4e5b490dd56aabf2816aa84537bb0",
+        "rawBlobSha256": "202bab411fc1fb4a45a2b4363b3c036b05465e9b4bf1ec817f1a6eb5cd29cead"
+      },
+      "candidate": {
+        "gitBlobSha1": "adf7c2f46fb1819671584707d0780a5c84eb5a6a",
+        "rawBlobSha256": "4b59eb40f07cd75dde2618926df493965c54438ac76210ee915147b5efd7f669"
+      }
+    },
+    {
+      "path": "e2e/m00-shell.spec.mjs",
+      "base": {
+        "gitBlobSha1": "8a733a3466540fcc93eecf935dba6c433ffde31d",
+        "rawBlobSha256": "7c5d5864841205cb5c3ac92c1b2f077df420fb8a330124ae7d696da01cba6bae"
+      },
+      "candidate": {
+        "gitBlobSha1": "f2a4a672abcea4dad3216820ca40147ec39ff446",
+        "rawBlobSha256": "ff38ded6f328a5ff52821331dd8e4933a869ea58c6244cfb8a111e04baab92fa"
+      }
+    },
+    {
+      "path": "scripts/record-preview-output.mjs",
+      "base": {
+        "gitBlobSha1": "69f019cb45dc536bb7077a6b20e746bd335162a7",
+        "rawBlobSha256": "ed398421ff608185f6052c7ff3bebea1a09285547c8fe241d07c0ef0eace0ac1"
+      },
+      "candidate": {
+        "gitBlobSha1": "98e7d34489e3dadf8ddf788f43d2b5bf6e149a3f",
+        "rawBlobSha256": "b09b966b0dcb26761f4b167b14c5570d9328a7d25234c98b73233b6a781f80d4"
+      }
+    },
+    {
+      "path": "src/pages/en.astro",
+      "base": {
+        "gitBlobSha1": "c79da1528fb2b93eac5169cf990ec716c1cdc89d",
+        "rawBlobSha256": "3a1198fa495558fecd28876b8b16b9ef7ead9c7a4c22d42f192e60d6725898de"
+      },
+      "candidate": {
+        "gitBlobSha1": "a8c7208e1b7136e8a8ddb7dc47200f612bcb8dac",
+        "rawBlobSha256": "76d0ec3168b3a6f5b058b300ab4ce0c689dcc7a78fc4eae831d818fe174450ae"
+      }
+    },
+    {
+      "path": "test/cloudflare-preview-output.test.mjs",
+      "base": {
+        "gitBlobSha1": "c8abebfb8c90e4f34e7f057d181d5fe268a5297e",
+        "rawBlobSha256": "9a979306853fda27141b6600ba4c0a54d1df3956154e591f41a90c0528337a8e"
+      },
+      "candidate": {
+        "gitBlobSha1": "fb9bf318038666686f58824a80570511837cfae2",
+        "rawBlobSha256": "48025009e30b685abfa65ad9ceb783bc627fabdb76c1780aa60ee253f4dbc819"
+      }
+    },
+    {
+      "path": "test/cloudflare-preview-workflow.test.mjs",
+      "base": {
+        "gitBlobSha1": "7a05aca1ac09d4382d9139b6ea5586ea4d5e7695",
+        "rawBlobSha256": "d3d00d830dc8213556566848cb6dbbce8a5f80d279dbc735ee3437d9af6d5729"
+      },
+      "candidate": {
+        "gitBlobSha1": "39d15de56fc915003cecc29dc292b7789cf3fb9c",
+        "rawBlobSha256": "1945030b187d8a38044aa14089dc14e00e4c37fce5ba862a735423277465e9ea"
+      }
+    },
+    {
+      "path": "test/p1-wrangler-output-fix-fingerprints.test.mjs",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "cd600174e2e547de8ca25636615dd15c86128589",
+        "rawBlobSha256": "0c5b206a38f1ba2ea10af5edc54e13d4723b4bd04267fe078ae1f13e8f710e46"
+      }
+    }
+  ]
+}

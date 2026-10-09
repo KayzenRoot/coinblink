@@ -98,12 +98,15 @@ test("rollback documentation uses only supported Wrangler Preview delete options
 });
 
 test("exact-main rechecks run immediately before provider steps without Cloudflare credentials", () => {
-  for (const [guardName, providerName] of [
-    ["Reverify exact HEAD and canonical main before Preview CLI", "Create isolated Worker Preview"],
-    ["Reverify exact HEAD and canonical main before Preview deletion", "Delete only the selected managed Preview and its deployments"],
+  for (const [guardName, providerName, action] of [
+    ["Reverify exact HEAD and canonical main before Preview CLI", "Create isolated Worker Preview", "deploy"],
+    ["Reverify exact HEAD and canonical main before Preview deletion", "Delete only the selected managed Preview and its deployments", "delete"],
   ]) {
     const guard = stepBlockNamed(guardName);
     const provider = stepBlockNamed(providerName);
+    const actionCondition = `if: inputs.action == '${action}'`;
+    assert.ok(guard.includes(actionCondition), `${guardName} uses ${actionCondition}`);
+    assert.ok(provider.includes(actionCondition), `${providerName} uses ${actionCondition}`);
     assert.match(guard, /node scripts\/verify-exact-head\.mjs/);
     assert.match(guard, /node scripts\/verify-preview-main\.mjs/);
     assert.match(guard, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);

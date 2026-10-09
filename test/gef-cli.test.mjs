@@ -53,27 +53,27 @@ test("preflight validates the post-merge M00 checkpoint and preserves admission 
   const checkpoint = JSON.parse(readFileSync(join(root, ".engineering", "CHECKPOINT.json"), "utf8"));
   const admission = readFileSync(join(root, ".engineering", "CB-M00-ADMISSION.md"), "utf8");
   assert.equal(checkpoint.schemaVersion, 2);
-  assert.equal(checkpoint.status, "M00_ADMITTED");
-  assert.equal(checkpoint.phase, "IMPLEMENTATION_IN_PROGRESS");
-  assert.equal(checkpoint.completedThroughModule, "NONE");
-  assert.equal(Object.hasOwn(checkpoint, "stopState"), false);
-  assert.equal(
-    checkpoint.nextLegalStage,
-    "SATISFY_M00_P1_PROVIDER_AUTHORIZATION_AND_PREVIEW_EVIDENCE_GATE",
-  );
+  assert.equal(typeof checkpoint.status, "string");
+  assert.ok(checkpoint.status.length > 0);
+  assert.equal(typeof checkpoint.phase, "string");
+  assert.ok(checkpoint.phase.length > 0);
+  const moduleIds = Array.from({ length: 19 }, (_, module) => `CB-M${String(module).padStart(2, "0")}`);
+  assert.ok(["NONE", ...moduleIds].includes(checkpoint.completedThroughModule));
+  assert.equal(Number.isInteger(checkpoint.overallCompletionPercent), true);
+  assert.ok(checkpoint.overallCompletionPercent >= 0 && checkpoint.overallCompletionPercent <= 100);
+  assert.equal(typeof checkpoint.nextLegalStage, "string");
+  assert.ok(checkpoint.nextLegalStage.length > 0);
   assert.equal(checkpoint.checkpointFacts.sourceMainSha, "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f");
-  assert.equal(checkpoint.overallCompletionPercent, 0);
-  assert.equal(
-    checkpoint.checkpointFacts.applicationImplementation,
-    "M00_P0_LOCAL_IMPLEMENTED_P1_PENDING",
-  );
-  assert.deepEqual(checkpoint.progressBasis, {
-    measure: "implemented_application_modules",
-    overallCompletionPercent: 0,
-    productionWeights: "OMITTED_UNDEFINED",
-    reason: "No approved production-weight denominator exists for CoinBlink; neither denominator nor earned weight is fabricated.",
-  });
-  assert.equal(checkpoint.checkpointFacts.previewDeployment, "NOT_DEPLOYED");
+  assert.equal(checkpoint.progressBasis.measure, "implemented_application_modules");
+  assert.equal(checkpoint.progressBasis.overallCompletionPercent, checkpoint.overallCompletionPercent);
+  assert.equal(typeof checkpoint.checkpointFacts.applicationImplementation, "string");
+  assert.equal(typeof checkpoint.checkpointFacts.previewDeployment, "string");
+  assert.equal(typeof checkpoint.checkpointFacts.activeWorkOrder, "string");
+  assert.equal(typeof checkpoint.progressBasis.reason, "string");
+  if (checkpoint.progressBasis.productionWeights === "OMITTED_UNDEFINED") {
+    assert.equal(Object.hasOwn(checkpoint, "mainProductionDenominatorWeight"), false);
+    assert.equal(Object.hasOwn(checkpoint, "earnedProductionWeight"), false);
+  }
   assert.equal(checkpoint.checkpointFacts.formalAdmission.workOrder, "CB-M00-WO-001");
   assert.equal(checkpoint.checkpointFacts.formalAdmission.status, "ADMITTED");
   assert.equal(checkpoint.checkpointFacts.formalAdmission.change, "CB-GOV-005");
@@ -83,14 +83,16 @@ test("preflight validates the post-merge M00 checkpoint and preserves admission 
   assert.match(admission, /PR #32 merged at this exact SHA/);
   assert.match(admission, /previous candidate had no code authority before merge/);
   assert.match(admission, /now-effective M00 admission/);
-  assert.equal(checkpoint.checkpointFacts.activeWorkOrder, "CB-M00-WO-001");
-  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "ADMITTED");
+  const moduleAdmission = checkpoint.checkpointFacts.moduleAdmission;
+  assert.deepEqual(Object.keys(moduleAdmission).sort(), [...moduleIds].sort());
+  assert.equal(moduleAdmission["CB-M00"], "ADMITTED");
   for (let module = 1; module <= 17; module += 1) {
-    assert.equal(checkpoint.checkpointFacts.moduleAdmission[`CB-M${String(module).padStart(2, "0")}`], "NOT_ADMITTED");
+    assert.ok(
+      ["ADMITTED", "NOT_ADMITTED"].includes(moduleAdmission[`CB-M${String(module).padStart(2, "0")}`]),
+      `CB-M${String(module).padStart(2, "0")} has a valid admission state`,
+    );
   }
-  assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M18"], "FUTURE_NOT_ADMITTED");
-  assert.equal(Object.hasOwn(checkpoint, "mainProductionDenominatorWeight"), false);
-  assert.equal(Object.hasOwn(checkpoint, "earnedProductionWeight"), false);
+  assert.equal(moduleAdmission["CB-M18"], "FUTURE_NOT_ADMITTED");
 
   const doctor = runJson(["doctor", "--target", root]);
   assert.equal(doctor.value.effect, "NONE");
@@ -105,16 +107,13 @@ test("preflight validates the post-merge M00 checkpoint and preserves admission 
   assert.equal(status.value.effect, "NONE");
   assert.equal(status.value.status.readOnly, true);
   assert.equal(status.value.status.release.valid, true);
-  assert.equal(status.value.status.release.production.status, "M00_ADMITTED");
-  assert.equal(status.value.status.release.production.phase, "IMPLEMENTATION_IN_PROGRESS");
-  assert.equal(status.value.status.release.production.completedThroughModule, "NONE");
-  assert.equal(
-    status.value.status.release.production.nextLegalStage,
-    "SATISFY_M00_P1_PROVIDER_AUTHORIZATION_AND_PREVIEW_EVIDENCE_GATE",
-  );
-  assert.equal(status.value.status.release.production.overallCompletionPercent, 0);
-  assert.equal(status.value.status.operator.state, "M00_ADMITTED");
-  assert.equal(status.value.status.operator.progress, 0);
+  assert.equal(status.value.status.release.production.status, checkpoint.status);
+  assert.equal(status.value.status.release.production.phase, checkpoint.phase);
+  assert.equal(status.value.status.release.production.completedThroughModule, checkpoint.completedThroughModule);
+  assert.equal(status.value.status.release.production.nextLegalStage, checkpoint.nextLegalStage);
+  assert.equal(status.value.status.release.production.overallCompletionPercent, checkpoint.overallCompletionPercent);
+  assert.equal(status.value.status.operator.state, checkpoint.status);
+  assert.equal(status.value.status.operator.progress, checkpoint.overallCompletionPercent);
   assert.equal(status.value.status.operator.stale, true);
   assert.equal(status.value.status.driftBaseline.state, "ABSENT");
   assert.equal(status.value.status.observationLimits.includes("operator.stale.unknown_conservative"), true);

@@ -6,7 +6,7 @@
 **Execution branch:** `codex/cb-m00-wo-001-p0`.
 **Authorized base:** `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d` (CB-GOV-005 / PR #32 merge SHA).
 **Execution Context Lock SHA-256:** `a209324291429ce22495abc0b3c7029e84686f621cadff80b1b6ff1f97eaee1e`.
-**Candidate fingerprints:** `.engineering/evidence/CB-M00-WO-001-FINGERPRINTS.json` records Git blob SHA-1 and raw-blob SHA-256 for changed paths at snapshot HEAD `bde3e324926c237ae6f73c1aeffbed7cac21d070`; it excludes itself and this Evidence Bundle to avoid self-reference. The evidence-only follow-up leaves the listed candidate blobs unchanged.
+**Candidate fingerprints:** `.engineering/evidence/CB-M00-WO-001-FINGERPRINTS.json` records Git blob SHA-1 and raw-blob SHA-256 for 44 changed paths at immutable snapshot `bde3e324926c237ae6f73c1aeffbed7cac21d070`; the manifest and this Evidence Bundle are excluded to avoid self-reference. All 44 blob pairs were revalidated against that snapshot; subsequent commits contain evidence-only changes.
 **Implementation HEAD:** reported as the exact PR head in the PR description and required GitHub checks; this file avoids self-referencing its containing commit.
 **Checkpoint:** `.engineering/CHECKPOINT.json` is unchanged; its admitted-base values remain `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, preview `NOT_DEPLOYED`, with no `stopState`. Proposed candidate promotion is in `CB-M00-WO-001-CHECKPOINT-DELTA.md` only.
 
@@ -23,7 +23,7 @@
 |---|---|---|
 | Git base and branch | PASS | Local regular clone; `HEAD` initially matched the requested base exactly; new branch `codex/cb-m00-wo-001-p0`. The original checkout and existing linked worktree were preserved. |
 | Node archive | PASS | Official Node v22.19.0 Windows x64 archive SHA-256 matched the official `SHASUMS256.txt`: `ea3fad0e67a991d8477d8c01344b56e69c676ccb733f065b22436994b1253f86`. Runtime reported `v22.19.0`; bundled npm `10.9.3`. |
-| Dependency set | PASS / REVIEW | Pinned `astro@7.3.8`, `@astrojs/cloudflare@14.3.4`, `wrangler@4.149.0`, Playwright `1.64.0`, ESLint `10.12.0`, TypeScript `6.0.3`; `npm ci` completed and reported 0 vulnerabilities. A Windows cleanup warning (`EPERM` while removing a stale WASI directory) did not change the successful exit code; clean Docker build install also completed with 0 vulnerabilities. |
+| Dependency set | PASS / REVIEW | Pinned `astro@7.3.8`, `@astrojs/cloudflare@14.3.4`, `wrangler@4.149.0`, Playwright `1.64.0`, ESLint `10.12.0`, TypeScript `6.0.3`; `npm ci` completed and reported 0 vulnerabilities. The clean Docker build install also completed with 0 vulnerabilities. |
 | `npm audit --audit-level=high` | PASS | Exit 0; `found 0 vulnerabilities`. |
 | `npm audit signatures` | REVIEW / BLOCKED BY PACKAGE METADATA | Exit 1 / E404 for transitive `@gef-bootstrap/config@0.0.0`; the signature check was not disabled. GEF doctor also continues to report dependency provenance `unverified` / `REVIEW`; retain this for owner review. |
 
@@ -43,7 +43,7 @@
 | `npm run typecheck` | PASS | Astro check: 20 files, 0 errors, 0 warnings, 0 hints. |
 | `npm test` | PASS | 9 unit tests passed; Astro build completed; 6 Playwright tests passed. This includes WCAG 2.1 A/AA axe checks, three viewports, horizontal overflow, skip-link focus, browser console, sanitized endpoints, response headers, and honest 404. |
 | Generated Worker binding assertion | PASS | Build emitted `dist/server/wrangler.json`; the build guard checks no `SESSION`, KV, D1, R2, Durable Object, Queue, or service bindings, requires only the `ASSETS` static binding, and rejects unchecked plaintext `vars`. `astro.config.mjs` sets `session: false`; image processing uses `passthrough`, so no `IMAGES` binding is needed. |
-| Docker Compose build/smoke | PASS at alternate local port | Compose built the image, started a healthy container, returned `/health` status `ok`, `/preview-status` with `cloudflarePreview=not-deployed`, and HTTP 404 for a missing route. The exact candidate build SHA `bde3e324926c237ae6f73c1aeffbed7cac21d070` was exercised on `127.0.0.1:3010`; the smoke verified that SHA in both endpoints and removed only Compose project `coinblink-m00-wo-001`. |
+| Docker Compose build/smoke | PASS at alternate local port | Compose built the image, started a healthy container, returned `/health` status `ok`, `/preview-status` with `cloudflarePreview=not-deployed`, and HTTP 404 for a missing route. The final local candidate SHA `93b49f0554a8e6f42b90cdd94bb5b155e09e6b99` was exercised on `127.0.0.1:3010`; `/health` and `/preview-status` reported that exact SHA, the container was healthy, and a missing route returned 404. Only Compose project `coinblink-m00-wo-001` was removed. |
 | Host port 3000 | BLOCKED locally by unrelated service | Before and after the smoke, container `d76127e8ff37` (`nexlabs-website-web-1`) owned `127.0.0.1:3000->3000/tcp`. It was not stopped or modified. The Compose default remains port 3000; a dedicated Ubuntu exact-head CI smoke is configured to validate that binding on its isolated runner. |
 
 ## Screenshot artifacts
@@ -52,9 +52,9 @@ The local Playwright run created and visually inspected the following screenshot
 
 | Artifact path | Viewport | SHA-256 |
 |---|---:|---|
-| `artifacts/playwright/bde3e324926c/desktop-1536x864.png` | 1536 × 864 | `fef9d91f5731b9d76df4ae17cdc7d91124b4b2a473c28785ed200bcec340173f` |
-| `artifacts/playwright/bde3e324926c/tablet-768x1024.png` | 768 × 1024 | `f8d4a205a0539340caf45d343cc1e262c3a549dee4c2164a57f30dc5e59c9f91` |
-| `artifacts/playwright/bde3e324926c/mobile-390x844.png` | 390 × 844 | `97fda482aee4d3f90b8ebbf1ff91594eb0605b2ffffc48f89c96f83656bdb834` |
+| `artifacts/playwright/93b49f0554a8/desktop-1536x864.png` | 1536 × 864 | `fef9d91f5731b9d76df4ae17cdc7d91124b4b2a473c28785ed200bcec340173f` |
+| `artifacts/playwright/93b49f0554a8/tablet-768x1024.png` | 768 × 1024 | `f8d4a205a0539340caf45d343cc1e262c3a549dee4c2164a57f30dc5e59c9f91` |
+| `artifacts/playwright/93b49f0554a8/mobile-390x844.png` | 390 × 844 | `97fda482aee4d3f90b8ebbf1ff91594eb0605b2ffffc48f89c96f83656bdb834` |
 
 ## Remote gates and outstanding audit
 

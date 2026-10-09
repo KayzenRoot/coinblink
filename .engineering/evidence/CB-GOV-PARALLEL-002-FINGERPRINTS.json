@@ -34,11 +34,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "a866df86a4d17c1a5940eba899967e4130fd102c",
-      "candidateRawSha256": "d8014cb25d04cca3438bfa704c884be7a01401115c541f260699f6a90ff39aa3",
-      "indexGitBlobSha1": "a866df86a4d17c1a5940eba899967e4130fd102c",
-      "workingTreeGitBlobSha1": "a866df86a4d17c1a5940eba899967e4130fd102c",
-      "workingTreeSha256": "d8014cb25d04cca3438bfa704c884be7a01401115c541f260699f6a90ff39aa3"
+      "candidateGitBlobSha1": "68cc4ceeccfdf43681787c2b02bc4ac9c960bd70",
+      "candidateRawSha256": "ae4b4332534c6b2369727d3b11750d2d70a1052f4470556a63c800990a84483f",
+      "indexGitBlobSha1": "68cc4ceeccfdf43681787c2b02bc4ac9c960bd70",
+      "workingTreeGitBlobSha1": "68cc4ceeccfdf43681787c2b02bc4ac9c960bd70",
+      "workingTreeSha256": "ae4b4332534c6b2369727d3b11750d2d70a1052f4470556a63c800990a84483f"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-PARALLEL-002.md",

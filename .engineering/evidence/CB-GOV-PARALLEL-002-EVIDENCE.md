@@ -5,7 +5,8 @@
 **Issue:** [#43](https://github.com/KayzenRoot/coinblink/issues/43)
 **Base SHA:** `e98d581c7306ab255af9b96e7c046db6f49acf12`
 **Branch:** `codex/cb-gov-parallel-002`
-**PR:** Pending creation.
+**PR:** [#44](https://github.com/KayzenRoot/coinblink/pull/44) (draft while exact-head checks run).
+**Implementation commit:** `b9308798fc7ff40f25330a5dfd3aba0e0dfffa0a` (based on the frozen `e98d581...` main).
 **GEF:** Bootstrap `1.1.2`, source `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`.
 
 ## Baseline and regression
@@ -40,7 +41,7 @@ The final change set is limited to this Work Order, its Context Lock, no-op Chec
 | Lint/typecheck/build/audit | `npm run lint`; `npm run typecheck`; `npm run build`; `npm audit --audit-level=high` | PASS; typecheck 37 files, zero errors/warnings/hints; build has no `SESSION`/data/service/production bindings; audit zero vulnerabilities |
 | GEF in managed worktree | `npm run gef -- doctor --target . --json`; `npm run gef -- status --target . --json` | `REVIEW`; `ok=true` and checkpoint valid, but repository observation is `FINDING` / dirtiness `UNKNOWN` with `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED` |
 | Docker smoke | Isolated Compose project on free `127.0.0.1:3015`; app source unchanged from base SHA `e98d581...` | PASS; exact build SHA `e98d581...`; `/health` 200, `/preview-status` demo/NOT_DEPLOYED, `/en` 200 with `noindex`, missing route 404. Port 3000 owner and other containers were preserved; only this temporary project was removed. |
-| GEF in normal clone | `doctor` / `status` on an ordinary checkout of the candidate | Pending |
+| GEF in normal clone | `npm run gef -- doctor --target . --json`; `npm run gef -- status --target . --json` on ordinary clone at implementation commit `b930879...` | PASS; both `ok=true`, repository observable `HEALTHY` / `CLEAN`, checkpoint valid, no observation limits. GEF security advisory fields remain `REVIEW` for dependency provenance and mutable GitHub ref; status conservatively reports no drift baseline and stale operator metadata. |
 | Exact-head CI | Ubuntu, Windows, Docker, SonarCloud, Socket Project Report, Socket PR Alerts, CodeRabbit | Pending push; all results must match final PR HEAD |
 | Context Lock | Inline verifier against base `e98d581...` plus GitHub Issue API body bytes | PASS; all 24 SHA-1/SHA-256 rows and Issue #43 body SHA-256 matched |
 | Fingerprints | `CB-GOV-PARALLEL-002-FINGERPRINTS.json` checked against staged diff and working tree | PASS; exact 9-path change set, 8 SHA-1/SHA-256 records, no omission or extra path |

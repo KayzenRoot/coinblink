@@ -3,13 +3,13 @@
   "repository": "KayzenRoot/coinblink",
   "workOrder": "CB-M00-WO-001",
   "baseSha": "bf3a5f800ddb3ebf9a0a6b338268f59500b6547d",
-  "fingerprintedCommit": "bde3e324926c237ae6f73c1aeffbed7cac21d070",
+  "fingerprintedCommit": "6a33bf25b3bf31c65f2dd47f490b84e74a9a4cfe",
   "fingerprintMethod": "Git blob SHA-1 from git rev-parse plus SHA-256 over exact git cat-file blob bytes",
   "selfReferenceExclusions": [
     ".engineering/evidence/CB-M00-WO-001-EVIDENCE.md",
     ".engineering/evidence/CB-M00-WO-001-FINGERPRINTS.json"
   ],
-  "fileCount": 44,
+  "fileCount": 45,
   "files": [
     {
       "path": ".dockerignore",
@@ -83,8 +83,8 @@
     },
     {
       "path": ".github/workflows/gef-validation.yml",
-      "gitBlobSha1": "2ed583150400c953e61f28d3776cc451d033df91",
-      "rawBlobSha256": "e293e347fa6734e3666cd6f3f71d690b49b738b9b5b769e62a748cb10a25f7b2"
+      "gitBlobSha1": "294de58a57950b3177e4dd7fc7d1e32c45b2a687",
+      "rawBlobSha256": "2bcd15824dfc58ce15b55baf96943b34c64cf2aa9ae73f33a2d902fb85a7b90d"
     },
     {
       "path": ".gitignore",
@@ -98,8 +98,8 @@
     },
     {
       "path": "Dockerfile",
-      "gitBlobSha1": "06d866b3ca8705a9008de8475f1c0159bc1830a3",
-      "rawBlobSha256": "10d566a1458168dd73200c78a47cb4ac798109a14273d85d2b02eccfe8ce8a12"
+      "gitBlobSha1": "4e63947acfe1e5dbf471ca3800640cab4c71fb2d",
+      "rawBlobSha256": "044ee1a33d86d56e46a6dbd7484a8ff95e62ad36ebe0e2fe1c43457166097cf4"
     },
     {
       "path": "README.md",
@@ -158,8 +158,8 @@
     },
     {
       "path": "scripts/assert-no-session-binding.mjs",
-      "gitBlobSha1": "43dc242b3901ca0c4505d2912666ad3533ce22b7",
-      "rawBlobSha256": "0236bc88b019f53d5797fed182c04c8fee8d6b7fdc50da6370b2a1b133304da0"
+      "gitBlobSha1": "0830fbf0a095c1e6ff2a6d7c20b9e20fecafc00d",
+      "rawBlobSha256": "dc2317b554c80df3baa7cbe892a97c6da13a4c799934480182d62c231d42b251"
     },
     {
       "path": "src/env.d.ts",
@@ -203,13 +203,13 @@
     },
     {
       "path": "src/styles/global.css",
-      "gitBlobSha1": "88f8a405998bd160e4355ad82a37a2970235ef5c",
-      "rawBlobSha256": "80e48e3336de7108426cca98016d22ed8a4cd2e11fadff91a740d83ebba5c810"
+      "gitBlobSha1": "e9de35b21b59785c4036c65b92a9afa92060c7f5",
+      "rawBlobSha256": "b9d35570cf67c74befe041100595faa42fc8d3f045407ccb0a30c19c221a0ae3"
     },
     {
       "path": "test/exact-head-ci.test.mjs",
-      "gitBlobSha1": "5f5c8877b10db87252dcbbc32ad64da543bb14d7",
-      "rawBlobSha256": "62fe277b3daee1e520086c8c06831e390ef45f43b09df83e18f8be32d89bb8e7"
+      "gitBlobSha1": "7f9a06ed9a42815d83ed202d5416f3832d525fb7",
+      "rawBlobSha256": "715dc8346c317c8993aee4d8bc58905b42bb935b4648195fac920b65d83a9a04"
     },
     {
       "path": "test/gef-cli.test.mjs",
@@ -220,6 +220,11 @@
       "path": "test/m00-context-lock.test.mjs",
       "gitBlobSha1": "4b24d58de8e7f7de5a5dffef83e1dfb263324d7f",
       "rawBlobSha256": "fc9ff9bbccbe1774098574cdf1875b362743fde4d1d4e7986761d0d403661a40"
+    },
+    {
+      "path": "test/session-binding-guard.test.mjs",
+      "gitBlobSha1": "73f5affd50d2f0429abfa44f51339aa774a8c351",
+      "rawBlobSha256": "57d5d9cab2d0e5fc418ee760810dbe85b34b46669fdf945d392e90a3abd5665e"
     },
     {
       "path": "tsconfig.json",

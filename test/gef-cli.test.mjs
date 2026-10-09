@@ -45,7 +45,7 @@ test("the pinned GEF CLI exposes its verified version and command surface", () =
   }
 });
 
-test("preflight validates the admitted M00 checkpoint and preserves the pre-merge authority boundary", () => {
+test("preflight validates the post-merge M00 checkpoint and preserves admission provenance and scope", () => {
   const preview = runJson(["init", "--target", root]);
   assert.equal(preview.value.effect, "NONE");
   assert.equal(preview.value.plan.install.state, "READY");
@@ -54,12 +54,25 @@ test("preflight validates the admitted M00 checkpoint and preserves the pre-merg
   const admission = readFileSync(join(root, ".engineering", "CB-M00-ADMISSION.md"), "utf8");
   assert.equal(checkpoint.schemaVersion, 2);
   assert.equal(checkpoint.status, "M00_ADMITTED");
-  assert.equal(checkpoint.phase, "IMPLEMENTATION_NOT_STARTED");
+  assert.equal(checkpoint.phase, "IMPLEMENTATION_IN_PROGRESS");
+  assert.equal(checkpoint.completedThroughModule, "NONE");
   assert.equal(Object.hasOwn(checkpoint, "stopState"), false);
-  assert.equal(checkpoint.nextLegalStage, "START_CB_M00_WO_001_FROM_CURRENT_CANONICAL_MAIN");
+  assert.equal(
+    checkpoint.nextLegalStage,
+    "SATISFY_M00_P1_PROVIDER_AUTHORIZATION_AND_PREVIEW_EVIDENCE_GATE",
+  );
   assert.equal(checkpoint.checkpointFacts.sourceMainSha, "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f");
   assert.equal(checkpoint.overallCompletionPercent, 0);
-  assert.equal(checkpoint.checkpointFacts.applicationImplementation, "NOT_STARTED");
+  assert.equal(
+    checkpoint.checkpointFacts.applicationImplementation,
+    "M00_P0_LOCAL_IMPLEMENTED_P1_PENDING",
+  );
+  assert.deepEqual(checkpoint.progressBasis, {
+    measure: "implemented_application_modules",
+    overallCompletionPercent: 0,
+    productionWeights: "OMITTED_UNDEFINED",
+    reason: "No approved production-weight denominator exists for CoinBlink; neither denominator nor earned weight is fabricated.",
+  });
   assert.equal(checkpoint.checkpointFacts.previewDeployment, "NOT_DEPLOYED");
   assert.equal(checkpoint.checkpointFacts.formalAdmission.workOrder, "CB-M00-WO-001");
   assert.equal(checkpoint.checkpointFacts.formalAdmission.status, "ADMITTED");
@@ -93,6 +106,12 @@ test("preflight validates the admitted M00 checkpoint and preserves the pre-merg
   assert.equal(status.value.status.readOnly, true);
   assert.equal(status.value.status.release.valid, true);
   assert.equal(status.value.status.release.production.status, "M00_ADMITTED");
+  assert.equal(status.value.status.release.production.phase, "IMPLEMENTATION_IN_PROGRESS");
+  assert.equal(status.value.status.release.production.completedThroughModule, "NONE");
+  assert.equal(
+    status.value.status.release.production.nextLegalStage,
+    "SATISFY_M00_P1_PROVIDER_AUTHORIZATION_AND_PREVIEW_EVIDENCE_GATE",
+  );
   assert.equal(status.value.status.release.production.overallCompletionPercent, 0);
   assert.equal(status.value.status.operator.state, "M00_ADMITTED");
   assert.equal(status.value.status.operator.progress, 0);

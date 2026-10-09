@@ -2,10 +2,10 @@
   "schemaVersion": 2,
   "project": "CoinBlink",
   "status": "M00_ADMITTED",
-  "phase": "IMPLEMENTATION_NOT_STARTED",
+  "phase": "IMPLEMENTATION_IN_PROGRESS",
   "completedThroughModule": "NONE",
   "overallCompletionPercent": 0,
-  "nextLegalStage": "START_CB_M00_WO_001_FROM_CURRENT_CANONICAL_MAIN",
+  "nextLegalStage": "SATISFY_M00_P1_PROVIDER_AUTHORIZATION_AND_PREVIEW_EVIDENCE_GATE",
   "checkpointFacts": {
     "sourceMainSha": "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f",
     "scopeApproval": {
@@ -13,7 +13,7 @@
       "ownerComment": "6067708856",
       "scope": "M00_ONLY"
     },
-    "applicationImplementation": "NOT_STARTED",
+    "applicationImplementation": "M00_P0_LOCAL_IMPLEMENTED_P1_PENDING",
     "previewDeployment": "NOT_DEPLOYED",
     "formalAdmission": {
       "workOrder": "CB-M00-WO-001",

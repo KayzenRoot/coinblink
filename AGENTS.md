@@ -1,6 +1,6 @@
 # CoinBlink · Agent Operating Contract
 
-GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2. The local M00 P0 foundation is merged; no Cloudflare preview is deployed or authorized.
+GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2. The local M00 P0 foundation is merged. After separate Owner authorization, a dedicated CoinBlink Worker Preview was created for base `main` SHA `ec3b5df6e477b349c0761fd46dec7c873ebd2cc5`; the initial workflow failed only while recording Wrangler's CLI output. The parser correction is under exact-head review. No production deployment or checkpoint promotion is claimed.
 
 1. Read `.engineering/SOURCE-HIERARCHY.md`, `.engineering/CHECKPOINT.md`, and the admitted Work Order before any change. A candidate Work Order does not authorize application code.
 2. GEF's [ADR-0008 at the admitted v1.1.2 source commit](https://github.com/KayzenRoot/gef-bootstrap/blob/af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82/.engineering/decisions/ADR-0008-CODEX-ONLY-GITHUB-FIRST.md) delegates code/tests/CI/migrations to **Codex**. ChatGPT prepares governance, GitHub coordination and owner exact-head audit. Matt Pocock skills are advisory, never above GEF sources.
@@ -11,7 +11,7 @@ GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2. The 
 7. Future visual implementation must use approved master screenshot and logo as immutable source references. Never replace them with a generic template.
 8. Planning is **OPEN**. Proposed modules and tools do not authorize implementation.
 
-**M00 status at the PR #33 merge commit:** PR #32 admitted M00; PR #33 merged the local P0 implementation at `b40a6467b1b143cc28a6e9969fddaefd0ebc438b`. P0 is implemented locally, but the checkpoint on that base still carries the pre-P0 snapshot. This CB-GOV-006 candidate promotes it to `IMPLEMENTATION_IN_PROGRESS` / `M00_P0_LOCAL_IMPLEMENTED_P1_PENDING` while retaining 0%, `NOT_DEPLOYED`, the original admission provenance, and the existing module boundaries. The candidate is not canonical until this governance PR is authorized and merged. P1 remains `PROVIDER_SETUP_REQUIRED`; no Cloudflare authorization or deployment is claimed. Do not start another module or claim M00 `DONE` before its complete DoD.
+**M00 status at the PR #33 merge commit:** PR #32 admitted M00; PR #33 merged the local P0 implementation at `b40a6467b1b143cc28a6e9969fddaefd0ebc438b`. P0 is implemented locally, but the checkpoint on that base still carries the pre-P0 snapshot. This CB-GOV-006 candidate promotes it to `IMPLEMENTATION_IN_PROGRESS` / `M00_P0_LOCAL_IMPLEMENTED_P1_PENDING` while retaining 0%, `NOT_DEPLOYED`, the original admission provenance, and the existing module boundaries. The candidate is not canonical until this governance PR is authorized and merged. The Owner later authorized P1 provider setup and an isolated Preview was created for base `main` SHA `ec3b5df6e477b349c0761fd46dec7c873ebd2cc5`; its first run failed at output recording, so corrected-head validation and final least-privilege token validation remain pending. Do not infer P1 completion, production deployment, checkpoint promotion, or M01+ admission. Do not start another module or claim M00 `DONE` before its complete DoD.
 
 ## Retained draft design source · CB-DESIGN-002
 

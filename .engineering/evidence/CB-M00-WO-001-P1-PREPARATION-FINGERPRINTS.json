@@ -9,6 +9,17 @@
   "excludesSelf": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION-FINGERPRINTS.json",
   "files": [
     {
+      "path": "AGENTS.md",
+      "base": {
+        "gitBlobSha1": "0cdce3e0cb86da828aef4f7a6a9e9947d2fe3ec8",
+        "rawBlobSha256": "8460bccdf60d56f29b484b90072c23c4946806f4469c384bea516d529b5be3a1"
+      },
+      "candidate": {
+        "gitBlobSha1": "ac48525e1a586c65766922539d420fb8d37caccb",
+        "rawBlobSha256": "2c899a0ee1fd4b72f36b4e6446a5ff79f7662aed9c1a2766feba5bcc5cb9f68e"
+      }
+    },
+    {
       "path": ".engineering/context-locks/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
@@ -20,8 +31,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "76b4fd7954330346d636235036395e3f50e55730",
-        "rawBlobSha256": "dc4643b5b9b972419a664d066e8bf99ce4b3f79193f059cf580c33b69f5e2fab"
+        "gitBlobSha1": "62dc4e2eb287abeead531c249a1383a435001c5d",
+        "rawBlobSha256": "156caf22a8aa0eed667b9ed0c40cc42b7b85b3a86bde22ab7b3058da50a08335"
       }
     },
     {

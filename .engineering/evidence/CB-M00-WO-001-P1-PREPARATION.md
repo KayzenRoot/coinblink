@@ -4,7 +4,7 @@
 
 **Base:** `954b4db2d6dff3798e76fd4d75d6bccaf24b0876` (`origin/main`)
 
-**Branch:** `codex/cb-m00-p1-preparation`
+**Branch:** `codex/cb-m00-preview-json-fix`
 
 **Candidate HEAD:** published in the PR description and exact-head check run links after commit; this file deliberately avoids a self-referential commit hash.
 
@@ -45,6 +45,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 - Addressed Owner audit continuation #5468234422: Preview `robots.txt` now permits crawling so crawlers can read the existing HTML, response-header, and static-asset noindex controls. Browser/config tests and the exact-SHA remote-smoke contract reject `Disallow: /`; this is not access control and Preview content remains public demo data.
 - Addressed the final-head CodeRabbit deletion regression: a manifest entry with `candidate: null` now also requires the worktree path to be absent. The isolated Git test stages a deletion, recreates the path as untracked, and verifies that the index/worktree diff alone misses it while fingerprint validation rejects it.
 - The first Owner-authorized Preview attempt is documented in the provider evidence section below. Its CLI command created a real Preview successfully, then the output recorder rejected Wrangler's leading `Attaching ...` progress line before the nested JSON. This parser-only correction accepts that documented CLI framing while continuing to reject unrelated or trailing text.
+- Updated the root `AGENTS.md` status note to reflect the Owner-authorized Preview for the documented base SHA, while explicitly keeping corrected-head validation pending and leaving production/checkpoint claims unchanged.
 
 ## Owner-authorized Cloudflare Preview evidence · 2026-10-09
 
@@ -88,4 +89,4 @@ Local `docker ps` confirmed unrelated `nexlabs-website-web-1` owns `127.0.0.1:30
 
 ## Result
 
-The local preparation is ready for independent review. Merge and external deployment remain outside this work's stop boundary. The Owner must audit the exact final HEAD, review the PR evidence and checks, and separately authorize provider setup before any Preview action can run.
+The original P1 preparation has since been followed by the separately Owner-authorized Preview operation documented above. That base-SHA Preview exists, but its first workflow run failed at output recording; this parser correction has not yet been deployed and the final least-privilege token has not yet been exercised by Wrangler. PR #38 is ready for exact-head checks and independent Owner audit. No checkpoint promotion, production deployment, or M00 completion is claimed.

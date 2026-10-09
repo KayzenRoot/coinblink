@@ -43,12 +43,132 @@ function parseWranglerJsonOutput(output, expectedName) {
   } catch (parseError) {
     const lines = output.trim().split(/\r?\n/);
     const jsonStart = lines.findIndex((line) => line.trimStart().startsWith("{"));
-    const expectedProgressLine = `Attaching preview ${expectedName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}`;
-    if (jsonStart !== 1 || lines[0] !== expectedProgressLine) {
-      throw new Error("Wrangler output contains an unexpected Preview progress line.", { cause: parseError });
+    if (jsonStart !== 1 || !isExpectedPreviewProgressLine(lines[0], expectedName)) {
+      const safeProgressLine = jsonStart === 1 ? redactProgressLine(lines[0]) : "";
+      const diagnostic = safeProgressLine ? ` Received: ${safeProgressLine}` : "";
+      throw new Error(`Wrangler output contains an unexpected Preview progress line.${diagnostic}`, { cause: parseError });
     }
     return JSON.parse(lines.slice(jsonStart).join("\n").trim());
   }
+}
+
+function isExpectedPreviewProgressLine(line, expectedName) {
+  // Wrangler can colorize its single progress line even when stdout is redirected in hosted CI.
+  // eslint-disable-next-line no-control-regex
+  const normalizedLine = line.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "").trim();
+  const previewIdentifier = `(?:${escapeRegExp(expectedName)}|["']${escapeRegExp(expectedName)}["'])`;
+  const workerIdentifier = `(?:${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}|["']${escapeRegExp(CLOUDFLARE_PREVIEW_WORKER_NAME)}["'])`;
+  const progressPattern = new RegExp(
+    String.raw`^(?:attaching|creating|updating|deploying)\s+preview\s+${previewIdentifier}\s+(?:to|on)\s+(?:worker\s+)?${workerIdentifier}[.!]?$`,
+    "i",
+  );
+  return progressPattern.test(normalizedLine) && containsExactIdentifier(normalizedLine, expectedName) && containsExactIdentifier(normalizedLine, CLOUDFLARE_PREVIEW_WORKER_NAME);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, (character) => String.fromCharCode(92) + character);
+}
+
+function containsExactIdentifier(text, identifier) {
+  let offset = -1;
+  while ((offset = text.indexOf(identifier, offset + 1)) !== -1) {
+    const before = text[offset - 1];
+    const after = text[offset + identifier.length];
+    if ((!before || !/[A-Za-z0-9_-]/.test(before)) && (!after || !/[A-Za-z0-9_-]/.test(after))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function redactProgressLine(line) {
+  return redactCredentialAssignments(line.replace(/https?:\/\/\S+/gi, "[url]"))
+    .replace(/\b[0-9a-f]{32}\b/gi, "[redacted]")
+    .replace(/[A-Za-z0-9._~+/-]{24,}/g, "[redacted]")
+    .replace(/[\r\n\t]/g, " ")
+    .slice(0, 160);
+}
+
+function redactCredentialAssignments(line) {
+  const parts = splitDiagnosticParts(line);
+  let redactNextPart = false;
+
+  return parts.map((part) => {
+    if (/^\s+$/.test(part)) return part;
+    if (redactNextPart) {
+      if (part === "=" || part === ":") return part;
+      redactNextPart = false;
+      return "[redacted]";
+    }
+
+    const separatorIndex = part.search(/[=:]/);
+    if (separatorIndex !== -1 && isCredentialKey(part.slice(0, separatorIndex))) {
+      const valueStart = separatorIndex + 1;
+      if (valueStart < part.length) return `${part.slice(0, valueStart)}[redacted]`;
+      redactNextPart = true;
+      return part;
+    }
+
+    if (isCredentialKey(part)) redactNextPart = true;
+    return part;
+  }).join("");
+}
+
+function isCredentialKey(value) {
+  const key = value.toUpperCase().replace(/^-+/, "").replace(/^['"]|['"]$/g, "");
+  return ["TOKEN", "SECRET", "KEY", "PASSWORD", "BEARER"].some((suffix) =>
+    key === suffix || key.endsWith(`_${suffix}`) || key.endsWith(`-${suffix}`),
+  );
+}
+
+function splitDiagnosticParts(value) {
+  const parts = [];
+  let partStart = 0;
+  let activeQuote = "";
+  let escaped = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    if (index < partStart) continue;
+    const character = value[index];
+    if (activeQuote) {
+      ({ activeQuote, escaped } = advanceQuoteState(character, activeQuote, escaped));
+      continue;
+    }
+    const previousCharacter = value[index - 1];
+    if (
+      (character === "\"" || character === "'")
+      && (index === partStart || previousCharacter === "=" || previousCharacter === ":")
+    ) {
+      activeQuote = character;
+      continue;
+    }
+    if (!/\s/.test(character)) continue;
+
+    if (index > partStart) parts.push(value.slice(partStart, index));
+    const whitespaceEnd = findWhitespaceEnd(value, index);
+    parts.push(value.slice(index, whitespaceEnd));
+    partStart = whitespaceEnd;
+  }
+
+  if (activeQuote) {
+    parts.push("[redacted]");
+    return parts;
+  }
+
+  if (partStart < value.length) parts.push(value.slice(partStart));
+  return parts;
+}
+
+function advanceQuoteState(character, activeQuote, escaped) {
+  if (escaped) return { activeQuote, escaped: false };
+  if (character === "\\") return { activeQuote, escaped: true };
+  return { activeQuote: character === activeQuote ? "" : activeQuote, escaped: false };
+}
+
+function findWhitespaceEnd(value, start) {
+  let end = start;
+  while (end < value.length && /\s/.test(value[end])) end += 1;
+  return end;
 }
 
 export function parsePreviewOutput(output, expectedName) {

@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 const baseSha = "954b4db2d6dff3798e76fd4d75d6bccaf24b0876";
+const candidateSha = "45623ab453be267baf81f1c0703c1ef84dc67bd2";
 const lockPath = resolve(".engineering/context-locks/CB-M00-WO-001-P1-PREPARATION.md");
 const lock = readFileSync(lockPath, "utf8");
 const evidence = readFileSync(resolve(".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md"), "utf8");
@@ -44,17 +45,18 @@ function assertPathAbsentFromWorktree(path, cwd) {
   assert.fail(`${path} is declared deleted but still exists in the working tree (mode ${pathInfo.mode})`);
 }
 
-function assertFingerprintEntryMatches(entry, { baseCommitSha = baseSha, cwd = process.cwd() } = {}) {
-  assertWorktreeMatchesIndex(entry.path, cwd);
-  const candidateObject = spawnSync("git", ["rev-parse", `:${entry.path}`], { cwd, encoding: "utf8" });
+function assertFingerprintEntryMatches(entry, { baseCommitSha = baseSha, candidateCommitSha, cwd = process.cwd() } = {}) {
+  if (!candidateCommitSha) assertWorktreeMatchesIndex(entry.path, cwd);
+  const candidateReference = candidateCommitSha ? `${candidateCommitSha}:${entry.path}` : `:${entry.path}`;
+  const candidateObject = spawnSync("git", ["rev-parse", candidateReference], { cwd, encoding: "utf8" });
   assert.ifError(candidateObject.error);
   if (entry.candidate === null) {
     assert.notEqual(candidateObject.status, 0, `${entry.path} is declared deleted but remains in the Git index`);
-    assertPathAbsentFromWorktree(entry.path, cwd);
+    if (!candidateCommitSha) assertPathAbsentFromWorktree(entry.path, cwd);
   } else {
-    assert.equal(candidateObject.status, 0, `${entry.path} is fingerprinted but missing from the Git index`);
+    assert.equal(candidateObject.status, 0, `${entry.path} is fingerprinted but missing from the candidate snapshot`);
     const candidateBlobId = candidateObject.stdout.trim();
-    const candidateBytes = execFileSync("git", ["cat-file", "blob", `:${entry.path}`], { cwd });
+    const candidateBytes = execFileSync("git", ["cat-file", "blob", candidateReference], { cwd });
     assert.equal(candidateBlobId, entry.candidate.gitBlobSha1, `${entry.path} candidate blob SHA-1`);
     assert.equal(createHash("sha256").update(candidateBytes).digest("hex"), entry.candidate.rawBlobSha256, `${entry.path} candidate raw SHA-256`);
   }
@@ -83,18 +85,19 @@ test("P1 preparation Context Lock binds its frozen table to the exact merged mai
   }
 });
 
-test("P1 Evidence Bundle exactly covers changed paths and fingerprints candidate blobs from the staged Git index", () => {
+test("P1 Evidence Bundle exactly covers its frozen source snapshot and candidate blob fingerprints", () => {
   assert.equal(fingerprints.schemaVersion, 1);
   assert.equal(fingerprints.repository, "KayzenRoot/coinblink");
   assert.equal(fingerprints.workOrder, "CB-M00-WO-001");
   assert.equal(fingerprints.baseCommitSha, baseSha);
+  assert.equal(fingerprints.branch, "codex/cb-m00-preview-json-fix");
   assert.equal(fingerprints.excludesSelf, ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION-FINGERPRINTS.json");
-  const changedPaths = execFileSync("git", ["diff", "--name-only", "--no-renames", "-z", baseSha], { encoding: "utf8" })
+  const changedPaths = execFileSync("git", ["diff", "--name-only", "--no-renames", "-z", baseSha, candidateSha], { encoding: "utf8" })
     .split("\0")
     .filter(Boolean);
   assertExactFingerprintCoverage(changedPaths, fingerprints.files, fingerprints.excludesSelf);
 
-  for (const entry of fingerprints.files) assertFingerprintEntryMatches(entry);
+  for (const entry of fingerprints.files) assertFingerprintEntryMatches(entry, { candidateCommitSha: candidateSha });
 });
 
 test("fingerprint path coverage rejects omissions, extras, duplicates, and unlisted deletions", () => {

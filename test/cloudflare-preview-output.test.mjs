@@ -104,8 +104,19 @@ test("rejects the unrelated flattened output-file event format", () => {
   }), /nested Preview and deployment resources/);
 });
 
-test("accepts the Wrangler CLI progress line before its nested Preview JSON", () => {
-  const cliOutput = `Attaching preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}\n${JSON.stringify(validOutput, null, 2)}\n`;
+test("accepts the Wrangler CLI progress line with exact Preview and Worker identities", () => {
+  for (const action of ["Attaching", "Creating", "Updating", "Deploying"]) {
+    const cliOutput = `${action} preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}\n${JSON.stringify(validOutput, null, 2)}\n`;
+    assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
+      previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+      deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+    }, action);
+  }
+});
+
+test("accepts quoted Wrangler progress identifiers and terminal color codes", () => {
+  const progressLine = `\u001b[36mAttaching Preview "${previewName}" to Worker "${CLOUDFLARE_PREVIEW_WORKER_NAME}"\u001b[0m`;
+  const cliOutput = `${progressLine}\n${JSON.stringify(validOutput, null, 2)}\n`;
   assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
     previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
     deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
@@ -116,6 +127,54 @@ test("rejects unrecognized text around Wrangler Preview JSON", () => {
   const json = JSON.stringify(validOutput);
   assert.throws(() => parsePreviewOutput(`Debug output\n${json}`, previewName));
   assert.throws(() => parsePreviewOutput(`Attaching preview\n${json}\nFinished`, previewName));
+});
+
+test("redacts token-like values from rejected Wrangler progress diagnostics", () => {
+  const json = JSON.stringify(validOutput, null, 2);
+  const whitespaceCredential = "credential-value-".repeat(4);
+  const assignmentCredential = "short-assignment-secret";
+  const cloudflareCredential = "short-cloudflare-secret";
+  const apiKey = "short-api-key";
+  const spacedCredential = "spaced-assignment-secret";
+  const quotedCredential = "quoted assignment secret with spaces";
+  const apostropheCredential = "apostrophe-delimited-secret";
+  const unterminatedCredential = "unterminated quoted secret with spaces";
+  const credentialUrl = "https://url-user:url-password@example.workers.dev";
+  const queryTokenUrl = "https://example.workers.dev/?access_token=query-token";
+  let capturedError;
+  try {
+    parsePreviewOutput(
+      `Unexpected output token ${whitespaceCredential} token=${assignmentCredential} CLOUDFLARE_API_TOKEN=${cloudflareCredential} api_key: ${apiKey} API_SECRET = ${spacedCredential} SESSION_TOKEN="${quotedCredential}"; Worker's report token ${apostropheCredential}; URLs ${credentialUrl} ${queryTokenUrl}; untrusted output "${unterminatedCredential}\n${json}`,
+      previewName,
+    );
+  } catch (error) {
+    capturedError = error;
+  }
+  assert.ok(capturedError instanceof Error);
+  assert.match(capturedError.message, /Unexpected output token/);
+  assert.doesNotMatch(capturedError.message, /credential-value/);
+  assert.doesNotMatch(capturedError.message, /short-assignment-secret/);
+  assert.doesNotMatch(capturedError.message, /short-cloudflare-secret/);
+  assert.doesNotMatch(capturedError.message, /short-api-key/);
+  assert.doesNotMatch(capturedError.message, /spaced-assignment-secret/);
+  assert.doesNotMatch(capturedError.message, /quoted assignment secret with spaces/);
+  assert.doesNotMatch(capturedError.message, /apostrophe-delimited-secret/);
+  assert.doesNotMatch(capturedError.message, /unterminated quoted secret with spaces/);
+  assert.doesNotMatch(capturedError.message, /url-user:url-password/);
+  assert.doesNotMatch(capturedError.message, /access_token=query-token/);
+});
+
+test("redacts an unterminated quoted tail in rejected Wrangler output", () => {
+  const secret = "short unclosed secret value";
+  let capturedError;
+  try {
+    parsePreviewOutput(`Untrusted diagnostic "${secret}\n${JSON.stringify(validOutput)}`, previewName);
+  } catch (error) {
+    capturedError = error;
+  }
+
+  assert.ok(capturedError instanceof Error);
+  assert.doesNotMatch(capturedError.message, /short unclosed secret value/);
 });
 
 test("rejects unrelated Wrangler progress lines before valid Preview JSON", () => {

@@ -106,4 +106,14 @@ The corrected source/test snapshot `578fb454d51eb9a9ef2c08a1a4c33c9957142280` wa
 | Docker Compose smoke | PASS | Exact build SHA `578fb454d51eb9a9ef2c08a1a4c33c9957142280` returned from `/health` and `/preview-status`; `/en` returned 200 with `noindex` and `nosniff`; unknown route returned 404. The pinned base digest was unchanged. Smoke used isolated port `3015` because another project owns `3000`; unrelated containers were preserved and only the temporary CoinBlink Compose project was removed. |
 | Fingerprint regression | PASS | `node --test test/governance-parallel-plan.test.mjs`: 16/16, including exact path coverage, HEAD/index/worktree SHA-1 and SHA-256 checks, and deterministic local/multi-remote branch-ref enumeration. |
 
-The exact-head GitHub rollup and fresh CodeRabbit review remain live gates on PR #42 and must be read from the final pushed SHA. The canonical Context Lock sources and checkpoint remain unchanged; the checkpoint delta is still only proposed.
+## Exact-head GitHub validation for the corrected candidate
+
+At pushed HEAD `4deff264543c769f4a3a3b8aaa6356f151317fff`, run [#38000126316](https://github.com/KayzenRoot/coinblink/actions/runs/38000126316) completed successfully. All checks were attached to that exact SHA:
+
+- Ubuntu GEF/M00 job [passed](https://github.com/KayzenRoot/coinblink/actions/runs/38000126316/job/114055904179).
+- Windows GEF/M00 job [passed](https://github.com/KayzenRoot/coinblink/actions/runs/38000126316/job/114055904404).
+- Docker Compose smoke [passed](https://github.com/KayzenRoot/coinblink/actions/runs/38000126316/job/114055904481); the pinned base image and digest were unchanged.
+- CodeRabbit, SonarCloud, Socket Project Report and Socket PR Alerts all passed at the same SHA. The final CodeRabbit CLI review also returned zero issues.
+- All five original CodeRabbit review threads are now resolved and outdated. The Owner review remains a COMMENTED audit on the earlier `a893cb24...` SHA; `reviewDecision` is empty and Owner approval is still required.
+
+These results are immutable evidence for `4deff264...`; the current live PR check rollup remains authoritative for any later evidence-only commit. The canonical Context Lock sources and checkpoint remain unchanged; the checkpoint delta is still only proposed.

@@ -24,6 +24,14 @@ function commandLines(commandText) {
   return command.join("\n");
 }
 
+function stepBlockNamed(name) {
+  const lines = gatedJob.split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trim() === `- name: ${name}`);
+  assert.notEqual(start, -1, `step ${name} is present`);
+  const end = lines.findIndex((line, index) => index > start && line.trim().startsWith("- name:"));
+  return lines.slice(start, end === -1 ? lines.length : end).join("\n");
+}
+
 function optionsIn(command) {
   return [...command.matchAll(/--([a-z][a-z-]*)/g)].map(([, option]) => option).sort();
 }
@@ -89,16 +97,22 @@ test("rollback documentation uses only supported Wrangler Preview delete options
   assert.doesNotMatch(rollback, /--ignore-base-config/);
 });
 
-test("rechecks the exact current main immediately before each provider operation", () => {
-  for (const command of ["./node_modules/.bin/wrangler preview \\", "./node_modules/.bin/wrangler preview delete \\"]) {
-    const commandIndex = gatedJob.indexOf(command);
-    assert.notEqual(commandIndex, -1, `${command} is present`);
-    const mainGuardIndex = gatedJob.lastIndexOf("node scripts/verify-preview-main.mjs", commandIndex);
-    const headGuardIndex = gatedJob.lastIndexOf("node scripts/verify-exact-head.mjs", commandIndex);
-    assert.notEqual(mainGuardIndex, -1, `${command} has a current-main check`);
-    assert.notEqual(headGuardIndex, -1, `${command} has an exact checked-out HEAD check`);
-    assert.ok(commandIndex - mainGuardIndex < 200, `${command} is kept adjacent to its current-main check`);
-    assert.ok(commandIndex - headGuardIndex < 260, `${command} is kept adjacent to its exact checked-out HEAD check`);
+test("exact-main rechecks run immediately before provider steps without Cloudflare credentials", () => {
+  for (const [guardName, providerName] of [
+    ["Reverify exact HEAD and canonical main before Preview CLI", "Create isolated Worker Preview"],
+    ["Reverify exact HEAD and canonical main before Preview deletion", "Delete only the selected managed Preview and its deployments"],
+  ]) {
+    const guard = stepBlockNamed(guardName);
+    const provider = stepBlockNamed(providerName);
+    assert.match(guard, /node scripts\/verify-exact-head\.mjs/);
+    assert.match(guard, /node scripts\/verify-preview-main\.mjs/);
+    assert.match(guard, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
+    assert.doesNotMatch(guard, /CLOUDFLARE_(API_TOKEN|ACCOUNT_ID)/);
+    assert.match(provider, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
+    const guardIndex = gatedJob.indexOf(guard);
+    const providerIndex = gatedJob.indexOf(provider);
+    assert.ok(guardIndex < providerIndex, `${providerName} follows the exact-main guard`);
+    assert.ok(providerIndex - guardIndex < 800, `${providerName} immediately follows the exact-main guard`);
   }
 });
 

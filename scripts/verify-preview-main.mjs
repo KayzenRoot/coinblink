@@ -5,7 +5,7 @@ import { validatePreviewMainIdentity } from "./cloudflare-preview-policy.mjs";
 const mainEndpoint = "https://api.github.com/repos/KayzenRoot/coinblink/commits/main";
 const fullShaPattern = /^[0-9a-f]{40}$/;
 
-export async function fetchCurrentMainSha(fetchImpl = fetch, githubToken) {
+export async function fetchCurrentMainSha({ fetchImpl = fetch, githubToken } = {}) {
   const headers = {
     accept: "application/vnd.github+json",
     "user-agent": "coinblink-m00-preview-main-guard",
@@ -25,7 +25,7 @@ export async function fetchCurrentMainSha(fetchImpl = fetch, githubToken) {
   return result.sha;
 }
 
-export async function verifyPreviewMain({ repository, ref, sha, fetchImpl = fetch, githubToken }) {
+export async function verifyPreviewMain({ repository, ref, sha, githubToken, fetchImpl = fetch }) {
   const preflightErrors = validatePreviewMainIdentity({
     repository,
     ref,
@@ -35,7 +35,7 @@ export async function verifyPreviewMain({ repository, ref, sha, fetchImpl = fetc
   });
   if (preflightErrors.length > 0) throw new Error(preflightErrors.join("; "));
 
-  const currentMainSha = await fetchCurrentMainSha(fetchImpl, githubToken);
+  const currentMainSha = await fetchCurrentMainSha({ fetchImpl, githubToken });
   const errors = validatePreviewMainIdentity({
     repository,
     ref,

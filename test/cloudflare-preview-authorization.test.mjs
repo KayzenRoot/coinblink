@@ -184,8 +184,12 @@ test("current-main guard checks GitHub's branch tip and fails closed on unavaila
   assert.equal(requestOptions.headers.accept, "application/vnd.github+json");
   assert.equal(requestOptions.headers.authorization, `Bearer ${token}`);
 
-  await assert.rejects(fetchCurrentMainSha(async () => new Response("unavailable", { status: 503 })), /HTTP 503/);
-  await assert.rejects(fetchCurrentMainSha(async () => new Response(JSON.stringify({ sha: "short" }), { status: 200 })), /full commit SHA/);
+  await assert.rejects(fetchCurrentMainSha({
+    fetchImpl: async () => new Response("unavailable", { status: 503 }),
+  }), /HTTP 503/);
+  await assert.rejects(fetchCurrentMainSha({
+    fetchImpl: async () => new Response(JSON.stringify({ sha: "short" }), { status: 200 }),
+  }), /full commit SHA/);
   await assert.rejects(verifyPreviewMain({
     repository: "KayzenRoot/coinblink",
     ref: "refs/heads/main",

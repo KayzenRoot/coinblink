@@ -46,7 +46,7 @@ jobs:
         run: node --version && npm --version
 
       - name: Install locked dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Check dependency advisories
         run: npm audit --audit-level=high
@@ -59,11 +59,11 @@ jobs:
 
       - name: Install Chromium (Ubuntu)
         if: runner.os == 'Linux'
-        run: npx playwright install --with-deps chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Install Chromium (Windows)
         if: runner.os == 'Windows'
-        run: npx playwright install chromium
+        run: .\node_modules\.bin\playwright.cmd install chromium
 
       - name: Run unit, build, browser, accessibility and GEF checks
         run: npm test

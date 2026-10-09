@@ -33,13 +33,6 @@ function findSessionBindings(value, path = "") {
     if (key.toLowerCase() === "binding" && typeof child === "string" && child.toUpperCase() === "SESSION") {
       matches.push(childPath);
     }
-    if (key.toLowerCase() === "kv_namespaces" && Array.isArray(child)) {
-      for (const [index, binding] of child.entries()) {
-        if (binding?.binding?.toUpperCase() === "SESSION") {
-          matches.push(`${childPath}[${index}].binding`);
-        }
-      }
-    }
     matches.push(...findSessionBindings(child, childPath));
   }
   return matches;

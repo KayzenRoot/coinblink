@@ -6,6 +6,7 @@ const securityHeaders: ReadonlyArray<readonly [string, string]> = [
   ["Referrer-Policy", "strict-origin-when-cross-origin"],
   ["X-Content-Type-Options", "nosniff"],
   ["X-Frame-Options", "DENY"],
+  ["X-Robots-Tag", "noindex, nofollow, noarchive"],
 ];
 
 export const onRequest = defineMiddleware(async (_context, next) => {

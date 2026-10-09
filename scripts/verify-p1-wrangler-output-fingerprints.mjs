@@ -33,6 +33,8 @@ test("P1 output-correction fingerprints exactly bind this branch to the frozen m
   assert.equal(manifest.change, "CB-M00-P1-WRANGLER-OUTPUT-FIX");
   assert.equal(manifest.baseCommitSha, baseSha);
   assert.equal(manifest.branch, "codex/cb-m00-wrangler-structured-output");
+  const currentBranch = process.env.GITHUB_HEAD_REF || execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim();
+  assert.equal(currentBranch, manifest.branch);
   assert.equal(manifest.excludesSelf, manifestPath);
 
   const changedPaths = execFileSync("git", ["diff", "--name-only", "--no-renames", "-z", baseSha], { encoding: "utf8" })
@@ -42,23 +44,29 @@ test("P1 output-correction fingerprints exactly bind this branch to the frozen m
 
   for (const entry of manifest.files) {
     gitDiffQuiet(entry.path);
-    const candidateReference = `:${entry.path}`;
-    const candidateBlobId = execFileSync("git", ["rev-parse", candidateReference], { encoding: "utf8" }).trim();
-    const candidateBytes = execFileSync("git", ["cat-file", "blob", candidateReference]);
-    assert.equal(candidateBlobId, entry.candidate.gitBlobSha1, `${entry.path} candidate blob SHA-1`);
-    assert.equal(createHash("sha256").update(candidateBytes).digest("hex"), entry.candidate.rawBlobSha256, `${entry.path} candidate raw SHA-256`);
-
     const baseObject = spawnSync("git", ["rev-parse", `${baseSha}:${entry.path}`], { encoding: "utf8" });
     assert.ifError(baseObject.error);
     if (entry.base === null) {
       assert.notEqual(baseObject.status, 0, `${entry.path} is declared new but exists in frozen main`);
-      continue;
+    } else {
+      assert.equal(baseObject.status, 0, `${entry.path} is fingerprinted as existing in frozen main`);
+      const baseBlobId = baseObject.stdout.trim();
+      const baseBytes = execFileSync("git", ["cat-file", "blob", `${baseSha}:${entry.path}`]);
+      assert.equal(baseBlobId, entry.base.gitBlobSha1, `${entry.path} base blob SHA-1`);
+      assert.equal(createHash("sha256").update(baseBytes).digest("hex"), entry.base.rawBlobSha256, `${entry.path} base raw SHA-256`);
     }
 
-    assert.equal(baseObject.status, 0, `${entry.path} is fingerprinted as existing in frozen main`);
-    const baseBlobId = baseObject.stdout.trim();
-    const baseBytes = execFileSync("git", ["cat-file", "blob", `${baseSha}:${entry.path}`]);
-    assert.equal(baseBlobId, entry.base.gitBlobSha1, `${entry.path} base blob SHA-1`);
-    assert.equal(createHash("sha256").update(baseBytes).digest("hex"), entry.base.rawBlobSha256, `${entry.path} base raw SHA-256`);
+    const candidateReference = `:${entry.path}`;
+    const candidateObject = spawnSync("git", ["rev-parse", candidateReference], { encoding: "utf8" });
+    assert.ifError(candidateObject.error);
+    if (entry.candidate === null) {
+      assert.notEqual(candidateObject.status, 0, `${entry.path} is declared deleted but remains in the Git index`);
+    } else {
+      assert.equal(candidateObject.status, 0, `${entry.path} has a candidate fingerprint but no Git index blob`);
+      const candidateBlobId = candidateObject.stdout.trim();
+      const candidateBytes = execFileSync("git", ["cat-file", "blob", candidateReference]);
+      assert.equal(candidateBlobId, entry.candidate.gitBlobSha1, `${entry.path} candidate blob SHA-1`);
+      assert.equal(createHash("sha256").update(candidateBytes).digest("hex"), entry.candidate.rawBlobSha256, `${entry.path} candidate raw SHA-256`);
+    }
   }
 });

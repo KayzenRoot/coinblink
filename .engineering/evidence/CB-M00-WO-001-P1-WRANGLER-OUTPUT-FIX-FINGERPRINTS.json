@@ -12,8 +12,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "0909245cc8c1854d0553ee73d910737c708c3507",
-        "rawBlobSha256": "23c84f90bf84fea89869ba6d8ed4c4c39c0bdb7cb79b730d5ce070c3d151616b"
+        "gitBlobSha1": "785cfc488a7b2c66212dcf63e16d7654cc0cea2c",
+        "rawBlobSha256": "2401abf9e8ffda70770ad6fe781aa229b71dc247a47c3c8af34a3c82d408d210"
       }
     },
     {
@@ -52,6 +52,17 @@
       }
     },
     {
+      "path": ".github/workflows/gef-validation.yml",
+      "base": {
+        "gitBlobSha1": "3d9c6e3823be195074cafd8004f27de4ef59b2d8",
+        "rawBlobSha256": "1c84923eeda3d182f7ebb9c5e4b5ed4a425e802665187c072f24166c052129a4"
+      },
+      "candidate": {
+        "gitBlobSha1": "d29833428c93e9c8479909255d285f61d839bdb1",
+        "rawBlobSha256": "aeeebbc9996ed168953b6e4e9f1901fcfa6a4eaca43b5001582329c29e15411e"
+      }
+    },
+    {
       "path": "e2e/m00-shell.spec.mjs",
       "base": {
         "gitBlobSha1": "8a733a3466540fcc93eecf935dba6c433ffde31d",
@@ -71,6 +82,14 @@
       "candidate": {
         "gitBlobSha1": "6c2f58f0a2c304f47bbe55487d20cd74f6490139",
         "rawBlobSha256": "86a48563d6aa6d7e1b2a4e0c800d70e1561eb28119c2ef185ed32ac88d547aa1"
+      }
+    },
+    {
+      "path": "scripts/verify-p1-wrangler-output-fingerprints.mjs",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "8a7b2051098b117ef2d7c47684a192c546068b39",
+        "rawBlobSha256": "db365aba8babd495534083ffcd0efa41588bd8a0ea4ec3b9d40d241032814e43"
       }
     },
     {
@@ -104,14 +123,6 @@
       "candidate": {
         "gitBlobSha1": "39d15de56fc915003cecc29dc292b7789cf3fb9c",
         "rawBlobSha256": "1945030b187d8a38044aa14089dc14e00e4c37fce5ba862a735423277465e9ea"
-      }
-    },
-    {
-      "path": "test/p1-wrangler-output-fix-fingerprints.test.mjs",
-      "base": null,
-      "candidate": {
-        "gitBlobSha1": "cd600174e2e547de8ca25636615dd15c86128589",
-        "rawBlobSha256": "0c5b206a38f1ba2ea10af5edc54e13d4723b4bd04267fe078ae1f13e8f710e46"
       }
     }
   ]

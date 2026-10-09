@@ -16,6 +16,8 @@ The real base-Preview screenshot exposed stale M00 copy that claimed the provide
 
 The first PR analysis reported SonarCloud `javascript:S3776` as CRITICAL because the JSON event-stream scanner exceeded the cognitive-complexity limit (35 versus 15). After extracting `scanJsonObjectEnd`, Sonar's next candidate analysis still measured 17. A further refactor extracted string/brace transitions into `advanceJsonScanState`; this keeps the scanner behavior explicit and the regression suite passes without relaxing accepted JSON, event, Worker, Preview-name, or URL validation. SonarCloud must re-analyze the new exact PR HEAD before review is complete.
 
+CodeRabbit's review of the first PR candidate reported one MAJOR issue: this correction's fixed-snapshot fingerprint assertion must not remain in the permanent `npm test` suite, where future changes to these files would fail against this historical manifest. The test is now a candidate-only validator under `scripts/`, with a dedicated CI step gated to this exact PR branch; the normal `npm test` suite no longer discovers it. The candidate validator still checks exact changed-path coverage, Git-index SHA-1/SHA-256, working-tree consistency, and deleted paths. The review did not cover this latest refactor, so a new final-HEAD review is required.
+
 ## Existing Preview evidence (base SHA only)
 
 - Stable Preview: [https://coinblink-m00-run-37968696916-1-coinblink-m00-preview.kayzendev.workers.dev/](https://coinblink-m00-run-37968696916-1-coinblink-m00-preview.kayzendev.workers.dev/)
@@ -40,14 +42,16 @@ This Preview belongs to the base main SHA, not this correction candidate. It is 
 | `npm audit --audit-level=high` | PASS after the scanner correction: 0 vulnerabilities. |
 | `npm run lint` | PASS after the scanner correction: ESLint with zero warnings allowed. |
 | `npm run typecheck` | PASS after the scanner correction: 35 Astro/TypeScript files, 0 errors, warnings, or hints. |
-| `npm test` | PASS after the scanner correction under the pinned Node 22.19.0/npm 10.9.3 runtime: 62/62 unit tests; Astro Cloudflare build and generated Worker binding guard passed; 7/7 Playwright tests passed for local presentation. |
+| `npm test` | PASS after the scanner correction under the pinned Node 22.19.0/npm 10.9.3 runtime: 61/61 default unit tests; Astro Cloudflare build and generated Worker binding guard passed; 7/7 Playwright tests passed for local presentation. |
+| Candidate fingerprint validator | PASS locally (1/1) via `node --test scripts/verify-p1-wrangler-output-fingerprints.mjs`. Exact candidate validation is a dedicated branch-gated CI step on this PR's Ubuntu and Windows jobs, outside permanent mainline `npm test`; final-HEAD CI for that step is pending. |
 | Local preview-mode check | PASS on the first candidate: Astro build with `PUBLIC_BUILD_ENV=preview` and Playwright 7/7, including the correct non-production Worker Preview labels. This is local-only evidence, not a Cloudflare deployment. |
 | Wrangler source/version inspection | PASS: local package reports `4.149.0`; Preview and delete help inspected without Cloudflare credentials or API calls. |
 | GEF `doctor --target . --json` | Exit 0 after the scanner correction; checkpoint present/valid and toolchain healthy. Repository observation remains `FINDING` (`GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`), dependency provenance remains `unverified` / `REVIEW`; these findings are not suppressed. |
 | GEF `status --target . --json` | Exit 0 after the scanner correction; canonical checkpoint reports M00 admitted/in progress, 0%, P1 authorization/evidence as next stage. Worktree dirtiness is `UNKNOWN` and absent drift baseline yields conservative stale status; no baseline was fabricated. |
 | Local Docker Compose smoke | BLOCKED: Docker Desktop Linux engine is unavailable (`dockerDesktopLinuxEngine` named pipe not found). Read-only port check found no listener on 3000, 3010, or 3011. No container was stopped or altered. Exact-head GitHub Docker validation is still required. |
-| Initial PR candidate `789b57760cf97e2d9e748a95247086b6c93ba6cd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. SonarCloud still reported the CRITICAL code smell described above. These results are historical for that candidate and do not certify the scanner-corrected HEAD. |
-| Scanner-corrected candidate exact-head CI and CodeRabbit | Pending a new commit and fresh checks/review. |
+| Earlier PR candidate `789b57760cf97e2d9e748a95247086b6c93ba6cd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. SonarCloud reported the CRITICAL code smell described above. |
+| Parser-refactored PR candidate `295846a6c42edc5bea177cdac004acfc62e5debd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate (0 new issues), Socket Alerts, and Socket Project Report. These checks predate the candidate-only fingerprint-validator adjustment. |
+| Final candidate exact-head CI and CodeRabbit | Pending a new commit and fresh checks/review. |
 | Cloudflare action for corrected HEAD | Not run. Requires correction PR review/merge and the existing protected Environment approval; no Cloudflare API, resource, billing, secret, production, or R2 operation was performed for this correction. |
 
 The existing Context Locks and canonical `.engineering/CHECKPOINT.json` are preserved byte-for-byte. No checkpoint promotion is proposed in this correction. The next legal action is independent review of the correction PR; only after its normal merge can the protected workflow be run again against the corrected exact `main` SHA.

@@ -115,7 +115,8 @@ test("exact-main rechecks run immediately before provider steps without Cloudfla
     const guardIndex = gatedJob.indexOf(guard);
     const providerIndex = gatedJob.indexOf(provider);
     assert.ok(guardIndex < providerIndex, `${providerName} follows the exact-main guard`);
-    assert.ok(providerIndex - guardIndex < 800, `${providerName} immediately follows the exact-main guard`);
+    const betweenGuardAndProvider = gatedJob.slice(guardIndex + guard.length, providerIndex);
+    assert.equal(betweenGuardAndProvider.trim(), "", `${providerName} immediately follows its guard`);
   }
 });
 

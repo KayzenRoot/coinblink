@@ -31,14 +31,14 @@ Commands below were run with Node 22.19.0 and npm 10.9.3 through the pinned loca
 |---|---|---|---|
 | Runtime | `node --version`; `npm --version` | PASS | Node `22.19.0`; npm `10.9.3` |
 | Dependency install | `npm ci --ignore-scripts` | PASS | 437 packages installed; npm reported zero vulnerabilities |
-| GEF doctor | `npm run gef -- doctor` | REVIEW | CLI returned `ok=true`, checkpoint readable/valid, but repository observer returned `FINDING`, `GIT_DIRECTORY_NOT_A_DIRECTORY`, and `WORKING_TREE_NOT_OBSERVED` in this managed worktree; not counted as a clean repository PASS |
-| GEF status | `npm run gef -- status` | REVIEW | checkpoint projection is valid and confirms M00/0%, but repository dirtiness is `UNKNOWN` and operator narrative is stale; not counted as a clean repository PASS |
+| GEF doctor | `npm run gef -- doctor` | REVIEW | Managed worktree first reported `GIT_DIRECTORY_NOT_A_DIRECTORY`/`WORKING_TREE_NOT_OBSERVED`; a normal clone at candidate HEAD `7661cd72a2321efe61231f8fe0c6285be7a858ef` reported repository observable and toolchain healthy. GEF security remains `REVIEW` for unverified dependency provenance and non-immutable GitHub ref. |
+| GEF status | `npm run gef -- status` | REVIEW | Normal clone reported a clean, observed worktree and valid checkpoint (`M00_ADMITTED`, 0%); operator narrative is stale and drift baseline absent. Canonical files were not changed to clear these findings. |
 | Dependency audit | `npm audit --audit-level=high` | PASS | zero vulnerabilities |
 | Lint | `npm run lint` | PASS | exit 0, zero warnings |
 | Typecheck | `npm run typecheck` | PASS | 35 files, zero errors/warnings/hints |
 | Build | `npm run build` | PASS | Astro server build and no-session/no-binding assertion succeeded |
 | Unit + build + Playwright | `npm test` | PASS | 71 unit tests; Astro server build and binding assertion passed; 7 Playwright tests passed at desktop `1536x864`, tablet `768x1024`, and mobile `390x844`, plus route/security/noindex checks |
-| Docker smoke | `docker compose -p coinblink-cb-gov-parallel-001 up --build --detach --wait --wait-timeout 120`; smoke `/health`, `/preview-status`, `/en`, 404 and security/noindex headers on port `3015` | PASS | Docker Desktop was started locally. The daemon resumed pre-existing containers; none were stopped or modified. An unrelated project occupies port `3000`, so this isolated Compose project used `3015` and was then removed by its own project name. Health and preview JSON reported the candidate build SHA `7fd4e9a428cc97946e152bd7a24e9fdc87f40969`. |
+| Docker smoke | Docker Compose isolated project on `127.0.0.1:3015`; verify `/health`, `/preview-status`, `/en`, 404 and security/noindex headers | PASS | Exact candidate SHA `7661cd72a2321efe61231f8fe0c6285be7a858ef` returned matching build SHA. Docker Desktop resumed pre-existing containers; none were stopped or modified. Another project owns port `3000`, so the smoke used `3015`; only the isolated CoinBlink test project was then removed. |
 | Fingerprint manifest | `node --test test/governance-parallel-plan.test.mjs` | PASS | 13/13 tests, including exact path set, Work Order allowlist, deletion/rename representation, HEAD/index/worktree hashes and source-lock fingerprints |
 
 ## Security and scope

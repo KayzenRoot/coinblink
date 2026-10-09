@@ -30,10 +30,10 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "headGitBlobSha1": "86c187999922371a9ab12ad5838fed682b3a96dc",
-      "indexGitBlobSha1": "86c187999922371a9ab12ad5838fed682b3a96dc",
-      "workingTreeGitBlobSha1": "86c187999922371a9ab12ad5838fed682b3a96dc",
-      "workingTreeSha256": "67dd26940ecd340934b2467935e493f038d7e2fa362cc0d9bfbd1fc6d898f1ec"
+      "headGitBlobSha1": "f7cc0a6d24e13dc88655c6d6ea3cb5921f1c82af",
+      "indexGitBlobSha1": "f7cc0a6d24e13dc88655c6d6ea3cb5921f1c82af",
+      "workingTreeGitBlobSha1": "f7cc0a6d24e13dc88655c6d6ea3cb5921f1c82af",
+      "workingTreeSha256": "1ff11d3bbb07e8ecea1fd8a18b2202707ff9855bbf365c88457a029355fe3aa7"
     },
     {
       "path": ".engineering/proposals/CB-GOV-PARALLEL-001-CONTRACT-REGISTER.json",

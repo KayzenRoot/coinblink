@@ -90,7 +90,7 @@ function redactProgressLine(line) {
 }
 
 function redactCredentialAssignments(line) {
-  const parts = line.split(/(\s+)/);
+  const parts = splitDiagnosticParts(line);
   let redactNextPart = false;
 
   return parts.map((part) => {
@@ -115,10 +115,50 @@ function redactCredentialAssignments(line) {
 }
 
 function isCredentialKey(value) {
-  const key = value.toUpperCase().replace(/^-+/, "");
+  const key = value.toUpperCase().replace(/^-+/, "").replace(/^['"]|['"]$/g, "");
   return ["TOKEN", "SECRET", "KEY", "PASSWORD", "BEARER"].some((suffix) =>
     key === suffix || key.endsWith(`_${suffix}`) || key.endsWith(`-${suffix}`),
   );
+}
+
+function splitDiagnosticParts(value) {
+  const parts = [];
+  let partStart = 0;
+  let activeQuote = "";
+  let escaped = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (activeQuote) {
+      if (escaped) {
+        escaped = false;
+      } else if (character === "\\") {
+        escaped = true;
+      } else if (character === activeQuote) {
+        activeQuote = "";
+      }
+      continue;
+    }
+    const previousCharacter = value[index - 1];
+    if (
+      (character === "\"" || character === "'")
+      && (index === partStart || previousCharacter === "=" || previousCharacter === ":")
+    ) {
+      activeQuote = character;
+      continue;
+    }
+    if (!/\s/.test(character)) continue;
+
+    if (index > partStart) parts.push(value.slice(partStart, index));
+    let whitespaceEnd = index + 1;
+    while (whitespaceEnd < value.length && /\s/.test(value[whitespaceEnd])) whitespaceEnd += 1;
+    parts.push(value.slice(index, whitespaceEnd));
+    index = whitespaceEnd - 1;
+    partStart = whitespaceEnd;
+  }
+
+  if (partStart < value.length) parts.push(value.slice(partStart));
+  return parts;
 }
 
 export function parsePreviewOutput(output, expectedName) {

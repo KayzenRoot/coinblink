@@ -43,21 +43,23 @@ export async function verifyPreviewMain({ repository, ref, sha, fetchImpl = fetc
   return currentMainSha;
 }
 
-async function runPreviewMainGuard() {
-  const sha = process.env.GITHUB_SHA;
+export async function runPreviewMainGuard({ env = process.env, fetchImpl = fetch, logger = console } = {}) {
+  const sha = env.GITHUB_SHA;
   try {
-    const currentMainSha = await verifyPreviewMain({
-      repository: process.env.GITHUB_REPOSITORY,
-      ref: process.env.GITHUB_REF,
+    await verifyPreviewMain({
+      repository: env.GITHUB_REPOSITORY,
+      ref: env.GITHUB_REF,
       sha,
+      fetchImpl,
     });
-    console.log(`Verified canonical main SHA ${currentMainSha}.`);
+    logger.log("Verified canonical main SHA against GitHub's current branch tip.");
+    return 0;
   } catch {
-    console.error("Preview workflow stopped: canonical main could not be verified.");
-    process.exitCode = 1;
+    logger.error("Preview workflow stopped: canonical main could not be verified.");
+    return 1;
   }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  await runPreviewMainGuard();
+  process.exitCode = await runPreviewMainGuard();
 }

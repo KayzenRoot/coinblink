@@ -33,7 +33,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 - Added a manual-only GitHub Actions workflow, exact-current-main guard immediately before each provider operation, Owner/environment/plan/zero-cost/IAM/dedicated-Worker/isolation/credential gate, run-derived Preview names, output validation, exact-SHA health and preview-status smoke contract, and name-scoped rollback. It uses the locked Wrangler binary already installed by npm ci.
 - Cloudflare credentials are absent from the read-only preflight job and only enter the gated Wrangler action step. The workflow never uses `pull_request_target`, `wrangler deploy`, or version upload.
 - Added deterministic policy, config, workflow, Wrangler-output, smoke-contract, and Context Lock tests.
-- The canonical-main guard logs a fixed failure message and never forwards remote/error text; a CLI regression test supplies malformed multiline identity input and verifies it cannot enter the log output.
+- The canonical-main guard logs only fixed success/failure messages and never forwards API or error text; deterministic regressions verify both paths without network access and ensure malformed multiline identity input cannot enter CLI output.
 
 ## Local validation
 
@@ -44,7 +44,7 @@ Prepare a fail-closed, manual-only Cloudflare Worker Preview lane for admitted M
 | `npm audit --audit-level=high` | PASS; 0 vulnerabilities |
 | `npm run lint` | PASS; ESLint with zero warnings allowed |
 | `npm run typecheck` | PASS; 34 files, 0 errors, 0 warnings, 0 hints |
-| `npm test` | PASS; 40/40 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
+| `npm test` | PASS; 41/41 unit tests, Astro Cloudflare build plus generated-config guard, 7/7 Playwright tests |
 | Playwright views | PASS at 1536×864, 768×1024, and 390×844; accessibility assertions included |
 | Docker Compose localhost smoke | PASS on verified free `127.0.0.1:3010` using unique project `coinblink-m00-p1-sanitizer-local-20261009`; Linux adapter build, health/buildSha, local `not-deployed` status, robots/noindex and true 404 passed. Only that temporary Compose project was removed. |
 | GEF `doctor --target . --json` | Exit 0, effect `NONE`; checkpoint present/valid; toolchain healthy. This linked-worktree observer reports `repository.observable=FINDING` because `.git` is a worktree file, with `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`; this limitation is retained, not suppressed. Dependency provenance is `unverified` / `REVIEW`. |

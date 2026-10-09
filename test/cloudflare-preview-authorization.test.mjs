@@ -12,6 +12,7 @@ import {
 } from "../scripts/cloudflare-preview-policy.mjs";
 import {
   fetchCurrentMainSha,
+  runPreviewMainGuard,
   verifyPreviewMain,
 } from "../scripts/verify-preview-main.mjs";
 
@@ -131,6 +132,27 @@ test("preview main guard logs a fixed message for malformed multiline identity i
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /Preview workflow stopped: canonical main could not be verified\./);
   assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, new RegExp(injectedText));
+});
+
+test("preview main guard verifies current SHA without logging API response data", async () => {
+  const sha = "d".repeat(40);
+  const messages = [];
+  const exitCode = await runPreviewMainGuard({
+    env: {
+      GITHUB_REPOSITORY: "KayzenRoot/coinblink",
+      GITHUB_REF: "refs/heads/main",
+      GITHUB_SHA: sha,
+    },
+    fetchImpl: async () => new Response(JSON.stringify({ sha }), { status: 200 }),
+    logger: {
+      log: (message) => messages.push(message),
+      error: (message) => messages.push(message),
+    },
+  });
+
+  assert.equal(exitCode, 0);
+  assert.deepEqual(messages, ["Verified canonical main SHA against GitHub's current branch tip."]);
+  assert.ok(messages.every((message) => !message.includes(sha)));
 });
 
 test("current-main guard checks GitHub's public branch tip and fails closed on unavailable or invalid data", async () => {

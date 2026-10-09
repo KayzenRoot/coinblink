@@ -20,8 +20,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "3de55b70f2532975e55f544832a09f62895e9b4a",
-        "rawBlobSha256": "512232ea4827da27c5d0350068bf9d0efdaea0c38c5f5a4ccda6487ed22ea840"
+        "gitBlobSha1": "fbb4b7d432841265ceacc05f1b08d3ed7084f99f",
+        "rawBlobSha256": "175a00ac605ca14511600a1080e9ab7aeb5bd2418b6fff34969f5dccb3dd626b"
       }
     },
     {
@@ -114,8 +114,8 @@
       "path": "scripts/verify-preview-main.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "3a825e8a7a4f208318f0c924264e626858c8450e",
-        "rawBlobSha256": "d85408bae0b45ee6d6d6ef592a246c3b99f8fc7e0d7747d931eeb79fd802cba3"
+        "gitBlobSha1": "7c9c0fa077dc918b0e531c01c7cb47f2682f3596",
+        "rawBlobSha256": "1fd56c1bb7cbc40b9d392bc3b9ebde08ef4b3d160963c758de9c23099c3183c9"
       }
     },
     {
@@ -171,8 +171,8 @@
       "path": "test/cloudflare-preview-authorization.test.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "e1158c0e627eb46ded93ab5ac51316e6df573ba2",
-        "rawBlobSha256": "3f276319ee279919d21c8157b14dc70fd13cc3ef421075484cd81506ace36b27"
+        "gitBlobSha1": "adf0515061cb762fea364f1874df328d48e3c826",
+        "rawBlobSha256": "7cbde8394c975429b6ccdad87df67972eefb157f2bdcae558bca614c5ca2f88f"
       }
     },
     {

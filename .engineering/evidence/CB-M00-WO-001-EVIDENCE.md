@@ -1,13 +1,13 @@
 # Evidence Bundle · CB-M00-WO-001
 
-**Verdict:** `P0_LOCAL_CANDIDATE_VALIDATED / EXACT_HEAD_CI_AND_AUDIT_PENDING / M00_NOT_DONE`.
+**Verdict:** `P0_LOCAL_CANDIDATE_VALIDATED / EXACT_HEAD_CI_PASS_AT_c716 / INDEPENDENT_AUDIT_PENDING / M00_NOT_DONE`.
 **Repository:** `KayzenRoot/coinblink`.
 **Work Order:** `CB-M00-WO-001`; change: local M00 P0 foundation.
 **Execution branch:** `codex/cb-m00-wo-001-p0`.
 **Authorized base:** `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d` (CB-GOV-005 / PR #32 merge SHA).
 **Execution Context Lock SHA-256:** `a209324291429ce22495abc0b3c7029e84686f621cadff80b1b6ff1f97eaee1e`.
 **Candidate fingerprints:** `.engineering/evidence/CB-M00-WO-001-FINGERPRINTS.json` records Git blob SHA-1 and raw-blob SHA-256 for 45 changed paths at immutable implementation snapshot `6a33bf25b3bf31c65f2dd47f490b84e74a9a4cfe`; the manifest and this Evidence Bundle are excluded to avoid self-reference. All 45 blob pairs were revalidated against that snapshot; subsequent commits contain evidence-only changes.
-**Implementation HEAD:** reported as the exact PR head in the PR description and required GitHub checks; this file avoids self-referencing its containing commit.
+**Implementation HEAD:** implementation snapshot `6a33bf25b3bf31c65f2dd47f490b84e74a9a4cfe`; the exact candidate SHA and live required checks are listed in PR #33. This file avoids self-referencing its containing commit.
 **Checkpoint:** `.engineering/CHECKPOINT.json` is unchanged; its admitted-base values remain `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, preview `NOT_DEPLOYED`, with no `stopState`. Proposed candidate promotion is in `CB-M00-WO-001-CHECKPOINT-DELTA.md` only.
 
 ## Scope and source boundary
@@ -58,10 +58,11 @@ The local Playwright run created and visually inspected the following screenshot
 
 ## Remote gates and outstanding audit
 
-- [Initial GitHub workflow run 37868417930](https://github.com/KayzenRoot/coinblink/actions/runs/37868417930) on `1449d9b62b2b2df1e2dab47b1316c64407fdcd6c` exposed two candidate issues. Ubuntu/Windows failed because the shallow checkout omitted locked base `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; Docker passed. [SonarCloud reported](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=33) five MAJOR vulnerabilities tied to ad-hoc `npx`/install lifecycle scripts, plus a demo-label contrast issue and a redundant-branch complexity issue. Commits `1bbf835` and `6a33bf2` fetch required Git history, use the pinned local Playwright binary, disable dependency lifecycle scripts, add guard tests, simplify recursive binding detection, and set an explicit high-contrast demo-label surface. Local checks and exact-SHA Docker/E2E smoke pass after these corrections; fresh exact-head GitHub and SonarCloud checks are pending after publication.
+- [Initial GitHub workflow run 37868417930](https://github.com/KayzenRoot/coinblink/actions/runs/37868417930) on `1449d9b62b2b2df1e2dab47b1316c64407fdcd6c` exposed two candidate issues. Ubuntu/Windows failed because the shallow checkout omitted locked base `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; Docker passed. [SonarCloud reported](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=33) five MAJOR vulnerabilities tied to ad-hoc `npx`/install lifecycle scripts, plus a demo-label contrast issue and a redundant-branch complexity issue. Commits `1bbf835` and `6a33bf2` fetch required Git history, use the pinned local Playwright binary, disable dependency lifecycle scripts, add guard tests, simplify recursive binding detection, and set an explicit high-contrast demo-label surface. Those findings were corrected and the exact-head rerun below passed.
+- Exact-head [GitHub Actions run 37870129338](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338) passed on candidate `c716e109ed87d679cc54f2c119079efb98ad2351`: Ubuntu M00/GEF, Windows M00/GEF, isolated Docker Compose smoke, and exact-SHA screenshot upload. [Ubuntu job](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338/job/113626046339), [Windows job](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338/job/113626046277), and [Docker job](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338/job/113626046054) each concluded success. SonarCloud Code Analysis and both Socket checks also passed. The Ubuntu job uploaded `coinblink-m00-playwright-37870129338-1` with the three exact-head viewport screenshots.
+- This evidence refresh changes documentation only and triggers the same exact-head workflow on the resulting PR candidate. The live [PR #33 checks](https://github.com/KayzenRoot/coinblink/pull/33/checks) are authoritative for that final candidate SHA; the run above remains the recorded exact-head result for `c716e109`.
 - CodeRabbit posted `Review skipped: draft pull request`; this is not an independent review. Independent review and Owner audit remain pending. Keep this PR draft and unmerged.
 - Cloudflare account, plan, cost ceiling, scoped credentials, and non-production isolation have not been verified or authorized. P1 is `PROVIDER_SETUP_REQUIRED`; no preview URL is claimed and no deployment was attempted.
-- Exact-head workflow run URLs, checks, and the CI screenshot artifact must be linked from the PR after the new HEAD run completes. The initial run and local results are not represented as new-head CI.
 - Known residuals: local port 3000 conflict above; GEF local drift baseline is absent; GEF doctor reports dependency provenance `unverified` and mutable-ref GitHub policy `REVIEW`; `npm audit signatures` returns E404 for unpublished transitive `@gef-bootstrap/config@0.0.0`. `npm audit --audit-level=high` reports no vulnerabilities; the pinned GEF tarball/SLSA test passes.
 
 ## Stop condition

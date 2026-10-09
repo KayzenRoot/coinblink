@@ -20,7 +20,7 @@ CodeRabbit's review of the first PR candidate reported one MAJOR issue: this cor
 
 The CodeRabbit CLI review of candidate `a967115e9efd7dec0a91d019aacfdde74f808e54` returned 0 issues. SonarCloud then failed that candidate with critical deterministic-sort warnings and minor PATH-resolution security warnings in the dedicated validator. The candidate validator now uses an explicit code-point comparator and fixed absolute Git executable paths for the supported Ubuntu and Windows runners. Fresh SonarCloud and CodeRabbit results for this final adjustment remain required.
 
-Candidate `55dfe9a910db99e5804a0ce26d528398393fd44d` passed all six required exact-head checks and the CodeRabbit CLI review returned 0 issues. SonarCloud's Quality Gate passed but its detailed API still reported one MINOR `javascript:S7780` code smell on the escaped Windows path literal. The path now uses `String.raw`; the resulting candidate needs fresh exact-head checks and review.
+Candidate `55dfe9a910db99e5804a0ce26d528398393fd44d` passed all six required exact-head checks and the CodeRabbit CLI review returned 0 issues. SonarCloud's Quality Gate passed but its detailed API still reported one MINOR `javascript:S7780` code smell on the escaped Windows path literal. Candidate `cd24e27060a7fe05de7bf41cf1954faee462e7d6` uses `String.raw` for that fixed path and passed fresh exact-head CI, SonarCloud with no open issues, and a CodeRabbit review with 0 issues.
 
 ## Existing Preview evidence (base SHA only)
 
@@ -56,8 +56,11 @@ This Preview belongs to the base main SHA, not this correction candidate. It is 
 | Earlier PR candidate `789b57760cf97e2d9e748a95247086b6c93ba6cd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. SonarCloud reported the CRITICAL code smell described above. |
 | Parser-refactored PR candidate `295846a6c42edc5bea177cdac004acfc62e5debd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate (0 new issues), Socket Alerts, and Socket Project Report. These checks predate the candidate-only fingerprint-validator adjustment. |
 | Candidate `a967115e9efd7dec0a91d019aacfdde74f808e54` exact-head CI and review | Ubuntu, Windows, Docker Compose, and both Socket checks passed; SonarCloud failed on the dedicated validator issues described above. CodeRabbit CLI reviewed this SHA and returned 0 issues. These results predate the latest validator hardening. |
-| Candidate `55dfe9a910db99e5804a0ce26d528398393fd44d` exact-head CI and review | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. CodeRabbit CLI returned 0 issues. SonarCloud's detailed issue query still showed one MINOR `javascript:S7780`, fixed in the current unstaged literal cleanup. |
-| Final candidate exact-head CI and CodeRabbit | Pending a new commit and fresh checks/review. |
+| Candidate `55dfe9a910db99e5804a0ce26d528398393fd44d` exact-head CI and review | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. CodeRabbit CLI returned 0 issues. SonarCloud's detailed issue query still showed one MINOR `javascript:S7780`, fixed in the next candidate. |
+| Code candidate `cd24e27060a7fe05de7bf41cf1954faee462e7d6` exact-head CI | PASS: [run 37975979787](https://github.com/KayzenRoot/coinblink/actions/runs/37975979787) passed Ubuntu, Windows, Docker Compose, SonarCloud, Socket Alerts, and Socket Project Report. SonarCloud's open-issue API returned none. |
+| Code candidate `cd24e27060a7fe05de7bf41cf1954faee462e7d6` CodeRabbit review | PASS: full CodeRabbit CLI review returned 0 issues. |
 | Cloudflare action for corrected HEAD | Not run. Requires correction PR review/merge and the existing protected Environment approval; no Cloudflare API, resource, billing, secret, production, or R2 operation was performed for this correction. |
+
+The exact-head evidence above validates the code candidate. The current PR HEAD after this Evidence Bundle/fingerprint refresh must pass its own exact-head CI and review because the manifest hashes the updated document bytes. The refresh changes only evidence and hashes, not application or workflow code.
 
 The existing Context Locks and canonical `.engineering/CHECKPOINT.json` are preserved byte-for-byte. No checkpoint promotion is proposed in this correction. The next legal action is independent review of the correction PR; only after its normal merge can the protected workflow be run again against the corrected exact `main` SHA.

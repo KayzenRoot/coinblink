@@ -1,6 +1,6 @@
 # Evidence Bundle · CB-GOV-PARALLEL-001
 
-**Status:** `GOVERNANCE_PROPOSAL / PENDING_EXACT_HEAD_CI_AND_INDEPENDENT_OWNER_REVIEW`
+**Status:** `GOVERNANCE_PROPOSAL / OWNER_REVIEW_PENDING / DOCKER_HUB_PULL_LIMIT`
 **Repository:** `KayzenRoot/coinblink`
 **Base SHA:** `27015adc87caacabbed0e318f892644ce0473f10`
 **Branch:** `codex/cb-gov-parallel-001`
@@ -45,6 +45,14 @@ Commands below were run with Node 22.19.0 and npm 10.9.3 through the pinned loca
 
 No secrets, credentials, provider API calls, Cloudflare resource actions, billing changes, production deployment, GitHub protection changes, M18 token activity, branch deletion, force push, bypass, checkpoint promotion, self-review, or merge occurred. The P1 run's failure does not establish remote resource absence. The only proposed next stage after this PR is independent review and Owner audit; M00 P1 and global Issue #6 approval remain open.
 
-## Exact-head GitHub results
+## Exact-head GitHub results at initial PR publication
 
-Pending PR publication. Record the exact final PR HEAD, Ubuntu/Windows/Docker, SonarCloud, Socket, CodeRabbit, and independent review links here only after they are observed on that SHA. This proposal must stop before merge and must remain `NOT_ADOPTED` until normal Owner audit and GEF promotion.
+PR [#42](https://github.com/KayzenRoot/coinblink/pull/42) initially ran at HEAD `15da88eff36d601b41ad0b5d555e84e9a002018c` against base `27015adc87caacabbed0e318f892644ce0473f10`:
+
+- Ubuntu GEF validation [passed](https://github.com/KayzenRoot/coinblink/actions/runs/37992382530/job/114030674688).
+- Windows GEF validation [passed](https://github.com/KayzenRoot/coinblink/actions/runs/37992382530/job/114030624213).
+- Docker Compose smoke [failed](https://github.com/KayzenRoot/coinblink/actions/runs/37992382530/job/114029600513); a retry on the same SHA [failed again](https://github.com/KayzenRoot/coinblink/actions/runs/37992382530/job/114030622161) because Docker Hub returned HTTP 429 while resolving the public `node:22.19.0-bookworm-slim` manifest. Exact-SHA local Docker smoke passed; no CI gate was bypassed.
+- [SonarCloud](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=42), [Socket Project Report](https://socket.dev/dashboard/org/nexlabs/sbom/8580ec7b-8f74-4793-8974-1951a96c1c18), and [Socket PR Alerts](https://socket.dev) passed.
+- CodeRabbit was still `PENDING` and no independent Owner review had been recorded at capture.
+
+These results belong to the initial PR head. A subsequent Evidence Bundle/fingerprint-only commit requires new exact-head checks. This proposal must stop before merge and remain `NOT_ADOPTED` until the Docker pull constraint is resolved, exact-head checks pass, and normal Owner audit/adoption occurs.

@@ -55,4 +55,13 @@ PR [#42](https://github.com/KayzenRoot/coinblink/pull/42) initially ran at HEAD 
 - [SonarCloud](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=42), [Socket Project Report](https://socket.dev/dashboard/org/nexlabs/sbom/8580ec7b-8f74-4793-8974-1951a96c1c18), and [Socket PR Alerts](https://socket.dev) passed.
 - CodeRabbit was still `PENDING` and no independent Owner review had been recorded at capture.
 
-These results belong to the initial PR head. A subsequent Evidence Bundle/fingerprint-only commit requires new exact-head checks. This proposal must stop before merge and remain `NOT_ADOPTED` until the Docker pull constraint is resolved, exact-head checks pass, and normal Owner audit/adoption occurs.
+## Follow-up exact-head GitHub results
+
+At candidate HEAD `a79e8ff74b3d831da048da0d5856f16c7077c7e5`, [run #37993107707](https://github.com/KayzenRoot/coinblink/actions/runs/37993107707) confirmed:
+
+- Ubuntu GEF [passed](https://github.com/KayzenRoot/coinblink/actions/runs/37993107707/job/114032100579) and Windows GEF [passed](https://github.com/KayzenRoot/coinblink/actions/runs/37993107707/job/114032100260).
+- Docker Compose smoke [failed](https://github.com/KayzenRoot/coinblink/actions/runs/37993107707/job/114032100598); its same-SHA retry [failed again](https://github.com/KayzenRoot/coinblink/actions/runs/37993107707/job/114032754062) when `auth.docker.io` returned HTTP 504 obtaining a Docker Hub token. This is a remote registry availability/rate-limit blocker; local exact-SHA Docker smoke passed.
+- SonarCloud and both Socket checks passed on that head.
+- CodeRabbit still had only an in-progress comment reviewing the initial head; no completed CodeRabbit or Owner review was recorded.
+
+The current evidence/fingerprint-only commit requires a fresh exact-head CI rollup. Keep the proposal `NOT_ADOPTED`; do not merge until the Docker pull constraint is resolved, all exact-head checks pass, and normal Owner audit/adoption occurs.

@@ -104,8 +104,17 @@ test("rejects the unrelated flattened output-file event format", () => {
   }), /nested Preview and deployment resources/);
 });
 
-test("accepts the Wrangler CLI progress line before its nested Preview JSON", () => {
+test("accepts the Wrangler CLI progress line with exact Preview and Worker identities", () => {
   const cliOutput = `Attaching preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}\n${JSON.stringify(validOutput, null, 2)}\n`;
+  assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
+    previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+    deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+  });
+});
+
+test("accepts quoted Wrangler progress identifiers and terminal color codes", () => {
+  const progressLine = `\u001b[36mAttaching Preview "${previewName}" to Worker "${CLOUDFLARE_PREVIEW_WORKER_NAME}"\u001b[0m`;
+  const cliOutput = `${progressLine}\n${JSON.stringify(validOutput, null, 2)}\n`;
   assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
     previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
     deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
@@ -116,6 +125,20 @@ test("rejects unrecognized text around Wrangler Preview JSON", () => {
   const json = JSON.stringify(validOutput);
   assert.throws(() => parsePreviewOutput(`Debug output\n${json}`, previewName));
   assert.throws(() => parsePreviewOutput(`Attaching preview\n${json}\nFinished`, previewName));
+});
+
+test("redacts token-like values from rejected Wrangler progress diagnostics", () => {
+  const json = JSON.stringify(validOutput, null, 2);
+  const tokenLikeValue = "credential-value-".repeat(4);
+  let capturedError;
+  try {
+    parsePreviewOutput(`Unexpected output token ${tokenLikeValue}\n${json}`, previewName);
+  } catch (error) {
+    capturedError = error;
+  }
+  assert.ok(capturedError instanceof Error);
+  assert.match(capturedError.message, /Unexpected output token/);
+  assert.doesNotMatch(capturedError.message, /credential-value/);
 });
 
 test("rejects unrelated Wrangler progress lines before valid Preview JSON", () => {

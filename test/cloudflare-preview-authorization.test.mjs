@@ -134,16 +134,22 @@ test("preview main guard logs a fixed message for malformed multiline identity i
   assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, new RegExp(injectedText));
 });
 
-test("preview main guard verifies current SHA without logging API response data", async () => {
+test("preview main guard uses a read-only GitHub token without logging credentials or API response data", async () => {
   const sha = "d".repeat(40);
+  const token = "test-readonly-github-token";
   const messages = [];
+  let requestOptions;
   const exitCode = await runPreviewMainGuard({
     env: {
       GITHUB_REPOSITORY: "KayzenRoot/coinblink",
       GITHUB_REF: "refs/heads/main",
       GITHUB_SHA: sha,
+      GITHUB_TOKEN: token,
     },
-    fetchImpl: async () => new Response(JSON.stringify({ sha }), { status: 200 }),
+    fetchImpl: async (_url, options) => {
+      requestOptions = options;
+      return new Response(JSON.stringify({ sha, private_field: "response-data-must-not-be-logged" }), { status: 200 });
+    },
     logger: {
       log: (message) => messages.push(message),
       error: (message) => messages.push(message),
@@ -152,17 +158,20 @@ test("preview main guard verifies current SHA without logging API response data"
 
   assert.equal(exitCode, 0);
   assert.deepEqual(messages, ["Verified canonical main SHA against GitHub's current branch tip."]);
-  assert.ok(messages.every((message) => !message.includes(sha)));
+  assert.equal(requestOptions.headers.authorization, `Bearer ${token}`);
+  assert.ok(messages.every((message) => !message.includes(sha) && !message.includes(token) && !message.includes("response-data-must-not-be-logged")));
 });
 
-test("current-main guard checks GitHub's public branch tip and fails closed on unavailable or invalid data", async () => {
+test("current-main guard checks GitHub's branch tip and fails closed on unavailable or invalid data", async () => {
   const currentSha = "c".repeat(40);
+  const token = "test-readonly-github-token";
   let requestedUrl;
   let requestOptions;
   const verifiedSha = await verifyPreviewMain({
     repository: "KayzenRoot/coinblink",
     ref: "refs/heads/main",
     sha: currentSha,
+    githubToken: token,
     fetchImpl: async (url, options) => {
       requestedUrl = url;
       requestOptions = options;
@@ -173,14 +182,40 @@ test("current-main guard checks GitHub's public branch tip and fails closed on u
   assert.equal(requestedUrl, "https://api.github.com/repos/KayzenRoot/coinblink/commits/main");
   assert.equal(requestOptions.redirect, "error");
   assert.equal(requestOptions.headers.accept, "application/vnd.github+json");
-  assert.equal(Object.hasOwn(requestOptions.headers, "authorization"), false);
+  assert.equal(requestOptions.headers.authorization, `Bearer ${token}`);
 
-  await assert.rejects(fetchCurrentMainSha(async () => new Response("unavailable", { status: 503 })), /HTTP 503/);
-  await assert.rejects(fetchCurrentMainSha(async () => new Response(JSON.stringify({ sha: "short" }), { status: 200 })), /full commit SHA/);
+  await assert.rejects(fetchCurrentMainSha({
+    fetchImpl: async () => new Response("unavailable", { status: 503 }),
+  }), /HTTP 503/);
+  await assert.rejects(fetchCurrentMainSha({
+    fetchImpl: async () => new Response(JSON.stringify({ sha: "short" }), { status: 200 }),
+  }), /full commit SHA/);
   await assert.rejects(verifyPreviewMain({
     repository: "KayzenRoot/coinblink",
     ref: "refs/heads/main",
     sha: "a".repeat(40),
     fetchImpl: async () => new Response(JSON.stringify({ sha: "b".repeat(40) }), { status: 200 }),
   }), /current origin\/main tip/);
+});
+
+test("preview main guard reports only a safe HTTP status when GitHub lookup fails", async () => {
+  const token = "test-readonly-github-token";
+  const messages = [];
+  const exitCode = await runPreviewMainGuard({
+    env: {
+      GITHUB_REPOSITORY: "KayzenRoot/coinblink",
+      GITHUB_REF: "refs/heads/main",
+      GITHUB_SHA: "e".repeat(40),
+      GITHUB_TOKEN: token,
+    },
+    fetchImpl: async () => new Response(`private response ${token}`, { status: 403 }),
+    logger: {
+      log: (message) => messages.push(message),
+      error: (message) => messages.push(message),
+    },
+  });
+
+  assert.equal(exitCode, 1);
+  assert.deepEqual(messages, ["Preview workflow stopped: GitHub main lookup returned HTTP 403."]);
+  assert.ok(messages.every((message) => !message.includes(token) && !message.includes("private response")));
 });

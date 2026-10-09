@@ -105,11 +105,13 @@ test("rejects the unrelated flattened output-file event format", () => {
 });
 
 test("accepts the Wrangler CLI progress line with exact Preview and Worker identities", () => {
-  const cliOutput = `Attaching preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}\n${JSON.stringify(validOutput, null, 2)}\n`;
-  assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
-    previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
-    deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
-  });
+  for (const action of ["Attaching", "Creating", "Updating", "Deploying"]) {
+    const cliOutput = `${action} preview ${previewName} to ${CLOUDFLARE_PREVIEW_WORKER_NAME}\n${JSON.stringify(validOutput, null, 2)}\n`;
+    assert.deepEqual(parsePreviewOutput(cliOutput, previewName), {
+      previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+      deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
+    }, action);
+  }
 });
 
 test("accepts quoted Wrangler progress identifiers and terminal color codes", () => {

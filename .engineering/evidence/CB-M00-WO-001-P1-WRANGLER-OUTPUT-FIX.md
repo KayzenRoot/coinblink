@@ -14,6 +14,8 @@ Inspection of the locked Wrangler `4.149.0` package confirms two distinct machin
 
 The real base-Preview screenshot exposed stale M00 copy that claimed the provider deployment was still a separate gate and the environment was local. The shell now derives those labels and descriptions from the existing exact build environment (`local`, `ci`, or `preview`); tests cover each presentation. Demo-only and disconnected-data messaging remains intact.
 
+The first PR analysis reported SonarCloud `javascript:S3776` as CRITICAL because the JSON event-stream scanner exceeded the cognitive-complexity limit (35 versus 15). The scanner was extracted into a dedicated `scanJsonObjectEnd` helper without relaxing accepted JSON, event, Worker, Preview-name, or URL validation. The regression suite passes after this correction; SonarCloud must re-analyze the new exact PR HEAD before review is complete.
+
 ## Existing Preview evidence (base SHA only)
 
 - Stable Preview: [https://coinblink-m00-run-37968696916-1-coinblink-m00-preview.kayzendev.workers.dev/](https://coinblink-m00-run-37968696916-1-coinblink-m00-preview.kayzendev.workers.dev/)
@@ -35,16 +37,17 @@ This Preview belongs to the base main SHA, not this correction candidate. It is 
 |---|---|
 | Toolchain | PASS: Node.js `22.19.0`, npm `10.9.3`. |
 | `npm ci --ignore-scripts` | PASS: 437 packages installed; 0 vulnerabilities reported by the install audit. |
-| `npm audit --audit-level=high` | PASS: 0 vulnerabilities. |
-| `npm run lint` | PASS: ESLint with zero warnings allowed. |
-| `npm run typecheck` | PASS: 35 Astro/TypeScript files, 0 errors, warnings, or hints. |
-| `npm test` | PASS: 62/62 unit tests; Astro Cloudflare build and generated Worker binding guard passed; 7/7 Playwright tests passed for local presentation. |
-| Local preview-mode check | PASS: Astro build with `PUBLIC_BUILD_ENV=preview` and Playwright 7/7, including the correct non-production Worker Preview labels. This is local-only evidence, not a Cloudflare deployment. |
+| `npm audit --audit-level=high` | PASS after the scanner correction: 0 vulnerabilities. |
+| `npm run lint` | PASS after the scanner correction: ESLint with zero warnings allowed. |
+| `npm run typecheck` | PASS after the scanner correction: 35 Astro/TypeScript files, 0 errors, warnings, or hints. |
+| `npm test` | PASS after the scanner correction under the pinned Node 22.19.0/npm 10.9.3 runtime: 62/62 unit tests; Astro Cloudflare build and generated Worker binding guard passed; 7/7 Playwright tests passed for local presentation. |
+| Local preview-mode check | PASS on the first candidate: Astro build with `PUBLIC_BUILD_ENV=preview` and Playwright 7/7, including the correct non-production Worker Preview labels. This is local-only evidence, not a Cloudflare deployment. |
 | Wrangler source/version inspection | PASS: local package reports `4.149.0`; Preview and delete help inspected without Cloudflare credentials or API calls. |
-| GEF `doctor --target . --json` | Exit 0; checkpoint present/valid and toolchain healthy. Repository observation remains `FINDING` (`GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`), dependency provenance remains `unverified` / `REVIEW`; these findings are not suppressed. |
-| GEF `status --target . --json` | Exit 0; canonical checkpoint reports M00 admitted/in progress, 0%, P1 authorization/evidence as next stage. Worktree dirtiness is `UNKNOWN` and absent drift baseline yields conservative stale status; no baseline was fabricated. |
+| GEF `doctor --target . --json` | Exit 0 after the scanner correction; checkpoint present/valid and toolchain healthy. Repository observation remains `FINDING` (`GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`), dependency provenance remains `unverified` / `REVIEW`; these findings are not suppressed. |
+| GEF `status --target . --json` | Exit 0 after the scanner correction; canonical checkpoint reports M00 admitted/in progress, 0%, P1 authorization/evidence as next stage. Worktree dirtiness is `UNKNOWN` and absent drift baseline yields conservative stale status; no baseline was fabricated. |
 | Local Docker Compose smoke | BLOCKED: Docker Desktop Linux engine is unavailable (`dockerDesktopLinuxEngine` named pipe not found). Read-only port check found no listener on 3000, 3010, or 3011. No container was stopped or altered. Exact-head GitHub Docker validation is still required. |
-| Exact-head Ubuntu/Windows/Docker checks and CodeRabbit | Pending PR checks/review on the final candidate HEAD. |
+| Initial PR candidate `789b57760cf97e2d9e748a95247086b6c93ba6cd` exact-head CI | PASS: Ubuntu, Windows, Docker Compose, SonarCloud Quality Gate, Socket Alerts, and Socket Project Report. SonarCloud still reported the CRITICAL code smell described above. These results are historical for that candidate and do not certify the scanner-corrected HEAD. |
+| Scanner-corrected candidate exact-head CI and CodeRabbit | Pending a new commit and fresh checks/review. |
 | Cloudflare action for corrected HEAD | Not run. Requires correction PR review/merge and the existing protected Environment approval; no Cloudflare API, resource, billing, secret, production, or R2 operation was performed for this correction. |
 
 The existing Context Locks and canonical `.engineering/CHECKPOINT.json` are preserved byte-for-byte. No checkpoint promotion is proposed in this correction. The next legal action is independent review of the correction PR; only after its normal merge can the protected workflow be run again against the corrected exact `main` SHA.

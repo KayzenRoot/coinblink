@@ -175,6 +175,29 @@ export function parsePreviewOutput(output, expectedName) {
   return validatePreviewOutput(parseWranglerJsonOutput(output, expectedName), expectedName);
 }
 
+function scanJsonObjectEnd(output, start) {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let offset = start; offset < output.length; offset += 1) {
+    const character = output[offset];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') inString = false;
+    } else if (character === '"') inString = true;
+    else if (character === "{") depth += 1;
+    else if (character === "}") {
+      depth -= 1;
+      if (depth === 0) return offset + 1;
+      if (depth < 0) throw new Error("Wrangler output event stream contains malformed JSON.");
+    }
+  }
+
+  throw new Error("Wrangler output event stream contains incomplete JSON.");
+}
+
 function parseJsonValueStream(output) {
   const values = [];
   let offset = 0;
@@ -185,34 +208,7 @@ function parseJsonValueStream(output) {
     if (output[offset] !== "{") throw new Error("Wrangler output event stream contains data outside JSON objects.");
 
     const start = offset;
-    let depth = 0;
-    let inString = false;
-    let escaped = false;
-    let complete = false;
-
-    for (; offset < output.length; offset += 1) {
-      const character = output[offset];
-      if (inString) {
-        if (escaped) escaped = false;
-        else if (character === "\\") escaped = true;
-        else if (character === '"') inString = false;
-        continue;
-      }
-
-      if (character === '"') inString = true;
-      else if (character === "{") depth += 1;
-      else if (character === "}") {
-        depth -= 1;
-        if (depth === 0) {
-          offset += 1;
-          complete = true;
-          break;
-        }
-        if (depth < 0) throw new Error("Wrangler output event stream contains malformed JSON.");
-      }
-    }
-
-    if (!complete) throw new Error("Wrangler output event stream contains incomplete JSON.");
+    offset = scanJsonObjectEnd(output, start);
     try {
       values.push(JSON.parse(output.slice(start, offset)));
     } catch (error) {

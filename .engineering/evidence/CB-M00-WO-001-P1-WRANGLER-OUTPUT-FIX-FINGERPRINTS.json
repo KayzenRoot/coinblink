@@ -12,8 +12,8 @@
       "path": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "d8740683d5d7bea8b7edf7d66b450d59b885d2e3",
-        "rawBlobSha256": "143ed111dd6ff7a4884296dec8495e07b49f740e8fdd18499a4217ab55415e35"
+        "gitBlobSha1": "11dace51e2435903c860a9325329df5f6f33e375",
+        "rawBlobSha256": "378323634150c2e0b5ea0f31d28a5ee1826bef8c8797797ca1b99ce19e0bb431"
       }
     },
     {
@@ -69,8 +69,8 @@
         "rawBlobSha256": "ed398421ff608185f6052c7ff3bebea1a09285547c8fe241d07c0ef0eace0ac1"
       },
       "candidate": {
-        "gitBlobSha1": "98e7d34489e3dadf8ddf788f43d2b5bf6e149a3f",
-        "rawBlobSha256": "b09b966b0dcb26761f4b167b14c5570d9328a7d25234c98b73233b6a781f80d4"
+        "gitBlobSha1": "05c4c35387ab0369b06d15872eaa7004d1cdf96f",
+        "rawBlobSha256": "4339cc0cd8d329ddce14e7352ade5ea69c4e38f2ca1d299b6ef1c724b5b80a55"
       }
     },
     {

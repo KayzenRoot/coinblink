@@ -139,10 +139,12 @@ test("redacts token-like values from rejected Wrangler progress diagnostics", ()
   const quotedCredential = "quoted assignment secret with spaces";
   const apostropheCredential = "apostrophe-delimited-secret";
   const unterminatedCredential = "unterminated quoted secret with spaces";
+  const credentialUrl = "https://url-user:url-password@example.workers.dev";
+  const queryTokenUrl = "https://example.workers.dev/?access_token=query-token";
   let capturedError;
   try {
     parsePreviewOutput(
-      `Unexpected output token ${whitespaceCredential} token=${assignmentCredential} CLOUDFLARE_API_TOKEN=${cloudflareCredential} api_key: ${apiKey} API_SECRET = ${spacedCredential} SESSION_TOKEN="${quotedCredential}"; Worker's report token ${apostropheCredential}; untrusted output "${unterminatedCredential}\n${json}`,
+      `Unexpected output token ${whitespaceCredential} token=${assignmentCredential} CLOUDFLARE_API_TOKEN=${cloudflareCredential} api_key: ${apiKey} API_SECRET = ${spacedCredential} SESSION_TOKEN="${quotedCredential}"; Worker's report token ${apostropheCredential}; URLs ${credentialUrl} ${queryTokenUrl}; untrusted output "${unterminatedCredential}\n${json}`,
       previewName,
     );
   } catch (error) {
@@ -158,6 +160,8 @@ test("redacts token-like values from rejected Wrangler progress diagnostics", ()
   assert.doesNotMatch(capturedError.message, /quoted assignment secret with spaces/);
   assert.doesNotMatch(capturedError.message, /apostrophe-delimited-secret/);
   assert.doesNotMatch(capturedError.message, /unterminated quoted secret with spaces/);
+  assert.doesNotMatch(capturedError.message, /url-user:url-password/);
+  assert.doesNotMatch(capturedError.message, /access_token=query-token/);
 });
 
 test("redacts an unterminated quoted tail in rejected Wrangler output", () => {

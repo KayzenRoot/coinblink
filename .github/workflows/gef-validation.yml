@@ -15,13 +15,17 @@ concurrency:
 
 jobs:
   cli:
-    name: GEF CLI (${{ matrix.os }})
+    name: M00 and GEF (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, windows-2022]
-    timeout-minutes: 20
+    timeout-minutes: 30
+    env:
+      EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      PUBLIC_BUILD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      PUBLIC_BUILD_ENV: ci
     steps:
       - name: Check out exact commit
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -31,12 +35,10 @@ jobs:
       - name: Set up pinned Node.js and npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22.17.0
+          node-version: 22.19.0
           cache: npm
 
       - name: Verify exact checked-out commit
-        env:
-          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: node scripts/verify-exact-head.mjs
 
       - name: Verify runner versions
@@ -45,5 +47,70 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Run GEF CLI and provenance tests
+      - name: Check dependency advisories
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck Astro and TypeScript
+        run: npm run typecheck
+
+      - name: Install Chromium (Ubuntu)
+        if: runner.os == 'Linux'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Chromium (Windows)
+        if: runner.os == 'Windows'
+        run: npx playwright install chromium
+
+      - name: Run unit, build, browser, accessibility and GEF checks
         run: npm test
+
+      - name: Upload exact-head browser screenshots
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: coinblink-m00-playwright-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/playwright/**
+          if-no-files-found: warn
+
+  docker-compose:
+    name: Docker Compose smoke (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      COINBLINK_BUILD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      COINBLINK_BUILD_ENV: ci
+      COINBLINK_PORT: 3000
+      COMPOSE_PROJECT_NAME: coinblink-m00-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.19.0
+
+      - name: Verify exact checked-out commit
+        run: node scripts/verify-exact-head.mjs
+
+      - name: Build and start isolated Compose project
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" up --build --detach --wait --wait-timeout 120
+        shell: bash
+
+      - name: Verify Docker routes and exact build SHA
+        run: |
+          curl --fail --silent --show-error http://127.0.0.1:3000/health | jq -e --arg sha "$EXPECTED_SHA" '.status == "ok" and .buildSha == $sha'
+          curl --fail --silent --show-error http://127.0.0.1:3000/preview-status | jq -e --arg sha "$EXPECTED_SHA" '.status == "demo" and .cloudflarePreview == "not-deployed" and .buildSha == $sha'
+          test "$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' http://127.0.0.1:3000/missing-route)" = "404"
+        shell: bash
+
+      - name: Remove only this Compose project
+        if: always()
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" down --remove-orphans
+        shell: bash

@@ -1,0 +1,15 @@
+.git
+.gef
+.gef-private
+.astro
+.wrangler
+node_modules
+dist
+artifacts
+playwright-report
+test-results
+.env
+.env.*
+!.env.example
+.gitignore
+README.md

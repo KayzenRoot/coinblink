@@ -1,0 +1,137 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="CoinBlink · Crypto news in a blink"
+  description="A local, demonstration-only foundation for the CoinBlink portal. No live news or market data is connected."
+>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="/en" aria-label="CoinBlink home">
+        <span class="brand__name"><span>Coin</span><span class="brand__lime">Blink</span></span>
+        <span class="brand__tagline">Crypto news in a blink.</span>
+      </a>
+
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a class="primary-nav__active" href="/en" aria-current="page">Home</a>
+        <span aria-label="News, not implemented in M00">News</span>
+        <span aria-label="Markets, not implemented in M00">Markets</span>
+        <span aria-label="Analysis, not implemented in M00">Analysis</span>
+      </nav>
+
+      <p class="preview-chip"><span class="preview-chip__dot" aria-hidden="true"></span>Local preview</p>
+    </header>
+
+    <main id="main" class="main-content">
+      <section class="feature-grid" aria-labelledby="welcome-title">
+        <div class="feature-panel">
+          <div class="feature-panel__topline">
+            <p class="eyebrow">FOUNDATION · M00</p>
+            <p class="demo-label">DEMO · NO LIVE DATA</p>
+          </div>
+          <h1 id="welcome-title">Crypto news<br />in a <span class="text-lime">blink.</span></h1>
+          <p class="feature-panel__copy">
+            The local foundation is running. Editorial stories and licensed market data are not connected.
+          </p>
+          <div class="feature-panel__actions">
+            <a class="button button--primary" href="/preview-status">Preview status <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="/health">Health endpoint</a>
+          </div>
+          <p class="feature-panel__note">This preview contains no published headlines, quotes, or market values.</p>
+        </div>
+
+        <aside class="status-panel" aria-labelledby="status-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">SYSTEM STATUS</p>
+              <h2 id="status-title">Local foundation</h2>
+            </div>
+            <span class="status-pill"><span class="status-pill__dot" aria-hidden="true"></span>Available</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-row__marker" aria-hidden="true">01</span>
+            <div>
+              <h3>Editorial feed</h3>
+              <p>Not connected · no stories are shown</p>
+            </div>
+            <span class="status-row__state">Pending</span>
+          </div>
+          <div class="status-row">
+            <span class="status-row__marker" aria-hidden="true">02</span>
+            <div>
+              <h3>Market data</h3>
+              <p>Not connected · no values are shown</p>
+            </div>
+            <span class="status-row__state">Pending</span>
+          </div>
+          <div class="status-row">
+            <span class="status-row__marker" aria-hidden="true">03</span>
+            <div>
+              <h3>Cloudflare preview</h3>
+              <p>Provider deployment is a separate gate</p>
+            </div>
+            <span class="status-row__state">Local only</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="status-strip" aria-label="Build and data status">
+        <div class="status-strip__item">
+          <span class="status-strip__label">Runtime</span>
+          <span class="status-strip__value">Worker-compatible</span>
+        </div>
+        <div class="status-strip__item">
+          <span class="status-strip__label">Content mode</span>
+          <span class="status-strip__value status-strip__value--lime">Demonstration only</span>
+        </div>
+        <div class="status-strip__item">
+          <span class="status-strip__label">Market feed</span>
+          <span class="status-strip__value">Not connected</span>
+        </div>
+        <div class="status-strip__item">
+          <span class="status-strip__label">Environment</span>
+          <span class="status-strip__value">Local development</span>
+        </div>
+      </section>
+
+      <section class="lower-grid" aria-label="Preview details">
+        <article class="info-panel" aria-labelledby="included-title">
+          <div class="panel-heading panel-heading--compact">
+            <div>
+              <p class="eyebrow">CURRENT SLICE</p>
+              <h2 id="included-title">M00 foundation</h2>
+            </div>
+            <span class="panel-index" aria-hidden="true">P0</span>
+          </div>
+          <p class="body-copy">This local shell verifies the route, health response, Worker build, and responsive structure.</p>
+          <ul class="foundation-list">
+            <li><span aria-hidden="true">✓</span>English route at <code>/en</code></li>
+            <li><span aria-hidden="true">✓</span>Sanitized health and preview status</li>
+            <li><span aria-hidden="true">✓</span>Accessible 404 response</li>
+          </ul>
+        </article>
+
+        <article class="info-panel info-panel--quiet" aria-labelledby="data-title">
+          <div class="panel-heading panel-heading--compact">
+            <div>
+              <p class="eyebrow">DATA BOUNDARY</p>
+              <h2 id="data-title">No live feed</h2>
+            </div>
+            <span class="offline-mark" aria-hidden="true">—</span>
+          </div>
+          <p class="body-copy">No external provider, account, or production resource is connected to this preview.</p>
+          <a class="text-link" href="/preview-status">Read the preview status <span aria-hidden="true">→</span></a>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>CoinBlink <span aria-hidden="true">·</span> local M00 preview</span>
+      <span>Demonstration only · no financial data</span>
+    </footer>
+  </div>
+</BaseLayout>

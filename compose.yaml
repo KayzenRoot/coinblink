@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_BUILD_SHA: ${COINBLINK_BUILD_SHA:-local}
+        PUBLIC_BUILD_ENV: ${COINBLINK_BUILD_ENV:-local}
+    ports:
+      - "127.0.0.1:${COINBLINK_PORT:-3000}:3000"
+    environment:
+      WRANGLER_SEND_METRICS: "false"
+    init: true
+    stop_grace_period: 5s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      start_period: 20s
+      retries: 6

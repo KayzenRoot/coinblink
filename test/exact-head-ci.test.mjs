@@ -11,7 +11,7 @@ const verifierPath = join(root, "scripts", "verify-exact-head.mjs");
 const expectedShaExpression = String.raw`\$\{\{\s*github\.event_name\s*==\s*'pull_request'\s*&&\s*github\.event\.pull_request\.head\.sha\s*\|\|\s*github\.sha\s*\}\}`;
 
 function workflowSteps(contents) {
-  return contents.replace(/\r\n/g, "\n").split(/^      - name: /m).slice(1);
+  return contents.replace(/\r\n/g, "\n").split(/^[ ]{6}- name: /m).slice(1);
 }
 
 test("CI checks out the event's exact commit and verifies HEAD", () => {
@@ -23,8 +23,9 @@ test("CI checks out the event's exact commit and verifies HEAD", () => {
   assert.ok(checkout, "workflow must have an exact-commit checkout step");
   assert.match(checkout, new RegExp(`ref:\\s*${expectedShaExpression}`));
   assert.ok(verification, "workflow must verify the selected commit after checkout");
-  assert.match(verification, new RegExp(`EXPECTED_SHA:\\s*${expectedShaExpression}`));
   assert.match(verification, /run: node scripts\/verify-exact-head\.mjs/);
+  assert.match(workflow, new RegExp(`EXPECTED_SHA:\\s*${expectedShaExpression}`));
+  assert.match(workflow, new RegExp(`PUBLIC_BUILD_SHA:\\s*${expectedShaExpression}`));
 });
 
 test("the workflow contract test locates steps in a CRLF checkout", () => {

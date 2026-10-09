@@ -24,13 +24,13 @@
 | Node archive | PASS | Official Node v22.19.0 Windows x64 archive SHA-256 matched the official `SHASUMS256.txt`: `ea3fad0e67a991d8477d8c01344b56e69c676ccb733f065b22436994b1253f86`. Runtime reported `v22.19.0`; bundled npm `10.9.3`. |
 | Dependency set | PASS / REVIEW | Pinned `astro@7.3.8`, `@astrojs/cloudflare@14.3.4`, `wrangler@4.149.0`, Playwright `1.64.0`, ESLint `10.12.0`, TypeScript `6.0.3`; `npm ci` completed and reported 0 vulnerabilities. A Windows cleanup warning (`EPERM` while removing a stale WASI directory) did not change the successful exit code; clean Docker build install also completed with 0 vulnerabilities. |
 | `npm audit --audit-level=high` | PASS | Exit 0; `found 0 vulnerabilities`. |
-| `npm audit signatures` | REVIEW / BLOCKED BY PACKAGE METADATA | Exit 1 / E404 for transitive `@gef-bootstrap/contracts@0.0.0`; the signature check was not disabled. GEF doctor also continues to report dependency provenance `unverified` / `REVIEW`; retain this for owner review. |
+| `npm audit signatures` | REVIEW / BLOCKED BY PACKAGE METADATA | Exit 1 / E404 for transitive `@gef-bootstrap/config@0.0.0`; the signature check was not disabled. GEF doctor also continues to report dependency provenance `unverified` / `REVIEW`; retain this for owner review. |
 
 ## GEF 1.1.2 evidence
 
 | Command | Result | Observations |
 |---|---|---|
-| `npm run gef -- doctor --target . --json` | PASS / REVIEW | Exit 0, effect `NONE`; checkpoint present and valid; repository observable `HEALTHY`; Node/platform/Git healthy. Dependency provenance is `unverified` / `REVIEW`. |
+| `npm run gef -- doctor --target . --json` | PASS / REVIEW | Exit 0, effect `NONE`; checkpoint present and valid; repository observable `HEALTHY`; Node/platform/Git healthy. Dependency provenance is `unverified` / `REVIEW`. GEF GitHub policy is also `REVIEW` because the execution branch is mutable (`immutableRef=false`; `writePermission=false`). |
 | `npm run gef -- status --target . --json` | PASS / REVIEW | Exit 0, effect `NONE`; checkpoint reads `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%; dirtiness observed. `operator.stale=true`, drift baseline `ABSENT`, and `operator.stale.unknown_conservative` are retained because this separate clone has no local GEF drift/adoption baseline. No baseline was fabricated. |
 | `npm test` GEF unit coverage | PASS | GEF 1.1.2 version/commands, read-only plan/doctor/status, checkpoint module boundaries, official package tarball/SLSA evidence and Context Lock fingerprints passed. The test exercises `init --apply` only in a disposable temporary directory and verifies repeated apply refuses to clobber; repository state is not applied. |
 
@@ -60,7 +60,7 @@ The local Playwright run created and visually inspected the following screenshot
 - Cloudflare account, plan, cost ceiling, scoped credentials, and non-production isolation have not been verified or authorized. P1 is `PROVIDER_SETUP_REQUIRED`; no preview URL is claimed and no deployment was attempted.
 - Exact-head GitHub Ubuntu/Windows checks, the isolated Docker Compose CI job, independent review, and Owner audit are pending for the final PR head. The PR is intended to remain draft and unmerged for audit.
 - A final exact-head status, check-run URLs, screenshot artifact URL, and remaining external review results are linked from the PR description/checks. A prior base or local working-tree run is not represented as final-head CI.
-- Known residuals: local port 3000 conflict above; GEF local drift baseline is absent; GEF dependency provenance and npm signature metadata remain REVIEW. No critical/high npm audit vulnerabilities were reported.
+- Known residuals: local port 3000 conflict above; GEF local drift baseline is absent; GEF dependency provenance and mutable-ref GitHub policy remain REVIEW; npm signature verification returns E404 for unpublished transitive `@gef-bootstrap/config@0.0.0`. No critical/high npm audit vulnerabilities were reported.
 
 ## Stop condition
 

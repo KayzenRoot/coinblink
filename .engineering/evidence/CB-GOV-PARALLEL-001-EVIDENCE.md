@@ -92,4 +92,18 @@ Local validation was completed on correction HEAD `fa3b6074bf938f5c604d453cbc6cb
 
 The CodeRabbit final-head review of `3b2c7898dbb0fa2a00ee96a0594bc204335dfed3` identified one major issue: a generic future-Work-Order test read live local/remote refs from whichever checkout ran the suite, so later module branches could make it fail nondeterministically. The correction removes that live-checkout assertion. A focused regression now creates a disposable local Git repository with a local branch, `origin` and `upstream` tracking refs, and a symbolic `origin/HEAD`; it verifies exact enumeration, case-insensitive collision refusal, and acceptance of a distinct allocation without network access. The test cleans up its temporary repository.
 
-Final local validation and exact-head GitHub results for this correction are recorded after the refreshed fingerprint manifest is committed. The canonical Context Lock sources and checkpoint remain unchanged; the checkpoint delta is still only proposed.
+The corrected source/test snapshot `578fb454d51eb9a9ef2c08a1a4c33c9957142280` was validated with the repository-pinned Node.js `22.19.0` and npm `10.9.3`:
+
+| Check | Result | Evidence |
+|---|---|---|
+| `npm ci --ignore-scripts` | PASS | 437 packages installed; zero vulnerabilities reported. |
+| `npm audit --audit-level=high` | PASS | Zero reported vulnerabilities. |
+| `npm run lint` | PASS | ESLint exited 0 with no warnings. |
+| `npm run typecheck` | PASS | 35 files; zero errors, warnings, or hints. |
+| `npm test` | PASS | 74/74 unit tests; Astro build and no-session/no-binding assertion passed; 7/7 Playwright tests passed at desktop, tablet and mobile sizes. |
+| `npm run build` | PASS | Astro server build and no-session/no-binding assertion passed. |
+| GEF 1.1.2 `doctor` / `status` | REVIEW | In an observed, clean normal clone, both commands returned `ok=true`; toolchain/repository observation and checkpoint validation passed. Security remains `REVIEW` for unverified dependency provenance and a non-immutable GitHub ref. Status retains the stale operator narrative and absent drift baseline findings; no canonical files were changed to suppress them. |
+| Docker Compose smoke | PASS | Exact build SHA `578fb454d51eb9a9ef2c08a1a4c33c9957142280` returned from `/health` and `/preview-status`; `/en` returned 200 with `noindex` and `nosniff`; unknown route returned 404. The pinned base digest was unchanged. Smoke used isolated port `3015` because another project owns `3000`; unrelated containers were preserved and only the temporary CoinBlink Compose project was removed. |
+| Fingerprint regression | PASS | `node --test test/governance-parallel-plan.test.mjs`: 16/16, including exact path coverage, HEAD/index/worktree SHA-1 and SHA-256 checks, and deterministic local/multi-remote branch-ref enumeration. |
+
+The exact-head GitHub rollup and fresh CodeRabbit review remain live gates on PR #42 and must be read from the final pushed SHA. The canonical Context Lock sources and checkpoint remain unchanged; the checkpoint delta is still only proposed.

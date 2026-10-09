@@ -45,7 +45,7 @@ test("the pinned GEF CLI exposes its verified version and command surface", () =
   }
 });
 
-test("preflight validates the post-merge M00 checkpoint target without authorizing the open candidate", () => {
+test("preflight validates the admitted M00 checkpoint and preserves the pre-merge authority boundary", () => {
   const preview = runJson(["init", "--target", root]);
   assert.equal(preview.value.effect, "NONE");
   assert.equal(preview.value.plan.install.state, "READY");
@@ -67,8 +67,9 @@ test("preflight validates the post-merge M00 checkpoint target without authorizi
   assert.equal(checkpoint.checkpointFacts.formalAdmission.effectiveOnMerge, true);
   assert.equal(checkpoint.checkpointFacts.formalAdmission.candidateBranchCodeAuthority, "NOT_AUTHORIZED_BEFORE_MERGE");
   assert.equal(checkpoint.checkpointFacts.formalAdmission.requiredBeforeEffective, "EXACT_HEAD_CHECKS_INDEPENDENT_REVIEW_OWNER_AUDIT_AND_MERGE");
-  assert.match(admission, /That target is not active while the PR is open: the candidate branch has no code authority/);
-  assert.match(admission, /exact candidate passes all required checks and independent review[\s\S]*Owner's exact-head audit, and merges/);
+  assert.match(admission, /PR #32 merged at this exact SHA/);
+  assert.match(admission, /previous candidate had no code authority before merge/);
+  assert.match(admission, /now-effective M00 admission/);
   assert.equal(checkpoint.checkpointFacts.activeWorkOrder, "CB-M00-WO-001");
   assert.equal(checkpoint.checkpointFacts.moduleAdmission["CB-M00"], "ADMITTED");
   for (let module = 1; module <= 17; module += 1) {
@@ -95,7 +96,9 @@ test("preflight validates the post-merge M00 checkpoint target without authorizi
   assert.equal(status.value.status.release.production.overallCompletionPercent, 0);
   assert.equal(status.value.status.operator.state, "M00_ADMITTED");
   assert.equal(status.value.status.operator.progress, 0);
-  assert.equal(typeof status.value.status.operator.stale, "boolean");
+  assert.equal(status.value.status.operator.stale, true);
+  assert.equal(status.value.status.driftBaseline.state, "ABSENT");
+  assert.equal(status.value.status.observationLimits.includes("operator.stale.unknown_conservative"), true);
   assert.equal(status.value.status.observationLimits.includes("GOVERNANCE_SOURCE_ABSENT"), false);
 });
 

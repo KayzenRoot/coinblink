@@ -1,6 +1,6 @@
 # ADR-CB-0001 · M00 Preview-first Technical Baseline
 
-**Status:** `M00_SCOPE_APPROVED / GEF_ADMISSION_PENDING`. This scoped implementation detail is derived from the Owner-approved M00-only source pack in PR #30. `.engineering/ARCHITECTURE.md`, `.engineering/SCOPE.md`, `.engineering/REQUIREMENTS.md`, `.engineering/SECURITY.md` and `.engineering/DEFINITION-OF-DONE.md` remain the canonical boundary. This ADR does not approve the full product architecture, production deployment, paid services or other modules.
+**Status:** `M00_SCOPE_APPROVED / M00_ADMITTED`. PR #32 admitted this scoped implementation detail on `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. It is derived from the Owner-approved M00-only source pack in PR #30. `.engineering/ARCHITECTURE.md`, `.engineering/SCOPE.md`, `.engineering/REQUIREMENTS.md`, `.engineering/SECURITY.md` and `.engineering/DEFINITION-OF-DONE.md` remain the canonical boundary. This ADR does not approve the full product architecture, production deployment, paid services or other modules.
 
 ## Decision boundary
 
@@ -19,7 +19,7 @@
 
 ## Compatibility, cost and external authority
 
-No Astro build, Worker compatibility test, Cloudflare account access, plan/quota review, deployment cost measurement or Preview URL has been verified by this governance candidate. Wrangler and framework versions remain to be selected and tested after admission. No provider credential is requested or committed. These facts are gates for their respective later actions, not evidence of a successful deployment.
+At CB-GOV-005 admission time, no Astro build, Worker compatibility test, provider access, plan/quota review, deployment cost measurement or Preview URL had been verified. The current CB-M00-WO-001 candidate now pins compatible Astro/Cloudflare/Wrangler packages and has local build, browser, binding-isolation and Docker smoke evidence in its Evidence Bundle. Cloudflare account access, plan/cost review, remote Preview URL and deployment remain unverified and unauthorized; no provider credential is requested or committed. These facts gate the remote lane and do not change the approved local P0 scope.
 
 ## Security and exclusions
 
@@ -30,7 +30,7 @@ No Astro build, Worker compatibility test, Cloudflare account access, plan/quota
 
 ## Admission and stop condition
 
-This ADR is not an admission. No application code may start until the CB-GOV-004 checkpoint is canonical on `main`, GEF 1.1.2 validates the exact post-merge main, a fresh Context Lock is bound to that actual SHA, exact-head review/checks pass, and a separate M00 admission record is approved. No M00 completion claim is valid without its actual local, browser, Docker, security, review and (for the remote lane) provider evidence.
+M00 is admitted by PR #32 at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; application code may proceed only on the active admitted Work Order and a fresh Context Lock bound to that exact SHA. No M00 completion claim is valid without its actual local, browser, Docker, security, review and (for the remote lane) provider evidence.
 
 Official platform references retained from the pre-admission candidate:
 

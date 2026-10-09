@@ -1,6 +1,6 @@
 # CoinBlink · Scoped Implementation Boundary
 
-**Status: OWNER_APPROVED_M00_ONLY / GEF_ADMISSION_PENDING.** Not an assertion the entire product Scope is FROZEN. Owner explicitly accepted this bounded source contract on 2026-10-08, PR #30 comment 6067708856; full product Scope remains open.
+**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED.** This does not mean the entire product Scope is FROZEN. Owner explicitly accepted this bounded source contract on 2026-10-08, PR #30 comment 6067708856; PR #32 admitted M00 at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. Full product Scope remains open.
 
 ## Included in first admitted execution candidate CB-M00-WO-001
 - TypeScript/Astro Worker-compatible functional site preview scaffold, intentionally not a finished Golden Home.

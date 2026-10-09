@@ -1,3 +1,12 @@
 node_modules/
+.astro/
+dist/
+.wrangler/
+artifacts/
+playwright-report/
+test-results/
+.env
+.env.*
+!.env.example
+.gef/
 .gef-private/
-.gef/receipts/

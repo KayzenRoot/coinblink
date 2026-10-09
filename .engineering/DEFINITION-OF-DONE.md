@@ -1,18 +1,21 @@
 # CoinBlink · Definition of Done: M00 Preview Foundation
 
-**Status: OWNER_APPROVED_M00_ONLY / CB-GOV-005_ADMISSION_CANDIDATE; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. While PR #32 is open, canonical main remains M00-not-admitted and the candidate grants no code authority. Its checkpoint records the intended post-merge state: M00 admitted, implementation not started, 0%, with no pending stop state.
+**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; its canonical checkpoint records implementation `NOT_STARTED`, 0%, with no pending `stopState`. This Work Order may implement M00 P0, but it does not mark M00 `DONE`.
+
+**Current candidate:** the local P0 implementation and run `37870422086` passed on audited HEAD `ccbce66b216796012689869b9de17effd2327f5a`. That isolated Docker smoke used port 3000 on Ubuntu. The subsequent CodeRabbit review identified two M00 corrections; each candidate SHA requires its own exact-head CI result. The live PR checks identify the current candidate SHA and result. Independent audit, Owner audit and merge remain pending. The canonical checkpoint JSON is unchanged.
 
 ## Admission gate
-- [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). Full GEF technical gate remains separately pending.
+- [x] Exact owner approval of this M00-only Scope / Requirements / Architecture / Security / DoD bundle is recorded for initial source HEAD `84f6c02a119259806d230470efc115162d733855` in PR #30 comment `6067708856` (2026-10-08). The separate GEF admission gate was completed in CB-GOV-005 / PR #32.
 - [x] CB-GOV-004 checkpoint is canonical on main `cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f`; its post-merge Ubuntu and Windows GEF validation passed on that SHA. This records verified zero application implementation progress and does not mark a module done.
-- [ ] CB-GOV-005 admission candidate passes pinned GEF 1.1.2, exact Context Lock, secret scan, Linux/Windows exact-head checks and independent review; the Owner audits and merges that same HEAD. Only the resulting main SHA makes the checkpoint target canonical and admits M00. The open candidate is not executable. The old PR #29 base is not reusable.
+- [x] CB-GOV-005 / PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d` after exact-head checks, independent review and the Owner's audit of `947cc330e2fb3ba41ee5ff66ff1bd7b980b9e0d0`. The merged checkpoint admits only M00, preserves 0%/`NOT_STARTED`, and has no pending `stopState`. The old PR #29 base is not reusable.
 
 ## P0: Working local foundation
-- [ ] Code authored by Codex on authorized execution branch; npm ci, Node engine, typecheck, GEF and app build all pass.
-- [ ] /en, /health, /preview-status, 404 actually work, with honest demo/under-construction states and no fabricated content.
-- [ ] Docker Compose localhost:3000 actually builds and serves, or remains explicitly BLOCKED with a testable reason.
-- [ ] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus and browser-console pass. Capture real artifact names/commit IDs.
-- [ ] Astro session auto-KV disabled and generated config has NO unrequested SESSION binding.
+- [x] Code authored by Codex on the admitted execution branch; local `npm ci`, Node engine, typecheck, GEF and app build pass. Exact-head GitHub CI remains a separate P2 gate.
+- [x] `/en`, `/health`, `/preview-status`, and 404 work with honest demo states and no fabricated content in local Playwright and Docker smoke.
+- [ ] Docker Compose default port 3000 remains **BLOCKED locally** by unrelated container `d76127e8ff37` (`nexlabs-website-web-1`). Local smoke used port 3010; do not stop or remove the unrelated container.
+- [x] Exact-head run `37870422086` on `ccbce66b216796012689869b9de17effd2327f5a` passed the isolated Ubuntu Docker smoke on port 3000, including health, preview-status, exact build SHA and 404 checks. Any later candidate requires a fresh run.
+- [x] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus, axe accessibility, overflow and browser-console checks pass locally. Exact-head artifact `coinblink-m00-playwright-37870422086-1` was uploaded; current candidate artifacts are linked from PR #33 checks.
+- [x] Astro session auto-KV is disabled and the generated Worker config has no unrequested `SESSION` binding.
 
 ## P1: Remote preview (external authorization gate)
 - [ ] Owner-scoped Cloudflare account/plan/access/cost gate and trusted GitHub secrets explicitly validated.
@@ -20,7 +23,7 @@
 - [ ] No preview deployed unless provider authorization/cost gate passed. If missing: `PROVIDER_SETUP_REQUIRED`, never describe as DONE.
 
 ## P2: Review and promotion
-- [ ] Existing Linux/Windows GEF and relevant new app CI jobs green at exact final SHA.
+Exact-head CI is SHA-specific: run `37870422086` passed on audited candidate `ccbce66b216796012689869b9de17effd2327f5a`; the live PR #33 checks are authoritative for any correction candidate that follows.
 - [ ] No unresolved critical/high security or CodeRabbit/Codex independent review items, no fake tests or provider claims.
 - [ ] Evidence Bundle shows actual logs, screenshots, URLs, build versions, isolation, local Docker proof, cost/rollback and Owner visual approval.
 - [ ] Gate-valid checkpoint delta promoted only after independent audit and merge approval, no force push.

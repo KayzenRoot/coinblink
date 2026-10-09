@@ -11,7 +11,7 @@ const verifierPath = join(root, "scripts", "verify-exact-head.mjs");
 const expectedShaExpression = String.raw`\$\{\{\s*github\.event_name\s*==\s*'pull_request'\s*&&\s*github\.event\.pull_request\.head\.sha\s*\|\|\s*github\.sha\s*\}\}`;
 
 function workflowSteps(contents) {
-  return contents.replace(/\r\n/g, "\n").split(/^      - name: /m).slice(1);
+  return contents.replace(/\r\n/g, "\n").split(/^[ ]{6}- name: /m).slice(1);
 }
 
 test("CI checks out the event's exact commit and verifies HEAD", () => {
@@ -22,9 +22,21 @@ test("CI checks out the event's exact commit and verifies HEAD", () => {
 
   assert.ok(checkout, "workflow must have an exact-commit checkout step");
   assert.match(checkout, new RegExp(`ref:\\s*${expectedShaExpression}`));
+  assert.match(checkout, /fetch-depth:\s*0/, "checkout must include the admitted base for Context Lock validation");
   assert.ok(verification, "workflow must verify the selected commit after checkout");
-  assert.match(verification, new RegExp(`EXPECTED_SHA:\\s*${expectedShaExpression}`));
   assert.match(verification, /run: node scripts\/verify-exact-head\.mjs/);
+  assert.match(workflow, new RegExp(`EXPECTED_SHA:\\s*${expectedShaExpression}`));
+  assert.match(workflow, new RegExp(`PUBLIC_BUILD_SHA:\\s*${expectedShaExpression}`));
+});
+
+test("CI checkout does not persist credentials while pull request code runs", () => {
+  const workflow = readFileSync(workflowPath, "utf8");
+  const checkouts = workflowSteps(workflow).filter((step) => /^\s*uses:\s*actions\/checkout@/m.test(step));
+
+  assert.equal(checkouts.length, 2, "both CI jobs must use checkout");
+  for (const checkout of checkouts) {
+    assert.match(checkout, /persist-credentials:\s*false/i, "checkout must not persist its token in Git config");
+  }
 });
 
 test("the workflow contract test locates steps in a CRLF checkout", () => {

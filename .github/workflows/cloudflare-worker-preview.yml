@@ -104,8 +104,6 @@ jobs:
       COINBLINK_CF_GITHUB_ENVIRONMENT_PROTECTED: ${{ vars.COINBLINK_CF_GITHUB_ENVIRONMENT_PROTECTED }}
       COINBLINK_CF_PLAN: ${{ vars.COINBLINK_CF_PLAN }}
       COINBLINK_CF_FREE_PLAN_CONFIRMED: ${{ vars.COINBLINK_CF_FREE_PLAN_CONFIRMED }}
-      COINBLINK_CF_MONTHLY_COST_CEILING_USD: ${{ vars.COINBLINK_CF_MONTHLY_COST_CEILING_USD }}
-      COINBLINK_CF_COST_CEILING_CONFIRMED: ${{ vars.COINBLINK_CF_COST_CEILING_CONFIRMED }}
       COINBLINK_CF_IAM_SCOPE_CONFIRMED: ${{ vars.COINBLINK_CF_IAM_SCOPE_CONFIRMED }}
       COINBLINK_CF_DEDICATED_WORKER_CONFIRMED: ${{ vars.COINBLINK_CF_DEDICATED_WORKER_CONFIRMED }}
       COINBLINK_CF_ISOLATION_CONFIRMED: ${{ vars.COINBLINK_CF_ISOLATION_CONFIRMED }}
@@ -135,7 +133,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Verify Owner, account, plan, cost, IAM, isolation, and credentials
+      - name: Verify Owner, Workers Free plan, IAM, isolation, and credentials
         run: node scripts/assert-preview-deployment-authorization.mjs
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-GOV-SOLO-001",
+  "baseMainSha": "b4ddb9891cc66cd3688b8e11a86abc75db4b8544",
+  "integrationBaseSha": "19692990b3221875f6c0085321a7204e7f133224",
+  "changedGitPathCountIncludingManifest": 8,
+  "manifestSelfHash": "EXCLUDED",
+  "contextLockSha256": "1f0920fd55b7037a09138de876624f9367578889b1c7b3b9db4724640e2c3d9b",
+  "files": [
+    {
+      "path": ".engineering/SOURCE-HIERARCHY.md",
+      "status": "M",
+      "baseGitBlobSha1": "503257fb6af2c7d95b59f92b4b68fe62a9b8b08f",
+      "baseSha256": "4e9cd445ecd5f8448e88c3faec1e3a0fbf1674aa9bb9ee15b531d5f10d8decb2",
+      "candidateGitBlobSha1": "9841fd7bf2a7e932dabfd105448e55ff68511fc3",
+      "candidateRawSha256": "1a493106a57ea071936ba01f15c8f1b34bb5d7d566f7d650d296b65bee26a240",
+      "indexGitBlobSha1": "9841fd7bf2a7e932dabfd105448e55ff68511fc3",
+      "workingTreeGitBlobSha1": "9841fd7bf2a7e932dabfd105448e55ff68511fc3",
+      "workingTreeSha256": "1a493106a57ea071936ba01f15c8f1b34bb5d7d566f7d650d296b65bee26a240"
+    },
+    {
+      "path": ".engineering/context-locks/CB-GOV-SOLO-001.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "0e085ed665317a6d31f7439e59f426d43bb8eacc",
+      "candidateRawSha256": "1f0920fd55b7037a09138de876624f9367578889b1c7b3b9db4724640e2c3d9b",
+      "indexGitBlobSha1": "0e085ed665317a6d31f7439e59f426d43bb8eacc",
+      "workingTreeGitBlobSha1": "0e085ed665317a6d31f7439e59f426d43bb8eacc",
+      "workingTreeSha256": "1f0920fd55b7037a09138de876624f9367578889b1c7b3b9db4724640e2c3d9b"
+    },
+    {
+      "path": ".engineering/evidence/CB-GOV-SOLO-001-CHECKPOINT-DELTA.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "f927ae86c9a82460cf1af5c0d9dd4c0daa042639",
+      "candidateRawSha256": "413716c210e29aa77a54c11afc5cfb44b689f9254420811564fadf238c628ae1",
+      "indexGitBlobSha1": "f927ae86c9a82460cf1af5c0d9dd4c0daa042639",
+      "workingTreeGitBlobSha1": "f927ae86c9a82460cf1af5c0d9dd4c0daa042639",
+      "workingTreeSha256": "413716c210e29aa77a54c11afc5cfb44b689f9254420811564fadf238c628ae1"
+    },
+    {
+      "path": ".engineering/evidence/CB-GOV-SOLO-001-EVIDENCE.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "2a8ebb2cf0cb0606eead30249ac3a5079ca47e90",
+      "candidateRawSha256": "57ce9f5d9ac4e30f92913840865924e3873db5ec71f4c8e94476d7682283c183",
+      "indexGitBlobSha1": "2a8ebb2cf0cb0606eead30249ac3a5079ca47e90",
+      "workingTreeGitBlobSha1": "2a8ebb2cf0cb0606eead30249ac3a5079ca47e90",
+      "workingTreeSha256": "57ce9f5d9ac4e30f92913840865924e3873db5ec71f4c8e94476d7682283c183"
+    },
+    {
+      "path": ".engineering/work-orders/CB-GOV-SOLO-001.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "68f7c7a4eccbfeb600497c2f51b14ba8c76ac732",
+      "candidateRawSha256": "efa234ef292c7fd2dc6b2a52e8608f79e8ff185ab9fe34ebf223f469df510479",
+      "indexGitBlobSha1": "68f7c7a4eccbfeb600497c2f51b14ba8c76ac732",
+      "workingTreeGitBlobSha1": "68f7c7a4eccbfeb600497c2f51b14ba8c76ac732",
+      "workingTreeSha256": "efa234ef292c7fd2dc6b2a52e8608f79e8ff185ab9fe34ebf223f469df510479"
+    },
+    {
+      "path": "docs/DECISIONS_LEDGER.md",
+      "status": "M",
+      "baseGitBlobSha1": "79bc32e119fc7b9e4b45a8a082bf55ed46cb6eca",
+      "baseSha256": "829477e61f57b1b39e2cb8aeb3e2361da1a4a5fb9f4ce03b925948839751a28b",
+      "candidateGitBlobSha1": "fcb9f1c66aa91c60e1f662bb018081cc77fe676e",
+      "candidateRawSha256": "27cff9a7c74597989645e0a4e9fe8d6bfab641499849bd5b0f49e5ce906e4b0c",
+      "indexGitBlobSha1": "fcb9f1c66aa91c60e1f662bb018081cc77fe676e",
+      "workingTreeGitBlobSha1": "fcb9f1c66aa91c60e1f662bb018081cc77fe676e",
+      "workingTreeSha256": "27cff9a7c74597989645e0a4e9fe8d6bfab641499849bd5b0f49e5ce906e4b0c"
+    },
+    {
+      "path": "docs/architecture/ADR-CB-0003-SOLO-MAINTAINER-REVIEW.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "1ad736672e3dfbe112f9ef3f3f198dacd978832a",
+      "candidateRawSha256": "be489c635e4cdacdcadcf4a10f012c63db72cfa58942149e4e96bde39c331ae0",
+      "indexGitBlobSha1": "1ad736672e3dfbe112f9ef3f3f198dacd978832a",
+      "workingTreeGitBlobSha1": "1ad736672e3dfbe112f9ef3f3f198dacd978832a",
+      "workingTreeSha256": "be489c635e4cdacdcadcf4a10f012c63db72cfa58942149e4e96bde39c331ae0"
+    }
+  ]
+}

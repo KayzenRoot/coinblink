@@ -107,8 +107,13 @@ function detectADR() {
   const doc = readFileSync(path.join(ROOT, ADR), 'utf8');
   // Read only the exact first Status line; the words ADOPTED occur in historical paragraphs.
   const statusLine = doc.split(/\r?\n/u).find(line => line.startsWith('**Status:**'));
-  return Boolean(statusLine && /^\*\*Status:\*\*.*\bADOPTED\b.*\bOWNER_APPROVED\b/u.test(statusLine)
-    && !statusLine.includes('NOT_ADOPTED'));
+  if (!statusLine) return false;
+  const tokens = statusLine.slice('**Status:**'.length)
+    .replaceAll('`', '')
+    .split('/')
+    .map(token => token.trim());
+  return tokens.includes('ADOPTED') && tokens.includes('OWNER_APPROVED')
+    && !tokens.includes('NOT_ADOPTED');
 }
 
 function parseMaxAgents(argv) {
@@ -117,7 +122,9 @@ function parseMaxAgents(argv) {
   if (i + 1 >= argv.length || !/^[1-9]\d*$/u.test(argv[i + 1])) {
     throw new Error('--max-agents requires a positive integer');
   }
-  return Number(argv[i + 1]);
+  const parsed = Number(argv[i + 1]);
+  if (!Number.isSafeInteger(parsed)) throw new Error('--max-agents exceeds the safe integer range');
+  return parsed;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

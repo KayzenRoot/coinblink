@@ -45,11 +45,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "3c67493e27c52debcf388498330c94b7f6aeb8db",
-      "candidateRawSha256": "3af653cb8a8bcd9674cc957c7d56975a11c06994250188c74b9f7ff7dd601ed5",
-      "indexGitBlobSha1": "3c67493e27c52debcf388498330c94b7f6aeb8db",
-      "workingTreeGitBlobSha1": "3c67493e27c52debcf388498330c94b7f6aeb8db",
-      "workingTreeSha256": "8cf414998eaa54ab45bbd292623bfaf7fc549e87d4657f343b7b0289cb6fa4fe"
+      "candidateGitBlobSha1": "bde8c815905b523ad2e8eed3153fa5e7d2c084f0",
+      "candidateRawSha256": "e1c0fb929cc6e8b4ea1ed78b1de6628061552ec5535932e92b3b5f62cae137fb",
+      "indexGitBlobSha1": "bde8c815905b523ad2e8eed3153fa5e7d2c084f0",
+      "workingTreeGitBlobSha1": "bde8c815905b523ad2e8eed3153fa5e7d2c084f0",
+      "workingTreeSha256": "aea425f64aa8cff9a6df282543ffdc2da9bd675cdb440a83ee4f176107b2e123"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-SOLO-001.md",

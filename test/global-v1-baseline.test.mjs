@@ -22,10 +22,10 @@ test('approved staged baseline does not admit a new module', () => {
 });
 
 test('Golden bytes, single Owner and source-backed article still have hard module gates', () => {
-  assert.match(read('.engineering/SCOPE.md'), /original hash-verified JPEGs/);
-  assert.match(read('.engineering/ARCHITECTURE.md'), /single-use activation invitation/);
-  assert.match(read('.engineering/DEFINITION-OF-DONE.md'), /source-backed/);
-  assert.match(read('.engineering/ARCHITECTURE.md'), /separately/);
+  const requirements = read('.engineering/REQUIREMENTS.md');
+  assert.match(requirements, /^V1-G02:.*hash-verified original JPEG bytes.*no regenerated substitute.*screenshot-as-functional-HTML\.$/m);
+  assert.match(requirements, /^V1-G03:.*one human Owner.*no public privileged enrollment.*login.*atomic bootstrap.*MFA.*recovery.*session revocation.*owner isolation.*$/m);
+  assert.match(requirements, /^V1-G05:.*licensed and source-backed.*reviewed and Owner-approved.*draft\/mock is never counted as published LIVE\.$/m);
   assert.match(read('docs/DECISIONS_LEDGER.md'), /CB-DEC-046/);
   assert.match(read('docs/DECISIONS_LEDGER.md'), /CB-DEC-047/);
 });

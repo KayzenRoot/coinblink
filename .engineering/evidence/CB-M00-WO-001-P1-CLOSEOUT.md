@@ -1,12 +1,24 @@
 # Evidence Bundle · CB-M00-WO-001 P1 closeout readiness
 
-**Verdict:** `PREVIEW_AND_PUBLIC_BROWSER_EVIDENCE_VERIFIED / EFFECTIVE_ZERO_COST_CEILING_UNMET / LIVE_BINDINGS_AND_FINAL_AUDIT_PENDING / M00_NOT_DONE`.
+**Historical verdict at prior evidence snapshot:** `PREVIEW_AND_PUBLIC_BROWSER_EVIDENCE_VERIFIED / EFFECTIVE_ZERO_COST_CEILING_UNMET / LIVE_BINDINGS_AND_FINAL_AUDIT_PENDING / M00_NOT_DONE`. The cost ceiling and bindings wording is superseded by the dated status reconciliation below; retained as provenance for the earlier snapshot.
 **Repository:** `KayzenRoot/coinblink`.
 **Work Order:** `CB-M00-WO-001` (existing; no new Work Order).
 **Base:** canonical `main` SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`.
 **Preview workflow:** [run 38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879), `workflow_dispatch`, completed `success`; exact SHA matched base, both jobs succeeded.
 **Recovery procedure:** [Issue #36 comment 6097266338](https://github.com/KayzenRoot/coinblink/issues/36#issuecomment-6097266338).
 **Canonical checkpoint:** unchanged in this PR; M00 admitted/in progress, P1 pending in machine state, 0% overall, no `stopState`.
+
+## Current Owner-approved closeout reconciliation · 2026-10-10
+
+The prior verdict above was accurate for its earlier evidence snapshot. Since then, the Owner approved Workers Free with the existing informational `$10` alert and no account-wide hard `$0` ceiling requirement (Issue #36 comment [6099048180](https://github.com/KayzenRoot/coinblink/issues/36#issuecomment-6099048180)), and approved the three existing responsive screenshots as evidence of the M00 technical demo only. This is not Golden Home parity or M01 acceptance.
+
+The current canonical main base is `bd5eea7da88c83aaa0cf15a64d77c01ed7677738` after PR #49; the five post-merge checks passed. The deployed app SHA remains `e8886e21c6f152ca374b1e42852c6b6638543f40`; `git diff e8886e21c6f152ca374b1e42852c6b6638543f40..bd5eea7da88c83aaa0cf15a64d77c01ed7677738 -- src public astro.config.mjs package.json package-lock.json Dockerfile compose.yaml wrangler.jsonc` was empty, so the app and build configuration are unchanged from the verified Preview artifact. A new exact-main Preview workflow [#38068609949](https://github.com/KayzenRoot/coinblink/actions/runs/38068609949) passed its full local preflight for SHA `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`; the `cloudflare-preview` Environment job is waiting for its normal reviewer and has not deployed a new Preview.
+
+Authenticated read-only Cloudflare dashboard inspection on 2026-10-10 confirmed the account's Workers Free plan; the Workers & Pages list showed one Worker, `coinblink-m00-preview`. The base Worker service showed `Bindings 0`, no custom domains or routes, and only its `workers.dev` hostname. The selected Preview `coinblink-m00-run-38049696879-1` showed exactly one binding: Assets / `ASSETS`. The dashboard showed 274 of 100,000 Workers requests for the current day and `$0.00` billable usage for the displayed September 14–October 14 cycle. Those are point-in-time observations, not a guarantee of future account-wide costs or proof that unrelated Cloudflare products are absent. No binding, billing, secret, production or other-project setting was changed.
+
+The authenticated Cloudflare read-only view confirms the Preview's single static Assets binding, with no D1, KV, R2, Queue, Service, or SESSION binding. The previously captured stable and immutable Preview URLs and app routes remain tied to the old exact app SHA in the historical table below. No fresh run URL is claimed until the protected environment review for #38068609949 is completed. Local Windows Compose remains healthy at `http://localhost:3187`; port 3000 is occupied by an unrelated service and was not stopped or changed.
+
+As of this reconciliation, the canonical checkpoint remains `M00_ADMITTED / IMPLEMENTATION_IN_PROGRESS / M00_P0_LOCAL_IMPLEMENTED_P1_PENDING`, `previewDeployment=NOT_DEPLOYED`, `completedThroughModule=NONE`, 0%, with M01–M17 unadmitted, M18 future/unadmitted, and no `stopState`. Final independent review, normal Environment approval for the current-main Preview workflow, and Owner go/no-go on a proposed checkpoint rule remain open. The module catalog contains 19 entries; no future module code was started.
 
 ## Actual remote URLs and exact build identity
 

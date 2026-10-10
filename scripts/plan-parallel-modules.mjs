@@ -4,6 +4,7 @@
  * A plan is never an admission, worktree creation, Codex task dispatch or merge authorization.
  */
 import { readFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { availableParallelism, freemem } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MATRIX = '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json';
 const CHECKPOINT = '.engineering/CHECKPOINT.json';
 const ADR = 'docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md';
+const GLOBAL_SOURCE_APPROVALS = [
+  ['scopeApproved', '.engineering/SCOPE.md'],
+  ['architectureApproved', '.engineering/ARCHITECTURE.md'],
+  ['dodApproved', '.engineering/DEFINITION-OF-DONE.md'],
+];
+const GLOBAL_GATE_LABELS = {
+  scopeApproved: 'global Scope approval',
+  architectureApproved: 'global Architecture approval',
+  dodApproved: 'global DoD approval',
+  issue6Closed: 'Issue #6 global gate closure',
+  parallelADRAdopted: 'parallel-delivery ADR adoption',
+};
 
 /** Calculates a safe authoring concurrency ceiling from currently available resources. */
 export function localAuthoringSlots({ cpus, ramBytes }) {
@@ -20,19 +33,19 @@ export function localAuthoringSlots({ cpus, ramBytes }) {
   }
   // At least 2 logical CPUs and 4 GiB currently available RAM budgeted per concurrent author.
   // Heavy Chromium/Playwright/Docker checks must use a separate shared queue.
-  return Math.max(1, Math.min(Math.floor(cpus / 2), Math.floor(ramBytes / (4 * 1024 ** 3))));
+  return Math.min(Math.floor(cpus / 2), Math.floor(ramBytes / (4 * 1024 ** 3)));
 }
 
 /** Builds a read-only plan from the canonical module matrix, checkpoint, and approved gates. */
-export function planParallelModules({ matrix, checkpoint, adoptedADR = false, resourceSlots = 1, gates = {} }) {
+export function planParallelModules({ matrix, checkpoint, globalGates = {}, resourceSlots = 1, gates = {} }) {
   if (matrix.moduleCount !== 19 || matrix.modules.length !== 19) {
     throw new Error('Canonical module count is not the 19-module product catalog');
   }
   if (checkpoint.checkpointFacts.moduleAdmission['CB-M18'] !== 'FUTURE_NOT_ADMITTED') {
     throw new Error('M18 must remain FUTURE_NOT_ADMITTED');
   }
-  if (!Number.isInteger(resourceSlots) || resourceSlots < 1) {
-    throw new Error('resourceSlots must be a positive integer');
+  if (!Number.isInteger(resourceSlots) || resourceSlots < 0) {
+    throw new Error('resourceSlots must be a non-negative integer');
   }
   const ids = matrix.modules.map(item => item.id);
   const expected = Array.from({ length: 19 }, (_, i) => 'CB-M' + String(i).padStart(2, '0'));
@@ -43,10 +56,17 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
   if (admissionIds.size !== expected.length || expected.some(id => !admissionIds.has(id))) {
     throw new Error('Checkpoint admission registry differs from 19 canonical module IDs');
   }
+  const facts = checkpoint.checkpointFacts;
   const m00Done = checkpoint.status === 'M00_COMPLETE'
     && checkpoint.completedThroughModule === 'CB-M00'
-    && checkpoint.checkpointFacts.previewDeployment === 'PREVIEW_VERIFIED';
+    && checkpoint.overallCompletionPercent === 5
+    && facts.applicationImplementation === 'M00_COMPLETE'
+    && facts.previewDeployment === 'PREVIEW_VERIFIED'
+    && facts.moduleAdmission['CB-M00'] === 'ADMITTED';
   const completed = new Set(m00Done ? ['CB-M00'] : []);
+  const pendingGlobalGates = Object.keys(GLOBAL_GATE_LABELS)
+    .filter(key => globalGates[key] !== true);
+  const globalGatesSatisfied = pendingGlobalGates.length === 0;
   // Other modules are never inferred complete from an old proposal or an issue title.
   // A future orchestrator must read their separately promoted completion evidence.
   const waves = matrix.waves.filter(w => w.id !== 'G0' && w.id !== 'FUTURE');
@@ -57,16 +77,19 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
     const admission = checkpoint.checkpointFacts.moduleAdmission[id];
     const gate = gates[id] ?? {};
     const unfinishedExternalGates = module.externalGates.filter((_, index) => gate.externalGateApprovals?.[index] !== true);
+    const integrationBlockers = (module.integrationGates ?? [])
+      .filter((_, index) => gate.integrationGateApprovals?.[index] !== true)
+      .map(item => `Integration contract ${item.module}: ${item.gate}`);
     const workOrderPath = '.engineering/work-orders/' + id + '-WO-001.md';
     const contextLockPath = '.engineering/context-locks/' + id + '-WO-001.md';
     const contractPath = 'docs/architecture/contracts/' + id + '.md';
     const frozenSources = gate.workOrderFrozen === true && gate.contextLockFrozen === true
       && gate.contractApproved === true;
-    const canImplement = m00Done && adoptedADR && admission === 'ADMITTED'
+    const canImplement = m00Done && globalGatesSatisfied && admission === 'ADMITTED'
       && unmetDependencies.length === 0 && unfinishedExternalGates.length === 0 && frozenSources;
     const blockerLabels = [
       ...(!m00Done ? ['M00 not canonically complete'] : []),
-      ...(!adoptedADR ? ['Global Scope/Architecture/DoD + parallel ADR not yet adopted'] : []),
+      ...pendingGlobalGates.map(key => `Global gate pending: ${key} (${GLOBAL_GATE_LABELS[key]})`),
       ...unmetDependencies.map(dep => 'Dependency not independently complete: ' + dep),
       ...unfinishedExternalGates.map(x => 'External evidence: ' + x),
       ...(admission !== 'ADMITTED' ? ['Module not admitted: ' + id] : []),
@@ -74,7 +97,7 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
     ];
     return {
       id, issue: module.issue, wave: wave.id, admission,
-      unmetDependencies, canImplement, blockers: blockerLabels,
+      unmetDependencies, canImplement, blockers: blockerLabels, integrationBlockers,
       suggestedWorktree: 'cb-' + id.slice(3).toLowerCase() + '-wo-001',
       suggestedBranch: 'codex/' + id.toLowerCase() + '-wo-001',
       requiredFiles: { workOrderPath, contextLockPath, contractPath },
@@ -89,7 +112,9 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
     checkpointPercent: checkpoint.overallCompletionPercent,
     moduleCount: 19,
     unfinishedModuleCount: m00Done ? 18 : 19,
-    globalParallelADREffective: adoptedADR,
+    globalGatesSatisfied,
+    pendingGlobalGates: pendingGlobalGates.map(key => GLOBAL_GATE_LABELS[key]),
+    globalParallelADREffective: globalGates.parallelADRAdopted === true,
     resourceSlots,
     nextModuleCandidates: dependencyReady.map(x => x.id),
     eligibleCodeAgentsNow: ready.slice(0, resourceSlots).map(x => x.id),
@@ -104,6 +129,56 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
 /** Reads and parses a repository JSON file relative to the planner root. */
 function readJson(file) {
   return JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
+}
+
+/** Parses operator-supplied planning evidence without treating it as authorization. */
+export function parseGateEvidence(raw) {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new Error('Gate evidence must be valid JSON: ' + error.message, { cause: error });
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Gate evidence must be an object keyed by admitted module ID');
+  }
+  for (const [id, gates] of Object.entries(parsed)) {
+    if (!/^CB-M(?:0[1-9]|1[0-7])$/u.test(id)) {
+      throw new Error('Gate evidence contains an unsupported module ID: ' + id);
+    }
+    if (!gates || typeof gates !== 'object' || Array.isArray(gates)) {
+      throw new Error('Gate evidence for ' + id + ' must be an object');
+    }
+    const allowedFields = new Set([
+      'externalGateApprovals', 'integrationGateApprovals',
+      'workOrderFrozen', 'contextLockFrozen', 'contractApproved',
+    ]);
+    for (const [key, value] of Object.entries(gates)) {
+      if (!allowedFields.has(key)) throw new Error('Unknown gate evidence field: ' + key);
+      if (key === 'externalGateApprovals' || key === 'integrationGateApprovals') {
+        if (!Array.isArray(value) || value.some(item => typeof item !== 'boolean')) {
+          throw new Error(key + ' must be an array of boolean values');
+        }
+      } else if (typeof value !== 'boolean') {
+        throw new Error(key + ' must be a boolean');
+      }
+    }
+  }
+  return parsed;
+}
+
+/** Returns true only for a status line explicitly recording global approval and freeze. */
+export function isGlobalApprovalStatus(document) {
+  if (typeof document !== 'string') return false;
+  const statusLine = document.split(/\r?\n/u).find(line => line.startsWith('**Status:'));
+  return statusLine?.includes('OWNER_APPROVED_GLOBAL') === true
+    && statusLine.includes('FROZEN');
+}
+
+/** Reads a source document and checks its explicit global-approval status line. */
+function hasGlobalApprovalStatus(file) {
+  if (!existsSync(path.join(ROOT, file))) return false;
+  return isGlobalApprovalStatus(readFileSync(path.join(ROOT, file), 'utf8'));
 }
 
 /** Checks only the ADR's current status line for an Owner-approved adoption. */
@@ -121,29 +196,63 @@ function detectADR() {
     && !tokens.has('NOT_ADOPTED');
 }
 
-/** Parses an optional positive integer limit on eligible code agents. */
+/** Reads the five independent global gates; unavailable GitHub state fails closed. */
+function readGlobalGates() {
+  const globalGates = Object.fromEntries(
+    GLOBAL_SOURCE_APPROVALS.map(([key, file]) => [key, hasGlobalApprovalStatus(file)]),
+  );
+  try {
+    globalGates.issue6Closed = execFileSync(
+      'gh', ['api', 'repos/KayzenRoot/coinblink/issues/6', '--jq', '.state'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+    ).trim() === 'closed';
+  } catch {
+    globalGates.issue6Closed = false;
+  }
+  globalGates.parallelADRAdopted = detectADR();
+  return globalGates;
+}
+
+/** Parses an optional non-negative integer limit on eligible code agents. */
 function parseMaxAgents(argv) {
   const i = argv.indexOf('--max-agents');
   if (i === -1) return null;
-  if (i + 1 >= argv.length || !/^[1-9]\d*$/u.test(argv[i + 1])) {
-    throw new Error('--max-agents requires a positive integer');
+  if (i + 1 >= argv.length || !/^(?:0|[1-9]\d*)$/u.test(argv[i + 1])) {
+    throw new Error('--max-agents requires a non-negative integer');
   }
   const parsed = Number(argv[i + 1]);
   if (!Number.isSafeInteger(parsed)) throw new Error('--max-agents exceeds the safe integer range');
   return parsed;
 }
 
+/** Parses an optional path containing explicitly supplied, non-authorizing gate evidence. */
+function parseGateEvidencePath(argv) {
+  const i = argv.indexOf('--gate-evidence');
+  if (i === -1) return null;
+  if (i + 1 >= argv.length || argv[i + 1].startsWith('--')) {
+    throw new Error('--gate-evidence requires a JSON file path');
+  }
+  return argv[i + 1];
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const maxAgents = parseMaxAgents(process.argv.slice(2));
+    const gateEvidencePath = parseGateEvidencePath(process.argv.slice(2));
     const slots = localAuthoringSlots({ cpus: availableParallelism(), ramBytes: freemem() });
     const actualSlots = maxAgents === null ? slots : Math.min(slots, maxAgents);
+    const gates = gateEvidencePath === null ? {} : parseGateEvidence(
+      readFileSync(path.resolve(ROOT, gateEvidencePath), 'utf8'),
+    );
     const result = planParallelModules({
       matrix: readJson(MATRIX),
       checkpoint: readJson(CHECKPOINT),
-      adoptedADR: detectADR(),
+      globalGates: readGlobalGates(),
       resourceSlots: actualSlots,
+      gates,
     });
+    result.gateEvidenceProvided = gateEvidencePath !== null;
+    result.gateEvidenceTrust = 'UNVERIFIED_OPERATOR_INPUT_NOT_AUTHORIZATION';
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
   } catch (error) {
     process.stderr.write('CoinBlink parallel preflight BLOCKED: ' + error.message + '\n');

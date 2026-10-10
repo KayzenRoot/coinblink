@@ -11,12 +11,12 @@
 - `.engineering/SOURCE-HIERARCHY.md` Git blob `91b658b1bb1b3a5482973005949e0faa087aeef5`
 - `docs/DECISIONS_LEDGER.md` Git blob `1a1e8413a43310ad7c0757fd78c07ac40936b8e2`
 
-**Authorized documentation-only delta:** existing M00 Source Hierarchy, DoD, Decisions Ledger, existing M00 WO, this Context Lock, Owner decision evidence and no-op checkpoint proposal.
+**Authorized bounded M00 financial-policy implementation delta:** existing Source Hierarchy, DoD, Decisions Ledger, existing admitted M00 WO, this Context Lock, Owner decision evidence and no-op checkpoint proposal, PLUS only `scripts/cloudflare-preview-policy.mjs`, `test/cloudflare-preview-authorization.test.mjs`, and `.github/workflows/cloudflare-worker-preview.yml` to remove the two obsolete hard account-wide US$0 gate variables while retaining exact-main, Workers Free, Owner, protected Environment, token, scoped IAM and Preview isolation. This is a correction required by CodeRabbit within the same active M00 WO, not authorization to change application logic or billing.
 
-**No writes allowed:** application/Cloudflare runtime code, Worker bindings, Secrets, billing, production deploy, CI/tests authored by ChatGPT, `.engineering/CHECKPOINT.json`, M01+ implementation/admission, Golden assets, global Issue #6 product approval.
+**No writes allowed:** application runtime beyond the explicitly bounded Preview authorization validator and its unit test, Worker bindings, Cloudflare secrets, billing, production deploy, unrelated CI/workflows, `.engineering/CHECKPOINT.json`, M01+ implementation/admission, Golden assets, global Issue #6 product approval.
 
 **Verification:** Exact candidate HEAD CI, GEF, CodeRabbit and risk-appropriate technical audit required before governance-source merge; do not bypass tool access restrictions. If base main moves, normally merge main into branch and refresh review/sha, no force-push.
 
 **Current checkpoint:** M00_ADMITTED/IMPLEMENTATION_IN_PROGRESS, P1 field NOT_DEPLOYED in canonical JSON, 0%; CB-M01..CB-M17 NOT_ADMITTED, CB-M18 FUTURE_NOT_ADMITTED. Operational Preview is real but is not automatically machine checkpoint promotion.
 
-**STOP CONDITION:** documentation PR approved/integrated as appropriate, then separately finish M00 binding/visual/checkpoint gates. No paid credit or upgrade.
+**STOP CONDITION:** exact-HEAD corrected Free-only policy PR passes all relevant CI/security/CodeRabbit/audit and is integrated only with permitted Owner go/no-go; then separately finish M00 binding/visual/checkpoint gates. No paid credit or upgrade.

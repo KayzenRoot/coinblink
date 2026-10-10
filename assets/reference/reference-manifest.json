@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "project": "CoinBlink",
   "goldenImageAuthority": "user-selected source originals, immutable; no screenshots as functional backgrounds",
-  "status": "BYTES_NOT_IMPORTED",
+  "status": "BYTES_READY_FOR_PR_REVIEW",
   "assets": [
     {
       "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -11,7 +11,8 @@
       "width": 1536,
       "height": 864,
       "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8",
-      "presentInGit": false
+      "presentInGit": true,
+      "sizeBytes": 532365
     },
     {
       "path": "assets/reference/coinblink-logo-approved-original-1179x1040.jpg",
@@ -20,9 +21,10 @@
       "width": 1179,
       "height": 1040,
       "sha256": "126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0",
-      "presentInGit": false
+      "presentInGit": true,
+      "sizeBytes": 121728
     }
   ],
   "related": "docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v1.0.md",
-  "transfer": "Original raster image bytes are retained in conversation artifacts but current authenticated GitHub tooling cannot read local files as binary payload. Follow-up work must transfer byte-identical images, check digests, then flip presentInGit only after verification."
+  "transfer": "Binary presence is evaluated per Git tree: verify both JPEG byte hashes, sizes, and dimensions before setting presentInGit true. An unmerged branch or pull request does not make the assets canonical in main."
 }

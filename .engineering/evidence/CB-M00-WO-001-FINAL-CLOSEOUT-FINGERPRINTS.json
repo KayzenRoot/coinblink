@@ -1,0 +1,85 @@
+{
+  "repository": "KayzenRoot/coinblink",
+  "workOrder": "CB-M00-WO-001",
+  "baseSha": "bd5eea7da88c83aaa0cf15a64d77c01ed7677738",
+  "selfPath": ".engineering/evidence/CB-M00-WO-001-FINAL-CLOSEOUT-FINGERPRINTS.json",
+  "selfExcluded": true,
+  "coverageRule": "Exact staged Git path set from frozen base, including additions and modifications, excluding only this manifest; no unapproved deletions.",
+  "baseManifest": {
+    "path": ".engineering/evidence/CB-M00-WO-001-FINAL-CLOSEOUT-BASE-FINGERPRINTS.json",
+    "sha256": "ee5a539a4a1d8484afd4342351c3962e075b7fdf0717e730a5dbf561150044f5",
+    "filesRevalidated": 33
+  },
+  "files": [
+    {
+      "path": ".engineering/CHECKPOINT.md",
+      "status": "M",
+      "mode": "100644",
+      "gitBlobSha1": "739b3507e9fae6be56fbd6284f61e434dee80174",
+      "rawSha256": "4bf70ae5396c4a213a3b58af68c4028094bf8490944515c718e567d9937caaf0"
+    },
+    {
+      "path": ".engineering/context-locks/CB-M00-WO-001-FINAL-CLOSEOUT.md",
+      "status": "A",
+      "mode": "100644",
+      "gitBlobSha1": "ace2e7602e94cc50fc29dd7f2b665ad9765fbd2e",
+      "rawSha256": "5ed51e0d56f60272e39b1104c5299a368a69506e76b4cd104cd8ca8ffcada382"
+    },
+    {
+      "path": ".engineering/DEFINITION-OF-DONE.md",
+      "status": "M",
+      "mode": "100644",
+      "gitBlobSha1": "3b1b356f8ee50ed810805b04b98dbf8004b13c52",
+      "rawSha256": "0635dd1beae8c175ca11c0224f9dd55d92b4a4a77c2d8730645fd3ede32ed783"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-FINAL-CHECKPOINT-DELTA.md",
+      "status": "A",
+      "mode": "100644",
+      "gitBlobSha1": "acb901c10c1ed4ef98b37882074ce92d17709ff0",
+      "rawSha256": "ad0dfa79bb40b82dc921c64edc475b16f5fb7c71472003c8d5fba382d052eed6"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-FINAL-CLOSEOUT-BASE-FINGERPRINTS.json",
+      "status": "A",
+      "mode": "100644",
+      "gitBlobSha1": "0c563e2091efe5e06877397554dfbe7b97ba2023",
+      "rawSha256": "ee5a539a4a1d8484afd4342351c3962e075b7fdf0717e730a5dbf561150044f5"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-FINAL-CLOSEOUT.md",
+      "status": "A",
+      "mode": "100644",
+      "gitBlobSha1": "f63b81b49c3169a0a9abe6cd3c5ba52b2334eb4d",
+      "rawSha256": "1aaf48f6c59b623988bb82ac04b12d673e051e3ee992c1de9609020b4697343a"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md",
+      "status": "M",
+      "mode": "100644",
+      "gitBlobSha1": "c9dcfb614aabf3432d44a4405e92e3095d339f57",
+      "rawSha256": "8e02ac8015d034a87ceeac7b2584da43aad7db4e716584ab46bba804ef43b5fc"
+    },
+    {
+      "path": ".engineering/SOURCE-HIERARCHY.md",
+      "status": "M",
+      "mode": "100644",
+      "gitBlobSha1": "7e11bb06763fe645a2c99fa9f0d4fa7fe201e93c",
+      "rawSha256": "c1c391ffb85d5ad9b4cd7f0176b26d634ef8c3b244c254d24ad146d4465bd064"
+    },
+    {
+      "path": ".engineering/work-orders/CB-M00-WO-001.md",
+      "status": "M",
+      "mode": "100644",
+      "gitBlobSha1": "e01674923d23264ab0a92589e5d71ead02c23175",
+      "rawSha256": "b0f42b05c1271eb896d4b19809c1e898ec277037d138e16c71dd82b7dcb2ab79"
+    },
+    {
+      "path": "AGENTS.md",
+      "status": "M",
+      "mode": "100644",
+      "gitBlobSha1": "123b8624bc851a0af30b3007bcf37e3a722c9166",
+      "rawSha256": "bf0efc4ca20753ab70d55701f8de034b2b9fc147483ed25d83b0d75629bd3ef6"
+    }
+  ]
+}

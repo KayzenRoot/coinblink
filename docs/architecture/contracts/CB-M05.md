@@ -2,7 +2,7 @@
 
 **Admission candidate status:** REVIEW_REQUIRED / NON_EXECUTABLE_UNTIL_THIS_PR_MERGED; after merge only P0 fixture-based non-privileged CMS UI is authorized. Real identity/sessions/vault/database/P1 remain BLOCKED until a separate approved security/data ADR.
 **Contract owner upon approved limited-P0 admission:** CB-M05. **Consumers:** M02 article read model, M03 source ingestion, M07/M08/M09/M10/M11/M13/M17 as admitted by actual dependency DAG.
-**Source base:** `d8233772a80b613015284309a30657ba576a1b4f`, M00 COMPLETE/5%. The staged global source/ADR PR #53 is merged into main; Issue #6 is closed. This proposal is still NOT_ADMITTED until an individual GEF Work Order and Context Lock. M05 P1 authentication/security implementation choices remain gated. This document freezes **no** auth implementation vendor or Cloudflare resource.
+**Source base:** `d8233772a80b613015284309a30657ba576a1b4f`, M00 COMPLETE/5%. The staged global source/ADR PR #53 is merged into main; Issue #6 is closed. On pre-merge canonical main, M05 remains NOT_ADMITTED. This PR proposes an individual GEF Work Order and Context Lock; only after a reviewed, Owner-authorized merge will the P0 MOCK-only admission be effective. M05 P1 authentication/security implementation choices remain gated. This document freezes **no** auth implementation vendor or Cloudflare resource.
 
 ## Security boundary (P0 is not working auth)
 
@@ -60,4 +60,4 @@ Atomic concurrent first-Owner claim yields one winner; second Owner never create
 
 ## Required next authority
 
-Global #53 (staged Scope/Architecture/DoD + adopted parallel ADR) must merge and #6 resolve, security/data/provider selection reviewed for privileged components, own `CB-M05-WO-001` with latest main Context Lock/contract ownership and separate GEF admission in checkpoint. Until then this is a **producer draft only**, not code or actual Codex agent authorization.
+Global #53 and Issue #6 are already merged/closed. This candidate contains own `CB-M05-WO-001`, current-main Context Lock and proposed checkpoint admission. **While this PR is open, it remains NON_EXECUTABLE**. Only after all exact-head checks, independent review, explicit Owner go/no-go and canonical merge may a Codex Desktop local M05 agent implement **P0 MOCK / SECURITY DISABLED UI only**. Authentication, sessions, MFA/recovery, persistent Owner identity, database and provider vault remain P1 BLOCKED until their separate approved security/data/provider ADR, regardless of P0 admission.

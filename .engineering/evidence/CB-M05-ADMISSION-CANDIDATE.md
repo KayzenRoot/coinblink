@@ -15,3 +15,7 @@ Ubuntu and Windows CI on preceding candidate SHA `80a65053714271e8e3bb06b597c751
 ## Progress invariant regression follow-up
 
 The admission-only checkpoint must remain 5% while `completedThroughModule=CB-M00`; admissions may not advance completion. The regression test now asserts exact 5% conditionally on the canonical last completed module, while allowing a later explicitly completed module's separately reviewed checkpoint to increase percent without falsely failing the historic global test. No completion percent or application code changed by this fix.
+
+## CodeRabbit subsequent exact-head review correction
+
+The CodeRabbit final review reported (1) stale M05 contract text implying `NOT_ADMITTED` forever even after the independently reviewed P0 admission merge, and (2) an overgeneralized preflight test that required the same M05-specific contract status wording from all admitted modules, which could break M01's separate legitimate promotion. Updated both in this same scoped PR. The contract now makes pre-merge no-authority and post-merge P0-only authority explicit, with P1 identity/vault/database fully gated. Preflight now checks each admitted module's own Work Order evidence and module-specific contract semantics. CI, security reviews and exact-head approval must be re-evaluated on the new SHA.

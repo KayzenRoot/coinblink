@@ -1,5 +1,11 @@
 # CoinBlink · GEF Source Hierarchy and Decision Authority
 
+## Owner-approved M00 Free-only cost interpretation · 2026-10-10
+
+**CURRENT OWNER DIRECTIVE (Issue #36 comment 6099048180):** Continue CoinBlink M00 on Cloudflare **Workers Free now**, leave the **US$10 informational budget alert** as configured, and **do not require an enforced hard US$0 monthly account-wide spending cap** as a prerequisite for Free-only development. The Owner will explicitly decide on credits or Paid only when Free is no longer sufficient. No paid upgrade or purchase is authorized today. This **supersedes previous hard-cap interpretations for M00**, while preserving authorization/least-privilege IAM, secrets, no-paid-bindings and no-production Worker security, exact-SHA Preview evidence, actual live Worker binding inventory review, visual acceptance and checkpoint governance.
+
+The Free-only Owner directive is effective as an operational authorization immediately. This source clarification is proposed in its own traceable governance PR and does **not** promote `.engineering/CHECKPOINT.json`, M00 completion, global Issue #6 or M01+ code admissions. See `.engineering/evidence/CB-M00-WO-001-FREE-OWNER-DECISION.md`.
+
 ## Current operational status · 2026-10-10
 
 The manual, protected Preview workflow [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded for canonical `main` SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`; real stable/immutable URLs and remote browser evidence are in `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md`. The authenticated read-only dashboard showed Workers Free and USD 0.00 observed for the current cycle. This is not a hard spending cap; an effective monthly USD 0 ceiling remains unmet. Live provider binding inventory and final closeout audit also remain pending. The canonical GEF checkpoint is deliberately unchanged (`previewDeployment=NOT_DEPLOYED`, implementation P1 pending, overall 0%) until a separately audited checkpoint delta; the operational Preview evidence must not be confused with checkpoint promotion. M00 is not `DONE`; M01–M17 remain unadmitted and M18 remains future/not admitted.

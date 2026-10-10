@@ -5,18 +5,18 @@
   "integrationBaseSha": "e98d581c7306ab255af9b96e7c046db6f49acf12",
   "changedGitPathCountIncludingManifest": 9,
   "manifestSelfHash": "EXCLUDED",
-  "contextLockSha256": "3e031ac0858892666cba5a56ae4163cbc899006bdbae9d4f2e6095376cd0ba6a",
+  "contextLockSha256": "ec3aa459ebc0cc171d404c4c30b4e0898fb16a062dd01b2be224dbd0007dcc31",
   "files": [
     {
       "path": ".engineering/context-locks/CB-GOV-PARALLEL-002.md",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "eb03c50e55dea8871476136ad2711fe294b56b6a",
-      "candidateRawSha256": "3e031ac0858892666cba5a56ae4163cbc899006bdbae9d4f2e6095376cd0ba6a",
-      "indexGitBlobSha1": "eb03c50e55dea8871476136ad2711fe294b56b6a",
-      "workingTreeGitBlobSha1": "eb03c50e55dea8871476136ad2711fe294b56b6a",
-      "workingTreeSha256": "3e031ac0858892666cba5a56ae4163cbc899006bdbae9d4f2e6095376cd0ba6a"
+      "candidateGitBlobSha1": "65d8963eeaf1f3d29833bf5af99d81a21f62872d",
+      "candidateRawSha256": "ec3aa459ebc0cc171d404c4c30b4e0898fb16a062dd01b2be224dbd0007dcc31",
+      "indexGitBlobSha1": "65d8963eeaf1f3d29833bf5af99d81a21f62872d",
+      "workingTreeGitBlobSha1": "65d8963eeaf1f3d29833bf5af99d81a21f62872d",
+      "workingTreeSha256": "ec3aa459ebc0cc171d404c4c30b4e0898fb16a062dd01b2be224dbd0007dcc31"
     },
     {
       "path": ".engineering/evidence/CB-GOV-PARALLEL-002-CHECKPOINT-DELTA.md",
@@ -34,11 +34,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "9037193b86445925cca69156caef4670708bfd56",
-      "candidateRawSha256": "7988a24ecb548961ed0c694276c247c9f8ee57922b0eddd061d6dd6b41d1046d",
-      "indexGitBlobSha1": "9037193b86445925cca69156caef4670708bfd56",
-      "workingTreeGitBlobSha1": "9037193b86445925cca69156caef4670708bfd56",
-      "workingTreeSha256": "7988a24ecb548961ed0c694276c247c9f8ee57922b0eddd061d6dd6b41d1046d"
+      "candidateGitBlobSha1": "2aa79e83e12206ce0a3a42fbbd201991fea8f6c6",
+      "candidateRawSha256": "c0d8a83126140c1d49774c357d71d7d94175437b11e7952c574618ab4a85da30",
+      "indexGitBlobSha1": "2aa79e83e12206ce0a3a42fbbd201991fea8f6c6",
+      "workingTreeGitBlobSha1": "2aa79e83e12206ce0a3a42fbbd201991fea8f6c6",
+      "workingTreeSha256": "c0d8a83126140c1d49774c357d71d7d94175437b11e7952c574618ab4a85da30"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-PARALLEL-002.md",

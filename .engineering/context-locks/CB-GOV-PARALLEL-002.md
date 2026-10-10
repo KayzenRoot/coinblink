@@ -18,9 +18,9 @@
 
 ## Authority and source fingerprints
 
-The following exact source blobs and byte-level SHA-256 hashes were read at the locked base. A source change requires a new baseline review before further edits; it does not authorize broadening this Work Order.
+The following Git blob object IDs and SHA-256 hashes of the canonical blob contents (the exact bytes stored in Git, without the Git object header) were read at the locked base. These hashes are independent of working-tree line-ending conversion. A source change requires a new baseline review before further edits; it does not authorize broadening this Work Order.
 
-| Path | Git blob SHA-1 | Raw SHA-256 |
+| Path | Git blob SHA-1 | Canonical blob SHA-256 |
 |---|---|---|
 | `AGENTS.md` | `ac48525e1a586c65766922539d420fb8d37caccb` | `2c899a0ee1fd4b72f36b4e6446a5ff79f7662aed9c1a2766feba5bcc5cb9f68e` |
 | `.engineering/SOURCE-HIERARCHY.md` | `503257fb6af2c7d95b59f92b4b68fe62a9b8b08f` | `4e9cd445ecd5f8448e88c3faec1e3a0fbf1674aa9bb9ee15b531d5f10d8decb2` |

@@ -1,7 +1,7 @@
 # CB-M01 · Golden Home producer contract candidate
 
-**Status:** PROPOSED / NOT_APPROVED / NOT_ADMITTED / NON_EXECUTABLE.
-**Contract owner if admitted:** CB-M01. **Consumer dependencies:** CB-M02, CB-M13 and explicitly versioned other consumers after their own WOs.
+**Admission candidate status:** REVIEW_REQUIRED / NON_EXECUTABLE_UNTIL_THIS_PR_MERGED. This module producer contract is accepted only if the separate exact-head CB-M01 admission PR is merged with Owner go/no-go; it remains non-authorizing in an open candidate PR.
+**Contract owner upon approved admission merge:** CB-M01. **Consumer dependencies:** CB-M02, CB-M13 and explicitly versioned other consumers after their own WOs.
 **Source base:** `d8233772a80b613015284309a30657ba576a1b4f` (M00 COMPLETE, 5%). Global staged V1 source/parallelism PR #53 is merged, and byte-identical original Golden assets PR #54 is merged. The main Git blob hashes and canonical per-file manifest flags have been verified; M01 itself remains NOT_ADMITTED until a separate GEF Work Order/Context Lock.
 
 ## Immutable inputs and gate

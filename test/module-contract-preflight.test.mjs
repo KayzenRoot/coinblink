@@ -18,8 +18,15 @@ test('pre-admission contract draft never grants application-code authorization',
   assert.deepEqual(plan.modules.map(m => m.id), ['CB-M01', 'CB-M05']);
   assert.ok(plan.modules.every(m => !m.applicationCodeAuthorized && m.contractStatus === 'PROPOSED_NOT_ADOPTED'));
   for (const m of plan.modules) {
-    assert.ok(['ADMITTED', 'NOT_ADMITTED'].includes(source.checkpointFacts.moduleAdmission[m.id]));
-    assert.match(read(m.contractPath), /Status:\*\* PROPOSED \/ NOT_APPROVED \/ NOT_ADMITTED \/ NON_EXECUTABLE/u);
+    const state = source.checkpointFacts.moduleAdmission[m.id];
+    assert.ok(['ADMITTED', 'NOT_ADMITTED'].includes(state), m.id);
+    const contract = read(m.contractPath);
+    if (state === 'ADMITTED') {
+      assert.match(contract, /Admission candidate status:\*\* REVIEW_REQUIRED \/ NON_EXECUTABLE_UNTIL_THIS_PR_MERGED/u);
+      assert.equal(typeof source.checkpointFacts.moduleAdmissionEvidence?.[m.id]?.workOrder, 'string');
+    } else {
+      assert.match(contract, /Status:\*\* PROPOSED \/ NOT_APPROVED \/ NOT_ADMITTED \/ NON_EXECUTABLE/u);
+    }
   }
 });
 

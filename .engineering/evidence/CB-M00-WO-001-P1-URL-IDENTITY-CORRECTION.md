@@ -87,3 +87,11 @@ Wrangler's immutable hostname uses the first eight hexadecimal characters of its
 4. Keep M00 `IMPLEMENTATION_IN_PROGRESS`, P1 pending, overall completion `0%`, and M01+ not admitted until all remaining DoD gates and the separately audited checkpoint process pass.
 
 The related proposal is `.engineering/evidence/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION-CHECKPOINT-DELTA.md`; it records no promotion in this correction.
+
+## 2026-10-10 follow-up superseding the next-gate section above
+
+The previously planned corrected exact-main dispatch occurred as protected run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) on `e8886e21c6f152ca374b1e42852c6b6638543f40` and completed SUCCESS with the official stable/immutable verifier. The real URLs, route/security results, fresh Playwright/axe screenshots, read-only plan/billing observation, and remaining live-binding limitation are recorded in [the P1 closeout Evidence Bundle](CB-M00-WO-001-P1-CLOSEOUT.md). The earlier workflow/PR #47 instructions above remain historical. Do not repeat deployment, alter the checkpoint, or mark M00 complete from this evidence correction.
+
+## 2026-10-10 follow-up superseding the next-gate section above
+
+The previously planned corrected exact-main dispatch occurred as protected run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) on `e8886e21c6f152ca374b1e42852c6b6638543f40` and completed SUCCESS with the official stable/immutable verifier. The real URLs, route/security results, fresh Playwright/axe screenshots, read-only plan/billing observation, and remaining live-binding limitation are recorded in [the P1 closeout Evidence Bundle](CB-M00-WO-001-P1-CLOSEOUT.md). The earlier workflow/PR #47 instructions above remain historical. Do not repeat deployment, alter the checkpoint, or mark M00 complete from this evidence correction.

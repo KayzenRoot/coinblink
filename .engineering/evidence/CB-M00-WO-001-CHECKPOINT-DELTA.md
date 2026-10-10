@@ -28,3 +28,7 @@ This delta describes a possible checkpoint promotion after exact-head CI, indepe
 - P1 remains pending until account, plan/cost ceiling, least-privilege credentials, and non-production isolation are explicitly verified. Do not infer approval or create a remote resource.
 - Do not mark M00 `DONE`: the DoD still requires accepted preview evidence and the remaining owner visual/function acceptance. Do not admit M01–M18 or close Issue #6.
 - Re-evaluate this proposal against the actual post-merge main SHA before promoting it. Do not use a future SHA or candidate state as canonical evidence.
+
+## Historical proposal status · superseded operational facts · 2026-10-10
+
+This delta was drafted before Owner-authorized provider setup and the successful Preview. Its `PROVIDER_SETUP_REQUIRED`/no-deployment premise is historical. The exact canonical Preview run, live URLs and current read-only provider observation are recorded in `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md`. This older delta is not promoted or current authority; the current proposal is `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-CHECKPOINT-DELTA.md`, which intentionally makes no canonical checkpoint change while live bindings and final review remain pending.

@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "repository": "KayzenRoot/coinblink",
+  "workOrder": "CB-M00-WO-001",
+  "purpose": "P1 closeout candidate source fingerprints",
+  "baseMainSha": "e8886e21c6f152ca374b1e42852c6b6638543f40",
+  "branch": "codex/cb-m00-wo-001-p1-closeout",
+  "fingerprintAlgorithm": "Git blob SHA-1 and raw-byte SHA-256 from the Git index",
+  "selfReferenceExcluded": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-FINGERPRINTS.json",
+  "changeCounts": {
+    "added": 11,
+    "modified": 12,
+    "deleted": 0
+  },
+  "fingerprints": [
+    {
+      "path": ".engineering/CHECKPOINT.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "1f455d2c6392317a425587d3ae9ddf79bbf18470",
+      "baseRawSha256": "5f572b1b2c75e08d6881494bffd61892f9121280e31ca6fbfa08e5c48b27587e",
+      "candidateGitBlobSha1": "738b07e69f75728f5d5f2dbde932be615d3ce411",
+      "candidateRawSha256": "d738f4addd64aa2242c9133e129ee2b308ae80e67fa4dc66cdab8c68793e3d2b"
+    },
+    {
+      "path": ".engineering/context-locks/CB-M00-WO-001-P1-CLOSEOUT.md",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "9a1f1116d19923010ba1628e21b3e0fe9ecad626",
+      "candidateRawSha256": "e2d41a5b76ccb40f2473fb6f6b3f3cce74ffe836ec272bb5a9b3ba2467e01791"
+    },
+    {
+      "path": ".engineering/DEFINITION-OF-DONE.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "3804f6f521de9f5251c4329f4cc02b8e7ec2631e",
+      "baseRawSha256": "4952f2b7ec9ac6479c0c3723054d521b702aeee0499130e2c1e12f658a98ac5d",
+      "candidateGitBlobSha1": "36e8d937ba466da356f8ce43c2dc4e95d21ceae8",
+      "candidateRawSha256": "59ed7e2ac266ff4ea05f0273458f346b29a9d6050ba5577fb233a4c0dfd11416"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-CHECKPOINT-DELTA.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "4032b682165ba8e722e998f93a9c518f07960f91",
+      "baseRawSha256": "4a9151fabdf9cf1d7f1b1cf01272608d57da6afef2bb18faaff352a75926631f",
+      "candidateGitBlobSha1": "cd0f7128f4097289a5154372258f51f1a3471390",
+      "candidateRawSha256": "3f3d01cd339bc1690efcbee1d445b6084243138274327f818d81fafd497ab6d2"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-EVIDENCE.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "dd337a77bd75fdbd6b3b3e432c95f0887105d6f4",
+      "baseRawSha256": "d4ad7c4590d73daf58991c16c5c547fe708d2871c6094e0d42926df8d46248bb",
+      "candidateGitBlobSha1": "cc9399c6facb83526a8a6c1d8da307394070c3dd",
+      "candidateRawSha256": "7c52e6fe78a6e6355fc164fea0ea6a89a88f480ece884eeb817d91888d37f065"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-BASE-FINGERPRINTS.json",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "0a5a6f1364e5379a0031cb8a8cd01c88ddeaeed6",
+      "candidateRawSha256": "c22fa7d58c494b9e9b175762f61733f8d8ff69fcc706f2dad7cacbbece6e68a6"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-CHECKPOINT-DELTA.md",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "53da8ed3d63be95a165d8161db8a6852a67cfcc1",
+      "candidateRawSha256": "03fd5ad050b56b505f2d38bd6d9e8d68ac0cbc9c233ce677baa54392d92ffde0"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "7db456c8077d5ae1f07ade74fefeeb68a98a76b4",
+      "candidateRawSha256": "585df28f71fc05a79b767a53c1e680f1c0f35f03609328efe34fe8768fe24e2e"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "abebd50cfd53d0621d34d9d02a0383436fb7d74d",
+      "baseRawSha256": "8a1d9863a0c832f91b1b2ceff97d26d56c549ff2eeeeada0305c96326fd62e72",
+      "candidateGitBlobSha1": "bd94713b7fc926ac46d9ef1330921e7eef76e189",
+      "candidateRawSha256": "a981ff5b68896b173ac0fdb61545992b722be8761b88bb827155d05dd12988b6"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/desktop-1536x864.png",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "49edd8e6d1fefac9111b56f2f720aa0ed01431fa",
+      "candidateRawSha256": "81d8119e39133406486e686c25af86160c52a30c0861baaefb78dcbf1e363772"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/mobile-390x844.png",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "c4312c2e876ae6ce2d70331f499363650c3f4e62",
+      "candidateRawSha256": "a0a54e76a826a927787172779f5d232b55c14363d7089ed2b3b3817285840f24"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/PLAYWRIGHT-LOG.md",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "80c26f624bd306c0049aad4786a0152ee9d4cffc",
+      "candidateRawSha256": "c4c976680bc1137197c7c98946277d4b1783dc135f8209ad490196f86f7895d6"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/RESULTS.json",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "7e84a7f3c8e05a8852374687e1332c17d93a402e",
+      "candidateRawSha256": "03459fdc50e5897fa16a954cfb7f2e3cea469dbe580651c68eeb26662d2ac5ee"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/SHA256SUMS.txt",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "f19b42ba1b6b71f07ab028357724465e4e2650fd",
+      "candidateRawSha256": "8b75d7e8baa7053e701266b552ce667ee19cfb2c218386479c34ff1c1c2dcdc0"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/tablet-768x1024.png",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "3126f6a0988c27ce964a40ee769a2a27c9627869",
+      "candidateRawSha256": "bd54a64ee87eaf3e5a27e3baf6e804712c8cbbdb8c1068203cdd0b765fe44f4e"
+    },
+    {
+      "path": ".engineering/evidence/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "66262b7d98a92c655c3601820ec8ba6e6b86866a",
+      "baseRawSha256": "fe50c3365c3f0d2826d92b58cdbbfdea8961f4b295f271af917d09715520b06f",
+      "candidateGitBlobSha1": "250c90d3ae3ac0405edcdb706683067fdef6802f",
+      "candidateRawSha256": "70d332de3dc052908af44467d2aebff6740ff20c3b54f43d122ec30abd0bfaee"
+    },
+    {
+      "path": ".engineering/SOURCE-HIERARCHY.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "503257fb6af2c7d95b59f92b4b68fe62a9b8b08f",
+      "baseRawSha256": "4e9cd445ecd5f8448e88c3faec1e3a0fbf1674aa9bb9ee15b531d5f10d8decb2",
+      "candidateGitBlobSha1": "728912afb921e924b37719c359676bd2f08bd3b4",
+      "candidateRawSha256": "dcb3d88ddb598303e332f5acafac52820628b4c37901c09b69385b746f303d83"
+    },
+    {
+      "path": ".engineering/work-orders/CB-M00-WO-001.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "a4ee309193e5c825283d95e828ce0839379e2694",
+      "baseRawSha256": "cf28ad350d34c0906474b27b53bd0cb560387fd4cc13052ac7f5c69e946b6fa1",
+      "candidateGitBlobSha1": "ac24e9361a7e916ef996cb5190268de055a3b2ea",
+      "candidateRawSha256": "3decff41d9034d2d150ef59155f926c822564fc758d2cc2b06d0adc7798c7ab3"
+    },
+    {
+      "path": "AGENTS.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "ac48525e1a586c65766922539d420fb8d37caccb",
+      "baseRawSha256": "2c899a0ee1fd4b72f36b4e6446a5ff79f7662aed9c1a2766feba5bcc5cb9f68e",
+      "candidateGitBlobSha1": "51b06f72c62c980ed9305d1fa12a3a0940ebd1b8",
+      "candidateRawSha256": "2b1a510537b3bfbe1f6758bb8994950d2b8dde07cbd95c34ba1a7725ad0b80bb"
+    },
+    {
+      "path": "docs/architecture/ADR-CB-0001-M00-PREVIEWS-STACK.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "1bc1f0627097c30d95faa2b1faaa6f74ba79acae",
+      "baseRawSha256": "82255f331af4c383dea4ef1c2f567aaf4b8f261cb14f5ef4dfd26c65457bf4cd",
+      "candidateGitBlobSha1": "3d998b177fa3b0a26f9d9aa30c79ff557fcf8971",
+      "candidateRawSha256": "2da76947f4080abbb2314d5b37d40983cb315d6f731736ae7a60e27a8ed9999e"
+    },
+    {
+      "path": "docs/DECISIONS_LEDGER.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "79bc32e119fc7b9e4b45a8a082bf55ed46cb6eca",
+      "baseRawSha256": "829477e61f57b1b39e2cb8aeb3e2361da1a4a5fb9f4ce03b925948839751a28b",
+      "candidateGitBlobSha1": "1ce023813bfd2423d271b957f918ab6695cce609",
+      "candidateRawSha256": "58d0fc4fad2ed7e4fde00c27ece4cfcd73d20e2510a0f7282ba3574ccbf89f46"
+    },
+    {
+      "path": "docs/operations/CB-M00-CLOUDFLARE-PREVIEW.md",
+      "changeType": "M",
+      "baseGitBlobSha1": "c65eca6a10b6ce1dc56ce3d995b485e26217eb0e",
+      "baseRawSha256": "8e0f5c42e4654ea60381af07f17387ce431186afbb879d192817deeeee405434",
+      "candidateGitBlobSha1": "28f487281d7c1db60f97147d9f0c947b6488f50c",
+      "candidateRawSha256": "347e01699e52aa5cb0c2d6e35fe574e0d67d2574ab008c08215cbb2d3320ba3b"
+    },
+    {
+      "path": "scripts/collect-m00-preview-evidence.mjs",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "616851d5b2840e9a1c83b59192c04f3218e767bc",
+      "candidateRawSha256": "7d0b3556d9fc15f4438850df2d65b58399956480d381d97d3cf3036a5a38d7cd"
+    }
+  ]
+}

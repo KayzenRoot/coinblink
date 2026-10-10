@@ -67,3 +67,9 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-042 | Bounded CoinBlink M00 source pack | USER APPROVED M00 ONLY / FORMALLY ADMITTED | Owner approval at PR #30 comment `6067708856`, for source HEAD `84f6c02a119259806d230470efc115162d733855`; approval covers the bounded M00 Scope/Requirements/Architecture/Security/DoD only. PR #32 admits execution of this scope; global Issue #6 remains open |
 | CB-DEC-043 | Formal admission candidate for CB-M00-WO-001 | ADMITTED / CB-GOV-005 MERGED | PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`, admitting only M00. At the merge base, application implementation is `NOT_STARTED` at 0%; CB-M01..CB-M17 remain `NOT_ADMITTED`, CB-M18 remains `FUTURE_NOT_ADMITTED`, and Issue #6 stays open |
 
+## Owner-directed governance proposal · 2026-10-09
+
+| ID | Topic | State | Current authority / details |
+|---|---|---|---|
+| CB-DEC-044 | Bounded solo-maintainer review policy | USER-DIRECTED / PROPOSED / NOT EFFECTIVE UNTIL MERGE | Owner direction is recorded in Issue #45 and PR #44 comment [6091952619](https://github.com/KayzenRoot/coinblink/pull/44#issuecomment-6091952619). The exception is prospective and limited to LOW/STANDARD work after an objective technical audit by a non-executing reviewer, exact-HEAD CI, complete evidence, closed findings, and an Owner go/no-go for that exact SHA. A review by the PR author remains COMMENTED / NOT_INDEPENDENT_GITHUB_APPROVE; never manufacture a GitHub approval or bypass any enforced rule. ELEVATED/HIGH_ASSURANCE work, including this governance-rule change, requires qualified independent assurance and heightened proof. The proposal does not alter GEF, product Scope/DoD, checkpoint, the 19-module registry, M00 P1/provider gates, or deployment authority. It becomes operative only after PR #46 satisfies its ELEVATED audit and normal merge/read-back; existing policy remains in force until then. |
+

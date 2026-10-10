@@ -34,3 +34,13 @@ The manual, protected Preview workflow [#38049696879](https://github.com/KayzenR
 
 Frozen v1.0 Golden Home and original logo remain above all new v2 page sketches in visual authority. Draft v2 visual docs, page coverage matrix, settings/security and media engine proposals merged under docs/design/ in PR #28; they are **not approved screenshots, product Scope/DoD or code instructions**. CB-M17 and CB-M18 remain NOT ADMITTED. One Owner V1 security directive supersedes any proposed multi-human admin RBAC found in earlier planning docs. Root encryption/bootstrap material is never saved in ordinary site Settings DB.
 
+## Proposed review-policy clarification · CB-GOV-SOLO-001
+
+**Status: PROPOSED / OWNER-DIRECTED / NOT EFFECTIVE UNTIL AUTHORIZED MERGE.** This addendum is part of the candidate governance PR #46. It has no effect on this branch and becomes prospective policy only when the ADR-CB-0003, this clarification, and its append-only Decisions Ledger record pass their ELEVATED review and are merged together through the normal GitHub process. Until then, existing review requirements remain in force.
+
+If adopted, LOW/STANDARD work still requires an objective technical audit by a reviewer other than the implementation executor, exact-HEAD required checks, traceable evidence, closed findings, and a separate Owner go/no-go tied to the exact HEAD. This clarifies only the acceptance record where a distinct-human GitHub APPROVE is unavailable and no GitHub-enforced rule requires one. An Owner-authored COMMENTED review remains NOT_INDEPENDENT_GITHUB_APPROVE; do not mislabel it, change identities, bypass branch protection, or ignore any GitHub-required review or status.
+
+This exception does not apply to ELEVATED or HIGH_ASSURANCE work, including governance-rule changes, money or billing, Web3/signing, privileged authentication, irreversible changes, production/provider mutations, or critical security. Those require qualified independent assurance, stronger proof, and any separate Owner/provider authorization. If risk is ambiguous, use the stricter class. GEF and other higher-priority authority prevail; this clarification does not change Scope, DoD, checkpoint, module admission, provider approval, or deployment authority.
+
+The 2026-10-09 status paragraphs above and dated status narratives in other documents are historical snapshots. For current state, the actual live GitHub state and promoted checkpoint control according to authority items 1 and 2; do not read a stale narrative as a current admission, review, or deployment fact. A rejection or changed source requires a corrected proposal, refreshed Context Lock/evidence, and a new exact-HEAD audit; there is no automatic or retroactive acceptance.
+

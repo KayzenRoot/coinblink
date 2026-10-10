@@ -176,19 +176,23 @@ export function parseGateEvidence(raw) {
   return parsed;
 }
 
-/** Returns true only for a status line explicitly recording global approval and freeze. */
-export function isGlobalApprovalStatus(document) {
-  if (typeof document !== 'string') return false;
-  const statusLine = document.split(/\r?\n/u).find(line => line.startsWith('**Status:'));
-  if (!statusLine) return false;
-  const statusText = statusLine.slice('**Status:'.length);
+/** Reads one explicitly labeled status value and strips its Markdown formatting. */
+function readExactStatusValue(document, prefix) {
+  if (typeof document !== 'string') return null;
+  const statusLine = document.split(/\r?\n/u).find(line => line.startsWith(prefix));
+  if (!statusLine) return null;
+  const statusText = statusLine.slice(prefix.length);
   const closingMarker = statusText.indexOf('**');
-  const status = (closingMarker === -1 ? statusText : statusText.slice(0, closingMarker))
+  return (closingMarker === -1 ? statusText : statusText.slice(0, closingMarker))
     .replaceAll('`', '')
     .trim()
     .replace(/\.$/u, '')
     .trim();
-  return status === 'OWNER_APPROVED_GLOBAL / FROZEN';
+}
+
+/** Returns true only for a status line explicitly recording global approval and freeze. */
+export function isGlobalApprovalStatus(document) {
+  return readExactStatusValue(document, '**Status:') === 'OWNER_APPROVED_GLOBAL / FROZEN';
 }
 
 /** Reads a source document and checks its explicit global-approval status line. */
@@ -199,17 +203,7 @@ function hasGlobalApprovalStatus(file) {
 
 /** Accepts only the exact current status for Owner-approved ADR adoption. */
 export function isParallelAdrApproved(document) {
-  if (typeof document !== 'string') return false;
-  const statusLine = document.split(/\r?\n/u).find(line => line.startsWith('**Status:**'));
-  if (!statusLine) return false;
-  const statusText = statusLine.slice('**Status:**'.length);
-  const closingMarker = statusText.indexOf('**');
-  const status = (closingMarker === -1 ? statusText : statusText.slice(0, closingMarker))
-    .replaceAll('`', '')
-    .trim()
-    .replace(/\.$/u, '')
-    .trim();
-  return status === 'ADOPTED / OWNER_APPROVED';
+  return readExactStatusValue(document, '**Status:**') === 'ADOPTED / OWNER_APPROVED';
 }
 
 /** Checks only the ADR's current status line for an Owner-approved adoption. */

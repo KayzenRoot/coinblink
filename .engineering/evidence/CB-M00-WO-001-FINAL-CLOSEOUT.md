@@ -1,6 +1,6 @@
 # Final M00 closeout Evidence Bundle · CB-M00-WO-001
 
-**State:** `EVIDENCE_RECONCILED / CURRENT-MAIN PREVIEW ENVIRONMENT APPROVAL PENDING / CHECKPOINT DELTA PROPOSED / M00 NOT DONE`.
+**State:** `EVIDENCE_RECONCILED / EXISTING APPROVED PREVIEW REUSED FOR UNCHANGED APP / CHECKPOINT DELTA PROPOSED / M00 NOT DONE`.
 **Repository:** `KayzenRoot/coinblink`.
 **Work Order:** `CB-M00-WO-001` (existing; no new Work Order).
 **Canonical base:** `main` SHA `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`.
@@ -12,7 +12,7 @@
 
 - PR #49 merged to `main` at `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`. The six PR-head checks and five post-merge checks succeeded; exact commit check-runs were SonarCloud, Socket Project Report, Ubuntu+GEF, Windows+GEF, and Docker Compose.
 - Current main CI is green at the exact base SHA. The app/build inputs listed in the immutable P1 bundle did not change between deployed app SHA `e8886e21c6f152ca374b1e42852c6b6638543f40` and current main base `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`.
-- Fresh official protected workflow [#38068609949](https://github.com/KayzenRoot/coinblink/actions/runs/38068609949) was dispatched on `main` at exact SHA `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`. `Exact-main local preflight` completed `SUCCESS`, including exact checkout/main, Node 22.19.0/npm 10.9.3, `npm ci --ignore-scripts`, high-severity audit, lint, typecheck, Chromium install, `npm test`, browser/a11y and GEF checks. The second job is `WAITING` at protected Environment `cloudflare-preview`; it has not executed. No deployment result, new URL, or current-SHA Preview is claimed until the normal reviewer approves and the workflow completes.
+- Additional exact-main workflow [#38068609949](https://github.com/KayzenRoot/coinblink/actions/runs/38068609949) ran on `main` at `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`. Its exact-main preflight completed `SUCCESS` (Node 22.19.0/npm 10.9.3, dependency audit, lint, typecheck, Chromium, tests/build/a11y and GEF). The protected job was canceled before any provider step after confirming the Owner's reuse decision in [Issue #6 comment 6099111571](https://github.com/KayzenRoot/coinblink/issues/6#issuecomment-6099111571). No Cloudflare action or deployment occurred; the existing successful Preview is reused because application/build inputs are unchanged.
 
 ## Existing isolated Preview evidence
 
@@ -43,7 +43,7 @@ Authenticated dashboard inspection was limited to the existing account and dedic
 - Workers & Pages listed one Worker, `coinblink-m00-preview` (the list showed 1–1 of 1). The page showed 274 of 100,000 requests for the displayed day and billable usage `$0.00` for September 14–October 14. This is a point-in-time observation only; it is not a hard account-wide cost ceiling and says nothing about unrelated account services.
 - The base Worker Overview showed `Bindings 0`, no custom domains/routes, and only the `workers.dev` hostname. The selected Preview `coinblink-m00-run-38049696879-1` showed exactly one binding: Assets / `ASSETS`. No D1, KV, R2, Queue, Service or SESSION binding was present in that Preview inventory. No R2 access or modification occurred.
 - The existing `$10` alert remains informational and unchanged under Owner decision [Issue #36 comment 6099048180](https://github.com/KayzenRoot/coinblink/issues/36#issuecomment-6099048180). A hard monthly account-wide `$0` cap is **not** a Free-stage gate. No Paid upgrade, billing change, production deployment, secret change, or other Worker modification occurred.
-- The fresh current-main workflow cannot proceed to its deployment job until the protected GitHub Environment review is completed; this bundle does not call that gate approved.
+- No Environment approval is pending for the canceled run. A new deployment is unnecessary while app/build inputs remain unchanged under the Owner's explicit reuse decision; any future app/build change requires a separate protected run approval.
 
 ## Local Windows Docker preview
 
@@ -58,9 +58,9 @@ The project-owned Compose service is healthy at [http://localhost:3187/en](http:
 | Real Preview stable/immutable URLs, HTTPS, routes, 404, noindex/security headers, Playwright/axe desktop/tablet/mobile | `VERIFIED FOR DEPLOYED SHA e8886e2` | Prior successful workflow and retained SHA256 evidence listed above. |
 | Workers Free, scoped dedicated Worker, provider binding isolation, no production/R2 binding | `VERIFIED READ-ONLY` | Current dashboard inspection; one static Assets binding in Preview and zero base Worker bindings. |
 | M00 technical demo visual Owner acceptance | `VERIFIED` | Direct Owner approval in this conversation applies to the three existing captures only; not Golden parity. |
-| Exact current-main Preview workflow on `bd5eea7` | `PENDING` | Run #38068609949 preflight passed; protected Environment reviewer is still required. |
+| Existing protected Preview for unchanged app/build | `VERIFIED / REUSED` | Run #38049696879 validates exact app SHA `e8886e2...`; no app/build-input diff exists through `bd5eea7`, and the Owner directed reuse at Issue #6 comment 6099111571. Extra run #38068609949 was canceled before provider action. |
 | Independent final audit of this closeout PR and final checkpoint target | `PENDING` | Must be performed on the final PR SHA by a separate read-only auditor. |
-| Checkpoint promotion and M00 canonical completion | `PENDING` | Proposed only in `CB-M00-WO-001-FINAL-CHECKPOINT-DELTA.md`; requires current Preview, exact-head audit, Owner approval of the integer progress rule and normal merge. |
+| Checkpoint promotion and M00 canonical completion | `PENDING` | Proposed only in `CB-M00-WO-001-FINAL-CHECKPOINT-DELTA.md`; requires reuse-valid Preview evidence for unchanged app/build, exact-head audit, Owner approval of the integer progress rule and normal merge. |
 | Global multi-module Scope/Architecture/DoD and parallel-delivery ADR adoption | `PENDING` | Issue #6 remains open; ADR-CB-0002/PR #46 is not adopted. It does not block M00-only demo evidence, but it blocks future module admission. |
 | Original M01 Golden Home/logo assets | `BLOCKED` | Issue #5 manifest still says `presentInGit=false` for both originals. M01 stays not admitted. |
 
@@ -70,7 +70,7 @@ The proposal matrix still contains exactly 19 module identities, CB-M00 through 
 
 ## Proposed Checkpoint Delta
 
-See `.engineering/evidence/CB-M00-WO-001-FINAL-CHECKPOINT-DELTA.md`. It leaves the canonical checkpoint unchanged in this PR and proposes `M00_COMPLETE`, `completedThroughModule=CB-M00`, a conservative `floor(1/19 × 100)=5%` module-count indicator, and `PREVIEW_VERIFIED` only after the current-main protected run passes. This value is not effective and the existing canonical checkpoint remains 0% until the Owner approves the exact candidate after the final audit.
+See `.engineering/evidence/CB-M00-WO-001-FINAL-CHECKPOINT-DELTA.md`. It leaves the canonical checkpoint unchanged in this PR and proposes `M00_COMPLETE`, `completedThroughModule=CB-M00`, a conservative `floor(1/19 × 100)=5%` module-count indicator, and `PREVIEW_VERIFIED` based on run #38049696879 plus unchanged app/build inputs through current main, following Owner direction in Issue #6 comment 6099111571. This value is not effective and the existing canonical checkpoint remains 0% until the Owner approves the exact candidate after the final audit.
 
 ## Validation record
 
@@ -87,4 +87,4 @@ Local validation was executed in the isolated candidate worktree with Node `v22.
 | GEF 1.1.2 `status --target . --json` via local `gef.cmd` | Exit 0; reports canonical checkpoint M00 admitted, 0%, and no stop state. Repository dirtiness is `UNKNOWN`; absent baseline and conservative operator-staleness warning are retained, not suppressed. |
 | Docker local smoke | PASS; project-owned container healthy on `127.0.0.1:3187`, `/health` and `/preview-status` both return exact base SHA `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`. |
 
-`npm run gef -- ...` initially failed due PowerShell forwarding the arguments incorrectly (`Unknown command: "pm"`); no source was changed by that failed invocation. Direct invocation of the pinned local GEF executable succeeded as recorded above. The current-main preflight run is a separate exact-main result, not candidate-branch CI. Candidate GitHub check-runs, CodeRabbit, qualified independent review and the final candidate fingerprint set must be read back at the pushed PR's exact final SHA; do not copy historic or base-SHA results into a new-head claim.
+`npm run gef -- ...` initially failed due PowerShell forwarding the arguments incorrectly (`Unknown command: "pm"`); no source was changed by that failed invocation. Direct invocation of the pinned local GEF executable succeeded as recorded above. Run #38068609949 is a separate exact-main preflight result, canceled before provider action per the Owner's reuse instruction; it is not candidate-branch CI. Candidate GitHub check-runs, CodeRabbit, qualified independent review and the final candidate fingerprint set must be read back at the pushed PR's exact final SHA; do not copy historic or base-SHA results into a new-head claim.

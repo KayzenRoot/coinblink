@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parsePreviewOutput } from "../scripts/record-preview-output.mjs";
+import { parsePreviewOutput, parsePreviewOutputEvents } from "../scripts/record-preview-output.mjs";
 import { CLOUDFLARE_PREVIEW_WORKER_NAME } from "../scripts/cloudflare-preview-policy.mjs";
 
 const previewName = "coinblink-m00-run-123-1";
@@ -18,6 +18,26 @@ const validOutput = {
     urls: [`https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`],
   },
 };
+const validPreviewEvent = {
+  type: "preview",
+  version: 1,
+  worker_name: CLOUDFLARE_PREVIEW_WORKER_NAME,
+  preview_id: validOutput.preview.id,
+  preview_name: validOutput.preview.name,
+  preview_slug: validOutput.preview.slug,
+  preview_urls: validOutput.preview.urls,
+  deployment_id: validOutput.deployment.id,
+  deployment_urls: validOutput.deployment.urls,
+  timestamp: "2026-10-09T00:00:00.000Z",
+};
+const validSessionEvent = {
+  type: "wrangler-session",
+  version: 1,
+  wrangler_version: "4.149.0",
+  command_line_args: ["preview", "--json"],
+  log_file_path: "/tmp/wrangler.log",
+  timestamp: "2026-10-09T00:00:00.000Z",
+};
 
 function parseMockCliOutput(output, expected = previewName) {
   return parsePreviewOutput(JSON.stringify(output, null, 2), expected);
@@ -28,6 +48,57 @@ test("accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resou
     previewUrl: `https://${previewName}-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
     deploymentUrl: `https://deployment-id-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`,
   });
+});
+
+test("accepts Wrangler 4.149.0 structured output-file events and exact dedicated Worker identity", () => {
+  const eventStream = `${JSON.stringify(validSessionEvent)} ${JSON.stringify(validPreviewEvent)} `;
+  assert.deepEqual(parsePreviewOutputEvents(eventStream, previewName), {
+    previewUrl: validOutput.preview.urls[0],
+    deploymentUrl: validOutput.deployment.urls[0],
+  });
+});
+
+test("structured output events reject wrong Worker, Preview name, and URL identities", () => {
+  assert.throws(
+    () => parsePreviewOutputEvents(JSON.stringify({ ...validPreviewEvent, worker_name: "coinblink-production" }), previewName),
+    /different Worker/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(JSON.stringify({ ...validPreviewEvent, preview_name: "another-preview" }), previewName),
+    /Preview name/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(JSON.stringify({ ...validPreviewEvent, deployment_id: "different-id" }), previewName),
+    /hostname does not match the returned/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(JSON.stringify({ ...validPreviewEvent, preview_urls: [validOutput.deployment.urls[0]] }), previewName),
+    /hostname does not match the returned/,
+  );
+});
+
+test("structured output event stream rejects missing, duplicate, malformed, and unrelated records", () => {
+  assert.throws(() => parsePreviewOutputEvents("", previewName), /did not write structured output events/);
+  assert.throws(
+    () => parsePreviewOutputEvents(`${JSON.stringify(validPreviewEvent)} ${JSON.stringify(validPreviewEvent)}`, previewName),
+    /exactly one Preview output event/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(`${JSON.stringify(validSessionEvent)} {"type":`, previewName),
+    /incomplete JSON/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(`${JSON.stringify(validPreviewEvent)} unexpected output`, previewName),
+    /data outside JSON objects/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(`${JSON.stringify(validSessionEvent)} ${JSON.stringify({ type: "command-failed", version: 1 })}`, previewName),
+    /unsupported event type/,
+  );
+  assert.throws(
+    () => parsePreviewOutputEvents(JSON.stringify({ ...validSessionEvent, version: 2 }), previewName),
+    /unsupported session event sequence/,
+  );
 });
 
 test("rejects output targeting a different Worker or Preview name", () => {

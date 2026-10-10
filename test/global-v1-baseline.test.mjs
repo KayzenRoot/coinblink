@@ -22,7 +22,7 @@ test('approved staged baseline does not admit a new module', () => {
 });
 
 test('Golden bytes, single Owner and source-backed article still have hard module gates', () => {
-  assert.match(read('.engineering/SCOPE.md'), /original Golden JPEGs/);
+  assert.match(read('.engineering/SCOPE.md'), /original hash-verified JPEGs/);
   assert.match(read('.engineering/ARCHITECTURE.md'), /single-use activation invitation/);
   assert.match(read('.engineering/DEFINITION-OF-DONE.md'), /source-backed/);
   assert.match(read('.engineering/ARCHITECTURE.md'), /separately/);

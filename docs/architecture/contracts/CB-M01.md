@@ -2,7 +2,7 @@
 
 **Status:** PROPOSED / NOT_APPROVED / NOT_ADMITTED / NON_EXECUTABLE.
 **Contract owner if admitted:** CB-M01. **Consumer dependencies:** CB-M02, CB-M13 and explicitly versioned other consumers after their own WOs.
-**Source base:** `842fc5a0e54bdaed37066abd830fd1b346368b2b` (M00 COMPLETE, 5%). Actual global V1 source status is still determined from `main`, **not from unmerged PR #53**. Golden originals appear only in unmerged PR #54 at preparation time.
+**Source base:** `d8233772a80b613015284309a30657ba576a1b4f` (M00 COMPLETE, 5%). Global staged V1 source/parallelism PR #53 is merged, and byte-identical original Golden assets PR #54 is merged. The main Git blob hashes and canonical per-file manifest flags have been verified; M01 itself remains NOT_ADMITTED until a separate GEF Work Order/Context Lock.
 
 ## Immutable inputs and gate
 
@@ -11,7 +11,7 @@
 | Golden Home JPEG | `assets/reference/coinblink-home-master-dark-1536x864.jpg` | 1536×864 | `82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8` |
 | Approved Logo JPEG | `assets/reference/coinblink-logo-approved-original-1179x1040.jpg` | 1179×1040 | `126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0` |
 
-**Blocking:** `main` must contain byte-identical, decoded original files and `presentInGit=true` for both. Asset PR #54 passing CI alone is not canonical import. Never flatten the entire screenshot as page markup or copy it as a background; implement actual editable, accessible semantic components.
+**Blocking:** `main` must contain byte-identical, decoded original files and `presentInGit=true` for both. Asset PR #54 was merged and its original-byte identifiers are present in canonical main; repeat byte validation before admission. Never flatten the entire screenshot as page markup or copy it as a background; implement actual editable, accessible semantic components.
 
 ## Version-0 draft content interface (contract only, not compiled TypeScript)
 

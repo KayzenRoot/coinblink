@@ -2,7 +2,7 @@
 
 **Status:** PROPOSED / NOT_APPROVED / NOT_ADMITTED / NON_EXECUTABLE.
 **Contract owner if admitted:** CB-M05. **Consumers:** M02 article read model, M03 source ingestion, M07/M08/M09/M10/M11/M13/M17 as admitted by actual dependency DAG.
-**Source base:** `842fc5a0e54bdaed37066abd830fd1b346368b2b`, M00 COMPLETE/5%. The staged global source/ADR PR #53 is still not in main at drafting time. This document freezes **no** auth implementation vendor or Cloudflare resource.
+**Source base:** `d8233772a80b613015284309a30657ba576a1b4f`, M00 COMPLETE/5%. The staged global source/ADR PR #53 is merged into main; Issue #6 is closed. This proposal is still NOT_ADMITTED until an individual GEF Work Order and Context Lock. M05 P1 authentication/security implementation choices remain gated. This document freezes **no** auth implementation vendor or Cloudflare resource.
 
 ## Security boundary (P0 is not working auth)
 

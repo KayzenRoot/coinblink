@@ -43,7 +43,7 @@ Git blob SHA-1 and raw blob SHA-256 are computed from the exact base commit's Gi
 | `test/cloudflare-preview-output.test.mjs` | `fb9bf318038666686f58824a80570511837cfae2` | `48025009e30b685abfa65ad9ceb783bc627fabdb76c1780aa60ee253f4dbc819` |
 | `package.json` | `77391db66af630f8dc8463f1c90f903356533322` | `0c16820bff7fb5d8cc99b6e18f451b6fe458e835d4a7b2412c1aafd1f3d07438` |
 | `package-lock.json` | `bf984890253d1fc09c8cda60adf98c10e9ec4e15` | `79255c007f327d69714b76ba401e87261ae557f725af89a117b5afd609be3bd8` |
-| `wrangler.jsonc` | `980a4af6a5c3cd40a37797ad53d27530a54bbbe2` | `9e384a485e0bb610da3dd06160da2bfad2bfba807166e6f6d7d38a8e0c0dfba046` |
+| `wrangler.jsonc` | `980a4af6a5c3cd40a37797ad53d27530a54bbbe2` | `9e384a485e0bb610da3dd06160da2bfad2bfba807166e6f7d38a8e0c0dfba046` |
 
 ## Exit gates
 

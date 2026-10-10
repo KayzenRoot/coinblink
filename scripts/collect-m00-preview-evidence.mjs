@@ -4,6 +4,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
+import { createPreviewEvidenceRouteHandler } from "./preview-evidence-origin-guard.mjs";
 
 /* global document, getComputedStyle, window */
 
@@ -19,6 +20,8 @@ const viewports = [
   { name: "mobile-390x844", width: 390, height: 844 },
 ];
 const blockedOrigins = [];
+const blockedRedirects = [];
+const routeFetchErrors = [];
 const consoleErrors = [];
 const intentional404ConsoleMessages = [];
 const pageErrors = [];
@@ -41,6 +44,8 @@ const results = {
   routes: [],
   viewports: [],
   blockedOrigins,
+  blockedRedirects,
+  routeFetchErrors,
   consoleErrors,
   intentional404ConsoleMessages,
   pageErrors,
@@ -81,21 +86,16 @@ async function goTo(page, origin, pathname) {
 }
 
 async function instrumentPage(page) {
-  await page.route("**/*", async (route) => {
-    const requestedUrl = new URL(route.request().url());
-    if (requestedUrl.protocol !== "https:" || !allowedOrigins.has(requestedUrl.origin)) {
-      blockedOrigins.push(requestedUrl.origin);
-      await route.abort();
-      return;
-    }
-    await route.continue();
-  });
+  await page.route(
+    "**/*",
+    createPreviewEvidenceRouteHandler({ allowedOrigins, blockedOrigins, blockedRedirects, routeFetchErrors }),
+  );
   page.on("console", (message) => {
     if (message.type() !== "error") return;
     const entry = { text: message.text(), url: page.url(), location: message.location() };
     if (
       entry.url === `${stableOrigin}/m00-closeout-intentional-404` &&
-      entry.text === "Failed to load resource: the server responded with a status of 404 ()"
+      /^Failed to load resource: the server responded with a status of 404(?: \(Not Found\))?$/.test(entry.text)
     ) {
       intentional404ConsoleMessages.push(entry);
       return;
@@ -144,7 +144,7 @@ try {
   const healthResponse = await goTo(page, stableOrigin, "/health");
   assert.equal(healthResponse.status(), 200, "stable /health HTTP status");
   const health = await healthResponse.json();
-  assert.deepEqual(Object.keys(health).sort(), ["buildSha", "environment", "service", "status"]);
+  assert.deepEqual(Object.keys(health).sort((left, right) => left.localeCompare(right, "en")), ["buildSha", "environment", "service", "status"]);
   assert.deepEqual(health, {
     status: "ok",
     service: "coinblink",
@@ -263,7 +263,9 @@ try {
     await viewportContext.close();
   }
 
-  assert.deepEqual(blockedOrigins, [], "no cross-origin navigation or resource was attempted");
+  assert.deepEqual(blockedOrigins, [], "no disallowed cross-origin navigation or resource was attempted");
+  assert.deepEqual(blockedRedirects, [], "no redirect was followed from a Preview document or resource");
+  assert.deepEqual(routeFetchErrors, [], "all allowed Preview requests returned a response without transport errors");
   assert.deepEqual(consoleErrors, [], "browser console errors outside the intentional 404 document");
   assert.ok(intentional404ConsoleMessages.length <= 1, "intentional 404 route produced too many console errors");
   assert.deepEqual(pageErrors, [], "uncaught browser errors");
@@ -286,7 +288,7 @@ try {
       `- Stable origin: ${stableOrigin}`,
       `- Immutable origin: ${immutableOrigin}`,
       `- Browser: Playwright ${results.playwrightVersion} / axe-playwright ${results.axePlaywrightVersion} / Chromium ${results.browserVersion}, fresh isolated contexts, HTTPS validation enabled, no profile/cookies/CDP attach`,
-      `- Checks: exact-SHA /health on both origins, /preview-status contract, /robots.txt, real 404, security headers, noindex, three viewport layouts, axe WCAG 2.1 A/AA, keyboard focus, console/page/network errors, same-origin-only requests`,
+      `- Checks: exact-SHA /health on both origins, /preview-status contract, /robots.txt, real 404, security headers, noindex, three viewport layouts, axe WCAG 2.1 A/AA, keyboard focus, console/page/network errors, exact-origin allowlist and redirect blocking for documents and resources`,
       `- Screenshots and SHA-256 values: see RESULTS.json and SHA256SUMS.txt.`,
     ].join("\n") + "\n",
     "utf8",

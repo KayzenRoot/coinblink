@@ -18,7 +18,7 @@
 
 ## Bounded write set
 
-1. Add one isolated evidence collector under `scripts/collect-m00-preview-evidence.mjs`; it has no application runtime role/dependency and only requests the two exact Preview HTTPS origins. It blocks every other origin and stops before output when exact-SHA `/health` fails.
+1. Add one isolated evidence collector under `scripts/collect-m00-preview-evidence.mjs`, its strict exact-origin/redirect guard under `scripts/preview-evidence-origin-guard.mjs`, and focused local redirect regression tests under `test/`; these have no application runtime role/dependency. The collector only requests the two exact Preview HTTPS origins, rejects other origins, blocks 3xx responses before navigation or resources can follow them, and stops before output when exact-SHA `/health` fails. The insecure-loopback exception exists only as an explicit test option and is disabled in the collector.
 2. Add the three actual responsive PNGs and machine-readable/log/hash outputs under `.engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/`.
 3. Add the closeout Evidence Bundle, no-promotion proposed Checkpoint Delta, immutable-base fingerprint manifest, candidate fingerprint manifest and this Context Lock.
 4. Append dated status corrections to `AGENTS.md`, `.engineering/SOURCE-HIERARCHY.md`, `.engineering/CHECKPOINT.md`, `.engineering/DEFINITION-OF-DONE.md`, `.engineering/work-orders/CB-M00-WO-001.md`, `.engineering/evidence/CB-M00-WO-001-EVIDENCE.md`, earlier non-lock P1 Evidence Bundles, `docs/DECISIONS_LEDGER.md`, ADR-CB-0001, and the Cloudflare operations guide. Older Context Locks and dated event narratives are preserved.
@@ -66,7 +66,7 @@ Git blob SHA-1 is calculated over the Git blob header and exact base bytes; raw 
 
 ## Validation and exit gates
 
-- Collector must pass exact stable and immutable `/health` SHA gates before screenshots, preserve HTTPS validation and origin allowlist, verify route/security/noindex, exact PNG IHDR dimensions, axe, responsive overflow, keyboard focus, console/page/network error counts, and output SHA-256 hashes.
+- Collector must pass exact stable and immutable `/health` SHA gates before screenshots, preserve HTTPS validation and exact-origin allowlist, prove redirects are blocked for documents/resources, verify route/security/noindex, exact PNG IHDR dimensions, axe, responsive overflow, keyboard focus, console/page/network error counts, and output SHA-256 hashes.
 - Run repository unit/browser tests, lint, typecheck, build, security audit and GEF 1.1.2 doctor/status; record that the local shell uses Node 24 if pinned Node 22.19/npm 10.9.3 cannot be selected. Exact-head PR CI uses the repository-pinned runtime.
 - Verify exact remote Preview run/commit/check state without triggering a new deployment. Do not reuse the deploy token to inspect billing or provider bindings.
 - Open one PR under this same Work Order; require exact-head CI and independent review. Do not merge, promote checkpoint, mark M00 done, or start M01+.

@@ -8,7 +8,7 @@
   "fingerprintAlgorithm": "Git blob SHA-1 and raw-byte SHA-256 from the Git index",
   "selfReferenceExcluded": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-FINGERPRINTS.json",
   "changeCounts": {
-    "added": 11,
+    "added": 13,
     "modified": 12,
     "deleted": 0
   },
@@ -26,8 +26,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "9a1f1116d19923010ba1628e21b3e0fe9ecad626",
-      "candidateRawSha256": "e2d41a5b76ccb40f2473fb6f6b3f3cce74ffe836ec272bb5a9b3ba2467e01791"
+      "candidateGitBlobSha1": "84364b9958032a88b23d4721268cb8a7b3f5f70e",
+      "candidateRawSha256": "4e6f0c6965b90e0325d301bb6aa84e5415e4967bc572bb2acd2b3ef1c84a5267"
     },
     {
       "path": ".engineering/DEFINITION-OF-DONE.md",
@@ -74,8 +74,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "b58b75af4f2534a6387768cec48cf73745131e97",
-      "candidateRawSha256": "25e039b47302d74d1465141447fe9a92db317e494e673529be0dd0f95db18741"
+      "candidateGitBlobSha1": "89a20e570f3d2b05a3ea697029fe6f56d6c54bba",
+      "candidateRawSha256": "4ca98618c4adcac09b0021b0a575665b8db8e397fb7f6f3f7c6f2da4d00e0b6d"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
@@ -106,24 +106,24 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "80c26f624bd306c0049aad4786a0152ee9d4cffc",
-      "candidateRawSha256": "c4c976680bc1137197c7c98946277d4b1783dc135f8209ad490196f86f7895d6"
+      "candidateGitBlobSha1": "79673e20e0d75834d71b832a553fe4743ed8abfa",
+      "candidateRawSha256": "5981fc11d4b57b90df53b15d19f9fc0b276ddaf5f0017b208f8494e0578a235f"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/RESULTS.json",
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "7e84a7f3c8e05a8852374687e1332c17d93a402e",
-      "candidateRawSha256": "03459fdc50e5897fa16a954cfb7f2e3cea469dbe580651c68eeb26662d2ac5ee"
+      "candidateGitBlobSha1": "91457e80d4881af3de1c38eb0e0aa6b0c1ebcab2",
+      "candidateRawSha256": "d982d60d43e838249ab38a7a4eca5eddaf8624b2e9793c59339c849fb85c0e4f"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/SHA256SUMS.txt",
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "f19b42ba1b6b71f07ab028357724465e4e2650fd",
-      "candidateRawSha256": "8b75d7e8baa7053e701266b552ce667ee19cfb2c218386479c34ff1c1c2dcdc0"
+      "candidateGitBlobSha1": "5a96189015548bd33feae8dea8af40845cf971db",
+      "candidateRawSha256": "86916e0b803343afc19505a1afec52fd5971c2cb64af6ba62c49f47e9e745540"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/tablet-768x1024.png",
@@ -194,8 +194,24 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "616851d5b2840e9a1c83b59192c04f3218e767bc",
-      "candidateRawSha256": "7d0b3556d9fc15f4438850df2d65b58399956480d381d97d3cf3036a5a38d7cd"
+      "candidateGitBlobSha1": "c10ceba50ed8e4e5e1d63d8faf48bd7c34afe155",
+      "candidateRawSha256": "6d56c5330ff183c688f21687e405e1faff9ee67dfda88feee333535245743c8a"
+    },
+    {
+      "path": "scripts/preview-evidence-origin-guard.mjs",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "14b3ad53fbaf28f2fd58adb4f16021fa01047fbb",
+      "candidateRawSha256": "9faa8234e298c14199e027e82b51b7d1df296b39be041c57981c74c9584c88a0"
+    },
+    {
+      "path": "test/preview-evidence-origin-guard.test.mjs",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "e4d1a071925f02cce3c401ac2020fb5eb30ccc0f",
+      "candidateRawSha256": "408e31748ff1757ba7cfc37c41ff3812e5f46203ee969b913ce3c6dfbf34de92"
     }
   ]
 }

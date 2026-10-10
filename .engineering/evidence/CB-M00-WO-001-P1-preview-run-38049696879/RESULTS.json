@@ -6,7 +6,7 @@
   "stableOrigin": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev",
   "immutableOrigin": "https://5ca9306c-coinblink-m00-preview.kayzendev.workers.dev",
   "browserContext": "fresh-isolated-context-no-profile-or-cookies",
-  "capturedAt": "2026-10-10T12:23:42.554Z",
+  "capturedAt": "2026-10-10T13:03:54.268Z",
   "browserVersion": "156.0.8078.4",
   "playwrightVersion": "1.64.0",
   "axePlaywrightVersion": "4.13.0",
@@ -174,10 +174,12 @@
     }
   ],
   "blockedOrigins": [],
+  "blockedRedirects": [],
+  "routeFetchErrors": [],
   "consoleErrors": [],
   "intentional404ConsoleMessages": [
     {
-      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
       "url": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev/m00-closeout-intentional-404",
       "location": {
         "url": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev/m00-closeout-intentional-404",

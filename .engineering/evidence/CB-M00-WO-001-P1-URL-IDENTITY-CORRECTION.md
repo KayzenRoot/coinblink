@@ -74,11 +74,14 @@ Wrangler's immutable hostname uses the first eight hexadecimal characters of its
 | `npm test` | PASS with Node.js `22.19.0` on `PATH`; 81/81 unit tests, Astro build and no-SESSION/data/service/production-binding guard, 7/7 Playwright tests. The first attempt without the pinned runtime directory on `PATH` failed because subprocess tests found system Node 24; it was rerun with the required pinned `PATH` and passed. |
 | `gef doctor --target . --json` | Exit 0; checkpoint/toolchain valid, but linked-worktree repository observation is `FINDING` with `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`; dependency provenance is `unverified` and GitHub policy is `REVIEW`. Not reported as a clean GEF pass. |
 | `gef status --target . --json` | Exit 0; checkpoint is readable and valid. Dirtiness is `UNKNOWN`, drift baseline absent, and stale operator projection is conservatively unknown because this is a linked worktree. |
-| Docker smoke / correction-PR exact-head CI / fresh CodeRabbit review | Pending final-head hosted checks for the correction PR. The existing five post-merge main checks passed before Preview run `38045607351`; they do not validate the correction candidate. |
+| Local Docker Compose smoke | PASS on final candidate SHA `f358f7a4fa499594eed0d106be29c78e9a65a7d4`, isolated project `coinblink-m00-p1-urlid-f358f7a`, alternate port `3187`; `/health` and `/preview-status` returned the exact SHA and the missing route returned 404. Only this temporary project was removed; existing containers were preserved. |
+| Exact-head correction PR checks | PASS on PR #47 SHA `f358f7a4fa499594eed0d106be29c78e9a65a7d4`, run `38047645192`: Ubuntu, Windows, Docker Compose smoke, SonarCloud, and both Socket checks. |
+| CodeRabbit final-head review | PASS; review completed for base `9c900fda5044c1cfa42934f20dcd3621a48cd613` to head `f358f7a4fa499594eed0d106be29c78e9a65a7d4`, run `76021d75-d475-4f35-9e2b-ffa8d8a9e7e7`, with no actionable comments. Its separate docstring-coverage advisory is informational and is not an admitted project gate. |
+| PR #47 state | OPEN and ready for Owner audit/merge; no merge or checkpoint promotion is claimed. The current five post-merge checks on canonical `main` remain successful at `9c900fda5044c1cfa42934f20dcd3621a48cd613`. |
 
 ## Required next gates
 
-1. Review and merge this bounded code correction through the normal PR process; no merge or checkpoint promotion is claimed here.
+1. Complete Owner audit and merge PR #47 through the normal PR process; no merge or checkpoint promotion is claimed here.
 2. Re-read current `main`, dispatch the existing protected Preview workflow on that exact SHA, and obtain the required per-run `cloudflare-preview` Environment approval.
 3. Require the official workflow to succeed end-to-end, including URL recording and both-origin checks. Revalidate the new run's actual stable/immutable origins, bindings, endpoints, headers, noindex, and screenshots before any P1 checkpoint promotion.
 4. Keep M00 `IMPLEMENTATION_IN_PROGRESS`, P1 pending, overall completion `0%`, and M01+ not admitted until all remaining DoD gates and the separately audited checkpoint process pass.

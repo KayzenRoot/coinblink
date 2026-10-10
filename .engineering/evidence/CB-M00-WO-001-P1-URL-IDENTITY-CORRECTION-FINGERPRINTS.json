@@ -33,8 +33,8 @@
       },
       {
         "path": ".engineering/evidence/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION.md",
-        "gitBlobSha1": "6f8fc2d36beaadc214002919f096d5bdefef1e6c",
-        "rawBlobSha256": "f222b8731f9c5ad787f8c596a89fe7c39c30579ec41c65683ef6865b81d12406"
+        "gitBlobSha1": "66262b7d98a92c655c3601820ec8ba6e6b86866a",
+        "rawBlobSha256": "fe50c3365c3f0d2826d92b58cdbbfdea8961f4b295f271af917d09715520b06f"
       },
       {
         "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-desktop-1536x864.png",
@@ -96,8 +96,17 @@
     "unitTests": "PASS 81/81",
     "buildAndBindingGuard": "PASS",
     "playwrightLocal": "PASS 7/7",
+    "dockerComposeSmoke": "PASS; isolated Docker Compose project coinblink-m00-p1-urlid-f358f7a on port 3187; exact build SHA f358f7a4fa499594eed0d106be29c78e9a65a7d4; health=200, preview-status=200 (not-deployed), missing-route=404; only this temporary project removed",
     "gefDoctor": "exit 0; repository observation FINDING; dependency provenance unverified; GitHub policy REVIEW",
     "gefStatus": "exit 0; checkpoint valid; dirtiness UNKNOWN; drift baseline absent"
+  },
+  "finalHeadGithub": {
+    "pr": 47,
+    "headSha": "f358f7a4fa499594eed0d106be29c78e9a65a7d4",
+    "checksRun": 38047645192,
+    "technicalChecks": "PASS: Ubuntu, Windows, Docker Compose smoke, SonarCloud, Socket Project Report, Socket PR Alerts",
+    "codeRabbit": "PASS; final-head review completed, no actionable comments; review run 76021d75-d475-4f35-9e2b-ffa8d8a9e7e7",
+    "prState": "OPEN_READY_FOR_OWNER_AUDIT; not merged"
   },
   "selfFingerprintNote": "This file is excluded from candidatePathSet to avoid recursive self-fingerprinting. Its final Git blob is available at the exact PR HEAD; the PR description and checks identify that immutable commit SHA."
 }

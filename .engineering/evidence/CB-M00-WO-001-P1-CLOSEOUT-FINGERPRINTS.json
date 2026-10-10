@@ -146,8 +146,8 @@
       "changeType": "M",
       "baseGitBlobSha1": "503257fb6af2c7d95b59f92b4b68fe62a9b8b08f",
       "baseRawSha256": "4e9cd445ecd5f8448e88c3faec1e3a0fbf1674aa9bb9ee15b531d5f10d8decb2",
-      "candidateGitBlobSha1": "0045ab20cfafa4b65890a4862019e5b7228bc2a4",
-      "candidateRawSha256": "cfbca902da8611b4182dbe1363fb0df133945aa6a1b2c9e72ba632cc4043b1ef"
+      "candidateGitBlobSha1": "91b658b1bb1b3a5482973005949e0faa087aeef5",
+      "candidateRawSha256": "ea8cee524482dd9e68a51b8b125a9d4970e7d60a87ddfdf412407bc3ba14bb8a"
     },
     {
       "path": ".engineering/work-orders/CB-M00-WO-001.md",
@@ -162,8 +162,8 @@
       "changeType": "M",
       "baseGitBlobSha1": "ac48525e1a586c65766922539d420fb8d37caccb",
       "baseRawSha256": "2c899a0ee1fd4b72f36b4e6446a5ff79f7662aed9c1a2766feba5bcc5cb9f68e",
-      "candidateGitBlobSha1": "27a3e498b69cc42c00272ef7971d9d2b5ec50bd7",
-      "candidateRawSha256": "6e7930d93ebeec6049229cd1d92c112db1bd23cd705a17f29523009de53393db"
+      "candidateGitBlobSha1": "cc40ac2995314a49a518a00630d2da0019a3fb5c",
+      "candidateRawSha256": "2d30f37c3877aa1fb0ab7c6c43dafa64fc4b7a7897aa023babc26bb45927642a"
     },
     {
       "path": "docs/architecture/ADR-CB-0001-M00-PREVIEWS-STACK.md",
@@ -178,8 +178,8 @@
       "changeType": "M",
       "baseGitBlobSha1": "79bc32e119fc7b9e4b45a8a082bf55ed46cb6eca",
       "baseRawSha256": "829477e61f57b1b39e2cb8aeb3e2361da1a4a5fb9f4ce03b925948839751a28b",
-      "candidateGitBlobSha1": "482ed150f95ab7dfe1ca6e1405e3846f06ee1289",
-      "candidateRawSha256": "c3757d96a0de56d52690e5a5408b3df6e082a30ffe9d6b1f6314087c112b4f2c"
+      "candidateGitBlobSha1": "1a1e8413a43310ad7c0757fd78c07ac40936b8e2",
+      "candidateRawSha256": "b6077f1bcfd20bb02d0c550d98e9cd70012a2d3142f4140dcd4ca2fcb51136da"
     },
     {
       "path": "docs/operations/CB-M00-CLOUDFLARE-PREVIEW.md",

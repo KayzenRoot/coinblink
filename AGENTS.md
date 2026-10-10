@@ -1,14 +1,5 @@
 # CoinBlink · Agent Operating Contract
 
-## Owner-approved immediate operating boundary · 2026-10-10
-
-**M00 financial gate updated, do not re-block:** Per [Owner decision, Issue #36 comment 6099048180](https://github.com/KayzenRoot/coinblink/issues/36#issuecomment-6099048180), **Workers Free is authorized now**. Keep existing **US$10 budget alert**, which is informational, not a hard ceiling. Do **not** require an effective US$0 account-wide monthly hard cap before continuing M00 on Free. Continue verified M00-only Preview/evidence flow. Upgrade to Paid/credit **only upon a fresh explicit Owner decision**. Enforce Worker-level no-paid-bindings, least privilege, Cloudflare provider isolation, no production resource, per-run protected approval and exact-SHA security; still obtain actual binding inventory evidence. Do not recycle the old hard cap as a blocker.
-
-**Acceleration target:** Once M00 DoD and global source/admission gates legally permit it, Codex Desktop LOCAL assigns **concurrent implementation agents** for separately admitted M01 and M05 (then later independent module waves): 1 agent/worktree/branch/WO/Context Lock/exclusive paths/PR per module, an Integration Steward for shared contracts, quality/security tests and independent audit on exact HEAD, and serialized main merges unless a validated merge queue exists. Planning and contractual drafts only before admission. Do not add modules or change M18 FUTURE.
-
-**Accurate status:** the manual, protected M00 Preview [run #38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded at application SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`, evidence-only PR #48 squash merged at `1ecf88fef5263a8a0b0a291262123f550cfa24e8`, and main CI passed. The M00 machine checkpoint remains unpromoted, binding/Owner demo acceptance/closeout remain separate, and no M01+ module is admitted. Older paragraphs below marked as historical are not current source authority.
-
-
 GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2. The local M00 P0 foundation is merged.
 
 ## Current M00 status · 2026-10-10

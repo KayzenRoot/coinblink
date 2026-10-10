@@ -67,3 +67,12 @@ This register **preserves the exact distinction between owner-approved direction
 | CB-DEC-042 | Bounded CoinBlink M00 source pack | USER APPROVED M00 ONLY / FORMALLY ADMITTED | Owner approval at PR #30 comment `6067708856`, for source HEAD `84f6c02a119259806d230470efc115162d733855`; approval covers the bounded M00 Scope/Requirements/Architecture/Security/DoD only. PR #32 admits execution of this scope; global Issue #6 remains open |
 | CB-DEC-043 | Formal admission candidate for CB-M00-WO-001 | ADMITTED / CB-GOV-005 MERGED | PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`, admitting only M00. At the merge base, application implementation is `NOT_STARTED` at 0%; CB-M01..CB-M17 remain `NOT_ADMITTED`, CB-M18 remains `FUTURE_NOT_ADMITTED`, and Issue #6 stays open |
 
+
+
+## Owner directive · Workers Free now, Paid only when separately authorized (2026-10-10)
+
+| ID | Topic | State | Current authority / details |
+|---|---|---|---|
+| CB-DEC-045 | CoinBlink M00 Cloudflare Free-first, US$10 alert is not a hard cap | **USER APPROVED; Free-only operation authorized NOW** | [Owner's explicit decision, Issue #36 comment 6099048180](https://github.com/KayzenRoot/coinblink/issues/36#issuecomment-6099048180). Use the existing isolated Preview on Workers Free without demanding proof of a literal hard US$0 account-level monthly ceiling; leave the current US$10 budget alert unchanged as informational. Free plan/quotas apply. If and when Free is insufficient, Owner separately decides about buying credit or enabling Paid. **No paid-plan upgrade, purchase, paid service, production deployment or paid binding authorized here.** Preserve Worker binding isolation, IAM, redacted secrets and per-run protected Preview approvals. This M00-specific financial DoD clarification supersedes earlier hard-$0 gate wording only; it does not approve M00 DONE, global Issue #6 or M01+ admissions. |
+
+**Numbering:** CB-DEC-044 is reserved for the separately proposed solo-maintainer governance PR #46 and is not treated as adopted in this canonical decision. This append-only CB-DEC-045 records an independent, explicit Owner decision.

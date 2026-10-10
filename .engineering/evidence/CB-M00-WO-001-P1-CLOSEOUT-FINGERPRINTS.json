@@ -74,8 +74,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "9ebdb163199146b600efa18bc95bc2a5282c275d",
-      "candidateRawSha256": "8c82579b7f2a94581003895c235635a97a39b59549ece94761ddd214e65de619"
+      "candidateGitBlobSha1": "dc4ab0b4777f4dee9225b922937ebad4466dd662",
+      "candidateRawSha256": "703417b46e3b00892c6934b14bbe295311469becdddd57822d1ec78187d1bc9b"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",

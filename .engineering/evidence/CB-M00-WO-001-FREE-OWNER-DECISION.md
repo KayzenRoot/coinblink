@@ -21,3 +21,14 @@ This approval supersedes ONLY the literal hard-US$0 financial-cap requirement at
 No `.engineering/CHECKPOINT.json` update is part of this record. The current proposal itself must be tested/reviewed on a final SHA before integration.
 
 **STOP:** stop and request the Owner's new go/no-go before any Paid plan, credit, paid binding, production resources, destructive provider action or HIGH/CRITICAL security exception.
+
+## Exact guard implementation correction · 2026-10-10
+
+An exact-HEAD CodeRabbit review of this PR identified a concrete residual contradiction: `validatePreviewAuthorization()` still enforced `COINBLINK_CF_MONTHLY_COST_CEILING_USD=0` and `COINBLINK_CF_COST_CEILING_CONFIRMED=true`, and the protected workflow still forwarded those two attestations. This was **not** just stale prose. Corrected in this **same existing M00 Work Order and PR**:
+- `scripts/cloudflare-preview-policy.mjs`: remove only the two account-wide hard-dollar attestation requirements, retaining checks of exact repository/HEAD, Actor+Owner, workflow dispatch confirmation, Workers Free plan, Free confirmation, GitHub protected Environment, account/token, IAM scope, dedicated Worker name and isolation. Paid plan still fails closed.
+- `.github/workflows/cloudflare-worker-preview.yml`: stop forwarding the two obsolete budget-specific variables to the guarded job; retained manual-only and protected Preview workflows.
+- `test/cloudflare-preview-authorization.test.mjs`: coverage verifies normal Free-only authorization **without** those attestations, confirms even stale/non-zero informational values do not block, and continues rejecting Paid plan, unapproved actor, bad Worker, IAM, token, isolation and malformed identity.
+
+This is **not** a new deployment; older successful run #38049696879 remains a provenance record for the M00 application. This change requires exact final-head hosted CI, CodeRabbit review and risk-appropriate Owner merge authorization before it is canonical. The optional old GitHub Environment variable names may remain configured but are not relied upon by the corrected workflow. No live secrets, billing, actual Worker bindings or checkpoint mutated.
+
+**Financial status:** Free-only Owner authorization APPROVED; hard US$0 account-wide cap NOT REQUIRED. Actual Free subscription read-only evidence remains historical, and other paid products are not permitted to be enabled by this Work Order. Binding inventory and M00 demo Owner acceptance remain outstanding separately.

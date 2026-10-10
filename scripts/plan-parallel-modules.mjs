@@ -264,7 +264,7 @@ function parseGateEvidencePath(argv) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  async function run() {
+  try {
     const maxAgents = parseMaxAgents(process.argv.slice(2));
     const gateEvidencePath = parseGateEvidencePath(process.argv.slice(2));
     const slots = localAuthoringSlots({ cpus: availableParallelism(), ramBytes: freemem() });
@@ -282,9 +282,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     result.gateEvidenceProvided = gateEvidencePath !== null;
     result.gateEvidenceTrust = 'UNVERIFIED_OPERATOR_INPUT_NOT_AUTHORIZATION';
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
-  }
-  run().catch(error => {
+  } catch (error) {
     process.stderr.write('CoinBlink parallel preflight BLOCKED: ' + error.message + '\n');
     process.exitCode = 1;
-  });
+  }
 }

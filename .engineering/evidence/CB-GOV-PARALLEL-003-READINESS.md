@@ -154,3 +154,33 @@ Final code/test fingerprints (SHA-256):
 | `test/parallel-batch-planner.test.mjs` | `97181daac2483e7460d0d77b1a07811169d91cd65fe5079f0b6163acd2e87958` |
 
 The final PR HEAD checks, SonarCloud findings, CodeRabbit review and Owner audit must be re-read after pushing this correction. This local validation does not authorize merge or module implementation.
+
+## SonarCloud follow-up and final CLI correction
+
+SonarCloud analyzed the pushed HEAD `9804b6be2b21420fcc65e321ddc68f4922969651`. Its Quality Gate passed and the earlier three findings were absent, but the exact new-code issue query returned one open issue:
+
+| Rule | Severity / type | Exact prior line | Finding and disposition |
+|---|---|---:|---|
+| `javascript:S7785` | MAJOR / CODE_SMELL | `scripts/plan-parallel-modules.mjs:286` | Prefer top-level `await` over the Promise chain. Replaced the nested async `run()` plus `.catch()` chain with top-level `await` inside the direct-execution guard and a local `try/catch`. |
+
+After this correction, the planner CLI executed successfully and continued to report M00 COMPLETE / 5%, 19 modules, five pending global gates, zero resource slots, no planner-eligible module slots, and no code authority. The `9804b6be` hosted result remains recorded as historical evidence; the next pushed HEAD requires fresh exact-HEAD SonarCloud and CodeRabbit reviews.
+
+Validation after the top-level-await correction, using Node `22.19.0` and npm `10.9.3`:
+
+| Check | Result |
+|---|---|
+| Focused planner tests | PASS — 15/15. |
+| `npm test` | PASS — 103/103 unit/governance tests, Astro build and no-binding guard, 7/7 Playwright tests. |
+| `npm run lint` | PASS — zero warnings. |
+| `npm run typecheck` | PASS — 44 files, zero errors, warnings, or hints. |
+| `npm audit --audit-level=high` | PASS — zero vulnerabilities. |
+| `git diff --check` | PASS. |
+| GEF 1.1.2 `doctor` and `status` | Read-only commands succeeded with `effect: NONE`; the managed worktree remains REVIEW for the documented repository-observation, dependency-provenance, drift-baseline, and operator-snapshot limitations. |
+| Docker local smoke | Existing `coinblink-local-app-1` remained healthy at `127.0.0.1:3187`; `/health`, `/preview-status`, and `/en` returned HTTP 200 and reported app build SHA `9757772d145f0aea69e0ecc0d7d0e7190e07916e`. No container was restarted or modified. |
+
+Final post-Sonar source fingerprints (SHA-256):
+
+| Path | SHA-256 |
+|---|---|
+| `scripts/plan-parallel-modules.mjs` | `7a375f828256c7d2c9b51c06ba7d9f1d7c0189df333ec44e039b57bc126ee10c` |
+| `test/parallel-batch-planner.test.mjs` | `97181daac2483e7460d0d77b1a07811169d91cd65fe5079f0b6163acd2e87958` |

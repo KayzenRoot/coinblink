@@ -19,3 +19,7 @@ The admission-only checkpoint must remain 5% while `completedThroughModule=CB-M0
 ## CodeRabbit subsequent exact-head review correction
 
 The CodeRabbit final review reported (1) stale M05 contract text implying `NOT_ADMITTED` forever even after the independently reviewed P0 admission merge, and (2) an overgeneralized preflight test that required the same M05-specific contract status wording from all admitted modules, which could break M01's separate legitimate promotion. Updated both in this same scoped PR. The contract now makes pre-merge no-authority and post-merge P0-only authority explicit, with P1 identity/vault/database fully gated. Preflight now checks each admitted module's own Work Order evidence and module-specific contract semantics. CI, security reviews and exact-head approval must be re-evaluated on the new SHA.
+
+## Restrict exact module-admission allow-list (CodeRabbit audit correction)
+
+The baseline regression now requires precisely CB-M05 ADMITTED and every other M01–M17 NOT_ADMITTED **in this PR**. It positively verifies this module's Work Order, contract, Context Lock and Owner-reviewed-merge marker. This is a strict admission delta test on the candidate only; when later individually authorized module admissions merge, their own guarded PRs must update the expected allow-list in the same reviewed change. No generic 17-module blanket admission. This does not make the candidate executable before Owner-approved merge.

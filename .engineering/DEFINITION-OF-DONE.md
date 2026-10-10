@@ -1,4 +1,24 @@
-# CoinBlink · Definition of Done: M00 Preview Foundation
+# CoinBlink · Global staged V1 baseline
+
+**Status: OWNER_APPROVED_GLOBAL / FROZEN.**
+
+This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
+
+## Approved global Definition of Done
+
+Every module receives one reviewed, admitted Work Order and fresh Context Lock with exact base SHA, dependencies, external gates, immutable source fingerprints, producer/consumer contracts, path ownership and STOP CONDITION. Separate PR and worktree, reproducible tests, Evidence Bundle and independently described audit. Mocks are never counted as LIVE, partial UI is not P1 authentication, and no unadmitted module is marked complete.
+
+P0: visible, functional nonprivileged UI/contracts with explicit mock labels and no unapproved provider calls. P1: genuine, authorized backend/auth/data/article workflow with meaningful error/permission tests. P2: full security, privacy, source rights, accessibility, responsive screenshots, rollback and exact-head CI/review/Owner go-no-go. No module is DONE until its approved P1/P2 functionality is evidenced; overall progress follows the existing 19-module counter.
+
+First-beta acceptance: exact original Golden Home assets and measured visual parity; one secured human-Owner CMS with authenticated session and audited approvals; one article with demonstrable licensed source provenance, reviewed publication and visible public reading; Docker preview, protected Cloudflare Preview, Windows/Ubuntu/GEF, CodeRabbit, SonarCloud, Socket and browser/a11y tests. Public launch and real monetization remain separate.
+
+Parallel authors only start after global ADR/source effectiveness, source-backed individual admission and accepted dependencies. Integration Steward owns all shared paths and merges stay serial; tests are required at PR exact HEAD even when build work is done in batches. No arbitrary two-agent maximum, but actual available RAM and CPU are real constraints.
+
+Payment plans, D1/R2/Queues, external accounts/keys, posting, invoicing, production release and token minting have separate authorization gates. An informational US$10 Worker budget alert is not a spending hard cap and is not an obstacle to existing Free operations.
+
+## Historical M00 DoD and checkpoint proof, retained below
+
+### CoinBlink · Definition of Done: M00 Preview Foundation
 
 **Status: M00 P0 + P1 demonstrated / OWNER DIRECTED CHECKPOINT PROMOTION; module-specific DoD only.** This promotion becomes canonical only on a valid merge of the exact-HEAD-reviewed checkpoint PR; it does not constitute V1-wide DoD or module admissions for M01–M18. CB-GOV-005/PR #32 was the historical M00 admission.
 

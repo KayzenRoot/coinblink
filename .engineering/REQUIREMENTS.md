@@ -1,6 +1,29 @@
-# CoinBlink · M00 Requirements and Acceptance Inputs
+# CoinBlink · Global staged V1 baseline
 
-**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED.** Specific to M00 only. PR #32 admitted this bounded Work Order at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. The full product Requirements for future modules are not yet frozen.
+**Status: OWNER_APPROVED_GLOBAL / FROZEN.**
+
+This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
+
+## Approved global requirements for initial milestone
+
+V1-G01: Preserve exactly 19 module identities with M00 COMPLETE/5%, M01-M17 unadmitted until reviewed and M18 FUTURE.
+V1-G02: M01 Golden Home and logo must use hash-verified original JPEG bytes; no regenerated substitute and no screenshot-as-functional-HTML.
+V1-G03: M05 supports one human Owner, no public privileged enrollment; negative security tests cover login, atomic bootstrap, MFA, recovery, session revocation and owner isolation before a real auth claim.
+V1-G04: Provider secrets require a write-only protected vault and external root, never exposed in GET, logs or client bundles; live vault use awaits security/provider authorization.
+V1-G05: First completed article must be licensed and source-backed, reviewed and Owner-approved; draft/mock is never counted as published LIVE.
+V1-G06: English is canonical; pt-BR and es translations planned with locale/SEO contracts and editorial review.
+V1-G07: Keep existing Docker localhost preview and protected Workers Free Preview isolated; require separate approval per Cloudflare run and for paid/production changes.
+V1-G08: Parallel Codex Desktop modules require global source/ADR effectivity, individual GEF admission, Work Order, Context Lock, exclusive file ownership, accepted producer contracts and bounded host resources.
+V1-G09: Maintain Ubuntu/Windows/GEF, CodeRabbit, SonarCloud, Socket, Docker and Playwright/axe checks, positive and security-negative tests and independent exact-HEAD review.
+V1-G10: Future providers, market data, social posting, ads, paid APIs and token issuance are gated; mocks must be clearly labelled and may not fabricate real-world facts.
+
+Acceptance for the first public functional milestone requires working protected CMS and verified article-to-public-site end-to-end behavior, beyond P0 fixture screens. Each component is implemented only via its own admitted module Work Order.
+
+## Historical M00-only requirements, retained below
+
+### CoinBlink · M00 Requirements and Acceptance Inputs
+
+**Historical M00-only status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED.** Specific to M00 only. PR #32 admitted this bounded Work Order at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`. The full product Requirements for future modules are not yet frozen.
 
 | ID | Requirement | Verification |
 |---|---|---|

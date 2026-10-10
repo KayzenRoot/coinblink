@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -170,6 +170,28 @@ function baseBlobSha256(baseSha, filePath) {
   const bytes = git(['show', `${baseSha}:${filePath}`], null);
   return createHash('sha256').update(bytes).digest('hex');
 }
+
+test('frozen PR #42 verifier ignores inherited Git repository-location overrides', () => {
+  const poisonedEnvironment = {
+    ...process.env,
+    COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT: 'e98d581c7306ab255af9b96e7c046db6f49acf12',
+    GIT_DIR: path.join(repoRoot, 'not-the-coinblink-git-dir'),
+    GIT_WORK_TREE: path.join(repoRoot, 'not-the-coinblink-worktree'),
+  };
+  const result = spawnSync(process.execPath, [
+    path.join(repoRoot, 'scripts/verify-cb-gov-parallel-001-history.mjs'),
+  ], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    timeout: 30_000,
+    windowsHide: true,
+    env: poisonedEnvironment,
+  });
+
+  assert.equal(result.error, undefined, 'frozen verifier starts under hostile Git repository-location variables');
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  assert.match(result.stdout, /PASS archived CB-GOV-PARALLEL-001 evidence at e98d581/u);
+});
 
 test('parallel governance matrix preserves exactly the existing 19 module and issue identities', () => {
   assert.equal(plan.moduleCount, 19);

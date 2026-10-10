@@ -63,7 +63,7 @@ test("preflight validates the post-merge M00 checkpoint and preserves admission 
   assert.ok(checkpoint.overallCompletionPercent >= 0 && checkpoint.overallCompletionPercent <= 100);
   assert.equal(typeof checkpoint.nextLegalStage, "string");
   assert.ok(checkpoint.nextLegalStage.length > 0);
-  assert.equal(checkpoint.checkpointFacts.sourceMainSha, "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f");
+  assert.match(checkpoint.checkpointFacts.sourceMainSha, /^[0-9a-f]{40}$/u);
   assert.equal(checkpoint.progressBasis.measure, "implemented_application_modules");
   assert.equal(checkpoint.progressBasis.overallCompletionPercent, checkpoint.overallCompletionPercent);
   assert.equal(typeof checkpoint.checkpointFacts.applicationImplementation, "string");

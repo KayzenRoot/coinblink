@@ -34,66 +34,66 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "efaff6ada351b23b8228e29bd95eb570d9850d46",
-      "candidateRawSha256": "a4f6768046f430ff22d62412e23021592f0a82bf2aa87ce52eb475fea6598994",
-      "indexGitBlobSha1": "efaff6ada351b23b8228e29bd95eb570d9850d46",
-      "workingTreeGitBlobSha1": "efaff6ada351b23b8228e29bd95eb570d9850d46",
-      "workingTreeSha256": "a4f6768046f430ff22d62412e23021592f0a82bf2aa87ce52eb475fea6598994"
+      "candidateGitBlobSha1": "8934469d0da30c114841c9689b1e76f6d17c7688",
+      "candidateRawSha256": "117e31d8c20920e0d6497f8bcad2b87aa96e80eaa876617157c36ca32076ee22",
+      "indexGitBlobSha1": "8934469d0da30c114841c9689b1e76f6d17c7688",
+      "workingTreeGitBlobSha1": "8934469d0da30c114841c9689b1e76f6d17c7688",
+      "workingTreeSha256": "117e31d8c20920e0d6497f8bcad2b87aa96e80eaa876617157c36ca32076ee22"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-PARALLEL-002.md",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "633defbce2e383eba944473ca1e6ce39ea092414",
-      "candidateRawSha256": "b558385a92b06b92e889e1c471c17ec530b2b61925f3fa56af8cd1d0f164ab31",
-      "indexGitBlobSha1": "633defbce2e383eba944473ca1e6ce39ea092414",
-      "workingTreeGitBlobSha1": "633defbce2e383eba944473ca1e6ce39ea092414",
-      "workingTreeSha256": "b558385a92b06b92e889e1c471c17ec530b2b61925f3fa56af8cd1d0f164ab31"
+      "candidateGitBlobSha1": "158f2d47b54f3a52b19be861fb6f79baaa1cc17b",
+      "candidateRawSha256": "ad96557e66de88d4e925e3a826ddbb3dce3188deea078b8adb5425427aac0c20",
+      "indexGitBlobSha1": "158f2d47b54f3a52b19be861fb6f79baaa1cc17b",
+      "workingTreeGitBlobSha1": "158f2d47b54f3a52b19be861fb6f79baaa1cc17b",
+      "workingTreeSha256": "ad96557e66de88d4e925e3a826ddbb3dce3188deea078b8adb5425427aac0c20"
     },
     {
       "path": "scripts/verify-cb-gov-parallel-001-history.mjs",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "7b4148be84beb23bbfad11124806ccbc57a3f8aa",
-      "candidateRawSha256": "2c8ab6b0755df1b2f09d68964bdf03226cbf8a38ef47d5c93ef00ce91e43f0dc",
-      "indexGitBlobSha1": "7b4148be84beb23bbfad11124806ccbc57a3f8aa",
-      "workingTreeGitBlobSha1": "7b4148be84beb23bbfad11124806ccbc57a3f8aa",
-      "workingTreeSha256": "2c8ab6b0755df1b2f09d68964bdf03226cbf8a38ef47d5c93ef00ce91e43f0dc"
+      "candidateGitBlobSha1": "20710d69c6579ae8a9497321dda0dcd016f51ab4",
+      "candidateRawSha256": "fbdb8e74e196cd96b257a066f23dd5e23eaabea346a12be779b5942e8fcbd406",
+      "indexGitBlobSha1": "20710d69c6579ae8a9497321dda0dcd016f51ab4",
+      "workingTreeGitBlobSha1": "20710d69c6579ae8a9497321dda0dcd016f51ab4",
+      "workingTreeSha256": "fbdb8e74e196cd96b257a066f23dd5e23eaabea346a12be779b5942e8fcbd406"
     },
     {
       "path": "test/future-checkpoint-regression.test.mjs",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "347e1d4faf6e095534d56ef89b36cbc1b9f2aa26",
-      "candidateRawSha256": "6a5e64f3a147a28459426f4e12b8af7410d156808ec0d0a112e644655c535f1b",
-      "indexGitBlobSha1": "347e1d4faf6e095534d56ef89b36cbc1b9f2aa26",
-      "workingTreeGitBlobSha1": "347e1d4faf6e095534d56ef89b36cbc1b9f2aa26",
-      "workingTreeSha256": "6a5e64f3a147a28459426f4e12b8af7410d156808ec0d0a112e644655c535f1b"
+      "candidateGitBlobSha1": "14210b71e4eb83ebbe51914fa713b3c075b847bc",
+      "candidateRawSha256": "1193911ce92c8437980056f8facc2ed7d01644a7e625a3bee94808cd30a690fc",
+      "indexGitBlobSha1": "14210b71e4eb83ebbe51914fa713b3c075b847bc",
+      "workingTreeGitBlobSha1": "14210b71e4eb83ebbe51914fa713b3c075b847bc",
+      "workingTreeSha256": "1193911ce92c8437980056f8facc2ed7d01644a7e625a3bee94808cd30a690fc"
     },
     {
       "path": "test/gef-cli.test.mjs",
       "status": "M",
       "baseGitBlobSha1": "54269dba0a596ce283eca96c911b541a284ab529",
       "baseSha256": "df9e009b215a88cf151db34927d1f814d24f200d0e28513cc51d797835c42f21",
-      "candidateGitBlobSha1": "57c4cf2b792c811cba7aa062dc84554c8bac54bc",
-      "candidateRawSha256": "f4a66561d5026d6646fa44cd5cf5c4b95334406c4fd2e742ee1b0460ae35657d",
-      "indexGitBlobSha1": "57c4cf2b792c811cba7aa062dc84554c8bac54bc",
-      "workingTreeGitBlobSha1": "57c4cf2b792c811cba7aa062dc84554c8bac54bc",
-      "workingTreeSha256": "f4a66561d5026d6646fa44cd5cf5c4b95334406c4fd2e742ee1b0460ae35657d"
+      "candidateGitBlobSha1": "2398e3a6f97a7d1f66acdfaf7896394d3d1e7ca9",
+      "candidateRawSha256": "7149712acef1481ab98b924ffb0be1b2b431de5857552e91c2a8f051670a9207",
+      "indexGitBlobSha1": "2398e3a6f97a7d1f66acdfaf7896394d3d1e7ca9",
+      "workingTreeGitBlobSha1": "2398e3a6f97a7d1f66acdfaf7896394d3d1e7ca9",
+      "workingTreeSha256": "7149712acef1481ab98b924ffb0be1b2b431de5857552e91c2a8f051670a9207"
     },
     {
       "path": "test/governance-parallel-plan.test.mjs",
       "status": "M",
       "baseGitBlobSha1": "40eb3afb2c429b55a2754f0194794654c2d1c13e",
       "baseSha256": "7ad000d7095df52e5b90218bf0586eaa91b970cc9b16e72c78d4f6a2b6ea0275",
-      "candidateGitBlobSha1": "2124b8183ded8fe262dc53d9f5be59a71d018f20",
-      "candidateRawSha256": "c2dcf1f96d84bea58f16c695101a6ab04b0b9cd0305a843f17065d248256f5f8",
-      "indexGitBlobSha1": "2124b8183ded8fe262dc53d9f5be59a71d018f20",
-      "workingTreeGitBlobSha1": "2124b8183ded8fe262dc53d9f5be59a71d018f20",
-      "workingTreeSha256": "c2dcf1f96d84bea58f16c695101a6ab04b0b9cd0305a843f17065d248256f5f8"
+      "candidateGitBlobSha1": "3cb0384765b8780cbb66a6d2f045d3390637d332",
+      "candidateRawSha256": "d62fd23c14e41be5baca246c2eaf4e9883d36387c35b5e16902d92bd98e547f3",
+      "indexGitBlobSha1": "3cb0384765b8780cbb66a6d2f045d3390637d332",
+      "workingTreeGitBlobSha1": "3cb0384765b8780cbb66a6d2f045d3390637d332",
+      "workingTreeSha256": "d62fd23c14e41be5baca246c2eaf4e9883d36387c35b5e16902d92bd98e547f3"
     }
   ]
 }

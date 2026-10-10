@@ -21,6 +21,7 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
     'test/governance-parallel-plan.test.mjs',
     'test/gef-cli.test.mjs',
     'test/future-checkpoint-regression.test.mjs',
+    'scripts/verify-cb-gov-parallel-001-history.mjs',
   ]) {
     cpSync(path.join(repoRoot, testFile), path.join(checkout, testFile));
   }
@@ -42,6 +43,7 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
   checkpoint.checkpointFacts.applicationImplementation = 'M00_COMPLETE';
   checkpoint.checkpointFacts.previewDeployment = 'PREVIEW_VERIFIED';
   checkpoint.checkpointFacts.activeWorkOrder = 'CB-M01-WO-001';
+  checkpoint.checkpointFacts.sourceMainSha = '1111111111111111111111111111111111111111';
   checkpoint.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
   checkpoint.progressBasis.overallCompletionPercent = 10;
   writeFileSync(checkpointPath, `${JSON.stringify(checkpoint, null, 2)}\n`);

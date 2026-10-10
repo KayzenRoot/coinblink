@@ -19,12 +19,26 @@ const compareEnglish = (left, right) => left.localeCompare(right, 'en-US');
 
 assert.ok(gitExecutable, 'Git is installed in a fixed system directory for this supported runner.');
 
+const gitEnvironment = { ...process.env };
+for (const variable of [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_COMMON_DIR',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_NAMESPACE',
+  'GIT_CEILING_DIRECTORIES',
+]) {
+  delete gitEnvironment[variable];
+}
+
 if (process.env.COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT !== historicalMainSha) {
   throw new Error(`Set COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT=${historicalMainSha} to verify only the immutable merged snapshot.`);
 }
 
 function gitBuffer(args) {
-  return execFileSync(gitExecutable, args, { cwd: repoRoot, encoding: null });
+  return execFileSync(gitExecutable, args, { cwd: repoRoot, encoding: null, env: gitEnvironment });
 }
 
 function gitText(args) {

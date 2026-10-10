@@ -40,7 +40,7 @@ Only these paths may change:
 
 The two existing test files retain their behavior and immutable M00 admission provenance checks, while comparisons to present-day checkpoint and Git paths become schema/invariant based. Generic path ownership, deletion, path-set, and fingerprint consistency tests remain active against an explicitly supplied active Work Order fixture. A deterministic temporary-clone regression commits an unrelated future file and a schema-valid synthetic checkpoint advancement, then runs both affected evergreen suites. The synthetic state is disposable test data, never canonical evidence.
 
-The new historical verifier requires `COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT` to equal the full immutable SHA. It reads the PR #42 tree and its recorded parent only; it never compares that historical fingerprint bundle with the caller's current `HEAD`, index, worktree, or active PR paths. Ordinary `npm test` does not execute this one-time verifier.
+The new historical verifier requires `COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT` to equal the full immutable SHA. It reads the PR #42 tree and its recorded parent only; it never compares that historical fingerprint bundle with the caller's current `HEAD`, index, worktree, or active PR paths. The evergreen governance suite invokes the frozen verifier with hostile `GIT_DIR` and `GIT_WORK_TREE` overrides to prove its Git commands remain bound to the supplied repository root.
 
 ## Acceptance criteria
 

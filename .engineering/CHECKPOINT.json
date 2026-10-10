@@ -51,7 +51,7 @@
         "contract": "docs/architecture/contracts/CB-M05.md",
         "contextLock": ".engineering/context-locks/CB-M05-WO-001.md",
         "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
-        "governanceMainSha": "d8233772a80b613015284309a30657ba576a1b4f",
+        "governanceMainSha": "e40d36b2a589596869eb296696e917f724d5be65",
         "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
         "scope": "P0_STATIC_NON_PRIVILEGED_CMS_UI_MOCK_ONLY",
         "privilegedAuthVaultDatabaseCodeGate": "NOT_AUTHORIZED_UNTIL_SEPARATE_OWNER_APPROVED_SECURITY_DATA_ADR"

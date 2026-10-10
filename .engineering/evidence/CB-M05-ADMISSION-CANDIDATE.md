@@ -1,6 +1,6 @@
 # CB-M05 scoped-P0 admission · proposed checkpoint delta
 
-**Canonical main before proposal:** `d8233772a80b613015284309a30657ba576a1b4f`; M00 COMPLETE/5%, global Scope/Architecture/DoD and ADR-CB-0002 adopted, Issue #6 closed, 19 modules unchanged. Producer contract preparatory PR #55 head `772f2d11f26f798e0917067319991079974eb849` must be merged independently before this candidate's own reviewed admission.
+**Canonical main before proposal:** `e40d36b2a589596869eb296696e917f724d5be65`; M00 COMPLETE/5%, global Scope/Architecture/DoD and ADR-CB-0002 adopted, Issue #6 closed, 19 modules unchanged. Producer contract preparatory PR #55 head `772f2d11f26f798e0917067319991079974eb849` must be merged independently before this candidate's own reviewed admission.
 
 **Proposed candidate only:** M05 NOT_ADMITTED→ADMITTED solely for safe non-privileged P0 CMS UI, no real auth/vault/database permission. Work Order `CB-M05-WO-001` and Context Lock are candidates. Checkpoint retains M00_COMPLETE/5% and M01..M04/M06..M17 NOT_ADMITTED, M18 FUTURE. No local agent launched or app code changed. A separate M01 admission candidate may merge first and require normal PR synchronization without rewriting this module scope.
 

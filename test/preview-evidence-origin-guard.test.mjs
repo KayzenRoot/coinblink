@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { after, before, test } from "node:test";
+import { readFileSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -121,4 +122,17 @@ test("clears only stale success/failure artifacts before a fresh evidence captur
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("checks stable and immutable build identity before clearing prior evidence", () => {
+  const collector = readFileSync(new URL("../scripts/collect-m00-preview-evidence.mjs", import.meta.url), "utf8");
+  const stableHealth = collector.indexOf('assert.deepEqual(health, {');
+  const immutableHealth = collector.indexOf("assert.deepEqual(immutableHealth, health");
+  const cleanup = collector.indexOf("await clearStalePreviewEvidenceArtifacts(outputDirectory)");
+
+  assert.ok(stableHealth >= 0, "stable health identity assertion is present");
+  assert.ok(immutableHealth >= 0, "immutable health identity assertion is present");
+  assert.ok(cleanup >= 0, "stale output cleanup is present");
+  assert.ok(stableHealth < immutableHealth, "stable origin must be verified first");
+  assert.ok(immutableHealth < cleanup, "both origins must pass before old artifacts are cleared");
 });

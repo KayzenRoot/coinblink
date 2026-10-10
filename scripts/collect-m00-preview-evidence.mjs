@@ -156,16 +156,16 @@ try {
   assertSecurityHeaders(healthResponse.headers(), "/health");
   results.initialHealth = { status: healthResponse.status(), body: health, headers: evidenceHeaders(healthResponse.headers()) };
 
-  await mkdir(outputDirectory, { recursive: true });
-  await clearStalePreviewEvidenceArtifacts(outputDirectory);
-  outputDirectoryCreated = true;
-
   const immutableHealthResponse = await goTo(page, immutableOrigin, "/health");
   assert.equal(immutableHealthResponse.status(), 200, "immutable /health HTTP status");
   const immutableHealth = await immutableHealthResponse.json();
   assert.deepEqual(immutableHealth, health, "immutable origin must serve the same exact build metadata");
   assertSecurityHeaders(immutableHealthResponse.headers(), "immutable /health");
   results.immutableHealth = { status: immutableHealthResponse.status(), body: immutableHealth, headers: evidenceHeaders(immutableHealthResponse.headers()) };
+
+  await mkdir(outputDirectory, { recursive: true });
+  await clearStalePreviewEvidenceArtifacts(outputDirectory);
+  outputDirectoryCreated = true;
 
   const statusResponse = await goTo(page, stableOrigin, "/preview-status");
   assert.equal(statusResponse.status(), 200, "/preview-status HTTP status");

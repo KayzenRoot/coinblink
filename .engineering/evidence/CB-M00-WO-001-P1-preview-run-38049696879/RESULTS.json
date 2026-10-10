@@ -6,7 +6,7 @@
   "stableOrigin": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev",
   "immutableOrigin": "https://5ca9306c-coinblink-m00-preview.kayzendev.workers.dev",
   "browserContext": "fresh-isolated-context-no-profile-or-cookies",
-  "capturedAt": "2026-10-10T13:24:04.639Z",
+  "capturedAt": "2026-10-10T13:35:43.081Z",
   "browserVersion": "156.0.8078.4",
   "playwrightVersion": "1.64.0",
   "axePlaywrightVersion": "4.13.0",

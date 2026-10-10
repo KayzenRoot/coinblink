@@ -30,8 +30,6 @@ const validAuthorization = {
   COINBLINK_CF_GITHUB_ENVIRONMENT_PROTECTED: "true",
   COINBLINK_CF_PLAN: "workers-free",
   COINBLINK_CF_FREE_PLAN_CONFIRMED: "true",
-  COINBLINK_CF_MONTHLY_COST_CEILING_USD: "0",
-  COINBLINK_CF_COST_CEILING_CONFIRMED: "true",
   COINBLINK_CF_IAM_SCOPE_CONFIRMED: "true",
   COINBLINK_CF_DEDICATED_WORKER_CONFIRMED: "true",
   COINBLINK_CF_ISOLATION_CONFIRMED: "true",
@@ -40,7 +38,7 @@ const validAuthorization = {
   CLOUDFLARE_API_TOKEN: "unit-test-placeholder-only",
 };
 
-test("rejects missing Owner authorization, plan, zero cost, IAM, isolation, and credentials", () => {
+test("rejects missing Owner authorization, Workers Free plan, IAM, isolation, and credentials", () => {
   const errors = validatePreviewAuthorization({
     GITHUB_REPOSITORY: "KayzenRoot/coinblink",
     GITHUB_EVENT_NAME: "workflow_dispatch",
@@ -50,19 +48,31 @@ test("rejects missing Owner authorization, plan, zero cost, IAM, isolation, and 
     INPUT_ACTION: "deploy",
     INPUT_CONFIRMATION: "not-authorized",
   });
-  assert.ok(errors.length >= 12);
+  assert.ok(errors.length >= 10);
   assert.ok(errors.every((message) => !message.includes("unit-test-placeholder-only")));
 });
 
-test("accepts only exact Owner-attested Free plan and zero-cost authorization", () => {
+test("accepts exact Owner-attested Workers Free plan and protected authorization", () => {
   assert.deepEqual(validatePreviewAuthorization(validAuthorization), []);
+});
+
+test("accepts Free-only Owner approval without account-wide zero-cap attestations", () => {
+  assert.deepEqual(validatePreviewAuthorization(validAuthorization), []);
+  assert.deepEqual(validatePreviewAuthorization({
+    ...validAuthorization,
+    COINBLINK_CF_MONTHLY_COST_CEILING_USD: "10",
+    COINBLINK_CF_COST_CEILING_CONFIRMED: "false",
+  }), []);
+  assert.ok(validatePreviewAuthorization({
+    ...validAuthorization,
+    COINBLINK_CF_PLAN: "workers-paid",
+  }).length > 0, "paid plan must remain blocked");
 });
 
 test("fails closed if any one external authorization fact changes", () => {
   for (const [key, value] of [
     ["GITHUB_ACTOR", "other-user"],
     ["COINBLINK_CF_PLAN", "workers-paid"],
-    ["COINBLINK_CF_MONTHLY_COST_CEILING_USD", "5"],
     ["COINBLINK_CF_IAM_SCOPE_CONFIRMED", "false"],
     ["COINBLINK_CF_ISOLATION_CONFIRMED", "false"],
     ["COINBLINK_CF_WORKER_NAME", "production-worker"],

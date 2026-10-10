@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-GOV-PARALLEL-002",
+  "baseMainSha": "e98d581c7306ab255af9b96e7c046db6f49acf12",
+  "integrationBaseSha": "e98d581c7306ab255af9b96e7c046db6f49acf12",
+  "changedGitPathCountIncludingManifest": 9,
+  "manifestSelfHash": "EXCLUDED",
+  "contextLockSha256": "ec3aa459ebc0cc171d404c4c30b4e0898fb16a062dd01b2be224dbd0007dcc31",
+  "files": [
+    {
+      "path": ".engineering/context-locks/CB-GOV-PARALLEL-002.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "65d8963eeaf1f3d29833bf5af99d81a21f62872d",
+      "candidateRawSha256": "ec3aa459ebc0cc171d404c4c30b4e0898fb16a062dd01b2be224dbd0007dcc31",
+      "indexGitBlobSha1": "65d8963eeaf1f3d29833bf5af99d81a21f62872d",
+      "workingTreeGitBlobSha1": "65d8963eeaf1f3d29833bf5af99d81a21f62872d",
+      "workingTreeSha256": "ec3aa459ebc0cc171d404c4c30b4e0898fb16a062dd01b2be224dbd0007dcc31"
+    },
+    {
+      "path": ".engineering/evidence/CB-GOV-PARALLEL-002-CHECKPOINT-DELTA.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "9d89f15f39e0ee984d37c7a21732888cd3e90abb",
+      "candidateRawSha256": "03e3159878e90a383f8b7d4564fa6c70677c6ae775e1abff38a96c51a6de047c",
+      "indexGitBlobSha1": "9d89f15f39e0ee984d37c7a21732888cd3e90abb",
+      "workingTreeGitBlobSha1": "9d89f15f39e0ee984d37c7a21732888cd3e90abb",
+      "workingTreeSha256": "03e3159878e90a383f8b7d4564fa6c70677c6ae775e1abff38a96c51a6de047c"
+    },
+    {
+      "path": ".engineering/evidence/CB-GOV-PARALLEL-002-EVIDENCE.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "84064184140a1c36b6dcbd430da4979398ea6c88",
+      "candidateRawSha256": "a7b88b3610cb0554d12d6839f9cd61501ee6f52d6a590a96ac434b76dbec2a05",
+      "indexGitBlobSha1": "84064184140a1c36b6dcbd430da4979398ea6c88",
+      "workingTreeGitBlobSha1": "84064184140a1c36b6dcbd430da4979398ea6c88",
+      "workingTreeSha256": "a7b88b3610cb0554d12d6839f9cd61501ee6f52d6a590a96ac434b76dbec2a05"
+    },
+    {
+      "path": ".engineering/work-orders/CB-GOV-PARALLEL-002.md",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "158f2d47b54f3a52b19be861fb6f79baaa1cc17b",
+      "candidateRawSha256": "ad96557e66de88d4e925e3a826ddbb3dce3188deea078b8adb5425427aac0c20",
+      "indexGitBlobSha1": "158f2d47b54f3a52b19be861fb6f79baaa1cc17b",
+      "workingTreeGitBlobSha1": "158f2d47b54f3a52b19be861fb6f79baaa1cc17b",
+      "workingTreeSha256": "ad96557e66de88d4e925e3a826ddbb3dce3188deea078b8adb5425427aac0c20"
+    },
+    {
+      "path": "scripts/verify-cb-gov-parallel-001-history.mjs",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "20710d69c6579ae8a9497321dda0dcd016f51ab4",
+      "candidateRawSha256": "fbdb8e74e196cd96b257a066f23dd5e23eaabea346a12be779b5942e8fcbd406",
+      "indexGitBlobSha1": "20710d69c6579ae8a9497321dda0dcd016f51ab4",
+      "workingTreeGitBlobSha1": "20710d69c6579ae8a9497321dda0dcd016f51ab4",
+      "workingTreeSha256": "fbdb8e74e196cd96b257a066f23dd5e23eaabea346a12be779b5942e8fcbd406"
+    },
+    {
+      "path": "test/future-checkpoint-regression.test.mjs",
+      "status": "A",
+      "baseGitBlobSha1": null,
+      "baseSha256": null,
+      "candidateGitBlobSha1": "14210b71e4eb83ebbe51914fa713b3c075b847bc",
+      "candidateRawSha256": "1193911ce92c8437980056f8facc2ed7d01644a7e625a3bee94808cd30a690fc",
+      "indexGitBlobSha1": "14210b71e4eb83ebbe51914fa713b3c075b847bc",
+      "workingTreeGitBlobSha1": "14210b71e4eb83ebbe51914fa713b3c075b847bc",
+      "workingTreeSha256": "1193911ce92c8437980056f8facc2ed7d01644a7e625a3bee94808cd30a690fc"
+    },
+    {
+      "path": "test/gef-cli.test.mjs",
+      "status": "M",
+      "baseGitBlobSha1": "54269dba0a596ce283eca96c911b541a284ab529",
+      "baseSha256": "df9e009b215a88cf151db34927d1f814d24f200d0e28513cc51d797835c42f21",
+      "candidateGitBlobSha1": "2398e3a6f97a7d1f66acdfaf7896394d3d1e7ca9",
+      "candidateRawSha256": "7149712acef1481ab98b924ffb0be1b2b431de5857552e91c2a8f051670a9207",
+      "indexGitBlobSha1": "2398e3a6f97a7d1f66acdfaf7896394d3d1e7ca9",
+      "workingTreeGitBlobSha1": "2398e3a6f97a7d1f66acdfaf7896394d3d1e7ca9",
+      "workingTreeSha256": "7149712acef1481ab98b924ffb0be1b2b431de5857552e91c2a8f051670a9207"
+    },
+    {
+      "path": "test/governance-parallel-plan.test.mjs",
+      "status": "M",
+      "baseGitBlobSha1": "40eb3afb2c429b55a2754f0194794654c2d1c13e",
+      "baseSha256": "7ad000d7095df52e5b90218bf0586eaa91b970cc9b16e72c78d4f6a2b6ea0275",
+      "candidateGitBlobSha1": "3cb0384765b8780cbb66a6d2f045d3390637d332",
+      "candidateRawSha256": "d62fd23c14e41be5baca246c2eaf4e9883d36387c35b5e16902d92bd98e547f3",
+      "indexGitBlobSha1": "3cb0384765b8780cbb66a6d2f045d3390637d332",
+      "workingTreeGitBlobSha1": "3cb0384765b8780cbb66a6d2f045d3390637d332",
+      "workingTreeSha256": "d62fd23c14e41be5baca246c2eaf4e9883d36387c35b5e16902d92bd98e547f3"
+    }
+  ]
+}

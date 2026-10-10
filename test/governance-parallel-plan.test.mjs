@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,7 +11,6 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const moduleMatrixPath = '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json';
 const contractRegisterPath = '.engineering/proposals/CB-GOV-PARALLEL-001-CONTRACT-REGISTER.json';
 const contextLockPath = '.engineering/context-locks/CB-GOV-PARALLEL-001.md';
-const fingerprintManifestPath = '.engineering/evidence/CB-GOV-PARALLEL-001-FINGERPRINTS.json';
 const plan = JSON.parse(readFileSync(path.join(repoRoot, moduleMatrixPath), 'utf8'));
 const contractRegister = JSON.parse(readFileSync(path.join(repoRoot, contractRegisterPath), 'utf8'));
 
@@ -32,11 +31,6 @@ function parseNameStatusZ(raw) {
   }
 
   return entries;
-}
-
-function changedPathEntries(baseSha) {
-  const raw = git(['diff', '--no-renames', '--name-status', '-z', `${baseSha}...HEAD`]);
-  return parseNameStatusZ(raw);
 }
 
 function orderedWaveIndex(moduleId) {
@@ -154,6 +148,18 @@ function assertWithinAllowlist(filePath, allowedPaths) {
   assert.equal(allowed, true, `${filePath} is owned by the active Work Order allowlist`);
 }
 
+function assertEntriesWithinWorkOrder(entries, workOrder) {
+  for (const entry of entries) {
+    assertWithinAllowlist(entry.path, workOrder.allowedPaths);
+    if (entry.status === 'D') {
+      assert.ok(
+        workOrder.allowedDeletions?.includes(entry.path),
+        `${entry.path} deletion has an explicit reason in ${workOrder.id}`,
+      );
+    }
+  }
+}
+
 function assertFingerprintConsistency(entry) {
   assert.equal(entry.headGitBlobSha1, entry.expectedHeadGitBlobSha1, `${entry.path} HEAD blob matches evidence`);
   assert.equal(entry.indexGitBlobSha1, entry.expectedHeadGitBlobSha1, `${entry.path} staged index blob matches HEAD`);
@@ -164,6 +170,28 @@ function baseBlobSha256(baseSha, filePath) {
   const bytes = git(['show', `${baseSha}:${filePath}`], null);
   return createHash('sha256').update(bytes).digest('hex');
 }
+
+test('frozen PR #42 verifier ignores inherited Git repository-location overrides', () => {
+  const poisonedEnvironment = {
+    ...process.env,
+    COINBLINK_VERIFY_PARALLEL_001_SNAPSHOT: 'e98d581c7306ab255af9b96e7c046db6f49acf12',
+    GIT_DIR: path.join(repoRoot, 'not-the-coinblink-git-dir'),
+    GIT_WORK_TREE: path.join(repoRoot, 'not-the-coinblink-worktree'),
+  };
+  const result = spawnSync(process.execPath, [
+    path.join(repoRoot, 'scripts/verify-cb-gov-parallel-001-history.mjs'),
+  ], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    timeout: 30_000,
+    windowsHide: true,
+    env: poisonedEnvironment,
+  });
+
+  assert.equal(result.error, undefined, 'frozen verifier starts under hostile Git repository-location variables');
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  assert.match(result.stdout, /PASS archived CB-GOV-PARALLEL-001 evidence at e98d581/u);
+});
 
 test('parallel governance matrix preserves exactly the existing 19 module and issue identities', () => {
   assert.equal(plan.moduleCount, 19);
@@ -185,28 +213,32 @@ test('parallel governance matrix preserves exactly the existing 19 module and is
   }
 });
 
-test('proposal mirrors the checkpoint admission map without inventing progress or a stopState', () => {
+test('canonical checkpoint can advance while the archived parallel proposal stays non-authoritative', () => {
   const checkpoint = JSON.parse(readFileSync(path.join(repoRoot, '.engineering/CHECKPOINT.json'), 'utf8'));
-  assert.deepEqual(plan.currentCheckpoint, {
-    status: checkpoint.status,
-    phase: checkpoint.phase,
-    applicationImplementation: checkpoint.checkpointFacts.applicationImplementation,
-    previewDeployment: checkpoint.checkpointFacts.previewDeployment,
-    overallCompletionPercent: checkpoint.overallCompletionPercent,
-    nextLegalStage: checkpoint.nextLegalStage,
-  });
-  assert.equal(plan.currentCheckpoint.overallCompletionPercent, 0);
-  assert.equal(Object.hasOwn(checkpoint, 'stopState'), false);
+  const moduleIds = plan.modules.map((module) => module.id);
+  const admissions = checkpoint.checkpointFacts.moduleAdmission;
 
-  const matrixAdmissions = Object.fromEntries(plan.modules.map((module) => [
-    module.id,
-    module.id === 'CB-M00'
-      ? 'ADMITTED'
-      : module.id === 'CB-M18'
-        ? 'FUTURE_NOT_ADMITTED'
-        : 'NOT_ADMITTED',
-  ]));
-  assert.deepEqual(checkpoint.checkpointFacts.moduleAdmission, matrixAdmissions);
+  assert.equal(checkpoint.schemaVersion, 2);
+  assert.equal(typeof checkpoint.status, 'string');
+  assert.ok(checkpoint.status.length > 0);
+  assert.equal(typeof checkpoint.phase, 'string');
+  assert.ok(checkpoint.phase.length > 0);
+  assert.ok(['NONE', ...moduleIds].includes(checkpoint.completedThroughModule));
+  assert.equal(Number.isInteger(checkpoint.overallCompletionPercent), true);
+  assert.ok(checkpoint.overallCompletionPercent >= 0 && checkpoint.overallCompletionPercent <= 100);
+  assert.equal(checkpoint.progressBasis.measure, 'implemented_application_modules');
+  assert.equal(checkpoint.progressBasis.overallCompletionPercent, checkpoint.overallCompletionPercent);
+  assert.equal(typeof checkpoint.nextLegalStage, 'string');
+  assert.ok(checkpoint.nextLegalStage.length > 0);
+  assert.equal(typeof checkpoint.checkpointFacts.applicationImplementation, 'string');
+  assert.equal(typeof checkpoint.checkpointFacts.previewDeployment, 'string');
+  assert.equal(typeof checkpoint.checkpointFacts.activeWorkOrder, 'string');
+  assert.deepEqual(Object.keys(admissions).sort(), [...moduleIds].sort(), 'canonical admission registry keeps exactly CB-M00 through CB-M18');
+  assert.equal(admissions['CB-M00'], 'ADMITTED', 'M00 admission remains effective after its implementation closes');
+  for (const moduleId of moduleIds.slice(1, -1)) {
+    assert.ok(['ADMITTED', 'NOT_ADMITTED'].includes(admissions[moduleId]), `${moduleId} has an explicit admission state`);
+  }
+  assert.equal(admissions['CB-M18'], 'FUTURE_NOT_ADMITTED', 'M18 remains future until a separately approved change');
 
   for (const module of plan.modules) {
     const expectedAdmission = module.id === 'CB-M00'
@@ -473,97 +505,35 @@ test('correction evidence keeps the worktree identity logical and identifies PR 
   assert.match(evidence, /^\*\*PR:\*\* `#42`; head SHA will be read from GitHub and reported in the PR, not inferred from this file\.$/mu);
 });
 
-test('current governance PR paths obey this Work Order allowlist and protected sources remain untouched', () => {
-  const actualEntries = changedPathEntries(plan.integrationBaseSha);
-  const actualPaths = actualEntries.map((entry) => entry.path);
-  const allowed = plan.governanceChangeAllowlist;
-  const workOrder = readFileSync(path.join(repoRoot, '.engineering/work-orders/CB-GOV-PARALLEL-001.md'), 'utf8');
-  const scopeSection = workOrder.split('## Scope and proposed files')[1]?.split('\nNo existing canonical source')[0] ?? '';
-  const workOrderPaths = [...scopeSection.matchAll(/^- `([^`]+)`/gmu)].map((match) => match[1]);
+const activeWorkOrderFixture = {
+  id: 'TEST-CB-M02-WO',
+  allowedPaths: [
+    'src/modules/CB-M02/**',
+    'test/modules/CB-M02/**',
+    'docs/architecture/contracts/CB-M02.md',
+  ],
+  allowedDeletions: ['test/modules/CB-M02/obsolete-contract.test.mjs'],
+};
 
-  assert.equal(plan.integrationBaseSha, plan.baseMainSha, 'this PR starts from its frozen main base');
-  assert.deepEqual(git(['merge-base', plan.integrationBaseSha, 'HEAD']).trim(), plan.integrationBaseSha);
-  assert.deepEqual(workOrderPaths.map(normalizedPath).sort(), allowed.map(normalizedPath).sort(), 'matrix and Work Order exact allowlists match');
-  for (const entry of actualEntries) assertWithinAllowlist(entry.path, allowed);
+test('active Work Order ownership accepts only its supplied module paths and approved deletions', () => {
+  const activeChanges = [
+    { status: 'A', path: 'src/modules/CB-M02/index.ts' },
+    { status: 'M', path: 'test/modules/CB-M02/module.test.mjs' },
+    { status: 'D', path: 'test/modules/CB-M02/obsolete-contract.test.mjs' },
+  ];
 
-  const allowedDeletions = plan.governanceAllowedDeletions ?? [];
-  for (const entry of actualEntries.filter((candidate) => candidate.status === 'D')) {
-    assert.ok(allowedDeletions.includes(entry.path), `${entry.path} deletion has a specific Work Order reason`);
-  }
-
-  const protectedPaths = [
-    '.engineering/CHECKPOINT.json',
-    '.engineering/CHECKPOINT.md',
-    '.engineering/SOURCE-HIERARCHY.md',
-    '.engineering/SCOPE.md',
-    '.engineering/ARCHITECTURE.md',
-    '.engineering/SECURITY.md',
-    '.engineering/DEFINITION-OF-DONE.md',
-    '.github/workflows/gef-validation.yml',
-    'package.json',
-    'package-lock.json',
-    'docs/DECISIONS_LEDGER.md',
-  ].map(normalizedPath);
-  for (const changedPath of actualPaths) {
-    assert.equal(protectedPaths.includes(normalizedPath(changedPath)), false, `${changedPath} is outside this governance delta`);
-  }
+  assert.doesNotThrow(() => assertEntriesWithinWorkOrder(activeChanges, activeWorkOrderFixture));
 });
 
-test('fingerprint bundle exactly covers the current integration-base Git paths and verifies HEAD, index, and worktree', () => {
-  const manifest = JSON.parse(readFileSync(path.join(repoRoot, fingerprintManifestPath), 'utf8'));
-  assert.equal(manifest.baseMainSha, plan.baseMainSha);
-  assert.equal(manifest.integrationBaseSha, plan.integrationBaseSha);
-  assert.equal(manifest.workOrder, plan.workOrder);
-
-  const manifestEntries = manifest.files;
-  const manifestPaths = manifestEntries.map((entry) => entry.path);
-  const actualEntries = changedPathEntries(manifest.integrationBaseSha);
-  const actualPaths = actualEntries.map((entry) => entry.path);
-  assertExactChangedPathSet(actualPaths, manifestPaths, fingerprintManifestPath);
-  assert.equal(manifest.changedGitPathCountIncludingManifest, actualEntries.length);
-  assert.equal(existsSync(path.join(repoRoot, fingerprintManifestPath)), true, 'fingerprint manifest exists but is excluded from its own hashes');
-
-  const entryByPath = new Map(manifestEntries.map((entry) => [normalizedPath(entry.path), entry]));
-  for (const diffEntry of actualEntries) {
-    const changedPath = diffEntry.path;
-    if (normalizedPath(changedPath) === normalizedPath(fingerprintManifestPath)) continue;
-    const entry = entryByPath.get(normalizedPath(changedPath));
-    assert.ok(entry, `${changedPath} is present in the manifest`);
-    assert.equal(entry.status, diffEntry.status, `${changedPath} change status is recorded`);
-
-    const absolutePath = path.join(repoRoot, changedPath);
-    if (diffEntry.status === 'D') {
-      assert.equal(existsSync(absolutePath), false, `${changedPath} is deleted`);
-      assert.equal(entry.headGitBlobSha1, null, `${changedPath} has no HEAD blob`);
-      assert.equal(entry.indexGitBlobSha1, null, `${changedPath} has no index blob`);
-      assert.equal(entry.workingTreeGitBlobSha1, null, `${changedPath} has no worktree blob`);
-      assert.equal(entry.workingTreeSha256, null, `${changedPath} has no worktree SHA-256`);
-      assert.ok(entry.baseGitBlobSha1, `${changedPath} records its frozen-base blob`);
-      assert.ok(entry.baseSha256, `${changedPath} records its frozen-base SHA-256`);
-      continue;
-    }
-
-    assert.equal(existsSync(absolutePath), true, `${changedPath} exists`);
-    const headSha1 = git(['rev-parse', `HEAD:${changedPath}`]).trim();
-    const indexSha1 = git(['rev-parse', `:${changedPath}`]).trim();
-    const workingTreeSha1 = git(['hash-object', '--', changedPath]).trim();
-    const workingTreeSha256 = createHash('sha256').update(readFileSync(absolutePath)).digest('hex');
-    assertFingerprintConsistency({
-      path: changedPath,
-      expectedHeadGitBlobSha1: entry.headGitBlobSha1,
-      headGitBlobSha1: headSha1,
-      indexGitBlobSha1: indexSha1,
-      workingTreeGitBlobSha1: workingTreeSha1,
-    });
-    assert.equal(workingTreeSha256, entry.workingTreeSha256, `${changedPath} worktree SHA-256 matches evidence`);
-    if (diffEntry.status === 'A') {
-      assert.equal(entry.baseGitBlobSha1, null, `${changedPath} is new at the integration base`);
-      assert.equal(entry.baseSha256, null, `${changedPath} has no base SHA-256`);
-    } else {
-      assert.equal(entry.baseGitBlobSha1, git(['rev-parse', `${manifest.integrationBaseSha}:${changedPath}`]).trim(), `${changedPath} base blob matches evidence`);
-      assert.equal(entry.baseSha256, baseBlobSha256(manifest.integrationBaseSha, changedPath), `${changedPath} base SHA-256 matches evidence`);
-    }
-  }
+test('active Work Order ownership rejects outside paths and unexplained deletions', () => {
+  assert.throws(
+    () => assertEntriesWithinWorkOrder([{ status: 'M', path: 'src/modules/CB-M03/index.ts' }], activeWorkOrderFixture),
+    /owned by the active Work Order allowlist/u,
+  );
+  assert.throws(
+    () => assertEntriesWithinWorkOrder([{ status: 'D', path: 'test/modules/CB-M02/undocumented-delete.test.mjs' }], activeWorkOrderFixture),
+    /explicit reason/u,
+  );
 });
 
 test('exact path-set validator rejects omitted, extra, duplicate, and untracked deletion paths', () => {

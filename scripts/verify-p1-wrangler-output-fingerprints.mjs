@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { test } from "node:test";
 
 const baseSha = "27015adc87caacabbed0e318f892644ce0473f10";
+const comparisonBaseSha = "b4ddb9891cc66cd3688b8e11a86abc75db4b8544";
 const gitExecutable = process.platform === "win32"
   ? String.raw`C:\Program Files\Git\cmd\git.exe`
   : "/usr/bin/git";
@@ -61,10 +62,15 @@ test("P1 output-correction fingerprints exactly bind this branch to the frozen m
   assert.equal(manifest.workOrder, "CB-M00-WO-001");
   assert.equal(manifest.change, "CB-M00-P1-WRANGLER-OUTPUT-FIX");
   assert.equal(manifest.baseCommitSha, baseSha);
+  assert.equal(manifest.comparisonBaseCommitSha, comparisonBaseSha);
   assert.equal(manifest.branch, "codex/cb-m00-wrangler-structured-output");
   assert.equal(manifest.excludesSelf, manifestPath);
 
-  const changedPaths = execFileSync(gitExecutable, ["diff", "--name-only", "--no-renames", "-z", baseSha], { encoding: "utf8" })
+  const comparisonBaseIsAncestor = spawnSync(gitExecutable, ["merge-base", "--is-ancestor", comparisonBaseSha, "HEAD"]);
+  assert.ifError(comparisonBaseIsAncestor.error);
+  assert.equal(comparisonBaseIsAncestor.status, 0, "the synchronized main SHA must be an ancestor of this PR head");
+
+  const changedPaths = execFileSync(gitExecutable, ["diff", "--name-only", "--no-renames", "-z", comparisonBaseSha], { encoding: "utf8" })
     .split("\0")
     .filter(Boolean);
   assertExactPathCoverage(changedPaths, manifest.files);

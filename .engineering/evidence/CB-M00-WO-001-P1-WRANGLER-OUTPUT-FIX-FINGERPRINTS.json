@@ -4,16 +4,25 @@
   "workOrder": "CB-M00-WO-001",
   "change": "CB-M00-P1-WRANGLER-OUTPUT-FIX",
   "baseCommitSha": "27015adc87caacabbed0e318f892644ce0473f10",
+  "comparisonBaseCommitSha": "b4ddb9891cc66cd3688b8e11a86abc75db4b8544",
   "branch": "codex/cb-m00-wrangler-structured-output",
   "fingerprintSource": "Git blob IDs and SHA-256 over Git blob bytes from frozen base and staged index; working-tree/index consistency is checked; no checkout newline conversion",
   "excludesSelf": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX-FINGERPRINTS.json",
   "files": [
     {
+      "path": ".engineering/context-locks/CB-M00-WO-001-PR41-SYNCHRONIZATION.md",
+      "base": null,
+      "candidate": {
+        "gitBlobSha1": "71538e176fd8ed75100a6e690e0b5b73acab79cd",
+        "rawBlobSha256": "de6f419ec093d78f30eead50a55e706f1ac0a25785bae14e00b97f8bdf04b5c0"
+      }
+    },
+    {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-WRANGLER-OUTPUT-FIX.md",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "7ba748256b0bc5af0114c7cbc39e2da0a26da8fe",
-        "rawBlobSha256": "1dd14a5fa5a31586f2a140393f1efc029ffa49af861352338d03bbc33ef2210e"
+        "gitBlobSha1": "29f9f2be4e1ee185413d94f3f6e39e202e11607c",
+        "rawBlobSha256": "812fafd46549c8dca522fdd3f8f03153c16f86129ac9a9ec068004582aad67f7"
       }
     },
     {
@@ -88,8 +97,8 @@
       "path": "scripts/verify-p1-wrangler-output-fingerprints.mjs",
       "base": null,
       "candidate": {
-        "gitBlobSha1": "711c3ddb03a6179876705aa9786131f211765b5b",
-        "rawBlobSha256": "d0d7e74566c3a4baa96ecac5e7a12f622443b0c90bb20decd17a650f829051e6"
+        "gitBlobSha1": "65c181bbaf74619db5831bcde074ce5ffbfb914f",
+        "rawBlobSha256": "f7b11a6da9341341141081069cd0929c316f1fd4fce999ca39642f5ec0a554a8"
       }
     },
     {

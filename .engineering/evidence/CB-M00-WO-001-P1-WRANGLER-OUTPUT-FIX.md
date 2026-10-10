@@ -68,6 +68,37 @@ This Preview belongs to the base main SHA, not this correction candidate. It is 
 | Evidence candidate `ba22e3d7413595c39770156b9b75e713c4a042be` exact-head CI and review | PASS: [run 37976801288](https://github.com/KayzenRoot/coinblink/actions/runs/37976801288) passed Ubuntu, Windows, Docker Compose, SonarCloud, Socket Alerts, and Socket Project Report; SonarCloud has no open issues. CodeRabbit CLI returned 0 issues. |
 | Cloudflare action for corrected HEAD | Not run. Requires correction PR review/merge and the existing protected Environment approval; no Cloudflare API, resource, billing, secret, production, or R2 operation was performed for this correction. |
 
-Every remote result above names the SHA it validates. The live PR #41 shows the latest exact-head checks and review state after subsequent amendments. No checkpoint or Context Lock change is part of this correction.
+Every historical remote result above names the SHA it validates. Those older checks and reviews do not validate the synchronized candidate below. No checkpoint promotion is proposed in this correction.
 
-The existing Context Locks and canonical `.engineering/CHECKPOINT.json` are preserved byte-for-byte. No checkpoint promotion is proposed in this correction. The next legal action is independent review of the correction PR; only after its normal merge can the protected workflow be run again against the corrected exact `main` SHA.
+## PR #41 continuation after main synchronization
+
+- **Synchronized main:** `b4ddb9891cc66cd3688b8e11a86abc75db4b8544`.
+- **Pre-sync PR head:** `d9bc2e2073c4071ff3fcda9e341cf05872e830e3`.
+- **Normal merge commit:** `6de7469c931187ddb46fbbc2e8c94818b3436070`; no rebase, force-push, or textual conflict resolution was used.
+- **Path integration:** `main` changed 19 paths since the original correction base; PR #41 changed 13 paths from synchronized main; exact path-set intersection was empty. This is structural evidence only; combined-tree tests and CI are still required for semantic compatibility.
+- **Fingerprint provenance:** the original frozen correction base `27015adc87caacabbed0e318f892644ce0473f10` and its source fingerprints remain historical. The manifest now records `comparisonBaseCommitSha=b4ddb9891cc66cd3688b8e11a86abc75db4b8544` for exact PR-path coverage while continuing to verify source and candidate bytes as Git blobs with SHA-1/SHA-256. The candidate-only validator requires synchronized main to be an ancestor of the PR head.
+- **Context Locks:** `.engineering/context-locks/CB-M00-WO-001-EXECUTION.md` and `.engineering/context-locks/CB-M00-WO-001-P1-PREPARATION.md` retain their original frozen contents. `.engineering/context-locks/CB-M00-WO-001-PR41-SYNCHRONIZATION.md` records the new base, current authority, scope, and critical-source fingerprints.
+- **Checkpoint:** unchanged. M00 remains admitted; P0 local implementation is recorded; P1 remains `NOT_DEPLOYED`; overall completion remains 0%; M01–M17 remain unadmitted and M18 remains future/unadmitted.
+- **Preview boundary:** the protected workflow was read and its exact-main, environment approval, Owner, and authorization gates remain in place. No workflow dispatch, Cloudflare API, Wrangler Preview/delete/deploy, secret read, billing change, production binding, R2, or remote resource operation was performed. A corrected-main Preview must still be run through the protected workflow after review/merge and its real URLs, SHA, routes, headers, isolation, rollback, and responsive screenshots must be verified before P1 or M00 can be marked complete.
+
+The current candidate's local test results and exact-head hosted checks are recorded in the updated Evidence Bundle and PR #41 after the synchronized candidate is validated. Prior exact-head checks and reviews remain historical and are not carried forward as evidence for a new SHA.
+
+## Local validation after synchronized main merge
+
+These checks ran on the combined PR #41 tree after merging `b4ddb9891cc66cd3688b8e11a86abc75db4b8544`. They are pre-final-commit results; the final pushed HEAD must still pass exact-head GitHub CI and fresh review.
+
+| Check | Result |
+|---|---|
+| Runtime | PASS: Node.js `22.19.0`, npm `10.9.3`. |
+| `npm ci --ignore-scripts` | PASS: 437 packages installed; install audit found 0 vulnerabilities. npm emitted one cleanup `EPERM` warning for a dependency directory that did not affect the successful installation. |
+| `npm run lint` | PASS: ESLint completed with zero warnings allowed. |
+| `npm run typecheck` | PASS: 38 Astro/TypeScript files; 0 errors, warnings, or hints. |
+| `npm audit --audit-level=high` | PASS: 0 vulnerabilities. |
+| `npm test` | PASS after supplying the documented CI metadata (`PUBLIC_BUILD_SHA` and `EXPECTED_SHA`): 79/79 unit/governance tests, Astro Cloudflare build, generated Worker binding guard, and 7/7 Playwright browser/accessibility tests at desktop 1536×864, tablet 768×1024, and mobile 390×844. An initial local invocation omitted `EXPECTED_SHA` and failed the environment assertion; the corrected invocation passed all tests. |
+| Candidate fingerprint validator | PASS: `node --test scripts/verify-p1-wrangler-output-fingerprints.mjs`, 2/2; exact changed-path coverage, base Git blob SHA-1/SHA-256, index/worktree consistency, and synchronized-main ancestry passed. |
+| Synchronized Context Lock | PASS: all 20 recorded base Git blob SHA-1/SHA-256 pairs independently recomputed from `b4ddb9891cc66cd3688b8e11a86abc75db4b8544`. |
+| GEF `doctor --target . --json` | Exit 0; checkpoint is present, readable, and valid; Node/Git/platform probes are healthy. GEF reports `repository.observable=FINDING` with `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED` because this is a managed linked worktree; dependency provenance is `unverified`/`REVIEW`. These findings remain visible and are not treated as a clean repository observation. |
+| GEF `status --target . --json` | Exit 0; canonical projection remains `M00_ADMITTED`, 0%, and the P1 provider/evidence gate is next. Dirtiness is `UNKNOWN`; conservative status is stale because no drift baseline exists. No baseline or clean state was fabricated. |
+| Local Docker Compose smoke | PASS on free loopback port 3010 in a uniquely named Compose project. Built from the unchanged pinned `node:22.19.0-bookworm-slim` image digest; `/health`, `/preview-status`, `/en`, 404, noindex, build metadata, and `NOT_DEPLOYED` response passed. The build SHA was an explicit pre-commit validation sentinel, not a claim that this was a committed or remote build. Only this named Compose project was removed; the unrelated listener on port 3000 was not touched. |
+| Exact-head GitHub CI and CodeRabbit | PENDING until the final commit is pushed. The prior green runs and reviews in the historical table do not apply to this synchronized candidate. |
+| Cloudflare Preview | NOT RUN. No dispatch, Cloudflare API/Wrangler command, credential access, billing change, or remote resource operation occurred. |

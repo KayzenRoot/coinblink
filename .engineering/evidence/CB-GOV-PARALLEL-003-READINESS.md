@@ -16,3 +16,35 @@ Run `node scripts/plan-parallel-modules.mjs` or `node scripts/plan-parallel-modu
 5. Require observed authoring/worktree/agent IDs at dispatch time. Suggested names in the plan are prospective, **never claims of created worktrees**. The CLI does not infer that module M02+ is completed merely from a proposed wave or a prior `ADMITTED` field. Future multi-module completion proof requires explicit promoted evidence; the scheduler is intentionally conservative until a source-backed completion registry exists.
 
 **STOP CONDITION:** execute `npm test`, lint/typecheck, Windows/Ubuntu/Docker GitHub checks and CodeRabbit on exact candidate SHA; audit and merge this tool under normal authority. Follow with real Scope/Architecture/DoD/ADR and admission decisions. Existing 19 modules and M18 FUTURE unchanged. All source-heavy product modules remain subject to their own DoD and Owner review.
+
+## Same-PR SonarCloud correction · 2026-10-10
+
+The pre-correction PR head `e0d9c85496bfb16b22de0f94808022b9ad97b75f` failed the new-code Reliability Quality Gate (rating D, required A). The PR-specific SonarCloud API returned three open diagnostics in `scripts/plan-parallel-modules.mjs`:
+
+| Rule / classification | Prior location | Correction |
+|---|---|---|
+| `javascript:S2871`, CRITICAL / BUG, Reliability impact HIGH | Line 40, both bare `.sort()` calls in the checkpoint registry equality guard | Replaced sorting with exact set equality: compare set size with the 19 expected IDs, then verify every canonical ID with `Set.has()`. This preserves order-independent equality and rejects missing or extra checkpoint keys. |
+| `javascript:S7776`, MINOR / CODE_SMELL, Maintainability impact MEDIUM | Line 111, `tokens.includes()` in the status parser | Store the status tokens in a `Set` and use `.has()` for all membership checks; the `NOT_ADOPTED` exclusion remains unchanged. |
+
+The five planner functions also received concise JSDoc descriptions in response to CodeRabbit's prior docstring-coverage warning; this changes no runtime behavior.
+
+The regression test `checkpoint admission registry matches the exact canonical module ID set` verifies reordered keys are accepted while a missing ID or unexpected `CB-M19` fails closed. No quality gate, assertion, module count, checkpoint, ADR status, or module-admission state was weakened or changed.
+
+Candidate source SHA-256 fingerprints (before commit):
+
+| Path | SHA-256 |
+|---|---|
+| `scripts/plan-parallel-modules.mjs` | `b757dd641ef5b82e6b46fb7bf4ade32eb6ee044034e260e5ef702f212b475ae4` |
+| `test/parallel-batch-planner.test.mjs` | `034b720032276f686017aefe4af8d557a66c9443a9cbe3806997446f4c8bc2a8` |
+
+Local validation used Node `22.19.0` and npm `10.9.3`:
+
+- `npm ci`: 437 packages installed, 448 audited, 0 vulnerabilities.
+- `npm test`: 95/95 unit tests pass; Astro build and binding guard pass; 7/7 Playwright checks pass.
+- `npm run lint`: pass with zero warnings.
+- `npm run typecheck`: 44 files, 0 errors, 0 warnings, 0 hints.
+- `npm audit --audit-level=high`: 0 vulnerabilities.
+- GEF `doctor` and `status`: read-only commands succeeded with `effect: NONE`; repository observability is **REVIEW**, because this managed linked worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED`. GEF also reports unverified dependency provenance, an absent drift baseline, and a stale operator snapshot; this is not represented as a clean GEF PASS.
+- `git diff --check`: pass.
+
+Exact-head Ubuntu/Windows/Docker/SonarCloud/Socket checks, hosted CodeRabbit review, and final audit are evaluated on the pushed candidate SHA in the PR; this local Evidence Bundle does not pre-claim their results. The canonical checkpoint remains `M00_COMPLETE` at 5%; M01–M17 remain `NOT_ADMITTED`, and M18 remains `FUTURE_NOT_ADMITTED`.

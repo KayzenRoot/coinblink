@@ -13,6 +13,7 @@ const MATRIX = '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json';
 const CHECKPOINT = '.engineering/CHECKPOINT.json';
 const ADR = 'docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md';
 
+/** Calculates a safe authoring concurrency ceiling from currently available resources. */
 export function localAuthoringSlots({ cpus, ramBytes }) {
   if (!Number.isInteger(cpus) || cpus < 1 || !Number.isFinite(ramBytes) || ramBytes <= 0) {
     throw new Error('Invalid resource observations');
@@ -22,6 +23,7 @@ export function localAuthoringSlots({ cpus, ramBytes }) {
   return Math.max(1, Math.min(Math.floor(cpus / 2), Math.floor(ramBytes / (4 * 1024 ** 3))));
 }
 
+/** Builds a read-only plan from the canonical module matrix, checkpoint, and approved gates. */
 export function planParallelModules({ matrix, checkpoint, adoptedADR = false, resourceSlots = 1, gates = {} }) {
   if (matrix.moduleCount !== 19 || matrix.modules.length !== 19) {
     throw new Error('Canonical module count is not the 19-module product catalog');
@@ -37,7 +39,8 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
   if (JSON.stringify(ids) !== JSON.stringify(expected)) {
     throw new Error('Module identifiers/order changed from CB-M00 through CB-M18');
   }
-  if (Object.keys(checkpoint.checkpointFacts.moduleAdmission).sort().join('|') !== [...expected].sort().join('|')) {
+  const admissionIds = new Set(Object.keys(checkpoint.checkpointFacts.moduleAdmission));
+  if (admissionIds.size !== expected.length || expected.some(id => !admissionIds.has(id))) {
     throw new Error('Checkpoint admission registry differs from 19 canonical module IDs');
   }
   const m00Done = checkpoint.status === 'M00_COMPLETE'
@@ -98,24 +101,27 @@ export function planParallelModules({ matrix, checkpoint, adoptedADR = false, re
   };
 }
 
+/** Reads and parses a repository JSON file relative to the planner root. */
 function readJson(file) {
   return JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
 }
 
+/** Checks only the ADR's current status line for an Owner-approved adoption. */
 function detectADR() {
   if (!existsSync(path.join(ROOT, ADR))) return false;
   const doc = readFileSync(path.join(ROOT, ADR), 'utf8');
   // Read only the exact first Status line; the words ADOPTED occur in historical paragraphs.
   const statusLine = doc.split(/\r?\n/u).find(line => line.startsWith('**Status:**'));
   if (!statusLine) return false;
-  const tokens = statusLine.slice('**Status:**'.length)
+  const tokens = new Set(statusLine.slice('**Status:**'.length)
     .replaceAll('`', '')
     .split('/')
-    .map(token => token.trim());
-  return tokens.includes('ADOPTED') && tokens.includes('OWNER_APPROVED')
-    && !tokens.includes('NOT_ADOPTED');
+    .map(token => token.trim()));
+  return tokens.has('ADOPTED') && tokens.has('OWNER_APPROVED')
+    && !tokens.has('NOT_ADOPTED');
 }
 
+/** Parses an optional positive integer limit on eligible code agents. */
 function parseMaxAgents(argv) {
   const i = argv.indexOf('--max-agents');
   if (i === -1) return null;

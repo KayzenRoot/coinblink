@@ -68,6 +68,22 @@ test('invalid module count, M18 admission and unsafe limits fail closed', () => 
   assert.throws(() => planParallelModules({ matrix, checkpoint, resourceSlots: 0 }), /positive integer/u);
 });
 
+test('checkpoint admission registry matches the exact canonical module ID set', () => {
+  const reordered = structuredClone(checkpoint);
+  reordered.checkpointFacts.moduleAdmission = Object.fromEntries(
+    Object.entries(reordered.checkpointFacts.moduleAdmission).reverse(),
+  );
+  assert.equal(planParallelModules({ matrix, checkpoint: reordered }).moduleCount, 19);
+
+  const missing = structuredClone(checkpoint);
+  delete missing.checkpointFacts.moduleAdmission['CB-M07'];
+  assert.throws(() => planParallelModules({ matrix, checkpoint: missing }), /registry/u);
+
+  const unexpected = structuredClone(checkpoint);
+  unexpected.checkpointFacts.moduleAdmission['CB-M19'] = 'NOT_ADMITTED';
+  assert.throws(() => planParallelModules({ matrix, checkpoint: unexpected }), /registry/u);
+});
+
 test('resource-aware authoring is not hard-capped to two agents', () => {
   assert.equal(localAuthoringSlots({ cpus: 24, ramBytes: 64 * 1024 ** 3 }), 12);
   assert.equal(localAuthoringSlots({ cpus: 4, ramBytes: 8 * 1024 ** 3 }), 2);

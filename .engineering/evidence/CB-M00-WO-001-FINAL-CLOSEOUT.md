@@ -18,6 +18,10 @@
 
 The immutable Context Lock records the plan and status observed when that lock was created, including the then-prospective protected approval for run #38068609949. It is intentionally unchanged to preserve its frozen provenance. Later, the Owner directed reuse of run #38049696879 while application/build inputs remain unchanged (Issue #6 comment 6099111571); run #38068609949 was then canceled at the protected gate before any provider step. This dated Evidence Bundle and the current Source Hierarchy/Work Order status supersede the lock's prospective gate wording for present operations. Protected Environment approval remains required for any future new deployment.
 
+### Immutable Context Lock manifest-count erratum · 2026-10-10
+
+The independent read-only audit of PR #50 found a counting typo in this immutable Context Lock: it says the frozen base manifest records 32 SHA-1/SHA-256 pairs, while the referenced manifest contains 33 file records. The audit revalidated all 33 pairs against the frozen base Git blobs and exact bytes; no fingerprint mismatch or source-set discrepancy was found. The Context Lock remains unchanged to preserve its recorded provenance. This dated erratum corrects only the count; the manifest's recorded SHA-256 remains `ee5a539a4a1d8484afd4342351c3962e075b7fdf0717e730a5dbf561150044f5`.
+
 ## Existing isolated Preview evidence
 
 The already successful protected workflow [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) deployed exact app SHA `e8886e21c6f152ca374b1e42852c6b6638543f40` to the dedicated Worker Preview. These URLs and the captured evidence remain real and valid for that exact app SHA:

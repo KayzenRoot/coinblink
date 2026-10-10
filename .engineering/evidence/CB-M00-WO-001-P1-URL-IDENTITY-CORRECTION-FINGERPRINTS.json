@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M00-WO-001",
+  "change": "CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION",
+  "base": {
+    "ref": "main",
+    "sha": "9c900fda5044c1cfa42934f20dcd3621a48cd613"
+  },
+  "branch": "codex/cb-m00-wo-001-p1-url-identity",
+  "checkpoint": {
+    "changed": false,
+    "canonicalPreviewDeployment": "NOT_DEPLOYED",
+    "overallCompletionPercent": 0,
+    "delta": "PROPOSED_NO_PROMOTION"
+  },
+  "candidatePathSet": {
+    "manifestExcludedFromItsOwnFileList": ".engineering/evidence/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION-FINGERPRINTS.json",
+    "files": [
+      {
+        "path": ".engineering/context-locks/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION.md",
+        "gitBlobSha1": "3cc328bfc191cd7b476441066cbc720b298c47fe",
+        "rawBlobSha256": "a2fc6bcfdf6a089294944953ed8f9fb2f755ad18bbed2afcc2e210e1a1079fcf"
+      },
+      {
+        "path": ".engineering/evidence/CB-M00-WO-001-EVIDENCE.md",
+        "gitBlobSha1": "dd337a77bd75fdbd6b3b3e432c95f0887105d6f4",
+        "rawBlobSha256": "d4ad7c4590d73daf58991c16c5c547fe708d2871c6094e0d42926df8d46248bb"
+      },
+      {
+        "path": ".engineering/evidence/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION-CHECKPOINT-DELTA.md",
+        "gitBlobSha1": "b92d9361be4eab132f72a86c968f3a798ca5ac5b",
+        "rawBlobSha256": "886913815f8a8b882b97c2443d2fda895c0d88feae5f2992d5a11b8f9d83e226"
+      },
+      {
+        "path": ".engineering/evidence/CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION.md",
+        "gitBlobSha1": "6f8fc2d36beaadc214002919f096d5bdefef1e6c",
+        "rawBlobSha256": "f222b8731f9c5ad787f8c596a89fe7c39c30579ec41c65683ef6865b81d12406"
+      },
+      {
+        "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-desktop-1536x864.png",
+        "gitBlobSha1": "4b7ff7cc6aad0f51bfc4ea96cba2fe3af3c306a2",
+        "rawBlobSha256": "62b11fa6fcdfe40161a0eb76e45663c55b27210573ad32adf5cb9c30506bd145"
+      },
+      {
+        "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-mobile-390x844.png",
+        "gitBlobSha1": "35f13f7fa38bea5ee902c432795239c87c011e9b",
+        "rawBlobSha256": "72fafb5e008ff4c76ce48d6d11d6e6c29de259a43427b43c41290fea0c0e68db"
+      },
+      {
+        "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-tablet-768x1024.png",
+        "gitBlobSha1": "3126f6a0988c27ce964a40ee769a2a27c9627869",
+        "rawBlobSha256": "bd54a64ee87eaf3e5a27e3baf6e804712c8cbbdb8c1068203cdd0b765fe44f4e"
+      },
+      {
+        "path": "scripts/record-preview-output.mjs",
+        "gitBlobSha1": "a0786a35e64d7f42fee6d0530b45d30252d0bc3d",
+        "rawBlobSha256": "c85e3bb118e125d0c3ed97ad27bef4675bbeb204504b71fe01570398c6457aa2"
+      },
+      {
+        "path": "test/cloudflare-preview-output.test.mjs",
+        "gitBlobSha1": "3e94a4244dc3a776755281493066372d6d690ef7",
+        "rawBlobSha256": "73c4d5900383962b45209d8eaa964d0f85a86372b26415a76fa86f199e6f23d1"
+      }
+    ]
+  },
+  "remotePreview": {
+    "githubRun": 38045607351,
+    "workflowConclusion": "failure",
+    "failure": "Recorder rejected UUID deployment ID because the immutable hostname uses its eight-character hexadecimal prefix",
+    "deployedBuildSha": "9c900fda5044c1cfa42934f20dcd3621a48cd613",
+    "previewName": "coinblink-m00-run-38045607351-1",
+    "stableUrl": "https://coinblink-m00-run-38045607351-1-coinblink-m00-preview.kayzendev.workers.dev/",
+    "immutableUrl": "https://14557496-coinblink-m00-preview.kayzendev.workers.dev/",
+    "cloudflareUiState": "Ready",
+    "routeSecurityVerifier": "PASS on both actual URLs at deployedBuildSha",
+    "playwright": {
+      "runtime": "Node.js 22.19.0 / Playwright 1.64.0 / axe-core 4.13.0",
+      "stableUrl": "PASS at 1536x864, 768x1024, 390x844; noindex; no overflow; zero axe violations; zero page errors"
+    },
+    "bindings": "Dashboard showed three static Assets on Preview; no R2/KV/D1/product-data bindings; production overview showed zero resource bindings",
+    "screenshots": [
+      ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-desktop-1536x864.png",
+      ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-tablet-768x1024.png",
+      ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38045607351/stable-mobile-390x844.png"
+    ],
+    "secretsRead": false,
+    "productionDeploy": false
+  },
+  "localChecks": {
+    "node": "22.19.0",
+    "npm": "10.9.3",
+    "npmCi": "PASS",
+    "npmAuditHigh": "PASS 0 vulnerabilities",
+    "lint": "PASS",
+    "typecheck": "PASS 38 files / 0 diagnostics",
+    "unitTests": "PASS 81/81",
+    "buildAndBindingGuard": "PASS",
+    "playwrightLocal": "PASS 7/7",
+    "gefDoctor": "exit 0; repository observation FINDING; dependency provenance unverified; GitHub policy REVIEW",
+    "gefStatus": "exit 0; checkpoint valid; dirtiness UNKNOWN; drift baseline absent"
+  },
+  "selfFingerprintNote": "This file is excluded from candidatePathSet to avoid recursive self-fingerprinting. Its final Git blob is available at the exact PR HEAD; the PR description and checks identify that immutable commit SHA."
+}

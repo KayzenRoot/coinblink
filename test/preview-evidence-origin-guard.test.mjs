@@ -6,7 +6,10 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright";
-import { createPreviewEvidenceRouteHandler } from "../scripts/preview-evidence-origin-guard.mjs";
+import {
+  createPreviewEvidenceBrowserContext,
+  createPreviewEvidenceRouteHandler,
+} from "../scripts/preview-evidence-origin-guard.mjs";
 import { clearStalePreviewEvidenceArtifacts } from "../scripts/preview-evidence-output-cleanup.mjs";
 
 let originServer;
@@ -26,6 +29,18 @@ before(async () => {
   target = `http://127.0.0.1:${targetServer.address().port}`;
 
   originServer = createServer((request, response) => {
+    if (request.url === "/service-worker.js") {
+      response.writeHead(200, { "content-type": "application/javascript" });
+      response.end("self.addEventListener('fetch', () => {});");
+      return;
+    }
+
+    if (request.url === "/service-worker-page") {
+      response.writeHead(200, { "content-type": "text/html" });
+      response.end("<!doctype html><html><body>Service Worker guard fixture</body></html>");
+      return;
+    }
+
     if (request.url === "/") {
       response.writeHead(200, { "content-type": "text/html" });
       response.end('<!doctype html><html><body><img id="redirected" src="/redirect-resource"></body></html>');
@@ -63,7 +78,8 @@ function installGuard(page, blockedRedirects) {
 }
 
 test("blocks a cross-origin redirect from a document subresource before fetching its destination", async () => {
-  const context = await browser.newContext({ ignoreHTTPSErrors: false });
+  targetHits.length = 0;
+  const context = await createPreviewEvidenceBrowserContext(browser, { ignoreHTTPSErrors: false });
   try {
     const page = await context.newPage();
     const blockedRedirects = [];
@@ -81,8 +97,62 @@ test("blocks a cross-origin redirect from a document subresource before fetching
   }
 });
 
+test("registers the Service Worker fixture when a regular context explicitly allows it", async () => {
+  const context = await browser.newContext({
+    ignoreHTTPSErrors: false,
+    serviceWorkers: "allow",
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto(`${origin}/service-worker-page`, { waitUntil: "networkidle" });
+
+    const registrationResult = await page.evaluate(async () => {
+      await navigator.serviceWorker.register("/service-worker.js");
+      return (await navigator.serviceWorker.getRegistrations()).length;
+    });
+
+    assert.equal(registrationResult, 1);
+    assert.equal((await context.serviceWorkers()).length, 1);
+  } finally {
+    await context.close();
+  }
+});
+
+test("blocks Service Worker registration in an evidence browser context", async () => {
+  targetHits.length = 0;
+  const context = await createPreviewEvidenceBrowserContext(browser, {
+    ignoreHTTPSErrors: false,
+    serviceWorkers: "allow",
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto(`${origin}/service-worker-page`, { waitUntil: "networkidle" });
+
+    const serviceWorkerState = await page.evaluate(async () => {
+      try {
+        await navigator.serviceWorker.register("/service-worker.js");
+        return {
+          registrationResult: "resolved",
+          registrations: (await navigator.serviceWorker.getRegistrations()).length,
+        };
+      } catch (error) {
+        return {
+          registrationResult: error instanceof Error ? error.name : String(error),
+          registrations: (await navigator.serviceWorker.getRegistrations()).length,
+        };
+      }
+    });
+
+    assert.equal(serviceWorkerState.registrations, 0);
+    assert.deepEqual(await context.serviceWorkers(), [], `unexpected worker after registration result: ${serviceWorkerState.registrationResult}`);
+  } finally {
+    await context.close();
+  }
+});
+
 test("blocks a cross-origin navigation redirect before fetching its destination", async () => {
-  const context = await browser.newContext({ ignoreHTTPSErrors: false });
+  targetHits.length = 0;
+  const context = await createPreviewEvidenceBrowserContext(browser, { ignoreHTTPSErrors: false });
   try {
     const page = await context.newPage();
     const blockedRedirects = [];

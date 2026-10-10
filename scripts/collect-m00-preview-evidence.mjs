@@ -4,7 +4,10 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
-import { createPreviewEvidenceRouteHandler } from "./preview-evidence-origin-guard.mjs";
+import {
+  createPreviewEvidenceBrowserContext,
+  createPreviewEvidenceRouteHandler,
+} from "./preview-evidence-origin-guard.mjs";
 import { clearStalePreviewEvidenceArtifacts } from "./preview-evidence-output-cleanup.mjs";
 
 /* global document, getComputedStyle, window */
@@ -133,7 +136,7 @@ try {
   results.browserVersion = browser.version();
   results.playwrightVersion = JSON.parse(await readFile(new URL("../node_modules/playwright/package.json", import.meta.url), "utf8")).version;
   results.axePlaywrightVersion = JSON.parse(await readFile(new URL("../node_modules/@axe-core/playwright/package.json", import.meta.url), "utf8")).version;
-  const context = await browser.newContext({
+  const context = await createPreviewEvidenceBrowserContext(browser, {
     ignoreHTTPSErrors: false,
     viewport: { width: 1536, height: 864 },
   });
@@ -200,7 +203,7 @@ try {
   results.routes.push({ path: intentional404Path, status: missingResponse.status(), headers: evidenceHeaders(missingResponse.headers()) });
 
   for (const viewport of viewports) {
-    const viewportContext = await browser.newContext({
+    const viewportContext = await createPreviewEvidenceBrowserContext(browser, {
       ignoreHTTPSErrors: false,
       viewport: { width: viewport.width, height: viewport.height },
     });

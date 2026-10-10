@@ -67,6 +67,10 @@ Git blob SHA-1 is calculated over the Git blob header and exact base bytes; raw 
 ## Validation and exit gates
 
 - Collector must pass exact stable and immutable `/health` SHA gates before screenshots or cleanup, preserve HTTPS validation and exact-origin allowlist, prove redirects are blocked for documents/resources, verify stale-artifact cleanup is limited to known outputs, verify route/security/noindex, exact PNG IHDR dimensions, axe, responsive overflow, keyboard focus, console/page/network error counts, and output SHA-256 hashes.
-- Run repository unit/browser tests, lint, typecheck, build, security audit and GEF 1.1.2 doctor/status; record that the local shell uses Node 24 if pinned Node 22.19/npm 10.9.3 cannot be selected. Exact-head PR CI uses the repository-pinned runtime.
+- Run repository unit/browser tests, lint, typecheck, build, security audit and GEF 1.1.2 doctor/status under Node `22.19.0` / npm `10.9.3`; the official Windows x64 archive SHA-256 is independently verified in the correction Evidence Bundle. Exact-head PR CI remains authoritative for the pushed commit.
 - Verify exact remote Preview run/commit/check state without triggering a new deployment. Do not reuse the deploy token to inspect billing or provider bindings.
 - Open one PR under this same Work Order; require exact-head CI and independent review. Do not merge, promote checkpoint, mark M00 done, or start M01+.
+
+## Audit correction delta · 2026-10-10
+
+The frozen canonical base remains `e8886e21c6f152ca374b1e42852c6b6638543f40`; no base fingerprint or checkpoint source was rebound. Within the original write set, this correction makes the evidence collector's network boundary fail closed for Service Workers: all Chromium contexts are created by `createPreviewEvidenceBrowserContext`, which forces `serviceWorkers: "block"`; the regression verifies a valid local worker cannot register even when the caller supplies an `"allow"` override. The change is limited to the collector, its existing origin-guard module, its focused test, and this closeout Evidence Bundle/fingerprint manifest. The protected Preview workflow and deployed application are untouched. Exact candidate fingerprints are recorded in the candidate manifest, which continues to exclude only itself; the frozen base manifest remains immutable.

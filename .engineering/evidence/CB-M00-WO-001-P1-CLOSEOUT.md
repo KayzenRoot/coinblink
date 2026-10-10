@@ -70,6 +70,32 @@ Validation used Node.js `v22.19.0` and npm `10.9.3` from the already-present off
 
 The GEF observer finding describes this linked-worktree filesystem layout, not a checkpoint parse failure or application finding. Exact-head PR CI runs in the repository's normal GitHub checkout and remains a separate required gate. The signature audit's 404 remains an open provenance review item; the ordinary high-severity audit passed.
 
+## PR #48 audit disposition · 2026-10-10
+
+The SonarCloud analysis for the audited pre-correction PR head `e92c559eb0f8fb84520b6a02804af6c971bd886e` passed its Quality Gate and reported zero Security Hotspots. The read-only SonarCloud issues API returned 19 open findings: all are `MINOR` / `CODE_SMELL`, rule `javascript:S9382` (“Unexpected await inside a loop”), in `scripts/collect-m00-preview-evidence.mjs` at lines 203, 207–209, 212–217, 220, 225, 230, 236–237, 239, 241–242 and 264. These are serial browser-context creation, navigation, assertions, capture, hashing and context-close operations in the viewport loop. They intentionally preserve ordered checks, one viewport at a time and deterministic artifact writes; parallelizing them would overlap contexts and undermine the bounded resource and evidence sequence. No correctness, security or reliability defect is demonstrated by these warnings, so no Sonar status was changed.
+
+The API also returned one historical `CRITICAL` / `BUG`, `javascript:S2871`, at the same file with status `CLOSED`; it is not one of the 19 open issues. The comparator already uses `localeCompare`, and the issue is closed. No other open severities, rules or files were present in the 19-issue result.
+
+SonarCloud measured `0.0% Coverage on New Code`. The repository's test script runs `node --test` without coverage instrumentation, and no LCOV report path or other coverage report is configured in the repository. This metric therefore means that SonarCloud received no measured new-code coverage; it does not mean the tests did not run. The M00 DoD and current Quality Gate do not define a numeric coverage threshold, so no coverage gate or instrumentation was invented for this evidence-only Work Order.
+
+The collector used `page.route()` with fresh Chromium contexts that previously left Service Workers at Playwright's default. Playwright documents that requests intercepted by Service Workers can bypass route interception and recommends `serviceWorkers: "block"` when using routing ([BrowserContext routing](https://playwright.dev/docs/api/class-browsercontext#browser-context-route)). The closeout correction now creates all collector contexts through `createPreviewEvidenceBrowserContext`, which forces Service Workers to `"block"` even if an option attempts to allow them. The focused regression serves a valid local Service Worker script, attempts registration while passing an `"allow"` override, and verifies that no registration or running worker exists. No application code, site behavior, dependency, Preview resource, binding, billing setting or checkpoint value changed. The previously captured Preview screenshots remain historical evidence for the exact deployed application SHA; this correction hardens only the local collector.
+
+### Correction validation
+
+Validation used the repository-supported Node.js `v22.19.0` / npm `10.9.3` runtime archive, SHA-256 `ea3fad0e67a991d8477d8c01344b56e69c676ccb733f065b22436994b1253f86`, verified against the official Node.js release `SHASUMS256.txt` ([release archive](https://nodejs.org/en/download/archive/v22.19.0)). A preliminary attempt under the desktop's Node `v24.19.0` correctly failed the GEF major-version assertion; it is not counted as a project validation result.
+
+| Command | Result |
+|---|---|
+| `node --test test/preview-evidence-origin-guard.test.mjs` | PASS, 6/6 including a valid Service Worker positive control, evidence-context blocking, and cross-origin redirect regressions. |
+| `npm test` | PASS, 87/87 unit tests, Astro Worker build/no-binding guard, and 7/7 Playwright browser tests across desktop/tablet/mobile with axe. |
+| `npm run lint` | PASS, ESLint with zero warnings. |
+| `npm run typecheck` | PASS, 42 files; 0 errors, warnings or hints. |
+| `npm audit --audit-level=high` | PASS, 0 vulnerabilities. |
+| GEF 1.1.2 `doctor` / `status` | Both read-only commands exited 0 and read a valid checkpoint. The linked worktree observer remains `FINDING` / dirtiness `UNKNOWN` (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`); no baseline or state was fabricated. |
+| Exact-head GitHub checks and CodeRabbit | Pending publication of the correction commit; must be read from PR #48 at its final pushed SHA. |
+
+No local Docker smoke or remote Cloudflare operation was run for this collector-only correction. No screenshot, Preview, cost, live-binding, Owner visual-acceptance or checkpoint-promotion result is newly claimed.
+
 ## Source fingerprints
 
 The frozen base manifest `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-BASE-FINGERPRINTS.json` contains 32 source paths at exact base SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`; all Git blob SHA-1 and raw-byte SHA-256 pairs were revalidated against those immutable Git objects. The candidate manifest `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-FINGERPRINTS.json` records the exact changed-path set against that base, including additions and modifications, with Git blob SHA-1 and raw-byte SHA-256. It excludes only itself to avoid self-reference. No source deletions are in scope.

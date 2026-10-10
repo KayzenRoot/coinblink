@@ -26,8 +26,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "dbb5049c026a811cb8c235a0229f8df1ba54b428",
-      "candidateRawSha256": "0f3277089ceb67b04e67908efa961fe835eddaf027bf8232537c00abde443ebf"
+      "candidateGitBlobSha1": "b9d6e5bbc72ac74c8df3da42f6bdd15c67f58a24",
+      "candidateRawSha256": "4d5af5709ba4e204e48ca6ae181c3abe711ad6eb0b8e234c0f30399de1884faf"
     },
     {
       "path": ".engineering/DEFINITION-OF-DONE.md",
@@ -74,8 +74,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "dc4ab0b4777f4dee9225b922937ebad4466dd662",
-      "candidateRawSha256": "703417b46e3b00892c6934b14bbe295311469becdddd57822d1ec78187d1bc9b"
+      "candidateGitBlobSha1": "db3a06417d3dc71fcee003921eeda07dff8e6bc1",
+      "candidateRawSha256": "35d82c6d07ed64064dbab5d4217f208883af5f04db5675a1870c1395e43f65be"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
@@ -194,16 +194,16 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "b1bc243875415e2d76fb307726c5c90a59b903ea",
-      "candidateRawSha256": "78ac2b88120a755e66eacef16e974d330fef300ddaa0d15349e99469e663193d"
+      "candidateGitBlobSha1": "2c7388a0f301ccf0cb38afe8e73ddf51163640a9",
+      "candidateRawSha256": "83be905ac2a8903e1ac33fcc5f4c9f42e63ae6deb255a8baca98ebb0540d8f7b"
     },
     {
       "path": "scripts/preview-evidence-origin-guard.mjs",
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "14b3ad53fbaf28f2fd58adb4f16021fa01047fbb",
-      "candidateRawSha256": "9faa8234e298c14199e027e82b51b7d1df296b39be041c57981c74c9584c88a0"
+      "candidateGitBlobSha1": "06a9e871d7f6ff0b7802005a9be3c71385f7cade",
+      "candidateRawSha256": "66d7f05f12a414b23517174bbf45adc7ef1e172cf0b3884ec1dadb8ce42768ad"
     },
     {
       "path": "scripts/preview-evidence-output-cleanup.mjs",
@@ -218,8 +218,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "286ffc09aa22e0c1db7c141fb3e67a5c9b0f96a4",
-      "candidateRawSha256": "97f794484440ea8eb1d9e64ef50128c9b589ce016bf250168d4d0dee049659d8"
+      "candidateGitBlobSha1": "f42f939a774bc1a0fddd4ecae997eca00284f150",
+      "candidateRawSha256": "24c5a1e85c40c52fb5053292116698bf165eb5890eff880716080cf3c1eb8d12"
     }
   ]
 }

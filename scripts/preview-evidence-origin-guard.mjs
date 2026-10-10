@@ -1,5 +1,9 @@
 const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);
 
+export function createPreviewEvidenceBrowserContext(browser, options = {}) {
+  return browser.newContext({ ...options, serviceWorkers: "block" });
+}
+
 export function createPreviewEvidenceRouteHandler({
   allowedOrigins,
   blockedOrigins,

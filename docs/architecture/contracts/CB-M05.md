@@ -1,7 +1,7 @@
 # CB-M05 · Sole-Owner CMS producer contract candidate
 
-**Status:** PROPOSED / NOT_APPROVED / NOT_ADMITTED / NON_EXECUTABLE.
-**Contract owner if admitted:** CB-M05. **Consumers:** M02 article read model, M03 source ingestion, M07/M08/M09/M10/M11/M13/M17 as admitted by actual dependency DAG.
+**Admission candidate status:** REVIEW_REQUIRED / NON_EXECUTABLE_UNTIL_THIS_PR_MERGED; after merge only P0 fixture-based non-privileged CMS UI is authorized. Real identity/sessions/vault/database/P1 remain BLOCKED until a separate approved security/data ADR.
+**Contract owner upon approved limited-P0 admission:** CB-M05. **Consumers:** M02 article read model, M03 source ingestion, M07/M08/M09/M10/M11/M13/M17 as admitted by actual dependency DAG.
 **Source base:** `d8233772a80b613015284309a30657ba576a1b4f`, M00 COMPLETE/5%. The staged global source/ADR PR #53 is merged into main; Issue #6 is closed. This proposal is still NOT_ADMITTED until an individual GEF Work Order and Context Lock. M05 P1 authentication/security implementation choices remain gated. This document freezes **no** auth implementation vendor or Cloudflare resource.
 
 ## Security boundary (P0 is not working auth)

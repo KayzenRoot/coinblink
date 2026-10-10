@@ -12,11 +12,15 @@ test('approved staged baseline does not admit a new module', () => {
   }
   assert.equal(isParallelAdrApproved(read('docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md')), true);
   const cp = JSON.parse(read('.engineering/CHECKPOINT.json'));
-  assert.equal(cp.status, 'M00_COMPLETE');
-  assert.equal(cp.overallCompletionPercent, 5);
   assert.equal(Object.keys(cp.checkpointFacts.moduleAdmission).length, 19);
+  assert.equal(cp.checkpointFacts.moduleAdmission['CB-M00'], 'ADMITTED');
+  assert.ok(Number.isInteger(cp.overallCompletionPercent) && cp.overallCompletionPercent >= 5);
   for (let i=1; i<=17; i++) {
-    assert.equal(cp.checkpointFacts.moduleAdmission['CB-M'+String(i).padStart(2,'0')], 'NOT_ADMITTED');
+    const id = 'CB-M' + String(i).padStart(2, '0');
+    assert.ok(['NOT_ADMITTED','ADMITTED'].includes(cp.checkpointFacts.moduleAdmission[id]), id);
+    if (cp.checkpointFacts.moduleAdmission[id] === 'ADMITTED') {
+      assert.equal(typeof cp.checkpointFacts.moduleAdmissionEvidence?.[id]?.workOrder, 'string', id + ' requires specific documented authorization');
+    }
   }
   assert.equal(cp.checkpointFacts.moduleAdmission['CB-M18'], 'FUTURE_NOT_ADMITTED');
 });

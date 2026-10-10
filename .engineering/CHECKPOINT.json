@@ -5,7 +5,7 @@
   "phase": "IMPLEMENTATION_IN_PROGRESS",
   "completedThroughModule": "CB-M00",
   "overallCompletionPercent": 5,
-  "nextLegalStage": "ADOPT_GLOBAL_SCOPE_ARCHITECTURE_DOD_AND_PARALLEL_DELIVERY_ADR_THEN_ADMIT_DEPENDENCY_READY_MODULES",
+  "nextLegalStage": "CB_M05_P0_ADMISSION_REVIEW_THEN_LOCAL_MOCK_ONLY_CODE_IF_CANONICAL;_P1_SECURITY_ADR_PENDING",
   "checkpointFacts": {
     "sourceMainSha": "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f",
     "scopeApproval": {
@@ -30,7 +30,7 @@
       "CB-M02": "NOT_ADMITTED",
       "CB-M03": "NOT_ADMITTED",
       "CB-M04": "NOT_ADMITTED",
-      "CB-M05": "NOT_ADMITTED",
+      "CB-M05": "ADMITTED",
       "CB-M06": "NOT_ADMITTED",
       "CB-M07": "NOT_ADMITTED",
       "CB-M08": "NOT_ADMITTED",
@@ -44,6 +44,18 @@
       "CB-M16": "NOT_ADMITTED",
       "CB-M17": "NOT_ADMITTED",
       "CB-M18": "FUTURE_NOT_ADMITTED"
+    },
+    "moduleAdmissionEvidence": {
+      "CB-M05": {
+        "workOrder": "CB-M05-WO-001",
+        "contract": "docs/architecture/contracts/CB-M05.md",
+        "contextLock": ".engineering/context-locks/CB-M05-WO-001.md",
+        "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
+        "governanceMainSha": "d8233772a80b613015284309a30657ba576a1b4f",
+        "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
+        "scope": "P0_STATIC_NON_PRIVILEGED_CMS_UI_MOCK_ONLY",
+        "privilegedAuthVaultDatabaseCodeGate": "NOT_AUTHORIZED_UNTIL_SEPARATE_OWNER_APPROVED_SECURITY_DATA_ADR"
+      }
     }
   },
   "progressBasis": {

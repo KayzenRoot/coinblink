@@ -7,3 +7,7 @@
 **Gates:** exact Golden SHA-256 and Git binary blobs, current main GEF 1.1.2 readback, PR #55 contract adoption, exclusive ownership, exact-head CI/tests/CodeRabbit, Owner go/no-go and actual merge; historic sourceMainSha is provenance and remains untouched. No Cloudflare new deployment, costs, code or external services in this admission candidate.
 
 **POST-MERGE EVIDENCE NOT YET CLAIMED:** no exact CI URL/independent review/main SHA can be asserted before actually observed. After promotion, Codex Desktop LOCAL starts M01 code in a separate new worktree with a fresh execution Context Lock referencing real postmerge main.
+
+## Progress invariant regression follow-up
+
+The admission-only checkpoint must remain 5% while `completedThroughModule=CB-M00`; admissions may not advance completion. The regression test now asserts exact 5% conditionally on the canonical last completed module, while allowing a later explicitly completed module's separately reviewed checkpoint to increase percent without falsely failing the historic global test. No completion percent or application code changed by this fix.

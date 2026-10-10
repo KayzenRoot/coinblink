@@ -15,6 +15,9 @@ test('approved staged baseline does not admit a new module', () => {
   assert.equal(Object.keys(cp.checkpointFacts.moduleAdmission).length, 19);
   assert.equal(cp.checkpointFacts.moduleAdmission['CB-M00'], 'ADMITTED');
   assert.ok(Number.isInteger(cp.overallCompletionPercent) && cp.overallCompletionPercent >= 5);
+  if (cp.completedThroughModule === 'CB-M00') {
+    assert.equal(cp.overallCompletionPercent, 5, 'admission alone never counts as completing a module');
+  }
   for (let i=1; i<=17; i++) {
     const id = 'CB-M' + String(i).padStart(2, '0');
     assert.ok(['NOT_ADMITTED','ADMITTED'].includes(cp.checkpointFacts.moduleAdmission[id]), id);

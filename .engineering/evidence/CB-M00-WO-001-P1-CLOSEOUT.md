@@ -92,7 +92,8 @@ Validation used the repository-supported Node.js `v22.19.0` / npm `10.9.3` runti
 | `npm run typecheck` | PASS, 42 files; 0 errors, warnings or hints. |
 | `npm audit --audit-level=high` | PASS, 0 vulnerabilities. |
 | GEF 1.1.2 `doctor` / `status` | Both read-only commands exited 0 and read a valid checkpoint. The linked worktree observer remains `FINDING` / dirtiness `UNKNOWN` (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`); no baseline or state was fabricated. |
-| Exact-head GitHub checks and CodeRabbit | Pending publication of the correction commit; must be read from PR #48 at its final pushed SHA. |
+| Exact-head GitHub checks | PASS on `faf105c3a2d3d4ea9855be7282b7da419471e8a7`: Ubuntu, Windows, Docker Compose, Socket Project Report, Socket PR Alerts, and SonarCloud all succeeded in [run 38061005514](https://github.com/KayzenRoot/coinblink/actions/runs/38061005514). |
+| CodeRabbit review | Completed on `faf105c3a2d3d4ea9855be7282b7da419471e8a7`; it reported one minor documentation-clarity comment about naming the Context Lock in its own change-scope list. The list is corrected in this candidate. Final-head review of the resulting commit remains pending. |
 
 No local Docker smoke or remote Cloudflare operation was run for this collector-only correction. No screenshot, Preview, cost, live-binding, Owner visual-acceptance or checkpoint-promotion result is newly claimed.
 

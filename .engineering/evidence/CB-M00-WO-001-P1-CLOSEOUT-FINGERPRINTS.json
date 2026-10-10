@@ -26,8 +26,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "b9d6e5bbc72ac74c8df3da42f6bdd15c67f58a24",
-      "candidateRawSha256": "4d5af5709ba4e204e48ca6ae181c3abe711ad6eb0b8e234c0f30399de1884faf"
+      "candidateGitBlobSha1": "3cfa0574e912a3e8d2cdfc27887ea259184cda8b",
+      "candidateRawSha256": "38b2609a30f35bbdb4b1efe812ab97c4108829b94841377342a6f35c9698909d"
     },
     {
       "path": ".engineering/DEFINITION-OF-DONE.md",
@@ -74,8 +74,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "db3a06417d3dc71fcee003921eeda07dff8e6bc1",
-      "candidateRawSha256": "35d82c6d07ed64064dbab5d4217f208883af5f04db5675a1870c1395e43f65be"
+      "candidateGitBlobSha1": "1943c922bacb4ca0a643f9b3dcc458f2409d2b65",
+      "candidateRawSha256": "fa411f852778e52f1750e4b734a4be0c7b2240d40b75710874cac3f1281680e8"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",

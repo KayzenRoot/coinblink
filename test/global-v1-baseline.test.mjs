@@ -6,7 +6,7 @@ import { isGlobalApprovalStatus, isParallelAdrApproved } from '../scripts/plan-p
 
 const read = name => readFileSync(resolve(process.cwd(), name), 'utf8');
 
-test('approved staged baseline does not admit a new module', () => {
+test('global staged baseline accepts only the separately reviewed CB-M01 admission candidate', () => {
   for (const name of ['SCOPE', 'ARCHITECTURE', 'REQUIREMENTS', 'DEFINITION-OF-DONE']) {
     assert.equal(isGlobalApprovalStatus(read('.engineering/' + name + '.md')), true);
   }
@@ -20,9 +20,14 @@ test('approved staged baseline does not admit a new module', () => {
   }
   for (let i=1; i<=17; i++) {
     const id = 'CB-M' + String(i).padStart(2, '0');
-    assert.ok(['NOT_ADMITTED','ADMITTED'].includes(cp.checkpointFacts.moduleAdmission[id]), id);
-    if (cp.checkpointFacts.moduleAdmission[id] === 'ADMITTED') {
-      assert.equal(typeof cp.checkpointFacts.moduleAdmissionEvidence?.[id]?.workOrder, 'string', id + ' requires specific documented authorization');
+    const expected = id === 'CB-M01' ? 'ADMITTED' : 'NOT_ADMITTED';
+    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' is outside this single-module admission');
+    if (expected === 'ADMITTED') {
+      const proof = cp.checkpointFacts.moduleAdmissionEvidence?.[id];
+      assert.equal(proof?.workOrder, id + '-WO-001', id + ' needs a module-specific reviewed Work Order');
+      assert.equal(proof?.contract, 'docs/architecture/contracts/' + id + '.md', id + ' needs the matching producer contract');
+      assert.equal(proof?.contextLock, '.engineering/context-locks/' + id + '-WO-001.md', id + ' needs the matching Context Lock');
+      assert.match(proof?.status ?? '', /EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE/u);
     }
   }
   assert.equal(cp.checkpointFacts.moduleAdmission['CB-M18'], 'FUTURE_NOT_ADMITTED');

@@ -11,3 +11,7 @@
 ## Progress invariant regression follow-up
 
 The admission-only checkpoint must remain 5% while `completedThroughModule=CB-M00`; admissions may not advance completion. The regression test now asserts exact 5% conditionally on the canonical last completed module, while allowing a later explicitly completed module's separately reviewed checkpoint to increase percent without falsely failing the historic global test. No completion percent or application code changed by this fix.
+
+## Restrict exact module-admission allow-list (CodeRabbit audit correction)
+
+The baseline regression now requires precisely CB-M01 ADMITTED and every other M01–M17 NOT_ADMITTED **in this PR**. It positively verifies this module's Work Order, contract, Context Lock and Owner-reviewed-merge marker. This is a strict admission delta test on the candidate only; when later individually authorized module admissions merge, their own guarded PRs must update the expected allow-list in the same reviewed change. No generic 17-module blanket admission. This does not make the candidate executable before Owner-approved merge.

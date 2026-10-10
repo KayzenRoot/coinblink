@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isGlobalApprovalStatus, localAuthoringSlots, parseGateEvidence, planParallelModules } from '../scripts/plan-parallel-modules.mjs';
+import { isGlobalApprovalStatus, isIssue6Closed, localAuthoringSlots, parseGateEvidence, planParallelModules } from '../scripts/plan-parallel-modules.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const matrix = JSON.parse(readFileSync(path.join(ROOT, '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json'), 'utf8'));
@@ -23,8 +23,10 @@ test('M00 completion is read from canonical checkpoint, not historical proposal 
   assert.equal(plan.checkpointPercent, 5);
   assert.equal(plan.unfinishedModuleCount, 18);
   assert.equal(plan.globalGatesSatisfied, false);
-  assert.deepEqual(plan.nextModuleCandidates, ['CB-M01', 'CB-M05']);
-  assert.deepEqual(plan.eligibleCodeAgentsNow, []);
+  assert.deepEqual(plan.dependencyReadyModuleCandidates, ['CB-M01', 'CB-M05']);
+  assert.deepEqual(plan.plannerEligibleAgentModulesWithinResourceSlots, []);
+  assert.equal(plan.moduleApplicationCodeAuthorizedByPlanner, false);
+  assert.match(plan.disclaimer, /never grants application-code authority/u);
   assert.equal(plan.candidates.length, 17);
   assert.ok(plan.candidates.find(c => c.id === 'CB-M01').blockers.some(x => x.includes('External evidence')));
   assert.ok(plan.candidates.find(c => c.id === 'CB-M05').blockers.some(x => x.includes('Module not admitted')));
@@ -36,7 +38,7 @@ test('stale proposal cannot authorize app code after M00 is complete', () => {
   altered.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
   altered.checkpointFacts.moduleAdmission['CB-M05'] = 'ADMITTED';
   const plan = planParallelModules({ matrix, checkpoint: altered, resourceSlots: 16 });
-  assert.deepEqual(plan.eligibleCodeAgentsNow, []);
+  assert.deepEqual(plan.plannerEligibleAgentModulesWithinResourceSlots, []);
 });
 
 test('valid admitted independent modules schedule concurrently without exceeding host slots', () => {
@@ -48,10 +50,12 @@ test('valid admitted independent modules schedule concurrently without exceeding
     'CB-M05': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
   };
   const p1 = planParallelModules({ matrix, checkpoint: altered, globalGates: approvedGlobalGates, resourceSlots: 1, gates: approved });
-  assert.deepEqual(p1.eligibleCodeAgentsNow, ['CB-M01']);
-  assert.deepEqual(p1.eligibleCodeAgentsWaitingForResourceSlot, ['CB-M05']);
+  assert.deepEqual(p1.plannerEligibleAgentModulesWithinResourceSlots, ['CB-M01']);
+  assert.deepEqual(p1.plannerEligibleAgentModulesWaitingForResourceSlots, ['CB-M05']);
   const p2 = planParallelModules({ matrix, checkpoint: altered, globalGates: approvedGlobalGates, resourceSlots: 8, gates: approved });
-  assert.deepEqual(p2.eligibleCodeAgentsNow, ['CB-M01', 'CB-M05']);
+  assert.deepEqual(p2.plannerEligibleAgentModulesWithinResourceSlots, ['CB-M01', 'CB-M05']);
+  assert.equal(p2.candidates.find(candidate => candidate.id === 'CB-M01').plannerEligibleBasedOnEvaluatedInputs, true);
+  assert.equal(p2.moduleApplicationCodeAuthorizedByPlanner, false);
   assert.ok(p2.candidates.find(c => c.id === 'CB-M03').blockers.some(x => x.includes('CB-M05')));
 });
 
@@ -61,7 +65,7 @@ test('never treat active module admission alone as dependency completion', () =>
     altered.checkpointFacts.moduleAdmission[id] = 'ADMITTED';
   }
   const plan = planParallelModules({ matrix, checkpoint: altered, globalGates: approvedGlobalGates, resourceSlots: 16 });
-  assert.ok(!plan.eligibleCodeAgentsNow.includes('CB-M02'));
+  assert.ok(!plan.plannerEligibleAgentModulesWithinResourceSlots.includes('CB-M02'));
   assert.ok(plan.candidates.find(x => x.id === 'CB-M02').unmetDependencies.includes('CB-M01'));
 });
 
@@ -109,7 +113,7 @@ test('M00 completion requires all canonical completion facts to agree', () => {
     contradict(altered);
     const plan = planParallelModules({ matrix, checkpoint: altered, resourceSlots: 8 });
     assert.equal(plan.canonicalM00Complete, false);
-    assert.deepEqual(plan.eligibleCodeAgentsNow, []);
+    assert.deepEqual(plan.plannerEligibleAgentModulesWithinResourceSlots, []);
   }
 });
 
@@ -124,7 +128,7 @@ test('every global source and adoption gate is independently required', () => {
   for (const key of Object.keys(approvedGlobalGates)) {
     const gates = { ...approvedGlobalGates, [key]: false };
     const plan = planParallelModules({ matrix, checkpoint: altered, globalGates: gates, resourceSlots: 8, gates: approved });
-    assert.deepEqual(plan.eligibleCodeAgentsNow, [], `missing ${key} must fail closed`);
+    assert.deepEqual(plan.plannerEligibleAgentModulesWithinResourceSlots, [], `missing ${key} must fail closed`);
     assert.ok(plan.candidates.find(candidate => candidate.id === 'CB-M01')
       .blockers.some(blocker => blocker.includes(key)));
   }
@@ -142,8 +146,8 @@ test('resource floor can yield zero active agents without claiming a slot', () =
     matrix, checkpoint: altered, globalGates: approvedGlobalGates, resourceSlots: 0, gates: approved,
   });
   assert.equal(plan.resourceSlots, 0);
-  assert.deepEqual(plan.eligibleCodeAgentsNow, []);
-  assert.deepEqual(plan.eligibleCodeAgentsWaitingForResourceSlot, ['CB-M01', 'CB-M05']);
+  assert.deepEqual(plan.plannerEligibleAgentModulesWithinResourceSlots, []);
+  assert.deepEqual(plan.plannerEligibleAgentModulesWaitingForResourceSlots, ['CB-M01', 'CB-M05']);
 });
 
 test('integration contracts are reported separately from authoring blockers', () => {
@@ -163,12 +167,53 @@ test('CLI gate evidence parser accepts explicit module gates and rejects malform
   assert.throws(() => parseGateEvidence('{'), /JSON/u);
   assert.throws(() => parseGateEvidence('[]'), /object/u);
   assert.throws(() => parseGateEvidence('{"CB-M19":{}}'), /module ID/u);
-  assert.throws(() => parseGateEvidence('{"CB-M01":{"workOrderFrozen":"yes"}}'), /boolean/u);
+  assert.throws(() => parseGateEvidence('{"CB-M01":{"workOrderFrozen":"yes"}}'), TypeError);
+  assert.throws(() => parseGateEvidence('{"CB-M01":{"unreviewedApproval":true}}'), TypeError);
+});
+
+test('malformed gate evidence errors do not expose input or parser details', () => {
+  const marker = 'SYNTHETIC_SECRET_SENTINEL';
+  const malformedInput = marker + ' { malformed';
+  assert.throws(() => parseGateEvidence(malformedInput), error => {
+    assert.equal(error.name, 'SyntaxError');
+    assert.equal(error.message, 'Gate evidence must be valid JSON');
+    assert.equal(error.cause, undefined);
+    assert.equal(error.message.includes('SYNTHETIC_'), false);
+    return true;
+  });
 });
 
 test('global source gate recognizes only explicit global approval and freeze status', () => {
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / FROZEN.**'), true);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_M00_ONLY / FROZEN.**'), false);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / PROPOSED.**'), false);
+  assert.equal(isGlobalApprovalStatus('**Status: NOT_OWNER_APPROVED_GLOBAL / FROZEN.**'), false);
+  assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / NOT_FROZEN.**'), false);
+  assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / FROZEN / NOT_FROZEN.**'), false);
+  assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / FROZEN / PENDING.**'), false);
+  assert.equal(isGlobalApprovalStatus('**Status: FROZEN / OWNER_APPROVED_GLOBAL.**'), false);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_M00_ONLY.**\nHistorical: OWNER_APPROVED_GLOBAL / FROZEN'), false);
+});
+
+test('Issue #6 lookup uses a fixed unauthenticated read and fails closed', async () => {
+  let request;
+  const closedIssue = await isIssue6Closed(async (url, options) => {
+    request = { url, options };
+    return new Response(JSON.stringify({ number: 6, state: 'closed' }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  });
+  assert.equal(closedIssue, true);
+  assert.equal(request.url, 'https://api.github.com/repos/KayzenRoot/coinblink/issues/6');
+  assert.equal(request.options.method, undefined);
+  assert.equal(request.options.redirect, 'error');
+  assert.equal(request.options.headers.Authorization, undefined);
+  assert.ok(request.options.signal instanceof AbortSignal);
+
+  assert.equal(await isIssue6Closed(async () => new Response(JSON.stringify({ number: 6, state: 'open' }), { status: 200 })), false);
+  assert.equal(await isIssue6Closed(async () => new Response(JSON.stringify({ number: 7, state: 'closed' }), { status: 200 })), false);
+  assert.equal(await isIssue6Closed(async () => new Response(JSON.stringify({ number: 6, state: 'closed', pull_request: {} }), { status: 200 })), false);
+  assert.equal(await isIssue6Closed(async () => new Response('unavailable', { status: 503 })), false);
+  assert.equal(await isIssue6Closed(async () => { throw new Error('network failure'); }), false);
 });

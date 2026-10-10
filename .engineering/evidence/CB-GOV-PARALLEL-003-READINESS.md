@@ -4,7 +4,7 @@
 **Base main:** `9757772d145f0aea69e0ecc0d7d0e7190e07916e`, M00 COMPLETE/5%. **Owner direction:** maximum safe simultaneous Codex Desktop LOCAL agents, functional development as soon as admitted, local Docker visual loop and shared validated Cloudflare Preview.
 **Non-mutation:** This CLI does not spawn Codex, admit modules, checkout a worktree, merge, deploy or touch paid services.
 
-Run `node scripts/plan-parallel-modules.mjs` or `node scripts/plan-parallel-modules.mjs --max-agents 6` from the local repo. It reads the **canonical** `.engineering/CHECKPOINT.json`, the frozen **proposal** matrix (without changing history), all five global approval/adoption gates, local resource slots, and optional per-module gate evidence. Pass optional JSON with `--gate-evidence <path>` only when evaluating supplied evidence; the CLI labels that input unverified and non-authorizing. It reports dependency-ready admission candidates separately from **actual code-authorized** agents.
+Run `node scripts/plan-parallel-modules.mjs` or `node scripts/plan-parallel-modules.mjs --max-agents 6` from the local repo. It reads the **canonical** `.engineering/CHECKPOINT.json`, the frozen **proposal** matrix (without changing history), all five global approval/adoption gates, local resource slots, and optional per-module gate evidence. Pass optional JSON with `--gate-evidence <path>` only when evaluating supplied evidence; the CLI labels that input unverified and non-authorizing. It reports dependency-ready module candidates separately from planner-eligible agent-module slots under evaluated inputs. Planner output never admits modules or authorizes code work.
 
 **What is ready after M00?** The current *dependency-ready candidates* are M01 and M05. Both are NOT_ADMITTED; M01 still needs both byte-exact Golden images from Issue #5 and M05 requires documented one-human-Owner auth/recovery/MFA/secret strategy. The global V1 source pack and parallel ADR in Issue #6 remain unapproved. No module application code is authorized by this PR.
 
@@ -39,7 +39,7 @@ Read-only spec and standards reviews of the Sonar-corrected head found four plan
 | A host below the documented two-CPU/four-GiB-per-author floor still received one slot. | Resource calculation now returns zero slots below the floor; the planner accepts zero and schedules no active author. | Low-CPU/low-RAM results and a zero-slot schedule. |
 | M00 completion checked only status, completed-through, and Preview, allowing contradictory checkpoint facts. | Requires `applicationImplementation=M00_COMPLETE`, `CB-M00=ADMITTED`, `overallCompletionPercent=5`, plus the existing status, module, and Preview facts. | Contradictions in each of the new canonical fields fail closed. |
 | One ADR status represented five separate global gates. | Requires individually true Scope, Architecture, DoD, Issue #6 closure, and parallel ADR adoption. CLI status checks require explicit global-approved/frozen source status and read the Issue #6 state; unavailable GitHub access fails closed. | Each missing global gate independently prevents eligibility. |
-| CLI had no way to consume module gate evidence, so eligible agents could never be shown by CLI. | Added optional `--gate-evidence <path>` JSON input with schema validation. It is explicitly marked `UNVERIFIED_OPERATOR_INPUT_NOT_AUTHORIZATION`; absent input remains fail-closed. | Valid JSON shape and malformed JSON, unsupported IDs, and non-boolean gates are tested. |
+| CLI had no way to consume module gate evidence, so planner-eligible agent-module slots could never be displayed from supplied gates. | Added optional `--gate-evidence <path>` JSON input with schema validation. It is explicitly marked `UNVERIFIED_OPERATOR_INPUT_NOT_AUTHORIZATION`; absent input remains fail-closed. | Valid JSON shape and malformed JSON, unsupported IDs, and non-boolean gates are tested. |
 | Integration-only contracts were omitted from readiness output. | Reports missing `integrationGates` separately from authoring blockers, preserving the distinction between isolated authoring and cross-module merge readiness. | M17 displays the M08 and M07 integration contracts separately. |
 
 The planner still creates no worktrees, branches, tasks, approvals, admissions, deployments, or merges. A zero-agent result is expected until every canonical global and per-module gate is independently satisfied. The currently open Issue #6, unadopted ADR, M01 source-image hashes, M05 identity/security decisions, and absent individual admissions remain real blockers; no source was promoted or altered to imply approval.
@@ -90,3 +90,67 @@ Final code/test fingerprints after these corrections:
 | `test/parallel-batch-planner.test.mjs` | `a8cf4973e80eb69390b42c510a9eb025c9c1a58db7f092618bf0cf01a858203d` |
 
 Exact-head hosted checks and the final independent review remain to be read from the current PR after the correction push; no hosted status is claimed in this local result section.
+
+## SonarCloud and fail-closed status correction on the same PR
+
+The PR #52 SonarCloud API and check annotations were queried read-only for the exact pre-correction HEAD `0d0d2f56da3dde78c23418e8dd3c3c2c08d95362`. It reported these three open findings in `scripts/plan-parallel-modules.mjs`:
+
+| Rule | Severity / type | Exact prior line | Finding and disposition |
+|---|---|---:|---|
+| `javascript:S3776` | CRITICAL / CODE_SMELL | 135 | Cognitive Complexity 20 exceeded 15. Split gate evidence parsing into bounded record, field, and entry validators; JSON syntax failures now use `SyntaxError`, and schema failures use `TypeError`. |
+| `javascript:S7786` | MINOR / CODE_SMELL | 163 | A generic `Error` was used for a type-check failure. Replaced it with `TypeError`; invalid JSON is separately reported as `SyntaxError`. |
+| `javascript:S4036` | MINOR / VULNERABILITY | 206 | `execFileSync('gh', ...)` resolved `gh` through `PATH`. Removed process execution and replaced the Issue #6 state read with a fixed public GitHub REST GET, no credentials, redirect rejection, a five-second timeout, and fail-closed error handling. |
+
+The Quality Gate failure was the new-code Security Rating (`B`, required `A`). The earlier `S2871` and `S7776` findings were reported resolved by SonarCloud. Regression coverage now also rejects explicit negative, contradictory, extra, and reordered Scope/Architecture/DoD approval status tokens; only the exact `OWNER_APPROVED_GLOBAL / FROZEN` status is accepted. The additional case for an unknown `PENDING` status was first run red, then passed after the exact-status comparison was implemented.
+
+CodeRabbit's two actionable comments on `0d0d2f56da3dde78c23418e8dd3c3c2c08d95362` were also checked against the code: (1) the approval parser could accept `FROZEN` inside a negative or unknown status, and (2) output labels implied actual code-authorized agents despite relying on unverified operator gate input. The parser now accepts only the exact `OWNER_APPROVED_GLOBAL / FROZEN` status; the CLI calls outputs planner-eligible modules based on evaluated inputs, exposes `moduleApplicationCodeAuthorizedByPlanner: false`, and states that it never grants code authority. Regression tests cover negative, contradictory, reordered, and additional status tokens, and verify that planner eligibility never becomes authorization. A new CodeRabbit run is required on the pushed correction HEAD.
+
+Fresh local validation for this corrective candidate used Node `22.19.0` and npm `10.9.3`:
+
+| Check | Result |
+|---|---|
+| Focused planner tests | PASS — 14/14, including fixed unauthenticated Issue #6 GET semantics and fail-closed response handling. |
+| `npm test` | PASS — 102/102 unit/governance tests, Astro build and no-binding guard, 7/7 Playwright tests. |
+| `npm run lint` | PASS — zero warnings. |
+| `npm run typecheck` | PASS — 44 files, zero errors, warnings, or hints. |
+| `npm audit --audit-level=high` | PASS — zero vulnerabilities. |
+| `git diff --check` | PASS. |
+| GEF 1.1.2 `doctor` and `status` | Commands succeeded read-only with `effect: NONE`; result remains **REVIEW** because the managed worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED`, dependency provenance is unverified, drift baseline is absent, and the operator snapshot is stale. |
+
+The M00 checkpoint and 19-module catalog are unchanged. Issue #6 remains OPEN, the global Scope/Architecture/DoD and parallel ADR are not approved/adopted, M01–M17 remain `NOT_ADMITTED`, and M18 remains `FUTURE_NOT_ADMITTED`. This planner creates no agent, worktree, branch, PR, admission, deployment, or merge. Exact-head hosted CI, a new SonarCloud result, CodeRabbit, and independent review are pending on the next pushed HEAD.
+
+Corrective-candidate source fingerprints (SHA-256):
+
+| Path | SHA-256 |
+|---|---|
+| `scripts/plan-parallel-modules.mjs` | `c9eb103a7783706196aab0195f55344e5d6d27bf7c74ee59ab32ee8ce659bfed` |
+| `test/parallel-batch-planner.test.mjs` | `01d7530564b246f74c5a81dc3fa9399e41a9d706c8adeeb0d39ca8e43c38ed42` |
+
+Final planner CLI observation on this correction candidate: `M00_COMPLETE` / 5%, 19 modules, 18 unfinished, dependency-ready candidates M01 and M05, five pending global gates, zero resource slots, zero planner-eligible agent modules, and `moduleApplicationCodeAuthorizedByPlanner=false`. Issue #6 remained OPEN; the CLI marked operator gate input absent and unverified. The existing Docker preview remained up at `http://localhost:3187`: `/health` and `/preview-status` returned HTTP 200 with build SHA `9757772d145f0aea69e0ecc0d7d0e7190e07916e`; `/en` returned HTTP 200. This governance-only change did not rebuild or restart the container.
+
+## Diagnostic redaction correction and final local validation
+
+The independent read-only audit identified that malformed operator-supplied JSON could place a parser excerpt in the CLI error and exception cause. A regression test first failed on a synthetic `SYNTHETIC_SECRET_SENTINEL` input. The parser now emits only the fixed `SyntaxError` message `Gate evidence must be valid JSON`, without including or retaining the underlying parser exception. The regression test confirms the exact safe message, absent cause, and absent input marker.
+
+Validation after this correction used Node `22.19.0` and npm `10.9.3` after `npm ci`:
+
+| Check | Result |
+|---|---|
+| Focused planner tests | PASS — 15/15. |
+| `npm test` | PASS — 103/103 unit/governance tests, Astro build and no-binding guard, 7/7 Playwright tests. |
+| `npm run lint` | PASS — zero warnings. |
+| `npm run typecheck` | PASS — 44 files, zero errors, warnings, or hints. |
+| `npm audit --audit-level=high` | PASS — zero vulnerabilities. |
+| `git diff --check` | PASS. |
+| GEF 1.1.2 `doctor` and `status` | Read-only commands succeeded with `effect: NONE`; result remains **REVIEW**, because this managed worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED`, dependency provenance is unverified, drift baseline is absent, and the operator snapshot is stale. |
+| Planner CLI | M00 COMPLETE / 5%, 19 modules, Issue #6 open, five global gates pending, zero resource slots, no planner-eligible modules, no code authority. |
+| Docker local smoke | Existing `coinblink-local-app-1` remained healthy on `127.0.0.1:3187`; `/health`, `/preview-status`, and `/en` each returned HTTP 200. No container was restarted or modified. |
+
+Final code/test fingerprints (SHA-256):
+
+| Path | SHA-256 |
+|---|---|
+| `scripts/plan-parallel-modules.mjs` | `34dfd6b4ba5ce199b40fe8e4ad575dafe115239552df6b8670fa4ac628830143` |
+| `test/parallel-batch-planner.test.mjs` | `97181daac2483e7460d0d77b1a07811169d91cd65fe5079f0b6163acd2e87958` |
+
+The final PR HEAD checks, SonarCloud findings, CodeRabbit review and Owner audit must be re-read after pushing this correction. This local validation does not authorize merge or module implementation.

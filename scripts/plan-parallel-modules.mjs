@@ -4,7 +4,6 @@
  * A plan is never an admission, worktree creation, Codex task dispatch or merge authorization.
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { availableParallelism, freemem } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -85,7 +84,7 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
     const contractPath = 'docs/architecture/contracts/' + id + '.md';
     const frozenSources = gate.workOrderFrozen === true && gate.contextLockFrozen === true
       && gate.contractApproved === true;
-    const canImplement = m00Done && globalGatesSatisfied && admission === 'ADMITTED'
+    const plannerEligibleBasedOnEvaluatedInputs = m00Done && globalGatesSatisfied && admission === 'ADMITTED'
       && unmetDependencies.length === 0 && unfinishedExternalGates.length === 0 && frozenSources;
     const blockerLabels = [
       ...(!m00Done ? ['M00 not canonically complete'] : []),
@@ -97,14 +96,15 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
     ];
     return {
       id, issue: module.issue, wave: wave.id, admission,
-      unmetDependencies, canImplement, blockers: blockerLabels, integrationBlockers,
+      unmetDependencies, plannerEligibleBasedOnEvaluatedInputs,
+      blockers: blockerLabels, integrationBlockers,
       suggestedWorktree: 'cb-' + id.slice(3).toLowerCase() + '-wo-001',
       suggestedBranch: 'codex/' + id.toLowerCase() + '-wo-001',
       requiredFiles: { workOrderPath, contextLockPath, contractPath },
     };
   }));
-  const ready = candidates.filter(x => x.canImplement);
-  const blocked = candidates.filter(x => !x.canImplement);
+  const plannerEligible = candidates.filter(x => x.plannerEligibleBasedOnEvaluatedInputs);
+  const blocked = candidates.filter(x => !x.plannerEligibleBasedOnEvaluatedInputs);
   const dependencyReady = candidates.filter(x => x.unmetDependencies.length === 0);
   return {
     kind: 'READ_ONLY_NON_AUTHORIZING_PLAN',
@@ -116,13 +116,14 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
     pendingGlobalGates: pendingGlobalGates.map(key => GLOBAL_GATE_LABELS[key]),
     globalParallelADREffective: globalGates.parallelADRAdopted === true,
     resourceSlots,
-    nextModuleCandidates: dependencyReady.map(x => x.id),
-    eligibleCodeAgentsNow: ready.slice(0, resourceSlots).map(x => x.id),
-    eligibleCodeAgentsWaitingForResourceSlot: ready.slice(resourceSlots).map(x => x.id),
+    dependencyReadyModuleCandidates: dependencyReady.map(x => x.id),
+    plannerEligibleAgentModulesWithinResourceSlots: plannerEligible.slice(0, resourceSlots).map(x => x.id),
+    plannerEligibleAgentModulesWaitingForResourceSlots: plannerEligible.slice(resourceSlots).map(x => x.id),
+    moduleApplicationCodeAuthorizedByPlanner: false,
     heavyValidationExecution: 'SERIAL_OR_BOUNDED_SEPARATE_QUEUE',
     mergePolicy: 'SERIAL_MAIN_MERGES_WITH_EXACT_HEAD_RETEST',
     candidates, blockedCount: blocked.length,
-    disclaimer: 'This CLI creates no branches, worktrees, module admissions, paid resources or Codex tasks.',
+    disclaimer: 'This CLI creates no branches, worktrees, module admissions, paid resources or Codex tasks and never grants application-code authority; planner eligibility is conditional on the evaluated inputs.',
   };
 }
 
@@ -131,39 +132,47 @@ function readJson(file) {
   return JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
 }
 
+const GATE_EVIDENCE_FIELDS = new Set([
+  'externalGateApprovals', 'integrationGateApprovals',
+  'workOrderFrozen', 'contextLockFrozen', 'contractApproved',
+]);
+const ARRAY_GATE_EVIDENCE_FIELDS = new Set(['externalGateApprovals', 'integrationGateApprovals']);
+
+/** Returns whether a JSON value is a non-null, non-array record. */
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** Validates one explicit module gate value. */
+function validateGateEvidenceField(key, value) {
+  if (!GATE_EVIDENCE_FIELDS.has(key)) throw new TypeError('Unknown gate evidence field: ' + key);
+  if (ARRAY_GATE_EVIDENCE_FIELDS.has(key)) {
+    const validBooleanArray = Array.isArray(value) && value.every(item => typeof item === 'boolean');
+    if (!validBooleanArray) throw new TypeError(key + ' must be an array of boolean values');
+    return;
+  }
+  if (typeof value !== 'boolean') throw new TypeError(key + ' must be a boolean');
+}
+
+/** Validates the gate evidence for one supported, already-planned module. */
+function validateGateEvidenceEntry(id, gates) {
+  if (!/^CB-M(?:0[1-9]|1[0-7])$/u.test(id)) {
+    throw new TypeError('Gate evidence contains an unsupported module ID: ' + id);
+  }
+  if (!isRecord(gates)) throw new TypeError('Gate evidence for ' + id + ' must be an object');
+  for (const [key, value] of Object.entries(gates)) validateGateEvidenceField(key, value);
+}
+
 /** Parses operator-supplied planning evidence without treating it as authorization. */
 export function parseGateEvidence(raw) {
   let parsed;
   try {
     parsed = JSON.parse(raw);
-  } catch (error) {
-    throw new Error('Gate evidence must be valid JSON: ' + error.message, { cause: error });
+  } catch {
+    throw new SyntaxError('Gate evidence must be valid JSON');
   }
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Gate evidence must be an object keyed by admitted module ID');
-  }
-  for (const [id, gates] of Object.entries(parsed)) {
-    if (!/^CB-M(?:0[1-9]|1[0-7])$/u.test(id)) {
-      throw new Error('Gate evidence contains an unsupported module ID: ' + id);
-    }
-    if (!gates || typeof gates !== 'object' || Array.isArray(gates)) {
-      throw new Error('Gate evidence for ' + id + ' must be an object');
-    }
-    const allowedFields = new Set([
-      'externalGateApprovals', 'integrationGateApprovals',
-      'workOrderFrozen', 'contextLockFrozen', 'contractApproved',
-    ]);
-    for (const [key, value] of Object.entries(gates)) {
-      if (!allowedFields.has(key)) throw new Error('Unknown gate evidence field: ' + key);
-      if (key === 'externalGateApprovals' || key === 'integrationGateApprovals') {
-        if (!Array.isArray(value) || value.some(item => typeof item !== 'boolean')) {
-          throw new Error(key + ' must be an array of boolean values');
-        }
-      } else if (typeof value !== 'boolean') {
-        throw new Error(key + ' must be a boolean');
-      }
-    }
-  }
+  if (!isRecord(parsed)) throw new TypeError('Gate evidence must be an object keyed by module ID');
+  for (const [id, gates] of Object.entries(parsed)) validateGateEvidenceEntry(id, gates);
   return parsed;
 }
 
@@ -171,8 +180,14 @@ export function parseGateEvidence(raw) {
 export function isGlobalApprovalStatus(document) {
   if (typeof document !== 'string') return false;
   const statusLine = document.split(/\r?\n/u).find(line => line.startsWith('**Status:'));
-  return statusLine?.includes('OWNER_APPROVED_GLOBAL') === true
-    && statusLine.includes('FROZEN');
+  if (!statusLine) return false;
+  const status = statusLine.slice('**Status:'.length)
+    .replaceAll('`', '')
+    .replace(/\*\*$/u, '')
+    .trim()
+    .replace(/\.$/u, '')
+    .trim();
+  return status === 'OWNER_APPROVED_GLOBAL / FROZEN';
 }
 
 /** Reads a source document and checks its explicit global-approval status line. */
@@ -196,19 +211,32 @@ function detectADR() {
     && !tokens.has('NOT_ADOPTED');
 }
 
+/** Reads the public Issue #6 state without credentials; errors fail closed. */
+export async function isIssue6Closed(fetchImplementation = fetch) {
+  try {
+    const response = await fetchImplementation('https://api.github.com/repos/KayzenRoot/coinblink/issues/6', {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'CoinBlink-Parallel-Readiness',
+      },
+      redirect: 'error',
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return false;
+    const issue = await response.json();
+    return issue.number === 6 && issue.state === 'closed' && !issue.pull_request;
+  } catch {
+    return false;
+  }
+}
+
 /** Reads the five independent global gates; unavailable GitHub state fails closed. */
-function readGlobalGates() {
+async function readGlobalGates() {
   const globalGates = Object.fromEntries(
     GLOBAL_SOURCE_APPROVALS.map(([key, file]) => [key, hasGlobalApprovalStatus(file)]),
   );
-  try {
-    globalGates.issue6Closed = execFileSync(
-      'gh', ['api', 'repos/KayzenRoot/coinblink/issues/6', '--jq', '.state'],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-    ).trim() === 'closed';
-  } catch {
-    globalGates.issue6Closed = false;
-  }
+  globalGates.issue6Closed = await isIssue6Closed();
   globalGates.parallelADRAdopted = detectADR();
   return globalGates;
 }
@@ -236,7 +264,7 @@ function parseGateEvidencePath(argv) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try {
+  async function run() {
     const maxAgents = parseMaxAgents(process.argv.slice(2));
     const gateEvidencePath = parseGateEvidencePath(process.argv.slice(2));
     const slots = localAuthoringSlots({ cpus: availableParallelism(), ramBytes: freemem() });
@@ -247,15 +275,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const result = planParallelModules({
       matrix: readJson(MATRIX),
       checkpoint: readJson(CHECKPOINT),
-      globalGates: readGlobalGates(),
+      globalGates: await readGlobalGates(),
       resourceSlots: actualSlots,
       gates,
     });
     result.gateEvidenceProvided = gateEvidencePath !== null;
     result.gateEvidenceTrust = 'UNVERIFIED_OPERATOR_INPUT_NOT_AUTHORIZATION';
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
-  } catch (error) {
+  }
+  run().catch(error => {
     process.stderr.write('CoinBlink parallel preflight BLOCKED: ' + error.message + '\n');
     process.exitCode = 1;
-  }
+  });
 }

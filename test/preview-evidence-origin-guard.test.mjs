@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { after, before, test } from "node:test";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { chromium } from "playwright";
 import { createPreviewEvidenceRouteHandler } from "../scripts/preview-evidence-origin-guard.mjs";
+import { clearStalePreviewEvidenceArtifacts } from "../scripts/preview-evidence-output-cleanup.mjs";
 
 let originServer;
 let targetServer;
@@ -92,5 +96,29 @@ test("blocks a cross-origin navigation redirect before fetching its destination"
     });
   } finally {
     await context.close();
+  }
+});
+
+test("clears only stale success/failure artifacts before a fresh evidence capture", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "coinblink-preview-evidence-"));
+  const staleArtifacts = [
+    "desktop-1536x864.png",
+    "tablet-768x1024.png",
+    "mobile-390x844.png",
+    "RESULTS.json",
+    "PLAYWRIGHT-LOG.md",
+    "SHA256SUMS.txt",
+    "FAILED.json",
+  ];
+  try {
+    await Promise.all(staleArtifacts.map((fileName) => writeFile(join(directory, fileName), "stale")));
+    await writeFile(join(directory, "unrelated.txt"), "preserve");
+
+    await clearStalePreviewEvidenceArtifacts(directory);
+
+    await Promise.all(staleArtifacts.map((fileName) => assert.rejects(readFile(join(directory, fileName)), { code: "ENOENT" })));
+    assert.equal(await readFile(join(directory, "unrelated.txt"), "utf8"), "preserve");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
   }
 });

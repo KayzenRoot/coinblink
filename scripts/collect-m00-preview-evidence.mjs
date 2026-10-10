@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
 import { createPreviewEvidenceRouteHandler } from "./preview-evidence-origin-guard.mjs";
+import { clearStalePreviewEvidenceArtifacts } from "./preview-evidence-output-cleanup.mjs";
 
 /* global document, getComputedStyle, window */
 
@@ -156,8 +157,8 @@ try {
   results.initialHealth = { status: healthResponse.status(), body: health, headers: evidenceHeaders(healthResponse.headers()) };
 
   await mkdir(outputDirectory, { recursive: true });
+  await clearStalePreviewEvidenceArtifacts(outputDirectory);
   outputDirectoryCreated = true;
-  await rm(join(outputDirectory, "FAILED.json"), { force: true });
 
   const immutableHealthResponse = await goTo(page, immutableOrigin, "/health");
   assert.equal(immutableHealthResponse.status(), 200, "immutable /health HTTP status");

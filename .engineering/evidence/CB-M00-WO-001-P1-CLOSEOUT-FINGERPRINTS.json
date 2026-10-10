@@ -8,7 +8,7 @@
   "fingerprintAlgorithm": "Git blob SHA-1 and raw-byte SHA-256 from the Git index",
   "selfReferenceExcluded": ".engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT-FINGERPRINTS.json",
   "changeCounts": {
-    "added": 13,
+    "added": 14,
     "modified": 12,
     "deleted": 0
   },
@@ -26,8 +26,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "84364b9958032a88b23d4721268cb8a7b3f5f70e",
-      "candidateRawSha256": "4e6f0c6965b90e0325d301bb6aa84e5415e4967bc572bb2acd2b3ef1c84a5267"
+      "candidateGitBlobSha1": "dbb5049c026a811cb8c235a0229f8df1ba54b428",
+      "candidateRawSha256": "0f3277089ceb67b04e67908efa961fe835eddaf027bf8232537c00abde443ebf"
     },
     {
       "path": ".engineering/DEFINITION-OF-DONE.md",
@@ -74,8 +74,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "89a20e570f3d2b05a3ea697029fe6f56d6c54bba",
-      "candidateRawSha256": "4ca98618c4adcac09b0021b0a575665b8db8e397fb7f6f3f7c6f2da4d00e0b6d"
+      "candidateGitBlobSha1": "6ca7a81fd060d075c51cb2e1efc6fb20eaf715ec",
+      "candidateRawSha256": "76dcb54c4a3946bf579b41e79b8d0897e1de2a5fbdc36c57e9161a3c611e3379"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-PREPARATION.md",
@@ -114,16 +114,16 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "91457e80d4881af3de1c38eb0e0aa6b0c1ebcab2",
-      "candidateRawSha256": "d982d60d43e838249ab38a7a4eca5eddaf8624b2e9793c59339c849fb85c0e4f"
+      "candidateGitBlobSha1": "f8fe2f212bf2e30b8c4cee831776d1009f07d4b9",
+      "candidateRawSha256": "668ce61ddda674cfa11c246252a4bdf80131012cfb5f8b6b53721622e9723548"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/SHA256SUMS.txt",
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "5a96189015548bd33feae8dea8af40845cf971db",
-      "candidateRawSha256": "86916e0b803343afc19505a1afec52fd5971c2cb64af6ba62c49f47e9e745540"
+      "candidateGitBlobSha1": "b22ff5477aee5668a074334835295ba092a855f1",
+      "candidateRawSha256": "f4ee00c4792001d80c2b74b65bd5a7d69f5e427e7b306fa307bbe3e8591885a7"
     },
     {
       "path": ".engineering/evidence/CB-M00-WO-001-P1-preview-run-38049696879/tablet-768x1024.png",
@@ -194,8 +194,8 @@
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "c10ceba50ed8e4e5e1d63d8faf48bd7c34afe155",
-      "candidateRawSha256": "6d56c5330ff183c688f21687e405e1faff9ee67dfda88feee333535245743c8a"
+      "candidateGitBlobSha1": "83000a3146a8b109e334a393fa330f2d333732e7",
+      "candidateRawSha256": "e5e089b3759c2a139f7e0c792cf5f3584e88d27916a69dd581f5e81eb6883bc4"
     },
     {
       "path": "scripts/preview-evidence-origin-guard.mjs",
@@ -206,12 +206,20 @@
       "candidateRawSha256": "9faa8234e298c14199e027e82b51b7d1df296b39be041c57981c74c9584c88a0"
     },
     {
+      "path": "scripts/preview-evidence-output-cleanup.mjs",
+      "changeType": "A",
+      "baseGitBlobSha1": null,
+      "baseRawSha256": null,
+      "candidateGitBlobSha1": "a2e5fc852eaab09f73b395d577d41f9aee027e54",
+      "candidateRawSha256": "5b180e3209cb03259665a48e440229d532e5e2d4afd567daef2d1ce145b8c5b1"
+    },
+    {
       "path": "test/preview-evidence-origin-guard.test.mjs",
       "changeType": "A",
       "baseGitBlobSha1": null,
       "baseRawSha256": null,
-      "candidateGitBlobSha1": "e4d1a071925f02cce3c401ac2020fb5eb30ccc0f",
-      "candidateRawSha256": "408e31748ff1757ba7cfc37c41ff3812e5f46203ee969b913ce3c6dfbf34de92"
+      "candidateGitBlobSha1": "c3c73dd1cb9d4726d97e4b10cd04ab6bfed1b1d4",
+      "candidateRawSha256": "798214d9096409f39cd6e2b1ec20518a421027f26ddeadaa32d919efd9226006"
     }
   ]
 }

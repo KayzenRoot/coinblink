@@ -89,4 +89,8 @@ Local `docker ps` confirmed unrelated `nexlabs-website-web-1` owns `127.0.0.1:30
 
 ## Result
 
-The original P1 preparation has since been followed by the separately Owner-authorized Preview operation documented above. That base-SHA Preview exists, but its first workflow run failed at output recording; this parser correction has not yet been deployed and the final least-privilege token has not yet been exercised by Wrangler. The next provider operation is a new protected Preview dispatch on corrected `main`, after PR #38's current HEAD passes exact-head validation and the Owner audit/merge gate; provider setup authorization is already complete. No checkpoint promotion, production deployment, or M00 completion is claimed.
+The original P1 preparation has since been followed by a separate Owner-authorized Preview operation documented above. The earlier first workflow run failed at output recording; the correction and successful deployment are recorded in the dated addendum below. That earlier statement remains historical. No checkpoint promotion, production deployment, or M00 completion is claimed.
+
+## 2026-10-10 status reconciliation
+
+Protected Preview workflow [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded on exact canonical `main` SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`. Stable/immutable URLs and remote browser results are in [the P1 closeout Evidence Bundle](CB-M00-WO-001-P1-CLOSEOUT.md). The read-only dashboard showed Workers Free and `$0.00` observed for October; this is not an enforceable cost cap. The live binding inventory remains pending because it was not exposed in the authenticated Worker detail view. Do not repeat deployment or change the checkpoint in this evidence update.

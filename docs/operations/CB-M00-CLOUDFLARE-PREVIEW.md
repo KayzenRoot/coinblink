@@ -1,6 +1,12 @@
 # CB-M00 Cloudflare Worker Preview operations
 
-This is an operational contract for the optional P1 lane of the already-admitted M00 Work Order. It does not authorize a Cloudflare account operation. The current approved state remains `PROVIDER_SETUP_REQUIRED / NOT_DEPLOYED / OWNER_AUTHORIZATION_REQUIRED` until the Owner supplies and verifies every gate.
+This is an operational contract for the optional P1 lane of the already-admitted M00 Work Order.
+
+## Current verified operation · 2026-10-10
+
+Owner authorization and the protected GitHub Environment gate were recorded for the manual run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879), which succeeded on exact canonical main `e8886e21c6f152ca374b1e42852c6b6638543f40`. These establish the per-run Owner/environment gates only. The stable and immutable URLs and public route/browser checks are recorded in `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md`. The authenticated dashboard showed Workers Free and USD 0.00 observed in the current billing cycle; the account's USD 10 alert is informational and is not a hard cost ceiling. An effective monthly USD 0 hard ceiling was not verified, so this separate financial gate remains UNMET; neither the successful workflow nor its Owner-provided cost attestation proves account-level cost enforcement. No future Preview dispatch is authorized by this evidence until the effective cost gate is verified or its risk requirement is explicitly changed. No production deploy, R2 binding, DNS/billing change, or other-project change occurred. The dashboard did not expose the live Worker binding inventory; that read-only check remains pending. The machine checkpoint is not promoted and M00 is not DONE.
+
+The “Required Owner setup” and “Historical gate status before the first authorized Preview” sections below retain first-deployment prerequisites and their historical pre-deployment state; they are no longer instructions to repeat the already completed Preview deployment.
 
 ## Prepared boundary
 
@@ -44,6 +50,6 @@ Wrangler must return one actual stable Preview URL and one distinct immutable De
 
 Each deploy name is generated as `coinblink-m00-run-<run-id>-<attempt>`. To remove one, the Owner dispatches the same workflow from current `main`, chooses `delete`, enters that exact managed name from the deployment run summary, and completes both GitHub environment review and the authorization confirmation. The script rejects all names outside that pattern. `wrangler preview delete` uses the supported `--config`, `--name`, `--worker-name`, and `--skip-confirmation` options, scoped to worker `coinblink-m00-preview` and that one Preview name; the documented effect is removal of that Preview and its deployments. It does not delete the Worker, other Preview names, or production resources. No automatic cleanup targets provider resources.
 
-## Current gate status
+## Historical gate status before the first authorized Preview
 
 No Owner account, Free plan, cost ceiling, IAM scope, GitHub environment protection, or credential presence has been confirmed by this preparation. The workflow must remain closed. This preparation does not create a Preview, change the checkpoint, satisfy P1 remote evidence, or mark M00 complete.

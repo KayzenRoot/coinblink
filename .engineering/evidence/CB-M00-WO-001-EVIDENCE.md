@@ -1,6 +1,6 @@
 # Evidence Bundle · CB-M00-WO-001
 
-**Verdict:** `P0_LOCAL_CANDIDATE_VALIDATED / EXACT_HEAD_CI_PASS_AT_ccbce66 / CURRENT_HEAD_CHECKS_IN_PR / AUDIT_PENDING / M00_NOT_DONE`.
+**Verdict:** `P0_LOCAL_VALIDATED / P1_PREVIEW_AND_REMOTE_BROWSER_EVIDENCE_VERIFIED_AT_e8886e21 / CLOSEOUT_AUDIT_PENDING / M00_NOT_DONE`.
 **Repository:** `KayzenRoot/coinblink`.
 **Work Order:** `CB-M00-WO-001`; change: local M00 P0 foundation.
 **Execution branch:** `codex/cb-m00-wo-001-p0`.
@@ -9,7 +9,11 @@
 **Candidate fingerprints:** `.engineering/evidence/CB-M00-WO-001-FINGERPRINTS.json` records Git blob SHA-1 and raw-blob SHA-256 for 45 changed paths at immutable implementation snapshot `6a33bf25b3bf31c65f2dd47f490b84e74a9a4cfe`; the manifest and this Evidence Bundle are excluded to avoid self-reference. All 45 blob pairs were revalidated against that snapshot. The c716/ccbce follow-up commits before this review correction preserved that implementation snapshot; correction-delta fingerprints for the workflow, its contract test, and the DoD are recorded below. This Evidence Bundle remains excluded from self-reference.
 **Last audited candidate:** `ccbce66b216796012689869b9de17effd2327f5a`; exact-head run `37870422086` passed on this SHA. Earlier run `37870129338` at `c716e109ed87d679cc54f2c119079efb98ad2351` is retained as historical evidence. The current correction candidate SHA and its exact-head checks are in PR #33; predecessor CI does not validate a later candidate.
 **Context Lock:** original base SHA-256 `a209324291429ce22495abc0b3c7029e84686f621cadff80b1b6ff1f97eaee1e` and its 29 base source fingerprints are unchanged. The review corrections affect the CI workflow, its contract test, and documentary status, not the locked base decisions.
-**Checkpoint:** `.engineering/CHECKPOINT.json` is unchanged; its admitted-base values remain `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, preview `NOT_DEPLOYED`, with no `stopState`. Proposed candidate promotion is in `CB-M00-WO-001-CHECKPOINT-DELTA.md` only.
+**Historical implementation checkpoint:** the original P0 evidence base recorded `M00_ADMITTED`, `IMPLEMENTATION_NOT_STARTED`, 0%, preview `NOT_DEPLOYED`, and no `stopState`; that snapshot is preserved here as history. **Current canonical checkpoint:** `.engineering/CHECKPOINT.json` at main `e8886e21c6f152ca374b1e42852c6b6638543f40` records `M00_ADMITTED`, `IMPLEMENTATION_IN_PROGRESS`, `M00_P0_LOCAL_IMPLEMENTED_P1_PENDING`, `NOT_DEPLOYED`, 0%, and no `stopState`. Its current operational Preview evidence and still-pending checkpoint promotion are recorded in the 2026-10-10 P1 closeout addendum below.
+
+## Current P1 closeout record · 2026-10-10
+
+Protected Preview run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded on canonical `main` `e8886e21c6f152ca374b1e42852c6b6638543f40`; real stable/immutable URLs, exact-SHA routes, headers, screenshots, axe, and read-only plan/billing evidence are consolidated in [the P1 closeout Evidence Bundle](CB-M00-WO-001-P1-CLOSEOUT.md). Live provider binding inventory and final Owner/independent audit remain pending. This evidence update does not change the canonical GEF checkpoint; M00 is not done at 0%, and M01+ remains unadmitted.
 
 ## Review correction fingerprint delta
 

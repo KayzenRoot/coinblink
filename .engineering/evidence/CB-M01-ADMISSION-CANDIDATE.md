@@ -1,6 +1,6 @@
 # CB-M01 individual admission · proposed evidence delta
 
-**Source canonical main:** `d8233772a80b613015284309a30657ba576a1b4f`; M00 COMPLETE/5%, 19 module IDs, Issue #6 global gate CLOSED, Issue #5 original Golden bytes CLOSED after upstream #53/#54 merges and 5/5 main CI. PR #55 predecessor candidate `772f2d11f26f798e0917067319991079974eb849` must itself be merged and checked before this admission PR becomes eligible.
+**Source canonical main:** `e40d36b2a589596869eb296696e917f724d5be65`; M00 COMPLETE/5%, 19 module IDs, Issue #6 global gate CLOSED, Issue #5 original Golden bytes CLOSED after upstream #53/#54 merges and 5/5 main CI. PR #55 predecessor candidate `772f2d11f26f798e0917067319991079974eb849` must itself be merged and checked before this admission PR becomes eligible.
 
 **Proposed only:** M01 module admission NOT_ADMITTED→ADMITTED effective on the separate reviewed admission PR merge, not before; Work Order CB-M01-WO-001 created, Context Lock recorded, no module code, no actual desktop agent started and no checkpoint completion percent increase (still 5%). M05–M17 remain NOT_ADMITTED; M18 FUTURE.
 

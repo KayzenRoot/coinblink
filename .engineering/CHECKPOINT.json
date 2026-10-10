@@ -51,7 +51,7 @@
         "contract": "docs/architecture/contracts/CB-M01.md",
         "contextLock": ".engineering/context-locks/CB-M01-WO-001.md",
         "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
-        "governanceMainSha": "d8233772a80b613015284309a30657ba576a1b4f",
+        "governanceMainSha": "e40d36b2a589596869eb296696e917f724d5be65",
         "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
         "externalGoldenGate": "ISSUE_5_CLOSED_AND_ORIGINAL_JPEGS_VERIFIED",
         "scope": "P0-P2_GOLDEN_HOME_UI_AND_LOCAL_MOCK_SAFE_COMPONENTS"

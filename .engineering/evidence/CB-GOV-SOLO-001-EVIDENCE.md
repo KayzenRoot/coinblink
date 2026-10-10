@@ -45,6 +45,10 @@ The policy remains ineffective until a qualified independent assurance review of
 | Independent final ELEVATED assurance, final-head CodeRabbit and exact-head hosted CI | PENDING | Must match the final live PR head after this Evidence Bundle refresh. |
 | Owner exact-SHA go/no-go and authorized normal merge | PENDING | Required before policy adoption. |
 
+## Fingerprint interpretation
+
+candidateRawSha256 is SHA-256 over the candidate Git blob bytes. workingTreeSha256 is SHA-256 over raw checkout bytes; on Windows with core.autocrlf=true, these values may differ due to line endings. The index and working-tree Git blob IDs are checked separately after Git normalization.
+
 ## Independent audit correction record
 
 The read-only reviewer inspected the exact `b7ea8b6` diff and found no HIGH/CRITICAL defect. It identified that this bundle still marked completed CI/CodeRabbit checks as pending and attributed GEF `doctor` to an earlier commit. This refresh records the actual b7 results and exact-head GEF output above. Because this refresh creates a new commit, it does not reuse the prior review or checks as final-head evidence.

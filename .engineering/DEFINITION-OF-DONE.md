@@ -2,9 +2,17 @@
 
 **Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; its canonical checkpoint records implementation `NOT_STARTED`, 0%, with no pending `stopState`. This Work Order may implement M00 P0, but it does not mark M00 `DONE`.
 
+## Owner-approved Free-only operational policy · 2026-10-10
+
+**USER APPROVED, effective for operations now:** [Owner decision on Issue #36](https://github.com/KayzenRoot/coinblink/issues/36#issuecomment-6099048180). CoinBlink will **continue on Cloudflare Workers Free**. Keep the existing **US$10 budget alert** unchanged as informational only. A hard monthly **US$0 account-wide spending ceiling is NOT a prerequisite** for this Free-only M00 stage, superseding earlier financial gate statements in this document. Free quotas and currently billed US$0 are observations, not a guarantee against charges for unrelated account services. When Free becomes insufficient, the Owner will decide whether to add credit/enable Paid; **Paid upgrade, purchasing and paid bindings are NOT authorized now**.
+
+Preserve existing protected per-run GitHub Environment Owner approval, Worker-only IAM, secret protection, no paid products/bindings, preview-only isolation, no production deployment and actual live Worker binding inventory verification. The binding inventory is a separate security proof, **not a reason to resurrect the discarded hard-cap gate**. Reuse successful [Preview run #38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) and merged [P1 Evidence PR #48](https://github.com/KayzenRoot/coinblink/pull/48); do not force an unnecessary repeat deployment. M00 demo-only visual Owner signoff and checkpoint audit/promotion remain independent.
+
+**Historical evidence note:** any text below stating a hard effective US$0 ceiling is 'unmet' describes the earlier DoD interpretation and is superseded **only for the spending cap** by this approved update. P1 is **not yet DONE** for the other DoD conditions.
+
 ## P1 evidence update · 2026-10-10
 
-Protected Preview run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded on exact `main` SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`. Both real URLs, exact-SHA `/health`, `/preview-status`, real 404, HTTPS/security/noindex headers, screenshots at all three required viewports, keyboard focus and axe WCAG 2.1 A/AA are verified in `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md`. The read-only billing/plan observation is recorded there; USD 0.00 is not a hard cap. Owner and protected GitHub Environment per-run checks passed, but an effective monthly USD 0 cost ceiling was not verified and remains unmet. **The checkboxes below remain unchecked where the live Worker binding inventory, effective zero-cost ceiling, Golden visual/Owner acceptance, exact-head closeout PR audit, and checkpoint promotion remain outstanding. M00 is not `DONE`.**
+Protected Preview run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded on exact `main` SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`. Both real URLs, exact-SHA `/health`, `/preview-status`, real 404, HTTPS/security/noindex headers, screenshots at all three required viewports, keyboard focus and axe WCAG 2.1 A/AA are verified in `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md`. The read-only billing/plan observation is recorded there; USD 0.00 is not a hard cap. Owner and protected GitHub Environment per-run checks passed; the Owner's current Workers Free decision explicitly removes the hard USD 0 account-wide ceiling from the pending DoD. **The checkboxes below remain unchecked for live Worker binding inventory, M00 demo-only visual/Owner acceptance, final closeout audit, and checkpoint promotion. M00 is not `DONE`.**
 
 **Historical P0 audit candidate before PR #41 merge:** the local P0 implementation and run `37870422086` passed on audited HEAD `ccbce66b216796012689869b9de17effd2327f5a`. That isolated Docker smoke used port 3000 on Ubuntu. The subsequent CodeRabbit review identified two M00 corrections; each candidate SHA required its own exact-head CI result. The evidence below remains historical; current P1 and checkpoint status is recorded in the dated update above and the live P1 closeout Evidence Bundle.
 
@@ -22,9 +30,9 @@ Protected Preview run [#38049696879](https://github.com/KayzenRoot/coinblink/act
 - [x] Astro session auto-KV is disabled and the generated Worker config has no unrequested `SESSION` binding.
 
 ## P1: Remote preview (external authorization gate)
-- [ ] Owner-scoped Cloudflare account/plan/access/cost gate and trusted GitHub secrets explicitly validated.
+- [x] Owner approved the existing Workers Free plan, dedicated Worker, protected GitHub Environment and scoped secrets, as evidenced by successful protected run #38049696879 and Issue #36 decision #6099048180. Hard account-wide USD 0 ceiling is not required; the USD 10 alert remains informational. Any future Paid change requires separate Owner permission.
 - [ ] Verified real per-PR Worker Preview stable URL + immutable build URL, /health exact SHA, no production binding access, optional private admin route protected when present.
-- [ ] No preview deployed unless provider authorization/cost gate passed. If missing: `PROVIDER_SETUP_REQUIRED`, never describe as DONE.
+- [x] Current M00 Preview was deployed only after Owner and protected Environment authorization on Workers Free. New runs still require separate per-run approval and must not use Paid or production resources without explicit Owner permission.
 
 ## P2: Review and promotion
 Exact-head CI is SHA-specific: run `37870422086` passed on audited candidate `ccbce66b216796012689869b9de17effd2327f5a`; the live PR #33 checks are authoritative for any correction candidate that follows.

@@ -1,6 +1,12 @@
 # CoinBlink · Definition of Done: M00 Preview Foundation
 
-**Status: OWNER_APPROVED_M00_ONLY / M00_ADMITTED; module-specific DoD only.** Not a frozen full-project DoD for modules M01–M18. PR #32 merged at `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; its canonical checkpoint records implementation `NOT_STARTED`, 0%, with no pending `stopState`. This Work Order may implement M00 P0, but it does not mark M00 `DONE`.
+**Status: M00 P0 + P1 demonstrated / OWNER DIRECTED CHECKPOINT PROMOTION; module-specific DoD only.** This promotion becomes canonical only on a valid merge of the exact-HEAD-reviewed checkpoint PR; it does not constitute V1-wide DoD or module admissions for M01–M18. CB-GOV-005/PR #32 was the historical M00 admission.
+
+## M00 checkpoint promotion · Owner go/no-go 2026-10-10
+
+**Effective only on merge of the reviewed checkpoint-promotion PR:** `.engineering/CHECKPOINT.json` now projects `M00_COMPLETE`, `completedThroughModule=CB-M00`, `previewDeployment=PREVIEW_VERIFIED`, `activeWorkOrder=NONE`, overall **5%** (`floor(1 / 19 × 100)`). The Owner explicitly directed immediate finalization and movement out of the zero checkpoint in this conversation on 2026-10-10; this final M00-only promotion uses the [audited closeout evidence merged in PR #50](https://github.com/KayzenRoot/coinblink/pull/50) at main `9379bc22569d0e1ce391079a56f3147cfaa9f0f6`, [protected Preview run #38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) for unchanged app/build SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`, and authenticated read-only provider binding inventory `ASSETS` only. The M00 demo-only screenshots were accepted; **no claim of Golden Home M01 fidelity**. Docker local `coinblink-local` is healthy on 127.0.0.1:3187 per candidate evidence. Final exact-head CI/audit must pass before merge.
+
+There are exactly 19 modules in the project; M00 is completed, so 18 modules remain unfinished. M01–M17 are **NOT_ADMITTED**, M18 **FUTURE_NOT_ADMITTED**; Issue #6, ADR-CB-0002, separate per-module admissions and original Golden assets remain future gates. No paid Cloudflare/production action, no new Preview run. The original `sourceMainSha` preserves admission provenance; this promotion's distinct source base is `9379bc22569d0e1ce391079a56f3147cfaa9f0f6`.
 
 ## Owner-approved Free-only operational policy · 2026-10-10
 
@@ -28,20 +34,20 @@ The read-only Cloudflare UI showed Workers Free, the sole listed Worker `coinbli
 ## P0: Working local foundation
 - [x] Code authored by Codex on the admitted execution branch; local `npm ci`, Node engine, typecheck, GEF and app build pass. Exact-head GitHub CI remains a separate P2 gate.
 - [x] `/en`, `/health`, `/preview-status`, and 404 work with honest demo states and no fabricated content in local Playwright and Docker smoke.
-- [ ] Docker Compose default port 3000 remains **BLOCKED locally** by unrelated container `d76127e8ff37` (`nexlabs-website-web-1`). Local smoke used port 3010; do not stop or remove the unrelated container.
+- [x] Local Docker Compose runs the CoinBlink-owned service persistently on free port `127.0.0.1:3187` (healthy, exact build SHA); the unrelated service on port 3000 was not stopped or changed. The default port 3000 conflict is **resolved by isolating CoinBlink on port 3187**, not by stopping another project.
 - [x] Exact-head run `37870422086` on `ccbce66b216796012689869b9de17effd2327f5a` passed the isolated Ubuntu Docker smoke on port 3000, including health, preview-status, exact build SHA and 404 checks. Any later candidate requires a fresh run.
 - [x] Playwright desktop 1536×864, tablet 768×1024 and mobile 390×844 screenshots, keyboard/focus, axe accessibility, overflow and browser-console checks pass locally. Exact-head artifact `coinblink-m00-playwright-37870422086-1` was uploaded; current candidate artifacts are linked from PR #33 checks.
 - [x] Astro session auto-KV is disabled and the generated Worker config has no unrequested `SESSION` binding.
 
 ## P1: Remote preview (external authorization gate)
 - [x] Owner approved the existing Workers Free plan, dedicated Worker, protected GitHub Environment and scoped secrets, as evidenced by successful protected run #38049696879 and Issue #36 decision #6099048180. Hard account-wide USD 0 ceiling is not required; the USD 10 alert remains informational. Any future Paid change requires separate Owner permission.
-- [ ] Verified real per-PR Worker Preview stable URL + immutable build URL, /health exact SHA, no production binding access, optional private admin route protected when present.
+- [x] Real protected Worker Preview run #38049696879 published stable and immutable HTTPS URLs on exact app build SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`; `/health`, `/preview-status`, 404, noindex, security headers and desktop/tablet/mobile axe/browser evidence all verified. Read-only Cloudflare bindings show only `ASSETS` on Preview, no production resource access. No private admin route is present in the M00 demo.
 - [x] Current M00 Preview was deployed only after Owner and protected Environment authorization on Workers Free. New runs still require separate per-run approval and must not use Paid or production resources without explicit Owner permission.
 
 ## P2: Review and promotion
 Exact-head CI is SHA-specific: run `37870422086` passed on audited candidate `ccbce66b216796012689869b9de17effd2327f5a`; the live PR #33 checks are authoritative for any correction candidate that follows.
-- [ ] No unresolved critical/high security or CodeRabbit/Codex independent review items, no fake tests or provider claims.
-- [ ] Evidence Bundle shows actual logs, screenshots, URLs, build versions, isolation, local Docker proof, cost/rollback and Owner visual approval.
-- [ ] Gate-valid checkpoint delta promoted only after independent audit and merge approval, no force push.
+- [x] PR #50 final evidence independently audited; exact SHA 6/6 CI and CodeRabbit success. Minor SHA-in-own-manifest suggestion explicitly dispositioned as circular/self-referential. Exact-head regression/security/CodeRabbit must also pass the new checkpoint-promotion PR before merge.
+- [x] Merged PR #48 + #50 evidence includes real logs, stable/immutable URLs, exact build SHA, screenshots/axe, binding isolation, Workers Free with unchanged informational US$10 alert, safe rollback, and Owner M00-demo-only acceptance.
+- [ ] Gate-valid checkpoint delta in this checkpoint-promotion PR becomes canonical only after exact HEAD CI/audit and authorized normal merge, without force push. Its JSON target is included in this PR.
 
-**STOP:** The entire M00 is NOT DONE until real preview evidence exists. Local P0 can be approved as a checkpoint even if Cloudflare permission is pending; that does not bypass governance or imply M00 release completed.
+**STOP:** Real M00 preview evidence, isolated provider binding inspection, demo visual acceptance and final evidence audit exist. M00 may be declared DONE **only upon authorized merge of the separately validated checkpoint-promotion PR**. Global V1 and M01+ stay unadmitted.

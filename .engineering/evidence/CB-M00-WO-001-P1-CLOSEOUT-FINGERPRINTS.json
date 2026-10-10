@@ -154,8 +154,8 @@
       "changeType": "M",
       "baseGitBlobSha1": "a4ee309193e5c825283d95e828ce0839379e2694",
       "baseRawSha256": "cf28ad350d34c0906474b27b53bd0cb560387fd4cc13052ac7f5c69e946b6fa1",
-      "candidateGitBlobSha1": "ac24e9361a7e916ef996cb5190268de055a3b2ea",
-      "candidateRawSha256": "3decff41d9034d2d150ef59155f926c822564fc758d2cc2b06d0adc7798c7ab3"
+      "candidateGitBlobSha1": "592301a510521b239098716d60d80c6951ac7119",
+      "candidateRawSha256": "41ab2c73fa5e7681dab98f5c327beca93a1e6f5b3b37113562266ef9d91f8a1d"
     },
     {
       "path": "AGENTS.md",

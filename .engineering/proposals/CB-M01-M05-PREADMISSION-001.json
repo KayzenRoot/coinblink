@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "NON_AUTHORIZING_PRE_ADMISSION_CONTRACT_PLAN",
+  "sourceMainSha": "842fc5a0e54bdaed37066abd830fd1b346368b2b",
+  "modules": [
+    {
+      "id": "CB-M01",
+      "issue": 8,
+      "contractPath": "docs/architecture/contracts/CB-M01.md",
+      "contractStatus": "PROPOSED_NOT_ADOPTED",
+      "dependencies": [
+        "CB-M00"
+      ],
+      "requiredCanonicalProof": [
+        "main M00_COMPLETE",
+        "global #53 merged and #6 closed",
+        "asset #54 merged; exact SHA256 originals on main",
+        "owner visual Golden reference accepted",
+        "fresh GEF WO, Context Lock and individual admission"
+      ],
+      "expectedPreview": "/en",
+      "applicationCodeAuthorized": false
+    },
+    {
+      "id": "CB-M05",
+      "issue": 12,
+      "contractPath": "docs/architecture/contracts/CB-M05.md",
+      "contractStatus": "PROPOSED_NOT_ADOPTED",
+      "dependencies": [
+        "CB-M00"
+      ],
+      "requiredCanonicalProof": [
+        "main M00_COMPLETE",
+        "global #53 merged and #6 closed",
+        "one-human-Owner security/data/provider ADR approved for privileged code",
+        "fresh GEF WO, Context Lock and individual admission"
+      ],
+      "expectedPreview": "/admin/articles",
+      "applicationCodeAuthorized": false
+    }
+  ],
+  "integrationStewardOwnedPaths": [
+    "src/pages/**",
+    "src/middleware.*",
+    "src/layouts/**",
+    "package.json",
+    "package-lock.json",
+    "astro.config.*",
+    "wrangler.jsonc",
+    "compose.yaml",
+    ".github/workflows/**"
+  ],
+  "initialApplicationAgentsStarted": 0,
+  "allowedAgentCount": 0,
+  "notAuthoritativeForAdmission": true,
+  "nextMergeOrder": [
+    "PR #53 exact review green",
+    "PR #53 merge; main post CI",
+    "PR #54 sync after main moves, revalidate, merge, verify bytes",
+    "Issue #6 formal closeout",
+    "M01/M05 separate GEF admission"
+  ],
+  "resourcePolicy": "Re-measure available RAM and CPU on Windows immediately before actual agent start, never infer from UI badges"
+}

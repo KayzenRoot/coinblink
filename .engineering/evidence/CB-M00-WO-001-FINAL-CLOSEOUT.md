@@ -14,6 +14,10 @@
 - Current main CI is green at the exact base SHA. The app/build inputs listed in the immutable P1 bundle did not change between deployed app SHA `e8886e21c6f152ca374b1e42852c6b6638543f40` and current main base `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`.
 - Additional exact-main workflow [#38068609949](https://github.com/KayzenRoot/coinblink/actions/runs/38068609949) ran on `main` at `bd5eea7da88c83aaa0cf15a64d77c01ed7677738`. Its exact-main preflight completed `SUCCESS` (Node 22.19.0/npm 10.9.3, dependency audit, lint, typecheck, Chromium, tests/build/a11y and GEF). The protected job was canceled before any provider step after confirming the Owner's reuse decision in [Issue #6 comment 6099111571](https://github.com/KayzenRoot/coinblink/issues/6#issuecomment-6099111571). No Cloudflare action or deployment occurred; the existing successful Preview is reused because application/build inputs are unchanged.
 
+### Immutable Context Lock clarification
+
+The immutable Context Lock records the plan and status observed when that lock was created, including the then-prospective protected approval for run #38068609949. It is intentionally unchanged to preserve its frozen provenance. Later, the Owner directed reuse of run #38049696879 while application/build inputs remain unchanged (Issue #6 comment 6099111571); run #38068609949 was then canceled at the protected gate before any provider step. This dated Evidence Bundle and the current Source Hierarchy/Work Order status supersede the lock's prospective gate wording for present operations. Protected Environment approval remains required for any future new deployment.
+
 ## Existing isolated Preview evidence
 
 The already successful protected workflow [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) deployed exact app SHA `e8886e21c6f152ca374b1e42852c6b6638543f40` to the dedicated Worker Preview. These URLs and the captured evidence remain real and valid for that exact app SHA:

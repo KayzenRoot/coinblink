@@ -214,3 +214,24 @@ Final planner and regression-test source fingerprints (SHA-256):
 | `test/parallel-batch-planner.test.mjs` | `e3288cc8a1f64e65d08b301b9b94856cb1952fe4a679888f5160b3d51de32fef` |
 
 The hosted results on `699cb29cd56d6dfac0f8be20c2b76a146768e6a5` passed all seven checks, including SonarCloud with zero open new-code issues and a completed full CodeRabbit review. That review's verified parser finding was fixed after it, so all hosted checks, SonarCloud and full CodeRabbit review must be rerun on the new final HEAD. Owner audit/go-no-go is still required before merge; global gates and per-module admissions remain pending.
+
+## Full CodeRabbit review on `1aed0d7032dd291c60203b6bead7232b0e8c0a8d`
+
+The exact-HEAD review found one verified fail-open case in the parallel ADR gate: token membership accepted additional or contradictory status tokens. The canonical ADR currently says `PROPOSED / NOT_OWNER_APPROVED / NOT_ADOPTED`. The planner now exposes a pure status parser used by the CLI and accepts only exact `ADOPTED / OWNER_APPROVED`; it extracts the first current `Status:` line, removes its formatting, and rejects extra tokens or trailing prose. Regression tests cover the exact adopted value, current proposal, extra/negative tokens, trailing prose, and historical text. This changes no ADR status and grants no module authority.
+
+The SonarCloud PR comment reports `0.0% Coverage on New Code`; the public PR measure API currently reports `new_lines_to_cover=0` and `new_uncovered_lines=0`, and the PR-specific open-issue query reports zero. The project test script runs `node --test` but does not enable Node coverage collection or configure an LCOV report for SonarCloud. The planner behavior is exercised by focused regression tests, but SonarCloud receives no attributable test-coverage report for the changed JavaScript. The Quality Gate passes; no coverage instrumentation or unrelated project-wide issue was added because it is not required by this governance-only correction. The repository-wide open-issue count is distinct from this PR's zero new issues.
+
+This ADR-gate correction requires fresh local tests, exact-HEAD GitHub checks and SonarCloud, and another full CodeRabbit review before the Owner audit/go-no-go. The checkpoint and all module admissions remain unchanged.
+
+## ADR-gate correction and local verification
+
+After the ADR-status correction, the focused planner suite passed 16/16. Full validation used Node `22.19.0` and npm `10.9.3`: `npm test` passed 104/104 unit/governance tests, the Astro build and binding guard, and 7/7 Playwright tests; lint had zero warnings; typecheck passed 44 files with zero diagnostics; `npm audit --audit-level=high` reported zero vulnerabilities; `git diff --check` passed. GEF 1.1.2 `doctor` and `status` succeeded read-only with `effect: NONE`, with the same documented REVIEW/observation limitations. The current planner output remains non-authorizing with five global gates pending and zero resource slots.
+
+Latest planner/test fingerprints before this evidence-only addition (SHA-256):
+
+| Path | SHA-256 |
+|---|---|
+| `scripts/plan-parallel-modules.mjs` | `5fb94a4fc92c586d97a53aed2ea3eb01229788ef813ae93f2a86d2aab3749ba4` |
+| `test/parallel-batch-planner.test.mjs` | `37363eaa86ef19be96be2b9f48cbd8642ed3020540b70bb6709f4ba5915824ea` |
+
+The `1aed0d7` SonarCloud check passed with zero new issues. Its comment showed 0.0% new-code coverage; the public measure API returned zero new lines to cover and zero new uncovered lines. The repository test command does not collect Node coverage or configure an LCOV report, so this metric is not evidence that the planner tests were skipped; it is a coverage-attribution limitation. The behavioral tests exercise the planner. No unrelated coverage tooling was added to this narrow governance fix. Fresh exact-HEAD SonarCloud results are required after the ADR correction.

@@ -197,19 +197,26 @@ function hasGlobalApprovalStatus(file) {
   return isGlobalApprovalStatus(readFileSync(path.join(ROOT, file), 'utf8'));
 }
 
+/** Accepts only the exact current status for Owner-approved ADR adoption. */
+export function isParallelAdrApproved(document) {
+  if (typeof document !== 'string') return false;
+  const statusLine = document.split(/\r?\n/u).find(line => line.startsWith('**Status:**'));
+  if (!statusLine) return false;
+  const statusText = statusLine.slice('**Status:**'.length);
+  const closingMarker = statusText.indexOf('**');
+  const status = (closingMarker === -1 ? statusText : statusText.slice(0, closingMarker))
+    .replaceAll('`', '')
+    .trim()
+    .replace(/\.$/u, '')
+    .trim();
+  return status === 'ADOPTED / OWNER_APPROVED';
+}
+
 /** Checks only the ADR's current status line for an Owner-approved adoption. */
 function detectADR() {
   if (!existsSync(path.join(ROOT, ADR))) return false;
-  const doc = readFileSync(path.join(ROOT, ADR), 'utf8');
   // Read only the exact first Status line; the words ADOPTED occur in historical paragraphs.
-  const statusLine = doc.split(/\r?\n/u).find(line => line.startsWith('**Status:**'));
-  if (!statusLine) return false;
-  const tokens = new Set(statusLine.slice('**Status:**'.length)
-    .replaceAll('`', '')
-    .split('/')
-    .map(token => token.trim()));
-  return tokens.has('ADOPTED') && tokens.has('OWNER_APPROVED')
-    && !tokens.has('NOT_ADOPTED');
+  return isParallelAdrApproved(readFileSync(path.join(ROOT, ADR), 'utf8'));
 }
 
 /** Reads the public Issue #6 state without credentials; errors fail closed. */

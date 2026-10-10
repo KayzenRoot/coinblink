@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isGlobalApprovalStatus, isIssue6Closed, localAuthoringSlots, parseGateEvidence, planParallelModules } from '../scripts/plan-parallel-modules.mjs';
+import { isGlobalApprovalStatus, isIssue6Closed, isParallelAdrApproved, localAuthoringSlots, parseGateEvidence, planParallelModules } from '../scripts/plan-parallel-modules.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const matrix = JSON.parse(readFileSync(path.join(ROOT, '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json'), 'utf8'));
@@ -195,6 +195,15 @@ test('global source gate recognizes only explicit global approval and freeze sta
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / FROZEN / PENDING.**'), false);
   assert.equal(isGlobalApprovalStatus('**Status: FROZEN / OWNER_APPROVED_GLOBAL.**'), false);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_M00_ONLY.**\nHistorical: OWNER_APPROVED_GLOBAL / FROZEN'), false);
+});
+
+test('parallel ADR gate accepts only the exact Owner-approved adoption status', () => {
+  assert.equal(isParallelAdrApproved('**Status:** `ADOPTED / OWNER_APPROVED`'), true);
+  assert.equal(isParallelAdrApproved('**Status:** `PROPOSED / NOT_OWNER_APPROVED / NOT_ADOPTED`'), false);
+  assert.equal(isParallelAdrApproved('**Status:** `ADOPTED / OWNER_APPROVED / PROPOSED`'), false);
+  assert.equal(isParallelAdrApproved('**Status:** `ADOPTED / OWNER_APPROVED / NOT_ADOPTED`'), false);
+  assert.equal(isParallelAdrApproved('**Status:** `ADOPTED / OWNER_APPROVED` Owner note: draft'), false);
+  assert.equal(isParallelAdrApproved('Historical: ADOPTED / OWNER_APPROVED\n**Status:** `PROPOSED / NOT_ADOPTED`'), false);
 });
 
 test('Issue #6 lookup uses a fixed unauthenticated read and fails closed', async () => {

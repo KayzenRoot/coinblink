@@ -1,6 +1,25 @@
 # ADR-CB-0002 · Controlled Parallel Module Delivery
 
-**Status:** `PROPOSED / NOT_OWNER_APPROVED / NOT_ADOPTED`
+**Status:** ADOPTED / OWNER_APPROVED
+**Effective only when this reviewed governance PR is merged.**
+**Source base:** 842fc5a0e54bdaed37066abd830fd1b346368b2b
+**Owner scope:** recurrent explicit instruction to accelerate Codex Desktop LOCAL through many separate development agents, and Continue after a specific first-beta milestone approval request. This approves the bounded parallel execution methodology, NOT self-admission, unattended provider access or paid/production deployment.
+
+## Current effective decision, 2026-10-10
+
+- M00 is COMPLETE at 5%, Cloudflare Workers Free Preview verified, and Docker local was previously observed running on port 3187. Do not reopen M00 for a historic 0-percent snapshot.
+- Same-wave modules may be authored **concurrently only if independently admitted**, dependencies and versioned contracts already permit the work, file ownership is disjoint, resource slots are actually available, and security/provider grants are present where required.
+- One local Codex Desktop agent/worktree/branch/stable Work Order/Context Lock/PR per module. A separately authorized Integration Steward owns shared routes, layouts, auth boundary, schema/migrations, package dependencies, CI and deployments.
+- Serial merges to main with updated exact-head CI/reviews; merge queue is NOT assumed. No rebase/force push or self-approval. The existing read-only planner reports candidates, not authorized code tasks.
+- The Owner requests more than two concurrent modules whenever readiness and CPU/free RAM genuinely permit it; schedule workload without oversubscribing the Windows machine or harming unrelated Docker services.
+- M01 is externally gated by byte-exact original Golden assets. M05 is gated by a one-human-Owner security architecture for real password/MFA/recovery/vault; a separately admitted P0 fixture-only admin shell is not functional authentication. M02/M03/M04 follow their actual dependencies and per-module contracts.
+- Exactly 19 existing modules remain; M18 is FUTURE_NOT_ADMITTED and no token issuance is authorized. All live/social/market/payment/billing/production/secret-management actions still have distinct owner and provider gates.
+- Adoption of delivery methodology and global source baseline does **not** admit any future module or alter .engineering/CHECKPOINT.json. The global planning Issue #6 will be closed only after the effective source pack is merged and verified, while individual M01/M05 approvals remain separate.
+
+## Historical proposal snapshot (noncurrent, retained for audit)
+
+
+**Historical status:** PROPOSED / NOT_OWNER_APPROVED / NOT_ADOPTED
 **Work Order:** `CB-GOV-PARALLEL-001`
 **Base main:** `27015adc87caacabbed0e318f892644ce0473f10`
 **Scope:** proposed scheduling and integration mechanics for the existing 19 modules CB-M00–CB-M18 only. This ADR does not approve product functionality, architecture choices, new modules, paid services, deployment, or any module admission.

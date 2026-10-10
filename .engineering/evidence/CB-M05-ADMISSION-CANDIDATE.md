@@ -7,3 +7,7 @@
 **P1 external gate still OPEN:** actual persistent Owner claim, one-use bootstrap/password/recovery/MFA, secure sessions/cookies/CSRF, protected secret envelope storage, database/migrations and resource permissions require a qualified Owner-approved dedicated ADR. UI MOCK status is not evidence of authorization. Free Workers and informational US$10 alert remain, no Paid upgrade.
 
 **Evidence not yet observed:** exact final HEAD CI, CodeRabbit, authorized merge, actual execution SHA, Docker build/screenshot and app security tests cannot be claimed by a mere candidate. This admission proposal itself must pass required checks; no direct Cloudflare provider action in a governance PR.
+
+## Local exact-head regression correction
+
+Ubuntu and Windows CI on preceding candidate SHA `80a65053714271e8e3bb06b597c751f42662b2bc` reported 110 unit tests passed and exactly one outdated planner test failing: `test/parallel-batch-planner.test.mjs` expected CB-M05 to remain `NOT_ADMITTED` even in a separately reviewed admission candidate. This scope-limited regression correction verifies the *actual* admission from checkpoint, then asserts the read-only planner is still ineligible without real global/module evidence; if status is NOT_ADMITTED, the explicit admission blocker remains required. No planner bypass, runtime code or new provider permission. Recheck exact new commit in hosted CI.

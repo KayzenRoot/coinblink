@@ -29,7 +29,14 @@ test('M00 completion is read from canonical checkpoint, not historical proposal 
   assert.match(plan.disclaimer, /never grants application-code authority/u);
   assert.equal(plan.candidates.length, 17);
   assert.ok(plan.candidates.find(c => c.id === 'CB-M01').blockers.some(x => x.includes('External evidence')));
-  assert.ok(plan.candidates.find(c => c.id === 'CB-M05').blockers.some(x => x.includes('Module not admitted')));
+  const m05 = plan.candidates.find(candidate => candidate.id === 'CB-M05');
+  assert.equal(m05.admission, checkpoint.checkpointFacts.moduleAdmission['CB-M05']);
+  assert.equal(m05.plannerEligibleBasedOnEvaluatedInputs, false, 'a staged admission does not bypass missing global and module gates');
+  if (m05.admission === 'NOT_ADMITTED') {
+    assert.ok(m05.blockers.some(blocker => blocker.includes('Module not admitted')));
+  } else {
+    assert.ok(m05.blockers.some(blocker => blocker.includes('No verified Work Order + Context Lock + contract')));
+  }
   assert.equal(plan.candidates.some(c => c.id === 'CB-M18'), false);
 });
 

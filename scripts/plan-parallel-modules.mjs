@@ -4,7 +4,7 @@
  * A plan is never an admission, worktree creation, Codex task dispatch or merge authorization.
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { availableParallelism, totalmem } from 'node:os';
+import { availableParallelism, freemem } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,7 +17,7 @@ export function localAuthoringSlots({ cpus, ramBytes }) {
   if (!Number.isInteger(cpus) || cpus < 1 || !Number.isFinite(ramBytes) || ramBytes <= 0) {
     throw new Error('Invalid resource observations');
   }
-  // At least 2 logical CPUs and 4 GiB total RAM budgeted per concurrent author.
+  // At least 2 logical CPUs and 4 GiB currently available RAM budgeted per concurrent author.
   // Heavy Chromium/Playwright/Docker checks must use a separate shared queue.
   return Math.max(1, Math.min(Math.floor(cpus / 2), Math.floor(ramBytes / (4 * 1024 ** 3))));
 }
@@ -130,7 +130,7 @@ function parseMaxAgents(argv) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const maxAgents = parseMaxAgents(process.argv.slice(2));
-    const slots = localAuthoringSlots({ cpus: availableParallelism(), ramBytes: totalmem() });
+    const slots = localAuthoringSlots({ cpus: availableParallelism(), ramBytes: freemem() });
     const actualSlots = maxAgents === null ? slots : Math.min(slots, maxAgents);
     const result = planParallelModules({
       matrix: readJson(MATRIX),

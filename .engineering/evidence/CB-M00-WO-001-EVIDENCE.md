@@ -67,7 +67,7 @@ The local Playwright run created and visually inspected the following screenshot
 | `artifacts/playwright/6a33bf25b3bf/tablet-768x1024.png` | 768 × 1024 | `ad40e3c899c8bf52bc843e308fca86c93b8f2a9994d7566fbd091995f8e424f8` |
 | `artifacts/playwright/6a33bf25b3bf/mobile-390x844.png` | 390 × 844 | `7a008f713a5612fcb5c28508b83ae39d74c3bb002cd022f3e67da6fa5f992549` |
 
-## Remote gates and outstanding audit
+## Historical PR #41 gates and residuals (as of 2026-10-09)
 
 - [Initial GitHub workflow run 37868417930](https://github.com/KayzenRoot/coinblink/actions/runs/37868417930) on `1449d9b62b2b2df1e2dab47b1316c64407fdcd6c` exposed two candidate issues. Ubuntu/Windows failed because the shallow checkout omitted locked base `bf3a5f800ddb3ebf9a0a6b338268f59500b6547d`; Docker passed. [SonarCloud reported](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=33) five MAJOR vulnerabilities tied to ad-hoc `npx`/install lifecycle scripts, plus a demo-label contrast issue and a redundant-branch complexity issue. Commits `1bbf835` and `6a33bf2` fetch required Git history, use the pinned local Playwright binary, disable dependency lifecycle scripts, add guard tests, simplify recursive binding detection, and set an explicit high-contrast demo-label surface. Those findings were corrected in the succeeding exact-head runs.
 - Exact-head [GitHub Actions run 37870129338](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338) passed on candidate `c716e109ed87d679cc54f2c119079efb98ad2351`: Ubuntu M00/GEF, Windows M00/GEF, isolated Docker Compose smoke, and exact-SHA screenshot upload. [Ubuntu job](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338/job/113626046339), [Windows job](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338/job/113626046277), and [Docker job](https://github.com/KayzenRoot/coinblink/actions/runs/37870129338/job/113626046054) each concluded success. SonarCloud Code Analysis and both Socket checks also passed. The Ubuntu job uploaded `coinblink-m00-playwright-37870129338-1` with the three exact-head viewport screenshots.
@@ -79,6 +79,12 @@ The local Playwright run created and visually inspected the following screenshot
 - Cloudflare account, plan, cost ceiling, scoped credentials, and non-production isolation have not been verified or authorized. P1 is `PROVIDER_SETUP_REQUIRED`; no preview URL is claimed and no deployment was attempted.
 - Known residuals: local port 3000 conflict above; GEF local drift baseline is absent; GEF doctor reports dependency provenance `unverified` and mutable-ref GitHub policy `REVIEW`; `npm audit signatures` returns E404 for unpublished transitive `@gef-bootstrap/config@0.0.0`. `npm audit --audit-level=high` reports no vulnerabilities; the pinned GEF tarball/SLSA test passes.
 
-## Stop condition
+## Historical stop condition (before the 2026-10-10 Preview dispatch)
 
 Stop with the implementation PR ready for audit. Do not merge, promote `.engineering/CHECKPOINT.json`, mark M00 `DONE`, start another module, or run the Cloudflare preview lane. Only a later authorized audit/merge may promote the proposed delta.
+
+## 2026-10-10 P1 protected Preview follow-up
+
+The next authorized exact-main Preview attempt is documented in [the URL identity correction Evidence Bundle](CB-M00-WO-001-P1-URL-IDENTITY-CORRECTION.md). Run [38045607351](https://github.com/KayzenRoot/coinblink/actions/runs/38045607351) used canonical main SHA `9c900fda5044c1cfa42934f20dcd3621a48cd613`; preflight, Owner-gated authorization/build, and independent verification of both real Preview origins succeeded, but the official run failed while validating Wrangler's eight-character immutable hostname identity against its UUID deployment ID. Cloudflare shows the isolated Preview as Ready and reports the exact build SHA on both routes. This updates the earlier historical “no Preview deployed” evidence; the official workflow remains failed, P1 is not yet complete, and the canonical checkpoint was not changed.
+
+Stable/immutable origins, endpoint/security checks, remote responsive screenshots, invocation/binding observations, code correction, and the proposed no-promotion Checkpoint Delta are in the addendum. The immutable Context Locks and checkpoint remain untouched. A successful corrected exact-main workflow run and its audit are required before checkpoint promotion or M00 completion.

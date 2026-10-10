@@ -38,6 +38,8 @@ const validSessionEvent = {
   log_file_path: "/tmp/wrangler.log",
   timestamp: "2026-10-09T00:00:00.000Z",
 };
+const deploymentUuid = "12345678-1234-4abc-8def-1234567890ab";
+const shortDeploymentUrl = `https://12345678-${CLOUDFLARE_PREVIEW_WORKER_NAME}.account.workers.dev`;
 
 function parseMockCliOutput(output, expected = previewName) {
   return parsePreviewOutput(JSON.stringify(output, null, 2), expected);
@@ -56,6 +58,37 @@ test("accepts Wrangler 4.149.0 structured output-file events and exact dedicated
     previewUrl: validOutput.preview.urls[0],
     deploymentUrl: validOutput.deployment.urls[0],
   });
+});
+
+test("accepts the immutable Preview URL's eight-character prefix for a UUID deployment ID", () => {
+  const output = {
+    ...validOutput,
+    deployment: { ...validOutput.deployment, id: deploymentUuid, urls: [shortDeploymentUrl] },
+  };
+  const event = {
+    ...validPreviewEvent,
+    deployment_id: deploymentUuid,
+    deployment_urls: [shortDeploymentUrl],
+  };
+
+  assert.deepEqual(parseMockCliOutput(output), {
+    previewUrl: validOutput.preview.urls[0],
+    deploymentUrl: shortDeploymentUrl,
+  });
+  assert.deepEqual(parsePreviewOutputEvents(JSON.stringify(event), previewName), {
+    previewUrl: validOutput.preview.urls[0],
+    deploymentUrl: shortDeploymentUrl,
+  });
+});
+
+test("rejects an immutable Preview URL whose short deployment prefix differs from its UUID", () => {
+  assert.throws(
+    () => parsePreviewOutputEvents(
+      JSON.stringify({ ...validPreviewEvent, deployment_id: deploymentUuid }),
+      previewName,
+    ),
+    /hostname does not match the returned Preview or deployment identity/,
+  );
 });
 
 test("structured output events reject wrong Worker, Preview name, and URL identities", () => {

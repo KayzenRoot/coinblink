@@ -28,7 +28,7 @@ export function validatePreviewOutput(result, expectedName) {
   const deploymentUrl = validateCloudflareUrl(
     deployment.urls,
     "immutable Deployment URL",
-    `${deployment.id}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+    `${deploymentUrlIdentity(deployment.id)}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
   );
   if (previewUrl === deploymentUrl) {
     throw new Error("Stable Preview and immutable Deployment URLs must be distinct.");
@@ -248,7 +248,7 @@ function validatePreviewOutputEvent(event, expectedName) {
   const deploymentUrl = validateCloudflareUrl(
     event.deployment_urls,
     "immutable Deployment URL",
-    `${event.deployment_id}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
+    `${deploymentUrlIdentity(event.deployment_id)}-${CLOUDFLARE_PREVIEW_WORKER_NAME}`,
   );
   if (previewUrl === deploymentUrl) {
     throw new Error("Stable Preview and immutable Deployment URLs must be distinct.");
@@ -270,6 +270,11 @@ export function parsePreviewOutputEvents(output, expectedName) {
   if (previewEvents.length !== 1) throw new Error("Wrangler must return exactly one Preview output event.");
 
   return validatePreviewOutputEvent(previewEvents[0], expectedName);
+}
+
+function deploymentUrlIdentity(deploymentId) {
+  const uuid = /^([0-9a-f]{8})-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.exec(deploymentId);
+  return uuid ? uuid[1].toLowerCase() : deploymentId;
 }
 
 function validateCloudflareUrl(values, label, expectedHostnameLabel) {

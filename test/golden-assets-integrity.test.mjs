@@ -33,6 +33,11 @@ const startOfFrameMarkers = new Set([
   0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf,
 ]);
 
+/**
+ * Reads dimensions from the first supported JPEG start-of-frame segment.
+ * @param {Buffer} bytes JPEG file contents.
+ * @returns {{ width: number, height: number }} Decoded pixel dimensions.
+ */
 function readJpegDimensions(bytes) {
   assert.equal(bytes[0], 0xff, "JPEG must start with the SOI marker");
   assert.equal(bytes[1], 0xd8, "JPEG must start with the SOI marker");

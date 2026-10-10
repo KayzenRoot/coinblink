@@ -29,10 +29,14 @@ The source JPEG headers, decoded dimensions, byte counts, and SHA-256 values mat
 - `npm run lint`: passed with `--max-warnings=0`.
 - `npm run typecheck`: passed, 0 errors/warnings/hints.
 - `npm test`: passed, 105 unit tests, build plus session-binding guard, and 7 Playwright tests including desktop, tablet, mobile, route and security-header coverage.
+- Fresh validation after the CodeRabbit docstring warning, using supported Node.js 22.23.3 / npm 10.9.3: `node --check` passed; focused Golden integrity test passed (1/1); lint passed; typecheck passed across 45 files (0 errors, warnings, or hints); `npm test` passed (105 unit tests, build/session-binding guard, and all 7 Playwright tests).
+- A diagnostic `npm test` under system Node.js 24.19.0 correctly failed the repository's Node 22 version assertion; it was rerun with the supported Node 22.23.3 runtime and passed. No production code or dependency change was needed.
 - `git diff --check`: passed after editing.
 - `npm ci` dependency audit summary: 0 vulnerabilities.
+- Exact-head hosted checks on import commit `db41742595c214eaf5edfc2957953956a4e7fecc`: Ubuntu GEF/M00 passed ([job](https://github.com/KayzenRoot/coinblink/actions/runs/38087894544/job/114318139272)); Windows GEF/M00 passed ([job](https://github.com/KayzenRoot/coinblink/actions/runs/38087894544/job/114318139809)); Docker Compose smoke passed ([job](https://github.com/KayzenRoot/coinblink/actions/runs/38087894544/job/114318139235)); SonarCloud passed with 0 new issues and 0 security hotspots; both Socket Security checks passed.
+- CodeRabbit GitHub review on `db41742595c214eaf5edfc2957953956a4e7fecc` completed with no actionable comments (run `e80261b5-e38d-4bcc-bd27-d7a752075dec`). Its path filter excluded both JPEG files; the deterministic integrity test verifies their names, dimensions, sizes, and hashes. CodeRabbit reported 0% docstring coverage for the new JPEG-dimension helper; the helper now has JSDoc and the final-head review is pending.
 - Local GEF 1.1.2 `doctor` and `status`: command envelope `ok: true`, checkpoint valid and read-only; however, the Codex managed linked worktree observer reports `repository.observable=FINDING`, `dirtiness=UNKNOWN` with `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED`. This local result is REVIEW/UNKNOWN, not a clean GEF pass; exact-head Ubuntu/Windows CI will provide normal-checkout verification.
-- Exact candidate SHA and hosted CI: recorded by the PR after final push; do not reuse baseline runs for the candidate.
+- The hosted results above validate the imported asset commit. The JSDoc/evidence correction is being revalidated on its updated exact HEAD; no result from `db417...` is represented as validation of that later HEAD.
 
 ## Scope and checkpoint
 
@@ -43,4 +47,4 @@ The source JPEG headers, decoded dimensions, byte counts, and SHA-256 values mat
 
 ## Remaining gates
 
-Exact-head GitHub checks, review, Owner audit, and authorized normal merge remain required. After merge, verify both file hashes and manifest values in a clean clone before closing Issue #5. No merge or checkpoint promotion is claimed by this bundle.
+Updated exact-head GitHub checks and CodeRabbit review, Owner audit, and authorized normal merge remain required. After merge, verify both file hashes and manifest values in a clean clone before closing Issue #5. No merge or checkpoint promotion is claimed by this bundle.

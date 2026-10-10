@@ -11,3 +11,7 @@
 ## Local exact-head regression correction
 
 Ubuntu and Windows CI on preceding candidate SHA `80a65053714271e8e3bb06b597c751f42662b2bc` reported 110 unit tests passed and exactly one outdated planner test failing: `test/parallel-batch-planner.test.mjs` expected CB-M05 to remain `NOT_ADMITTED` even in a separately reviewed admission candidate. This scope-limited regression correction verifies the *actual* admission from checkpoint, then asserts the read-only planner is still ineligible without real global/module evidence; if status is NOT_ADMITTED, the explicit admission blocker remains required. No planner bypass, runtime code or new provider permission. Recheck exact new commit in hosted CI.
+
+## Progress invariant regression follow-up
+
+The admission-only checkpoint must remain 5% while `completedThroughModule=CB-M00`; admissions may not advance completion. The regression test now asserts exact 5% conditionally on the canonical last completed module, while allowing a later explicitly completed module's separately reviewed checkpoint to increase percent without falsely failing the historic global test. No completion percent or application code changed by this fix.

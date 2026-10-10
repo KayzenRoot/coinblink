@@ -181,9 +181,10 @@ export function isGlobalApprovalStatus(document) {
   if (typeof document !== 'string') return false;
   const statusLine = document.split(/\r?\n/u).find(line => line.startsWith('**Status:'));
   if (!statusLine) return false;
-  const status = statusLine.slice('**Status:'.length)
+  const statusText = statusLine.slice('**Status:'.length);
+  const closingMarker = statusText.indexOf('**');
+  const status = (closingMarker === -1 ? statusText : statusText.slice(0, closingMarker))
     .replaceAll('`', '')
-    .replace(/\*\*$/u, '')
     .trim()
     .replace(/\.$/u, '')
     .trim();

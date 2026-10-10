@@ -6,7 +6,7 @@
 
 Run `node scripts/plan-parallel-modules.mjs` or `node scripts/plan-parallel-modules.mjs --max-agents 6` from the local repo. It reads the **canonical** `.engineering/CHECKPOINT.json`, the frozen **proposal** matrix (without changing history), all five global approval/adoption gates, local resource slots, and optional per-module gate evidence. Pass optional JSON with `--gate-evidence <path>` only when evaluating supplied evidence; the CLI labels that input unverified and non-authorizing. It reports dependency-ready module candidates separately from planner-eligible agent-module slots under evaluated inputs. Planner output never admits modules or authorizes code work.
 
-**What is ready after M00?** The current *dependency-ready candidates* are M01 and M05. Both are NOT_ADMITTED; M01 still needs both byte-exact Golden images from Issue #5 and M05 requires documented one-human-Owner auth/recovery/MFA/secret strategy. The global V1 source pack and parallel ADR in Issue #6 remain unapproved. No module application code is authorized by this PR.
+**What is ready after M00?** The current *dependency-ready candidates* are M01 and M05. Both are NOT_ADMITTED; M01 still needs both byte-exact Golden images from Issue #5 and M05 still needs the single human Owner to document decisions on identity, recovery, MFA, and vault storage. The global V1 source pack and parallel ADR in Issue #6 remain unapproved. No module application code is authorized by this PR.
 
 **Future dispatch policy:**
 1. Freeze reviewed global source pack, ADR and compatibility contracts, per-module Work Orders, frozen Context Locks, exclusive path manifests and provider/security gates. Promote each admission using GEF, never through this CLI or an issue label.
@@ -184,3 +184,33 @@ Final post-Sonar source fingerprints (SHA-256):
 |---|---|
 | `scripts/plan-parallel-modules.mjs` | `7a375f828256c7d2c9b51c06ba7d9f1d7c0189df333ec44e039b57bc126ee10c` |
 | `test/parallel-batch-planner.test.mjs` | `97181daac2483e7460d0d77b1a07811169d91cd65fe5079f0b6163acd2e87958` |
+
+## Full CodeRabbit review on `699cb29cd56d6dfac0f8be20c2b76a146768e6a5`
+
+The full review covered all three PR files. It identified one verified parser edge case: when a bold `Status:` value is followed by same-line prose, removing a closing bold marker only at end-of-line caused the planner to reject an otherwise exact approved status. The regression test was first run red (14/15 pass); parsing now extracts the value up to the first closing bold marker before normalization and still requires exact `OWNER_APPROVED_GLOBAL / FROZEN`. A negative M00-only status followed by prose remains rejected.
+
+The review also suggested clarifying the outstanding M05 Owner decisions; the opening readiness summary now says the single human Owner must document identity, recovery, MFA, and vault storage. Its resource-clamping note was non-actionable: `Math.min(slots, maxAgents)` cannot exceed observed host slots, and a non-positive memory reading throws and fails closed. The review's test comment was LGTM. This correction requires fresh exact-HEAD tests, hosted checks, SonarCloud and CodeRabbit review before audit or merge.
+
+Validation after the full-review correction used Node `22.19.0` and npm `10.9.3`. An initial unpinned `npm test` on host Node 24 failed only the two GEF-version assertions (the pinned GEF test requires Node 22); the complete suite was rerun with the repository's pinned toolchain:
+
+| Check | Result |
+|---|---|
+| Red regression before parser correction | PASS as a defect reproduction: 14/15 focused tests passed; the new approved-status-plus-prose assertion failed. |
+| Focused planner tests after correction | PASS — 15/15. |
+| `npm test` with Node 22.19.0 / npm 10.9.3 | PASS — 103/103 unit/governance tests, Astro build and no-binding guard, 7/7 Playwright tests. |
+| `npm run lint` | PASS — zero warnings. |
+| `npm run typecheck` | PASS — 44 files, zero errors, warnings, or hints. |
+| `npm audit --audit-level=high` | PASS — zero vulnerabilities. |
+| GEF 1.1.2 `doctor` / `status` | Commands succeeded read-only with `effect: NONE`; overall remains REVIEW because this managed worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`, unverified dependency provenance, absent drift baseline, and stale operator snapshot. |
+| Planner CLI | PASS, read-only/non-authorizing: M00 COMPLETE / 5%, 19 modules, Issue #6 open, five global gates pending, zero resource slots, no eligible modules, and no application-code authority. |
+| Existing Docker smoke | `coinblink-local-app-1` remained healthy on port 3187; `/health`, `/preview-status`, and `/en` returned HTTP 200. The app SHA remains `9757772d145f0aea69e0ecc0d7d0e7190e07916e`; no container was restarted. |
+| `git diff --check` | PASS. |
+
+Final planner and regression-test source fingerprints (SHA-256):
+
+| Path | SHA-256 |
+|---|---|
+| `scripts/plan-parallel-modules.mjs` | `7681b7919fed69a6507addab0c81d57d0c426d1ae03e9b248ffed7227bbaa2b5` |
+| `test/parallel-batch-planner.test.mjs` | `e3288cc8a1f64e65d08b301b9b94856cb1952fe4a679888f5160b3d51de32fef` |
+
+The hosted results on `699cb29cd56d6dfac0f8be20c2b76a146768e6a5` passed all seven checks, including SonarCloud with zero open new-code issues and a completed full CodeRabbit review. That review's verified parser finding was fixed after it, so all hosted checks, SonarCloud and full CodeRabbit review must be rerun on the new final HEAD. Owner audit/go-no-go is still required before merge; global gates and per-module admissions remain pending.

@@ -185,7 +185,9 @@ test('malformed gate evidence errors do not expose input or parser details', () 
 
 test('global source gate recognizes only explicit global approval and freeze status', () => {
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / FROZEN.**'), true);
+  assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / FROZEN.** Approved by the Owner.'), true);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_M00_ONLY / FROZEN.**'), false);
+  assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_M00_ONLY / FROZEN.** Historical note: this was limited.'), false);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / PROPOSED.**'), false);
   assert.equal(isGlobalApprovalStatus('**Status: NOT_OWNER_APPROVED_GLOBAL / FROZEN.**'), false);
   assert.equal(isGlobalApprovalStatus('**Status: OWNER_APPROVED_GLOBAL / NOT_FROZEN.**'), false);

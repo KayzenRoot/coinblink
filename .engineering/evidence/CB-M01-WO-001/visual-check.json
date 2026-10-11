@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-11T15:10:13.628Z",
+  "generatedAt": "2026-10-11T15:32:38.871Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "d8f6aa605eea11d2ff700c9d0ad8007f431ecc71",
+  "headSha": "ea380a240aebf0348aa484f115461ce6fb46d028",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -26,7 +26,7 @@
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:59378",
+  "origin": "http://127.0.0.1:51852",
   "viewports": [
     {
       "name": "desktop",
@@ -175,17 +175,17 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 66ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 80ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"

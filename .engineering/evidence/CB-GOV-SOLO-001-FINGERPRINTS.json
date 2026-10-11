@@ -6,7 +6,7 @@
   "normalMergeCommitSha": "d9d6e54b1697387088cf33712037a70b3e8f2db2",
   "changedGitPathCountIncludingManifest": 8,
   "manifestSelfHash": "EXCLUDED",
-  "contextLockSha256": "0c8c0efc588b05d83a329d6ab6805fd2ef31f47d182ced35cad64c285fca3bb7",
+  "contextLockSha256": "51f411217de3ec894c686a0289d02b203d594d5b1b15dd8faa0ece13c4b711fe",
   "files": [
     {
       "path": ".engineering/SOURCE-HIERARCHY.md",
@@ -24,66 +24,66 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "3da0d1beb85568f61767e7e73de3a98031afb711",
-      "candidateRawSha256": "0c8c0efc588b05d83a329d6ab6805fd2ef31f47d182ced35cad64c285fca3bb7",
-      "indexGitBlobSha1": "3da0d1beb85568f61767e7e73de3a98031afb711",
-      "workingTreeGitBlobSha1": "3da0d1beb85568f61767e7e73de3a98031afb711",
-      "workingTreeSha256": "0c8c0efc588b05d83a329d6ab6805fd2ef31f47d182ced35cad64c285fca3bb7"
+      "candidateGitBlobSha1": "4dd5a27a2082d0efc2f97f4ef7a2ae3a23a03a7b",
+      "candidateRawSha256": "51f411217de3ec894c686a0289d02b203d594d5b1b15dd8faa0ece13c4b711fe",
+      "indexGitBlobSha1": "4dd5a27a2082d0efc2f97f4ef7a2ae3a23a03a7b",
+      "workingTreeGitBlobSha1": "4dd5a27a2082d0efc2f97f4ef7a2ae3a23a03a7b",
+      "workingTreeSha256": "51f411217de3ec894c686a0289d02b203d594d5b1b15dd8faa0ece13c4b711fe"
     },
     {
       "path": ".engineering/evidence/CB-GOV-SOLO-001-CHECKPOINT-DELTA.md",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "d3e9e9c4f336a90a8ce4497f0ed9e7c9d871f922",
-      "candidateRawSha256": "22a9c2254e7229aa9809580d1735bba26b88cfaa634ea8d85994b9fd6c38f9b7",
-      "indexGitBlobSha1": "d3e9e9c4f336a90a8ce4497f0ed9e7c9d871f922",
-      "workingTreeGitBlobSha1": "d3e9e9c4f336a90a8ce4497f0ed9e7c9d871f922",
-      "workingTreeSha256": "22a9c2254e7229aa9809580d1735bba26b88cfaa634ea8d85994b9fd6c38f9b7"
+      "candidateGitBlobSha1": "4ed0679b7973e9a7f56d6b096014ee3b6e187e1c",
+      "candidateRawSha256": "fe3c1cb3c90593bf37a864e54cea3f238a39416f67415df70089d109d15d62a5",
+      "indexGitBlobSha1": "4ed0679b7973e9a7f56d6b096014ee3b6e187e1c",
+      "workingTreeGitBlobSha1": "4ed0679b7973e9a7f56d6b096014ee3b6e187e1c",
+      "workingTreeSha256": "fe3c1cb3c90593bf37a864e54cea3f238a39416f67415df70089d109d15d62a5"
     },
     {
       "path": ".engineering/evidence/CB-GOV-SOLO-001-EVIDENCE.md",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "d72062ae164b3b2bf292b0fb09fd3dd01893044f",
-      "candidateRawSha256": "3727b6ff2e726af31fb9b69745b33621c09416657bf6c7a7deb106dc39f06c0b",
-      "indexGitBlobSha1": "d72062ae164b3b2bf292b0fb09fd3dd01893044f",
-      "workingTreeGitBlobSha1": "d72062ae164b3b2bf292b0fb09fd3dd01893044f",
-      "workingTreeSha256": "3727b6ff2e726af31fb9b69745b33621c09416657bf6c7a7deb106dc39f06c0b"
+      "candidateGitBlobSha1": "3ea14e9d5b75eab5234dcd7250c1d630e15cf9aa",
+      "candidateRawSha256": "d1c11d6bb1ca7bfa4b58c48748557d26de1db45a3041fe07e3471b471668b68a",
+      "indexGitBlobSha1": "3ea14e9d5b75eab5234dcd7250c1d630e15cf9aa",
+      "workingTreeGitBlobSha1": "3ea14e9d5b75eab5234dcd7250c1d630e15cf9aa",
+      "workingTreeSha256": "d1c11d6bb1ca7bfa4b58c48748557d26de1db45a3041fe07e3471b471668b68a"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-SOLO-001.md",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "acc5e929b0aa46aa1817445284d7197a3953bbfa",
-      "candidateRawSha256": "f67e0da6853746a4f80c1d0bcfbfc49946f655bc72547be67095c15e0ab3057b",
-      "indexGitBlobSha1": "acc5e929b0aa46aa1817445284d7197a3953bbfa",
-      "workingTreeGitBlobSha1": "acc5e929b0aa46aa1817445284d7197a3953bbfa",
-      "workingTreeSha256": "f67e0da6853746a4f80c1d0bcfbfc49946f655bc72547be67095c15e0ab3057b"
+      "candidateGitBlobSha1": "673233372312d81f704ade81d3f5e13db964bf2b",
+      "candidateRawSha256": "81f881e6f0e31f639383011a6d49424e55a51fbad681c3876f80a6e020c009ea",
+      "indexGitBlobSha1": "673233372312d81f704ade81d3f5e13db964bf2b",
+      "workingTreeGitBlobSha1": "673233372312d81f704ade81d3f5e13db964bf2b",
+      "workingTreeSha256": "81f881e6f0e31f639383011a6d49424e55a51fbad681c3876f80a6e020c009ea"
     },
     {
       "path": "docs/DECISIONS_LEDGER.md",
       "status": "M",
       "baseGitBlobSha1": "d33b083a9fd31f9d7509e5a39f76f183cb961a3f",
       "baseSha256": "ae505b48f383ab929b827c0b54a57d243d00156e6173f09d0168ded881b42117",
-      "candidateGitBlobSha1": "1e51b2e1954c262c323eb37409b29f0921e7cbbe",
-      "candidateRawSha256": "52aa073aeafb49e5a74ae5aa8d4bcf29c6f28198ed5f9dbbeab45b3afd43f617",
-      "indexGitBlobSha1": "1e51b2e1954c262c323eb37409b29f0921e7cbbe",
-      "workingTreeGitBlobSha1": "1e51b2e1954c262c323eb37409b29f0921e7cbbe",
-      "workingTreeSha256": "52aa073aeafb49e5a74ae5aa8d4bcf29c6f28198ed5f9dbbeab45b3afd43f617"
+      "candidateGitBlobSha1": "8e8d19ae050b243ad64fdf3f55ac48a727b11f92",
+      "candidateRawSha256": "f8491d2347e4195f48693640c940807f089e0c39aa4c2ed44e7e0bf0495d5d18",
+      "indexGitBlobSha1": "8e8d19ae050b243ad64fdf3f55ac48a727b11f92",
+      "workingTreeGitBlobSha1": "8e8d19ae050b243ad64fdf3f55ac48a727b11f92",
+      "workingTreeSha256": "f8491d2347e4195f48693640c940807f089e0c39aa4c2ed44e7e0bf0495d5d18"
     },
     {
       "path": "docs/architecture/ADR-CB-0003-SOLO-MAINTAINER-REVIEW.md",
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "b2df0c51d2e64d49a99b888073ba05a96a29753a",
-      "candidateRawSha256": "f1a1be815576e85911c03d80d7e23163dbcfc3de047ba9a7d09d8ac8cc9d2104",
-      "indexGitBlobSha1": "b2df0c51d2e64d49a99b888073ba05a96a29753a",
-      "workingTreeGitBlobSha1": "b2df0c51d2e64d49a99b888073ba05a96a29753a",
-      "workingTreeSha256": "f1a1be815576e85911c03d80d7e23163dbcfc3de047ba9a7d09d8ac8cc9d2104"
+      "candidateGitBlobSha1": "f427db92bfd9b3d3ceb56619018cda7327a98fb3",
+      "candidateRawSha256": "569a5017be346aa1a9fbb4454b89daa71619410107164fc5ff14cee85fbe2e64",
+      "indexGitBlobSha1": "f427db92bfd9b3d3ceb56619018cda7327a98fb3",
+      "workingTreeGitBlobSha1": "f427db92bfd9b3d3ceb56619018cda7327a98fb3",
+      "workingTreeSha256": "569a5017be346aa1a9fbb4454b89daa71619410107164fc5ff14cee85fbe2e64"
     }
   ]
 }

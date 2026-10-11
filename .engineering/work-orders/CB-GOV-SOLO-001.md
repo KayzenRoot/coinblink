@@ -11,7 +11,7 @@
 Prepare a truthful, bounded Owner-Solo governance proposal for future LOW/STANDARD work. Do not simulate independent GitHub approval, disable or bypass an effective rule, or apply the proposal before its own assurance and adoption gates are met.
 
 ## Current verified context
-- Live `main` is `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The canonical checkpoint is M00 COMPLETE / 5%; M01 and M05 are ADMITTED but incomplete; M02–M04 e M06–M17 are NOT_ADMITTED; M18 is FUTURE_NOT_ADMITTED; no active Work Order or `stopState` is present.
+- Live `main` is `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The canonical checkpoint is M00 COMPLETE / 5%; M01 and M05 are ADMITTED but incomplete; M02–M04 and M06–M17 are NOT_ADMITTED; M18 is FUTURE_NOT_ADMITTED; no active Work Order or `stopState` is present.
 - `ADR-CB-0002` is adopted on current `main`. That does not waive individual module gates or authorize additional implementation here.
 - Ruleset `coinblink-main-governance` ID `24888106` is active only for `refs/heads/main`, has no bypass actors, requires one eligible distinct approving review and seven status contexts (six app-bound check-runs plus CodeRabbit), plus thread resolution and squash-only merge. The effective-rules API confirms these requirements; the classic branch-protection endpoint returns 404 and is not used as proof.
 - PR #46's previous HEAD `342ae16be15d69250eb0ed004b77f9cc02140ede` used base `b4ddb9891cc66cd3688b8e11a86abc75db4b8544`; its old checks, lock, and audit are historical. R1 merged current `origin/main` normally, preserving the eight-path candidate scope. The Source Hierarchy and Decisions Ledger conflicts were resolved from current main plus additive proposal text.
@@ -36,7 +36,7 @@ No workflow/verifier/tests, checkpoint, global Scope/Architecture/Security/DoD, 
 - The live ruleset still requires one distinct eligible GitHub approval. Do not lower it, add bypass, grant write to another Owner-controlled identity, fake a bot status, or merge against GitHub's decision.
 - This ADR and its adoption are ELEVATED. M05 remains HIGH_ASSURANCE. Unknown risk is escalated. Keep security, auth/MFA/recovery, secret vault, money, billing/Paid, production/provider mutation, destructive migration, custody/signing and irreversible actions outside Solo.
 - Any trusted verifier must run from protected-main-controlled code, use least permissions and read only PR metadata/diffs/reviews, never execute untrusted PR code with secrets/write access, and fail closed. Adversarial tests and a separately governed transition are prerequisites before any live rule change.
-- Preserve exactly 19 modules and the canonical checkpoint. M00 remains COMPLETE/5%; M01/M05 remain admitted but incomplete; M02–M04 e M06–M17 unadmitted; M18 future. Do not claim module completion or move the checkpoint.
+- Preserve exactly 19 modules and the canonical checkpoint. M00 remains COMPLETE/5%; M01/M05 remain admitted but incomplete; M02–M04 and M06–M17 unadmitted; M18 future. Do not claim module completion or move the checkpoint.
 
 ## Acceptance and validation
 - The PR diff is exactly the eight listed paths; no conflict markers, no unexpected paths, no secrets, and `git diff --check` passes.

@@ -8,7 +8,7 @@
 ## Context and current enforcement
 CoinBlink has one write/admin identity, `KayzenRoot`. A second account controlled by the same Owner is not an independent reviewer. The live `coinblink-main-governance` ruleset (ID `24888106`) is active on `main`, has no bypass actors, and requires one eligible distinct approving review, exact checks, resolved review threads, and squash-only merges. This ADR cannot override that live rule.
 
-The current checkpoint records M00 COMPLETE / 5%; M01 and M05 ADMITTED but incomplete; M02–M04 e M06–M17 NOT_ADMITTED; M18 FUTURE_NOT_ADMITTED. ADR-CB-0002 is already adopted on main. This ADR changes none of those states and does not authorize M01/M05 implementation or alter Cloudflare.
+The current checkpoint records M00 COMPLETE / 5%; M01 and M05 ADMITTED but incomplete; M02–M04 and M06–M17 NOT_ADMITTED; M18 FUTURE_NOT_ADMITTED. ADR-CB-0002 is already adopted on main. This ADR changes none of those states and does not authorize M01/M05 implementation or alter Cloudflare.
 
 ## Proposed decision — future LOW/STANDARD work only
 After formal adoption through a separately assured ELEVATED transition, an Owner may record a truthful, reviewable acceptance tied to the full final PR SHA only when all conditions are satisfied:

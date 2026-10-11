@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-11T14:04:21.746Z",
+  "generatedAt": "2026-10-11T14:10:37.451Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "bc3f7b7c1c66dca10b778348d2e723196e4d8660",
+  "headSha": "dbbc0015a99f2394cc779d18dc60e40e5f6fa648",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:57051",
+  "origin": "http://127.0.0.1:50618",
   "viewports": [
     {
       "name": "desktop",
@@ -150,17 +150,18 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 42ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 41ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
-  ]
+  ],
+  "status": "passed"
 }

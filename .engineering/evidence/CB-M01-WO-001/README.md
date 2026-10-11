@@ -187,6 +187,14 @@ The local deep review on `4b264111` raised one MINOR: `visual-check.json` stored
 
 This is a factual correction to the local review's evidence-identity concern. Final exact-head hosted checks and fresh local/hosted review apply after the evidence append is committed; PR #58 remains draft/open for Owner audit.
 
+## Local CodeRabbit stale-report correction · 2026-10-11
+
+The local deep review on `7c0c652` found one MINOR test-harness risk: a failed visual run could leave an older passing `visual-check.json` in place. The runner now removes the prior report before starting and writes a bounded failure report with the current base/HEAD, partial viewport results, browser errors, server output and failure message if any assertion or cleanup fails. Unit regressions prove both stale-pass invalidation and preservation of current failure diagnostics.
+
+Final local validation on Node 22.23.3 / npm 10.9.9 after this code correction: `npm test` passed (136 unit tests, Astro build/no-binding guard, Playwright E2E 7/7); `npm run lint` passed; `npm run typecheck` passed (53 files, 0 errors/warnings/hints); `npm audit --audit-level=high` found 0 vulnerabilities. The separate M01 visual Playwright/Axe run passed at 1536×864, 768×1024 and 390×844 and recorded `status: passed`, base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`, captured code HEAD `dbbc0015a99f2394cc779d18dc60e40e5f6fa648`, the Tools/Videos destination check, 0 module Axe findings, no console/page errors, no external requests and no document overflow. The only full-page Axe region notice remains the shared Steward-owned `.skip-link`.
+
+Screenshot hashes remained desktop `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898`, tablet `4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b`, mobile `0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c`. Approved Golden JPEGs, manifest, Context Lock and base fingerprints remain unchanged. Exact-head hosted CI and fresh local/hosted review must still bind to the final pushed SHA; PR #58 stays draft/open for Owner audit.
+
 ## Local CodeRabbit evidence-table correction · 2026-10-11
 
 The local deep review of HEAD 36a535e raised minor evidence findings: the Fresh captures table still contained predecessor tablet/mobile hashes, and a historical Work Order heading did not identify its d3dbecb evidence commit. The table now matches the committed 768×1024 and 390×844 PNGs, and the heading is uniquely labeled. The review's additional concern about the Context Lock blob was checked deterministically: git rev-parse at frozen base 07f31d8 returns 75e155ae8d4bd6886dc565cf8841f1d64938f6d4 for .engineering/context-locks/CB-M01-WO-001.md, exactly matching the documented pre-refresh source blob. It remains unchanged; the current source blob is a separate later value. No fingerprint was fabricated or rewritten.

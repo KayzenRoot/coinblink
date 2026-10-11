@@ -148,3 +148,11 @@ Node.js `v22.23.3` local verification: `npm test` passed (137 unit/subtest cases
 ## Normal-clone GEF readback · code commit SHA 58394dc8b24d569511dcaed4f29018915408d2e2 · 2026-10-11
 
 A fresh ordinary clone at exact code commit `58394dc8b24d569511dcaed4f29018915408d2e2` returned GEF 1.1.2 doctor/status exit 0; repository observation is HEALTHY, with no observation limits, and the status is observed CLEAN/no conflict. The previous linked-worktree finding is resolved for this code SHA. Because this addendum changes the PR head, repeat doctor/status and hosted checks against the resulting documentation commit.
+
+## SonarCloud follow-up correction · 2026-10-11
+
+On exact previous HEAD `b110e5a4d7cc69665da15ce40a6208c742c2b22a`, SonarCloud reported 24 OPEN issues, including CRITICAL `javascript:S3776` at `test/modules/CB-M05/visual-server.mjs:61` because `waitForAstroServer` complexity was 20 against the allowed 15. The helper now delegates bounded request cancellation and capped retry sleeping to private functions, keeping process-state validation outside the request catch. This reduces the main loop's nesting without changing its deadline or child-origin contract. Focused regressions passed 11/11 and lint passed. Full suite, exact-head Sonar, and hosted checks remain pending for the corrected SHA.
+
+## Sonar complexity correction validation · 2026-10-11
+
+Local validation after reducing readiness-helper complexity: targeted M05 helper tests 11/11; `npm test` passed with 137 unit/subtest cases, successful build and no-binding guard, and 7/7 E2E tests. `npm run lint`, `npm run typecheck` (56 files, zero diagnostics), and `npm audit --audit-level=high` (zero vulnerabilities) passed. The embedded Playwright/Axe run exercised the 8 × 3 M05 fixture matrix and found 0 violations. SonarCloud's new exact-head scan remains required to verify removal of the previous critical S3776. Existing P0 mock boundary and evidence hashes remain unchanged.

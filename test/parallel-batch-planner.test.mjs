@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isGlobalApprovalStatus, isIssue6Closed, isParallelAdrApproved, localAuthoringSlots, parseGateEvidence, planParallelModules } from '../scripts/plan-parallel-modules.mjs';
+import { isGlobalApprovalStatus, isIssue6Closed, isParallelAdrApproved, localAuthoringSlots, parseGateEvidence, planParallelModules as createParallelPlan, readCanonicalMainCheckpoint } from '../scripts/plan-parallel-modules.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const matrix = JSON.parse(readFileSync(path.join(ROOT, '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json'), 'utf8'));
@@ -15,6 +15,12 @@ const approvedGlobalGates = {
   issue6Closed: true,
   parallelADRAdopted: true,
 };
+
+const planParallelModules = options => createParallelPlan({
+  ...options,
+  canonicalCheckpoint: options.canonicalCheckpoint ?? options.checkpoint ?? checkpoint,
+  canonicalMainSha: options.canonicalMainSha ?? 'c'.repeat(40),
+});
 
 test('M00 completion is read from canonical checkpoint, not historical proposal snapshot', () => {
   const plan = planParallelModules({ matrix, checkpoint, resourceSlots: 4 });
@@ -64,6 +70,114 @@ test('valid admitted independent modules schedule concurrently without exceeding
   assert.equal(p2.candidates.find(candidate => candidate.id === 'CB-M01').plannerEligibleBasedOnEvaluatedInputs, true);
   assert.equal(p2.moduleApplicationCodeAuthorizedByPlanner, false);
   assert.ok(p2.candidates.find(c => c.id === 'CB-M03').blockers.some(x => x.includes('CB-M05')));
+});
+
+test('candidate admission is not planner-eligible before canonical main readback', () => {
+  const candidate = structuredClone(checkpoint);
+  candidate.checkpointFacts.moduleAdmission['CB-M05'] = 'ADMITTED';
+  const canonical = structuredClone(checkpoint);
+  canonical.checkpointFacts.moduleAdmission['CB-M05'] = 'NOT_ADMITTED';
+  const approved = {
+    'CB-M01': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
+    'CB-M05': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
+  };
+
+  const plan = planParallelModules({
+    matrix, checkpoint: candidate, canonicalCheckpoint: canonical, canonicalMainSha: 'a'.repeat(40),
+    globalGates: approvedGlobalGates, resourceSlots: 8, gates: approved,
+  });
+  const m05 = plan.candidates.find(item => item.id === 'CB-M05');
+
+  assert.equal(plan.canonicalMainSha, 'a'.repeat(40));
+  assert.equal(m05.candidateAdmission, 'ADMITTED');
+  assert.equal(m05.admission, 'NOT_ADMITTED');
+  assert.equal(m05.plannerEligibleBasedOnEvaluatedInputs, false);
+  assert.ok(m05.blockers.some(blocker => blocker.includes('canonical main')));
+  assert.equal(plan.plannerEligibleAgentModulesWithinResourceSlots.includes('CB-M05'), false);
+});
+
+test('canonical main admission readback allows the same candidate after merge', () => {
+  const candidate = structuredClone(checkpoint);
+  const canonical = structuredClone(checkpoint);
+  const approved = {
+    'CB-M01': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
+    'CB-M05': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
+  };
+
+  const plan = planParallelModules({
+    matrix, checkpoint: candidate, canonicalCheckpoint: canonical, canonicalMainSha: 'b'.repeat(40),
+    globalGates: approvedGlobalGates, resourceSlots: 8, gates: approved,
+  });
+
+  assert.equal(plan.candidates.find(item => item.id === 'CB-M05').admission, 'ADMITTED');
+  assert.equal(plan.candidates.find(item => item.id === 'CB-M05').plannerEligibleBasedOnEvaluatedInputs, true);
+});
+
+test('canonical main checkpoint lookup is fixed, read-only, unauthenticated, and fails closed', async () => {
+  const mainSha = 'd'.repeat(40);
+  const calls = [];
+  const apiCheckpoint = structuredClone(checkpoint);
+  const fetchMock = async (url, options) => {
+    calls.push({ url, options });
+    if (calls.length === 1) {
+      return new Response(JSON.stringify({
+        ref: 'refs/heads/main', object: { type: 'commit', sha: mainSha },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+    return new Response(JSON.stringify({
+      type: 'file', path: '.engineering/CHECKPOINT.json', encoding: 'base64',
+      content: Buffer.from(JSON.stringify(apiCheckpoint)).toString('base64'),
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+
+  const result = await readCanonicalMainCheckpoint(fetchMock);
+
+  assert.equal(result.sha, mainSha);
+  assert.deepEqual(result.checkpoint, apiCheckpoint);
+  assert.equal(calls.length, 2);
+  assert.match(calls[0].url, /repos\/KayzenRoot\/coinblink\/git\/ref\/heads\/main/u);
+  assert.ok(calls[1].url.endsWith(`contents/.engineering/CHECKPOINT.json?ref=${mainSha}`));
+  for (const call of calls) {
+    assert.equal(call.options.method, undefined);
+    assert.equal(call.options.redirect, 'error');
+    assert.equal(call.options.headers.Authorization, undefined);
+    assert.ok(call.options.signal instanceof AbortSignal);
+  }
+
+  assert.equal(await readCanonicalMainCheckpoint(async () => new Response('unavailable', { status: 503 })), null);
+  assert.equal(await readCanonicalMainCheckpoint(async () => { throw new Error('network unavailable'); }), null);
+
+  assert.equal(await readCanonicalMainCheckpoint(async () => new Response(JSON.stringify({
+    ref: 'refs/heads/release', object: { type: 'commit', sha: mainSha },
+  }), { status: 200 })), null);
+
+  const validMainRef = new Response(JSON.stringify({
+    ref: 'refs/heads/main', object: { type: 'commit', sha: mainSha },
+  }), { status: 200 });
+  let wrongPathRequest = 0;
+  const wrongCheckpointPath = await readCanonicalMainCheckpoint(async () => {
+    wrongPathRequest += 1;
+    if (wrongPathRequest === 1) return validMainRef;
+    return new Response(JSON.stringify({
+      type: 'file', path: '.engineering/SCOPE.md', encoding: 'base64',
+      content: Buffer.from(JSON.stringify(apiCheckpoint)).toString('base64'),
+    }), { status: 200 });
+  });
+  assert.equal(wrongCheckpointPath, null);
+  assert.equal(wrongPathRequest, 2);
+
+  const malformedCheckpoint = await readCanonicalMainCheckpoint(async (url) => {
+    if (url.endsWith('/git/ref/heads/main')) {
+      return new Response(JSON.stringify({
+        ref: 'refs/heads/main', object: { type: 'commit', sha: mainSha },
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({
+      type: 'file', path: '.engineering/CHECKPOINT.json', encoding: 'base64',
+      content: Buffer.from('not a checkpoint').toString('base64'),
+    }), { status: 200 });
+  });
+  assert.equal(malformedCheckpoint, null);
 });
 
 test('never treat active module admission alone as dependency completion', () => {

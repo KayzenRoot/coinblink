@@ -1,0 +1,81 @@
+{
+  "schema": "coinblink-owner-solo-migration-baseline-v1",
+  "capturedDate": "2026-10-11",
+  "repository": "KayzenRoot/coinblink",
+  "mainSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "branchProtected": true,
+  "sourceEndpoint": "GET /repos/KayzenRoot/coinblink/rulesets/24888106",
+  "readOnly": true,
+  "notAnApiWritePayload": true,
+  "id": 24888106,
+  "name": "coinblink-main-governance",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/heads/main"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": true,
+        "required_reviewers": [],
+        "require_code_owner_review": false,
+        "require_last_push_approval": true,
+        "required_review_thread_resolution": true,
+        "require_extra_approval_for_unattributed_changes": true,
+        "allowed_merge_methods": [
+          "squash"
+        ]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "M00 and GEF (ubuntu-24.04)",
+            "integration_id": 15368
+          },
+          {
+            "context": "M00 and GEF (windows-2022)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Docker Compose smoke (Ubuntu)",
+            "integration_id": 15368
+          },
+          {
+            "context": "SonarCloud Code Analysis",
+            "integration_id": 12526
+          },
+          {
+            "context": "Socket Security: Pull Request Alerts",
+            "integration_id": 156372
+          },
+          {
+            "context": "Socket Security: Project Report",
+            "integration_id": 156372
+          },
+          {
+            "context": "CodeRabbit"
+          }
+        ]
+      }
+    },
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    }
+  ]
+}

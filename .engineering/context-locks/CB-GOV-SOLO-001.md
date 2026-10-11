@@ -28,7 +28,7 @@ Hashes bind the raw Git blob at `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; Git 
 
 ## Current authority and status
 
-Current checkpoint values are authoritative: M00 `M00_COMPLETE`, phase `IMPLEMENTATION_IN_PROGRESS`, 5%; M01/M05 `ADMITTED` but incomplete; M02–M17 `NOT_ADMITTED`; M18 `FUTURE_NOT_ADMITTED`; `activeWorkOrder=NONE`; no `stopState`. `ADR-CB-0002` is adopted on current main. Issue #45 owner direction authorizes preparation only. Issue #6 and each module's source-backed admission requirements remain distinct.
+Current checkpoint values are authoritative: M00 `M00_COMPLETE`, phase `IMPLEMENTATION_IN_PROGRESS`, 5%; M01/M05 `ADMITTED` but incomplete; M02–M04 e M06–M17 `NOT_ADMITTED`; M18 `FUTURE_NOT_ADMITTED`; `activeWorkOrder=NONE`; no `stopState`. `ADR-CB-0002` is adopted on current main. Issue #45 owner direction authorizes preparation only. Issue #6 and each module's source-backed admission requirements remain distinct.
 
 The active effective ruleset `coinblink-main-governance` ID `24888106` matches `refs/heads/main`, has no bypass actors, requires one eligible distinct GitHub approval, strict required statuses and squash-only merge, and blocks deletion/non-fast-forward. A classic branch-protection endpoint 404 is not used as a substitute for effective-ruleset evidence. Prior PR #46 checks, reviews, lock, and evidence at HEAD `342ae16be15d69250eb0ed004b77f9cc02140ede` are historical.
 

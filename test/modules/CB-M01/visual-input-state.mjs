@@ -39,6 +39,26 @@ export function resolveGitExecutable({ platform = process.platform, fileExists =
 
 export function assertVisualInputsClean(repositoryRoot, { gitExecutable = resolveGitExecutable() } = {}) {
   if (!isAbsolute(gitExecutable)) throw new Error("visual input verification requires an absolute Git executable path");
+  const indexEntries = execFileSync(gitExecutable, [
+    "ls-files",
+    "-v",
+    "-z",
+    "--",
+    ...visualInputPaths,
+  ], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  const flaggedInputs = indexEntries.split("\0").filter(Boolean).filter((entry) => {
+    const tag = entry[0];
+    return tag === "S" || tag === "s" || tag !== tag.toUpperCase();
+  }).map((entry) => entry.slice(2));
+  if (flaggedInputs.length > 0) {
+    throw new Error(`visual source inputs use hidden Git index flags (assume-unchanged or skip-worktree): ${flaggedInputs.join(", ")}`);
+  }
+
   const status = execFileSync(gitExecutable, [
     "status",
     "--porcelain=v1",

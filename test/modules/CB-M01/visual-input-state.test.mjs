@@ -70,6 +70,50 @@ test("untracked Golden Home sources also invalidate exact-HEAD visual evidence",
   );
 });
 
+test("assume-unchanged visual inputs cannot hide worktree edits from exact-HEAD evidence", async (t) => {
+  const root = await createRepository(t);
+  const relativePath = `${visualInputPaths[0]}/fixture.txt`;
+  const component = join(root, relativePath);
+  execFileSync(gitExecutable, ["-C", root, "update-index", "--assume-unchanged", "--", relativePath], { stdio: "pipe" });
+
+  try {
+    await writeFile(component, "modified while assume-unchanged\n", "utf8");
+    const hiddenStatus = execFileSync(gitExecutable, ["-C", root, "status", "--porcelain=v1", "--", relativePath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    assert.equal(hiddenStatus, "", "the fixture must prove ordinary Git status hides the modification");
+    assert.throws(
+      () => assertVisualInputsClean(root, { gitExecutable }),
+      /assume-unchanged.*src\/modules\/CB-M01\/fixture\.txt/u,
+    );
+  } finally {
+    execFileSync(gitExecutable, ["-C", root, "update-index", "--no-assume-unchanged", "--", relativePath], { stdio: "pipe" });
+  }
+});
+
+test("skip-worktree visual inputs cannot hide worktree edits from exact-HEAD evidence", async (t) => {
+  const root = await createRepository(t);
+  const relativePath = `${visualInputPaths[0]}/fixture.txt`;
+  const component = join(root, relativePath);
+  execFileSync(gitExecutable, ["-C", root, "update-index", "--skip-worktree", "--", relativePath], { stdio: "pipe" });
+
+  try {
+    await writeFile(component, "modified while skip-worktree\n", "utf8");
+    const hiddenStatus = execFileSync(gitExecutable, ["-C", root, "status", "--porcelain=v1", "--", relativePath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    assert.equal(hiddenStatus, "", "the fixture must prove ordinary Git status hides the modification");
+    assert.throws(
+      () => assertVisualInputsClean(root, { gitExecutable }),
+      /hidden Git index flags.*src\/modules\/CB-M01\/fixture\.txt/u,
+    );
+  } finally {
+    execFileSync(gitExecutable, ["-C", root, "update-index", "--no-skip-worktree", "--", relativePath], { stdio: "pipe" });
+  }
+});
+
 test("Git executable resolution uses only fixed system locations and never PATH lookup", () => {
   const argumentCounts = [];
   assert.throws(

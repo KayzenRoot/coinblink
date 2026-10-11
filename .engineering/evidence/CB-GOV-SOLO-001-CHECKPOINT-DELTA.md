@@ -1,6 +1,6 @@
 # CB-GOV-SOLO-001 — Proposed Checkpoint Delta
 
-**Status:** NO-OP PROPOSAL; do not promote automatically.
-**Source base:** `b4ddb9891cc66cd3688b8e11a86abc75db4b8544` (PR #44 squash merge).
+**Status:** NO-OP; proposal only. Do not promote automatically.
+**Checkpoint source main:** `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`.
 
-Canonical `.engineering/CHECKPOINT.json` remains untouched. M00 `ADMITTED`, `IMPLEMENTATION_IN_PROGRESS`, P1 `NOT_DEPLOYED`, 0% overall under unapproved production weights; M01–M17 `NOT_ADMITTED`, M18 `FUTURE_NOT_ADMITTED`. No `stopState` introduced. ADR-CB-0003 is a proposed process policy that cannot by itself change module statuses or grant Cloudflare deployment. Checkpoint updates for later M00 closure require their own evidence and audit.
+No canonical checkpoint field changes. The current checkpoint remains `M00_COMPLETE`, `IMPLEMENTATION_IN_PROGRESS`, `overallCompletionPercent=5`, with `CB-M00` complete; `CB-M01` and `CB-M05` admitted but incomplete; `CB-M02`–`CB-M17` not admitted; and `CB-M18` future/not admitted. `activeWorkOrder=NONE`; no `stopState` is present. The M00 preview is already verified in the canonical checkpoint. `ADR-CB-0002` is adopted on current main; this proposal changes neither its status nor any module admission. CB-GOV-SOLO-001 remains a proposed ELEVATED policy and grants no merge, deployment, or implementation authority. Any later checkpoint change requires its own evidence, audit, and governed promotion.

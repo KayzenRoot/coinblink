@@ -1,5 +1,53 @@
 # Evidence Bundle — CB-GOV-SOLO-001
 
+**Status:** R1 RECONCILED / PROPOSED ELEVATED POLICY / NOT EFFECTIVE; final hosted review and Owner gates remain pending.
+**Repository:** `KayzenRoot/coinblink` · **Issue:** [#45](https://github.com/KayzenRoot/coinblink/issues/45) · **PR:** [#46](https://github.com/KayzenRoot/coinblink/pull/46)
+**Source main SHA:** `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`
+**R1 normal-merge commit:** `d9d6e54b1697387088cf33712037a70b3e8f2db2`
+**Branch:** `codex/cb-gov-solo-001` · **GEF:** Bootstrap 1.1.2, source commit `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`.
+
+## Current verified state
+
+- The read-only R0 captured the current main, active ruleset, live PR heads, current checkpoint, Issue #45 owner direction, and Issue #61 governance evidence. The preflight report is retained locally at `%TEMP%\CB-GOV-SOLO-001-R0-PREFLIGHT.md`; no credential material was recorded.
+- Ruleset `24888106` is active on `main`, has no bypass actors, and requires one distinct eligible approval plus the six required provider-bound CI check-runs and CodeRabbit status. The effective-rules endpoint confirms application. The classic branch-protection endpoint returns 404; it is not evidence of a classic branch protection object.
+- PR #46's old head `342ae16be15d69250eb0ed004b77f9cc02140ede`, old base `b4ddb9891cc66cd3688b8e11a86abc75db4b8544`, old checks, and previous Context Lock are historical only. R1 merged current origin/main normally. The merge had two text conflicts (`SOURCE-HIERARCHY.md`, `DECISIONS_LEDGER.md`); current main was retained and the proposal was added conservatively. No rebase or force-push was used.
+- The authoritative checkpoint at source main is M00 COMPLETE / 5%; M01 and M05 ADMITTED but incomplete; M02–M17 NOT_ADMITTED; M18 FUTURE_NOT_ADMITTED; no active Work Order and no `stopState`. `ADR-CB-0002` is adopted on current main. This Work Order does not alter the checkpoint or module statuses.
+- Only the eight declared governance/documentation paths are in scope. Workflow/verifier code, tests, ruleset changes, Cloudflare, module implementation, secrets and billing are outside this PR.
+
+## Candidate verification status
+
+| Item | Result | Evidence / limitation |
+|---|---|---|
+| R0 read-only preflight | PASS | Live main/ruleset/PR state read back; local report at `%TEMP%\CB-GOV-SOLO-001-R0-PREFLIGHT.md`. |
+| R1 normal merge reconciliation | PASS | Commit `d9d6e54b1697387088cf33712037a70b3e8f2db2`; current main retained in both text conflicts. |
+| Exact eight-path diff and fingerprints | PASS | Deterministic check: 8/8 Git paths; 7/7 content entries; manifest self-excluded; base SHA, index, working tree, and candidate blobs match; Context Lock SHA-256 matches. |
+| `git diff --cached --check` | PASS | No whitespace errors after the final Evidence Bundle and fingerprint-manifest edits. |
+| GEF 1.1.2 `doctor --target . --json` | PASS with limits | Exit 0, checkpoint valid, toolchain healthy; linked worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED` and dependency provenance `REVIEW`. Doctor digest: `c57527dfe6ecbf8f267a70050a589faca820d2708fac300429e654a183619957`. |
+| GEF 1.1.2 `status --target . --json` | PASS with limits | Exit 0, canonical M00 COMPLETE / 5% read correctly; repository dirtiness UNKNOWN, drift baseline ABSENT, `operator.stale=true` conservative. No baseline was fabricated. Status digest: `64a5539048f8fad230ff18d503589c7c4f6563c63022e8111d4f2a1375fb525e`. |
+| Local application tests on pinned runtime | NOT RUN | Host provides Node 24.19.0/npm 11.17.0; package requires Node `>=22.19.0 <23`. Do not use this runtime for a pinned-conformance claim. |
+| Six exact-head hosted check-runs and fresh CodeRabbit | PENDING | Old runs/reviews belong to the prior HEAD; read back after the final push. |
+| Qualified independent ELEVATED assurance | PENDING / EXTERNAL | No qualified independent reviewer of the updated exact HEAD has been established. An internal tool review or bot is not a qualified external assurance. |
+| Distinct GitHub approval | PENDING / EXTERNAL | Active ruleset requires one eligible distinct approval; the sole write/admin collaborator cannot approve their own PR. No bypass or alternate-identity workaround. |
+| Owner exact-SHA GO/NO-GO and normal merge | PENDING | The Owner's direction authorizes preparation but is not a final SHA-bound adoption decision. |
+
+The GitHub PR's checks and reviews must be read from its live final head. This bundle does not treat an earlier check, CodeRabbit status, author `COMMENTED`, or local reviewer report as a result for a later commit.
+
+## Policy status
+
+CB-GOV-SOLO-001 and ADR-CB-0003 are proposals only. The live one-approval ruleset remains unchanged. A trusted app-bound Owner Solo Gate requires a separate steward-owned Work Order/PR with explicit admission and negative security tests; it is not present in this eight-path PR. R2/R3 cannot be started as code under this documentation-only write boundary. There has been no rule modification, approval fabrication, merge, checkpoint promotion, Cloudflare call, paid service, or module implementation.
+
+## Checkpoint Delta
+
+See the no-op proposal in `CB-GOV-SOLO-001-CHECKPOINT-DELTA.md`. It matches current `main` and makes no checkpoint changes.
+
+---
+
+<details><summary>Historical evidence snapshot from the pre-synchronization candidate (not current acceptance evidence)</summary>
+
+The original Evidence Bundle below is retained for provenance only. Its source SHA, 0% checkpoint description, module admissions, test runs, reviews, and exact-head assertions describe the older candidate and do not certify the current base or HEAD.
+
+# Evidence Bundle — CB-GOV-SOLO-001
+
 **Status:** ELEVATED GOVERNANCE PROPOSAL / FINAL AUDIT AND OWNER EXACT-SHA GO/NO-GO PENDING
 **Repository:** `KayzenRoot/coinblink`
 **Issue:** [#45](https://github.com/KayzenRoot/coinblink/issues/45)
@@ -60,3 +108,5 @@ See the [proposed no-op Checkpoint Delta](./CB-GOV-SOLO-001-CHECKPOINT-DELTA.md)
 ## Risks and limits
 
 This changes assurance policy and is therefore ELEVATED. The proposed LOW/STANDARD exception cannot override GEF, an enforced GitHub rule, provider approval, unresolved findings or higher-risk review requirements. A same-account Owner `COMMENTED` event is not a different-human GitHub approval. GEF retains the absent-baseline/stale operator signal and security `REVIEW` findings described above. No Cloudflare call, resource change, deployment, paid service, checkpoint promotion or product implementation is included.
+
+</details>

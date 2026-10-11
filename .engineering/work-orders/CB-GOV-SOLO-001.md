@@ -1,43 +1,49 @@
-# Work Order CB-GOV-SOLO-001 — Controlled Solo-Maintainer Review Decision
+# Work Order CB-GOV-SOLO-001 — Controlled Owner-Solo Review Policy
 
-**Status:** OWNER_DIRECTION_APPROVED / GOVERNANCE_CANDIDATE_NOT_EFFECTIVE
-**Issue:** #45
-**Repository:** KayzenRoot/coinblink
-**Current source base:** `b4ddb9891cc66cd3688b8e11a86abc75db4b8544` (squash merge of PR #44); the candidate branch originally started from PR #44 HEAD `f1a3c4fec5216aafddd8fd3803db71c006a0d289` and is synchronized by a normal merge, without rebase or force-push.
-**Risk:** ELEVATED for this governance decision (changes assurance rules). **Implementer:** ChatGPT governance documentation only; Codex remains exclusive code/test/CI implementer. **No module implementation admission.**
+**Status:** PROPOSED / ELEVATED / NOT EFFECTIVE
+**Repository:** `KayzenRoot/coinblink` · **Issue:** #45 · **PR:** #46
+**Current source main:** `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`
+**R1 normal-merge synchronization commit:** `d9d6e54b1697387088cf33712037a70b3e8f2db2`
+**Candidate branch:** `codex/cb-gov-solo-001` · **GEF:** 1.1.2
+**Risk:** ELEVATED. The proposal changes repository-wide assurance policy. It does not authorize application code, a ruleset change, or a merge.
 
-## OBJECTIVE
-Promote the Owner's explicitly authorized solo-maintainer LOW/STANDARD review exception through documented governance, without faking an independent human GitHub APPROVE or bypassing actual GitHub controls.
+## Objective
+Prepare a truthful, bounded Owner-Solo governance proposal for future LOW/STANDARD work. Do not simulate independent GitHub approval, disable or bypass an effective rule, or apply the proposal before its own assurance and adoption gates are met.
 
-## CONTEXT / FILES AND SOURCES TO READ
-Current main SHA, PRs #44 and #41, Issue #45 and Owner exception comment on #44, GEF pinned ADR-0008, `.engineering/CHECKPOINT.json`, Source Hierarchy, Decisions Ledger, Scope, Architecture, Security, Definition of Done, `AGENTS.md`, ADR-CB-0002 and actual CI/reviewer results. Pinned review evidence is snapshot-specific; revalidate before adoption.
+## Current verified context
+- Live `main` is `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The canonical checkpoint is M00 COMPLETE / 5%; M01 and M05 are ADMITTED but incomplete; M02–M17 are NOT_ADMITTED; M18 is FUTURE_NOT_ADMITTED; no active Work Order or `stopState` is present.
+- `ADR-CB-0002` is adopted on current `main`. That does not waive individual module gates or authorize additional implementation here.
+- Ruleset `coinblink-main-governance` ID `24888106` is active only for `refs/heads/main`, has no bypass actors, requires one eligible distinct approving review and seven status contexts (six app-bound check-runs plus CodeRabbit), plus thread resolution and squash-only merge. The effective-rules API confirms these requirements; the classic branch-protection endpoint returns 404 and is not used as proof.
+- PR #46's previous HEAD `342ae16be15d69250eb0ed004b77f9cc02140ede` used base `b4ddb9891cc66cd3688b8e11a86abc75db4b8544`; its old checks, lock, and audit are historical. R1 merged current `origin/main` normally, preserving the eight-path candidate scope. The Source Hierarchy and Decisions Ledger conflicts were resolved from current main plus additive proposal text.
+- The Owner's direction is recorded in Issue #45 comment `6112608146` and PR #46 correction comment `6112611949`. These authorize preparation, not a different-person GitHub APPROVE or adoption of the policy.
 
-## SCOPE
-Create proposed ADR-CB-0003, an additive Source Hierarchy clarification, an append-only Decisions Ledger entry, and a proposed no-op checkpoint delta. Distinguish independent technical review from independently authenticated GitHub APPROVE. Exact-SHA evidence, an Owner go/no-go, correction/withdrawal/rollback path, risk classification and conflict-of-interest disclosures remain mandatory. The policy operates only after this ELEVATED proposal receives qualified independent assurance, the Owner's exact-SHA go/no-go, authorized normal merge, and canonical read-back.
+## Scope and exact write boundary
+Update only these eight paths in this PR:
+1. `.engineering/SOURCE-HIERARCHY.md` (additive status/policy reconciliation only)
+2. `docs/DECISIONS_LEDGER.md` (append-only CB-DEC-044 proposal record)
+3. `docs/architecture/ADR-CB-0003-SOLO-MAINTAINER-REVIEW.md`
+4. `.engineering/work-orders/CB-GOV-SOLO-001.md`
+5. `.engineering/context-locks/CB-GOV-SOLO-001.md`
+6. `.engineering/evidence/CB-GOV-SOLO-001-CHECKPOINT-DELTA.md` (no-op only)
+7. `.engineering/evidence/CB-GOV-SOLO-001-EVIDENCE.md`
+8. `.engineering/evidence/CB-GOV-SOLO-001-FINGERPRINTS.json` (self-excluded from file entries)
 
-**Write boundary:** only this Work Order, its Context Lock, `.engineering/SOURCE-HIERARCHY.md` (additive clarification only), `docs/DECISIONS_LEDGER.md` (append-only row only), `docs/architecture/ADR-CB-0003-SOLO-MAINTAINER-REVIEW.md`, `.engineering/evidence/CB-GOV-SOLO-001-CHECKPOINT-DELTA.md`, `.engineering/evidence/CB-GOV-SOLO-001-EVIDENCE.md`, and `.engineering/evidence/CB-GOV-SOLO-001-FINGERPRINTS.json`. No tests or CI files, application files, checkpoint, Scope/Architecture/Security/DoD, or other decisions may be changed.
+No workflow/verifier/tests, checkpoint, global Scope/Architecture/Security/DoD, application, secrets, Cloudflare resources, or other Work Orders are editable here. A trusted Owner Solo Gate or any CI/ruleset change requires a separate steward-owned Work Order and PR with explicit admission; this candidate does not implement one.
 
-## OUT OF SCOPE
-No product/module files, tests or CI authored by ChatGPT, retroactive approval claims, branch protection alterations, Cloudflare setup/deploy, security control reduction, high-assurance waiver, M01+ implementation, issue #6 global approval, M18 token, force push/history rewrite, auto-merge or checkpoint promotion.
+## Policy requirements
+- The proposal is prospective and LOW/STANDARD only. Require a current admitted Work Order/Context Lock/path manifest, objective non-author technical audit, exact required checks, security/regression results, closed findings, provenance Evidence Bundle, and Owner GO/NO-GO tied to the full final SHA.
+- Always describe an author `COMMENTED` review as `NOT_INDEPENDENT_GITHUB_APPROVE`. Technical separation by a non-authoring tool/agent does not become a different-human approval.
+- The live ruleset still requires one distinct eligible GitHub approval. Do not lower it, add bypass, grant write to another Owner-controlled identity, fake a bot status, or merge against GitHub's decision.
+- This ADR and its adoption are ELEVATED. M05 remains HIGH_ASSURANCE. Unknown risk is escalated. Keep security, auth/MFA/recovery, secret vault, money, billing/Paid, production/provider mutation, destructive migration, custody/signing and irreversible actions outside Solo.
+- Any trusted verifier must run from protected-main-controlled code, use least permissions and read only PR metadata/diffs/reviews, never execute untrusted PR code with secrets/write access, and fail closed. Adversarial tests and a separately governed transition are prerequisites before any live rule change.
+- Preserve exactly 19 modules and the canonical checkpoint. M00 remains COMPLETE/5%; M01/M05 remain admitted but incomplete; M02–M17 unadmitted; M18 future. Do not claim module completion or move the checkpoint.
 
-## REQUIREMENTS / ARCHITECTURE RULES / CONSTRAINTS
-- LOW/STANDARD only: permit Owner's explicit SHA-specific go/no-go after objectively independent technical audit by a reviewer other than the implementation executor; if recorded on the same GitHub identity mark **NOT_INDEPENDENT_GITHUB_APPROVE** truthfully.
-- ELEVATED/HIGH_ASSURANCE, money, Web3/signing, privileged auth, critical security, destructive migrations, production/billing, irreversible actions: never use this exception; qualified independent approval and heightened checks required. If classification is disputed, use stricter class.
-- GitHub-enforced protections and provider gates are never bypassed. No incomplete CI, stale HEAD, known HIGH/CRITICAL defect, missing Evidence Bundle or missing rollback plan.
-- A technical review is independent *from the code executor* only if the auditor inspected actual diff and evidence and did not author the patch; identify role and limitations. It never impersonates another GitHub identity.
-- Merge serially, update dependent PRs by normal merge (no rewrite), rerun CI/review at combined SHA; checkpoint only from objective approved release gates.
-- GitHub policy change is a proposal until merged, and source hierarchy may not be used to override higher GEF policy.
+## Acceptance and validation
+- The PR diff is exactly the eight listed paths; no conflict markers, no unexpected paths, no secrets, and `git diff --check` passes.
+- The Context Lock fingerprints current canonical sources at `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; the manifest validates base, index, worktree, and candidate blob hashes.
+- GEF Bootstrap 1.1.2 `doctor` and `status` are executed and reported without fabricating a baseline or suppressing warnings.
+- Exact final PR HEAD receives all six required provider-bound check-runs and a fresh hosted CodeRabbit review. The active ruleset's distinct review and an explicit final-SHA Owner GO/NO-GO remain separate gates.
+- Local application suites may only be claimed when run with the repository-pinned Node 22/npm 10 toolchain. The current workstation exposes Node 24.19.0/npm 11.17.0; do not use it to claim pinned conformance.
 
-## ACCEPTANCE CRITERIA / TESTS
-1. Current source conflicts and higher-policy prerequisites are documented; no approved product Scope, Architecture, Security, or DoD is altered.
-2. ADR is explicitly restricted to LOW/STANDARD, preserves all higher-risk exclusions, and defines rejection, correction, withdrawal, rollback, and separate external approvals.
-3. Owner direction, one-off PR #44 exception, exact review evidence, CI, source limitations, and non-independent GitHub review attribution are linked truthfully.
-4. Diff equals the eight declared governance/evidence paths. Run `npm ci --ignore-scripts`, `npm test`, lint, typecheck, build, audit, GEF doctor/status and exact-head Ubuntu/Windows/Docker/SonarCloud/Socket/CodeRabbit checks. Obtain a qualified independent assurance review of the ELEVATED policy diff; no HIGH/CRITICAL findings may remain.
-5. All 19 module IDs/admissions and the canonical checkpoint are unchanged; M00 remains P1 pending at 0%; M18 remains FUTURE.
-6. Adoption requires the Owner's explicit go/no-go on the final SHA, a normal authorized merge and canonical read-back. PR #41 and its separate Cloudflare/provider gates remain distinct.
-
-## DELIVERABLES / REVIEW FORMAT
-ADR, additive source-reference and ledger status, this WO, Context Lock and no-op Checkpoint Delta, evidence links, proposed PR. Final auditor report in Brazilian Portuguese with base/head SHA, exact checks, risk, remaining external constraints and APPROVED / CORRECTION REQUIRED / BLOCKED.
-
-## STOP CONDITION
-Stop on stale source, failing CI, missing qualified independent assurance, unresolved HIGH/CRITICAL findings, missing exact-SHA Owner go/no-go, tool-imposed write/merge prohibition, or missing external authorization. Never claim this PR merges itself or grants M01+ admission.
+## Stop conditions
+Do not change the active ruleset, implement CI gate code in this PR, merge, self-approve, alter the checkpoint, start module code, or touch Cloudflare. Stop at the first missing qualified ELEVATED assurance, required distinct reviewer, exact-head result, or Owner SHA-bound GO/NO-GO. Report the precise external gate and leave the proposal ineffective.

@@ -1,42 +1,41 @@
-# ADR-CB-0003 — Solo Maintainer Review and Owner Acceptance
+# ADR-CB-0003 — Bounded Owner-Solo Review Policy
 
-**Status:** PROPOSED / OWNER DIRECTION AUTHORIZED / NOT EFFECTIVE UNTIL GOVERNANCE MERGE
-**Work Order:** CB-GOV-SOLO-001; **Issue:** #45
-**Owner intent:** Explicit authorization to establish a bounded solo-maintainer exception on 2026-10-09. This is not a representation that GitHub emitted `APPROVE` by a distinct reviewer.
-**Compatibility:** GEF pinned ADR-0008, CoinBlink Source Hierarchy, ADR-CB-0002. No changes to product scope, deployment, provider authorization, or module admissions.
+**Status:** PROPOSED / ELEVATED / NOT EFFECTIVE
+**Work Order:** CB-GOV-SOLO-001 · **Issue:** #45 · **PR:** #46
+**Owner direction:** Preparation of a bounded Owner-Solo process is authorized; that direction is not a distinct-human GitHub approval or policy adoption.
+**Source main:** `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` · **GEF:** pinned ADR-0008 at `af1fe9371a3883cbd8a4aafcbb405ddcd4c2ca82`.
 
-## Context
-CoinBlink is currently a one-human-maintainer repository. GitHub does not accept an author's own formal PR approval. PR #44 (STANDARD, tests/governance-only) was merged at `b4ddb9891cc66cd3688b8e11a86abc75db4b8544` after its exact-head checks passed and CodeRabbit findings were resolved. The Owner submitted an audit report as a `COMMENTED` review in [#5476676345](https://github.com/KayzenRoot/coinblink/pull/44#pullrequestreview-5476676345); that GitHub event is not an independent-human `APPROVE`. The Owner's one-off exception is recorded in PR #44 comment [6091952619](https://github.com/KayzenRoot/coinblink/pull/44#issuecomment-6091952619); it authorized only that exact PR and HEAD. An explicit different-human GitHub `APPROVE` cannot be substituted by an assertion or a bot status. The historical requirement for *independent technical audit* remains; this ADR proposes a narrow change to the form of acceptance for LOW/STANDARD risk only, effective prospectively after canonical promotion.
+## Context and current enforcement
+CoinBlink has one write/admin identity, `KayzenRoot`. A second account controlled by the same Owner is not an independent reviewer. The live `coinblink-main-governance` ruleset (ID `24888106`) is active on `main`, has no bypass actors, and requires one eligible distinct approving review, exact checks, resolved review threads, and squash-only merges. This ADR cannot override that live rule.
 
-## Decision for LOW and STANDARD changes
-The sole Owner may issue **explicit, reviewable acceptance for the exact PR HEAD** when all are true:
+The current checkpoint records M00 COMPLETE / 5%; M01 and M05 ADMITTED but incomplete; M02–M17 NOT_ADMITTED; M18 FUTURE_NOT_ADMITTED. ADR-CB-0002 is already adopted on main. This ADR changes none of those states and does not authorize M01/M05 implementation or alter Cloudflare.
 
-1. One stable admitted Work Order and frozen/current Context Lock define the change; no expansion outside its permitted paths or approved Scope/Architecture/DoD.
-2. Executor and auditor are separated by role. The auditor inspects actual diff/source, accepted interfaces, error paths, security and regressions; it records a factual review verdict and limitations. A different assistant/tool reviewing read-only may satisfy this *technical* separation only if it did not implement that change. Automated CI/CodeRabbit alone does not replace the objective audit.
-3. Risk classification is evidenced. Any ambiguous or elevated-impact behavior is escalated, never downclassified to obtain this exception.
-4. Exact-head required CI, security/static analysis, unit/integration/E2E as appropriate, Evidence Bundle, reviewer findings and any correction delta are PASS/closed. No known HIGH/CRITICAL defect remains.
-5. GitHub status is reported exactly: a review attributed to the PR author or a `COMMENTED` record is **NOT_INDEPENDENT_GITHUB_APPROVE**. Never impersonate independent human approval, manufacture a bot APPROVE, disable protections, merge against GitHub refusal, or bypass a required status. If GitHub actually requires an independent GitHub APPROVE, stop for a real eligible reviewer.
-6. The Owner records an explicit SHA-bound go/no-go and authorizes normal non-force merge. Post-merge main SHA, tests and checkpoint effects are read back. Corrections stay in their Work Order/PR when safe.
-7. This policy is prospective only after its own approved/authorized merge; a one-off Owner authorization of PR #44 is separately recorded in that PR and is not generalized retroactively.
+## Proposed decision — future LOW/STANDARD work only
+After formal adoption through a separately assured ELEVATED transition, an Owner may record a truthful, reviewable acceptance tied to the full final PR SHA only when all conditions are satisfied:
 
-## Exclusions: ELEVATED and HIGH_ASSURANCE
-This exception **does not apply** to money/billing/trading, Web3/signature/custody, privileged authentication, irreversible actions, production infrastructure changes, cloud resource creation/deletion or plan/billing modifications, destructive database migrations, security-critical code, major governance rule reductions or suspected critical/high defects. These require the original independent qualified review, additional proof obligations, separate Owner/provider authorization and rollback/roll-forward evidence. A governance rule change itself is classified ELEVATED and therefore requires its own stricter assurance at adoption. An unresolved gate yields BLOCKED.
+1. One admitted Work Order and current Context Lock define scope, dependencies, immutable inputs, exclusive path ownership, tests, evidence, and stop conditions.
+2. A technical auditor who did not author or execute the change inspects the actual final diff, relevant sources, interfaces, error paths, security and regressions, then records findings, severity, rationale, and limitations. Automated checks alone are not the audit.
+3. The change is classified from actual changed paths and behavior; disputed or unknown risk is elevated. PR labels and self-declared categories are not trusted inputs.
+4. Exact-head required CI/security tests pass; all findings are resolved; a provenance Evidence Bundle and applicable rollback evidence are complete.
+5. The Owner records a GO/NO-GO for that exact full SHA. A same-account `COMMENTED` review is reported as `NOT_INDEPENDENT_GITHUB_APPROVE` and never represented as a distinct-human approval.
+6. The normal GitHub merge process must still accept the change. Under the current ruleset, the distinct approving reviewer remains required. No bypass, fake identity/status, or merge against GitHub enforcement is permitted.
+7. Post-merge main SHA, CI, and checkpoint effects are read back. Merges remain serial unless a validated merge queue is separately adopted.
 
-## Rejection, correction, withdrawal, and rollback
-- A changed base or HEAD, stale Context Lock, missing exact-head check, unresolved finding, known HIGH/CRITICAL issue, missing evidence, disputed risk class, or required GitHub approval that is unavailable yields BLOCKED or CORRECTION REQUIRED; do not merge. Correct only within the active Work Order, refresh fingerprints/evidence, and rerun checks and audit on the new exact HEAD. Never rebase or force-push.
-- Before merge, the Owner may withdraw the direction; the proposal then remains ineffective and must not be applied. A rejected audit requires a documented correction and a fresh audit, not a reinterpretation of the finding.
-- After adoption, suspected misuse immediately suspends use of this exception for affected work. Revoke or amend the policy through a new governed ADR/Work Order and normal reviewed merge; do not retroactively bless a prior merge or weaken GitHub/provider controls. A later revert is itself a governance change and must satisfy its risk-appropriate review and evidence.
-- This ADR is itself ELEVATED. Its adoption requires a qualified independent assurance review of the final exact SHA, full required checks, complete Evidence Bundle, no HIGH/CRITICAL findings, and a separate Owner SHA-bound go/no-go. If GitHub enforces a different-human approval, that gate still requires a real eligible reviewer.
+## Separate trusted enforcement prerequisite
+The current repository-wide one-review rule cannot itself select approvers by risk. If a future governance transition changes that rule, it must be a separate ELEVATED Work Order/PR. Its trusted Owner Solo Gate must be sourced from already-protected main and app-bound; it must verify Owner identity, exact SHA/base, actual changed files and risk, reviewer and hosted CodeRabbit findings, exact required checks, and prohibited operations using GitHub metadata APIs. It must fail closed on missing, stale, forged, ambiguous, or unavailable evidence. It must not check out or execute untrusted PR code with secrets or write permissions. A workflow implementation and negative tests are explicitly outside this ADR's eight-path write scope and require separate admission and audit. `pull_request_target` is not acceptable for untrusted checkout or execution.
 
-## Parallel modules and Cloudflare
-This decision does not admit M01–M17, change M18 FUTURE, activate ADR-CB-0002, approve global Issue #6, finish M00, change Cloudflare/GitHub connection, or create Workers. Module WOs still need their individual admissions; merges remain serialized on main pending a verified merge queue. Existing protected Preview, account/cost/IAM and no-production-binding checks remain mandatory.
+## Exclusions
+Owner Solo does not apply to this ELEVATED policy change, any ruleset/workflow/verifier/grant change, M05 or other HIGH_ASSURANCE work, authentication/MFA/recovery, secrets/vault, money/trading, billing/Paid, production or Cloudflare resource mutation, destructive migrations, Web3/signing/custody, irreversible operations, or unresolved HIGH/CRITICAL defects. These require qualified independent assurance and all separate Owner/provider permissions. No risk downgrade by editing labels or prose.
+
+## Adoption, correction, and rollback
+This ADR is prospective only. Adoption requires a qualified independent assurance review of the final ELEVATED diff, required exact-head CI and CodeRabbit, closure of HIGH/CRITICAL issues, an actual eligible distinct GitHub approval under the current ruleset (unless a separately governed transition has legitimately changed enforcement), explicit Owner GO/NO-GO for the final SHA, normal merge, and canonical read-back. If any gate is unavailable, the policy remains ineffective. Corrections require new exact-head checks and review; no force-push or retroactive blessing. Suspected misuse suspends the exception and must be handled by a new governed change.
+
+## Parallel delivery and Cloudflare
+ADR-CB-0002 is adopted on main; this proposal neither changes that delivery method nor closes global planning, grants additional module admission, or authorizes module implementation. Current module admissions remain as stated in the canonical checkpoint. Existing Cloudflare Preview isolation and account controls remain separate; no resource, secret, billing, production, or deployment action is included.
 
 ## Rejected alternatives
-- Pretend author `COMMENTED` is formal GitHub `APPROVE`: rejected as inaccurate.
-- Create a second identity solely to rubber-stamp: rejected as not independent.
-- Disable required checks/branch protection: rejected.
-- Adopt unconditional auto-merge of all risk classes: rejected.
-- Keep every safe documentation/test PR indefinitely blocked due to absent second human reviewer: rejected as target workflow after safe approval and promotion.
-
-## Evidence and activation
-Issue #45 and PR #44 owner-exception note document the user's decision; PR #44 technical assessment and CI establish the bounded example but not approval of this ADR. This ADR is only effective after exact-head review, risk-appropriate gate verification and recorded Owner-authorized merge with canonical read-back. No checkpoint/module status is automatically promoted. Existing GEF source policy takes precedence if a conflict cannot be resolved.
+- Treating an Owner `COMMENTED` review as a GitHub `APPROVE`.
+- Granting write to an Owner-controlled second account solely to rubber-stamp.
+- Lowering approval counts, enabling bypass, or weakening checks in this Work Order.
+- Applying the LOW/STANDARD exception to ELEVATED/HIGH_ASSURANCE changes.
+- Executing PR-controlled workflow code with privileged secrets or permissions.

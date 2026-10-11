@@ -1,0 +1,533 @@
+{
+  "fixture": "M05 module component rendered in an isolated local-only Astro harness; not an application route or deployment build",
+  "baseUrl": "http://127.0.0.1:4397",
+  "mode": "MOCK / SECURITY DISABLED",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1536,
+      "height": 864
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "routeCount": 8,
+  "axeRuns": 24,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "fixtureObservations": "Document title, language, noindex, document/body overflow, console, page errors, and the test-only skip link are observed separately; Axe scans only the M05 root.",
+  "results": [
+    {
+      "view": "login",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-login-1536x864.png",
+        "sha256": "f24d6c8b5b6da9532e3392e083dda560883067d9b578139f65d060b29d2fed44",
+        "bytes": 189945,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "setup",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-setup-1536x864.png",
+        "sha256": "28dc4d12504dc733c903cf840887c3ff494fcd188757f0d56f75c82f88f88a1f",
+        "bytes": 190601,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "recovery",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-recovery-1536x864.png",
+        "sha256": "a3719a316422507f1f80a17599586233bdbe88811d79503ddc2c596b88298a4a",
+        "bytes": 190343,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "articles",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-articles-1536x864.png",
+        "sha256": "8b2a16153d8080d32e1d703bd8641054ef0ebdb67794e473190d3dbabf918298",
+        "bytes": 267536,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "article-new",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-article-new-1536x864.png",
+        "sha256": "3fa5ebfadf2bcd81da76698ea86578a98e84d7fb6fb8db52abf711f19aff9218",
+        "bytes": 213424,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "article-edit",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-article-edit-1536x864.png",
+        "sha256": "faa3d815f6cbbea50e733ef5bf8b6cc5b0e2ef343c32bbd5d5e0dbf389c0dba5",
+        "bytes": 210771,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "settings",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-settings-1536x864.png",
+        "sha256": "806313871c22755af4a8dd8fa3cefb0c79ca1981544d7511df9a78a8a3c14d96",
+        "bytes": 236407,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "integrations",
+      "viewport": "desktop",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 1536,
+        "documentViewport": 1536,
+        "bodyWidth": 1536
+      },
+      "screenshot": {
+        "path": "CB-M05-integrations-1536x864.png",
+        "sha256": "02b01371988e55d83635856e5ad3281b0e0bd2d05bb32b5e620848e41abda96b",
+        "bytes": 236051,
+        "width": 1536,
+        "height": 864
+      }
+    },
+    {
+      "view": "login",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-login-768x1024.png",
+        "sha256": "f458a34dc8be7229befdf3d54cfcbb0ef7e011aa13d7349c21bb8f2c882f68dc",
+        "bytes": 183236,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "setup",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-setup-768x1024.png",
+        "sha256": "cb6df6ff2358eb5521cf9d79de2d1679702865c17327fbede10674966a007442",
+        "bytes": 184139,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "recovery",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-recovery-768x1024.png",
+        "sha256": "8f4804be962606ab90dc0a28002a9db4981c0719c058f2b42342beea534f34de",
+        "bytes": 184536,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "articles",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-articles-768x1024.png",
+        "sha256": "8d5afc56e57be607fdf38d5d790e143ad9e573a42a49c7f0fe993353c29a999b",
+        "bytes": 232917,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "article-new",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-article-new-768x1024.png",
+        "sha256": "9f79e0b58169225acc1fe73e3424d62028e58457a02adfb84a7b112a748e39cd",
+        "bytes": 185072,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "article-edit",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-article-edit-768x1024.png",
+        "sha256": "22ce83d1585fae881bf798b1673ef2120430da6da6402a482b2b7affe390073b",
+        "bytes": 181879,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "settings",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-settings-768x1024.png",
+        "sha256": "e0f111cfba1c85cd6c86859e153c1f5ca623cda1c980aaab06987abbaff287d6",
+        "bytes": 192970,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "integrations",
+      "viewport": "tablet",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 768,
+        "documentViewport": 768,
+        "bodyWidth": 768
+      },
+      "screenshot": {
+        "path": "CB-M05-integrations-768x1024.png",
+        "sha256": "11721cc65ef173e798002ee891f8a0c862e8fc52cb295009c3144c9634bff11f",
+        "bytes": 196618,
+        "width": 768,
+        "height": 1024
+      }
+    },
+    {
+      "view": "login",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-login-390x844.png",
+        "sha256": "95ec93d21822b8ec9f40e1a2d4035875c82e22d8419f62d2c390df978f47717b",
+        "bytes": 155620,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "setup",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-setup-390x844.png",
+        "sha256": "6168f6807bd2cdf5108fcaad44cf2ffdd58b4d3b3b045cb384784a653d2caf9d",
+        "bytes": 156607,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "recovery",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-recovery-390x844.png",
+        "sha256": "cc6d2b1a3b7aaaa387acc1cf0fb38d2cd705759ce3cdc3452f098ed96945be93",
+        "bytes": 156761,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "articles",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-articles-390x844.png",
+        "sha256": "b9d0b12acf53454b3fc8450a7471ad98b5266f823465940fa21384ce0934c819",
+        "bytes": 154103,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "article-new",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-article-new-390x844.png",
+        "sha256": "f482d8bdbbd7b6a77d149b9002cc881e81e8f57a265cfa8379da658e8bc34352",
+        "bytes": 150616,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "article-edit",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-article-edit-390x844.png",
+        "sha256": "ad906b19ca0981286c06e463f5761aad84a00d249b76363b67c4e6cbacccdb59",
+        "bytes": 148523,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "settings",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-settings-390x844.png",
+        "sha256": "b0b085293094508a3c82aa23d2d99aeaa2d27322bd5dec94b3048ca9f7503c67",
+        "bytes": 149985,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "integrations",
+      "viewport": "mobile",
+      "axeScope": "[data-module='CB-M05'] only",
+      "axeViolations": [],
+      "fixtureMetadata": {
+        "title": "CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED",
+        "language": "en",
+        "robots": "noindex, nofollow",
+        "documentWidth": 390,
+        "documentViewport": 390,
+        "bodyWidth": 390
+      },
+      "screenshot": {
+        "path": "CB-M05-integrations-390x844.png",
+        "sha256": "9d3ff9260d35422a7f3c5802444ce20684b6d441884d20c58ee26b8bfdc7b5af",
+        "bytes": 151667,
+        "width": 390,
+        "height": 844
+      }
+    }
+  ]
+}

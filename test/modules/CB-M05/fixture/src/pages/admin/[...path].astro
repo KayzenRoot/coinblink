@@ -1,0 +1,23 @@
+---
+import AdminWorkspace from "../../../../../../../src/modules/CB-M05/AdminWorkspace.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export function getStaticPaths() {
+  return [
+    { params: { path: "login" }, props: { view: "login" } },
+    { params: { path: "setup" }, props: { view: "setup" } },
+    { params: { path: "recovery" }, props: { view: "recovery" } },
+    { params: { path: "articles" }, props: { view: "articles" } },
+    { params: { path: "articles/new" }, props: { view: "article-new" } },
+    { params: { path: "articles/mock-article/edit" }, props: { view: "article-edit" } },
+    { params: { path: "settings" }, props: { view: "settings" } },
+    { params: { path: "settings/integrations" }, props: { view: "integrations" } },
+  ];
+}
+
+const { view } = Astro.props;
+---
+
+<BaseLayout title="CB-M05 isolated presentation fixture · MOCK / SECURITY DISABLED">
+    <AdminWorkspace view={view} />
+</BaseLayout>

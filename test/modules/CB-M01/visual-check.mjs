@@ -200,6 +200,17 @@ try {
   assert.equal(mobileSearchVisible, false, "mobile must not show an inactive search affordance");
   assert.equal(mobileSearchInputVisible, false, "mobile search input is intentionally unavailable");
   interactionChecks.mobileSearch = { visible: mobileSearchVisible, inputVisible: mobileSearchInputVisible, intentionallyUnavailable: true };
+  const noScriptContext = await browser.newContext({ javaScriptEnabled: false });
+  const noScriptPage = await noScriptContext.newPage();
+  await noScriptPage.setViewportSize({ width: 390, height: 844 });
+  await noScriptPage.goto(origin, { waitUntil: "networkidle" });
+  await noScriptPage.locator("#demo-email").fill("owner@example.invalid");
+  await noScriptPage.getByRole("button", { name: /Preview only/ }).click();
+  const noScriptUrl = new URL(noScriptPage.url());
+  assert.equal(noScriptUrl.origin, new URL(origin).origin, "the newsletter preview control must not navigate when JavaScript is disabled");
+  assert.equal(noScriptUrl.search, "", "no email address may be serialized into a query string");
+  interactionChecks.noScriptNewsletter = { addressSerialized: false, javascriptEnabled: false };
+  await noScriptContext.close();
   const menu = page.locator("[data-menu-toggle]");
   await menu.click();
   assert.equal(await menu.getAttribute("aria-expanded"), "true");

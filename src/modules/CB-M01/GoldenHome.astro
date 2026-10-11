@@ -121,7 +121,7 @@ const stories = [
       </section>
       <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">
         <span class="newsletter-icon" aria-hidden="true">✉</span><small>DEMO · DISABLED DELIVERY</small><h2 id="newsletter-title">Join the CoinBlink newsletter</h2>
-        <p>This form will not send or store your email.</p><form data-demo-form><label class="sr-only" for="demo-email">Email address</label><input id="demo-email" name="email" type="email" placeholder="Email address" autocomplete="email" /><button type="submit">Preview only →</button></form>
+        <p>This preview will not send or store your email.</p><div class="newsletter-form" role="group" aria-label="Newsletter demo controls"><label class="sr-only" for="demo-email">Email address</label><input id="demo-email" name="email" type="email" placeholder="Email address" autocomplete="email" /><button type="button" data-demo-preview>Preview only →</button></div>
         <p class="form-status" aria-live="polite" data-form-status>No message will be sent.</p><ul class="newsletter-promises"><li>No storage</li><li>No delivery</li><li>Demo only</li></ul>
       </section>
     </section>
@@ -167,8 +167,7 @@ const stories = [
     filterStories();
   }));
   search?.addEventListener("input", filterStories);
-  document.querySelector("[data-demo-form]")?.addEventListener("submit", (event) => {
-    event.preventDefault();
+  document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
     const status = document.querySelector("[data-form-status]");
     if (status) status.textContent = "Preview only. No email was sent or stored.";
   });

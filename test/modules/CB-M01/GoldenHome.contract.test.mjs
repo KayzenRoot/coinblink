@@ -21,9 +21,10 @@ test("all market and editorial samples remain visibly demonstration-only", () =>
   assert.doesNotMatch(component, /<[^>]+>\s*Live\s*<\/[^>]+>/i);
 });
 
-test("the newsletter form cannot send data to an external destination", () => {
-  assert.match(component, /data-demo-form/);
-  assert.match(component, /event\.preventDefault\(\)/);
+test("the newsletter demo cannot submit an email address", () => {
+  assert.doesNotMatch(component, /<form\b/u, "demo email control must have no native submission behavior");
+  assert.match(component, /<button type="button" data-demo-preview>/u);
+  assert.match(component, /querySelector\("\[data-demo-preview\]"\)\?\.addEventListener\("click"/u);
   assert.doesNotMatch(component, /action\s*=|fetch\s*\(|XMLHttpRequest|navigator\.sendBeacon/);
 });
 

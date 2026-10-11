@@ -18,8 +18,6 @@ import {
 
 const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";
-const headSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim();
-const astroCli = join(repoRoot, "node_modules", "astro", "bin", "astro.mjs");
 const evidenceDir = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001", "screenshots");
 const reportPath = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001", "visual-check.json");
 const viewports = [
@@ -27,6 +25,36 @@ const viewports = [
   { name: "tablet", width: 768, height: 1024 },
   { name: "mobile", width: 390, height: 844 },
 ];
+const runStartedAt = new Date().toISOString();
+await clearVisualCheckReport(reportPath);
+let headSha = null;
+let origin = null;
+let port;
+let fixtureTempRoot;
+
+try {
+  headSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim();
+  port = await availablePort();
+  origin = "http://127.0.0.1:" + port;
+  fixtureTempRoot = await mkdtemp(join(tmpdir(), "coinblink-m01-fixture-"));
+} catch (error) {
+  await writeVisualCheckFailure(reportPath, {
+    generatedAt: runStartedAt,
+    baseSha,
+    headSha,
+    fixture: "isolated Astro fixture; no shared /en route integration",
+    origin,
+    viewports: [],
+    interactionChecks: {},
+    consoleErrors: [],
+    pageErrors: [],
+    externalRequests: [],
+    serverOutput: [],
+  }, error);
+  throw error;
+}
+
+const astroCli = join(repoRoot, "node_modules", "astro", "bin", "astro.mjs");
 
 async function availablePort() {
   const server = createServer();
@@ -62,13 +90,9 @@ async function stopAstroServer(child) {
   return waitForChildExit(child, 3_000);
 }
 
-const port = await availablePort();
-const origin = "http://127.0.0.1:" + port;
-const fixtureTempRoot = await mkdtemp(join(tmpdir(), "coinblink-m01-fixture-"));
 let serverOutput = "";
 let server;
 let runFailure;
-await clearVisualCheckReport(reportPath);
 
 async function waitUntilReady() {
   try {
@@ -325,7 +349,7 @@ try {
   }
 }
 const reportBase = {
-  generatedAt: new Date().toISOString(),
+  generatedAt: runStartedAt,
   baseSha,
   headSha,
   fixture: "isolated Astro fixture; no shared /en route integration",

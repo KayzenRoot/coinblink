@@ -52,6 +52,9 @@ test("visual evidence records the frozen base separately from the captured HEAD"
   assert.match(visualRunner, /const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";/u);
   assert.match(visualRunner, /headSha = await readGitHead\(repoRoot\);/u);
   assert.doesNotMatch(visualRunner, /execFileSync\("git"/u);
+  assert.match(visualRunner, /visualInputState = assertVisualInputsClean\(repoRoot\);/u);
+  assert.match(visualRunner, /finalHeadSha = await readGitHead\(repoRoot\);[\s\S]*visualInputState = assertVisualInputsClean\(repoRoot\);/u);
+  assert.match(visualRunner, /visualInputState,/u);
   assert.match(visualRunner, /baseSha,\s*headSha,/u);
   const clearReport = visualRunner.indexOf("await clearVisualCheckReport(reportPath)");
   assert.ok(clearReport >= 0, "each run must invalidate old evidence");

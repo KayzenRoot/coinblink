@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
 import { readGitHead } from "./git-head.mjs";
+import { assertVisualInputsClean } from "./visual-input-state.mjs";
 import {
   clearVisualCheckReport,
   removeFixtureTempRootAfterExit,
@@ -32,9 +33,11 @@ let headSha = null;
 let origin = null;
 let port;
 let fixtureTempRoot;
+let visualInputState = null;
 
 try {
   headSha = await readGitHead(repoRoot);
+  visualInputState = assertVisualInputsClean(repoRoot);
   port = await availablePort();
   origin = "http://127.0.0.1:" + port;
   fixtureTempRoot = await mkdtemp(join(tmpdir(), "coinblink-m01-fixture-"));
@@ -43,6 +46,7 @@ try {
     generatedAt: runStartedAt,
     baseSha,
     headSha,
+    visualInputState,
     fixture: "isolated Astro fixture; no shared /en route integration",
     origin,
     viewports: [],
@@ -199,6 +203,8 @@ try {
   for (const width of [850, 851, 1024, 1050, 1051]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(origin, { waitUntil: "networkidle" });
+    const documentWidth = await page.evaluate(() => globalThis.document.documentElement.scrollWidth);
+    assert.ok(documentWidth <= width, `responsive navigation must not create horizontal overflow at ${width}px: ${documentWidth}`);
     if (width > 760 && width <= 1050) {
       const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
         const title = strip.querySelector("h2").getBoundingClientRect();
@@ -232,8 +238,20 @@ try {
       for (let index = 0; index < await links.count(); index += 1) {
         assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be reachable at ${width}px`);
       }
-      interactionChecks.responsiveNavigation.push({ width, control: "menu toggle", expandedStateVerified: true, allLinksReachable: true });
-      await toggle.click();
+      for (const label of ["Tools", "Videos", "About"]) {
+        assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
+      }
+      await page.getByRole("link", { name: "Tools", exact: true }).click();
+      assert.equal(new URL(page.url()).hash, "#demo-data", `mouse can activate Tools at ${width}px`);
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+      await toggle.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true", `keyboard can open navigation at ${width}px`);
+      await page.getByRole("link", { name: "About", exact: true }).focus();
+      await page.keyboard.press("Enter");
+      assert.equal(new URL(page.url()).hash, "#footer", `keyboard can activate About at ${width}px`);
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+      interactionChecks.responsiveNavigation.push({ width, control: "mouse and keyboard", expandedStateVerified: true, allLinksReachable: true });
       assert.equal(await toggle.getAttribute("aria-expanded"), "false");
     } else {
       assert.equal(await toggle.isVisible(), false, "desktop navigation does not use a hidden menu toggle");
@@ -241,6 +259,9 @@ try {
       assert.equal(await links.count(), 8);
       for (let index = 0; index < await links.count(); index += 1) {
         assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be visible at ${width}px`);
+      }
+      for (const label of ["Tools", "Videos", "About"]) {
+        assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
       }
       const headerRects = await page.evaluate(() => [".brand", "#primary-nav", ".header-tools"].map((selector) => {
         const rect = globalThis.document.querySelector(selector).getBoundingClientRect();
@@ -250,6 +271,11 @@ try {
         assert.ok(headerRects[index - 1].right <= headerRects[index].left + 1, `header regions overlap at ${width}px: ${JSON.stringify(headerRects)}`);
       }
       interactionChecks.responsiveNavigation.push({ width, control: "inline navigation", allLinksVisible: true, headerRegionsOverlap: false });
+      await page.getByRole("link", { name: "Tools", exact: true }).click();
+      assert.equal(new URL(page.url()).hash, "#demo-data", "mouse can activate Tools at the desktop boundary");
+      await page.getByRole("link", { name: "About", exact: true }).focus();
+      await page.keyboard.press("Enter");
+      assert.equal(new URL(page.url()).hash, "#footer", "keyboard can activate About in the desktop navigation");
     }
   }
 
@@ -307,19 +333,35 @@ try {
   assert.equal(await page.locator("[data-news-card]:visible").count(), 1);
   assert.equal(await page.locator("[data-news-card]:visible").getAttribute("data-category-value"), "Bitcoin");
   await page.setViewportSize({ width: 768, height: 1024 });
+  const resultCount = page.locator("[data-result-count]");
   await page.locator("[data-news-search]").fill("no matching placeholder");
   assert.equal(await page.locator("[data-news-card]:visible").count(), 0);
+  assert.equal(await resultCount.textContent(), "0 placeholders");
   await page.locator("[data-category='All']").click();
   await page.locator("[data-news-search]").fill("Bitcoin");
   assert.equal(await page.locator("[data-news-card]:visible").count(), 1, "category labels are included in local search");
   assert.equal(await page.locator("[data-news-card]:visible").getAttribute("data-category-value"), "Bitcoin");
+  assert.equal(await resultCount.textContent(), "1 placeholder");
+  await page.locator("[data-news-search]").fill("Ethereum");
+  assert.equal(await page.locator("[data-news-card]:visible").count(), 1, "Ethereum is searchable by category label");
+  assert.equal(await page.locator("[data-news-card]:visible").getAttribute("data-category-value"), "Ethereum");
+  await page.locator("[data-news-search]").fill("not-a-category-or-story");
+  assert.equal(await page.locator("[data-news-card]:visible").count(), 0, "unmatched text hides every placeholder");
+  assert.equal(await resultCount.textContent(), "0 placeholders");
+  await page.locator("[data-news-search]").fill("Bitcoin");
   await page.locator("[data-category='Ethereum']").click();
+  assert.equal(await page.locator("[data-category='Ethereum']").getAttribute("aria-pressed"), "true");
   assert.equal(await page.locator("[data-news-card]:visible").count(), 0, "category selection remains combined with search");
+  assert.equal(await resultCount.textContent(), "0 placeholders");
   await page.locator("[data-category='All']").click();
+  assert.equal(await page.locator("[data-category='All']").getAttribute("aria-pressed"), "true");
   assert.equal(await page.locator("[data-news-card]:visible").count(), 1, "All restores the category-inclusive query results");
-  interactionChecks.categorySearch = { query: "Bitcoin", matchesCategory: "Bitcoin", selectedCategory: "All", matches: 1, combinedCategoryFilterVerified: true };
+  assert.equal(await resultCount.textContent(), "1 placeholder");
+  interactionChecks.categorySearch = { bitcoin: 1, ethereum: 1, unmatched: 0, selectedCategory: "All", resetCount: 1, combinedCategoryFilterVerified: true };
   await page.locator("[data-news-search]").clear();
   assert.equal(await page.locator("[data-news-card]:visible").count(), 4);
+  assert.equal(await resultCount.textContent(), "4 placeholders");
+  assert.deepEqual(await page.locator("[data-news-card]:visible small").allTextContents(), ["DEMO", "DEMO", "DEMO", "DEMO"]);
   await page.locator("#demo-email").fill("owner@example.invalid");
   await page.getByRole("button", { name: /Preview only/ }).click();
   assert.match(await page.locator("[data-form-status]").textContent(), /No email was sent or stored/);
@@ -353,10 +395,18 @@ try {
     shutdownFailure ??= error;
   }
 }
+try {
+  const finalHeadSha = await readGitHead(repoRoot);
+  assert.equal(finalHeadSha, headSha, "Git HEAD must remain unchanged during visual capture");
+  visualInputState = assertVisualInputsClean(repoRoot);
+} catch (error) {
+  runFailure ??= error;
+}
 const reportBase = {
   generatedAt: runStartedAt,
   baseSha,
   headSha,
+  visualInputState,
   fixture: "isolated Astro fixture; no shared /en route integration",
   origin,
   viewports: results,

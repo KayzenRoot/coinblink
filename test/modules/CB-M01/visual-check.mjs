@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -12,6 +12,8 @@ import { chromium } from "@playwright/test";
 import { removeFixtureTempRootAfterExit, waitForFixtureReady } from "./visual-server.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
+const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";
+const headSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim();
 const astroCli = join(repoRoot, "node_modules", "astro", "bin", "astro.mjs");
 const evidenceDir = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001", "screenshots");
 const reportPath = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001", "visual-check.json");
@@ -323,7 +325,8 @@ for (const result of results) {
 }
 const report = {
   generatedAt: new Date().toISOString(),
-  baseSha: "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  baseSha,
+  headSha,
   fixture: "isolated Astro fixture; no shared /en route integration",
   origin,
   viewports: results,

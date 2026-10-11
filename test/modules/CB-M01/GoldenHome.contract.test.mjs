@@ -43,6 +43,12 @@ test("unavailable Tools and Videos navigation routes to an explicit demo status"
   assert.match(component, /Tools and videos are unavailable in this demo\./u);
 });
 
+test("visual evidence records the frozen base separately from the captured HEAD", () => {
+  assert.match(visualRunner, /const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";/u);
+  assert.match(visualRunner, /const headSha = execFileSync\("git", \["rev-parse", "HEAD"\], \{ cwd: repoRoot, encoding: "utf8" \}\)\.trim\(\);/u);
+  assert.match(visualRunner, /baseSha,\s*headSha,/u);
+});
+
 test("trending cards keep one tablet row and a horizontally scrollable mobile row", () => {
   assert.match(stylesheet, /\.trending-strip \{ grid-template-columns:125px repeat\(3,minmax\(0,1fr\)\); \}/u);
   assert.match(stylesheet, /\.trending-strip \{ grid-auto-flow:column; grid-auto-columns:minmax\(148px,1fr\); grid-template-columns:132px; overflow-x:auto; \}/u);

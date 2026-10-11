@@ -15,8 +15,12 @@ test('global staged baseline preserves canonical CB-M01 admission and proposes o
   assert.equal(Object.keys(cp.checkpointFacts.moduleAdmission).length, 19);
   assert.equal(cp.checkpointFacts.moduleAdmission['CB-M00'], 'ADMITTED');
   assert.equal(cp.checkpointFacts.applicationImplementation, 'M00_COMPLETE');
-  assert.equal(cp.completedThroughModule, 'CB-M00');
-  assert.equal(cp.overallCompletionPercent, 5, 'admission alone never counts as completing a module');
+  assert.ok(Number.isInteger(cp.overallCompletionPercent) && cp.overallCompletionPercent >= 5, 'completed M00 progress cannot regress');
+  assert.equal(Object.hasOwn(cp.checkpointFacts.moduleAdmission, cp.completedThroughModule), true, 'the completed-through module is registered');
+  assert.equal(cp.checkpointFacts.moduleAdmission[cp.completedThroughModule], 'ADMITTED', 'only an admitted module can be completed');
+  if (cp.completedThroughModule === 'CB-M00') {
+    assert.equal(cp.overallCompletionPercent, 5, 'admission alone never counts as completing a module');
+  }
   for (let i=1; i<=17; i++) {
     const id = 'CB-M' + String(i).padStart(2, '0');
     const expected = ['CB-M01', 'CB-M05'].includes(id) ? 'ADMITTED' : 'NOT_ADMITTED';

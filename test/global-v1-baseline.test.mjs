@@ -6,17 +6,29 @@ import { isGlobalApprovalStatus, isParallelAdrApproved } from '../scripts/plan-p
 
 const read = name => readFileSync(resolve(process.cwd(), name), 'utf8');
 
-test('approved staged baseline does not admit a new module', () => {
+test('global staged baseline accepts only the separately reviewed CB-M01 admission candidate', () => {
   for (const name of ['SCOPE', 'ARCHITECTURE', 'REQUIREMENTS', 'DEFINITION-OF-DONE']) {
     assert.equal(isGlobalApprovalStatus(read('.engineering/' + name + '.md')), true);
   }
   assert.equal(isParallelAdrApproved(read('docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md')), true);
   const cp = JSON.parse(read('.engineering/CHECKPOINT.json'));
-  assert.equal(cp.status, 'M00_COMPLETE');
-  assert.equal(cp.overallCompletionPercent, 5);
   assert.equal(Object.keys(cp.checkpointFacts.moduleAdmission).length, 19);
+  assert.equal(cp.checkpointFacts.moduleAdmission['CB-M00'], 'ADMITTED');
+  assert.ok(Number.isInteger(cp.overallCompletionPercent) && cp.overallCompletionPercent >= 5);
+  if (cp.completedThroughModule === 'CB-M00') {
+    assert.equal(cp.overallCompletionPercent, 5, 'admission alone never counts as completing a module');
+  }
   for (let i=1; i<=17; i++) {
-    assert.equal(cp.checkpointFacts.moduleAdmission['CB-M'+String(i).padStart(2,'0')], 'NOT_ADMITTED');
+    const id = 'CB-M' + String(i).padStart(2, '0');
+    const expected = id === 'CB-M01' ? 'ADMITTED' : 'NOT_ADMITTED';
+    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' is outside this single-module admission');
+    if (expected === 'ADMITTED') {
+      const proof = cp.checkpointFacts.moduleAdmissionEvidence?.[id];
+      assert.equal(proof?.workOrder, id + '-WO-001', id + ' needs a module-specific reviewed Work Order');
+      assert.equal(proof?.contract, 'docs/architecture/contracts/' + id + '.md', id + ' needs the matching producer contract');
+      assert.equal(proof?.contextLock, '.engineering/context-locks/' + id + '-WO-001.md', id + ' needs the matching Context Lock');
+      assert.match(proof?.status ?? '', /EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE/u);
+    }
   }
   assert.equal(cp.checkpointFacts.moduleAdmission['CB-M18'], 'FUTURE_NOT_ADMITTED');
 });

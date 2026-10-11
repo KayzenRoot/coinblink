@@ -5,7 +5,7 @@
   "phase": "IMPLEMENTATION_IN_PROGRESS",
   "completedThroughModule": "CB-M00",
   "overallCompletionPercent": 5,
-  "nextLegalStage": "ADOPT_GLOBAL_SCOPE_ARCHITECTURE_DOD_AND_PARALLEL_DELIVERY_ADR_THEN_ADMIT_DEPENDENCY_READY_MODULES",
+  "nextLegalStage": "CB_M01_ADMISSION_REVIEW_THEN_LOCAL_CODE_IF_CANONICAL;_CB_M05_SEPARATE_ADMISSION_PENDING",
   "checkpointFacts": {
     "sourceMainSha": "cca3802d22b0ea49cafd7aa9778f2c73a8f6a45f",
     "scopeApproval": {
@@ -26,7 +26,7 @@
     "activeWorkOrder": "NONE",
     "moduleAdmission": {
       "CB-M00": "ADMITTED",
-      "CB-M01": "NOT_ADMITTED",
+      "CB-M01": "ADMITTED",
       "CB-M02": "NOT_ADMITTED",
       "CB-M03": "NOT_ADMITTED",
       "CB-M04": "NOT_ADMITTED",
@@ -44,6 +44,18 @@
       "CB-M16": "NOT_ADMITTED",
       "CB-M17": "NOT_ADMITTED",
       "CB-M18": "FUTURE_NOT_ADMITTED"
+    },
+    "moduleAdmissionEvidence": {
+      "CB-M01": {
+        "workOrder": "CB-M01-WO-001",
+        "contract": "docs/architecture/contracts/CB-M01.md",
+        "contextLock": ".engineering/context-locks/CB-M01-WO-001.md",
+        "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
+        "governanceMainSha": "e40d36b2a589596869eb296696e917f724d5be65",
+        "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
+        "externalGoldenGate": "ISSUE_5_CLOSED_AND_ORIGINAL_JPEGS_VERIFIED",
+        "scope": "P0-P2_GOLDEN_HOME_UI_AND_LOCAL_MOCK_SAFE_COMPONENTS"
+      }
     }
   },
   "progressBasis": {

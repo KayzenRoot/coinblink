@@ -4,6 +4,8 @@ import test from "node:test";
 
 const componentPath = new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url);
 const component = await readFile(componentPath, "utf8");
+const visualRunner = await readFile(new URL("./visual-check.mjs", import.meta.url), "utf8");
+const fixtureConfig = await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs", import.meta.url), "utf8");
 
 test("GoldenHome exposes the approved semantic page seam", () => {
   for (const required of ['<header', '<nav', '<main id="main"', '<footer', 'aria-label="Primary navigation"']) {
@@ -31,4 +33,23 @@ test("the component uses the immutable approved logo and does not flatten the Go
 
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
+});
+
+test("the visual fixture uses and cleans only a per-run isolated temp directory", () => {
+  assert.match(visualRunner, /mkdtemp\(join\(tmpdir\(\), "coinblink-m01-fixture-"\)\)/);
+  assert.match(visualRunner, /M01_FIXTURE_TEMP_DIR: fixtureTempRoot/);
+  assert.match(visualRunner, /rm\(fixtureTempRoot, \{ recursive: true, force: true \}\)/);
+  assert.match(visualRunner, /async function waitForChildExit\(child, timeoutMs\)/);
+  assert.match(visualRunner, /setTimeout\(\(\) => finish\(false\), timeoutMs\)/);
+  assert.match(visualRunner, /child\.kill\("SIGKILL"\)/);
+  assert.match(visualRunner, /if \(!serverStopped\)[\s\S]*isolated directory was retained/);
+  assert.match(visualRunner, /if \(!server \|\| server\.exitCode !== null \|\| server\.signalCode !== null\)[\s\S]*rm\(fixtureTempRoot/);
+  assert.doesNotMatch(visualRunner, /process\.env\.(?:TEMP|TMP)/);
+  assert.match(visualRunner, /\.engineering.*CB-M01-WO-001.*astro-fixture\.config\.mjs/);
+  assert.match(fixtureConfig, /if \(!fixtureTempDir \|\| !isAbsolute\(fixtureTempDir\)\)/);
+  assert.match(fixtureConfig, /relative\(tempParent, resolvedTempDir\)/);
+  assert.match(fixtureConfig, /basename\(resolvedTempDir\)\.startsWith\("coinblink-m01-fixture-"\)/);
+  assert.match(fixtureConfig, /cacheDir: join\(resolvedTempDir, "cache"\)/);
+  assert.match(fixtureConfig, /outDir: join\(resolvedTempDir, "dist"\)/);
+  assert.doesNotMatch(fixtureConfig, /fixtureRoot, "\.m01-fixture-output"|M01_FIXTURE_OUT_DIR/);
 });

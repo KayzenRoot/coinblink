@@ -12,7 +12,7 @@
 
 | Viewport | Image | SHA-256 | Horizontal overflow | Axe within M01 |
 | --- | --- | --- | ---: | ---: |
-| Desktop 1536×864 | `screenshots/golden-home-desktop.png` | `7e6df8ff376c4a51fb9d6b88fc0b9d53c23ea3c3bacf143a199e456c2919bc4c` | none | 0 violations |
+| Desktop 1536×864 | `screenshots/golden-home-desktop.png` | `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` | none | 0 violations |
 | Tablet 768×1024 | `screenshots/golden-home-tablet.png` | `d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb` | none | 0 violations |
 | Mobile 390×844 | `screenshots/golden-home-mobile.png` | `fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d` | none | 0 violations |
 
@@ -43,3 +43,23 @@ The immutable desktop Golden and the fresh desktop capture were also compared at
 ## Append-only publication state correction · 2026-10-11
 
 The earlier Evidence Bundle sentence stating that `HEAD` still equaled the base and changes were uncommitted is a historical snapshot from evidence authoring and is superseded by this append-only correction. The work is committed on `codex/cb-m01-wo-001-impl-20261011` in implementation commit `2ce7dcd`, EOF hygiene commit `282c42b`, and stylesheet line-ending correction `1335d83`. Base SHA: `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; the verified pre-documentation-correction head was `1335d83bbb333ec578656e4d3dc425d9ac1e6a8f`. The branch-wide `git diff --check <base> HEAD` passed after these commits. This note is documentation-only; record the post-note commit SHA as the exact PR head. Exact-head CI and independent review, `/en` route integration, Owner visual acceptance and checkpoint promotion remain pending. The linked-worktree GEF `FINDING/UNKNOWN` is not reported as PASS and will be repeated by the Steward in a normal clone.
+
+## Append-only SonarCloud security correction · 2026-10-11
+
+SonarCloud exact-head analysis of PR #58 at `f1c98e640092b4c7cc528e1194a01d85ada72b75` reported two duplicate `javascript:S5443` Critical findings at `test/modules/CB-M01/visual-check.mjs:44` and assigned Security Rating D. That line derived a predictable fixture output path from inherited `TEMP`/`TMP` values (or the repository root); the fixture config also used fixed cache/output locations. The findings are corrected in this candidate, but the new exact-head SonarCloud result remains pending and is not claimed as passed.
+
+The runner now creates its root with `mkdtemp` directly under `os.tmpdir()`, passes only that generated root to the fixture, and never reads `TEMP` or `TMP`. Astro cache and build output are children of this root. The fixture config moved into this Evidence Bundle so `node --test` does not execute it as a test file; it fails closed unless the supplied path is absolute, is a direct child of the OS temp root, and has the CoinBlink M01 prefix. Shutdown is bounded to a three-second graceful wait plus a three-second forced-termination wait. The runner removes only its generated root after an exit code or signal confirms Astro exited; if shutdown cannot be confirmed, it preserves the root and fails with its location and captured server output.
+
+Regression coverage checks the unique root, config environment, cache/output containment, absence of inherited temp variables, bounded shutdown, and cleanup only after process exit. An initial full `node --test` run with the fail-closed config still inside `test/` correctly exposed Node's broad test-file discovery; relocating that config into the Evidence Bundle resolved the discovery issue. The final full run below is the authoritative result.
+
+The same SonarCloud review reported 11 `javascript:S9382` Minor code smells (“Unexpected await inside a loop”) at old `visual-check.mjs` lines 57, 81, 82, 83, 84, 86, 88, 97, 98, 111, and 148 on the reviewed head. They are sequential operations over one Playwright page per viewport, a bounded local-server readiness poll, and ordered screenshot reads. Their awaits preserve browser/page ordering and deterministic evidence; changing them to concurrent promises would introduce races. The rule was not suppressed, and no change was needed for these advisory findings.
+
+Final local validation after the correction used Node.js `v22.23.3`:
+
+- `node --test test/modules/CB-M01/GoldenHome.contract.test.mjs` — PASS, 6/6; this supersedes the earlier 5/5 focused count above.
+- `npm run test:unit` — PASS, 125/125.
+- `node test/modules/CB-M01/visual-check.mjs` — PASS across 1536×864, 768×1024, and 390×844; zero M01 Axe violations, no overflow, browser console errors, page errors, or external requests. The inherited full-page `.skip-link` landmark finding remains recorded separately.
+- `npm run lint` — PASS with `--max-warnings=0`.
+- `git diff --check` — PASS.
+
+Fresh screenshot SHA-256 values: desktop `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` (578,591 bytes), tablet `d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb` (406,155 bytes), and mobile `fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d` (180,017 bytes). Exact-head CI, SonarCloud, independent review, `/en` route integration, Owner visual acceptance and checkpoint promotion remain pending.

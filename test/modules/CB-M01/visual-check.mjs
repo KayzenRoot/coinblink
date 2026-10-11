@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -31,20 +32,33 @@ async function availablePort() {
   return address.port;
 }
 
+async function waitForChildExit(child, timeoutMs) {
+  if (child.exitCode !== null || child.signalCode !== null) return true;
+  return new Promise((resolveExit) => {
+    const finish = (exited) => {
+      clearTimeout(timer);
+      child.off("exit", onExit);
+      resolveExit(exited);
+    };
+    const onExit = () => finish(true);
+    const timer = setTimeout(() => finish(false), timeoutMs);
+    child.once("exit", onExit);
+  });
+}
+
+async function stopAstroServer(child) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return true;
+  child.kill();
+  if (await waitForChildExit(child, 3_000)) return true;
+  child.kill("SIGKILL");
+  return waitForChildExit(child, 3_000);
+}
+
 const port = await availablePort();
 const origin = "http://127.0.0.1:" + port;
+const fixtureTempRoot = await mkdtemp(join(tmpdir(), "coinblink-m01-fixture-"));
 let serverOutput = "";
-const server = spawn(process.execPath, [
-  astroCli, "dev", "--config=" + join("test", "modules", "CB-M01", "fixture", "astro.config.mjs"),
-  "--host", "127.0.0.1", "--port", String(port), "--strictPort",
-], {
-  cwd: repoRoot,
-  windowsHide: true,
-  stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, M01_FIXTURE_OUT_DIR: join(process.env.TEMP || process.env.TMP || repoRoot, "coinblink-m01-fixture-dist") },
-});
-server.stdout.on("data", (chunk) => { serverOutput += chunk.toString(); });
-server.stderr.on("data", (chunk) => { serverOutput += chunk.toString(); });
+let server;
 
 async function waitUntilReady() {
   const deadline = Date.now() + 45_000;
@@ -64,8 +78,20 @@ const consoleErrors = [];
 const pageErrors = [];
 const externalRequests = [];
 let browser;
+let shutdownFailure;
 
 try {
+  server = spawn(process.execPath, [
+    astroCli, "dev", "--config=" + join(".engineering", "evidence", "CB-M01-WO-001", "astro-fixture.config.mjs"),
+    "--host", "127.0.0.1", "--port", String(port), "--strictPort",
+  ], {
+    cwd: repoRoot,
+    windowsHide: true,
+    stdio: ["ignore", "pipe", "pipe"],
+    env: { ...process.env, M01_FIXTURE_TEMP_DIR: fixtureTempRoot },
+  });
+  server.stdout.on("data", (chunk) => { serverOutput += chunk.toString(); });
+  server.stderr.on("data", (chunk) => { serverOutput += chunk.toString(); });
   await waitUntilReady();
   await mkdir(evidenceDir, { recursive: true });
   browser = await chromium.launch({ headless: true });
@@ -135,12 +161,28 @@ try {
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(externalRequests, []);
 } finally {
-  if (browser) await browser.close();
-  if (server.exitCode === null) {
-    server.kill();
-    await Promise.race([new Promise((resolveExit) => server.once("exit", resolveExit)), delay(3000)]);
+  try {
+    if (browser) await browser.close();
+  } catch (error) {
+    shutdownFailure ??= error;
+  }
+  try {
+    const serverStopped = await stopAstroServer(server);
+    if (!serverStopped) {
+      shutdownFailure = new Error("Astro fixture did not exit after termination; isolated directory was retained at " + fixtureTempRoot + ". Output: " + serverOutput);
+    }
+  } catch (error) {
+    shutdownFailure ??= error;
+  }
+  if (!server || server.exitCode !== null || server.signalCode !== null) {
+    try {
+      await rm(fixtureTempRoot, { recursive: true, force: true });
+    } catch (error) {
+      shutdownFailure ??= error;
+    }
   }
 }
+if (shutdownFailure) throw shutdownFailure;
 
 await mkdir(evidenceDir, { recursive: true });
 const { readFile } = await import("node:fs/promises");

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-11T06:03:43.445Z",
+  "generatedAt": "2026-10-11T06:24:43.060Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:53972",
+  "origin": "http://127.0.0.1:55034",
   "viewports": [
     {
       "name": "desktop",
@@ -25,7 +25,7 @@
           ]
         }
       ],
-      "screenshotSha256": "7e6df8ff376c4a51fb9d6b88fc0b9d53c23ea3c3bacf143a199e456c2919bc4c"
+      "screenshotSha256": "16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898"
     },
     {
       "name": "tablet",
@@ -79,13 +79,13 @@
   "externalRequests": [],
   "serverOutput": [
     "{\"message\":\"connected.\",\"label\":\"vite\",\"level\":\"info\"}",
-    "{\"message\":\"Generated 4ms\",\"label\":\"types\",\"level\":\"info\"}",
+    "{\"message\":\"Generated 2ms\",\"label\":\"types\",\"level\":\"info\"}",
     "{\"message\":\"connected.\",\"label\":\"vite\",\"level\":\"info\"}",
-    "{\"message\":\" astro  v7.3.8 ready in 1694 ms\\n┃ Local    http://127.0.0.1:53972/\",\"label\":\"SKIP_FORMAT\",\"level\":\"info\"}",
+    "{\"message\":\" astro  v7.3.8 ready in 2024 ms\\n┃ Local    http://127.0.0.1:55034/\",\"label\":\"SKIP_FORMAT\",\"level\":\"info\"}",
     "{\"message\":\"watching for file changes...\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 113ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 62ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
   ]

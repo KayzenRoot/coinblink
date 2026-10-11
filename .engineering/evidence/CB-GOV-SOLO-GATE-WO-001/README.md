@@ -1,6 +1,8 @@
 # Evidence Bundle | CB-GOV-SOLO-GATE-WO-001
 
-**State:** R0 preparation / code NOT executed in this GitHub governance setup. **Risk:** ELEVATED. **Work Order:** [#64](https://github.com/KayzenRoot/coinblink/issues/64). **Branch:** `codex/cb-gov-solo-gate-wo-001`, created from `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. **Owner:** KayzenRoot.
+**State:** `BLOCKED / PREPARED` at R0; no R1-R3 source code written. **Risk:** ELEVATED. **Work Order:** [#64](https://github.com/KayzenRoot/coinblink/issues/64). **Branch:** `codex/cb-gov-solo-gate-wo-001`, based on `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. **Owner:** KayzenRoot.
+
+R0 evidence and the exact admission stop are recorded in [R0-PREFLIGHT.md](./R0-PREFLIGHT.md). The Owner authorized an isolated candidate, but the accepted source hierarchy and GEF ADR-0008 require an admitted active Work Order before a code PR. Issue #64 itself remains PROPOSED / NOT ADMITTED, and the canonical checkpoint has `activeWorkOrder=NONE`. Therefore this branch contains documentation/evidence only; source-code rounds did not begin.
 
 ## Evidence provenance at branch initialization
 
@@ -10,7 +12,7 @@
 - This branch contains candidate GEF documents ONLY, not the risk classifier/validator implementation or active workflow.
 - Module checkpoint remains M00 COMPLETE/5%, M01+M05 admitted and incomplete.
 
-## Artifacts Codex must add, but none claimed yet
+## Planned artifacts not executed because R0 stopped
 
 1. R0 source fingerprint verification and threat model.
 2. Risk classifier with trusted GitHub metadata and missing/unknown=>DENY.
@@ -21,4 +23,4 @@
 7. Honest final status and proposed no-op checkpoint delta.
 8. Evidence sha256 and Git blob IDs after each final HEAD; never claim SHA of an uncreated file.
 
-**STOP CONDITION:** this is not a fully passing Evidence Bundle; completion and merge remain prohibited pending tests, source integration, independent qualified ELEVATED assurance, ruleset review requirements and Owner final SHA go/no-go.
+**STOP CONDITION:** this is not a completed implementation or fully passing Evidence Bundle. R1-R3 remain blocked pending formal GEF admission of an active Work Order and legal execution-base binding. Completion and merge also require exact-head checks, qualified independent ELEVATED assurance, the active ruleset's distinct eligible review, and Owner final-SHA go/no-go.

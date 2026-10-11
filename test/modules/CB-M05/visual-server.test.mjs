@@ -186,3 +186,22 @@ test("Astro shutdown runs even when Chromium close rejects", async () => {
   assert.deepEqual(signals, ["SIGTERM"], "Astro receives graceful termination after browser cleanup fails");
   assert.equal(child.exitCode, 0, "Astro exit is observed before cleanup completes");
 });
+
+test("cleanup does not SIGKILL a child that already exited from SIGTERM", async () => {
+  const child = new EventEmitter();
+  child.exitCode = null;
+  child.signalCode = null;
+  const signals = [];
+  child.kill = (signal) => {
+    signals.push(signal);
+    if (signal === "SIGTERM") {
+      child.signalCode = "SIGTERM";
+      setImmediate(() => child.emit("exit", null, "SIGTERM"));
+    }
+    return true;
+  };
+
+  await cleanupVisualFixture({ browser: { close: async () => {} }, server: child });
+  assert.deepEqual(signals, ["SIGTERM"], "the fallback must not signal an already-exited Astro process");
+  assert.equal(child.signalCode, "SIGTERM");
+});

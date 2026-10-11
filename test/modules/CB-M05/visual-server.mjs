@@ -17,11 +17,15 @@ export function buildAstroDevArgs(astroCli, port) {
   return [astroCli, "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"];
 }
 
+function childIsStillRunning(child) {
+  return child.exitCode === null && child.signalCode === null;
+}
+
 export async function cleanupVisualFixture({ browser, server }) {
   try {
     await browser?.close();
   } finally {
-    if (server.exitCode === null) {
+    if (childIsStillRunning(server)) {
       server.kill("SIGTERM");
       const cleanupTimer = new AbortController();
       try {
@@ -32,7 +36,7 @@ export async function cleanupVisualFixture({ browser, server }) {
       } finally {
         cleanupTimer.abort();
       }
-      if (server.exitCode === null) server.kill("SIGKILL");
+      if (childIsStillRunning(server)) server.kill("SIGKILL");
     }
   }
 }

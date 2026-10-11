@@ -93,3 +93,16 @@ Node.js `v22.23.3` local verification: `npm test` passed (131 unit tests, build/
 ## Normal-clone GEF readback · code commit SHA 91332e66cc77d0ab522367074b221478294799d2 · 2026-10-11
 
 A fresh ordinary clone at exact code commit `91332e66cc77d0ab522367074b221478294799d2` returned GEF 1.1.2 doctor/status exit 0; repository observation is HEALTHY, with no observation limits, and the status is observed CLEAN/no conflict. The previous linked-worktree finding is resolved for this code SHA. Because this addendum changes the PR head, repeat doctor/status and hosted checks against the resulting documentation commit.
+
+## SonarCloud exact-head triage · 04a562abee44a68f4ba6499b28782fd0323f65b7 · 2026-10-11
+
+Read-only SonarCloud API at this exact PR #58 HEAD reports **33 OPEN issues**, all `MINOR / CODE_SMELL`; the quality-gate check passed. Classification by rule/file/line:
+
+| Severity | Rule | File | Count / lines | Disposition |
+| --- | --- | --- | --- | --- |
+| MINOR | `javascript:S9382` | `test/modules/CB-M01/visual-check.mjs` | 30 at 110–113, 115, 117, 126–127, 140, 144–145, 150–157, 160–161, 163–167, 169, 184–185, 255 | Sequential Playwright navigation, menu state, keyboard focus, query/filter, screenshot and assertion operations depend on prior page state; parallelizing these awaits would change test semantics. |
+| MINOR | `javascript:S9382` | `test/modules/CB-M01/visual-server.mjs` | 1 at 66 | Readiness retry is sequential and deadline-bounded; a later probe depends on the prior result. |
+| MINOR | `javascript:S6582` | `test/modules/CB-M01/visual-check.mjs` | 1 at 51 | Optional-chain style suggestion; no functional defect. |
+| MINOR | `javascript:S6582` | `test/modules/CB-M01/visual-server.mjs` | 1 at 73 | Optional-chain style suggestion; no functional defect. |
+
+No HIGH/CRITICAL issue was reported in this scan. Measures report `new_lines=638`, `new_lines_to_cover=0`, and `new_uncovered_lines=0`; therefore a dashboard 0% new-code coverage value has no coverable-line denominator and is not a measured zero-coverage result. This is a historical exact-head snapshot; the append below will change HEAD, so fresh Sonar/CI is required there.

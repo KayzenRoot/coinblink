@@ -67,6 +67,7 @@ export async function waitForAstroServer({
     const childError = getChildError();
     if (childError) throw new Error(`Astro fixture could not start: ${childError.message}`);
     if (child.exitCode !== null) throw new Error(`Astro fixture exited early with code ${child.exitCode}`);
+    if (child.signalCode) throw new Error(`Astro fixture exited early with signal ${child.signalCode}`);
     if (childAnnouncedOrigin(getChildOutput(), expectedOrigin)) {
       try {
         const response = await probe(new URL("/admin/articles", expectedOrigin));

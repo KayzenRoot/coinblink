@@ -9,3 +9,7 @@ Every image comes from the local-only M05 Astro fixture importing the module com
 ## Latest port/readiness regression run · 2026-10-11
 
 The final regression execution used `run-2026-10-11T06-44-11-192Z` and an OS-assigned loopback origin. All eight views passed at desktop, tablet, and mobile sizes (24/24 Axe scans, zero violations, no console/page errors or horizontal overflow). Its 24 screenshot SHA-256 values, byte lengths, and dimensions matched the committed final captures in `run-2026-10-11T06-12-23-139Z` byte-for-byte; therefore no duplicate PNGs were added. The new generated run folder is local/ignored output; the committed capture links above remain the exact matching assets.
+
+## Signal-exit validation rerun · 2026-10-11
+
+The visual fixture was rerun inside full unit validation after the readiness gate began rejecting Astro `signalCode` exits. Run `run-2026-10-11T06-56-43-355Z` passed all eight views at 1536×864, 768×1024, and 390×844 (24 Axe scans, zero violations; zero console/page errors; no horizontal overflow). Its 24 screenshot SHA-256 values, byte lengths, and dimensions match the committed final acceptance set byte-for-byte. The new run directory is generated ignored output; the committed final PNGs remain the linked evidence. Full hosted checks for this docs/test follow-up HEAD are tracked by PR #59 after push.

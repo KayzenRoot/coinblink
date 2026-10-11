@@ -45,6 +45,17 @@ test("an Astro child that exits because strict binding failed cannot pass readin
   assert.equal(probes, 0, "a different listener cannot mask Astro's strict-port bind failure");
 });
 
+test("a signaled Astro child cannot be masked by a listener that rebinds its announced origin", async () => {
+  let probes = 0;
+  await assert.rejects(waitForAstroServer({
+    child: { exitCode: null, signalCode: "SIGTERM" },
+    expectedOrigin: "http://127.0.0.1:4397",
+    getChildOutput: () => "┃ Local http://127.0.0.1:4397/",
+    probe: async () => { probes += 1; return { ok: true, status: 200 }; },
+  }), /signal SIGTERM/u);
+  assert.equal(probes, 0, "a replacement listener returning HTTP 200 cannot mask Astro child termination by signal");
+});
+
 test("a different Local origin is not accepted as the child server origin", async () => {
   const clock = deterministicClock();
   let probes = 0;

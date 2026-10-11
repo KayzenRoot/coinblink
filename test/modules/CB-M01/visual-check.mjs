@@ -298,6 +298,10 @@ try {
   await menu.click();
   assert.equal(await menu.getAttribute("aria-expanded"), "true");
   assert.equal(await page.locator("#primary-nav").isVisible(), true);
+  await page.getByRole("link", { name: "Tools", exact: true }).click();
+  assert.equal(await menu.getAttribute("aria-expanded"), "false");
+  assert.equal(await page.locator("#primary-nav").isVisible(), false);
+  interactionChecks.mobileNavigationLinkCloses = true;
   await page.getByRole("button", { name: /Bitcoin/ }).click();
   assert.equal(await page.locator("[data-news-card]:visible").count(), 1);
   assert.equal(await page.locator("[data-news-card]:visible").getAttribute("data-category-value"), "Bitcoin");

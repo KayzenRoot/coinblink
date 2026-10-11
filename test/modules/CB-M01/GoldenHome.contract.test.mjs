@@ -43,6 +43,11 @@ test("unavailable Tools and Videos navigation routes to an explicit demo status"
   assert.match(component, /Tools and videos are unavailable in this demo\./u);
 });
 
+test("mobile navigation closes after selecting a link", () => {
+  assert.match(component, /navLinks\.forEach\(\(link\) => link\.addEventListener\("click"/u);
+  assert.match(visualRunner, /mobileNavigationLinkCloses/u);
+});
+
 test("visual evidence records the frozen base separately from the captured HEAD", () => {
   assert.match(visualRunner, /const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";/u);
   assert.match(visualRunner, /headSha = execFileSync\("git", \["rev-parse", "HEAD"\], \{ cwd: repoRoot, encoding: "utf8" \}\)\.trim\(\);/u);

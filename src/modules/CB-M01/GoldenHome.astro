@@ -139,6 +139,12 @@ const stories = [
     menu.setAttribute("aria-expanded", String(!expanded));
     nav?.classList.toggle("is-open", !expanded);
   });
+  const navLinks = [...(nav?.querySelectorAll("a") ?? [])];
+  navLinks.forEach((link) => link.addEventListener("click", () => {
+    if (menu?.getAttribute("aria-expanded") !== "true") return;
+    menu.setAttribute("aria-expanded", "false");
+    nav?.classList.remove("is-open");
+  }));
 
   let selected = "All";
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-category]")];

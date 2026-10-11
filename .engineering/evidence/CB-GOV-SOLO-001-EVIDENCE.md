@@ -25,14 +25,16 @@
 | GEF 1.1.2 `doctor --target . --json` | PASS with limits | Exit 0, checkpoint valid, toolchain healthy; linked worktree reports `GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED` and dependency provenance `REVIEW`. Doctor digest: `c57527dfe6ecbf8f267a70050a589faca820d2708fac300429e654a183619957`. |
 | GEF 1.1.2 `status --target . --json` | PASS with limits | Exit 0, canonical M00 COMPLETE / 5% read correctly; repository dirtiness UNKNOWN, drift baseline ABSENT, `operator.stale=true` conservative. No baseline was fabricated. Status digest: `64a5539048f8fad230ff18d503589c7c4f6563c63022e8111d4f2a1375fb525e`. |
 | Local application tests on pinned runtime | NOT RUN | Host provides Node 24.19.0/npm 11.17.0; package requires Node `>=22.19.0 <23`. Do not use this runtime for a pinned-conformance claim. |
-| Six exact-head hosted check-runs | PENDING | The six required checks started on candidate `42cde75467bb2e3d025b9131e7b3a4c16f3f9bf4` and passed, but this correction creates a new HEAD that requires a fresh exact-head run. |
-| CodeRabbit CLI review | CORRECTION APPLIED; FINAL REVIEW PENDING | Review against `main` on `42cde75467bb2e3d025b9131e7b3a4c16f3f9bf4` covered all eight changed files and found one minor inaccurate admission range in Source Hierarchy. Corrected to list M02–M04 and M06–M17 as not admitted; a new review is required for the final HEAD. |
-| Internal read-only documentation audit | PASS, LIMITED | Reviewer found no HIGH/CRITICAL issue in the eight-path proposal and confirmed fingerprints, checkpoint and ruleset; this is not qualified ELEVATED assurance or a GitHub `APPROVE`. |
+| Six exact-head hosted check-runs | PASS at `11df1fdc05f6df40c81b9869c2cab278db2f6e0f` | [Run #38169132928](https://github.com/KayzenRoot/coinblink/actions/runs/38169132928): Ubuntu/GEF, Windows/GEF, Docker Compose, SonarCloud, Socket Project Report and Socket PR Alerts all passed. This run is bound to the stated SHA. |
+| CodeRabbit CLI review | PASS at `11df1fdc05f6df40c81b9869c2cab278db2f6e0f`; provider status pending verification | `coderabbit review --agent --base main -c AGENTS.md` covered all eight changed files and raised 0 issues after the prior minor module-range finding was corrected. The CLI result is not qualified ELEVATED assurance and does not substitute for the required GitHub `CodeRabbit` status context if that context is absent. |
+| Internal read-only documentation audit | PASS, LIMITED at `11df1fdc05f6df40c81b9869c2cab278db2f6e0f` | Reviewer found no HIGH/CRITICAL issue in the eight-path proposal and confirmed fingerprints, checkpoint and ruleset; this is not qualified ELEVATED assurance or a GitHub `APPROVE`. |
 | Qualified independent ELEVATED assurance | PENDING / EXTERNAL | No qualified independent reviewer of the updated exact HEAD has been established. An internal tool review or bot is not a qualified external assurance. |
 | Distinct GitHub approval | PENDING / EXTERNAL | Active ruleset requires one eligible distinct approval; the sole write/admin collaborator cannot approve their own PR. No bypass or alternate-identity workaround. |
 | Owner exact-SHA GO/NO-GO and normal merge | PENDING | The Owner's direction authorizes preparation but is not a final SHA-bound adoption decision. |
 
 The GitHub PR's checks and reviews must be read from its live final head. This bundle does not treat an earlier check, CodeRabbit status, author `COMMENTED`, or local reviewer report as a result for a later commit.
+
+This evidence snapshot records the exact CI and CLI review result for `11df1fdc05f6df40c81b9869c2cab278db2f6e0f`. The bundle itself is versioned; any later evidence-only commit creates a new head whose required CI and review state must be read from the live PR before acceptance.
 
 ## Policy status
 

@@ -46,11 +46,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "ad0d421333efb27aa44ba83527b61fc9819112cf",
-      "candidateRawSha256": "d7a3804f98dab8a5f14155e7d6fbcf3c059a9f9156dbf17874a446fa64a66bc7",
-      "indexGitBlobSha1": "ad0d421333efb27aa44ba83527b61fc9819112cf",
-      "workingTreeGitBlobSha1": "ad0d421333efb27aa44ba83527b61fc9819112cf",
-      "workingTreeSha256": "d7a3804f98dab8a5f14155e7d6fbcf3c059a9f9156dbf17874a446fa64a66bc7"
+      "candidateGitBlobSha1": "bcec0d352c5b0b9aff3f6c153d395ca4f11f0566",
+      "candidateRawSha256": "3853a22d7b3999bfb270e72847279d5ccfd0a1595ac0af6777e89216dd9de736",
+      "indexGitBlobSha1": "bcec0d352c5b0b9aff3f6c153d395ca4f11f0566",
+      "workingTreeGitBlobSha1": "bcec0d352c5b0b9aff3f6c153d395ca4f11f0566",
+      "workingTreeSha256": "3853a22d7b3999bfb270e72847279d5ccfd0a1595ac0af6777e89216dd9de736"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-SOLO-001.md",

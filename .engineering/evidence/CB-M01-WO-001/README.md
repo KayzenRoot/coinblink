@@ -195,6 +195,12 @@ Final local validation on Node 22.23.3 / npm 10.9.9 after this code correction: 
 
 Screenshot hashes remained desktop `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898`, tablet `4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b`, mobile `0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c`. Approved Golden JPEGs, manifest, Context Lock and base fingerprints remain unchanged. Exact-head hosted CI and fresh local/hosted review must still bind to the final pushed SHA; PR #58 stays draft/open for Owner audit.
 
+## Local CodeRabbit initialization-order correction · 2026-10-11
+
+The next local deep review on `3f19161` found that Git/port/temp-directory initialization still preceded stale-report invalidation. The regression was added first and failed on that ordering. The runner now computes only the report location, clears prior output before those operations, and writes a current failure report if Git identity, port allocation, or fixture-directory initialization fails. The contract asserts clear-before-initialization order; the report helper tests failure status, exact identity and diagnostics.
+
+After the correction, `npm test` passed (136 unit tests, build/no-binding guard and E2E 7/7), lint passed, typecheck passed (53 files, 0 diagnostics), and npm audit found 0 vulnerabilities. The visual run passed on `b7d2ba65fda4dbfe04b9124e2b19a735d89dea6b`, with 3/3 viewports, 0 module Axe findings, no browser errors, no external requests, no document overflow, and unchanged screenshot hashes listed above. Golden originals and the Context Lock remain untouched. Final hosted CI and local/hosted review must verify the pushed final SHA; PR #58 remains draft/open.
+
 ## Local CodeRabbit evidence-table correction · 2026-10-11
 
 The local deep review of HEAD 36a535e raised minor evidence findings: the Fresh captures table still contained predecessor tablet/mobile hashes, and a historical Work Order heading did not identify its d3dbecb evidence commit. The table now matches the committed 768×1024 and 390×844 PNGs, and the heading is uniquely labeled. The review's additional concern about the Context Lock blob was checked deterministically: git rev-parse at frozen base 07f31d8 returns 75e155ae8d4bd6886dc565cf8841f1d64938f6d4 for .engineering/context-locks/CB-M01-WO-001.md, exactly matching the documented pre-refresh source blob. It remains unchanged; the current source blob is a separate later value. No fingerprint was fabricated or rewritten.

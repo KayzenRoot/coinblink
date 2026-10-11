@@ -35,4 +35,4 @@ R0 is read-only. R1-R3 candidate code is scoped exclusively to `scripts/governan
 - `R3: OWNER_ATTESTATION_TESTED`
 - `R4: NOT_ADMITTED / WORKFLOW_INSTALL_BLOCKED`
 
-Any missing gate/fingerprint/permission, nondeterministic behavior, HIGH/CRITICAL, altered owner attestation, changed base/head or workflow access = STOP. Official M00 COMPLETE / 5%, M01+M05 ADMITTED and incomplete, M02-M04/M06-M17 NOT_ADMITTED, M18 FUTURE. No project checkpoint change.
+Any missing gate/fingerprint/permission, nondeterministic behavior, HIGH/CRITICAL, altered owner attestation, changed base/head or workflow access = STOP. The machine checkpoint is M00 COMPLETE / 5%; it lists M01/M05 ADMITTED, but their evidence says effective only after reviewed merge, PRs #58/#59 are OPEN/BLOCKED, and source narratives still say M01-M17 NOT_ADMITTED. This candidate does not reconcile or act on that conflict and grants no module code authority. M18 is `FUTURE_NOT_ADMITTED`. No project checkpoint change.

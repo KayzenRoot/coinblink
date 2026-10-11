@@ -15,6 +15,7 @@
 - Issue [#63](https://github.com/KayzenRoot/coinblink/issues/63) identifies itself as preparation, not admitted to modify `main`, and says it is not code admission or merge GO.
 - Accepted `.engineering/SOURCE-HIERARCHY.md` section “Canonical authority order” item 5 requires an **admitted active Work Order** and current verified Context Lock, never a candidate draft. The canonical `.engineering/CHECKPOINT.json` has `activeWorkOrder: NONE`.
 - GEF Bootstrap v1.1.2 ADR-0008-D2 says Codex creates or updates the actual code PR only after relevant Work Order admission, Context Lock, and legal execution-base binding. The proposed WO #64 does not meet that condition. The explicit stop in #64 therefore applies.
+- The machine checkpoint lists M01/M05 as `ADMITTED`, but their `moduleAdmissionEvidence` says `EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE`; live PRs #58/#59 are OPEN/BLOCKED. Current Source Hierarchy, Scope, Architecture and DoD also retain narratives saying M01-M17 are NOT_ADMITTED. This cross-source status conflict is outside WO #64's write scope. No module status is changed or used to authorize work here; no module code was started.
 
 ## Canonical source fingerprints
 
@@ -37,9 +38,23 @@ No source fingerprint is stale. The candidate Context Lock anchors are bound to 
 
 - `main` is protected by active ruleset `coinblink-main-governance` ID `24888106`, targeted only at `refs/heads/main`; no bypass actors are configured.
 - The ruleset requires one distinct approving review, last-push approval, resolved review threads, squash-only merge, and seven status contexts: Ubuntu GEF, Windows GEF, Docker smoke, SonarCloud, two Socket checks, and CodeRabbit.
+- The full persisted API readback is in [`RULESET-SNAPSHOT.json`](./RULESET-SNAPSHOT.json). GitHub reports ruleset creation/update at `2026-10-11T15:23:15-03:00`, before PR #65 creation (`2026-10-11T21:52:22Z`) and the initial candidate commit (`2026-10-11T21:52:03Z`). The readback was captured at `2026-10-11T22:06:23Z`, establishing the recorded effective settings across branch initialization without claiming an unavailable audit-log export.
 - PR [#65](https://github.com/KayzenRoot/coinblink/pull/65) is OPEN and DRAFT at the candidate snapshot above, with base exactly current `main`; review decision is `REVIEW_REQUIRED` and merge state is `BLOCKED`.
 - At that snapshot the six check-runs (Ubuntu GEF, Windows GEF, Docker smoke, SonarCloud, Socket PR Alerts, Socket Project Report) were SUCCESS. Required CodeRabbit status was PENDING. This is not a complete exact-head gate set and is not an approval.
 - The live `main` SHA was unchanged after fetch/readback. Existing primary checkout changes (`.gef/`, `tmp/`) were left untouched; the candidate uses its dedicated clean worktree.
+
+## R0 threat model and boundary
+
+| Threat | R0 control / design requirement |
+|---|---|
+| Fork PR or malicious PR author submits executable content | Never execute PR-controlled code in a privileged workflow; any future metadata inspection must use trusted code already on `main`. No workflow is in this WO's write set. |
+| Forged, edited, deleted or stale Owner comment | Require GitHub API actor identity, immutable comment/review facts, exact PR/base/head binding and decision freshness; missing or changed evidence must block. No approval is inferred from text. |
+| Risk-label or title manipulation | Derive risk from trusted changed-path/content facts and admitted scope; labels, titles and author claims cannot lower risk; unknown is blocked. |
+| Compromised or substituted CI/action identity | Bind required checks to exact HEAD and expected GitHub App IDs; pin third-party actions before any future workflow admission. No check status is created or changed here. |
+| Base/head race or time-of-check/time-of-use change | Re-read current main and PR head immediately before a decision; bind all evidence to full immutable SHAs; serialize merge and invalidate after any change. No merge is possible from this candidate. |
+| Secret leakage or excessive workflow permissions | No secrets, write token, provider credentials, or privileged workflow are used; keep a future implementation metadata-only and least-privilege. |
+
+This table is a read-only threat-model artifact for R0, not a tested implementation or assurance finding closure.
 
 ## Toolchain and GEF observation
 
@@ -48,6 +63,7 @@ No source fingerprint is stale. The candidate Context Lock anchors are bound to 
 - `npm run gef -- doctor --target . --json`: command succeeded, `effect=NONE`; checkpoint is present/readable/valid. Toolchain Node/platform/Git are healthy. Repository observability is a finding because this is a linked worktree (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`); dependency provenance is `REVIEW`/unverified.
 - `npm run gef -- status --target . --json`: command succeeded, `effect=NONE`; canonical state is M00 COMPLETE / 5%; no development projection. The operator snapshot is conservatively stale because the optional drift baseline is absent. This does not admit a Work Order.
 - GitHub PR snapshot file set was exactly four documentation/evidence files: the candidate Context Lock, candidate no-op checkpoint delta, candidate Evidence README and candidate Work Order. No source, workflow, package, checkpoint, provider, secret or ruleset file was changed.
+- After the first evidence update, CodeRabbit published a hosted review on exact candidate SHA `1984fc5c6fb5d3b877ac4a960b9119517b4ff0c6` with four threads: three current documentation findings (module-status conflict, checkpoint lineage/status wording, and dated ruleset provenance) and one outdated STOP-wording finding already corrected in that SHA. This R0-only correction updates the candidate Work Order, Context Lock, no-op delta, README and evidence; it does not adjudicate the source conflict or begin implementation. A fresh final-head review remains required.
 
 ## Risk / side effects / next legal action
 

@@ -4,13 +4,13 @@
 
 R0 evidence and the exact admission stop are recorded in [R0-PREFLIGHT.md](./R0-PREFLIGHT.md). The Owner authorized an isolated candidate, but the accepted source hierarchy and GEF ADR-0008 require an admitted active Work Order before a code PR. Issue #64 itself remains PROPOSED / NOT ADMITTED, and the canonical checkpoint has `activeWorkOrder=NONE`. Therefore this branch contains documentation/evidence only; source-code rounds did not begin.
 
-## Evidence provenance at branch initialization
+## Branch and ruleset provenance
 
 - Canonical main SHA `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`, `protected=true`.
-- Ruleset #24888106 active, no bypass, one distinct eligible GitHub approval + seven check contexts.
+- The persisted ruleset readback is saved in [RULESET-SNAPSHOT.json](./RULESET-SNAPSHOT.json). GitHub reports it created/last updated at `2026-10-11T15:23:15-03:00`, before PR #65 was created at `2026-10-11T21:52:22Z` and its initial commit `f319134` at `2026-10-11T21:52:03Z`. The snapshot was read at `2026-10-11T22:06:23Z`; it records active enforcement, `main` only, no bypass, one required approving review, and seven required contexts.
 - Parent Owner Solo policy PR #46 remains ELEVATED / NOT EFFECTIVE. No reviewer impersonation.
 - This branch contains candidate GEF documents ONLY, not the risk classifier/validator implementation or active workflow.
-- Module checkpoint remains M00 COMPLETE/5%, M01+M05 admitted and incomplete.
+- The current checkpoint records M00 COMPLETE/5% but contains conflicting M01/M05 admission evidence; see [R0-PREFLIGHT.md](./R0-PREFLIGHT.md). This proposal does not resolve or act on that conflict.
 
 ## Planned artifacts not executed because R0 stopped
 

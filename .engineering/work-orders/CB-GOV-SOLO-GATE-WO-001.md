@@ -10,7 +10,7 @@ Owner responded "Continue" immediately to the explicit question to approve #64. 
 
 Current main is protected by `coinblink-main-governance` ruleset #24888106 with one **distinct eligible human GitHub APPROVE**, six required CI check-runs + CodeRabbit; no bypass. An owner-only `COMMENTED` audit and a passing machine attestation do **not** satisfy the current GitHub reviewer requirement. PR #46 Owner Solo policy is ELEVATED and **NOT EFFECTIVE**. No account substitution or spoofing.
 
-Canonical application checkpoint: M00 COMPLETE/5%, M01 and M05 ADMITTED but incomplete, M02-M04 and M06-M17 NOT_ADMITTED, M18 FUTURE. The owner-facing M05 P0 static MOCK is HIGH_ASSURANCE inherited from its parent; no login/MFA/DB/vault/publishing. Preserve the official `.engineering/CHECKPOINT.json` unchanged.
+The machine checkpoint records M00 COMPLETE/5% and lists M01/M05 as ADMITTED, but its `moduleAdmissionEvidence` marks both `EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE`; live PRs #58/#59 remain OPEN and BLOCKED, while current Source Hierarchy/Scope/Architecture narratives still say M01-M17 are NOT_ADMITTED. This ELEVATED Work Order does not adjudicate that conflict or authorize any module implementation. Preserve all 19 IDs and the canonical checkpoint unchanged. M05 P0 remains HIGH_ASSURANCE / MOCK-only; no login/MFA/DB/vault/publishing is included.
 
 ## Exact path ownership
 

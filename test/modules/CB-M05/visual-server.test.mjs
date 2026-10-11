@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
+import { readFile } from "node:fs/promises";
 import { get } from "node:http";
 import { createServer } from "node:net";
 import test from "node:test";
@@ -43,8 +44,13 @@ test("a reachable stale process cannot satisfy Astro readiness before child orig
 
 test("Astro dev arguments require the requested port instead of silently choosing another", () => {
   assert.deepEqual(buildAstroDevArgs("astro.mjs", 4397), [
-    "astro.mjs", "dev", "--host", "127.0.0.1", "--port", "4397", "--strictPort",
+    "astro.mjs", "dev", "--host", "127.0.0.1", "--port", "4397",
   ]);
+});
+
+test("Astro fixture enables Vite strictPort through supported configuration", async () => {
+  const config = await readFile(new URL("./fixture/astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /vite\s*:\s*\{\s*server\s*:\s*\{\s*strictPort\s*:\s*true/su);
 });
 
 test("an Astro child that exits because strict binding failed cannot pass readiness", async () => {

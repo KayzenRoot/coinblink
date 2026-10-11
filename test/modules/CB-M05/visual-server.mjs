@@ -14,7 +14,7 @@ export async function allocateEphemeralPort() {
 }
 
 export function buildAstroDevArgs(astroCli, port) {
-  return [astroCli, "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"];
+  return [astroCli, "dev", "--host", "127.0.0.1", "--port", String(port)];
 }
 
 function childIsStillRunning(child) {

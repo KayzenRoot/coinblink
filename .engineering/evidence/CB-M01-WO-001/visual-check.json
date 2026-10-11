@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-11T12:19:23.105Z",
+  "generatedAt": "2026-10-11T13:44:54.796Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:65507",
+  "origin": "http://127.0.0.1:50099",
   "viewports": [
     {
       "name": "desktop",
@@ -48,7 +48,7 @@
           ]
         }
       ],
-      "screenshotSha256": "d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb"
+      "screenshotSha256": "cffc4ba6e2578efb473f55bdd189f1c1f394344538db38a289951bdc6c381cc3"
     },
     {
       "name": "mobile",
@@ -71,7 +71,7 @@
           ]
         }
       ],
-      "screenshotSha256": "f8edf1c9420b2521e38d54a21edb88efc420ee350df14e724a259ea5aa42155d"
+      "screenshotSha256": "30132155bebf1363d2b55c5bf43778d38938b0812e7ce258f869180c06efcbe5"
     }
   ],
   "interactionChecks": {
@@ -107,6 +107,18 @@
         "headerRegionsOverlap": false
       }
     ],
+    "trendingStrip": {
+      "mobile": {
+        "horizontallyScrollable": true,
+        "singleRow": true,
+        "visibleItems": 4
+      },
+      "tablet": {
+        "width": 1050,
+        "singleRow": true,
+        "visibleItems": 3
+      }
+    },
     "focusVisible": {
       "reachedByTab": true,
       "outlineStyle": "solid",
@@ -133,17 +145,17 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 69ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 105ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}"
   ]
 }

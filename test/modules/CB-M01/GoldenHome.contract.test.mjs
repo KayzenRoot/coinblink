@@ -4,6 +4,7 @@ import test from "node:test";
 
 const componentPath = new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url);
 const component = await readFile(componentPath, "utf8");
+const stylesheet = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
 const visualRunner = await readFile(new URL("./visual-check.mjs", import.meta.url), "utf8");
 const visualServer = await readFile(new URL("./visual-server.mjs", import.meta.url), "utf8");
 const fixtureConfig = await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs", import.meta.url), "utf8");
@@ -35,6 +36,13 @@ test("the component uses the immutable approved logo and does not flatten the Go
 
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
+});
+
+test("trending cards keep one tablet row and a horizontally scrollable mobile row", () => {
+  assert.match(stylesheet, /\.trending-strip \{ grid-template-columns:125px repeat\(3,minmax\(0,1fr\)\); \}/u);
+  assert.match(stylesheet, /\.trending-strip \{ grid-auto-flow:column; grid-auto-columns:minmax\(148px,1fr\); grid-template-columns:132px; overflow-x:auto; \}/u);
+  assert.match(visualRunner, /tablet title and three visible items must share one row/u);
+  assert.match(visualRunner, /mobile trending title and all items must remain on a single row/u);
 });
 
 test("the visual fixture uses and cleans only a per-run isolated temp directory", () => {

@@ -73,7 +73,7 @@ const results = [];
 const consoleErrors = [];
 const pageErrors = [];
 const externalRequests = [];
-const interactionChecks = { responsiveNavigation: [], focusVisible: null, categorySearch: null };
+const interactionChecks = { responsiveNavigation: [], trendingStrip: {}, focusVisible: null, categorySearch: null };
 let browser;
 let shutdownFailure;
 
@@ -123,6 +123,28 @@ try {
       return { viewport, document: globalThis.document.documentElement.scrollWidth, overflowing };
     });
     assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " horizontal overflow: " + JSON.stringify(dimensions));
+    if (viewport.name === "mobile") {
+      const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
+        const children = [...strip.children];
+        return {
+          clientWidth: strip.clientWidth,
+          scrollWidth: strip.scrollWidth,
+          childRects: children.map((child) => {
+            const rect = child.getBoundingClientRect();
+            return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
+          }),
+        };
+      });
+      assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
+      assert.equal(trendingLayout.childRects.length, 5, "mobile trending strip must show its title and all four items");
+      const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
+      const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
+      assert.ok(
+        mobileRowBottom > mobileRowTop,
+        "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
+      );
+      interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 4 };
+    }
     const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
     const pageAxe = await new AxeBuilder({ page }).analyze();
     const encodeViolations = (axe) => axe.violations.map((violation) => ({
@@ -143,6 +165,26 @@ try {
   for (const width of [850, 851, 1024, 1050, 1051]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(origin, { waitUntil: "networkidle" });
+    if (width > 760 && width <= 1050) {
+      const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
+        const title = strip.querySelector("h2").getBoundingClientRect();
+        const items = [...strip.querySelectorAll(".trend-item")]
+          .filter((item) => globalThis.getComputedStyle(item).display !== "none")
+          .map((item) => {
+            const rect = item.getBoundingClientRect();
+            return { left: rect.left, top: rect.top, bottom: rect.bottom };
+          });
+        return { title: { left: title.left, top: title.top, bottom: title.bottom }, items };
+      });
+      assert.equal(trendingLayout.items.length, 3, "tablet trending strip must show three items");
+      const tabletRowTop = Math.max(trendingLayout.title.top, ...trendingLayout.items.map((item) => item.top));
+      const tabletRowBottom = Math.min(trendingLayout.title.bottom, ...trendingLayout.items.map((item) => item.bottom));
+      assert.ok(
+        tabletRowBottom > tabletRowTop,
+        "tablet title and three visible items must share one row: " + JSON.stringify(trendingLayout),
+      );
+      interactionChecks.trendingStrip.tablet = { width, singleRow: true, visibleItems: 3 };
+    }
     const toggle = page.locator("[data-menu-toggle]");
     const nav = page.locator("#primary-nav");
     const links = nav.locator("a");

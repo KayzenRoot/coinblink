@@ -1,9 +1,16 @@
 {
-  "generatedAt": "2026-10-11T14:28:23.416Z",
+  "generatedAt": "2026-10-11T14:51:42.540Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "f8088016ffb904df6c6143deecb54f70fb86b436",
+  "headSha": "30b07789fab9b50161446665bcae9cb9d6b096ee",
+  "visualInputState": {
+    "status": "clean",
+    "paths": [
+      "src/modules/CB-M01",
+      "assets/reference"
+    ]
+  },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:61959",
+  "origin": "http://127.0.0.1:50137",
   "viewports": [
     {
       "name": "desktop",
@@ -79,25 +86,25 @@
     "responsiveNavigation": [
       {
         "width": 850,
-        "control": "menu toggle",
+        "control": "mouse and keyboard",
         "expandedStateVerified": true,
         "allLinksReachable": true
       },
       {
         "width": 851,
-        "control": "menu toggle",
+        "control": "mouse and keyboard",
         "expandedStateVerified": true,
         "allLinksReachable": true
       },
       {
         "width": 1024,
-        "control": "menu toggle",
+        "control": "mouse and keyboard",
         "expandedStateVerified": true,
         "allLinksReachable": true
       },
       {
         "width": 1050,
-        "control": "menu toggle",
+        "control": "mouse and keyboard",
         "expandedStateVerified": true,
         "allLinksReachable": true
       },
@@ -126,10 +133,11 @@
       "outlineWidth": 2
     },
     "categorySearch": {
-      "query": "Bitcoin",
-      "matchesCategory": "Bitcoin",
+      "bitcoin": 1,
+      "ethereum": 1,
+      "unmatched": 0,
       "selectedCategory": "All",
-      "matches": 1,
+      "resetCount": 1,
       "combinedCategoryFilterVerified": true
     },
     "unavailableNavigation": {
@@ -151,17 +159,17 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 47ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 70ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"

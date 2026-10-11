@@ -63,3 +63,9 @@ Final local validation after the correction used Node.js `v22.23.3`:
 - `git diff --check` — PASS.
 
 Fresh screenshot SHA-256 values: desktop `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` (578,591 bytes), tablet `d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb` (406,155 bytes), and mobile `fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d` (180,017 bytes). Exact-head CI, SonarCloud, independent review, `/en` route integration, Owner visual acceptance and checkpoint promotion remain pending.
+
+## Append-only exact-head CI and Sonar status correction · 2026-10-11
+
+This addendum corrects the earlier pending-status statements above without removing their historical timeline. GitHub run [#38118073331](https://github.com/KayzenRoot/coinblink/actions/runs/38118073331) completed successfully at exact SHA `20e3dee003f334724331a03552197c40eb88a73f`. The check-run API confirmed this same `head_sha` for all results: GEF validation on Ubuntu and Windows, Docker Compose smoke, SonarCloud Code Analysis, Socket Security Project Report, and Socket Security Pull Request Alerts all passed. The successful SonarCloud result supersedes the earlier pending status for this SHA and validates the S5443 correction on that exact candidate.
+
+CodeRabbit's check status was `success` only because the bot skipped review on this draft PR; it is not an independent code review. The independent audit of SHA `20e3dee` found this evidence-status drift and no code finding. This append-only documentation correction will produce a new commit and exact HEAD; run #38118073331 is evidence for `20e3dee` only, so CI/Sonar checks must be revalidated on the resulting SHA before claiming current-head success. GEF normal-clone observation, `/en` route integration, Owner visual acceptance, and checkpoint promotion remain pending.

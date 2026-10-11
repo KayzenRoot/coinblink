@@ -89,3 +89,7 @@ At the preceding SonarCloud snapshot on PR #58 SHA `86123eb`, 13 OPEN findings w
 ## Correction Delta local validation · 2026-10-11
 
 Node.js `v22.23.3` local verification: `npm test` passed (131 unit tests, build/no-binding guard, 7 E2E tests); lint, Astro typecheck and dependency audit passed (0 vulnerabilities). The M01 browser matrix passed at the three required viewports and five responsive navigation widths; keyboard focus, category-inclusive filtering, Axe (0 module violations), console and overflow checks passed. Existing screenshot hashes are unchanged. GEF doctor/status commands succeeded but the linked-worktree repository observation remains `FINDING/UNKNOWN`; it is not a clean-observation PASS. Hosted exact-head CI and the new review remain pending for the correction commit.
+
+## Normal-clone GEF readback · code commit SHA 91332e66cc77d0ab522367074b221478294799d2 · 2026-10-11
+
+A fresh ordinary clone at exact code commit `91332e66cc77d0ab522367074b221478294799d2` returned GEF 1.1.2 doctor/status exit 0; repository observation is HEALTHY, with no observation limits, and the status is observed CLEAN/no conflict. The previous linked-worktree finding is resolved for this code SHA. Because this addendum changes the PR head, repeat doctor/status and hosted checks against the resulting documentation commit.

@@ -11,7 +11,7 @@
       "verb": "doctor",
       "readOnly": true,
       "target": {
-        "targetRef": "C:\\Users\\csn19\\.codex\\worktrees\\coinblink-cb-m01-wo-001-impl-20261011",
+        "targetRef": "historical-linked-worktree-at-captured-head",
         "exists": true,
         "isDirectory": true
       },

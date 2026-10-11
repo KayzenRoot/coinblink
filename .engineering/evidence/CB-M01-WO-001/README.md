@@ -37,7 +37,7 @@ The immutable desktop Golden and the fresh desktop capture were also compared at
 - `npm run test:unit` — 125/125 passed after the glyph correction; the run also regenerated the final three screenshots and full-page Axe report.
 - `npm run lint`, `npm run typecheck`, `npm run build`, isolated Astro fixture build, and Golden integrity test passed in this worktree. Typecheck reports 52 files, 0 errors/warnings/hints. Build has no `SESSION` binding.
 - `gef doctor --target .` and `gef status --target .` completed read-only but are not PASS: this linked worktree reports repository observability `FINDING` / dirtiness `UNKNOWN` (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`) and conservative `operator.stale=true`. The Integration Steward will repeat them in a normal clone at the pushed exact SHA.
-- Raw read-only GEF outputs are retained in `gef-doctor.json` and `gef-status.json`.
+- Read-only GEF outputs are retained in `gef-doctor.json` and `gef-status.json`. Their historical `targetRef` values are normalized to logical identities to avoid publishing workstation paths; the recorded linked-worktree findings are unchanged.
 - Exact-head CI, independent review, Owner visual acceptance, `/en` integration, and checkpoint promotion are pending.
 
 ## Append-only publication state correction · 2026-10-11

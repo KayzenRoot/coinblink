@@ -18,13 +18,14 @@ async function createRepository(t) {
   execFileSync(gitExecutable, ["init", "--quiet", root], { stdio: "pipe" });
   execFileSync(gitExecutable, ["-C", root, "config", "user.name", "CoinBlink test"], { stdio: "pipe" });
   execFileSync(gitExecutable, ["-C", root, "config", "user.email", "coinblink-test@example.invalid"], { stdio: "pipe" });
+  execFileSync(gitExecutable, ["-C", root, "config", "commit.gpgSign", "true"], { stdio: "pipe" });
   for (const path of visualInputPaths) {
     const filePath = extname(path) ? join(root, path) : join(root, path, "fixture.txt");
     await mkdir(dirname(filePath), { recursive: true });
     await writeFile(filePath, "committed visual input\n", "utf8");
   }
   execFileSync(gitExecutable, ["-C", root, "add", "--all"], { stdio: "pipe" });
-  execFileSync(gitExecutable, ["-C", root, "-c", "user.name=CoinBlink test", "-c", "user.email=coinblink-test@example.invalid", "commit", "--quiet", "-m", "fixture"], { stdio: "pipe" });
+  execFileSync(gitExecutable, ["-C", root, "-c", "user.name=CoinBlink test", "-c", "user.email=coinblink-test@example.invalid", "-c", "commit.gpgSign=false", "commit", "--quiet", "-m", "fixture"], { stdio: "pipe" });
   return root;
 }
 

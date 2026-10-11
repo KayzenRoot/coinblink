@@ -12,12 +12,16 @@ test('global staged baseline preserves canonical CB-M01 admission and proposes o
   }
   assert.equal(isParallelAdrApproved(read('docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md')), true);
   const cp = JSON.parse(read('.engineering/CHECKPOINT.json'));
-  assert.equal(Object.keys(cp.checkpointFacts.moduleAdmission).length, 19);
+  const moduleIds = Array.from({ length: 19 }, (_, index) => 'CB-M' + String(index).padStart(2, '0'));
+  assert.deepEqual(Object.keys(cp.checkpointFacts.moduleAdmission).sort(), [...moduleIds].sort());
   assert.equal(cp.checkpointFacts.moduleAdmission['CB-M00'], 'ADMITTED');
   assert.equal(cp.checkpointFacts.applicationImplementation, 'M00_COMPLETE');
   assert.ok(Number.isInteger(cp.overallCompletionPercent) && cp.overallCompletionPercent >= 5, 'completed M00 progress cannot regress');
   assert.equal(Object.hasOwn(cp.checkpointFacts.moduleAdmission, cp.completedThroughModule), true, 'the completed-through module is registered');
   assert.equal(cp.checkpointFacts.moduleAdmission[cp.completedThroughModule], 'ADMITTED', 'only an admitted module can be completed');
+  const completedModuleIndex = moduleIds.indexOf(cp.completedThroughModule);
+  const expectedCompletionPercent = Math.floor(((completedModuleIndex + 1) / moduleIds.length) * 100);
+  assert.equal(cp.overallCompletionPercent, expectedCompletionPercent, 'completion percentage must match completed module count');
   if (cp.completedThroughModule === 'CB-M00') {
     assert.equal(cp.overallCompletionPercent, 5, 'admission alone never counts as completing a module');
   }

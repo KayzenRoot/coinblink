@@ -41,8 +41,11 @@ export function planParallelModules({ matrix, checkpoint, canonicalCheckpoint, c
   if (matrix.moduleCount !== 19 || matrix.modules.length !== 19) {
     throw new Error('Canonical module count is not the 19-module product catalog');
   }
-  if (!isRecord(canonicalCheckpoint)) {
-    throw new Error('Canonical main checkpoint readback is required; refusing module eligibility');
+  if (!isCoinBlinkCheckpoint(checkpoint)) {
+    throw new Error('Candidate checkpoint must use the CoinBlink schema v2 identity');
+  }
+  if (!isCoinBlinkCheckpoint(canonicalCheckpoint)) {
+    throw new Error('Canonical main checkpoint must use the CoinBlink schema v2 identity');
   }
   if (typeof canonicalMainSha !== 'string' || !/^[a-f0-9]{40}$/u.test(canonicalMainSha)) {
     throw new Error('Canonical main checkpoint SHA is missing or invalid');
@@ -67,8 +70,6 @@ export function planParallelModules({ matrix, checkpoint, canonicalCheckpoint, c
   }
   const facts = canonicalCheckpoint.checkpointFacts;
   const m00Done = canonicalCheckpoint.status === 'M00_COMPLETE'
-    && canonicalCheckpoint.completedThroughModule === 'CB-M00'
-    && canonicalCheckpoint.overallCompletionPercent === 5
     && facts.applicationImplementation === 'M00_COMPLETE'
     && facts.previewDeployment === 'PREVIEW_VERIFIED'
     && facts.moduleAdmission['CB-M00'] === 'ADMITTED';
@@ -154,6 +155,12 @@ const ARRAY_GATE_EVIDENCE_FIELDS = new Set(['externalGateApprovals', 'integratio
 /** Returns whether a JSON value is a non-null, non-array record. */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** Validates the fixed GEF project checkpoint identity used by this planner. */
+function isCoinBlinkCheckpoint(value) {
+  return isRecord(value) && value.schemaVersion === 2 && value.project === 'CoinBlink'
+    && isRecord(value.checkpointFacts);
 }
 
 /** Validates one explicit module gate value. */
@@ -275,7 +282,7 @@ export async function readCanonicalMainCheckpoint(fetchImplementation = fetch) {
       || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(encoded)) return null;
 
     const parsed = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
-    if (!isRecord(parsed) || !isRecord(parsed.checkpointFacts?.moduleAdmission)) return null;
+    if (!isCoinBlinkCheckpoint(parsed) || !isRecord(parsed.checkpointFacts.moduleAdmission)) return null;
     return { sha, checkpoint: parsed };
   } catch {
     return null;

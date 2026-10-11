@@ -46,6 +46,19 @@ test('M00 completion is read from canonical checkpoint, not historical proposal 
   assert.equal(plan.candidates.some(c => c.id === 'CB-M18'), false);
 });
 
+test('canonical M00 completion remains true after progress advances through M01', () => {
+  const advanced = structuredClone(checkpoint);
+  advanced.completedThroughModule = 'CB-M01';
+  advanced.overallCompletionPercent = 10;
+  advanced.progressBasis.overallCompletionPercent = 10;
+
+  const plan = planParallelModules({ matrix, checkpoint: advanced, resourceSlots: 4 });
+
+  assert.equal(plan.canonicalM00Complete, true);
+  assert.equal(plan.checkpointPercent, 10);
+  assert.equal(plan.unfinishedModuleCount, 18);
+});
+
 test('stale proposal cannot authorize app code after M00 is complete', () => {
   const altered = structuredClone(checkpoint);
   altered.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
@@ -180,6 +193,32 @@ test('canonical main checkpoint lookup is fixed, read-only, unauthenticated, and
   assert.equal(malformedCheckpoint, null);
 });
 
+test('canonical main checkpoint read rejects unsupported schema and foreign project identity', async () => {
+  const mainSha = 'e'.repeat(40);
+  const invalidCheckpoints = [
+    ['unsupported schema', value => { value.schemaVersion = 999; }],
+    ['foreign project', value => { value.project = 'OtherProject'; }],
+  ];
+
+  for (const [label, invalidate] of invalidCheckpoints) {
+    const invalidCheckpoint = structuredClone(checkpoint);
+    invalidate(invalidCheckpoint);
+    const result = await readCanonicalMainCheckpoint(async url => {
+      if (url.endsWith('/git/ref/heads/main')) {
+        return new Response(JSON.stringify({
+          ref: 'refs/heads/main', object: { type: 'commit', sha: mainSha },
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        type: 'file', path: '.engineering/CHECKPOINT.json', encoding: 'base64',
+        content: Buffer.from(JSON.stringify(invalidCheckpoint)).toString('base64'),
+      }), { status: 200 });
+    });
+
+    assert.equal(result, null, `${label} checkpoint must fail closed`);
+  }
+});
+
 test('never treat active module admission alone as dependency completion', () => {
   const altered = structuredClone(checkpoint);
   for (const id of ['CB-M01', 'CB-M02', 'CB-M03', 'CB-M04', 'CB-M05']) {
@@ -198,6 +237,22 @@ test('invalid module count, M18 admission and unsafe limits fail closed', () => 
   altered.checkpointFacts.moduleAdmission['CB-M18'] = 'ADMITTED';
   assert.throws(() => planParallelModules({ matrix, checkpoint: altered }), /M18/u);
   assert.throws(() => planParallelModules({ matrix, checkpoint, resourceSlots: -1 }), /non-negative integer/u);
+});
+
+test('planner rejects a candidate or canonical checkpoint with the wrong project schema', () => {
+  const unsupportedSchema = structuredClone(checkpoint);
+  unsupportedSchema.schemaVersion = 999;
+  assert.throws(
+    () => planParallelModules({ matrix, checkpoint: unsupportedSchema }),
+    /CoinBlink schema v2/u,
+  );
+
+  const foreignProject = structuredClone(checkpoint);
+  foreignProject.project = 'OtherProject';
+  assert.throws(
+    () => planParallelModules({ matrix, checkpoint, canonicalCheckpoint: foreignProject }),
+    /CoinBlink schema v2/u,
+  );
 });
 
 test('checkpoint admission registry matches the exact canonical module ID set', () => {
@@ -225,9 +280,10 @@ test('resource-aware authoring is not hard-capped to two agents', () => {
 
 test('M00 completion requires all canonical completion facts to agree', () => {
   const contradictions = [
+    value => { value.status = 'M00_IN_PROGRESS'; },
     value => { value.checkpointFacts.applicationImplementation = 'M00_P0_LOCAL_IMPLEMENTED_P1_PENDING'; },
+    value => { value.checkpointFacts.previewDeployment = 'NOT_DEPLOYED'; },
     value => { value.checkpointFacts.moduleAdmission['CB-M00'] = 'NOT_ADMITTED'; },
-    value => { value.overallCompletionPercent = 0; },
   ];
   for (const contradict of contradictions) {
     const altered = structuredClone(checkpoint);

@@ -97,4 +97,18 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
     0,
     `affected evergreen tests pass at synthetic future HEAD ${runGit(['rev-parse', 'HEAD']).toString().trim()}\n${childOutput}`,
   );
+
+  checkpoint.overallCompletionPercent = 5;
+  checkpoint.progressBasis.overallCompletionPercent = 5;
+  writeFileSync(checkpointPath, `${JSON.stringify(checkpoint, null, 2)}\n`);
+  const understated = spawnSync(process.execPath, ["--test", "test/global-v1-baseline.test.mjs"], {
+    cwd: checkout,
+    encoding: "utf8",
+    timeout: 120_000,
+    windowsHide: true,
+    env: childEnvironment,
+  });
+  const understatedOutput = `${understated.stdout}\n${understated.stderr}`;
+  assert.notEqual(understated.status, 0, 'the baseline rejects M01 completion recorded as only 5%');
+  assert.match(understatedOutput, /completion percentage must match completed module count/u);
 });

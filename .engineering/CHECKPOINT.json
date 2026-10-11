@@ -26,7 +26,7 @@
     "activeWorkOrder": "NONE",
     "moduleAdmission": {
       "CB-M00": "ADMITTED",
-      "CB-M01": "NOT_ADMITTED",
+      "CB-M01": "ADMITTED",
       "CB-M02": "NOT_ADMITTED",
       "CB-M03": "NOT_ADMITTED",
       "CB-M04": "NOT_ADMITTED",
@@ -46,12 +46,23 @@
       "CB-M18": "FUTURE_NOT_ADMITTED"
     },
     "moduleAdmissionEvidence": {
+      "CB-M01": {
+        "workOrder": "CB-M01-WO-001",
+        "contract": "docs/architecture/contracts/CB-M01.md",
+        "contextLock": ".engineering/context-locks/CB-M01-WO-001.md",
+        "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
+        "governanceMainSha": "e40d36b2a589596869eb296696e917f724d5be65",
+        "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
+        "externalGoldenGate": "ISSUE_5_CLOSED_AND_ORIGINAL_JPEGS_VERIFIED",
+        "scope": "P0-P2_GOLDEN_HOME_UI_AND_LOCAL_MOCK_SAFE_COMPONENTS"
+      },
       "CB-M05": {
         "workOrder": "CB-M05-WO-001",
         "contract": "docs/architecture/contracts/CB-M05.md",
         "contextLock": ".engineering/context-locks/CB-M05-WO-001.md",
         "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
         "governanceMainSha": "e40d36b2a589596869eb296696e917f724d5be65",
+        "synchronizedFromMainSha": "c4ba069f1dfaddc8273001950805e8a18125db66",
         "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
         "scope": "P0_STATIC_NON_PRIVILEGED_CMS_UI_MOCK_ONLY",
         "privilegedAuthVaultDatabaseCodeGate": "NOT_AUTHORIZED_UNTIL_SEPARATE_OWNER_APPROVED_SECURITY_DATA_ADR"

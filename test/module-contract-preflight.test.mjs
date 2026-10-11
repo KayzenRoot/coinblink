@@ -19,21 +19,23 @@ test('pre-admission contract draft never grants application-code authorization',
   assert.ok(plan.modules.every(m => !m.applicationCodeAuthorized && m.contractStatus === 'PROPOSED_NOT_ADOPTED'));
   for (const m of plan.modules) {
     const state = source.checkpointFacts.moduleAdmission[m.id];
-    assert.ok(['ADMITTED', 'NOT_ADMITTED'].includes(state), m.id);
+    assert.equal(state, 'ADMITTED', m.id + ' is an individually admitted candidate in this combined checkpoint delta');
     const contract = read(m.contractPath);
-    if (state === 'ADMITTED') {
-      const evidence = source.checkpointFacts.moduleAdmissionEvidence?.[m.id];
-      assert.equal(evidence?.workOrder, m.id + '-WO-001', m.id + ' needs its own admitted Work Order');
-      assert.ok(contract.includes(m.id), m.id + ' must own the matching contract');
-      if (m.id === 'CB-M05') {
-        assert.match(contract, /P0 fixture-based non-privileged CMS UI is authorized/u);
-        assert.match(contract, /P1 remain BLOCKED/u);
-      } else if (m.id === 'CB-M01') {
-        assert.match(contract, /Golden Home/u);
-        assert.match(contract, /original files|original Golden JPEGs|original JPEGs|Golden assets/u);
-      }
-    } else {
-      assert.match(contract, /Status:\*\* PROPOSED \/ NOT_APPROVED \/ NOT_ADMITTED \/ NON_EXECUTABLE/u);
+    const evidence = source.checkpointFacts.moduleAdmissionEvidence?.[m.id];
+    assert.equal(evidence?.workOrder, m.id + '-WO-001', m.id + ' needs its own admitted Work Order');
+    assert.equal(evidence?.contract, m.contractPath, m.id + ' needs its matching producer contract');
+    assert.equal(evidence?.contextLock, '.engineering/context-locks/' + m.id + '-WO-001.md', m.id + ' needs its frozen Context Lock');
+    assert.match(evidence?.status ?? '', /EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE/u);
+    assert.ok(contract.includes(m.id), m.id + ' must own the matching contract');
+    if (m.id === 'CB-M05') {
+      assert.match(contract, /P0 fixture-based non-privileged CMS UI is authorized/u);
+      assert.match(contract, /P1 remain BLOCKED/u);
+      assert.equal(evidence.scope, 'P0_STATIC_NON_PRIVILEGED_CMS_UI_MOCK_ONLY');
+      assert.equal(evidence.privilegedAuthVaultDatabaseCodeGate, 'NOT_AUTHORIZED_UNTIL_SEPARATE_OWNER_APPROVED_SECURITY_DATA_ADR');
+    } else if (m.id === 'CB-M01') {
+      assert.match(contract, /Golden Home/u);
+      assert.match(contract, /original files|original Golden JPEGs|original JPEGs|Golden assets/u);
+      assert.equal(evidence.scope, 'P0-P2_GOLDEN_HOME_UI_AND_LOCAL_MOCK_SAFE_COMPONENTS');
     }
   }
 });

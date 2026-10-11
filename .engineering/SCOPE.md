@@ -2,6 +2,14 @@
 
 **Status: OWNER_APPROVED_GLOBAL / FROZEN.**
 
+## Effective module-admission readback · 2026-10-11
+
+**Current protected main at 07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c:** Exactly 19 module IDs, M00 COMPLETE / 5% (last completed), M01 ADMITTED within reviewed Golden Home/local-safe scope, and M05 ADMITTED **only P0 static nonprivileged CMS MOCK / SECURITY DISABLED**. M02–M04 and M06–M17 are NOT_ADMITTED; M18 is FUTURE_NOT_ADMITTED. `activeWorkOrder=NONE`; no M01/M05 implementation is DONE. Admission PR #56 merged as `c4ba069f1dfaddc8273001950805e8a18125db66`; PR #57 merged as `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The checkpoint's `EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE` was a historical condition satisfied by those admission merges, not a completion claim. Implementation PR #58/#59 remain OPEN. M05 P1 auth/session/MFA/DB/vault, paid resources, production and additional module code require their own approvals.
+
+**Chronology:** Any older lines below claiming M01–M17 NOT_ADMITTED are dated M00-only or global-staging baseline statements from 2026-10-08/10, preserved as historical evidence. They are **not the current effective module-admission map** and do not override the machine checkpoint. This source clarification does not itself admit new work or change 5%.
+
+## Historical original staged-baseline wording (before M01/M05 admissions)
+
 This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
 
 ## Approved staging and product boundary

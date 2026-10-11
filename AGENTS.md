@@ -1,8 +1,14 @@
 # CoinBlink · Agent Operating Contract
 
+## Effective module-admission readback · 2026-10-11
+
+**Current protected main at 07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c:** Exactly 19 module IDs, M00 COMPLETE / 5% (last completed), M01 ADMITTED within reviewed Golden Home/local-safe scope, and M05 ADMITTED **only P0 static nonprivileged CMS MOCK / SECURITY DISABLED**. M02–M04 and M06–M17 are NOT_ADMITTED; M18 is FUTURE_NOT_ADMITTED. `activeWorkOrder=NONE`; no M01/M05 implementation is DONE. Admission PR #56 merged as `c4ba069f1dfaddc8273001950805e8a18125db66`; PR #57 merged as `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The checkpoint's `EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE` was a historical condition satisfied by those admission merges, not a completion claim. Implementation PR #58/#59 remain OPEN. M05 P1 auth/session/MFA/DB/vault, paid resources, production and additional module code require their own approvals.
+
+**Chronology:** Any older lines below claiming M01–M17 NOT_ADMITTED are dated M00-only or global-staging baseline statements from 2026-10-08/10, preserved as historical evidence. They are **not the current effective module-admission map** and do not override the machine checkpoint. This source clarification does not itself admit new work or change 5%.
+
 GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2. The local M00 P0 foundation is merged.
 
-## M00 checkpoint promotion · Owner go/no-go 2026-10-10
+## Historical M00 checkpoint promotion snapshot · Owner go/no-go 2026-10-10
 
 **Effective only on merge of the reviewed checkpoint-promotion PR:** `.engineering/CHECKPOINT.json` now projects `M00_COMPLETE`, `completedThroughModule=CB-M00`, `previewDeployment=PREVIEW_VERIFIED`, `activeWorkOrder=NONE`, overall **5%** (`floor(1 / 19 × 100)`). The Owner explicitly directed immediate finalization and movement out of the zero checkpoint in this conversation on 2026-10-10; this final M00-only promotion uses the [audited closeout evidence merged in PR #50](https://github.com/KayzenRoot/coinblink/pull/50) at main `9379bc22569d0e1ce391079a56f3147cfaa9f0f6`, [protected Preview run #38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) for unchanged app/build SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`, and authenticated read-only provider binding inventory `ASSETS` only. The M00 demo-only screenshots were accepted; **no claim of Golden Home M01 fidelity**. Docker local `coinblink-local` is healthy on 127.0.0.1:3187 per candidate evidence. Final exact-head CI/audit must pass before merge.
 

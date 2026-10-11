@@ -1,5 +1,7 @@
 # CoinBlink · Decisions Ledger (working, 2026-10-08)
 
+**Current admission status (2026-10-11):** M00 COMPLETE/5%, M01 and M05 ADMITTED only within their reviewed scopes (M05 P0 MOCK only), M02–M04/M06–M17 NOT_ADMITTED, M18 FUTURE_NOT_ADMITTED. Historical ledger rows retain the state at their original dates; see CB-DEC-048 below.
+
 This register **preserves the exact distinction between owner-approved direction, candidate approaches, and unapproved planning**. It does not substitute GEF governance, signed ADRs, Scope or DoD. Canonical engineering documentation and identifiers use English; historical planning and the source Visual Bible are intentionally kept in Brazilian Portuguese without rewriting owner-approved source.
 
 | ID | Topic | State | Current authority / details |
@@ -83,3 +85,9 @@ This register **preserves the exact distinction between owner-approved direction
 |---|---|---|---|
 | CB-DEC-046 | First functional CoinBlink V1 milestone | OWNER CONFIRMED STAGED DIRECTION; EFFECTIVE ON GOVERNED MERGE | Owner replied Continue immediately after the explicit proposal to prioritize immutable Golden Home M01, secure single-human-Owner CMS M05, and a genuinely source-backed article path M02/M03 as the first working beta. All 19 planned modules remain, M18 future. Security/backend/provider choices are separately gated and must not be inferred from this priority decision. |
 | CB-DEC-047 | Parallel Codex Desktop LOCAL delivery | OWNER REPEATEDLY AUTHORIZED DELIVERY MODEL; ADR EFFECTIVE ON GOVERNED MERGE | Maximum realistic independent admitted module agents, each in own worktree/branch/WO/Context Lock/PR; separate Integration Steward for shared files, CodeRabbit/CI/GEF exact-head review and serial main merges. A resource-aware planner reports candidates only. Existing Workers Free and informational US$10 alert remain. No unadmitted app code, secret exposure or paid operations. |
+
+## Verified admission merge readback · 2026-10-11
+
+| ID | Topic | State | Evidence / boundary |
+|---|---|---|---|
+| CB-DEC-048 | Effective module admissions after governed #56/#57 merges | VERIFIED EXISTING STATE, NOT NEW OWNER PRODUCT POLICY | PR #56 merged at `c4ba069f1dfaddc8273001950805e8a18125db66`; PR #57 merged at `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. Machine checkpoint: M00 COMPLETE/5%; M01 ADMITTED, M05 ADMITTED only P0 MOCK/SECURITY DISABLED, remaining M02–M04/M06–M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED; `activeWorkOrder=NONE`. Implementation PRs #58/#59 OPEN, NOT DONE. Older pre-admission rows are historical. No change to Issue #6, CB-DEC-044, protected rules, real auth, provider or production approvals. |

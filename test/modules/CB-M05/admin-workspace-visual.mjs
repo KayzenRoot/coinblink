@@ -156,7 +156,15 @@ try {
   await browser?.close();
   if (server.exitCode === null) {
     server.kill("SIGTERM");
-    await Promise.race([new Promise((resolve) => server.once("exit", resolve)), delay(5000)]);
+    const cleanupTimer = new AbortController();
+    try {
+      await Promise.race([
+        new Promise((resolve) => server.once("exit", resolve)),
+        delay(5000, undefined, { signal: cleanupTimer.signal }),
+      ]);
+    } finally {
+      cleanupTimer.abort();
+    }
     if (server.exitCode === null) server.kill("SIGKILL");
   }
 }

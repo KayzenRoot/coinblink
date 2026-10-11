@@ -17,6 +17,25 @@ export function buildAstroDevArgs(astroCli, port) {
   return [astroCli, "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort"];
 }
 
+export async function cleanupVisualFixture({ browser, server }) {
+  try {
+    await browser?.close();
+  } finally {
+    if (server.exitCode === null) {
+      server.kill("SIGTERM");
+      const cleanupTimer = new AbortController();
+      try {
+        await Promise.race([
+          new Promise((resolve) => server.once("exit", resolve)),
+          delay(5000, undefined, { signal: cleanupTimer.signal }),
+        ]);
+      } finally {
+        cleanupTimer.abort();
+      }
+      if (server.exitCode === null) server.kill("SIGKILL");
+    }
+  }
+}
 function stripTerminalEscapes(output) {
   let normalized = "";
   for (let index = 0; index < output.length; index += 1) {

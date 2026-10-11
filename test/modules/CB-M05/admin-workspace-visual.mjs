@@ -4,12 +4,11 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
-import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { chromium } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
-import { allocateEphemeralPort, buildAstroDevArgs, waitForAstroServer } from "./visual-server.mjs";
+import { allocateEphemeralPort, buildAstroDevArgs, cleanupVisualFixture, waitForAstroServer } from "./visual-server.mjs";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(testDirectory, "../../..");
@@ -155,18 +154,5 @@ try {
   console.error(serverOutput);
   throw error;
 } finally {
-  await browser?.close();
-  if (server.exitCode === null) {
-    server.kill("SIGTERM");
-    const cleanupTimer = new AbortController();
-    try {
-      await Promise.race([
-        new Promise((resolve) => server.once("exit", resolve)),
-        delay(5000, undefined, { signal: cleanupTimer.signal }),
-      ]);
-    } finally {
-      cleanupTimer.abort();
-    }
-    if (server.exitCode === null) server.kill("SIGKILL");
-  }
+  await cleanupVisualFixture({ browser, server });
 }

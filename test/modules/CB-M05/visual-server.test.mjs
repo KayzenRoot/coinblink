@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import { get } from "node:http";
 import { createServer } from "node:net";
 import test from "node:test";
-import { buildAstroDevArgs, childAnnouncedOrigin, waitForAstroServer } from "./visual-server.mjs";
+import { buildAstroDevArgs, childAnnouncedOrigin, cleanupVisualFixture, waitForAstroServer } from "./visual-server.mjs";
 
 function httpGet(url, { signal }) {
   return new Promise((resolve, reject) => {
@@ -161,4 +162,27 @@ test("a child exit while its probe is pending cannot be masked by a later HTTP 2
 test("child origin matching ignores terminal color escapes but requires Astro's Local line", () => {
   assert.equal(childAnnouncedOrigin("\u001B[36m┃ Local http://127.0.0.1:4397/\u001B[39m", "http://127.0.0.1:4397"), true);
   assert.equal(childAnnouncedOrigin("worker says http://127.0.0.1:4397/", "http://127.0.0.1:4397"), false);
+});
+
+test("Astro shutdown runs even when Chromium close rejects", async () => {
+  const child = new EventEmitter();
+  child.exitCode = null;
+  child.signalCode = null;
+  const signals = [];
+  child.kill = (signal) => {
+    signals.push(signal);
+    if (signal === "SIGTERM") {
+      setImmediate(() => {
+        child.exitCode = 0;
+        child.emit("exit", 0, null);
+      });
+    }
+    return true;
+  };
+  const browserError = new Error("Chromium close failed");
+  const browser = { close: async () => { throw browserError; } };
+
+  await assert.rejects(cleanupVisualFixture({ browser, server: child }), browserError);
+  assert.deepEqual(signals, ["SIGTERM"], "Astro receives graceful termination after browser cleanup fails");
+  assert.equal(child.exitCode, 0, "Astro exit is observed before cleanup completes");
 });

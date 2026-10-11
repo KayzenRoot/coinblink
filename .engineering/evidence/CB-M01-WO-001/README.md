@@ -203,6 +203,14 @@ After the correction, `npm test` passed (136 unit tests, build/no-binding guard 
 
 The completed local CodeRabbit deep review of `bbded31fbdec2443446c24eb5e9779bc3b189da7` reported 0 issues after the report-invalidation correction. It reviewed the code and evidence paths while excluding the five PNG assets from textual analysis. This review preceded this documentation-only note; hosted exact-head checks and Owner audit remain pending.
 
+## Local CodeRabbit mobile-menu correction · 2026-10-11
+
+The local deep review on `d6cec21` raised two duplicate MINOR comments for one behavior: choosing a mobile navigation link left the menu expanded. Added a Playwright regression that opens the mobile menu, selects Tools, and verifies `aria-expanded=false` and the closed nav; it failed before the component change and passes now. The link handler closes only an expanded menu and leaves the existing toggle behavior intact.
+
+On Node 22.23.3, final `npm test` passed (137 unit tests, Astro build/no-binding guard, E2E 7/7); lint passed; typecheck passed (53 files, 0 errors/warnings/hints); npm audit found 0 vulnerabilities. The regenerated M01 visual report is `status: passed` for code HEAD `f8088016ffb904df6c6143deecb54f70fb86b436`, base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; it records menu closure and Tools/Videos status navigation, 0 module Axe violations, no browser errors, external requests or document overflow. The inherited full-page `.skip-link` region finding remains Steward-owned. Desktop/tablet/mobile screenshot hashes are unchanged from the table. Golden originals, manifest, Context Lock and fingerprints remain unchanged.
+
+The implementation and tests are within CB-M01. The evidence append must be followed by exact-head hosted checks and final review; PR #58 remains draft/open, with route integration, Owner audit and checkpoint progression still pending.
+
 ## Local CodeRabbit evidence-table correction · 2026-10-11
 
 The local deep review of HEAD 36a535e raised minor evidence findings: the Fresh captures table still contained predecessor tablet/mobile hashes, and a historical Work Order heading did not identify its d3dbecb evidence commit. The table now matches the committed 768×1024 and 390×844 PNGs, and the heading is uniquely labeled. The review's additional concern about the Context Lock blob was checked deterministically: git rev-parse at frozen base 07f31d8 returns 75e155ae8d4bd6886dc565cf8841f1d64938f6d4 for .engineering/context-locks/CB-M01-WO-001.md, exactly matching the documented pre-refresh source blob. It remains unchanged; the current source blob is a separate later value. No fingerprint was fabricated or rewritten.

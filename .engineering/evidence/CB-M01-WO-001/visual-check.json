@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-11T14:16:51.696Z",
+  "generatedAt": "2026-10-11T14:28:23.416Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "b7d2ba65fda4dbfe04b9124e2b19a735d89dea6b",
+  "headSha": "f8088016ffb904df6c6143deecb54f70fb86b436",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:52678",
+  "origin": "http://127.0.0.1:61959",
   "viewports": [
     {
       "name": "desktop",
@@ -144,23 +144,24 @@
     "noScriptNewsletter": {
       "addressSerialized": false,
       "javascriptEnabled": false
-    }
+    },
+    "mobileNavigationLinkCloses": true
   },
   "consoleErrors": [],
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 42ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 47ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"

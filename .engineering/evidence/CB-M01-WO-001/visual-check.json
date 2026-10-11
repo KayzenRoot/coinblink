@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-11T06:24:43.060Z",
+  "generatedAt": "2026-10-11T11:36:56.836Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:55034",
+  "origin": "http://127.0.0.1:60233",
   "viewports": [
     {
       "name": "desktop",
@@ -74,19 +74,67 @@
       "screenshotSha256": "fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d"
     }
   ],
+  "interactionChecks": {
+    "responsiveNavigation": [
+      {
+        "width": 850,
+        "control": "menu toggle",
+        "expandedStateVerified": true,
+        "allLinksReachable": true
+      },
+      {
+        "width": 851,
+        "control": "menu toggle",
+        "expandedStateVerified": true,
+        "allLinksReachable": true
+      },
+      {
+        "width": 1024,
+        "control": "menu toggle",
+        "expandedStateVerified": true,
+        "allLinksReachable": true
+      },
+      {
+        "width": 1050,
+        "control": "menu toggle",
+        "expandedStateVerified": true,
+        "allLinksReachable": true
+      },
+      {
+        "width": 1051,
+        "control": "inline navigation",
+        "allLinksVisible": true,
+        "headerRegionsOverlap": false
+      }
+    ],
+    "focusVisible": {
+      "reachedByTab": true,
+      "outlineStyle": "solid",
+      "outlineWidth": 2
+    },
+    "categorySearch": {
+      "query": "Bitcoin",
+      "matchesCategory": "Bitcoin",
+      "selectedCategory": "All",
+      "matches": 1,
+      "combinedCategoryFilterVerified": true
+    }
+  },
   "consoleErrors": [],
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"connected.\",\"label\":\"vite\",\"level\":\"info\"}",
-    "{\"message\":\"Generated 2ms\",\"label\":\"types\",\"level\":\"info\"}",
-    "{\"message\":\"connected.\",\"label\":\"vite\",\"level\":\"info\"}",
-    "{\"message\":\" astro  v7.3.8 ready in 2024 ms\\n┃ Local    http://127.0.0.1:55034/\",\"label\":\"SKIP_FORMAT\",\"level\":\"info\"}",
     "{\"message\":\"watching for file changes...\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 62ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 84ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}"
   ]
 }

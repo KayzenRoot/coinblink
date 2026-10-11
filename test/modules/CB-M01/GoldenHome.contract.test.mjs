@@ -5,6 +5,7 @@ import test from "node:test";
 const componentPath = new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url);
 const component = await readFile(componentPath, "utf8");
 const visualRunner = await readFile(new URL("./visual-check.mjs", import.meta.url), "utf8");
+const visualServer = await readFile(new URL("./visual-server.mjs", import.meta.url), "utf8");
 const fixtureConfig = await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs", import.meta.url), "utf8");
 
 test("GoldenHome exposes the approved semantic page seam", () => {
@@ -38,12 +39,16 @@ test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mar
 test("the visual fixture uses and cleans only a per-run isolated temp directory", () => {
   assert.match(visualRunner, /mkdtemp\(join\(tmpdir\(\), "coinblink-m01-fixture-"\)\)/);
   assert.match(visualRunner, /M01_FIXTURE_TEMP_DIR: fixtureTempRoot/);
-  assert.match(visualRunner, /rm\(fixtureTempRoot, \{ recursive: true, force: true \}\)/);
   assert.match(visualRunner, /async function waitForChildExit\(child, timeoutMs\)/);
   assert.match(visualRunner, /setTimeout\(\(\) => finish\(false\), timeoutMs\)/);
   assert.match(visualRunner, /child\.kill\("SIGKILL"\)/);
   assert.match(visualRunner, /if \(!serverStopped\)[\s\S]*isolated directory was retained/);
-  assert.match(visualRunner, /if \(!server \|\| server\.exitCode !== null \|\| server\.signalCode !== null\)[\s\S]*rm\(fixtureTempRoot/);
+  assert.match(visualRunner, /removeFixtureTempRootAfterExit\(server, fixtureTempRoot\)/);
+  assert.match(visualServer, /export async function waitForFixtureReady/);
+  assert.match(visualServer, /Promise\.race\([\s\S]*controller\.signal/);
+  assert.match(visualServer, /remainingMs/);
+  assert.match(visualServer, /assertFixtureRunning\(child\)/);
+  assert.match(visualServer, /export async function removeFixtureTempRootAfterExit/);
   assert.doesNotMatch(visualRunner, /process\.env\.(?:TEMP|TMP)/);
   assert.match(visualRunner, /\.engineering.*CB-M01-WO-001.*astro-fixture\.config\.mjs/);
   assert.match(fixtureConfig, /if \(!fixtureTempDir \|\| !isAbsolute\(fixtureTempDir\)\)/);

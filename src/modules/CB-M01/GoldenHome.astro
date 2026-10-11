@@ -150,7 +150,8 @@ const stories = [
     let visible = 0;
     cards.forEach((card) => {
       const matchesCategory = selected === "All" || card.getAttribute("data-category-value") === selected;
-      const matchesQuery = !query || card.textContent.toLowerCase().includes(query);
+      const searchableText = (card.getAttribute("data-category-value") ?? "") + " " + card.textContent;
+      const matchesQuery = !query || searchableText.toLowerCase().includes(query);
       card.hidden = !(matchesCategory && matchesQuery);
       if (!card.hidden) visible += 1;
     });

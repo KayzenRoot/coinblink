@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
+import { removeFixtureTempRootAfterExit, waitForFixtureReady } from "./visual-server.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const astroCli = join(repoRoot, "node_modules", "astro", "bin", "astro.mjs");
@@ -61,22 +62,18 @@ let serverOutput = "";
 let server;
 
 async function waitUntilReady() {
-  const deadline = Date.now() + 45_000;
-  while (Date.now() < deadline) {
-    if (server.exitCode !== null) throw new Error("Astro fixture exited: " + serverOutput);
-    try {
-      const response = await fetch(origin);
-      if (response.ok) return;
-    } catch { /* The Astro server is still starting. */ }
-    await delay(250);
+  try {
+    await waitForFixtureReady({ child: server, origin });
+  } catch (error) {
+    throw new Error(error.message + ". Output: " + serverOutput, { cause: error });
   }
-  throw new Error("Astro fixture did not become ready: " + serverOutput);
 }
 
 const results = [];
 const consoleErrors = [];
 const pageErrors = [];
 const externalRequests = [];
+const interactionChecks = { responsiveNavigation: [], focusVisible: null, categorySearch: null };
 let browser;
 let shutdownFailure;
 
@@ -92,6 +89,12 @@ try {
   });
   server.stdout.on("data", (chunk) => { serverOutput += chunk.toString(); });
   server.stderr.on("data", (chunk) => { serverOutput += chunk.toString(); });
+  try {
+    await once(server, "spawn");
+  } catch (error) {
+    serverOutput += `Astro fixture spawn failed: ${error.message}`;
+    throw error;
+  }
   await waitUntilReady();
   await mkdir(evidenceDir, { recursive: true });
   browser = await chromium.launch({ headless: true });
@@ -137,6 +140,59 @@ try {
     await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
   }
 
+  for (const width of [850, 851, 1024, 1050, 1051]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(origin, { waitUntil: "networkidle" });
+    const toggle = page.locator("[data-menu-toggle]");
+    const nav = page.locator("#primary-nav");
+    const links = nav.locator("a");
+    if (width <= 1050) {
+      assert.equal(await toggle.isVisible(), true, `navigation toggle must be available at ${width}px`);
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+      assert.equal(await nav.isVisible(), false, `collapsed navigation must stay closed at ${width}px`);
+      await toggle.click();
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(await links.count(), 8);
+      for (let index = 0; index < await links.count(); index += 1) {
+        assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be reachable at ${width}px`);
+      }
+      interactionChecks.responsiveNavigation.push({ width, control: "menu toggle", expandedStateVerified: true, allLinksReachable: true });
+      await toggle.click();
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+    } else {
+      assert.equal(await toggle.isVisible(), false, "desktop navigation does not use a hidden menu toggle");
+      assert.equal(await nav.isVisible(), true);
+      assert.equal(await links.count(), 8);
+      for (let index = 0; index < await links.count(); index += 1) {
+        assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be visible at ${width}px`);
+      }
+      const headerRects = await page.evaluate(() => [".brand", "#primary-nav", ".header-tools"].map((selector) => {
+        const rect = globalThis.document.querySelector(selector).getBoundingClientRect();
+        return { selector, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+      }));
+      for (let index = 1; index < headerRects.length; index += 1) {
+        assert.ok(headerRects[index - 1].right <= headerRects[index].left + 1, `header regions overlap at ${width}px: ${JSON.stringify(headerRects)}`);
+      }
+      interactionChecks.responsiveNavigation.push({ width, control: "inline navigation", allLinksVisible: true, headerRegionsOverlap: false });
+    }
+  }
+
+  await page.setViewportSize({ width: 1536, height: 864 });
+  await page.goto(origin, { waitUntil: "networkidle" });
+  let searchReachedByKeyboard = false;
+  for (let step = 0; step < 20 && !searchReachedByKeyboard; step += 1) {
+    await page.keyboard.press("Tab");
+    searchReachedByKeyboard = await page.evaluate(() => globalThis.document.activeElement === globalThis.document.querySelector("[data-news-search]"));
+  }
+  assert.equal(searchReachedByKeyboard, true, "keyboard Tab must reach the visible search input");
+  const searchFocusStyle = await page.locator("[data-news-search]").evaluate((input) => ({
+    outlineStyle: globalThis.getComputedStyle(input).outlineStyle,
+    outlineWidth: Number.parseFloat(globalThis.getComputedStyle(input).outlineWidth),
+  }));
+  assert.notEqual(searchFocusStyle.outlineStyle, "none", "keyboard focus must retain a visible outline");
+  assert.ok(searchFocusStyle.outlineWidth >= 2, `keyboard focus outline must be at least 2px: ${JSON.stringify(searchFocusStyle)}`);
+  interactionChecks.focusVisible = { reachedByTab: true, ...searchFocusStyle };
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(origin, { waitUntil: "networkidle" });
   const menu = page.locator("[data-menu-toggle]");
@@ -150,6 +206,14 @@ try {
   await page.locator("[data-news-search]").fill("no matching placeholder");
   assert.equal(await page.locator("[data-news-card]:visible").count(), 0);
   await page.locator("[data-category='All']").click();
+  await page.locator("[data-news-search]").fill("Bitcoin");
+  assert.equal(await page.locator("[data-news-card]:visible").count(), 1, "category labels are included in local search");
+  assert.equal(await page.locator("[data-news-card]:visible").getAttribute("data-category-value"), "Bitcoin");
+  await page.locator("[data-category='Ethereum']").click();
+  assert.equal(await page.locator("[data-news-card]:visible").count(), 0, "category selection remains combined with search");
+  await page.locator("[data-category='All']").click();
+  assert.equal(await page.locator("[data-news-card]:visible").count(), 1, "All restores the category-inclusive query results");
+  interactionChecks.categorySearch = { query: "Bitcoin", matchesCategory: "Bitcoin", selectedCategory: "All", matches: 1, combinedCategoryFilterVerified: true };
   await page.locator("[data-news-search]").clear();
   assert.equal(await page.locator("[data-news-card]:visible").count(), 4);
   await page.locator("#demo-email").fill("owner@example.invalid");
@@ -174,12 +238,13 @@ try {
   } catch (error) {
     shutdownFailure ??= error;
   }
-  if (!server || server.exitCode !== null || server.signalCode !== null) {
-    try {
-      await rm(fixtureTempRoot, { recursive: true, force: true });
-    } catch (error) {
-      shutdownFailure ??= error;
+  try {
+    const fixtureRemoved = await removeFixtureTempRootAfterExit(server, fixtureTempRoot);
+    if (!fixtureRemoved) {
+      shutdownFailure = new Error("Astro fixture exit was not confirmed; isolated directory was retained at " + fixtureTempRoot + ". Output: " + serverOutput);
     }
+  } catch (error) {
+    shutdownFailure ??= error;
   }
 }
 if (shutdownFailure) throw shutdownFailure;
@@ -196,6 +261,7 @@ const report = {
   fixture: "isolated Astro fixture; no shared /en route integration",
   origin,
   viewports: results,
+  interactionChecks,
   consoleErrors,
   pageErrors,
   externalRequests,

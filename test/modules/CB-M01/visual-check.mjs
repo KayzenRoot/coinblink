@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import { execFileSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -9,6 +9,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
+import { readGitHead } from "./git-head.mjs";
 import {
   clearVisualCheckReport,
   removeFixtureTempRootAfterExit,
@@ -33,7 +34,7 @@ let port;
 let fixtureTempRoot;
 
 try {
-  headSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim();
+  headSha = await readGitHead(repoRoot);
   port = await availablePort();
   origin = "http://127.0.0.1:" + port;
   fixtureTempRoot = await mkdtemp(join(tmpdir(), "coinblink-m01-fixture-"));

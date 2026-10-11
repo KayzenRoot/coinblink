@@ -50,11 +50,12 @@ test("mobile navigation closes after selecting a link", () => {
 
 test("visual evidence records the frozen base separately from the captured HEAD", () => {
   assert.match(visualRunner, /const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";/u);
-  assert.match(visualRunner, /headSha = execFileSync\("git", \["rev-parse", "HEAD"\], \{ cwd: repoRoot, encoding: "utf8" \}\)\.trim\(\);/u);
+  assert.match(visualRunner, /headSha = await readGitHead\(repoRoot\);/u);
+  assert.doesNotMatch(visualRunner, /execFileSync\("git"/u);
   assert.match(visualRunner, /baseSha,\s*headSha,/u);
   const clearReport = visualRunner.indexOf("await clearVisualCheckReport(reportPath)");
   assert.ok(clearReport >= 0, "each run must invalidate old evidence");
-  for (const initialization of ["execFileSync(\"git\"", "await availablePort()", "await mkdtemp("]) {
+  for (const initialization of ["await readGitHead(repoRoot)", "await availablePort()", "await mkdtemp("]) {
     assert.ok(clearReport < visualRunner.indexOf(initialization), "stale evidence must clear before " + initialization);
   }
   assert.match(visualRunner, /catch \(error\) \{\s*await writeVisualCheckFailure\(reportPath,/u);

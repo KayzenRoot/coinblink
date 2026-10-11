@@ -1,16 +1,32 @@
 {
-  "generatedAt": "2026-10-11T14:51:42.540Z",
+  "generatedAt": "2026-10-11T15:10:13.628Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "30b07789fab9b50161446665bcae9cb9d6b096ee",
+  "headSha": "d8f6aa605eea11d2ff700c9d0ad8007f431ecc71",
   "visualInputState": {
     "status": "clean",
     "paths": [
       "src/modules/CB-M01",
-      "assets/reference"
+      "src/layouts/BaseLayout.astro",
+      "src/styles/global.css",
+      "assets/reference",
+      "test/modules/CB-M01/fixture/src",
+      ".engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs",
+      "test/modules/CB-M01/visual-check.mjs",
+      "test/modules/CB-M01/visual-server.mjs",
+      "test/modules/CB-M01/visual-input-state.mjs",
+      "test/modules/CB-M01/visual-request-origin.mjs",
+      "test/modules/CB-M01/git-head.mjs",
+      "test/modules/CB-M01/GoldenHome.contract.test.mjs",
+      "test/modules/CB-M01/visual-server.test.mjs",
+      "test/modules/CB-M01/visual-input-state.test.mjs",
+      "test/modules/CB-M01/visual-request-origin.test.mjs",
+      "test/modules/CB-M01/git-head.test.mjs",
+      "package.json",
+      "package-lock.json"
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:50137",
+  "origin": "http://127.0.0.1:59378",
   "viewports": [
     {
       "name": "desktop",
@@ -159,18 +175,18 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 70ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 66ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"
 }

@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { isAbsolute, win32 } from "node:path";
+import { isAbsolute } from "node:path";
 
 export const visualInputPaths = Object.freeze(["src/modules/CB-M01", "assets/reference"]);
 

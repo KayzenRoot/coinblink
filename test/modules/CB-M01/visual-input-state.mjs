@@ -32,7 +32,7 @@ export function resolveGitExecutable({ platform = process.platform, fileExists =
       "C:\\Program Files (x86)\\Git\\bin\\git.exe",
     ]
     : ["/usr/bin/git", "/bin/git", "/usr/local/bin/git"];
-  const resolved = candidates.find(fileExists);
+  const resolved = candidates.find((candidate) => fileExists(candidate));
   if (resolved) return resolved;
   throw new Error("Git was not found at a fixed system location; visual evidence cannot be bound to a clean HEAD");
 }

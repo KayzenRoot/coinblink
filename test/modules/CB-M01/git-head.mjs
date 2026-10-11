@@ -17,10 +17,16 @@ async function resolveGitDirectory(repositoryRoot) {
   const marker = await stat(markerPath);
   if (marker.isDirectory()) return markerPath;
 
-  const markerText = await readFile(markerPath, "utf8");
-  const match = /^gitdir:\s*(.+)\s*$/iu.exec(markerText.trim());
-  if (!match) throw new Error("invalid Git directory marker");
-  return resolve(repositoryRoot, match[1]);
+  const markerText = (await readFile(markerPath, "utf8")).trim();
+  if (markerText.slice(0, 7).toLowerCase() !== "gitdir:") {
+    throw new Error("invalid Git directory marker");
+  }
+
+  const gitDirectory = markerText.slice(7).trim();
+  if (!gitDirectory || gitDirectory.includes("\n") || gitDirectory.includes("\r")) {
+    throw new Error("invalid Git directory marker");
+  }
+  return resolve(repositoryRoot, gitDirectory);
 }
 
 function validateReference(reference) {

@@ -71,6 +71,7 @@ test("untracked Golden Home sources also invalidate exact-HEAD visual evidence",
 });
 
 test("Git executable resolution uses only fixed system locations and never PATH lookup", () => {
+  const argumentCounts = [];
   assert.throws(
     () => resolveGitExecutable({ platform: "win32", fileExists: () => false }),
     /fixed system location/u,
@@ -78,8 +79,12 @@ test("Git executable resolution uses only fixed system locations and never PATH 
   assert.equal(
     resolveGitExecutable({
       platform: "win32",
-      fileExists: (candidate) => candidate === "C:\\Program Files\\Git\\cmd\\git.exe",
+      fileExists: function (candidate) {
+        argumentCounts.push(arguments.length);
+        return candidate === "C:\\Program Files\\Git\\cmd\\git.exe";
+      },
     }),
     "C:\\Program Files\\Git\\cmd\\git.exe",
   );
+  assert.deepEqual(argumentCounts, [1]);
 });

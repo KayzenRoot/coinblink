@@ -35,6 +35,27 @@ test("reads a loose branch ref through a linked-worktree gitdir and commondir", 
   assert.equal(await readGitHead(worktreeRoot), commit);
 });
 
+test("accepts a case-insensitive gitdir marker with whitespace before its path", async (t) => {
+  const root = await createRoot(t);
+  const worktreeRoot = join(root, "feature-worktree");
+  const gitDirectory = join(root, "linked-git-directory");
+  await mkdir(worktreeRoot);
+  await mkdir(gitDirectory);
+  await writeFile(join(worktreeRoot, ".git"), `GITDIR: \t  ${gitDirectory}\n`, "utf8");
+  await writeFile(join(gitDirectory, "HEAD"), `${commit}\n`, "utf8");
+
+  assert.equal(await readGitHead(worktreeRoot), commit);
+});
+
+test("rejects a gitdir marker with an extra non-whitespace line", async (t) => {
+  const root = await createRoot(t);
+  const worktreeRoot = join(root, "feature-worktree");
+  await mkdir(worktreeRoot);
+  await writeFile(join(worktreeRoot, ".git"), `gitdir: ${join(root, "somewhere")}\nextra\n`, "utf8");
+
+  await assert.rejects(readGitHead(worktreeRoot), /invalid Git directory marker/u);
+});
+
 test("resolves packed refs when no loose branch ref exists", async (t) => {
   const root = await createRoot(t);
   const gitDir = join(root, ".git");

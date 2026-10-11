@@ -59,6 +59,28 @@ test('canonical M00 completion remains true after progress advances through M01'
   assert.equal(plan.unfinishedModuleCount, 18);
 });
 
+test('planner rejects canonical completed-through progress that contradicts the checkpoint percentage', () => {
+  const inconsistent = structuredClone(checkpoint);
+  inconsistent.completedThroughModule = 'CB-M01';
+  inconsistent.overallCompletionPercent = 5;
+  inconsistent.progressBasis.overallCompletionPercent = 5;
+  inconsistent.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
+  inconsistent.checkpointFacts.moduleAdmission['CB-M05'] = 'ADMITTED';
+
+  assert.throws(() => planParallelModules({
+    matrix,
+    checkpoint,
+    canonicalCheckpoint: inconsistent,
+    canonicalMainSha: 'a'.repeat(40),
+    globalGates: approvedGlobalGates,
+    resourceSlots: 8,
+    gates: {
+      'CB-M01': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
+      'CB-M05': { externalGateApprovals: [true], workOrderFrozen: true, contextLockFrozen: true, contractApproved: true },
+    },
+  }), /Canonical main checkpoint progress is inconsistent/u);
+});
+
 test('stale proposal cannot authorize app code after M00 is complete', () => {
   const altered = structuredClone(checkpoint);
   altered.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
@@ -198,6 +220,12 @@ test('canonical main checkpoint read rejects unsupported schema and foreign proj
   const invalidCheckpoints = [
     ['unsupported schema', value => { value.schemaVersion = 999; }],
     ['foreign project', value => { value.project = 'OtherProject'; }],
+    ['inconsistent completion progress', value => {
+      value.completedThroughModule = 'CB-M01';
+      value.overallCompletionPercent = 5;
+      value.progressBasis.overallCompletionPercent = 5;
+      value.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
+    }],
   ];
 
   for (const [label, invalidate] of invalidCheckpoints) {
@@ -283,7 +311,6 @@ test('M00 completion requires all canonical completion facts to agree', () => {
     value => { value.status = 'M00_IN_PROGRESS'; },
     value => { value.checkpointFacts.applicationImplementation = 'M00_P0_LOCAL_IMPLEMENTED_P1_PENDING'; },
     value => { value.checkpointFacts.previewDeployment = 'NOT_DEPLOYED'; },
-    value => { value.checkpointFacts.moduleAdmission['CB-M00'] = 'NOT_ADMITTED'; },
   ];
   for (const contradict of contradictions) {
     const altered = structuredClone(checkpoint);
@@ -292,6 +319,13 @@ test('M00 completion requires all canonical completion facts to agree', () => {
     assert.equal(plan.canonicalM00Complete, false);
     assert.deepEqual(plan.plannerEligibleAgentModulesWithinResourceSlots, []);
   }
+
+  const completedButUnadmitted = structuredClone(checkpoint);
+  completedButUnadmitted.checkpointFacts.moduleAdmission['CB-M00'] = 'NOT_ADMITTED';
+  assert.throws(
+    () => planParallelModules({ matrix, checkpoint: completedButUnadmitted, resourceSlots: 8 }),
+    /progress is inconsistent/u,
+  );
 });
 
 test('every global source and adoption gate is independently required', () => {

@@ -65,6 +65,12 @@ export function planParallelModules({ matrix, checkpoint, canonicalCheckpoint, c
       throw new Error(`${label} checkpoint admission registry differs from 19 canonical module IDs`);
     }
   }
+  if (!hasConsistentCheckpointProgress(checkpoint, expected)) {
+    throw new Error('Candidate checkpoint progress is inconsistent with completedThroughModule');
+  }
+  if (!hasConsistentCheckpointProgress(canonicalCheckpoint, expected)) {
+    throw new Error('Canonical main checkpoint progress is inconsistent with completedThroughModule');
+  }
   if (canonicalCheckpoint.checkpointFacts.moduleAdmission['CB-M18'] !== 'FUTURE_NOT_ADMITTED') {
     throw new Error('M18 must remain FUTURE_NOT_ADMITTED in canonical main');
   }
@@ -161,6 +167,26 @@ function isRecord(value) {
 function isCoinBlinkCheckpoint(value) {
   return isRecord(value) && value.schemaVersion === 2 && value.project === 'CoinBlink'
     && isRecord(value.checkpointFacts);
+}
+
+/** Validates the GEF completion marker and exact percentage against the fixed 19-module catalog. */
+function hasConsistentCheckpointProgress(value, moduleIds = Array.from(
+  { length: 19 }, (_, index) => 'CB-M' + String(index).padStart(2, '0'),
+)) {
+  const completedThrough = value.completedThroughModule;
+  let expectedPercent;
+  if (completedThrough === 'NONE') {
+    expectedPercent = 0;
+  } else {
+    const completedIndex = moduleIds.indexOf(completedThrough);
+    if (completedIndex === -1 || value.checkpointFacts.moduleAdmission?.[completedThrough] !== 'ADMITTED') {
+      return false;
+    }
+    expectedPercent = Math.floor(((completedIndex + 1) / moduleIds.length) * 100);
+  }
+  return Number.isInteger(value.overallCompletionPercent)
+    && value.overallCompletionPercent === expectedPercent
+    && value.progressBasis?.overallCompletionPercent === expectedPercent;
 }
 
 /** Validates one explicit module gate value. */
@@ -282,7 +308,8 @@ export async function readCanonicalMainCheckpoint(fetchImplementation = fetch) {
       || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(encoded)) return null;
 
     const parsed = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
-    if (!isCoinBlinkCheckpoint(parsed) || !isRecord(parsed.checkpointFacts.moduleAdmission)) return null;
+    if (!isCoinBlinkCheckpoint(parsed) || !isRecord(parsed.checkpointFacts.moduleAdmission)
+      || !hasConsistentCheckpointProgress(parsed)) return null;
     return { sha, checkpoint: parsed };
   } catch {
     return null;

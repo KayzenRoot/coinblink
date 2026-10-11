@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { chromium } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
+import { allocateEphemeralPort, buildAstroDevArgs, waitForAstroServer } from "./visual-server.mjs";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(testDirectory, "../../..");
@@ -16,7 +17,7 @@ const fixtureRoot = path.join(testDirectory, "fixture");
 const astroCli = path.join(repositoryRoot, "node_modules", "astro", "bin", "astro.mjs");
 const runId = new Date().toISOString().replace(/[:.]/gu, "-");
 const artifactDirectory = path.join(testDirectory, "artifacts", `run-${runId}`);
-const port = Number(process.env.CB_M05_FIXTURE_PORT ?? 4397);
+const port = await allocateEphemeralPort();
 const baseUrl = `http://127.0.0.1:${port}`;
 const routes = [
   ["login", "/admin/login"],
@@ -38,31 +39,14 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-async function waitForServer(child) {
-  const deadline = Date.now() + 90_000;
-  let lastError;
-
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error(`Astro fixture exited early with code ${child.exitCode}`);
-    try {
-      const response = await fetch(`${baseUrl}/admin/articles`);
-      if (response.ok) return;
-      lastError = new Error(`Fixture returned HTTP ${response.status}`);
-    } catch (error) {
-      lastError = error;
-    }
-    await delay(500);
-  }
-
-  throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
-}
-
-const server = spawn(process.execPath, [astroCli, "dev", "--host", "127.0.0.1", "--port", String(port)], {
+const server = spawn(process.execPath, buildAstroDevArgs(astroCli, port), {
   cwd: fixtureRoot,
   env: { ...process.env, ASTRO_TELEMETRY_DISABLED: "1" },
   stdio: ["ignore", "pipe", "pipe"],
 });
 let serverOutput = "";
+let serverSpawnError;
+server.on("error", (error) => { serverSpawnError = error; });
 server.stdout.setEncoding("utf8").on("data", (chunk) => { serverOutput += chunk; });
 server.stderr.setEncoding("utf8").on("data", (chunk) => { serverOutput += chunk; });
 
@@ -72,7 +56,12 @@ const pageErrors = [];
 const results = [];
 
 try {
-  await waitForServer(server);
+  await waitForAstroServer({
+    child: server,
+    expectedOrigin: baseUrl,
+    getChildOutput: () => serverOutput,
+    getChildError: () => serverSpawnError,
+  });
   await mkdir(artifactDirectory, { recursive: true });
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();

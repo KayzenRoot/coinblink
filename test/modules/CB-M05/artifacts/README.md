@@ -13,3 +13,7 @@ The final regression execution used `run-2026-10-11T06-44-11-192Z` and an OS-ass
 ## Signal-exit validation rerun · 2026-10-11
 
 The visual fixture was rerun inside full unit validation after the readiness gate began rejecting Astro `signalCode` exits. Run `run-2026-10-11T06-56-43-355Z` passed all eight views at 1536×864, 768×1024, and 390×844 (24 Axe scans, zero violations; zero console/page errors; no horizontal overflow). Its 24 screenshot SHA-256 values, byte lengths, and dimensions match the committed final acceptance set byte-for-byte. The new run directory is generated ignored output; the committed final PNGs remain the linked evidence. Full hosted checks for this docs/test follow-up HEAD are tracked by PR #59 after push.
+
+## Hosted CI snapshot · 2026-10-11
+
+Run [#38119815645](https://github.com/KayzenRoot/coinblink/actions/runs/38119815645) completed SUCCESS on exact snapshot `a07bfc20ae0aecd335561112e1668f93a07babbd`; the six effective hosted checks passed. CodeRabbit was skipped because PR #59 was draft. This result is specific to that immutable SHA. For any later PR HEAD, use the live Checks section on PR #59 rather than treating this older snapshot as its result.

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+
 const componentPath = new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url);
 const component = await readFile(componentPath, "utf8");
 const stylesheet = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
@@ -8,42 +9,50 @@ const visualRunner = await readFile(new URL("./visual-check.mjs", import.meta.ur
 const visualServer = await readFile(new URL("./visual-server.mjs", import.meta.url), "utf8");
 const visualRequestOrigin = await readFile(new URL("./visual-request-origin.mjs", import.meta.url), "utf8");
 const fixtureConfig = await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs", import.meta.url), "utf8");
+
 test("GoldenHome exposes the approved semantic page seam", () => {
   for (const required of ['<header', '<nav', '<main id="main"', '<footer', 'aria-label="Primary navigation"']) {
     assert.ok(component.includes(required), "missing semantic seam: " + required);
   }
 });
+
 test("all market and editorial samples remain visibly demonstration-only", () => {
   for (const required of ["DEMO", "Not connected", "no live story connected", "MOCK MODE", "No message will be sent"]) {
     assert.ok(component.includes(required), "missing demo boundary: " + required);
   }
   assert.doesNotMatch(component, /<[^>]+>\s*Live\s*<\/[^>]+>/i);
 });
+
 test("the newsletter demo cannot submit an email address", () => {
   assert.doesNotMatch(component, /<form\b/u, "demo email control must have no native submission behavior");
   assert.match(component, /<button type="button" data-demo-preview>/u);
   assert.match(component, /querySelector\("\[data-demo-preview\]"\)\?\.addEventListener\("click"/u);
   assert.doesNotMatch(component, /action\s*=|fetch\s*\(|XMLHttpRequest|navigator\.sendBeacon/);
 });
+
 test("visual request monitoring compares parsed origins rather than URL prefixes", () => {
-  assert.match(visualRunner, /isFixtureOriginRequest\(request\.url\(\), origin\)/u);
-  assert.match(visualRequestOrigin, /new URL\(requestUrl\)\.origin === new URL\(fixtureOrigin\)\.origin/u);
+  assert.equal(visualRunner.includes("isFixtureOriginRequest(request.url(), origin)"), true);
+  assert.equal(visualRequestOrigin.includes("new URL(requestUrl).origin === new URL(fixtureOrigin).origin"), true);
 });
 test("the component uses the immutable approved logo and does not flatten the Golden Home", () => {
   assert.match(component, /coinblink-logo-approved-original-1179x1040\.jpg/);
   assert.doesNotMatch(component, /coinblink-home-master-dark-1536x864\.jpg/);
 });
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });
+
 test("unavailable Tools and Videos navigation routes to an explicit demo status", () => {
   assert.match(component, /<a href="#demo-data">Tools<\/a><a href="#demo-data">Videos<\/a>/u);
   assert.match(component, /Tools and videos are unavailable in this demo\./u);
 });
+
 test("mobile navigation closes after selecting a link", () => {
   assert.match(component, /navLinks\.forEach\(\(link\) => link\.addEventListener\("click"/u);
   assert.match(visualRunner, /mobileNavigationLinkCloses/u);
 });
+
 test("visual evidence records the frozen base separately from the captured HEAD", () => {
   assert.match(visualRunner, /const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";/u);
   assert.match(visualRunner, /headSha = await readGitHead\(repoRoot\);/u);
@@ -59,12 +68,14 @@ test("visual evidence records the frozen base separately from the captured HEAD"
   }
   assert.match(visualRunner, /catch \(error\) \{\s*await writeVisualCheckFailure\(reportPath,/u);
 });
+
 test("trending cards keep one tablet row and a horizontally scrollable mobile row", () => {
   assert.match(stylesheet, /\.trending-strip \{ grid-template-columns:125px repeat\(3,minmax\(0,1fr\)\); \}/u);
   assert.match(stylesheet, /\.trending-strip \{ grid-auto-flow:column; grid-auto-columns:minmax\(148px,1fr\); grid-template-columns:132px; overflow-x:auto; \}/u);
   assert.match(visualRunner, /tablet title and three visible items must share one row/u);
   assert.match(visualRunner, /mobile trending title and all items must remain on a single row/u);
 });
+
 test("the visual fixture uses and cleans only a per-run isolated temp directory", () => {
   assert.match(visualRunner, /mkdtemp\(join\(tmpdir\(\), "coinblink-m01-fixture-"\)\)/);
   assert.match(visualRunner, /M01_FIXTURE_TEMP_DIR: fixtureTempRoot/);

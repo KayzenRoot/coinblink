@@ -9,7 +9,9 @@ import {
   resolveGitExecutable,
   visualInputPaths,
 } from "./visual-input-state.mjs";
+
 const gitExecutable = resolveGitExecutable();
+
 async function createRepository(t) {
   const root = await mkdtemp(join(tmpdir(), "coinblink-m01-visual-inputs-"));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -25,11 +27,13 @@ async function createRepository(t) {
   execFileSync(gitExecutable, ["-C", root, "-c", "user.name=CoinBlink test", "-c", "user.email=coinblink-test@example.invalid", "commit", "--quiet", "-m", "fixture"], { stdio: "pipe" });
   return root;
 }
+
 test("visual source inputs are clean relative to the commit before claiming exact-HEAD evidence", async (t) => {
   const root = await createRepository(t);
   const result = assertVisualInputsClean(root, { gitExecutable });
   assert.deepEqual(result, { status: "clean", paths: visualInputPaths });
 });
+
 test("visual provenance covers every rendered source and fixture configuration input", () => {
   for (const path of [
     "src/layouts/BaseLayout.astro",
@@ -48,20 +52,24 @@ test("staged and unstaged Golden Home changes invalidate exact-HEAD visual evide
   await writeFile(component, "staged change\n", "utf8");
   execFileSync(gitExecutable, ["-C", root, "add", "--", `${visualInputPaths[0]}/fixture.txt`], { stdio: "pipe" });
   await writeFile(component, "unstaged change\n", "utf8");
+
   assert.throws(
     () => assertVisualInputsClean(root, { gitExecutable }),
     /visual source inputs are not clean relative to HEAD/u,
   );
 });
+
 test("untracked Golden Home sources also invalidate exact-HEAD visual evidence", async (t) => {
   const root = await createRepository(t);
   const untracked = join(root, visualInputPaths[0], "untracked.astro");
   await writeFile(untracked, "<p>Uncommitted visual source</p>\n", "utf8");
+
   assert.throws(
     () => assertVisualInputsClean(root, { gitExecutable }),
     /untracked\.astro/u,
   );
 });
+
 test("Git executable resolution uses only fixed system locations and never PATH lookup", () => {
   assert.throws(
     () => resolveGitExecutable({ platform: "win32", fileExists: () => false }),

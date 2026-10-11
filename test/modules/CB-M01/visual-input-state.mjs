@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { isAbsolute } from "node:path";
+
 export const visualInputPaths = Object.freeze([
   "src/modules/CB-M01",
   "src/layouts/BaseLayout.astro",
@@ -21,6 +22,7 @@ export const visualInputPaths = Object.freeze([
   "package.json",
   "package-lock.json",
 ]);
+
 export function resolveGitExecutable({ platform = process.platform, fileExists = existsSync } = {}) {
   const candidates = platform === "win32"
     ? [
@@ -34,6 +36,7 @@ export function resolveGitExecutable({ platform = process.platform, fileExists =
   if (resolved) return resolved;
   throw new Error("Git was not found at a fixed system location; visual evidence cannot be bound to a clean HEAD");
 }
+
 export function assertVisualInputsClean(repositoryRoot, { gitExecutable = resolveGitExecutable() } = {}) {
   if (!isAbsolute(gitExecutable)) throw new Error("visual input verification requires an absolute Git executable path");
   const status = execFileSync(gitExecutable, [

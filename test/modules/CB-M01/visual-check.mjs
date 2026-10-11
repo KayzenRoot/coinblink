@@ -11,13 +11,13 @@ import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
 import { readGitHead } from "./git-head.mjs";
 import { assertVisualInputsClean } from "./visual-input-state.mjs";
+import { isFixtureOriginRequest } from "./visual-request-origin.mjs";
 import {
   clearVisualCheckReport,
   removeFixtureTempRootAfterExit,
   waitForFixtureReady,
   writeVisualCheckFailure,
 } from "./visual-server.mjs";
-
 const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";
 const evidenceDir = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001", "screenshots");
@@ -34,7 +34,6 @@ let origin = null;
 let port;
 let fixtureTempRoot;
 let visualInputState = null;
-
 try {
   headSha = await readGitHead(repoRoot);
   visualInputState = assertVisualInputsClean(repoRoot);
@@ -58,9 +57,7 @@ try {
   }, error);
   throw error;
 }
-
 const astroCli = join(repoRoot, "node_modules", "astro", "bin", "astro.mjs");
-
 async function availablePort() {
   const server = createServer();
   await new Promise((resolveListen, reject) => {
@@ -72,7 +69,6 @@ async function availablePort() {
   assert.ok(address && typeof address === "object");
   return address.port;
 }
-
 async function waitForChildExit(child, timeoutMs) {
   if (child.exitCode !== null || child.signalCode !== null) return true;
   return new Promise((resolveExit) => {
@@ -86,7 +82,6 @@ async function waitForChildExit(child, timeoutMs) {
     child.once("exit", onExit);
   });
 }
-
 async function stopAstroServer(child) {
   if (!child || child.exitCode !== null || child.signalCode !== null) return true;
   child.kill();
@@ -94,11 +89,9 @@ async function stopAstroServer(child) {
   child.kill("SIGKILL");
   return waitForChildExit(child, 3_000);
 }
-
 let serverOutput = "";
 let server;
 let runFailure;
-
 async function waitUntilReady() {
   try {
     await waitForFixtureReady({ child: server, origin });
@@ -106,7 +99,6 @@ async function waitUntilReady() {
     throw new Error(error.message + ". Output: " + serverOutput, { cause: error });
   }
 }
-
 const results = [];
 const consoleErrors = [];
 const pageErrors = [];
@@ -114,7 +106,6 @@ const externalRequests = [];
 const interactionChecks = { responsiveNavigation: [], trendingStrip: {}, focusVisible: null, categorySearch: null, unavailableNavigation: null };
 let browser;
 let shutdownFailure;
-
 try {
   server = spawn(process.execPath, [
     astroCli, "dev", "--config=" + join(".engineering", "evidence", "CB-M01-WO-001", "astro-fixture.config.mjs"),
@@ -141,9 +132,8 @@ try {
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("request", (request) => {
-    if (!request.url().startsWith(origin)) externalRequests.push(request.url());
+    if (!isFixtureOriginRequest(request.url(), origin)) externalRequests.push(request.url());
   });
-
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto(origin, { waitUntil: "networkidle" });
@@ -199,7 +189,6 @@ try {
     });
     await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
   }
-
   for (const width of [850, 851, 1024, 1050, 1051]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(origin, { waitUntil: "networkidle" });
@@ -278,7 +267,6 @@ try {
       assert.equal(new URL(page.url()).hash, "#footer", "keyboard can activate About in the desktop navigation");
     }
   }
-
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.goto(origin, { waitUntil: "networkidle" });
   for (const label of ["Tools", "Videos"]) {
@@ -302,7 +290,6 @@ try {
   assert.notEqual(searchFocusStyle.outlineStyle, "none", "keyboard focus must retain a visible outline");
   assert.ok(searchFocusStyle.outlineWidth >= 2, `keyboard focus outline must be at least 2px: ${JSON.stringify(searchFocusStyle)}`);
   interactionChecks.focusVisible = { reachedByTab: true, ...searchFocusStyle };
-
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(origin, { waitUntil: "networkidle" });
   const mobileSearchVisible = await page.locator(".search-box").isVisible();
@@ -416,7 +403,6 @@ const reportBase = {
   externalRequests,
   serverOutput: serverOutput.split(/\r?\n/).filter(Boolean).slice(-12),
 };
-
 try {
   if (shutdownFailure) throw shutdownFailure;
   if (runFailure) throw runFailure;

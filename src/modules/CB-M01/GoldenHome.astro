@@ -1,0 +1,174 @@
+---
+import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
+import "./golden-home.css";
+
+const markets = [
+  { symbol: "BTC", name: "Bitcoin", tone: "bitcoin" },
+  { symbol: "ETH", name: "Ethereum", tone: "ethereum" },
+  { symbol: "SOL", name: "Solana", tone: "solana" },
+  { symbol: "BNB", name: "BNB", tone: "bnb" },
+  { symbol: "XRP", name: "XRP", tone: "xrp" },
+];
+const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
+const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "Regulation", "Web3"];
+const stories = [
+  { category: "Bitcoin", tag: "MARKET", icon: "₿" },
+  { category: "Ethereum", tag: "DEVELOPMENT", icon: "◆" },
+  { category: "Regulation", tag: "POLICY", icon: "⌘" },
+  { category: "Altcoins", tag: "ECOSYSTEM", icon: "◈" },
+];
+---
+
+<div class="cb-home" id="top">
+  <aside class="demo-banner" aria-label="Demonstration data notice">
+    <strong>DEMO</strong>
+    <span>Illustrative only — no live prices, headlines, or external feeds are connected.</span>
+  </aside>
+
+  <header class="cb-header">
+    <a class="brand" href="#top" aria-label="CoinBlink home">
+      <img src={approvedLogo.src} width="40" height="36" alt="" />
+      <span class="brand-name"><span>Coin</span><span>Blink</span><small>Crypto news in a blink.</small></span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span aria-hidden="true">☰</span><span class="sr-only">Toggle navigation</span>
+    </button>
+    <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation" data-primary-nav>
+      <a class="is-current" href="#top" aria-current="page">Home</a><a href="#latest-news">News</a>
+      <a href="#market-overview">Markets</a><a href="#radar-24h">Analysis</a><a href="#categories">Learn</a>
+      <a href="#market-overview">Tools</a><a href="#latest-news">Videos</a><a href="#footer">About</a>
+    </nav>
+    <div class="header-tools">
+      <label class="search-box"><span class="sr-only">Search demo stories</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+        <input type="search" placeholder="Search stories" autocomplete="off" data-news-search />
+      </label>
+      <span class="language-chip" aria-label="Language: English">◎ EN</span><span class="theme-chip" aria-label="Dark theme">◐ <i></i></span>
+    </div>
+  </header>
+
+  <main id="main" class="home-main" aria-label="CoinBlink demonstration homepage">
+    <section class="lead-grid" aria-label="Featured demonstration and market status">
+      <article class="hero-panel" aria-labelledby="hero-title">
+        <div class="hero-scene" aria-hidden="true">
+          <div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
+          <svg class="coin-art" viewBox="0 0 300 300">
+            <defs><radialGradient id="coin-face" cx="34%" cy="27%"><stop offset="0%" stop-color="#fff0a1"></stop><stop offset="36%" stop-color="#e8b927"></stop><stop offset="74%" stop-color="#8c5b08"></stop><stop offset="100%" stop-color="#21190b"></stop></radialGradient></defs>
+            <circle cx="150" cy="150" r="115" fill="#9cff3a" opacity=".16"></circle><circle cx="150" cy="150" r="108" fill="#17140c" stroke="#b8f34b" stroke-width="5"></circle>
+            <circle cx="150" cy="150" r="92" fill="url(#coin-face)" stroke="#ffe27d" stroke-width="4"></circle><circle cx="150" cy="150" r="78" fill="none" stroke="#ffeaa2" stroke-opacity=".55" stroke-width="2"></circle>
+            <text x="150" y="204" fill="#fff0a1" stroke="#8a5a08" stroke-width="1.5" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="154" font-weight="700" text-anchor="middle">₿</text>
+          </svg>
+          <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
+        </div>
+        <div class="hero-copy">
+          <div class="eyebrow-row"><strong>⚡ DEMO FEATURE</strong><span>Illustrative layout</span></div>
+          <h1 id="hero-title">Bitcoin market,<br />in <em>focus.</em></h1>
+          <p>This visual demo has no live market data or news connected.</p>
+          <div class="hero-actions"><a class="primary-action" href="#latest-news">Explore demo stories <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">View market panel</a></div>
+        </div>
+        <div class="hero-stat"><span>DEMO · NOT LIVE</span><strong>—</strong><small>Market data not connected</small></div>
+        <p class="hero-tags" aria-hidden="true">MARKET<br />ANALYSIS<br />DIGITAL ASSETS</p>
+      </article>
+
+      <aside class="market-panel" id="market-overview" aria-labelledby="market-title">
+        <div class="panel-title"><div><span class="panel-eyebrow">DEMONSTRATION</span><h2 id="market-title">Market overview</h2></div><span class="offline-badge"><i></i>Offline</span></div>
+        <p class="panel-description">Market data feed is not connected.</p>
+        <ul class="market-list">
+          {markets.map((market) => (
+            <li class="market-row">
+              <span class={"coin-mark coin-" + market.tone} aria-hidden="true">{market.symbol.slice(0, 1)}</span>
+              <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
+              <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
+              <span class="market-value" aria-label="Unavailable">—</span>
+            </li>
+          ))}
+        </ul>
+        <a class="panel-link" href="#demo-data">Data status <span aria-hidden="true">→</span></a>
+      </aside>
+    </section>
+
+    <section class="ticker-strip" aria-label="Market ticker demonstration"><strong>◉ Market ticker</strong><div class="ticker-items" tabindex="0" role="region" aria-label="Scrollable market ticker demonstration">{tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>Not connected</em></span>)}</div></section>
+
+    <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ Trending demo</h2>
+      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{label}<small>Demo placeholder</small></span></div>)}
+    </section>
+
+    <nav class="category-rail" id="categories" aria-label="Demonstration story categories">
+      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "⌘", "◎"][index]}</span>{category}<i aria-hidden="true">›</i></button>)}
+    </nav>
+
+    <section class="content-grid" aria-label="Demonstration signals">
+      <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
+        <div class="section-heading"><div><small>DEMO · NO FEED</small><h2 id="radar-title">◉ Radar 24h</h2></div><span>Unavailable</span></div>
+        <p>Key events appear when a verified source is connected.</p><div class="empty-state"><b aria-hidden="true">⌁</b><span>No verified updates are available in this demonstration.</span></div>
+      </article>
+      <article class="content-panel sentiment-panel" aria-labelledby="sentiment-title">
+        <div class="section-heading"><div><small>DEMO · NO FEED</small><h2 id="sentiment-title">◉ Market sentiment</h2></div><span class="offline-badge"><i></i>Offline</span></div>
+        <p>Sentiment is unavailable until an approved source is connected.</p>
+        <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label="Market sentiment unavailable"><b>—</b><small>Unavailable</small></div>
+          <ul><li>Extreme greed <b>—</b></li><li>Greed <b>—</b></li><li>Neutral <b>—</b></li><li>Fear <b>—</b></li><li>Extreme fear <b>—</b></li></ul>
+        </div>
+      </article>
+      <aside class="promo-panel" aria-label="CoinBlink demonstration brand panel"><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>DEMONSTRATION</small><h2>Stay ahead<br />of the next move.</h2><p>Crypto news in a blink.</p></div><a href="#demo-data">Explore the demo →</a></aside>
+    </section>
+
+    <section class="lower-grid" aria-label="Latest demonstration content">
+      <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
+        <div class="news-heading"><div><small>DEMO · NO STORIES CONNECTED</small><h2 id="news-title">Latest news</h2></div><span data-result-count aria-live="polite">4 placeholders</span></div>
+        <div class="news-cards">
+          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{story.tag}</span><small>DEMO</small><h3>Editorial placeholder · no live story connected</h3><p>No factual claim or live article is represented.</p></div></article>)}
+        </div>
+      </section>
+      <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">
+        <span class="newsletter-icon" aria-hidden="true">✉</span><small>DEMO · DISABLED DELIVERY</small><h2 id="newsletter-title">Join the CoinBlink newsletter</h2>
+        <p>This form will not send or store your email.</p><form data-demo-form><label class="sr-only" for="demo-email">Email address</label><input id="demo-email" name="email" type="email" placeholder="Email address" autocomplete="email" /><button type="submit">Preview only →</button></form>
+        <p class="form-status" aria-live="polite" data-form-status>No message will be sent.</p><ul class="newsletter-promises"><li>No storage</li><li>No delivery</li><li>Demo only</li></ul>
+      </section>
+    </section>
+
+    <section class="data-note" id="demo-data" aria-label="Data and integration status"><b aria-hidden="true">i</b><p><strong>Data status:</strong> visual samples are placeholders. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.</p><strong>MOCK MODE</strong></section>
+  </main>
+  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · Crypto news in a blink.</a><span>Demonstration only · no live market or editorial data</span><a href="#top">Back to top ↑</a></footer>
+</div>
+
+<script>
+  const menu = document.querySelector("[data-menu-toggle]");
+  const nav = document.querySelector("[data-primary-nav]");
+  menu?.addEventListener("click", () => {
+    const expanded = menu.getAttribute("aria-expanded") === "true";
+    menu.setAttribute("aria-expanded", String(!expanded));
+    nav?.classList.toggle("is-open", !expanded);
+  });
+
+  let selected = "All";
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-category]")];
+  const cards = [...document.querySelectorAll<HTMLElement>("[data-news-card]")];
+  const search = document.querySelector<HTMLInputElement>("[data-news-search]");
+  const count = document.querySelector("[data-result-count]");
+  function filterStories() {
+    const query = search?.value.trim().toLowerCase() ?? "";
+    let visible = 0;
+    cards.forEach((card) => {
+      const matchesCategory = selected === "All" || card.getAttribute("data-category-value") === selected;
+      const matchesQuery = !query || card.textContent.toLowerCase().includes(query);
+      card.hidden = !(matchesCategory && matchesQuery);
+      if (!card.hidden) visible += 1;
+    });
+    if (count) count.textContent = String(visible) + (visible === 1 ? " placeholder" : " placeholders");
+  }
+  buttons.forEach((button) => button.addEventListener("click", () => {
+    selected = button.getAttribute("data-category") ?? "All";
+    buttons.forEach((item) => {
+      const active = item === button;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-pressed", String(active));
+    });
+    filterStories();
+  }));
+  search?.addEventListener("input", filterStories);
+  document.querySelector("[data-demo-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const status = document.querySelector("[data-form-status]");
+    if (status) status.textContent = "Preview only. No email was sent or stored.";
+  });
+</script>

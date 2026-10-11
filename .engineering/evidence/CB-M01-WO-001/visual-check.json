@@ -1,0 +1,92 @@
+{
+  "generatedAt": "2026-10-11T06:03:43.445Z",
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "fixture": "isolated Astro fixture; no shared /en route integration",
+  "origin": "http://127.0.0.1:53972",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1536,
+      "height": 864,
+      "documentWidth": 1536,
+      "axeViolations": [],
+      "fullPageAxeViolations": [
+        {
+          "id": "region",
+          "impact": "moderate",
+          "description": "Ensure all page content is contained by landmarks",
+          "nodes": [
+            {
+              "target": [
+                ".skip-link"
+              ],
+              "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "screenshotSha256": "7e6df8ff376c4a51fb9d6b88fc0b9d53c23ea3c3bacf143a199e456c2919bc4c"
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "documentWidth": 768,
+      "axeViolations": [],
+      "fullPageAxeViolations": [
+        {
+          "id": "region",
+          "impact": "moderate",
+          "description": "Ensure all page content is contained by landmarks",
+          "nodes": [
+            {
+              "target": [
+                ".skip-link"
+              ],
+              "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "screenshotSha256": "d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb"
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "documentWidth": 390,
+      "axeViolations": [],
+      "fullPageAxeViolations": [
+        {
+          "id": "region",
+          "impact": "moderate",
+          "description": "Ensure all page content is contained by landmarks",
+          "nodes": [
+            {
+              "target": [
+                ".skip-link"
+              ],
+              "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "screenshotSha256": "fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "externalRequests": [],
+  "serverOutput": [
+    "{\"message\":\"connected.\",\"label\":\"vite\",\"level\":\"info\"}",
+    "{\"message\":\"Generated 4ms\",\"label\":\"types\",\"level\":\"info\"}",
+    "{\"message\":\"connected.\",\"label\":\"vite\",\"level\":\"info\"}",
+    "{\"message\":\" astro  v7.3.8 ready in 1694 ms\\n┃ Local    http://127.0.0.1:53972/\",\"label\":\"SKIP_FORMAT\",\"level\":\"info\"}",
+    "{\"message\":\"watching for file changes...\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 113ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
+  ]
+}

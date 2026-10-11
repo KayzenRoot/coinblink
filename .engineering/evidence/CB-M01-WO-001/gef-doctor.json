@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "commandId": "gef.doctor.run",
+  "contractVersion": "1.0",
+  "terminal": "SUCCEEDED",
+  "value": {
+    "commandId": "gef.doctor.run",
+    "effect": "NONE",
+    "doctor": {
+      "verb": "doctor",
+      "readOnly": true,
+      "target": {
+        "targetRef": "C:\\Users\\csn19\\.codex\\worktrees\\coinblink-cb-m01-wo-001-impl-20261011",
+        "exists": true,
+        "isDirectory": true
+      },
+      "findings": [
+        {
+          "id": "toolchain.node",
+          "state": "HEALTHY"
+        },
+        {
+          "id": "toolchain.platform",
+          "state": "HEALTHY"
+        },
+        {
+          "id": "toolchain.git",
+          "state": "HEALTHY"
+        },
+        {
+          "id": "repository.observable",
+          "state": "FINDING"
+        }
+      ],
+      "remediation": [
+        {
+          "finding": "repository.observable",
+          "risk": "REVIEW_REQUIRED",
+          "automatic": false,
+          "previewRequired": true
+        }
+      ],
+      "invariants": [
+        {
+          "name": "platform.supported",
+          "pass": true,
+          "actual": true,
+          "expected": true
+        },
+        {
+          "name": "toolchain.nodeMajor",
+          "pass": true,
+          "actual": true,
+          "expected": true
+        },
+        {
+          "name": "toolchain.git",
+          "pass": true,
+          "actual": true,
+          "expected": true
+        }
+      ],
+      "security": {
+        "dependency": {
+          "manifestDigest": "0c16820bff7fb5d8cc99b6e18f451b6fe458e835d4a7b2412c1aafd1f3d07438",
+          "lockDigest": "79255c007f327d69714b76ba401e87261ae557f725af89a117b5afd609be3bd8",
+          "auditCritical": 0,
+          "provenance": "unverified",
+          "state": "REVIEW",
+          "digest": "f17177028f4bfb04441f812ab685740bec5c6021b0f6665cd93472263f12a925"
+        },
+        "github": {
+          "immutableRef": false,
+          "untrustedFork": false,
+          "writePermission": false,
+          "state": "REVIEW",
+          "digest": "e8bdac1d7bae065e4b2ebfdc858b7d2483542bc9f508b747dd1e829ca146b328"
+        },
+        "safety": {
+          "classification": "NONE",
+          "confirmation": "AUTO",
+          "requested": "AUTO",
+          "restricted": false,
+          "minimum": [],
+          "state": "READY",
+          "digest": "b43e5565fe5d5ec78fde469fd614e6f533ed2946eaab6f035986377b34c06dd5"
+        }
+      },
+      "capabilities": {
+        "capabilities": [
+          "toolchain.git",
+          "toolchain.node",
+          "toolchain.platform"
+        ],
+        "unknown": [
+          "repository.observable"
+        ],
+        "state": "DEGRADED",
+        "digest": "a7de252e1123371a2798e5671ea7c93595a8b9e586d86501a52b3df7b6eb43f0"
+      },
+      "toolchain": {
+        "git": {
+          "toolId": "git",
+          "presence": "FOUND",
+          "executableIdentity": "4458c77866fe602129f0aad0280ca2762678efb49705408bc1ef0a5de1e4dd8c",
+          "observedVersion": "2.55.0.windows.5",
+          "probeStatus": "SUCCEEDED",
+          "compatibility": "NOT_CHECKED",
+          "gaps": []
+        }
+      },
+      "governance": {
+        "source": ".engineering/CHECKPOINT.json",
+        "present": true,
+        "readable": true,
+        "valid": true,
+        "observationLimits": []
+      },
+      "integrity": {
+        "root": "dccbab5595844acc2426d217b31810ea4e43561c0483eb78b5f0f0bd3bfa3908",
+        "schema": 1,
+        "digest": "1528748dca958b0eba2086ead6bb48b93167f1c148c62d64c5a6e038abec35fd"
+      },
+      "observationLimits": [
+        "GIT_DIRECTORY_NOT_A_DIRECTORY",
+        "WORKING_TREE_NOT_OBSERVED"
+      ]
+    },
+    "doctorDigest": "61502dc367076a339a0e34211969aef349e04cb9ebd5b94b49e39894f0946898"
+  }
+}

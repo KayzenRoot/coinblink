@@ -52,8 +52,8 @@ export function validatePreviewAuthorization(env) {
   expect("COINBLINK_CF_GITHUB_ENVIRONMENT_PROTECTED", "true", "protected GitHub environment review");
   expect("COINBLINK_CF_PLAN", "workers-free", "Cloudflare plan");
   expect("COINBLINK_CF_FREE_PLAN_CONFIRMED", "true", "Owner Free plan confirmation");
-  expect("COINBLINK_CF_MONTHLY_COST_CEILING_USD", "0", "monthly cost ceiling");
-  expect("COINBLINK_CF_COST_CEILING_CONFIRMED", "true", "Owner zero-cost confirmation");
+  // Owner-approved Free-only operation does not require a hard account-wide
+  // USD 0 billing cap. Paid plans remain forbidden by COINBLINK_CF_PLAN above.
   expect("COINBLINK_CF_IAM_SCOPE_CONFIRMED", "true", "scoped IAM confirmation");
   expect("COINBLINK_CF_DEDICATED_WORKER_CONFIRMED", "true", "dedicated Worker confirmation");
   expect("COINBLINK_CF_ISOLATION_CONFIRMED", "true", "Preview resource isolation confirmation");

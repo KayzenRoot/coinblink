@@ -19,7 +19,7 @@
 
 ## Compatibility, cost and external authority
 
-At CB-GOV-005 admission time, no Astro build, Worker compatibility test, provider access, plan/quota review, deployment cost measurement or Preview URL had been verified. The current CB-M00-WO-001 candidate now pins compatible Astro/Cloudflare/Wrangler packages and has local build, browser, binding-isolation and Docker smoke evidence in its Evidence Bundle. Cloudflare account access, plan/cost review, remote Preview URL and deployment remain unverified and unauthorized; no provider credential is requested or committed. These facts gate the remote lane and do not change the approved local P0 scope.
+At CB-GOV-005 admission time, no Astro build, Worker compatibility test, provider access, plan/quota review, deployment cost measurement or Preview URL had been verified. Those statements are historical. As of 2026-10-10, protected Preview run [#38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) succeeded for canonical main `e8886e21c6f152ca374b1e42852c6b6638543f40`; real stable/immutable URLs and exact-SHA/browser evidence are in `.engineering/evidence/CB-M00-WO-001-P1-CLOSEOUT.md`. The authenticated dashboard showed Workers Free and USD 0.00 observed for the October cycle; this is not a hard future cost ceiling, and the effective monthly USD 0 ceiling remains unmet. Static Worker/Workflow config is isolated and permits only the intended static asset binding, but the live provider binding inventory could not be inspected in the authenticated dashboard and remains pending. No production deployment, R2 use, billing change, or other-project modification is claimed.
 
 ## Security and exclusions
 

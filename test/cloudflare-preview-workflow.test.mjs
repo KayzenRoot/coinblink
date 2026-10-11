@@ -90,6 +90,7 @@ test("Cloudflare commands sit behind Owner/environment gates and use separate co
 
 test("pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete flags without provider calls", () => {
   const wranglerVersion = JSON.parse(readFileSync(resolve(repoRoot, "node_modules/wrangler/package.json"), "utf8")).version;
+  const wranglerSource = readFileSync(resolve(repoRoot, "node_modules/wrangler/wrangler-dist/cli.js"), "utf8");
   assert.equal(wranglerVersion, "4.149.0");
 
   const previewHelp = wranglerHelp("preview");
@@ -99,6 +100,9 @@ test("pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete fla
   assert.match(deleteHelp, /--name/);
   assert.match(deleteHelp, /--worker-name/);
   assert.match(deleteHelp, /--skip-confirmation/);
+  assert.match(wranglerSource, /variableName:\s*"WRANGLER_OUTPUT_FILE_PATH"/);
+  assert.match(wranglerSource, /type:\s*"preview",\s*version:\s*1,\s*worker_name:.*?preview_id:.*?preview_name:.*?preview_slug:.*?preview_urls:.*?deployment_id:.*?deployment_urls:/s);
+  assert.match(wranglerSource, /JSON\.stringify\(\{\s*preview:\s*previewResource,\s*deployment\s*\},\s*null,\s*2\)/);
 });
 
 test("rollback documentation uses only supported Wrangler Preview delete options", () => {
@@ -137,6 +141,10 @@ test("workflow compiles the exact SHA and verifies both actual URL slots after d
   assert.match(workflow, /PUBLIC_BUILD_SHA: \$\{\{ github\.sha \}\}/);
   assert.match(workflow, /PUBLIC_BUILD_ENV: preview/);
   assert.match(workflow, /scripts\/record-preview-output\.mjs/);
+  const createStep = stepBlockNamed("Create isolated Worker Preview");
+  assert.match(createStep, /WRANGLER_OUTPUT_FILE_PATH="\$RUNNER_TEMP\/wrangler-preview-events\.json"/);
+  assert.match(createStep, /wrangler-preview-stdout\.json/);
+  assert.match(createStep, /wrangler-preview-events\.json/);
   assert.match(workflow, /scripts\/verify-worker-preview\.mjs/);
   assert.match(workflow, /wrangler preview delete/);
 });

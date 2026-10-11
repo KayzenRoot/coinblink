@@ -10,6 +10,33 @@ const viewports = [
 ];
 const evidenceSha = (process.env.EXPECTED_SHA || "local").slice(0, 12);
 const screenshotDirectory = join(process.cwd(), "artifacts", "playwright", evidenceSha);
+const buildEnvironment = process.env.PUBLIC_BUILD_ENV?.trim() || "local";
+const expectedPresentation = buildEnvironment === "preview"
+  ? {
+    chip: "Cloudflare Worker Preview",
+    statusTitle: "Isolated Worker Preview",
+    statusDescription: "Dedicated non-production Worker Preview",
+    status: "Preview",
+    environment: "Cloudflare Worker Preview",
+    foundationCopy: "The demonstration foundation is running in an isolated Worker Preview.",
+  }
+  : buildEnvironment === "ci"
+    ? {
+      chip: "CI build",
+      statusTitle: "CI foundation",
+      statusDescription: "Deployment is a separate Owner-gated step",
+      status: "CI only",
+      environment: "CI build",
+      foundationCopy: "This CI build verifies the demonstration foundation.",
+    }
+    : {
+      chip: "Local preview",
+      statusTitle: "Local foundation",
+      statusDescription: "Provider deployment is a separate gate",
+      status: "Local only",
+      environment: "Local development",
+      foundationCopy: "The local foundation is running.",
+    };
 
 test.describe("CoinBlink M00 local shell", () => {
   for (const viewport of viewports) {
@@ -28,6 +55,12 @@ test.describe("CoinBlink M00 local shell", () => {
       await expect(page.getByRole("heading", { level: 1, name: "Crypto news in a blink." })).toBeVisible();
       await expect(page.getByText("DEMO · NO LIVE DATA")).toBeVisible();
       await expect(page.getByText("Not connected · no values are shown")).toBeVisible();
+      await expect(page.locator(".preview-chip")).toContainText(expectedPresentation.chip);
+      await expect(page.getByRole("heading", { level: 2, name: expectedPresentation.statusTitle })).toBeVisible();
+      await expect(page.getByText(expectedPresentation.statusDescription, { exact: true })).toBeVisible();
+      await expect(page.locator(".status-row__state").nth(2)).toHaveText(expectedPresentation.status);
+      await expect(page.locator(".status-strip__value").nth(3)).toHaveText(expectedPresentation.environment);
+      await expect(page.locator(".feature-panel__copy")).toContainText(expectedPresentation.foundationCopy);
 
       const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       expect(hasHorizontalOverflow).toBe(false);
@@ -60,7 +93,7 @@ test.describe("CoinBlink M00 local shell", () => {
     expect(health).toMatchObject({
       status: "ok",
       service: "coinblink",
-      environment: process.env.PUBLIC_BUILD_ENV || "local",
+      environment: buildEnvironment,
     });
     expect(health.buildSha).toBe(process.env.EXPECTED_SHA || "local");
     expect(Object.keys(health).sort()).toEqual(["buildSha", "environment", "service", "status"]);
@@ -74,9 +107,9 @@ test.describe("CoinBlink M00 local shell", () => {
       dataMode: "demonstration-only",
       editorialFeed: "not-connected",
       marketData: "not-connected",
-      cloudflarePreview: process.env.PUBLIC_BUILD_ENV === "preview" ? "preview" : "not-deployed",
+      cloudflarePreview: buildEnvironment === "preview" ? "preview" : "not-deployed",
       buildSha: process.env.EXPECTED_SHA || "local",
-      environment: process.env.PUBLIC_BUILD_ENV || "local",
+      environment: buildEnvironment,
     });
     expect(JSON.stringify(previewStatus)).not.toMatch(/secret|password|api.?key/i);
   });

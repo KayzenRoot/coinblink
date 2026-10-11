@@ -43,6 +43,10 @@ jobs:
       - name: Verify exact checked-out commit
         run: node scripts/verify-exact-head.mjs
 
+      - name: Verify P1 output-correction fingerprints
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'codex/cb-m00-wrangler-structured-output'
+        run: node --test scripts/verify-p1-wrangler-output-fingerprints.mjs
+
       - name: Verify runner versions
         run: node --version && npm --version
 

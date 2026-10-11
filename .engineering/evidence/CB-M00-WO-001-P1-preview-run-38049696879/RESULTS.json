@@ -1,0 +1,196 @@
+{
+  "status": "PASS",
+  "runId": "38049696879",
+  "workflowUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/38049696879",
+  "expectedBuildSha": "e8886e21c6f152ca374b1e42852c6b6638543f40",
+  "stableOrigin": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev",
+  "immutableOrigin": "https://5ca9306c-coinblink-m00-preview.kayzendev.workers.dev",
+  "browserContext": "fresh-isolated-context-no-profile-or-cookies",
+  "capturedAt": "2026-10-10T13:35:43.081Z",
+  "browserVersion": "156.0.8078.4",
+  "playwrightVersion": "1.64.0",
+  "axePlaywrightVersion": "4.13.0",
+  "initialHealth": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "service": "coinblink",
+      "buildSha": "e8886e21c6f152ca374b1e42852c6b6638543f40",
+      "environment": "preview"
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+      "content-type": "application/json; charset=utf-8",
+      "permissions-policy": "camera=(), geolocation=(), microphone=()",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-robots-tag": "noindex"
+    }
+  },
+  "immutableHealth": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "service": "coinblink",
+      "buildSha": "e8886e21c6f152ca374b1e42852c6b6638543f40",
+      "environment": "preview"
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+      "content-type": "application/json; charset=utf-8",
+      "permissions-policy": "camera=(), geolocation=(), microphone=()",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-robots-tag": "noindex"
+    }
+  },
+  "routes": [
+    {
+      "path": "/preview-status",
+      "status": 200,
+      "body": {
+        "status": "demo",
+        "dataMode": "demonstration-only",
+        "editorialFeed": "not-connected",
+        "marketData": "not-connected",
+        "cloudflarePreview": "preview",
+        "buildSha": "e8886e21c6f152ca374b1e42852c6b6638543f40",
+        "environment": "preview"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "content-type": "application/json; charset=utf-8",
+        "permissions-policy": "camera=(), geolocation=(), microphone=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-robots-tag": "noindex"
+      }
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "body": "User-agent: *\nAllow: /\n",
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-type": "text/plain",
+        "x-robots-tag": "noindex"
+      }
+    },
+    {
+      "path": "/m00-closeout-intentional-404",
+      "status": 404,
+      "headers": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "content-type": "text/html",
+        "permissions-policy": "camera=(), geolocation=(), microphone=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-robots-tag": "noindex"
+      }
+    }
+  ],
+  "viewports": [
+    {
+      "name": "desktop-1536x864",
+      "width": 1536,
+      "height": 864,
+      "route": "/en",
+      "status": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "content-type": "text/html",
+        "permissions-policy": "camera=(), geolocation=(), microphone=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-robots-tag": "noindex"
+      },
+      "noindex": true,
+      "noHorizontalOverflow": true,
+      "keyboardSkipLinkVisible": true,
+      "axeViolations": 0,
+      "stylesheetCount": 1,
+      "screenshot": "desktop-1536x864.png",
+      "pngWidth": 1536,
+      "pngHeight": 864,
+      "screenshotSha256": "81d8119e39133406486e686c25af86160c52a30c0861baaefb78dcbf1e363772"
+    },
+    {
+      "name": "tablet-768x1024",
+      "width": 768,
+      "height": 1024,
+      "route": "/en",
+      "status": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "content-type": "text/html",
+        "permissions-policy": "camera=(), geolocation=(), microphone=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-robots-tag": "noindex"
+      },
+      "noindex": true,
+      "noHorizontalOverflow": true,
+      "keyboardSkipLinkVisible": true,
+      "axeViolations": 0,
+      "stylesheetCount": 1,
+      "screenshot": "tablet-768x1024.png",
+      "pngWidth": 768,
+      "pngHeight": 1024,
+      "screenshotSha256": "bd54a64ee87eaf3e5a27e3baf6e804712c8cbbdb8c1068203cdd0b765fe44f4e"
+    },
+    {
+      "name": "mobile-390x844",
+      "width": 390,
+      "height": 844,
+      "route": "/en",
+      "status": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "content-type": "text/html",
+        "permissions-policy": "camera=(), geolocation=(), microphone=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-robots-tag": "noindex"
+      },
+      "noindex": true,
+      "noHorizontalOverflow": true,
+      "keyboardSkipLinkVisible": true,
+      "axeViolations": 0,
+      "stylesheetCount": 1,
+      "screenshot": "mobile-390x844.png",
+      "pngWidth": 390,
+      "pngHeight": 844,
+      "screenshotSha256": "a0a54e76a826a927787172779f5d232b55c14363d7089ed2b3b3817285840f24"
+    }
+  ],
+  "blockedOrigins": [],
+  "blockedRedirects": [],
+  "routeFetchErrors": [],
+  "consoleErrors": [],
+  "intentional404ConsoleMessages": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev/m00-closeout-intentional-404",
+      "location": {
+        "url": "https://coinblink-m00-run-38049696879-1-coinblink-m00-preview.kayzendev.workers.dev/m00-closeout-intentional-404",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [],
+  "subresourceErrors": []
+}

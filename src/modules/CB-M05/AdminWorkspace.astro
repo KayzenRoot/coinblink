@@ -14,9 +14,9 @@ const settingsViews = ["settings", "integrations"].includes(view);
 const securityViews = ["login", "setup", "recovery"].includes(view);
 
 const primaryNavigation = [
-  { label: "Articles", href: "/admin/articles", active: articleViews },
-  { label: "Settings", href: "/admin/settings", active: settingsViews && view === "settings" },
-  { label: "Integrations", href: "/admin/settings/integrations", active: view === "integrations" },
+  { label: "Articles", href: "/admin/articles", active: articleViews, current: view === "articles" },
+  { label: "Settings", href: "/admin/settings", active: settingsViews && view === "settings", current: view === "settings" },
+  { label: "Integrations", href: "/admin/settings/integrations", active: view === "integrations", current: view === "integrations" },
 ];
 
 const securityNavigation = [
@@ -46,7 +46,7 @@ const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
       <nav class="m05-nav" aria-label="Workspace">
         {primaryNavigation.map((item) => (
           <a class:list={["m05-nav__link", item.active && "m05-nav__link--active"]}
-            href={item.href} aria-current={item.active ? "page" : undefined}>
+            href={item.href} aria-current={item.current ? "page" : undefined}>
             <span>{item.label}</span>
             {item.label === "Articles" && <span class="m05-nav__badge">P0</span>}
           </a>

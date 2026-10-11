@@ -82,7 +82,9 @@ try {
       assert.equal(await page.locator("[data-module='CB-M05'] h1").count(), 1, `${view} has one module page heading`);
       assert.equal(await page.locator("[data-module='CB-M05'] form, [data-module='CB-M05'] input, [data-module='CB-M05'] textarea").count(), 0, `${view} has no credential or mutation form controls`);
       assert.equal(await page.locator("[data-module='CB-M05'] button").evaluateAll((buttons) => buttons.every((button) => button.disabled)), true, `${view} has no enabled action buttons`);
-
+      const articlesLink = page.locator(".m05-nav a[href='/admin/articles']");
+      assert.equal(await articlesLink.getAttribute("aria-current"), view === "articles" ? "page" : null, `${view} marks only the current Articles page`);
+      assert.equal(await articlesLink.evaluate((link) => link.classList.contains("m05-nav__link--active")), ["articles", "article-new", "article-edit"].includes(view), `${view} retains the Articles group highlight`);
       const dimensions = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         page: document.documentElement.scrollWidth,

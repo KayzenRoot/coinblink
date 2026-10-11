@@ -55,7 +55,7 @@ Each entry links to the captured PNG. `1536×864` is desktop, `768×1024` tablet
 | article-new | 1536×864 | [desktop](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-article-new-1536x864.png) | `3fa5ebfadf2bcd81da76698ea86578a98e84d7fb6fb8db52abf711f19aff9218` |
 | article-edit | 1536×864 | [desktop](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-article-edit-1536x864.png) | `faa3d815f6cbbea50e733ef5bf8b6cc5b0e2ef343c32bbd5d5e0dbf389c0dba5` |
 | settings | 1536×864 | [desktop](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-settings-1536x864.png) | `806313871c22755af4a8dd8fa3cefb0c79ca1981544d7511df9a78a8a3c14d96` |
-| integrations | 1536×864 | [desktop](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-integrations-1536x864.png) | `02b01371988e55d83635856e5ad3281b0e0bd2d05bb32b5e620848e41abda96b6` |
+| integrations | 1536×864 | [desktop](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-integrations-1536x864.png) | `02b01371988e55d83635856e5ad3281b0e0bd2d05bb32b5e620848e41abda96b` |
 | login | 768×1024 | [tablet](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-login-768x1024.png) | `f458a34dc8be7229befdf3d54cfcbb0ef7e011aa13d7349c21bb8f2c882f68dc` |
 | setup | 768×1024 | [tablet](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-setup-768x1024.png) | `cb6df6ff2358eb5521cf9d79de2d1679702865c17327fbede10674966a007442` |
 | recovery | 768×1024 | [tablet](../../test/modules/CB-M05/artifacts/run-2026-10-11T06-12-23-139Z/CB-M05-recovery-768x1024.png) | `8f4804be962606ab90dc0a28002a9db4981c0719c058f2b42342beea534f34de` |

@@ -1,0 +1,181 @@
+{
+  "capturedAtUtc": "2026-10-11T18:32:35Z",
+  "pullRequests": [
+    {
+      "number": 58,
+      "state": "open",
+      "draft": false,
+      "baseRef": "main",
+      "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+      "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+      "mergeable": true,
+      "mergeableState": "blocked",
+      "reviewDecision": "REVIEW_REQUIRED",
+      "checkRuns": [
+        {
+          "name": "SonarCloud Code Analysis",
+          "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 12526,
+          "appSlug": "sonarqubecloud"
+        },
+        {
+          "name": "Socket Security: Pull Request Alerts",
+          "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 156372,
+          "appSlug": "socket-security"
+        },
+        {
+          "name": "M00 and GEF (ubuntu-24.04)",
+          "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 15368,
+          "appSlug": "github-actions"
+        },
+        {
+          "name": "M00 and GEF (windows-2022)",
+          "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 15368,
+          "appSlug": "github-actions"
+        },
+        {
+          "name": "Docker Compose smoke (Ubuntu)",
+          "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 15368,
+          "appSlug": "github-actions"
+        },
+        {
+          "name": "Socket Security: Project Report",
+          "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 156372,
+          "appSlug": "socket-security"
+        }
+      ],
+      "statuses": [
+        {
+          "context": "CodeRabbit",
+          "state": "success",
+          "creator": null,
+          "description": "Review completed"
+        }
+      ],
+      "latestReviewsByAuthor": [
+        {
+          "login": "coderabbitai[bot]",
+          "state": "COMMENTED",
+          "commitSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "submittedAt": "2026-10-11T17:16:54Z"
+        },
+        {
+          "login": "KayzenRoot",
+          "state": "COMMENTED",
+          "commitSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+          "submittedAt": "2026-10-11T17:20:00Z"
+        }
+      ],
+      "reviewThreads": {
+        "total": 8,
+        "open": 0,
+        "closed": 8
+      }
+    },
+    {
+      "number": 59,
+      "state": "open",
+      "draft": false,
+      "baseRef": "main",
+      "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+      "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+      "mergeable": true,
+      "mergeableState": "blocked",
+      "reviewDecision": "REVIEW_REQUIRED",
+      "checkRuns": [
+        {
+          "name": "SonarCloud Code Analysis",
+          "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 12526,
+          "appSlug": "sonarqubecloud"
+        },
+        {
+          "name": "Socket Security: Pull Request Alerts",
+          "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 156372,
+          "appSlug": "socket-security"
+        },
+        {
+          "name": "Socket Security: Project Report",
+          "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 156372,
+          "appSlug": "socket-security"
+        },
+        {
+          "name": "M00 and GEF (ubuntu-24.04)",
+          "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 15368,
+          "appSlug": "github-actions"
+        },
+        {
+          "name": "Docker Compose smoke (Ubuntu)",
+          "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 15368,
+          "appSlug": "github-actions"
+        },
+        {
+          "name": "M00 and GEF (windows-2022)",
+          "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "status": "completed",
+          "conclusion": "success",
+          "appId": 15368,
+          "appSlug": "github-actions"
+        }
+      ],
+      "statuses": [
+        {
+          "context": "CodeRabbit",
+          "state": "success",
+          "creator": null,
+          "description": "Review completed"
+        }
+      ],
+      "latestReviewsByAuthor": [
+        {
+          "login": "coderabbitai[bot]",
+          "state": "COMMENTED",
+          "commitSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "submittedAt": "2026-10-11T16:42:29Z"
+        },
+        {
+          "login": "KayzenRoot",
+          "state": "COMMENTED",
+          "commitSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+          "submittedAt": "2026-10-11T16:43:25Z"
+        }
+      ],
+      "reviewThreads": {
+        "total": 5,
+        "open": 0,
+        "closed": 5
+      }
+    }
+  ]
+}

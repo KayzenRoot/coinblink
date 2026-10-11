@@ -1,0 +1,28 @@
+{
+  "capturedAtUtc": "2026-10-11T18:36:34Z",
+  "initialReadback": {
+    "mainSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+    "legacyProtected": false,
+    "repositoryRulesets": [],
+    "effectiveMainRules": []
+  },
+  "finalReadback": {
+    "mainSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+    "legacyProtected": true,
+    "repositoryRulesets": [
+      {
+        "id": 24888106,
+        "name": "coinblink-main-governance",
+        "enforcement": "active",
+        "target": "branch"
+      }
+    ],
+    "effectiveMainRuleTypes": [
+      "deletion",
+      "non_fast_forward",
+      "pull_request",
+      "required_status_checks"
+    ],
+    "defaultBranch": "main"
+  }
+}

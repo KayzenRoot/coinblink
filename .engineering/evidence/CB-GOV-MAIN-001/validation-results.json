@@ -1,0 +1,37 @@
+{
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "sourceFingerprintCount": 19,
+  "sourceFingerprints": "PASS",
+  "rulesetId": 24888106,
+  "rulesetScope": "PASS",
+  "rulesetActive": "PASS",
+  "bypassActors": 0,
+  "activeRuleTypes": [
+    "deletion",
+    "non_fast_forward",
+    "pull_request",
+    "required_status_checks"
+  ],
+  "requiredStatusCheckCount": 7,
+  "pullRequestSnapshots": [
+    {
+      "number": 58,
+      "headSha": "d15ec69529c88e77f9522701e3a9c04ee2e6058f",
+      "checks": 6,
+      "checksPassed": true,
+      "codeRabbit": true,
+      "reviewDecision": "REVIEW_REQUIRED",
+      "openThreads": 0
+    },
+    {
+      "number": 59,
+      "headSha": "d3b4d2d5cd407269bef76b533295e5855bcd2de1",
+      "checks": 6,
+      "checksPassed": true,
+      "codeRabbit": true,
+      "reviewDecision": "REVIEW_REQUIRED",
+      "openThreads": 0
+    }
+  ],
+  "checkpoint": "UNCHANGED; M00_COMPLETE 5%; M01/M05 ADMITTED; M18 FUTURE_NOT_ADMITTED"
+}

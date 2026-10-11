@@ -1,0 +1,25 @@
+{
+  "capturedAtUtc": "2026-10-11T18:25:27Z",
+  "authenticatedLogin": "KayzenRoot",
+  "repository": {
+    "fullName": "KayzenRoot/coinblink",
+    "visibility": "public",
+    "defaultBranch": "main",
+    "viewerPermission": "admin",
+    "allowSquashMerge": true,
+    "allowMergeCommit": true,
+    "allowRebaseMerge": true
+  },
+  "collaborators": [
+    {
+      "login": "KayzenRoot",
+      "permissions": {
+        "admin": true,
+        "maintain": true,
+        "push": true,
+        "triage": true,
+        "pull": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+[
+  {"path":"AGENTS.md","gitBlobSha1":"4e8a6ebeb4aa18ac58171fcddf3bde762d725ca7","rawSha256":"4424180619660921939c73236ac1aa7ea2973787263e1314437b8be052ef713d"},
+  {"path":".engineering/SOURCE-HIERARCHY.md","gitBlobSha1":"38ede6577b26a1c73ee0ca7b24488e21e14ab4d5","rawSha256":"4c5376e66b872ba1ab1c0b1e131d9a02c086dac3d76e4850fd2b7d800cc46921"},
+  {"path":".engineering/CHECKPOINT.json","gitBlobSha1":"eb9a00c4ae1e6b20d781bc6f2b995889b118b6be","rawSha256":"c2b9ef9f0c30f946f9287534305ad4f5f072875b9cfa5fe3e20b7442b45fa6f8"},
+  {"path":".engineering/CHECKPOINT.md","gitBlobSha1":"ad3d8aa36c0d310ba701f746820771119435947b","rawSha256":"dac14bf9dfddae622fd72112c1a0bdabb55b8fa46d2370182af7ad2fa0ddd850"},
+  {"path":".engineering/SCOPE.md","gitBlobSha1":"80fa60e1557e2b4a46b10088eb83040662b39f04","rawSha256":"c2c728d30d915dec287b56e9294aa59332fd6e56aaeb1f8f0554a890268d4ac9"},
+  {"path":".engineering/REQUIREMENTS.md","gitBlobSha1":"5d3d8c2c18ae0356f4d28a535265314c22600a41","rawSha256":"36b83012d76927a5e3dac2a86f9a29113c663f0e0865beac6842f45f8e74c1e4"},
+  {"path":".engineering/ARCHITECTURE.md","gitBlobSha1":"dc6797e169f24b5ed6056ed3740b77741249c7c0","rawSha256":"19782491ab5f5dba185e4756f3b478760e31aa4f566aeae17e95d39fbcc15fe0"},
+  {"path":".engineering/SECURITY.md","gitBlobSha1":"7f8a39a1a9296dad04ada71b0750eb05e9d8cf45","rawSha256":"4b588c089b7d1da2fce4eaf49942f045c4a1644c113396df4b39cbdc81859e2f"},
+  {"path":".engineering/DEFINITION-OF-DONE.md","gitBlobSha1":"8f136953924ef9e5e118f61384fe11d346e5b297","rawSha256":"c61119f0f7c4df1ad4f051626a413b022cc5f8b934a56d2981b6afdc488323ed"},
+  {"path":"docs/DECISIONS_LEDGER.md","gitBlobSha1":"d33b083a9fd31f9d7509e5a39f76f183cb961a3f","rawSha256":"ae505b48f383ab929b827c0b54a57d243d00156e6173f09d0168ded881b42117"},
+  {"path":"docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md","gitBlobSha1":"57d6f502ae65fae1f4d6f027b2a92eeec33f4ee6","rawSha256":"cfa4937121772eae4697bc3a8dd01f7e412dde48df9ba949b617f5e3ba813df6"},
+  {"path":"docs/architecture/contracts/CB-M01.md","gitBlobSha1":"e94fa7a56ee04c5e1f5d6ce2801a484db5d508ce","rawSha256":"8b2375c4255acac60de0dd56c0b652cbac684952903e4c5b0c752505d29d1e14"},
+  {"path":"docs/architecture/contracts/CB-M05.md","gitBlobSha1":"2b35f56903bb00f9c4025eafb6b40d7265c26405","rawSha256":"59f7ec0f3b7dd3429630b0718d96710aa208948a414e5c244f4ebda9240376a2"},
+  {"path":".engineering/work-orders/CB-M01-WO-001.md","gitBlobSha1":"1a29abc4e8ca7ec134b14c68cc4fed7a5e1163c5","rawSha256":"96ad226bd8c593621d2146ec9d02f8b07746c9a32a4f660814acd3c164940927"},
+  {"path":".engineering/work-orders/CB-M05-WO-001.md","gitBlobSha1":"719882376c3d57718251d7bf35e144502b348c1f","rawSha256":"5732de8ef04142e24c9b897f72b4912e9a8826f75df18edccd786113b732d0b6"},
+  {"path":".engineering/context-locks/CB-M01-WO-001.md","gitBlobSha1":"75e155ae8d4bd6886dc565cf8841f1d64938f6d4","rawSha256":"e9ecf11e22a9690c1b6c0e6d8b206871a9ab61ef68c007d2fcf4db8a3e5274ad"},
+  {"path":".engineering/context-locks/CB-M05-WO-001.md","gitBlobSha1":"c0e9a296f690b2ae647500cd509faaebcee17b18","rawSha256":"a557555d6d47f645387127cec13048c044e175877c4037304a5de1a0c9799a5c"},
+  {"path":".engineering/evidence/CB-M01-ADMISSION-CANDIDATE.md","gitBlobSha1":"0db0b0951361fe957874d200bac0ba2ff7629b03","rawSha256":"0cf1b7298284e41ed453c1b8b91b08b81a3eaa31618050fa98b8462267d6a8f2"},
+  {"path":".engineering/evidence/CB-M05-ADMISSION-CANDIDATE.md","gitBlobSha1":"881bf1aa87b89f3a3a657d076e0e59d1702317a8","rawSha256":"c60775b61ce89518f195d2cbf829b8a7520c8627c7c849b1cbd7a976fabab8c6"}
+]

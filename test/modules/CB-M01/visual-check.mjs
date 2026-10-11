@@ -9,7 +9,12 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
-import { removeFixtureTempRootAfterExit, waitForFixtureReady } from "./visual-server.mjs";
+import {
+  clearVisualCheckReport,
+  removeFixtureTempRootAfterExit,
+  waitForFixtureReady,
+  writeVisualCheckFailure,
+} from "./visual-server.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";
@@ -62,6 +67,8 @@ const origin = "http://127.0.0.1:" + port;
 const fixtureTempRoot = await mkdtemp(join(tmpdir(), "coinblink-m01-fixture-"));
 let serverOutput = "";
 let server;
+let runFailure;
+await clearVisualCheckReport(reportPath);
 
 async function waitUntilReady() {
   try {
@@ -292,6 +299,8 @@ try {
   assert.deepEqual(consoleErrors, []);
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(externalRequests, []);
+} catch (error) {
+  runFailure = error;
 } finally {
   try {
     if (browser) await browser.close();
@@ -315,15 +324,7 @@ try {
     shutdownFailure ??= error;
   }
 }
-if (shutdownFailure) throw shutdownFailure;
-
-await mkdir(evidenceDir, { recursive: true });
-const { readFile } = await import("node:fs/promises");
-for (const result of results) {
-  const screenshot = await readFile(join(evidenceDir, "golden-home-" + result.name + ".png"));
-  result.screenshotSha256 = createHash("sha256").update(screenshot).digest("hex");
-}
-const report = {
+const reportBase = {
   generatedAt: new Date().toISOString(),
   baseSha,
   headSha,
@@ -336,13 +337,27 @@ const report = {
   externalRequests,
   serverOutput: serverOutput.split(/\r?\n/).filter(Boolean).slice(-12),
 };
-await mkdir(resolve(reportPath, ".."), { recursive: true });
-await writeFile(reportPath, JSON.stringify(report, null, 2) + "\n", "utf8");
-const violations = results.flatMap((result) => result.axeViolations);
-if (violations.length) throw new Error("Axe violations: " + JSON.stringify(violations, null, 2));
-const globalViolations = results.flatMap((result) => result.fullPageAxeViolations);
-const unexpectedGlobalViolations = globalViolations.filter((violation) =>
-  violation.id !== "region" || violation.nodes.some((node) => !node.target.includes(".skip-link"))
-);
-if (unexpectedGlobalViolations.length) throw new Error("Unexpected full-page Axe violations: " + JSON.stringify(unexpectedGlobalViolations, null, 2));
-console.log(JSON.stringify({ reportPath, screenshots: results.map(({ name, width, height, screenshotSha256 }) => ({ name, width, height, screenshotSha256 })), viewports: results.map(({ name, documentWidth, axeViolations, fullPageAxeViolations }) => ({ name, documentWidth, moduleAxeViolationCount: axeViolations.length, fullPageAxeViolations })), consoleErrors, pageErrors, externalRequests }, null, 2));
+
+try {
+  if (shutdownFailure) throw shutdownFailure;
+  if (runFailure) throw runFailure;
+  await mkdir(evidenceDir, { recursive: true });
+  const { readFile } = await import("node:fs/promises");
+  for (const result of results) {
+    const screenshot = await readFile(join(evidenceDir, "golden-home-" + result.name + ".png"));
+    result.screenshotSha256 = createHash("sha256").update(screenshot).digest("hex");
+  }
+  const violations = results.flatMap((result) => result.axeViolations);
+  if (violations.length) throw new Error("Axe violations: " + JSON.stringify(violations, null, 2));
+  const globalViolations = results.flatMap((result) => result.fullPageAxeViolations);
+  const unexpectedGlobalViolations = globalViolations.filter((violation) =>
+    violation.id !== "region" || violation.nodes.some((node) => !node.target.includes(".skip-link"))
+  );
+  if (unexpectedGlobalViolations.length) throw new Error("Unexpected full-page Axe violations: " + JSON.stringify(unexpectedGlobalViolations, null, 2));
+  const report = { ...reportBase, status: "passed" };
+  await writeFile(reportPath, JSON.stringify(report, null, 2) + "\n", "utf8");
+  console.log(JSON.stringify({ reportPath, screenshots: results.map(({ name, width, height, screenshotSha256 }) => ({ name, width, height, screenshotSha256 })), viewports: results.map(({ name, documentWidth, axeViolations, fullPageAxeViolations }) => ({ name, documentWidth, moduleAxeViolationCount: axeViolations.length, fullPageAxeViolations })), consoleErrors, pageErrors, externalRequests }, null, 2));
+} catch (error) {
+  await writeVisualCheckFailure(reportPath, reportBase, error);
+  throw error;
+}

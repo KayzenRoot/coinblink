@@ -1,5 +1,6 @@
-import { rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { get } from "node:http";
+import { dirname } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 function assertFixtureRunning(child) {
@@ -73,4 +74,21 @@ export async function removeFixtureTempRootAfterExit(child, fixtureTempRoot, rem
   if (child && child.exitCode === null && child.signalCode === null) return false;
   await remove(fixtureTempRoot, { recursive: true, force: true });
   return true;
+}
+
+export async function clearVisualCheckReport(reportPath) {
+  await mkdir(dirname(reportPath), { recursive: true });
+  await rm(reportPath, { force: true });
+}
+
+export async function writeVisualCheckFailure(reportPath, report, error) {
+  await mkdir(dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, JSON.stringify({
+    ...report,
+    status: "failed",
+    failure: {
+      name: String(error?.name ?? "Error"),
+      message: String(error?.message ?? error).slice(0, 2_000),
+    },
+  }, null, 2) + "\n", "utf8");
 }

@@ -1,15 +1,22 @@
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { get } from "node:http";
 import { createServer } from "node:net";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import test from "node:test";
-import { removeFixtureTempRootAfterExit, waitForFixtureReady } from "./visual-server.mjs";
+import {
+  clearVisualCheckReport,
+  removeFixtureTempRootAfterExit,
+  waitForFixtureReady,
+  writeVisualCheckFailure,
+} from "./visual-server.mjs";
 
 const announcedChild = (origin) => ({
   exitCode: null,
   signalCode: null,
   output: `Astro dev server Local ${origin}/`,
 });
-
 function httpGet(url, { signal }) {
   return new Promise((resolve, reject) => {
     const request = get(url, { signal }, (response) => {
@@ -94,4 +101,39 @@ test("the generated fixture directory is removed only after child exit is confir
     path: "coinblink-m01-fixture-test",
     options: { recursive: true, force: true },
   }]);
+});
+
+test("a fresh visual run clears the prior report instead of leaving stale passing evidence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "coinblink-m01-report-test-"));
+  const reportPath = join(root, "nested", "visual-check.json");
+  try {
+    await mkdir(join(root, "nested"), { recursive: true });
+    await writeFile(reportPath, JSON.stringify({ status: "passed" }), "utf8");
+    await clearVisualCheckReport(reportPath);
+    await assert.rejects(readFile(reportPath, "utf8"), { code: "ENOENT" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("failed visual runs retain the current diagnostic error and exact candidate identity", async () => {
+  const root = await mkdtemp(join(tmpdir(), "coinblink-m01-report-test-"));
+  const reportPath = join(root, "visual-check.json");
+  const run = {
+    baseSha: "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+    headSha: "bc3f7b7c1c66dca10b778348d2e723196e4d8660",
+    viewports: [],
+    consoleErrors: ["fixture console error"],
+  };
+  try {
+    await writeVisualCheckFailure(reportPath, run, new Error("expected visual assertion failure"));
+    const saved = JSON.parse(await readFile(reportPath, "utf8"));
+    assert.equal(saved.status, "failed");
+    assert.deepEqual(saved.failure, { name: "Error", message: "expected visual assertion failure" });
+    assert.equal(saved.baseSha, run.baseSha);
+    assert.equal(saved.headSha, run.headSha);
+    assert.deepEqual(saved.consoleErrors, ["fixture console error"]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

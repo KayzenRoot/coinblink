@@ -13,8 +13,8 @@
 | Viewport | Image | SHA-256 | Horizontal overflow | Axe within M01 |
 | --- | --- | --- | ---: | ---: |
 | Desktop 1536×864 | `screenshots/golden-home-desktop.png` | `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` | none | 0 violations |
-| Tablet 768×1024 | `screenshots/golden-home-tablet.png` | `d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb` | none | 0 violations |
-| Mobile 390×844 | `screenshots/golden-home-mobile.png` | `f8edf1c9420b2521e38d54a21edb88efc420ee350df14e724a259ea5aa42155d` | none | 0 violations |
+| Tablet 768×1024 | `screenshots/golden-home-tablet.png` | `cffc4ba6e2578efb473f55bdd189f1c1f394344538db38a289951bdc6c381cc3` | none | 0 violations |
+| Mobile 390×844 | `screenshots/golden-home-mobile.png` | `30132155bebf1363d2b55c5bf43778d38938b0812e7ce258f869180c06efcbe5` | none | 0 violations |
 
 Detailed DOM, Axe, console, request, and screenshot metadata are in `visual-check.json`.
 
@@ -170,3 +170,7 @@ Final local validation on Node 22.23.3 / npm 10.9.9: npm test PASS (132 unit tes
 Updated M01 screenshots: desktop 1536×864, 578591 bytes, SHA-256 16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898; tablet 768×1024, 417089 bytes, SHA-256 cffc4ba6e2578efb473f55bdd189f1c1f394344538db38a289951bdc6c381cc3; mobile 390×844, 179438 bytes, SHA-256 30132155bebf1363d2b55c5bf43778d38938b0812e7ce258f869180c06efcbe5. The updated Playwright JSON records one-row tablet/mobile layout assertions. The approved Golden JPEGs and manifest remain unchanged.
 
 The result is limited to M01 component CSS, M01 contract/visual tests and M01 evidence. The new code/test head must receive exact-hosted CI, fresh local/hosted CodeRabbit review, and Owner audit. PR #58 stays draft/open; no shared /en integration, checkpoint change, merge, or M01 completion is claimed.
+
+## Local CodeRabbit evidence-table correction · 2026-10-11
+
+The local deep review of HEAD 36a535e raised minor evidence findings: the Fresh captures table still contained predecessor tablet/mobile hashes, and a historical Work Order heading did not identify its d3dbecb evidence commit. The table now matches the committed 768×1024 and 390×844 PNGs, and the heading is uniquely labeled. The review's additional concern about the Context Lock blob was checked deterministically: git rev-parse at frozen base 07f31d8 returns 75e155ae8d4bd6886dc565cf8841f1d64938f6d4 for .engineering/context-locks/CB-M01-WO-001.md, exactly matching the documented pre-refresh source blob. It remains unchanged; the current source blob is a separate later value. No fingerprint was fabricated or rewritten.

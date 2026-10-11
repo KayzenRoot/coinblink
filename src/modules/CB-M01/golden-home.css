@@ -71,8 +71,8 @@
   .cb-home .cb-header { min-height:58px; gap:12px; }
   .cb-home .brand img { width:35px; height:32px; }
   .cb-home .brand-name { font-size:19px; }
-  .cb-home .search-box { width:30px; justify-content:center; padding:0; border:0; }
-  .cb-home .search-box input,.cb-home .language-chip,.cb-home .theme-chip { display:none; }
+  .cb-home .search-box { display:none; }
+  .cb-home .language-chip,.cb-home .theme-chip { display:none; }
   .cb-home .home-main { padding-top:9px; }
   .cb-home .lead-grid,.cb-home .lower-grid { grid-template-columns:minmax(0,1fr); }
   .cb-home .hero-panel { min-height:378px; padding:21px; }

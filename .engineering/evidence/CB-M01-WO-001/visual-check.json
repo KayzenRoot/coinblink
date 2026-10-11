@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-11T11:36:56.836Z",
+  "generatedAt": "2026-10-11T11:57:54.966Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:60233",
+  "origin": "http://127.0.0.1:55412",
   "viewports": [
     {
       "name": "desktop",
@@ -71,7 +71,7 @@
           ]
         }
       ],
-      "screenshotSha256": "fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d"
+      "screenshotSha256": "f8edf1c9420b2521e38d54a21edb88efc420ee350df14e724a259ea5aa42155d"
     }
   ],
   "interactionChecks": {
@@ -118,6 +118,11 @@
       "selectedCategory": "All",
       "matches": 1,
       "combinedCategoryFilterVerified": true
+    },
+    "mobileSearch": {
+      "visible": false,
+      "inputVisible": false,
+      "intentionallyUnavailable": true
     }
   },
   "consoleErrors": [],
@@ -125,15 +130,15 @@
   "externalRequests": [],
   "serverOutput": [
     "{\"message\":\"watching for file changes...\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 84ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 86ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}"
   ]

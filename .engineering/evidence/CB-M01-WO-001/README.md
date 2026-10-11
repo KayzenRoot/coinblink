@@ -3,7 +3,7 @@
 ## Scope and provenance
 
 - Canonical implementation base: `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`.
-- Current Git `HEAD` is still exactly that base; implementation and evidence changes are uncommitted pending Integration Steward review.
+- The initial implementation evidence was captured while `HEAD` equaled this base; append-only correction records below document later PR commits.
 - Browser fixture renders the M01 component in isolation. The Integration Steward still owns mounting it at `/en`; this evidence does not claim route integration or M01 completion.
 - Golden JPEG source files remain unchanged: Home 1536×864, 532,365 bytes, SHA-256 `82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8`, Git blob `4e96bc960eb507c87ec71fc88bc347ccbc64b21f`; logo 1179×1040, 121,728 bytes, SHA-256 `126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0`, Git blob `60771965fa0eb3b19fc38db51b36cc295563f6ab`.
 - Browser: project Playwright Chromium, launched headlessly by `test/modules/CB-M01/visual-check.mjs`.
@@ -14,7 +14,7 @@
 | --- | --- | --- | ---: | ---: |
 | Desktop 1536×864 | `screenshots/golden-home-desktop.png` | `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` | none | 0 violations |
 | Tablet 768×1024 | `screenshots/golden-home-tablet.png` | `d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb` | none | 0 violations |
-| Mobile 390×844 | `screenshots/golden-home-mobile.png` | `fcd3609b3d7cd93e0093a6f77616693d7b57c5ba8dc16b39b53224743fb6418d` | none | 0 violations |
+| Mobile 390×844 | `screenshots/golden-home-mobile.png` | `f8edf1c9420b2521e38d54a21edb88efc420ee350df14e724a259ea5aa42155d` | none | 0 violations |
 
 Detailed DOM, Axe, console, request, and screenshot metadata are in `visual-check.json`.
 
@@ -106,3 +106,13 @@ Read-only SonarCloud API at this exact PR #58 HEAD reports **33 OPEN issues**, a
 | MINOR | `javascript:S6582` | `test/modules/CB-M01/visual-server.mjs` | 1 at 73 | Optional-chain style suggestion; no functional defect. |
 
 No HIGH/CRITICAL issue was reported in this scan. Measures report `new_lines=638`, `new_lines_to_cover=0`, and `new_uncovered_lines=0`; therefore a dashboard 0% new-code coverage value has no coverable-line denominator and is not a measured zero-coverage result. This is a historical exact-head snapshot; the append below will change HEAD, so fresh Sonar/CI is required there.
+
+## Correction Delta · inactive mobile search affordance · 2026-10-11
+
+CodeRabbit identified an inactive search affordance at widths up to 760px on exact PR #58 HEAD `1b008811b8d9da696cef53941427d8ca351961ca`: CSS hid the search input but left its magnifier visible. The regression was reproduced at 390×844: `.search-box` remained visible while its search input was hidden. M01 now hides the entire search control at the existing mobile breakpoint. Playwright asserts the whole control and input are unavailable on mobile, and `visual-check.json` records that intentional state. Search remains usable above the breakpoint.
+
+The mobile capture is now SHA-256 `f8edf1c9420b2521e38d54a21edb88efc420ee350df14e724a259ea5aa42155d` (179,479 bytes); desktop and tablet are unchanged at `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` and `d0ee32e043f5feef9fa7efb9f277a77a799e12a0756b50d84faa21ba8f0042bb`. The updated mobile PNG was visually inspected. M01 Axe remains at 0 violations; the shared `.skip-link` moderate landmark finding is unchanged and Integration-Steward-owned.
+
+On predecessor HEAD `1b008811`, exact CI run [#38136990859](https://github.com/KayzenRoot/coinblink/actions/runs/38136990859) passed Docker Compose smoke, Ubuntu GEF, Windows GEF, SonarCloud, and both Socket checks. Sonar reported 33 open MINOR CODE_SMELL findings (31 ordered `javascript:S9382` awaits and two style-only `javascript:S6582` suggestions), with no HIGH/CRITICAL issue; new-code measures were 638 lines, 0 lines to cover, and 0 uncovered. That is not measured 0% coverage. CodeRabbit's full review of the same predecessor found the mobile affordance defect; the corrected candidate needs its own exact-head CI/Sonar and review.
+
+Local validation of the correction on Node.js `v22.23.3`: `npm test` passed (131 unit tests, Astro build/no-binding guard, and 7/7 E2E); lint, typecheck (53 files, 0 diagnostics), and `npm audit --audit-level=high` (0 vulnerabilities) passed. The standalone Playwright matrix passed at desktop 1536×864, tablet 768×1024, and mobile 390×844, including mobile control visibility, M01 Axe, responsive navigation boundaries, category-inclusive search, no overflow/errors, and no external requests. One exploratory `npm test` inherited Node 24 and correctly failed the repository's Node 22 version assertions; rerunning with the supported Node 22 runtime passed.

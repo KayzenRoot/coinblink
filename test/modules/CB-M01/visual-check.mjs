@@ -195,6 +195,11 @@ try {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(origin, { waitUntil: "networkidle" });
+  const mobileSearchVisible = await page.locator(".search-box").isVisible();
+  const mobileSearchInputVisible = await page.locator("[data-news-search]").isVisible();
+  assert.equal(mobileSearchVisible, false, "mobile must not show an inactive search affordance");
+  assert.equal(mobileSearchInputVisible, false, "mobile search input is intentionally unavailable");
+  interactionChecks.mobileSearch = { visible: mobileSearchVisible, inputVisible: mobileSearchInputVisible, intentionallyUnavailable: true };
   const menu = page.locator("[data-menu-toggle]");
   await menu.click();
   assert.equal(await menu.getAttribute("aria-expanded"), "true");

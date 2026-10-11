@@ -90,3 +90,9 @@ These hashes identify the M05 source and fixture files in the current working tr
 ## Remaining gates
 
 The module fixture is not mounted on application routes. Steward-owned route integration, exact-head CI, independent/Owner review, normal merge, and any checkpoint change remain pending. P1 identity, session, recovery, persistence, secret-vault, Cloudflare, and production work remains unauthorized by this P0 execution record.
+
+## Append-only publication correction · 2026-10-11
+
+The M05 P0 implementation and local validation were committed as `30eb1dde25462161dfb65cc70de0d992d428ef72` and pushed to draft PR [#59](https://github.com/KayzenRoot/coinblink/pull/59). Earlier statements in this bundle that the implementation commit/PR HEAD was pending describe the pre-publication state and are superseded by this correction. The implementation-source SHA-256 values above identify files committed in `30eb1dd`, rather than only uncommitted working-tree files.
+
+This follow-up synchronizes only the Evidence Bundle and Work Order metadata; it makes no application, test, fixture, or screenshot changes. Local test results recorded above were run against implementation commit `30eb1dd`. Exact-head GitHub CI for the new documentation-only PR HEAD is pending and must be read back before claiming that gate. The draft PR remains unmerged; shared-route integration, independent/Owner review, and any checkpoint promotion remain pending. M05 is not declared complete, and no P1 authority is implied.

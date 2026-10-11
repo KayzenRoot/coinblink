@@ -20,6 +20,7 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
   for (const testFile of [
     'test/governance-parallel-plan.test.mjs',
     'test/gef-cli.test.mjs',
+    'test/global-v1-baseline.test.mjs',
     'test/future-checkpoint-regression.test.mjs',
     'scripts/verify-cb-gov-parallel-001-history.mjs',
   ]) {
@@ -33,19 +34,20 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
 
   const checkpointPath = path.join(checkout, '.engineering', 'CHECKPOINT.json');
   const checkpoint = JSON.parse(readFileSync(checkpointPath, 'utf8'));
-  // Synthetic schema-valid fixture only: it models a later M00 closure and M01 admission.
+  // Synthetic schema-valid fixture only: it models M01 completed after M00, at 10% progress.
   // It is committed only inside this disposable clone and is never canonical project evidence.
   checkpoint.status = 'M00_COMPLETE';
-  checkpoint.phase = 'IMPLEMENTATION_COMPLETE';
-  checkpoint.completedThroughModule = 'CB-M00';
+  checkpoint.phase = 'IMPLEMENTATION_IN_PROGRESS';
+  checkpoint.completedThroughModule = 'CB-M01';
   checkpoint.overallCompletionPercent = 10;
-  checkpoint.nextLegalStage = 'IMPLEMENT_CB_M01_AFTER_ADMISSION';
+  checkpoint.nextLegalStage = 'ASSESS_NEXT_ADMITTED_MODULE';
   checkpoint.checkpointFacts.applicationImplementation = 'M00_COMPLETE';
   checkpoint.checkpointFacts.previewDeployment = 'PREVIEW_VERIFIED';
-  checkpoint.checkpointFacts.activeWorkOrder = 'CB-M01-WO-001';
+  checkpoint.checkpointFacts.activeWorkOrder = 'NONE';
   checkpoint.checkpointFacts.sourceMainSha = '1111111111111111111111111111111111111111';
   checkpoint.checkpointFacts.moduleAdmission['CB-M01'] = 'ADMITTED';
   checkpoint.progressBasis.overallCompletionPercent = 10;
+  checkpoint.progressBasis.reason = 'Synthetic fixture only: 2 of 19 modules complete; floor(200 / 19) = 10 percent.';
   writeFileSync(checkpointPath, `${JSON.stringify(checkpoint, null, 2)}\n`);
 
   const unrelatedPath = path.join(checkout, 'docs', 'test-fixtures', 'future-work-order.md');
@@ -76,6 +78,7 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
     '--test',
     'test/governance-parallel-plan.test.mjs',
     'test/gef-cli.test.mjs',
+    'test/global-v1-baseline.test.mjs',
   ], {
     cwd: checkout,
     encoding: 'utf8',
@@ -87,10 +90,25 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
   assert.equal(result.error, undefined, 'synthetic evergreen test runner starts');
   const childOutput = `${result.stdout}\n${result.stderr}`;
   assert.match(childOutput, /parallel governance matrix preserves exactly the existing 19 module and issue identities/u);
+  assert.match(childOutput, /global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission/u);
   assert.match(childOutput, /preflight validates the post-merge M00 checkpoint/u);
   assert.equal(
     result.status,
     0,
     `affected evergreen tests pass at synthetic future HEAD ${runGit(['rev-parse', 'HEAD']).toString().trim()}\n${childOutput}`,
   );
+
+  checkpoint.overallCompletionPercent = 5;
+  checkpoint.progressBasis.overallCompletionPercent = 5;
+  writeFileSync(checkpointPath, `${JSON.stringify(checkpoint, null, 2)}\n`);
+  const understated = spawnSync(process.execPath, ["--test", "test/global-v1-baseline.test.mjs"], {
+    cwd: checkout,
+    encoding: "utf8",
+    timeout: 120_000,
+    windowsHide: true,
+    env: childEnvironment,
+  });
+  const understatedOutput = `${understated.stdout}\n${understated.stderr}`;
+  assert.notEqual(understated.status, 0, 'the baseline rejects M01 completion recorded as only 5%');
+  assert.match(understatedOutput, /completion percentage must match completed module count/u);
 });

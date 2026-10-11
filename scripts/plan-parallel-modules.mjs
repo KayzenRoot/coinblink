@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MATRIX = '.engineering/proposals/CB-GOV-PARALLEL-001-MODULE-MATRIX.json';
 const CHECKPOINT = '.engineering/CHECKPOINT.json';
+const GITHUB_API = 'https://api.github.com/repos/KayzenRoot/coinblink';
 const ADR = 'docs/architecture/ADR-CB-0002-PARALLEL-MODULE-DELIVERY.md';
 const GLOBAL_SOURCE_APPROVALS = [
   ['scopeApproved', '.engineering/SCOPE.md'],
@@ -36,12 +37,18 @@ export function localAuthoringSlots({ cpus, ramBytes }) {
 }
 
 /** Builds a read-only plan from the canonical module matrix, checkpoint, and approved gates. */
-export function planParallelModules({ matrix, checkpoint, globalGates = {}, resourceSlots = 1, gates = {} }) {
+export function planParallelModules({ matrix, checkpoint, canonicalCheckpoint, canonicalMainSha, globalGates = {}, resourceSlots = 1, gates = {} }) {
   if (matrix.moduleCount !== 19 || matrix.modules.length !== 19) {
     throw new Error('Canonical module count is not the 19-module product catalog');
   }
-  if (checkpoint.checkpointFacts.moduleAdmission['CB-M18'] !== 'FUTURE_NOT_ADMITTED') {
-    throw new Error('M18 must remain FUTURE_NOT_ADMITTED');
+  if (!isCoinBlinkCheckpoint(checkpoint)) {
+    throw new Error('Candidate checkpoint must use the CoinBlink schema v2 identity');
+  }
+  if (!isCoinBlinkCheckpoint(canonicalCheckpoint)) {
+    throw new Error('Canonical main checkpoint must use the CoinBlink schema v2 identity');
+  }
+  if (typeof canonicalMainSha !== 'string' || !/^[a-f0-9]{40}$/u.test(canonicalMainSha)) {
+    throw new Error('Canonical main checkpoint SHA is missing or invalid');
   }
   if (!Number.isInteger(resourceSlots) || resourceSlots < 0) {
     throw new Error('resourceSlots must be a non-negative integer');
@@ -51,14 +58,24 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
   if (JSON.stringify(ids) !== JSON.stringify(expected)) {
     throw new Error('Module identifiers/order changed from CB-M00 through CB-M18');
   }
-  const admissionIds = new Set(Object.keys(checkpoint.checkpointFacts.moduleAdmission));
-  if (admissionIds.size !== expected.length || expected.some(id => !admissionIds.has(id))) {
-    throw new Error('Checkpoint admission registry differs from 19 canonical module IDs');
+  for (const [label, source] of [['candidate', checkpoint], ['canonical main', canonicalCheckpoint]]) {
+    const admissionRegistry = source?.checkpointFacts?.moduleAdmission;
+    const admissionIds = new Set(isRecord(admissionRegistry) ? Object.keys(admissionRegistry) : []);
+    if (admissionIds.size !== expected.length || expected.some(id => !admissionIds.has(id))) {
+      throw new Error(`${label} checkpoint admission registry differs from 19 canonical module IDs`);
+    }
   }
-  const facts = checkpoint.checkpointFacts;
-  const m00Done = checkpoint.status === 'M00_COMPLETE'
-    && checkpoint.completedThroughModule === 'CB-M00'
-    && checkpoint.overallCompletionPercent === 5
+  if (!hasConsistentCheckpointProgress(checkpoint, expected)) {
+    throw new Error('Candidate checkpoint progress is inconsistent with completedThroughModule');
+  }
+  if (!hasConsistentCheckpointProgress(canonicalCheckpoint, expected)) {
+    throw new Error('Canonical main checkpoint progress is inconsistent with completedThroughModule');
+  }
+  if (canonicalCheckpoint.checkpointFacts.moduleAdmission['CB-M18'] !== 'FUTURE_NOT_ADMITTED') {
+    throw new Error('M18 must remain FUTURE_NOT_ADMITTED in canonical main');
+  }
+  const facts = canonicalCheckpoint.checkpointFacts;
+  const m00Done = canonicalCheckpoint.status === 'M00_COMPLETE'
     && facts.applicationImplementation === 'M00_COMPLETE'
     && facts.previewDeployment === 'PREVIEW_VERIFIED'
     && facts.moduleAdmission['CB-M00'] === 'ADMITTED';
@@ -73,7 +90,8 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
     const module = matrix.modules.find(x => x.id === id);
     if (!module) throw new Error('Unrecognized module in wave: ' + id);
     const unmetDependencies = module.dependencies.filter(dep => !completed.has(dep));
-    const admission = checkpoint.checkpointFacts.moduleAdmission[id];
+    const candidateAdmission = checkpoint.checkpointFacts.moduleAdmission[id];
+    const admission = facts.moduleAdmission[id];
     const gate = gates[id] ?? {};
     const unfinishedExternalGates = module.externalGates.filter((_, index) => gate.externalGateApprovals?.[index] !== true);
     const integrationBlockers = (module.integrationGates ?? [])
@@ -91,11 +109,11 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
       ...pendingGlobalGates.map(key => `Global gate pending: ${key} (${GLOBAL_GATE_LABELS[key]})`),
       ...unmetDependencies.map(dep => 'Dependency not independently complete: ' + dep),
       ...unfinishedExternalGates.map(x => 'External evidence: ' + x),
-      ...(admission !== 'ADMITTED' ? ['Module not admitted: ' + id] : []),
+      ...(admission !== 'ADMITTED' ? ['Module not admitted in canonical main: ' + id] : []),
       ...(!frozenSources ? ['No verified Work Order + Context Lock + contract'] : []),
     ];
     return {
-      id, issue: module.issue, wave: wave.id, admission,
+      id, issue: module.issue, wave: wave.id, admission, candidateAdmission,
       unmetDependencies, plannerEligibleBasedOnEvaluatedInputs,
       blockers: blockerLabels, integrationBlockers,
       suggestedWorktree: 'cb-' + id.slice(3).toLowerCase() + '-wo-001',
@@ -109,7 +127,9 @@ export function planParallelModules({ matrix, checkpoint, globalGates = {}, reso
   return {
     kind: 'READ_ONLY_NON_AUTHORIZING_PLAN',
     canonicalM00Complete: m00Done,
-    checkpointPercent: checkpoint.overallCompletionPercent,
+    checkpointPercent: canonicalCheckpoint.overallCompletionPercent,
+    candidateCheckpointPercent: checkpoint.overallCompletionPercent,
+    canonicalMainSha,
     moduleCount: 19,
     unfinishedModuleCount: m00Done ? 18 : 19,
     globalGatesSatisfied,
@@ -141,6 +161,32 @@ const ARRAY_GATE_EVIDENCE_FIELDS = new Set(['externalGateApprovals', 'integratio
 /** Returns whether a JSON value is a non-null, non-array record. */
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** Validates the fixed GEF project checkpoint identity used by this planner. */
+function isCoinBlinkCheckpoint(value) {
+  return isRecord(value) && value.schemaVersion === 2 && value.project === 'CoinBlink'
+    && isRecord(value.checkpointFacts);
+}
+
+/** Validates the GEF completion marker and exact percentage against the fixed 19-module catalog. */
+function hasConsistentCheckpointProgress(value, moduleIds = Array.from(
+  { length: 19 }, (_, index) => 'CB-M' + String(index).padStart(2, '0'),
+)) {
+  const completedThrough = value.completedThroughModule;
+  let expectedPercent;
+  if (completedThrough === 'NONE') {
+    expectedPercent = 0;
+  } else {
+    const completedIndex = moduleIds.indexOf(completedThrough);
+    if (completedIndex === -1 || value.checkpointFacts.moduleAdmission?.[completedThrough] !== 'ADMITTED') {
+      return false;
+    }
+    expectedPercent = Math.floor(((completedIndex + 1) / moduleIds.length) * 100);
+  }
+  return Number.isInteger(value.overallCompletionPercent)
+    && value.overallCompletionPercent === expectedPercent
+    && value.progressBasis?.overallCompletionPercent === expectedPercent;
 }
 
 /** Validates one explicit module gate value. */
@@ -233,6 +279,43 @@ export async function isIssue6Closed(fetchImplementation = fetch) {
   }
 }
 
+/** Reads the current canonical main ref and its checkpoint through fixed unauthenticated GitHub API GETs. */
+export async function readCanonicalMainCheckpoint(fetchImplementation = fetch) {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'CoinBlink-Parallel-Readiness',
+    'Cache-Control': 'no-cache',
+  };
+  try {
+    const refResponse = await fetchImplementation(`${GITHUB_API}/git/ref/heads/main`, {
+      headers, redirect: 'error', signal: AbortSignal.timeout(5000),
+    });
+    if (!refResponse.ok) return null;
+    const ref = await refResponse.json();
+    const sha = ref?.object?.sha;
+    if (ref?.ref !== 'refs/heads/main' || ref?.object?.type !== 'commit'
+      || typeof sha !== 'string' || !/^[a-f0-9]{40}$/u.test(sha)) return null;
+
+    const contentResponse = await fetchImplementation(
+      `${GITHUB_API}/contents/${CHECKPOINT}?ref=${encodeURIComponent(sha)}`,
+      { headers, redirect: 'error', signal: AbortSignal.timeout(5000) },
+    );
+    if (!contentResponse.ok) return null;
+    const file = await contentResponse.json();
+    const encoded = typeof file?.content === 'string' ? file.content.replace(/\s/gu, '') : '';
+    if (file?.type !== 'file' || file?.path !== CHECKPOINT || file?.encoding !== 'base64'
+      || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u.test(encoded)) return null;
+
+    const parsed = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+    if (!isCoinBlinkCheckpoint(parsed) || !isRecord(parsed.checkpointFacts.moduleAdmission)
+      || !hasConsistentCheckpointProgress(parsed)) return null;
+    return { sha, checkpoint: parsed };
+  } catch {
+    return null;
+  }
+}
+
 /** Reads the five independent global gates; unavailable GitHub state fails closed. */
 async function readGlobalGates() {
   const globalGates = Object.fromEntries(
@@ -274,9 +357,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const gates = gateEvidencePath === null ? {} : parseGateEvidence(
       readFileSync(path.resolve(ROOT, gateEvidencePath), 'utf8'),
     );
+    const canonicalMain = await readCanonicalMainCheckpoint();
+    if (!canonicalMain) throw new Error('Canonical main checkpoint could not be verified from GitHub; module eligibility is blocked');
     const result = planParallelModules({
       matrix: readJson(MATRIX),
       checkpoint: readJson(CHECKPOINT),
+      canonicalCheckpoint: canonicalMain.checkpoint,
+      canonicalMainSha: canonicalMain.sha,
       globalGates: await readGlobalGates(),
       resourceSlots: actualSlots,
       gates,

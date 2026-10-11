@@ -13,8 +13,8 @@
 | Viewport | Image | SHA-256 | Horizontal overflow | Axe within M01 |
 | --- | --- | --- | ---: | ---: |
 | Desktop 1536×864 | `screenshots/golden-home-desktop.png` | `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898` | none | 0 violations |
-| Tablet 768×1024 | `screenshots/golden-home-tablet.png` | `cffc4ba6e2578efb473f55bdd189f1c1f394344538db38a289951bdc6c381cc3` | none | 0 violations |
-| Mobile 390×844 | `screenshots/golden-home-mobile.png` | `30132155bebf1363d2b55c5bf43778d38938b0812e7ce258f869180c06efcbe5` | none | 0 violations |
+| Tablet 768×1024 | `screenshots/golden-home-tablet.png` | `4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b` | none | 0 violations |
+| Mobile 390×844 | `screenshots/golden-home-mobile.png` | `0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c` | none | 0 violations |
 
 Detailed DOM, Axe, console, request, and screenshot metadata are in `visual-check.json`.
 
@@ -170,6 +170,16 @@ Final local validation on Node 22.23.3 / npm 10.9.9: npm test PASS (132 unit tes
 Updated M01 screenshots: desktop 1536×864, 578591 bytes, SHA-256 16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898; tablet 768×1024, 417089 bytes, SHA-256 cffc4ba6e2578efb473f55bdd189f1c1f394344538db38a289951bdc6c381cc3; mobile 390×844, 179438 bytes, SHA-256 30132155bebf1363d2b55c5bf43778d38938b0812e7ce258f869180c06efcbe5. The updated Playwright JSON records one-row tablet/mobile layout assertions. The approved Golden JPEGs and manifest remain unchanged.
 
 The result is limited to M01 component CSS, M01 contract/visual tests and M01 evidence. The new code/test head must receive exact-hosted CI, fresh local/hosted CodeRabbit review, and Owner audit. PR #58 stays draft/open; no shared /en integration, checkpoint change, merge, or M01 completion is claimed.
+
+## Correction delta · unavailable Tools and Videos navigation · 2026-10-11
+
+The fresh local review of candidate `350aeed76476c5e59dfac3b8a8ccd9f0fe388a64` identified two M01 navigation links whose destinations did not match their labels. Both links now lead to `#demo-data`, whose copy explicitly states “Tools and videos are unavailable in this demo.” A contract regression was first run and failed on the prior targets; it passes with the correction. The isolated Playwright runner also clicks Tools, checks the URL fragment, and verifies the destination text.
+
+Final local validation on Node 22.23.3: `npm test` passed (133 unit tests, Astro build/no-binding guard, Playwright E2E 7/7); `npm run lint` passed; `npm run typecheck` passed (53 files, 0 errors/warnings/hints); `npm audit --audit-level=high` found 0 vulnerabilities. Focused M01 contract tests passed 8/8. The isolated M01 Playwright/Axe run passed at desktop, tablet, and mobile with 0 module Axe violations, no console/page errors, no external requests and no document overflow. The inherited full-page Axe `region` finding is limited to the shared `.skip-link` and remains Integration-Steward-owned.
+
+The latest captures are desktop 1536×864, 578591 bytes, SHA-256 `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898`; tablet 768×1024, 414406 bytes, SHA-256 `4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b`; mobile 390×844, 177383 bytes, SHA-256 `0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c`. The desktop capture remained byte-identical; tablet and mobile were recaptured and their hashes refreshed. Approved Golden JPEGs and manifest remain unchanged.
+
+This correction is limited to M01 navigation, its contract/browser checks, and evidence. Exact-head hosted CI, SonarCloud, Socket, fresh CodeRabbit review and Owner audit are required on the pushed commit. PR #58 remains draft/open; no route integration, checkpoint promotion, merge, or M01 completion is claimed.
 
 ## Local CodeRabbit evidence-table correction · 2026-10-11
 

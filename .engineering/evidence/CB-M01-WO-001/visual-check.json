@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-11T13:44:54.796Z",
+  "generatedAt": "2026-10-11T13:58:33.193Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:50099",
+  "origin": "http://127.0.0.1:51828",
   "viewports": [
     {
       "name": "desktop",
@@ -48,7 +48,7 @@
           ]
         }
       ],
-      "screenshotSha256": "cffc4ba6e2578efb473f55bdd189f1c1f394344538db38a289951bdc6c381cc3"
+      "screenshotSha256": "4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b"
     },
     {
       "name": "mobile",
@@ -71,7 +71,7 @@
           ]
         }
       ],
-      "screenshotSha256": "30132155bebf1363d2b55c5bf43778d38938b0812e7ce258f869180c06efcbe5"
+      "screenshotSha256": "0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c"
     }
   ],
   "interactionChecks": {
@@ -131,6 +131,10 @@
       "matches": 1,
       "combinedCategoryFilterVerified": true
     },
+    "unavailableNavigation": {
+      "toolsAndVideosTarget": "#demo-data",
+      "destinationStatusVerified": true
+    },
     "mobileSearch": {
       "visible": false,
       "inputVisible": false,
@@ -145,17 +149,17 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 105ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 140ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
   ]
 }

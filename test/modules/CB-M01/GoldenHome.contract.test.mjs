@@ -38,6 +38,11 @@ test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mar
   assert.match(component, />₿<\/text>/u);
 });
 
+test("unavailable Tools and Videos navigation routes to an explicit demo status", () => {
+  assert.match(component, /<a href="#demo-data">Tools<\/a><a href="#demo-data">Videos<\/a>/u);
+  assert.match(component, /Tools and videos are unavailable in this demo\./u);
+});
+
 test("trending cards keep one tablet row and a horizontally scrollable mobile row", () => {
   assert.match(stylesheet, /\.trending-strip \{ grid-template-columns:125px repeat\(3,minmax\(0,1fr\)\); \}/u);
   assert.match(stylesheet, /\.trending-strip \{ grid-auto-flow:column; grid-auto-columns:minmax\(148px,1fr\); grid-template-columns:132px; overflow-x:auto; \}/u);

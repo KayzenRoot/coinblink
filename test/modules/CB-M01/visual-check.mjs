@@ -73,7 +73,7 @@ const results = [];
 const consoleErrors = [];
 const pageErrors = [];
 const externalRequests = [];
-const interactionChecks = { responsiveNavigation: [], trendingStrip: {}, focusVisible: null, categorySearch: null };
+const interactionChecks = { responsiveNavigation: [], trendingStrip: {}, focusVisible: null, categorySearch: null, unavailableNavigation: null };
 let browser;
 let shutdownFailure;
 
@@ -221,6 +221,14 @@ try {
 
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.goto(origin, { waitUntil: "networkidle" });
+  for (const label of ["Tools", "Videos"]) {
+    const link = page.getByRole("link", { name: label, exact: true });
+    assert.equal(await link.getAttribute("href"), "#demo-data", label + " must lead to the explicit demo status");
+  }
+  await page.getByRole("link", { name: "Tools", exact: true }).click();
+  assert.equal(new URL(page.url()).hash, "#demo-data");
+  assert.match(await page.locator("#demo-data").textContent(), /Tools and videos are unavailable in this demo\./);
+  interactionChecks.unavailableNavigation = { toolsAndVideosTarget: "#demo-data", destinationStatusVerified: true };
   let searchReachedByKeyboard = false;
   for (let step = 0; step < 20 && !searchReachedByKeyboard; step += 1) {
     await page.keyboard.press("Tab");

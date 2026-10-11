@@ -14,7 +14,15 @@ The existing PR #57 branch `codex/cb-m05-p0-admission-001` at pre-sync SHA `68fa
 
 **P1 external gate still OPEN:** actual persistent Owner claim, one-use bootstrap/password/recovery/MFA, secure sessions/cookies/CSRF, protected secret envelope storage, database/migrations and resource permissions require a qualified Owner-approved dedicated ADR. UI MOCK status is not evidence of authorization. Free Workers and informational US$10 alert remain, no Paid upgrade.
 
-**Evidence not yet observed:** exact final HEAD CI, CodeRabbit, authorized merge, actual execution SHA, Docker build/screenshot and app security tests cannot be claimed by a mere candidate. This admission proposal itself must pass required checks; no direct Cloudflare provider action in a governance PR.
+## Local validation after M01-first synchronization
+
+Validated source tree: merge commit `d1fd02ccad489f2936a058f57f7f899384a91213` (first parent `68fa072ba70c5deb479cc1bbd403686278baa92f`, synchronized `main` second parent `c4ba069f1dfaddc8273001950805e8a18125db66`) plus the current Evidence Bundle and assertion-message correction in this PR. Runtime: Node `22.19.0`, npm `10.9.3`, Linux container; the Windows-linked Git worktree was copied into a temporary isolated test directory with its Git objects mounted read-only. `npm ci` and `npm audit --audit-level=high` passed; audit reported 0 vulnerabilities. `npm run lint` passed. `npm run typecheck` passed (47 files; 0 errors, warnings, or hints). `npm test` passed: 111 unit tests, build with no SESSION/data/service/production bindings, and 7/7 Playwright tests including desktop 1536×864, tablet 768×1024, mobile 390×844, health, preview-status, 404, security headers, and robots/noindex.
+
+Docker Compose smoke used a dedicated local project `coinblink-m05-admission-smoke` on `127.0.0.1:3188`; the container became healthy and exact-SHA `/health` and `/preview-status`, `/en` HTTP 200, and unknown-route HTTP 404 passed for `d1fd02ccad489f2936a058f57f7f899384a91213`. Only that temporary project is stopped after validation; the existing `coinblink-local` service and other projects are untouched.
+
+GEF Bootstrap `1.1.2` `doctor --json` and `status --json` both exited successfully and confirmed the checkpoint JSON is present/readable/valid with M00 COMPLETE/5%. GEF reports `operator.stale=true` with `operator.stale.unknown_conservative`; it also reports `toolchain.git=FINDING`, `repository.observable=FINDING`, and dirtiness `UNKNOWN` because it cannot verify the physical Git executable/worktree through this Windows-linked-worktree/container setup (`GIT_DIRECTORY_NOT_A_DIRECTORY` / `WORKING_TREE_NOT_OBSERVED` in the direct mount; `GIT_TOOL_UNAVAILABLE` in the normal Linux clone). These are recorded as REVIEW/UNKNOWN, not a healthy local repository observation. Exact-head Ubuntu/Windows GEF CI and final review remain required before any merge.
+
+**Evidence still pending:** exact final-HEAD GitHub CI, CodeRabbit review, independent audit, conditional Owner go/no-go, authorized merge, and post-merge canonical readback. The local Docker build/smoke and app test results above are real but do not substitute for those gates. No direct Cloudflare provider action is part of this governance PR.
 
 ## Local exact-head regression correction
 

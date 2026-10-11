@@ -19,7 +19,7 @@ test('pre-admission contract draft never grants application-code authorization',
   assert.ok(plan.modules.every(m => !m.applicationCodeAuthorized && m.contractStatus === 'PROPOSED_NOT_ADOPTED'));
   for (const m of plan.modules) {
     const state = source.checkpointFacts.moduleAdmission[m.id];
-    assert.equal(state, 'ADMITTED', m.id + ' is an individually admitted candidate in this combined checkpoint delta');
+    assert.equal(state, 'ADMITTED', m.id + ' must be admitted in the candidate checkpoint; M01 is inherited from canonical main and M05 is proposed here');
     const contract = read(m.contractPath);
     const evidence = source.checkpointFacts.moduleAdmissionEvidence?.[m.id];
     assert.equal(evidence?.workOrder, m.id + '-WO-001', m.id + ' needs its own admitted Work Order');

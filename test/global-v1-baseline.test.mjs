@@ -6,7 +6,7 @@ import { isGlobalApprovalStatus, isParallelAdrApproved } from '../scripts/plan-p
 
 const read = name => readFileSync(resolve(process.cwd(), name), 'utf8');
 
-test('global staged baseline accepts only the separately reviewed CB-M01 and scoped CB-M05 admission candidates', () => {
+test('global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission', () => {
   for (const name of ['SCOPE', 'ARCHITECTURE', 'REQUIREMENTS', 'DEFINITION-OF-DONE']) {
     assert.equal(isGlobalApprovalStatus(read('.engineering/' + name + '.md')), true);
   }
@@ -20,7 +20,7 @@ test('global staged baseline accepts only the separately reviewed CB-M01 and sco
   for (let i=1; i<=17; i++) {
     const id = 'CB-M' + String(i).padStart(2, '0');
     const expected = ['CB-M01', 'CB-M05'].includes(id) ? 'ADMITTED' : 'NOT_ADMITTED';
-    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' is outside this two-module admission delta');
+    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' is outside the M05 admission delta; M01 is inherited from canonical main');
     if (expected === 'ADMITTED') {
       const proof = cp.checkpointFacts.moduleAdmissionEvidence?.[id];
       assert.equal(proof?.workOrder, id + '-WO-001', id + ' needs a module-specific reviewed Work Order');

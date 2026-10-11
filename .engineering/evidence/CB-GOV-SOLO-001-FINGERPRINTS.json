@@ -13,11 +13,11 @@
       "status": "M",
       "baseGitBlobSha1": "38ede6577b26a1c73ee0ca7b24488e21e14ab4d5",
       "baseSha256": "4c5376e66b872ba1ab1c0b1e131d9a02c086dac3d76e4850fd2b7d800cc46921",
-      "candidateGitBlobSha1": "bedf7a5f57c56dc0dd44b7da13ae9fba30eff133",
-      "candidateRawSha256": "6aa8db5bdb3947c8202c5ee0ec36ff79fd3aa0de7d2d9e11e5a56b99f5fab547",
-      "indexGitBlobSha1": "bedf7a5f57c56dc0dd44b7da13ae9fba30eff133",
-      "workingTreeGitBlobSha1": "bedf7a5f57c56dc0dd44b7da13ae9fba30eff133",
-      "workingTreeSha256": "6aa8db5bdb3947c8202c5ee0ec36ff79fd3aa0de7d2d9e11e5a56b99f5fab547"
+      "candidateGitBlobSha1": "1229e093e685d0420a0ff9425e124b5d8af3a1fa",
+      "candidateRawSha256": "c45e0785735ed084fc964f8587a757e2a3bba855185efd1ce5153251b1f17f93",
+      "indexGitBlobSha1": "1229e093e685d0420a0ff9425e124b5d8af3a1fa",
+      "workingTreeGitBlobSha1": "1229e093e685d0420a0ff9425e124b5d8af3a1fa",
+      "workingTreeSha256": "c45e0785735ed084fc964f8587a757e2a3bba855185efd1ce5153251b1f17f93"
     },
     {
       "path": ".engineering/context-locks/CB-GOV-SOLO-001.md",
@@ -46,11 +46,11 @@
       "status": "A",
       "baseGitBlobSha1": null,
       "baseSha256": null,
-      "candidateGitBlobSha1": "567630e3985873df83d23b8d9e08771555704a72",
-      "candidateRawSha256": "f91b54d6a104b1bbc8509dbd3ba3ec6d89211e28b6221ae176beca8b3bff133f",
-      "indexGitBlobSha1": "567630e3985873df83d23b8d9e08771555704a72",
-      "workingTreeGitBlobSha1": "567630e3985873df83d23b8d9e08771555704a72",
-      "workingTreeSha256": "f91b54d6a104b1bbc8509dbd3ba3ec6d89211e28b6221ae176beca8b3bff133f"
+      "candidateGitBlobSha1": "ad0d421333efb27aa44ba83527b61fc9819112cf",
+      "candidateRawSha256": "d7a3804f98dab8a5f14155e7d6fbcf3c059a9f9156dbf17874a446fa64a66bc7",
+      "indexGitBlobSha1": "ad0d421333efb27aa44ba83527b61fc9819112cf",
+      "workingTreeGitBlobSha1": "ad0d421333efb27aa44ba83527b61fc9819112cf",
+      "workingTreeSha256": "d7a3804f98dab8a5f14155e7d6fbcf3c059a9f9156dbf17874a446fa64a66bc7"
     },
     {
       "path": ".engineering/work-orders/CB-GOV-SOLO-001.md",

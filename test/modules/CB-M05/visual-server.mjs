@@ -49,12 +49,21 @@ export function childAnnouncedOrigin(output, expectedOrigin) {
   });
 }
 
+function assertAstroChildRunning(child) {
+  if (child.exitCode !== null && child.exitCode !== undefined) {
+    throw new Error(`Astro fixture exited early with code ${child.exitCode}`);
+  }
+  if (child.signalCode) {
+    throw new Error(`Astro fixture exited early with signal ${child.signalCode}`);
+  }
+}
+
 export async function waitForAstroServer({
   child,
   expectedOrigin,
   getChildOutput,
   getChildError = () => undefined,
-  probe = (url) => fetch(url),
+  probe = (url, options) => fetch(url, options),
   timeoutMs = 90_000,
   intervalMs = 500,
   now = Date.now,
@@ -66,18 +75,39 @@ export async function waitForAstroServer({
   while (now() < deadline) {
     const childError = getChildError();
     if (childError) throw new Error(`Astro fixture could not start: ${childError.message}`);
-    if (child.exitCode !== null) throw new Error(`Astro fixture exited early with code ${child.exitCode}`);
-    if (child.signalCode) throw new Error(`Astro fixture exited early with signal ${child.signalCode}`);
+    assertAstroChildRunning(child);
     if (childAnnouncedOrigin(getChildOutput(), expectedOrigin)) {
+      const remainingMs = deadline - now();
+      if (remainingMs <= 0) break;
+      const controller = new AbortController();
+      let timeout;
+      let response;
+      let probeError;
+      const probeDeadline = new Promise((_, reject) => {
+        timeout = setTimeout(() => {
+          const error = new Error("readiness probe exceeded the remaining deadline");
+          controller.abort(error);
+          reject(error);
+        }, Math.max(1, Math.ceil(remainingMs)));
+      });
       try {
-        const response = await probe(new URL("/admin/articles", expectedOrigin));
-        if (response.ok) return response;
-        lastError = new Error(`Fixture returned HTTP ${response.status}`);
+        response = await Promise.race([
+          Promise.resolve().then(() => probe(new URL("/admin/articles", expectedOrigin), { signal: controller.signal })),
+          probeDeadline,
+        ]);
       } catch (error) {
-        lastError = error;
+        probeError = error;
+      } finally {
+        clearTimeout(timeout);
       }
+      assertAstroChildRunning(child);
+      if (response?.ok) return response;
+      if (probeError) lastError = probeError;
+      else if (response) lastError = new Error(`Fixture returned HTTP ${response.status}`);
     }
-    await sleep(intervalMs);
+    assertAstroChildRunning(child);
+    const remainingMs = deadline - now();
+    if (remainingMs > 0) await sleep(Math.min(intervalMs, remainingMs));
   }
 
   throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);

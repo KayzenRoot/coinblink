@@ -181,6 +181,12 @@ The latest captures are desktop 1536×864, 578591 bytes, SHA-256 `16f825a0ababb9
 
 This correction is limited to M01 navigation, its contract/browser checks, and evidence. Exact-head hosted CI, SonarCloud, Socket, fresh CodeRabbit review and Owner audit are required on the pushed commit. PR #58 remains draft/open; no route integration, checkpoint promotion, merge, or M01 completion is claimed.
 
+## Local CodeRabbit evidence identity correction · 2026-10-11
+
+The local deep review on `4b264111` raised one MINOR: `visual-check.json` stored only the constant `baseSha`, which could be mistaken for the commit used to create the screenshots. The review suggested replacing the field with the current HEAD. Inspection confirmed that `baseSha` correctly identifies frozen base `07f31d8`; replacing it would corrupt provenance. The runner now keeps that base and adds `headSha`, read from trimmed `git rev-parse HEAD`. A contract regression covers the distinction. The regenerated `visual-check.json` identifies captured code HEAD `bc3f7b7c1c66dca10b778348d2e723196e4d8660`; screenshot SHA-256 values remained the same as the preceding table. The two links' destination assertion also passed in that browser run.
+
+This is a factual correction to the local review's evidence-identity concern. Final exact-head hosted checks and fresh local/hosted review apply after the evidence append is committed; PR #58 remains draft/open for Owner audit.
+
 ## Local CodeRabbit evidence-table correction · 2026-10-11
 
 The local deep review of HEAD 36a535e raised minor evidence findings: the Fresh captures table still contained predecessor tablet/mobile hashes, and a historical Work Order heading did not identify its d3dbecb evidence commit. The table now matches the committed 768×1024 and 390×844 PNGs, and the heading is uniquely labeled. The review's additional concern about the Context Lock blob was checked deterministically: git rev-parse at frozen base 07f31d8 returns 75e155ae8d4bd6886dc565cf8841f1d64938f6d4 for .engineering/context-locks/CB-M01-WO-001.md, exactly matching the documented pre-refresh source blob. It remains unchanged; the current source blob is a separate later value. No fingerprint was fabricated or rewritten.

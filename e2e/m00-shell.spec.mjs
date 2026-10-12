@@ -286,6 +286,49 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(manual).toBeHidden();
   });
 
+  for (const viewport of [
+    { name: "desktop", width: 1536, height: 864 },
+    { name: "mobile", width: 390, height: 844 },
+  ]) {
+    test(`Crypto 101 guide is useful, translated, and accessible at ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/pt-br#learn");
+      const learn = page.locator("#learn");
+      await expect(page.getByRole("heading", { name: "Crypto 101: primeiros passos com segurança" })).toBeVisible();
+      await expect(learn.locator("details.learn-card")).toHaveCount(6);
+      await expect(learn).toContainText("Conteúdo educativo");
+      const wallet = learn.locator("details#learn-wallets");
+      await expect(wallet).not.toHaveAttribute("open");
+      const summary = wallet.locator("summary");
+      await summary.focus();
+      await summary.press("Enter");
+      await expect(wallet).toHaveAttribute("open", "");
+      await expect(wallet).toContainText("gerencia as chaves");
+      await expect(wallet).toContainText("Antes de agir:");
+      await summary.press("Enter");
+      await expect(wallet).not.toHaveAttribute("open");
+      const switchLink = page.getByRole("link", { name: "Switch to English" });
+      await expect(switchLink).toHaveAttribute("href", "/en#learn");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+      const accessibility = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+      expect(accessibility.violations).toEqual([]);
+    });
+  }
+
+  test("Learn link opens the real educational section without affecting search demo", async ({ page }) => {
+    await page.goto("/en?category=Bitcoin&q=bitcoin");
+    await page.getByRole("link", { name: "Learn", exact: true }).click();
+    await expect(page).toHaveURL(/\/en\?category=Bitcoin&q=bitcoin#learn$/);
+    await expect(page.locator("#learn details.learn-card")).toHaveCount(6);
+    await expect(page.getByRole("heading", { name: "Crypto 101: safer first steps" })).toBeVisible();
+    await expect(page.locator("#latest-news [data-news-card]").filter({ visible: true })).toHaveCount(1);
+    await expect(page.getByRole("link", { name: "Mudar para português" })).toHaveAttribute(
+      "href", "/pt-br?category=Bitcoin&q=bitcoin#learn",
+    );
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

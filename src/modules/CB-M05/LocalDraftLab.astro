@@ -3,12 +3,18 @@
     <div>
       <p class="m05-draft-eyebrow">LOCAL-ONLY EDITORIAL WORKSPACE</p>
       <h2 id="m05-draft-lab-heading">Write, preview and export a draft</h2>
-      <p>Everything stays in this browser tab until you choose to export a Markdown file. This is a public demo without a login, server storage, fact checks or publishing.</p>
+      <p>Export a Markdown file to keep working later, then import it here to resume. Nothing is uploaded or stored by CoinBlink; this is a public demo without login, fact checks or publishing.</p>
     </div>
     <span class="m05-draft-badge">NO CLOUD SAVE</span>
   </div>
   <div class="m05-draft-layout">
     <div class="m05-draft-fields" role="group" aria-label="Local draft fields">
+      <div class="m05-draft-import">
+        <label for="m05-draft-import">Resume from a CoinBlink .md draft</label>
+        <input id="m05-draft-import" data-m05-import type="file" accept=".md,text/markdown" aria-describedby="m05-import-help" />
+        <p id="m05-import-help">Select a previously exported CoinBlink Markdown file. Read locally, never uploaded; invalid files do not replace your work.</p>
+        <p data-m05-import-status role="status" aria-live="polite"></p>
+      </div>
       <label for="m05-draft-title">Headline <span>8–140 characters</span></label>
       <input id="m05-draft-title" data-m05-draft-title maxlength="140" type="text" autocomplete="off" placeholder="A precise, verifiable headline" />
       <label for="m05-draft-author">Author credit <span>optional, not a login</span></label>
@@ -34,7 +40,7 @@
       <p class="m05-draft-feedback" data-m05-preview-status role="status" aria-live="polite">Complete the fields to enable local export.</p>
     </section>
   </div>
-  <p class="m05-draft-notice"><strong>Not saved:</strong> your text is lost if you navigate away or reload without exporting. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
+  <p class="m05-draft-notice"><strong>Not saved online:</strong> export to .md before closing or reloading, then import that file to resume. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
 </section>
 <script is:inline type="module" src="/m05-draft-preview.js"></script>
 
@@ -47,6 +53,11 @@
   .m05-draft-badge { flex:0 0 auto; padding:6px 10px; color:#b8f34b; font-size:10px; font-weight:700; border:1px solid #39533b; border-radius:6px; }
   .m05-draft-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; align-items:start; }
   .m05-draft-fields { display:grid; gap:8px; min-width:0; }
+  .m05-draft-import { display:grid; gap:6px; border:1px solid #314535; border-radius:7px; background:#101a14; padding:13px; }
+  .m05-draft-import label { margin-top:0; font-size:12px; }
+  .m05-draft-import input[type="file"] { cursor:pointer; }
+  .m05-draft-import p { margin:0; color:#a1afa5; font-size:11px; line-height:1.5; }
+  .m05-draft-import [data-m05-import-status]:not(:empty) { color:#b8f34b; font-weight:650; }
   .m05-draft-fields label { margin-top:6px; display:flex; align-items:baseline; flex-wrap:wrap; justify-content:space-between; gap:4px; color:#f2f5f1; font-size:12px; font-weight:650; }
   .m05-draft-fields label span { color:#a1afa5; font-weight:450; font-size:10px; }
   .m05-draft-fields input, .m05-draft-fields textarea { width:100%; min-width:0; border:1px solid #3a4d40; border-radius:6px; padding:11px 12px; background:#0a120e; color:#f2f5f1; font:inherit; font-size:13px; resize:vertical; line-height:1.5; }

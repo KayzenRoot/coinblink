@@ -14,8 +14,8 @@ const menu = document.querySelector("[data-menu-toggle]");
   }));
 
   let selected = "All";
-  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-category]")];
-  const cards = [...document.querySelectorAll<HTMLElement>("[data-news-card]")];
+  const buttons = [...document.querySelectorAll("[data-category]")];
+  const cards = [...document.querySelectorAll("[data-news-card]")];
   const search = document.querySelector("[data-news-search]");
   const count = document.querySelector("[data-result-count]");
   function filterStories() {

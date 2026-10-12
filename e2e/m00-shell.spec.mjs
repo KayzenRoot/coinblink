@@ -131,7 +131,7 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(nav).toBeHidden();
     await expect(toggle).toBeFocused();
     await toggle.click();
-    await page.locator("#hero-title").click();
+    await page.locator(".demo-banner").click();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(nav).toBeHidden();
   });

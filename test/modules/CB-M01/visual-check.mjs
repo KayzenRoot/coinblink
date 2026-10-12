@@ -243,7 +243,7 @@ try {
         assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
       }
       await page.getByRole("link", { name: "Tools", exact: true }).click();
-      assert.equal(new URL(page.url()).hash, "#demo-data", `mouse can activate Tools at ${width}px`);
+      assert.equal(new URL(page.url()).hash, "#chain-lookup", `mouse can activate Tools at ${width}px`);
       assert.equal(await toggle.getAttribute("aria-expanded"), "false");
       await toggle.focus();
       await page.keyboard.press("Enter");

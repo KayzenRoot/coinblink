@@ -57,7 +57,27 @@ test("workspace template stays presentation-only and keeps every side-effect con
   assert.ok(buttons.every((tag) => /\bdisabled(?:\s|>|=)/iu.test(tag)), "every action button remains disabled in P0");
 
   assert.ok(component.includes('const basePath = publicDemo ? "/demo/editorial" : "/admin";'));
-  assert.ok(component.includes("!publicDemo && <nav"), "public demonstration must not expose fake security-preview links");
+  assert.ok(component.includes("!publicDemo && <>"), "public demonstration must not expose fake security-preview links");
   assert.ok(component.includes('href={\u0060\u0024{basePath}/articles/new\u0060}'), "draft link must remain inside the active demo prefix");
   assert.doesNotMatch(component, /href="\\/admin\\//u, "workspace navigation must use the supplied prefix");
+});
+
+const publicRoutes = [
+  ["src/pages/demo/editorial/index.astro", "articles"],
+  ["src/pages/demo/editorial/articles.astro", "articles"],
+  ["src/pages/demo/editorial/articles/new.astro", "article-new"],
+  ["src/pages/demo/editorial/settings.astro", "settings"],
+  ["src/pages/demo/editorial/settings/integrations.astro", "integrations"],
+];
+
+test("only non-privileged static M05 mock views are linked into public demo routes", () => {
+  for (const [path, view] of publicRoutes) {
+    const source = readFileSync(resolve(path), "utf8");
+    assert.ok(source.includes('<AdminWorkspace view="' + view + '" publicDemo={true} />'), path);
+    assert.match(source, /export const prerender = false;/u);
+    assert.match(source, /MOCK/u);
+    assert.doesNotMatch(source, /(?:login|setup|recovery|session|token|database|secret|publish)\\s*=/iu);
+  }
+  assert.ok(component.includes('!publicDemo && <>'));
+  assert.ok(component.includes('const basePath = publicDemo ? "/demo/editorial" : "/admin";'));
 });

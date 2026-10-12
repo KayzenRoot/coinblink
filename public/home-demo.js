@@ -62,6 +62,7 @@ function validatedSectionHash() {
     case "#categories": return "#categories";
     case "#latest-news": return "#latest-news";
     case "#learn": return "#learn";
+    case "#official-sources": return "#official-sources";
     case "#newsletter": return "#newsletter";
     case "#demo-data": return "#demo-data";
     case "#footer": return "#footer";

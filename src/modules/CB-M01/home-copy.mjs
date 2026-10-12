@@ -3,6 +3,9 @@
 export const HOME_LOCALES = Object.freeze(["en", "pt-br"]);
 const portuguese = Object.freeze({
   "CoinBlink home": "Início do CoinBlink",
+  "Crypto news in a blink.": "Notícias cripto num piscar de olhos.",
+  "ANALYSIS": "ANÁLISES",
+  "DIGITAL ASSETS": "ATIVOS DIGITAIS",
   "Demonstration data notice": "Aviso sobre dados demonstrativos",
   "Illustrative only — no live prices, headlines, or external feeds are connected.": "Apenas ilustrativo. Preços, notícias e fontes externas ao vivo não estão conectados.",
   "Toggle navigation": "Abrir ou fechar menu",

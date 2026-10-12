@@ -46,6 +46,44 @@ const empty = document.querySelector("[data-news-empty]");
 const clearButton = document.querySelector("[data-clear-filters]");
 const allowedCategories = new Set(buttons.map((button) => button.getAttribute("data-category")));
 const MAX_QUERY_LENGTH = 80;
+const languageSwitch = document.querySelector("[data-language-switch]");
+const shareButton = document.querySelector("[data-copy-filter-link]");
+const shareStatus = document.querySelector("[data-share-status]");
+const manualShare = document.querySelector("[data-share-manual]");
+const shareURLInput = document.querySelector("[data-share-url]");
+const sectionAnchors = new Set([
+  "#top", "#main", "#market-overview", "#radar-24h", "#categories",
+  "#latest-news", "#newsletter", "#demo-data", "#footer",
+]);
+
+function buildViewURL(pathname = window.location.pathname) {
+  const view = new URL(pathname, window.location.origin);
+  if (selected !== "All" && allowedCategories.has(selected)) {
+    view.searchParams.set("category", selected);
+  }
+  const query = searchText.trim().slice(0, MAX_QUERY_LENGTH);
+  if (query) view.searchParams.set("q", query);
+  if (sectionAnchors.has(window.location.hash)) view.hash = window.location.hash;
+  return view;
+}
+
+function updateLanguageSwitch() {
+  if (!languageSwitch) return;
+  const url = buildViewURL(isPortuguese ? "/en" : "/pt-br");
+  languageSwitch.setAttribute("href", url.pathname + url.search + url.hash);
+}
+
+function showManualShare(url) {
+  if (manualShare && shareURLInput) {
+    manualShare.hidden = false;
+    shareURLInput.value = url;
+    shareURLInput.focus();
+    shareURLInput.select();
+  }
+  if (shareStatus) shareStatus.textContent = isPortuguese
+    ? "Cópia automática indisponível. Selecione e copie o link abaixo."
+    : "Automatic copying is unavailable. Select and copy the link below.";
+}
 
 // Keep the demonstration view reproducible through a URL, without cookies,
 // remote requests, browser storage or untrusted category values.
@@ -59,14 +97,12 @@ function readFilterURL() {
 }
 
 function writeFilterURL(mode = "push") {
-  const next = new URL(window.location.href);
-  next.search = "";
-  if (selected !== "All") next.searchParams.set("category", selected);
-  const query = searchText.trim().slice(0, MAX_QUERY_LENGTH);
-  if (query) next.searchParams.set("q", query);
-  if (next.href === window.location.href) return;
-  const action = mode === "replace" ? "replaceState" : "pushState";
-  window.history[action](null, "", next.pathname + next.search + next.hash);
+  const next = buildViewURL();
+  if (next.href !== window.location.href) {
+    const action = mode === "replace" ? "replaceState" : "pushState";
+    window.history[action](null, "", next.pathname + next.search + next.hash);
+  }
+  updateLanguageSwitch();
 }
 
 function restoreFilterURL() {
@@ -84,6 +120,9 @@ function restoreFilterURL() {
 
 
 function filterStories() {
+  updateLanguageSwitch();
+  if (shareStatus) shareStatus.textContent = "";
+  if (manualShare) manualShare.hidden = true;
   const query = searchText.trim().toLocaleLowerCase("en");
   let visible = 0;
   cards.forEach((card) => {
@@ -173,7 +212,25 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("popstate", restoreFilterURL);
+window.addEventListener("hashchange", updateLanguageSwitch);
 restoreFilterURL();
+
+shareButton?.addEventListener("click", async () => {
+  const url = buildViewURL().href;
+  if (!window.navigator.clipboard?.writeText) {
+    showManualShare(url);
+    return;
+  }
+  try {
+    await window.navigator.clipboard.writeText(url);
+    if (manualShare) manualShare.hidden = true;
+    if (shareStatus) shareStatus.textContent = isPortuguese
+      ? "Link da seleção copiado."
+      : "View link copied.";
+  } catch {
+    showManualShare(url);
+  }
+});
 
 document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
   const status = document.querySelector("[data-form-status]");

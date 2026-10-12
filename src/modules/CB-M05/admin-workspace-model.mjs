@@ -26,7 +26,7 @@ const views = Object.freeze({
   setup: Object.freeze({ title: "Owner setup preview", description: "Owner activation is not available in this P0 mock. No account can be created here.", state: "unavailable" }),
   recovery: Object.freeze({ title: "Recovery preview", description: "Account recovery is not available in this P0 mock. No email or recovery code is requested.", state: "unavailable" }),
   articles: Object.freeze({ title: "Article workspace", description: "No demonstration articles are loaded. Live editorial content is not connected.", state: "empty", records: Object.freeze([]) }),
-  "article-new": Object.freeze({ title: "Draft creation preview", description: "Draft creation is disabled. This view contains no writable editor or publishing action.", state: "unavailable", records: Object.freeze([]) }),
+  "article-new": Object.freeze({ title: "Draft creation preview", description: "This public preview offers a temporary local drafting canvas and Markdown export. Nothing is saved, reviewed, or published on CoinBlink.", state: "unavailable", records: Object.freeze([]) }),
   "article-edit": Object.freeze({ title: "Draft review preview", description: "No article is selected. Editing, approval, and publication are disabled.", state: "empty", records: Object.freeze([]) }),
   settings: Object.freeze({ title: "Settings overview", description: "Settings are read-only in this P0 mock. No account or provider values are stored.", state: "unavailable", providers: providerCards }),
   integrations: Object.freeze({ title: "Integration catalog", description: "Provider connections are not configured. This catalog contains categories only, not credentials or live status checks.", state: "empty", providers: providerCards }),

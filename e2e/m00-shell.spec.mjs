@@ -72,6 +72,17 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-form-status]")).toContainText("No email was sent or stored.");
   });
 
+  test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
+    const response = await request.get("/", { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers().location).toBe("/en");
+    expect(response.headers()["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
+    const loaded = await page.goto("/");
+    expect(loaded?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/en\/?$/);
+    await expect(page.locator("#hero-title")).toContainText("Bitcoin market,");
+  });
+
   test("health and preview status expose only sanitized development metadata", async ({ request }) => {
     const healthResponse = await request.get("/health");
     expect(healthResponse.status()).toBe(200);

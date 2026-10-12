@@ -24,6 +24,7 @@ if (
 export default defineConfig({
   root: fixtureRoot,
   srcDir: fileURLToPath(new URL("../../../test/modules/CB-M01/fixture/src/", import.meta.url)),
+  publicDir: fileURLToPath(new URL("../../../public/", import.meta.url)),
   cacheDir: join(resolvedTempDir, "cache"),
   output: "static",
   outDir: join(resolvedTempDir, "dist"),

@@ -385,6 +385,68 @@ test.describe("CoinBlink M00 local shell", () => {
     );
   });
 
+  for (const viewport of [
+    { name: "desktop", width: 1536, height: 864, locale: "en" },
+    { name: "mobile", width: 390, height: 844, locale: "pt-br" },
+  ]) {
+    test(`read-only explorer tool validates real user inputs at ${viewport.name}`, async ({ page }) => {
+      const requests = [];
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      page.on("request", (request) => {
+        if (new URL(request.url()).origin !== "http://127.0.0.1:4321") requests.push(request.url());
+      });
+      await page.goto(`/${viewport.locale}#chain-lookup`);
+      const form = page.locator("[data-explorer-form]");
+      await expect(form).toBeVisible();
+      await expect(form.locator("[data-explorer-result]")).toBeHidden();
+      await form.locator("[data-explorer-network]").selectOption("ethereum");
+      await form.locator("[data-explorer-kind]").selectOption("transaction");
+      await form.locator("[data-explorer-value]").fill("javascript:alert(1)");
+      await form.getByRole("button", { name: viewport.locale === "en" ? "Prepare explorer link" : "Preparar link de consulta" }).click();
+      await expect(form.locator("[data-explorer-value]")).toHaveAttribute("aria-invalid", "true");
+      await expect(form.locator("[data-explorer-result]")).toBeHidden();
+      await form.locator("[data-explorer-value]").fill("0x" + "a".repeat(64));
+      await form.getByRole("button", { name: viewport.locale === "en" ? "Prepare explorer link" : "Preparar link de consulta" }).click();
+      await expect(form.locator("[data-explorer-result]")).toBeVisible();
+      await expect(form.locator("[data-explorer-value]")).not.toHaveAttribute("aria-invalid");
+      const outbound = form.locator("[data-explorer-link]");
+      await expect(outbound).toHaveAttribute("href", "https://etherscan.io/tx/0x" + "a".repeat(64));
+      await expect(outbound).toHaveAttribute("target", "_blank");
+      await expect(outbound).toHaveAttribute("rel", /noopener noreferrer/);
+      await expect(outbound).toHaveAttribute("referrerpolicy", "no-referrer");
+      await expect(form.locator("[data-explorer-status]")).toContainText(
+        viewport.locale === "en" ? "does not confirm" : "não confirma",
+      );
+      await expect(page).not.toHaveURL(/0x[a-f0-9]{64}/);
+      expect(requests).toEqual([]);
+      const accessibility = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+      expect(accessibility.violations).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+      await form.locator("[data-explorer-network]").selectOption("solana");
+      await expect(form.locator("[data-explorer-result]")).toBeHidden();
+      await expect(outbound).not.toHaveAttribute("href");
+    });
+  }
+
+  test("Tools menu and language switch keep a safe deep link without transmitting lookup text", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en?category=Bitcoin");
+    await page.locator("[data-menu-toggle]").click();
+    await page.getByRole("link", { name: "Tools", exact: true }).click();
+    await expect(page).toHaveURL(/\/en\?category=Bitcoin#chain-lookup$/);
+    await expect(page.locator("[data-menu-toggle]")).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("link", { name: "Mudar para português" })).toHaveAttribute(
+      "href", "/pt-br?category=Bitcoin#chain-lookup",
+    );
+    await page.locator("[data-explorer-value]").fill("0x" + "f".repeat(40));
+    expect(page.url()).not.toContain("ffff");
+    await page.getByRole("link", { name: "Mudar para português" }).click();
+    await expect(page).toHaveURL(/\/pt-br\?category=Bitcoin#chain-lookup$/);
+    await expect(page.locator("[data-explorer-value]")).toHaveValue("");
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

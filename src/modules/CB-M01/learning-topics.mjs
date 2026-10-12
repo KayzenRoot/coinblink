@@ -1,6 +1,5 @@
 // Evergreen, non-live educational material; no external feeds or credentials.
 // Parallel translations share one row to avoid duplicated data wiring.
-const COLUMNS = Object.freeze(["id", "icon", "enTitle", "enSummary", "enCheck", "ptTitle", "ptSummary", "ptCheck"]);
 const TOPIC_ROWS = Object.freeze([
   ["wallets", "◈", "What does a crypto wallet hold?", "A wallet manages the keys used to authorize transactions. Assets are recorded on a network, not stored inside the app.", "Before using one, check who controls the keys and what recovery options exist.", "O que uma carteira cripto guarda?", "A carteira gerencia as chaves usadas para autorizar transações. Os ativos ficam registrados na rede, não dentro do aplicativo.", "Antes de usar uma, verifique quem controla as chaves e como funciona a recuperação."],
   ["recovery", "✣", "Protect your recovery phrase", "A recovery phrase can restore access to many self-custody wallets. Anyone who obtains it may be able to control the assets.", "Never enter your recovery phrase into a website or share it with support agents.", "Proteja sua frase de recuperação", "A frase de recuperação pode restaurar o acesso a várias carteiras de autocustódia. Quem a obtiver poderá controlar os ativos.", "Nunca digite sua frase de recuperação em sites ou a compartilhe com atendentes."],

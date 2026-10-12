@@ -248,8 +248,10 @@ try {
       await toggle.focus();
       await page.keyboard.press("Enter");
       assert.equal(await toggle.getAttribute("aria-expanded"), "true", `keyboard can open navigation at ${width}px`);
-      await page.getByRole("link", { name: "About", exact: true }).focus();
-      await page.keyboard.press("Enter");
+      const aboutLink = page.getByRole("link", { name: "About", exact: true });
+      await aboutLink.focus();
+      await aboutLink.press("Enter");
+      await page.waitForURL(/#footer$/, { timeout: 5_000 });
       assert.equal(new URL(page.url()).hash, "#footer", `keyboard can activate About at ${width}px`);
       assert.equal(await toggle.getAttribute("aria-expanded"), "false");
       interactionChecks.responsiveNavigation.push({ width, control: "mouse and keyboard", expandedStateVerified: true, allLinksReachable: true });

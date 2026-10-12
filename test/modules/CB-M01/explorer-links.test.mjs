@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createExplorerLookup } from "../../../src/modules/CB-M01/explorer-links.mjs";
+import { createExplorerLookup } from "../../../public/explorer-links.js";
 
 const examples = [
   ["bitcoin", "address", "1BoatSLRHtKNngkdXEeobR76b53LETtpyT", "https://mempool.space/address/"],

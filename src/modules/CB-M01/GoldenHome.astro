@@ -41,7 +41,7 @@ const stories = [
     <div class="header-tools">
       <label class="search-box"><span class="sr-only">Search demo stories</span>
         <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
-        <input type="search" placeholder="Search stories" autocomplete="off" data-news-search />
+        <input type="search" placeholder="Search stories" autocomplete="off" maxlength="80" data-news-search />
       </label>
       <span class="language-chip" aria-label="Language: English">◎ EN</span><span class="theme-chip" aria-label="Dark theme">◐ <i></i></span>
     </div>
@@ -116,7 +116,7 @@ const stories = [
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
         <div class="news-heading"><div><small>DEMO · NO STORIES CONNECTED</small><h2 id="news-title">Latest news</h2></div><span data-result-count aria-live="polite" aria-atomic="true">4 placeholders</span></div>
         <div class="news-controls">
-          <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">Search demo stories</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder="Search demo stories" autocomplete="off" data-news-search-mobile /></label>
+          <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">Search demo stories</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder="Search demo stories" autocomplete="off" maxlength="80" data-news-search-mobile /></label>
           <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">Showing all demo placeholders.</p>
           <button class="news-clear-filters" type="button" data-clear-filters hidden>Clear filters</button>
         </div>
@@ -131,7 +131,7 @@ const stories = [
       </section>
       <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">
         <span class="newsletter-icon" aria-hidden="true">✉</span><small>DEMO · DISABLED DELIVERY</small><h2 id="newsletter-title">Join the CoinBlink newsletter</h2>
-        <p>This preview will not send or store your email.</p><div class="newsletter-form" role="group" aria-label="Newsletter demo controls"><label class="sr-only" for="demo-email">Email address</label><input id="demo-email" name="email" type="email" placeholder="Email address" autocomplete="email" /><button type="button" data-demo-preview>Preview only →</button></div>
+        <p>This preview will not send or store your email.</p><div class="newsletter-form" role="group" aria-label="Newsletter demo controls"><label class="sr-only" for="demo-email">Email address</label><input id="demo-email" name="email" type="email" placeholder="Email address" autocomplete="off" /><button type="button" data-demo-preview>Preview only →</button></div>
         <p class="form-status" aria-live="polite" data-form-status>No message will be sent.</p><ul class="newsletter-promises"><li>No storage</li><li>No delivery</li><li>Demo only</li></ul>
       </section>
     </section>

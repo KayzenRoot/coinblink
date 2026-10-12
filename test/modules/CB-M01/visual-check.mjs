@@ -275,7 +275,7 @@ try {
       }
       interactionChecks.responsiveNavigation.push({ width, control: "inline navigation", allLinksVisible: true, headerRegionsOverlap: false });
       await page.getByRole("link", { name: "Tools", exact: true }).click();
-      assert.equal(new URL(page.url()).hash, "#demo-data", "mouse can activate Tools at the desktop boundary");
+      assert.equal(new URL(page.url()).hash, "#chain-lookup", "mouse can activate Tools at the desktop boundary");
       await page.getByRole("link", { name: "About", exact: true }).focus();
       await page.keyboard.press("Enter");
       assert.equal(new URL(page.url()).hash, "#footer", "keyboard can activate About in the desktop navigation");
@@ -284,14 +284,18 @@ try {
 
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.goto(origin, { waitUntil: "networkidle" });
-  for (const label of ["Tools", "Videos"]) {
+  for (const [label, destination] of [["Tools", "#chain-lookup"], ["Videos", "#demo-data"]]) {
     const link = page.getByRole("link", { name: label, exact: true });
-    assert.equal(await link.getAttribute("href"), "#demo-data", label + " must lead to the explicit demo status");
+    assert.equal(await link.getAttribute("href"), destination, label + " must lead to its actual status");
   }
   await page.getByRole("link", { name: "Tools", exact: true }).click();
+  assert.equal(new URL(page.url()).hash, "#chain-lookup");
+  assert.match(await page.locator("#chain-lookup").textContent(), /Blockchain explorer lookup/);
+  assert.match(await page.locator("#chain-lookup").textContent(), /Public identifiers only/);
+  await page.getByRole("link", { name: "Videos", exact: true }).click();
   assert.equal(new URL(page.url()).hash, "#demo-data");
-  assert.match(await page.locator("#demo-data").textContent(), /Tools and videos are unavailable in this demo\./);
-  interactionChecks.unavailableNavigation = { toolsAndVideosTarget: "#demo-data", destinationStatusVerified: true };
+  assert.match(await page.locator("#demo-data").textContent(), /Video publishing and live feeds are unavailable/);
+  interactionChecks.unavailableNavigation = { toolsTarget: "#chain-lookup", videosTarget: "#demo-data", destinationStatusVerified: true };
   let searchReachedByKeyboard = false;
   for (let step = 0; step < 20 && !searchReachedByKeyboard; step += 1) {
     await page.keyboard.press("Tab");

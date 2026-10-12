@@ -62,15 +62,17 @@ const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
         ))}
       </ul>
 
-      <p class="m05-sidebar__label m05-sidebar__label--spaced">SECURITY PREVIEWS</p>
-      {!publicDemo && <nav class="m05-nav m05-nav--quiet" aria-label="Security mock previews">
+      {!publicDemo && <>
+        <p class="m05-sidebar__label m05-sidebar__label--spaced">SECURITY PREVIEWS</p>
+        <nav class="m05-nav m05-nav--quiet" aria-label="Security mock previews">
         {securityNavigation.map((item) => (
           <a class:list={["m05-nav__link", item.active && "m05-nav__link--active"]}
             href={item.href} aria-current={item.active ? "page" : undefined}>
             {item.label}
           </a>
         ))}
-      </nav>}
+        </nav>
+      </>}
 
       <div class="m05-sidebar__foot">
         <span class="m05-status-dot" aria-hidden="true"></span>

@@ -59,7 +59,7 @@ test("workspace template stays presentation-only and keeps every side-effect con
   assert.ok(component.includes('const basePath = publicDemo ? "/demo/editorial" : "/admin";'));
   assert.ok(component.includes("!publicDemo && <>"), "public demonstration must not expose fake security-preview links");
   assert.ok(component.includes('href={\u0060\u0024{basePath}/articles/new\u0060}'), "draft link must remain inside the active demo prefix");
-  assert.doesNotMatch(component, /href="\\/admin\\//u, "workspace navigation must use the supplied prefix");
+  assert.equal(component.includes('href="/admin/'), false, "workspace links must use the provided prefix");
 });
 
 const publicRoutes = [
@@ -76,7 +76,7 @@ test("only non-privileged static M05 mock views are linked into public demo rout
     assert.ok(source.includes('<AdminWorkspace view="' + view + '" publicDemo={true} />'), path);
     assert.match(source, /export const prerender = false;/u);
     assert.match(source, /MOCK/u);
-    assert.doesNotMatch(source, /(?:login|setup|recovery|session|token|database|secret|publish)\\s*=/iu);
+    assert.doesNotMatch(source, /(?:login|setup|recovery|session|token|database|secret|publish)\s*=/iu);
   }
   assert.ok(component.includes('!publicDemo && <>'));
   assert.ok(component.includes('const basePath = publicDemo ? "/demo/editorial" : "/admin";'));

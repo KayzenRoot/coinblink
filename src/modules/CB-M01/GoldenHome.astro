@@ -33,7 +33,7 @@ const stories = [
   <header class="cb-header">
     <a class="brand" href="#top" aria-label={t("CoinBlink home")}>
       <img src={approvedLogo.src} width="40" height="36" alt="" />
-      <span class="brand-name"><span>Coin</span><span>Blink</span><small>Crypto news in a blink.</small></span>
+      <span class="brand-name"><span>Coin</span><span>Blink</span><small>{t("Crypto news in a blink.")}</small></span>
     </a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
       <span aria-hidden="true">☰</span><span class="sr-only">{t("Toggle navigation")}</span>
@@ -72,7 +72,7 @@ const stories = [
           <div class="hero-actions"><a class="primary-action" href="#latest-news">{t("Explore demo stories")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">{t("View market panel")}</a></div>
         </div>
         <div class="hero-stat"><span>{t("DEMO · NOT LIVE")}</span><strong>—</strong><small>{t("Market data not connected")}</small></div>
-        <p class="hero-tags" aria-hidden="true">{t("MARKET")}<br />ANALYSIS<br />DIGITAL ASSETS</p>
+        <p class="hero-tags" aria-hidden="true">{t("MARKET")}<br />{t("ANALYSIS")}<br />{t("DIGITAL ASSETS")}</p>
       </article>
 
       <aside class="market-panel" id="market-overview" aria-labelledby="market-title">
@@ -114,7 +114,7 @@ const stories = [
           <ul><li>{t("Extreme greed")} <b>—</b></li><li>{t("Greed")} <b>—</b></li><li>{t("Neutral")} <b>—</b></li><li>{t("Fear")} <b>—</b></li><li>{t("Extreme fear")} <b>—</b></li></ul>
         </div>
       </article>
-      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>Crypto news in a blink.</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
+      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
@@ -143,7 +143,7 @@ const stories = [
 
     <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>
   </main>
-  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · Crypto news in a blink.</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
+  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
 <script is:inline src="/home-demo.js"></script>

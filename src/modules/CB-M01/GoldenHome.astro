@@ -114,9 +114,19 @@ const stories = [
 
     <section class="lower-grid" aria-label="Latest demonstration content">
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
-        <div class="news-heading"><div><small>DEMO · NO STORIES CONNECTED</small><h2 id="news-title">Latest news</h2></div><span data-result-count aria-live="polite">4 placeholders</span></div>
+        <div class="news-heading"><div><small>DEMO · NO STORIES CONNECTED</small><h2 id="news-title">Latest news</h2></div><span data-result-count aria-live="polite" aria-atomic="true">4 placeholders</span></div>
+        <div class="news-controls">
+          <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">Search demo stories</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder="Search demo stories" autocomplete="off" data-news-search-mobile /></label>
+          <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">Showing all demo placeholders.</p>
+          <button class="news-clear-filters" type="button" data-clear-filters hidden>Clear filters</button>
+        </div>
         <div class="news-cards">
           {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{story.tag}</span><small>DEMO</small><h3>Editorial placeholder · no live story connected</h3><p>No factual claim or live article is represented.</p></div></article>)}
+        </div>
+        <div class="news-no-results" data-news-empty role="status" hidden>
+          <strong>No demo placeholders match.</strong>
+          <p>Try another category or search term. No live news is connected.</p>
+          <button type="button" data-reset-filters>Show all placeholders</button>
         </div>
       </section>
       <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">

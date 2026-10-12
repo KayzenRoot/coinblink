@@ -182,6 +182,47 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-form-status]")).toContainText("No email was sent or stored.");
   });
 
+  for (const viewport of [
+    { name: "desktop", width: 1536, height: 864 },
+    { name: "mobile", width: 390, height: 844 },
+  ]) {
+    test(`Portuguese homepage is translated and keyboard accessible at ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/en");
+      const localeLink = page.getByRole("link", { name: "Mudar para português" });
+      await expect(localeLink).toBeVisible();
+      await expect(localeLink).toHaveAttribute("href", "/pt-br");
+      await localeLink.click();
+      await expect(page).toHaveURL(/\/pt-br$/);
+      await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+      await expect(page.locator(".cb-home")).toHaveAttribute("data-locale", "pt-br");
+      await expect(page.locator("#hero-title")).toContainText("Mercado Bitcoin,");
+      await expect(page.getByRole("heading", { level: 2, name: "Últimas notícias" })).toBeVisible();
+      await expect(page.locator("[data-result-count]")).toHaveText("4 exemplos");
+      await expect(page.getByRole("link", { name: "Switch to English" })).toHaveAttribute("href", "/en");
+      await expect(page.locator(".demo-banner")).toContainText("não estão conectados");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+      const violations = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      expect(violations.violations).toEqual([]);
+    });
+  }
+
+  test("Portuguese category filtering preserves canonical URLs and translated status", async ({ page }) => {
+    await page.goto("/pt-br?category=Regulation");
+    await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+    await expect(page.locator('[data-category="Regulation"]')).toContainText("Regulação");
+    await expect(page.locator('[data-category="Regulation"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(1);
+    await expect(page.locator("[data-result-count]")).toHaveText("1 exemplo");
+    await expect(page.locator("[data-news-filter-summary]")).toContainText("Regulação");
+    await page.locator("[data-demo-preview]").click();
+    await expect(page.locator("[data-form-status]")).toContainText("Nenhum e-mail foi enviado ou armazenado");
+    await page.locator("[data-clear-filters]").click();
+    await expect(page).toHaveURL(/\/pt-br$/);
+    await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(4);
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

@@ -2,10 +2,12 @@
 import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
 import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
+import { getLearningTopics } from "./learning-topics.mjs";
 
 interface Props { locale?: "en" | "pt-br"; }
 const { locale = "en" } = Astro.props;
 const t = (english: string) => translateHome(english, locale);
+const learningTopics = getLearningTopics(locale);
 
 const markets = [
   { symbol: "BTC", name: "Bitcoin", tone: "bitcoin" },
@@ -40,7 +42,7 @@ const stories = [
     </button>
     <nav class="primary-nav" id="primary-nav" aria-label={t("Primary navigation")} data-primary-nav>
       <a class="is-current" href="#top" aria-current="page">{t("Home")}</a><a href="#latest-news">{t("News")}</a>
-      <a href="#market-overview">{t("Markets")}</a><a href="#radar-24h">{t("Analysis")}</a><a href="#categories">{t("Learn")}</a>
+      <a href="#market-overview">{t("Markets")}</a><a href="#radar-24h">{t("Analysis")}</a><a href="#learn">{t("Learn")}</a>
       <a href="#demo-data">{t("Tools")}</a><a href="#demo-data">{t("Videos")}</a><a href="#footer">{t("About")}</a>
     </nav>
     <div class="header-tools">
@@ -147,6 +149,33 @@ const stories = [
         <p>{t("This preview will not send or store your email.")}</p><div class="newsletter-form" role="group" aria-label={t("Newsletter demo controls")}><label class="sr-only" for="demo-email">{t("Email address")}</label><input id="demo-email" name="email" type="email" placeholder={t("Email address")} autocomplete="off" /><button type="button" data-demo-preview>{t("Preview only")} →</button></div>
         <p class="form-status" aria-live="polite" data-form-status>{t("No message will be sent.")}</p><ul class="newsletter-promises"><li>{t("No storage")}</li><li>{t("No delivery")}</li><li>{t("Demo only")}</li></ul>
       </section>
+    </section>
+
+    <section class="learn-section content-panel" id="learn" aria-labelledby="learn-title">
+      <div class="learn-section__heading">
+        <div>
+          <small>{t("EVERGREEN EDUCATION · NOT MARKET SIGNALS")}</small>
+          <h2 id="learn-title">{t("Crypto 101: safer first steps")}</h2>
+          <p>{t("Learn the basics without live prices, investment recommendations or account sign-up.")}</p>
+        </div>
+        <span class="learn-section__count">{learningTopics.length} {t("short guides")}</span>
+      </div>
+      <div class="learn-grid">
+        {learningTopics.map((topic, index) => (
+          <details class="learn-card" id={`learn-${topic.id}`}>
+            <summary>
+              <span class="learn-card__icon" aria-hidden="true">{topic.icon}</span>
+              <span class="learn-card__header"><small>{t("GUIDE")} {String(index + 1).padStart(2, "0")}</small><strong>{topic.title}</strong></span>
+              <span class="learn-card__arrow" aria-hidden="true">+</span>
+            </summary>
+            <div class="learn-card__content">
+              <p>{topic.summary}</p>
+              <p><strong>{t("Safety check:")}</strong> {topic.checklist}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+      <p class="learn-section__footnote">{t("Educational material only. Verify important details with primary sources before acting.")}</p>
     </section>
 
     <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>

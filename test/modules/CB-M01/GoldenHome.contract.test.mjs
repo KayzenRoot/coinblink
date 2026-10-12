@@ -26,8 +26,10 @@ test("all market and editorial samples remain visibly demonstration-only", () =>
 
 test("the newsletter demo cannot submit an email address", () => {
   assert.match(component, /<script is:inline src="\/home-demo\.js"><\/script>/u);
-  assert.doesNotMatch(component, /<script>(.|\n)*<\/script>/u);
-  assert.doesNotMatch(component, /<form\b/u, "demo email control must have no native submission behavior");
+  assert.match(component, /<script>import "\.\/explorer-lookup\.mjs";<\/script>/u);
+  const newsletter = component.split('class="content-panel newsletter-panel"')[1]?.split("</section>")[0];
+  assert.ok(newsletter, "newsletter section is required");
+  assert.doesNotMatch(newsletter, /<form\b/u, "demo email control must have no native submission behavior");
   assert.match(component, /<button type="button" data-demo-preview>/u);
   assert.match(clientScript, /querySelector\("\[data-demo-preview\]"\)\?\.addEventListener\("click"/u);
   assert.doesNotMatch(component, /action\s*=|fetch\s*\(|XMLHttpRequest|navigator\.sendBeacon/);
@@ -46,9 +48,11 @@ test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mar
   assert.match(component, />₿<\/text>/u);
 });
 
-test("unavailable Tools and Videos navigation routes to an explicit demo status", () => {
-  assert.match(component, /<a href="#demo-data">\{t\("Tools"\)\}<\/a><a href="#demo-data">\{t\("Videos"\)\}<\/a>/u);
-  assert.match(component, /Tools and videos are unavailable in this demo\./u);
+test("Tools opens the working read-only lookup while Videos remains disconnected", () => {
+  assert.match(component, /<a href="#chain-lookup">\{t\("Tools"\)\}<\/a><a href="#demo-data">\{t\("Videos"\)\}<\/a>/u);
+  assert.match(component, /data-explorer-form/u);
+  assert.match(component, /Video publishing and live feeds are unavailable/u);
+  assert.match(component, /Public identifiers only\. Never paste private keys/u);
 });
 
 test("mobile navigation closes after selecting a link", () => {

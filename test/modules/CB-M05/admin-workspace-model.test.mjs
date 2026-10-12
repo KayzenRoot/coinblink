@@ -56,8 +56,8 @@ test("workspace template stays presentation-only and keeps every side-effect con
   assert.ok(buttons.length > 0, "the mock must show the unavailable action treatment");
   assert.ok(buttons.every((tag) => /\bdisabled(?:\s|>|=)/iu.test(tag)), "every action button remains disabled in P0");
 
-  const adminPaths = [...component.matchAll(/href="(\/admin[^"]*)"/giu)].map(([, href]) => href);
-  assert.ok(adminPaths.length > 0);
-  assert.equal(adminPaths.includes("/admin"), false, "P0 does not add an unapproved /admin root route");
-  assert.ok(adminPaths.every((href) => href.startsWith("/admin/articles") || href.startsWith("/admin/settings") || ["/admin/login", "/admin/setup", "/admin/recovery"].includes(href)));
+  assert.ok(component.includes('const basePath = publicDemo ? "/demo/editorial" : "/admin";'));
+  assert.ok(component.includes("!publicDemo && <nav"), "public demonstration must not expose fake security-preview links");
+  assert.ok(component.includes('href={\u0060\u0024{basePath}/articles/new\u0060}'), "draft link must remain inside the active demo prefix");
+  assert.doesNotMatch(component, /href="\\/admin\\//u, "workspace navigation must use the supplied prefix");
 });

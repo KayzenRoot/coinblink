@@ -1,4 +1,4 @@
-/* global document, Blob, URL, setTimeout */
+/* global document */
 // Public local-only drafting utility. Does not call servers, log, store, or publish.
 // Imports have no network dependencies; no Markdown/HTML is rendered as executable markup.
 const MAX_TITLE = 140;

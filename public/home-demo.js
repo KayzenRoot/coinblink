@@ -22,6 +22,16 @@ document.addEventListener("pointerdown", (event) => {
   closeMenu();
 });
 
+const isPortuguese = document.querySelector(".cb-home")?.getAttribute("data-locale") === "pt-br";
+const localizedCategories = {
+  All: "Todas",
+  Regulation: "Regulação",
+};
+const displayCategory = (id) => isPortuguese ? (localizedCategories[id] ?? id) : id;
+const placeholderCount = (n) => isPortuguese
+  ? String(n) + (n === 1 ? " exemplo" : " exemplos")
+  : String(n) + (n === 1 ? " placeholder" : " placeholders");
+
 let selected = "All";
 let searchText = "";
 const buttons = [...document.querySelectorAll("[data-category]")];
@@ -83,16 +93,22 @@ function filterStories() {
     card.hidden = !(matchesCategory && matchesQuery);
     if (!card.hidden) visible += 1;
   });
-  if (count) count.textContent = String(visible) + (visible === 1 ? " placeholder" : " placeholders");
+  if (count) count.textContent = placeholderCount(visible);
   if (empty) empty.hidden = visible !== 0;
   const filtered = selected !== "All" || query !== "";
   if (clearButton) clearButton.hidden = !filtered;
   if (summary) {
-    summary.textContent = filtered
-      ? "Showing " + visible + " demo placeholder" + (visible === 1 ? "" : "s") +
-        (selected === "All" ? "" : " in " + selected) +
-        (query ? " matching your search." : ".")
-      : "Showing all demo placeholders.";
+    summary.textContent = isPortuguese
+      ? (filtered
+        ? "Exibindo " + placeholderCount(visible) +
+          (selected === "All" ? "" : " em " + displayCategory(selected)) +
+          (query ? " correspondentes à busca." : ".")
+        : "Exibindo todos os exemplos.")
+      : (filtered
+        ? "Showing " + visible + " demo placeholder" + (visible === 1 ? "" : "s") +
+          (selected === "All" ? "" : " in " + selected) +
+          (query ? " matching your search." : ".")
+        : "Showing all demo placeholders.");
   }
 }
 
@@ -161,5 +177,7 @@ restoreFilterURL();
 
 document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
   const status = document.querySelector("[data-form-status]");
-  if (status) status.textContent = "Preview only. No email was sent or stored.";
+  if (status) status.textContent = isPortuguese
+    ? "Apenas prévia. Nenhum e-mail foi enviado ou armazenado."
+    : "Preview only. No email was sent or stored.";
 });

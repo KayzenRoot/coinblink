@@ -82,6 +82,8 @@ const portuguese = Object.freeze({
   "4 placeholders": "4 exemplos",
   "Showing all demo placeholders.": "Exibindo todos os exemplos.",
   "Clear filters": "Limpar filtros",
+  "Copy view link": "Copiar link da seleção",
+  "Copy this link manually": "Copie este link manualmente",
   "MARKET": "MERCADO",
   "DEVELOPMENT": "TECNOLOGIA",
   "POLICY": "REGULAÇÃO",

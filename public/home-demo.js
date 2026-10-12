@@ -61,6 +61,7 @@ function validatedSectionHash() {
     case "#radar-24h": return "#radar-24h";
     case "#categories": return "#categories";
     case "#latest-news": return "#latest-news";
+    case "#learn": return "#learn";
     case "#newsletter": return "#newsletter";
     case "#demo-data": return "#demo-data";
     case "#footer": return "#footer";

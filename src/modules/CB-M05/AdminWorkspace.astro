@@ -1,5 +1,6 @@
 ---
 import { ADMIN_WORKSPACE_VIEWS, getAdminWorkspaceView } from "./admin-workspace-model.mjs";
+import LocalDraftLab from "./LocalDraftLab.astro";
 
 type AdminWorkspaceView = typeof ADMIN_WORKSPACE_VIEWS[number];
 
@@ -131,7 +132,7 @@ const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
               <span class="m05-empty-state__mark" aria-hidden="true">—</span>
               <h3>Nothing is connected yet</h3>
               <p>There are no sample headlines, stories, sources, or market claims in this workspace.</p>
-              <a class="m05-link-button" href={`${basePath}/articles/new`}>Open the disabled draft preview <span aria-hidden="true">→</span></a>
+              <a class="m05-link-button" href={`${basePath}/articles/new`}>Open the local draft workshop <span aria-hidden="true">→</span></a>
             </div>
           </section>
 
@@ -144,7 +145,7 @@ const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
               <span class="m05-state-pill m05-state-pill--muted">MOCK</span>
             </div>
             <ol class="m05-workflow__steps">
-              <li><span>01</span><div><strong>Draft</strong><small>Not available</small></div></li>
+              <li><span>01</span><div><strong>Draft</strong><small>Local export preview only</small></div></li>
               <li><span>02</span><div><strong>Source check</strong><small>Not available</small></div></li>
               <li><span>03</span><div><strong>Fact check</strong><small>Not available</small></div></li>
               <li><span>04</span><div><strong>Owner review</strong><small>Not available</small></div></li>
@@ -168,7 +169,9 @@ const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
         </>
       )}
 
-      {(view === "article-new" || view === "article-edit") && (
+      {view === "article-new" && <LocalDraftLab />}
+
+      {view === "article-edit" && (
         <section class="m05-panel m05-disabled-editor" aria-labelledby="m05-editor-title">
           <div class="m05-panel__heading">
             <div>

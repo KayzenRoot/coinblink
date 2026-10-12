@@ -523,3 +523,91 @@
   .cb-home .official-source p { font-size:13px; }
   .cb-home .official-source__foot a { font-size:12px; min-height:36px; display:inline-flex; align-items:center; }
 }
+
+
+/* Real read-only outbound blockchain lookup. No API, wallet or client storage. */
+.cb-home .chain-lookup { margin-top:16px; scroll-margin-top:18px; }
+.cb-home .chain-lookup__heading {
+  display:flex; flex-wrap:wrap; align-items:flex-start;
+  justify-content:space-between; gap:12px; margin-bottom:18px;
+}
+.cb-home .chain-lookup__heading small {
+  display:block; color:var(--lime); font-size:9px;
+  font-weight:750; letter-spacing:.12em;
+}
+.cb-home .chain-lookup__heading h2 {
+  margin:7px 0; color:var(--text);
+  font-size:clamp(19px,2.3vw,24px);
+}
+.cb-home .chain-lookup__heading p {
+  margin:0; max-width:68ch; color:var(--muted);
+  font-size:12px; line-height:1.55;
+}
+.cb-home .chain-lookup__pill {
+  border:1px solid var(--border-bright); border-radius:6px;
+  padding:7px 10px; color:var(--lime); font-size:10px; font-weight:700;
+}
+.cb-home .chain-lookup__form {
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px; align-items:end;
+}
+.cb-home .chain-lookup__form label {
+  display:grid; min-width:0; gap:7px;
+  color:var(--text); font-size:11px; font-weight:650;
+}
+.cb-home .chain-lookup__form input,
+.cb-home .chain-lookup__form select {
+  width:100%; min-width:0; min-height:44px;
+  border:1px solid var(--border-bright); border-radius:6px;
+  background:#0d1811; color:var(--text);
+  font:inherit; font-size:12px; padding:9px 12px;
+}
+.cb-home .chain-lookup__form input[aria-invalid="true"] { border-color:#ffb56a; }
+.cb-home .chain-lookup__form input:focus-visible,
+.cb-home .chain-lookup__form select:focus-visible,
+.cb-home .chain-lookup__form button:focus-visible,
+.cb-home .chain-lookup__result a:focus-visible {
+  outline:3px solid var(--lime); outline-offset:2px;
+}
+.cb-home .chain-lookup__value { grid-column:1/-1; }
+.cb-home .chain-lookup__form button {
+  min-height:44px; justify-self:start; border:0; border-radius:6px;
+  padding:10px 16px; background:var(--lime); color:#0d1c0f;
+  font:inherit; font-size:12px; font-weight:800; cursor:pointer;
+}
+.cb-home .chain-lookup__status {
+  margin:0; min-width:0; color:var(--muted);
+  font-size:11px; line-height:1.5; overflow-wrap:anywhere;
+}
+.cb-home .chain-lookup__status:empty { display:none; }
+.cb-home .chain-lookup__result {
+  display:flex; grid-column:1/-1; flex-wrap:wrap;
+  align-items:center; justify-content:space-between; gap:12px;
+  border:1px solid var(--border-bright); border-radius:7px;
+  background:#14251a; padding:13px;
+}
+.cb-home .chain-lookup__result[hidden] { display:none; }
+.cb-home .chain-lookup__result>span {
+  color:var(--muted); font-size:11px; overflow-wrap:anywhere;
+}
+.cb-home .chain-lookup__result strong { color:var(--text); }
+.cb-home .chain-lookup__result a {
+  min-height:40px; display:inline-flex; align-items:center; gap:8px;
+  color:var(--lime); font-size:12px; font-weight:750;
+  text-decoration:underline; text-underline-offset:3px;
+}
+.cb-home .chain-lookup__warning {
+  margin:17px 0 0; border-left:3px solid var(--lime);
+  padding:8px 12px; background:#111e15;
+  color:var(--muted); font-size:11px; line-height:1.6;
+}
+@media(max-width:560px) {
+  .cb-home .chain-lookup__form { grid-template-columns:minmax(0,1fr); }
+  .cb-home .chain-lookup__value,
+  .cb-home .chain-lookup__result { grid-column:1; }
+  .cb-home .chain-lookup__form label { font-size:12px; }
+  .cb-home .chain-lookup__form input,
+  .cb-home .chain-lookup__form select { font-size:14px; }
+  .cb-home .chain-lookup__status,
+  .cb-home .chain-lookup__warning { font-size:12px; }
+}

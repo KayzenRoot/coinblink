@@ -4,7 +4,7 @@
 
 ## Scope of this candidate
 
-- Proposal: `docs/architecture/ADR-CB-0003-M05-LOCAL-D1-DATA-BOUNDARY.md`.
+- Proposal: `docs/architecture/ADR-CB-0004-M05-LOCAL-D1-DATA-BOUNDARY.md`.
 - Scope delta: `.engineering/proposals/CB-M05-D1-LOCAL-SCOPE-DELTA.md`.
 - Additive gated references: `.engineering/work-orders/CB-M05-WO-001.md`, `.engineering/context-locks/CB-M05-WO-001.md`, `docs/architecture/contracts/CB-M05.md`.
 - Source `main` before PR: `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; M05 app PR #59 open at `a20a4bd629c3beb29dcf1e45eeac8f04465b3b8c`.

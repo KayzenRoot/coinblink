@@ -26,7 +26,7 @@ test("all market and editorial samples remain visibly demonstration-only", () =>
 
 test("the newsletter demo cannot submit an email address", () => {
   assert.match(component, /<script is:inline src="\/home-demo\.js"><\/script>/u);
-  assert.match(component, /<script>import "\.\/explorer-lookup\.mjs";<\/script>/u);
+  assert.match(component, /<script is:inline type="module" src="\/explorer-lookup\.js"><\/script>/u);
   const newsletter = component.split('class="content-panel newsletter-panel"')[1]?.split("</section>")[0];
   assert.ok(newsletter, "newsletter section is required");
   assert.doesNotMatch(newsletter, /<form\b/u, "demo email control must have no native submission behavior");

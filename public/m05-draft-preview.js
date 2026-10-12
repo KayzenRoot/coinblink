@@ -59,6 +59,56 @@ export function draftToMarkdown(prepared) {
   ].join("\n");
 }
 
+// Accept only the exact, non-published CoinBlink export structure.
+// This is a data parser, not a general-purpose Markdown or HTML importer.
+export function parseLocalDraftMarkdown(raw) {
+  if (typeof raw !== "string" || raw.length > 20000 || raw.includes("\0")) {
+    throw new Error("Unsupported or oversized Markdown draft");
+  }
+  const text = raw.replace(/^\uFEFF/u, "").replace(/\r\n?/gu, "\n");
+  const header = "# ";
+  const byline = "\n\n> WORKING DRAFT ONLY. Not checked, approved, or published.\n\n**Author label:** ";
+  const source = "\n\n**Original source:** ";
+  const summary = "\n\n## Summary\n\n";
+  const body = "\n\n## Draft\n\n";
+  const gates = "\n\n## Editorial gates\n\n";
+  const exactGates = [
+    "- [ ] Verify facts against original source and independent evidence",
+    "- [ ] Check reuse rights and attribution",
+    "- [ ] Request owner review before any publication",
+  ].join("\n");
+  if (!text.startsWith(header) || !text.endsWith(gates + exactGates + "\n")) {
+    throw new Error("Not a CoinBlink working draft");
+  }
+  const markers = [byline, source, summary, body, gates];
+  let cursor = header.length;
+  const values = [];
+  for (const part of markers) {
+    const position = text.indexOf(part, cursor);
+    if (position < cursor) throw new Error("Missing original draft sections");
+    values.push(text.slice(cursor, position));
+    cursor = position + part.length;
+  }
+  if (text.slice(cursor) !== exactGates + "\n") {
+    throw new Error("Unexpected content after editorial gates");
+  }
+  const [title, author, originalSource, brief, article] = values;
+  // Legacy exports encoded angle brackets, and the text is never assigned to innerHTML.
+  const restore = (value) => value.replace(/&lt;/gu, "<").replace(/&gt;/gu, ">");
+  const result = prepareLocalDraft({
+    title: restore(title),
+    author: restore(author) === "Not provided" ? "" : restore(author),
+    source: originalSource,
+    summary: restore(brief),
+    body: restore(article),
+  });
+  // Never silently truncate or partially import an unfamiliar/malformed file.
+  if (!result.ready || draftToMarkdown(result) !== text) {
+    throw new Error("Draft format or fields failed validation");
+  }
+  return result;
+}
+
 export function safeDraftFilename(title) {
   const slug = clean(title, MAX_TITLE)
     .normalize("NFKD").replace(/[\u0300-\u036f]/gu, "")
@@ -84,6 +134,8 @@ if (typeof document !== "undefined") {
       source: root.querySelector("[data-m05-preview-source]"),
       status: root.querySelector("[data-m05-preview-status]"),
     };
+    const importInput = root.querySelector("[data-m05-import]");
+    const importStatus = root.querySelector("[data-m05-import-status]");
     const exportButton = root.querySelector("[data-m05-export]");
     const hint = root.querySelector("[data-m05-draft-hint]");
     const read = () => prepareLocalDraft(Object.fromEntries(
@@ -103,6 +155,26 @@ if (typeof document !== "undefined") {
       exportButton.disabled = !draft.ready;
     };
     Object.values(fields).forEach((field) => field.addEventListener("input", refresh));
+    importInput.addEventListener("change", async () => {
+      const file = importInput.files?.[0];
+      importInput.value = "";
+      if (!file) return;
+      if (!/\.md$/iu.test(file.name) || file.size > 24000 || file.size === 0) {
+        importStatus.textContent = "Choose a CoinBlink .md draft smaller than 24 KB.";
+        return;
+      }
+      try {
+        const restored = parseLocalDraftMarkdown(await file.text());
+        for (const [key, field] of Object.entries(fields)) {
+          field.value = restored[key];
+        }
+        refresh();
+        importStatus.textContent = "Draft restored from this file in your browser only. Nothing was uploaded.";
+        fields.title.focus();
+      } catch {
+        importStatus.textContent = "This file is not a valid CoinBlink working draft. Current text was kept.";
+      }
+    });
     exportButton.addEventListener("click", () => {
       const draft = read();
       if (!draft.ready) return;

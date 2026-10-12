@@ -61,3 +61,12 @@ Atomic concurrent first-Owner claim yields one winner; second Owner never create
 ## Required next authority
 
 Global #53 and Issue #6 are already merged/closed. This candidate contains own `CB-M05-WO-001`, current-main Context Lock and proposed checkpoint admission. **While this PR is open, it remains NON_EXECUTABLE**. Only after all exact-head checks, independent review, explicit Owner go/no-go and canonical merge may a Codex Desktop local M05 agent implement **P0 MOCK / SECURITY DISABLED UI only**. Authentication, sessions, MFA/recovery, persistent Owner identity, database and provider vault remain P1 BLOCKED until their separate approved security/data/provider ADR, regardless of P0 admission.
+
+
+## Proposed local-only D1 draft persistence addendum (NOT EXECUTABLE)
+
+[ADR-CB-0003](../ADR-CB-0003-M05-LOCAL-D1-DATA-BOUNDARY.md) and the [proposed Scope Delta](../../../.engineering/proposals/CB-M05-D1-LOCAL-SCOPE-DELTA.md) propose a future `LOCAL_D1_SPIKE` limited to synthetic draft CRUD, revision integrity and restart persistence in a disposable **Windows-local Wrangler D1 state directory**. D1 `--remote`, Cloudflare resource creation, Worker preview/production bindings, exposed privileged mutations, login and publish remain excluded. Local simulation is not an authorized Owner CMS session or a LIVE content feed.
+
+Data producer draft contract for later design: source-backed fields `id,title,summary,body,authorLabel,sourceUrl,locale,revision,createdAt,updatedAt`, fixed `state=draft`, fixed `mode=LOCAL_TEST`; every update needs a revision precondition and historical snapshot. All source URLs must be validated HTTPS and independent attribution/rights remain pending verification. The public M05 P0 demo must keep its existing Markdown import/export and not auto-save remotely.
+
+**Integration Steward is sole owner** of central migrations and binding/router/configuration changes. M05 owns module-local contract and tests only. A reviewed governance merge, regenerated canonical-main execution lock and separate Owner go/no-go are required before any local D1 migration. This addendum does not adopt P1 security/data or supersede the blocked auth, MFA, vault, publish or provider decisions above.

@@ -119,3 +119,78 @@
 @media (prefers-reduced-motion:reduce) {
   .cb-home *,.cb-home *::before,.cb-home *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; }
 }
+
+
+/* Usable discovery controls for the disconnected editorial demonstration. */
+.cb-home .news-panel { scroll-margin-top:16px; }
+.cb-home .news-controls {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:0 0 10px;
+}
+.cb-home .news-filter-summary {
+  margin:0;
+  min-width:0;
+  flex:1 1 auto;
+  color:var(--muted);
+  font-size:10px;
+}
+.cb-home .news-mobile-search { display:none; }
+.cb-home .news-clear-filters,
+.cb-home .news-no-results button {
+  min-height:34px;
+  border:1px solid var(--border-bright);
+  border-radius:5px;
+  background:#17251a;
+  color:var(--lime);
+  font:inherit;
+  font-size:10px;
+  font-weight:700;
+  cursor:pointer;
+  padding:6px 12px;
+}
+.cb-home .news-clear-filters[hidden],
+.cb-home .news-no-results[hidden] { display:none; }
+.cb-home .news-no-results {
+  display:grid;
+  justify-items:start;
+  gap:8px;
+  padding:20px;
+  border:1px dashed var(--border-bright);
+  border-radius:7px;
+  background:#0c1610;
+  color:var(--text);
+}
+.cb-home .news-no-results strong { font-size:13px; }
+.cb-home .news-no-results p { margin:0; color:var(--muted); font-size:11px; }
+@media (max-width:760px) {
+  .cb-home .news-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px; }
+  .cb-home .news-mobile-search {
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-height:42px;
+    padding:0 12px;
+    border:1px solid var(--border-bright);
+    border-radius:6px;
+    color:var(--muted);
+    background:#0d1712;
+  }
+  .cb-home .news-mobile-search>span[aria-hidden] { font-size:20px; }
+  .cb-home .news-mobile-search input {
+    width:100%;
+    min-width:0;
+    min-height:40px;
+    border:0;
+    background:transparent;
+    color:var(--text);
+    font:inherit;
+    font-size:13px;
+  }
+  .cb-home .news-filter-summary { font-size:11px; }
+  .cb-home .news-clear-filters { min-height:40px; font-size:11px; }
+}

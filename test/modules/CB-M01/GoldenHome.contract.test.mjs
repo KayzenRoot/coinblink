@@ -98,3 +98,13 @@ test("the visual fixture uses and cleans only a per-run isolated temp directory"
   assert.match(fixtureConfig, /outDir: join\(resolvedTempDir, "dist"\)/);
   assert.doesNotMatch(fixtureConfig, /fixtureRoot, "\.m01-fixture-output"|M01_FIXTURE_OUT_DIR/);
 });
+
+const sharedEnglishRoute = await readFile(new URL("../../../src/pages/en.astro", import.meta.url), "utf8");
+
+test("real /en route mounts GoldenHome without bypassing the common secure layout", () => {
+  assert.match(sharedEnglishRoute, /import BaseLayout from "\.\.\/layouts\/BaseLayout\.astro"/u);
+  assert.match(sharedEnglishRoute, /import GoldenHome from "\.\.\/modules\/CB-M01\/GoldenHome\.astro"/u);
+  assert.match(sharedEnglishRoute, /<BaseLayout[\s\S]*<GoldenHome \/>[\s\S]*<\/BaseLayout>/u);
+  assert.doesNotMatch(sharedEnglishRoute, /<main\b/u, "the shared route must not create a second main landmark");
+  assert.match(sharedEnglishRoute, /export const prerender = false/u);
+});

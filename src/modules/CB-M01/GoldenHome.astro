@@ -3,11 +3,13 @@ import approvedLogo from "../../../assets/reference/coinblink-logo-approved-orig
 import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
 import { getLearningTopics } from "./learning-topics.mjs";
+import { getOfficialSources } from "./official-sources.mjs";
 
 interface Props { locale?: "en" | "pt-br"; }
 const { locale = "en" } = Astro.props;
 const t = (english: string) => translateHome(english, locale);
 const learningTopics = getLearningTopics(locale);
+const officialSources = getOfficialSources(locale);
 
 const markets = [
   { symbol: "BTC", name: "Bitcoin", tone: "bitcoin" },
@@ -122,6 +124,7 @@ const stories = [
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
         <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
+        <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
         <div class="news-controls">
           <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
           <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">{t("Showing all demo placeholders.")}</p>
@@ -176,6 +179,31 @@ const stories = [
         ))}
       </div>
       <p class="learn-section__footnote">{t("Educational material only. Verify important details with primary sources before acting.")}</p>
+    </section>
+
+    <section class="official-sources content-panel" id="official-sources" aria-labelledby="official-sources-title">
+      <div class="official-sources__heading">
+        <div>
+          <small>{t("ORIGINAL PUBLISHERS · EXTERNAL LINKS")}</small>
+          <h2 id="official-sources-title">{t("Official source desk")}</h2>
+          <p>{t("Visit original publishing pages directly. No headlines, dates or third-party articles are imported into CoinBlink.")}</p>
+        </div>
+        <span class="official-sources__count">{officialSources.length} {t("sources")}</span>
+      </div>
+      <div class="official-sources__grid">
+        {officialSources.map((source) => (
+          <article class="official-source" data-official-source={source.id}>
+            <small class="official-source__type">{source.type === "regulation" ? t("REGULATORY NEWSROOM") : source.type === "ecosystem" ? t("PROJECT ANNOUNCEMENTS") : t("PROTOCOL UPDATES")}</small>
+            <h3>{source.name}</h3>
+            <p>{source.description}</p>
+            <div class="official-source__foot">
+              <span>{source.host}</span>
+              <a href={source.url} target="_blank" rel="noopener noreferrer external" referrerpolicy="no-referrer" aria-label={`${t("Open official site:")} ${source.name}`}>{t("Visit publisher")} <span aria-hidden="true">↗</span></a>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="official-sources__disclaimer">{t("Source links are not an endorsement, a live feed or a license to republish. Check the date, context and original claims on each site.")}</p>
     </section>
 
     <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>

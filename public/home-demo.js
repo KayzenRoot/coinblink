@@ -1,4 +1,4 @@
-/* global document */
+/* global document, window */
 // CoinBlink M01: demonstration-only interactions. No network calls, storage or submission.
 const menu = document.querySelector("[data-menu-toggle]");
 const nav = document.querySelector("[data-primary-nav]");
@@ -34,6 +34,44 @@ const count = document.querySelector("[data-result-count]");
 const summary = document.querySelector("[data-news-filter-summary]");
 const empty = document.querySelector("[data-news-empty]");
 const clearButton = document.querySelector("[data-clear-filters]");
+const allowedCategories = new Set(buttons.map((button) => button.getAttribute("data-category")));
+const MAX_QUERY_LENGTH = 80;
+
+// Keep the demonstration view reproducible through a URL, without cookies,
+// remote requests, browser storage or untrusted category values.
+function readFilterURL() {
+  const params = new URL(window.location.href).searchParams;
+  const category = params.get("category");
+  return {
+    category: allowedCategories.has(category) ? category : "All",
+    query: (params.get("q") ?? "").slice(0, MAX_QUERY_LENGTH),
+  };
+}
+
+function writeFilterURL(mode = "push") {
+  const next = new URL(window.location.href);
+  next.search = "";
+  if (selected !== "All") next.searchParams.set("category", selected);
+  const query = searchText.trim().slice(0, MAX_QUERY_LENGTH);
+  if (query) next.searchParams.set("q", query);
+  if (next.href === window.location.href) return;
+  const action = mode === "replace" ? "replaceState" : "pushState";
+  window.history[action](null, "", next.pathname + next.search + next.hash);
+}
+
+function restoreFilterURL() {
+  const next = readFilterURL();
+  selected = next.category;
+  searchText = next.query;
+  searches.forEach((input) => { input.value = searchText; });
+  buttons.forEach((button) => {
+    const active = button.getAttribute("data-category") === selected;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  filterStories();
+}
+
 
 function filterStories() {
   const query = searchText.trim().toLocaleLowerCase("en");
@@ -72,10 +110,12 @@ function resetFilters() {
   searchText = "";
   searches.forEach((search) => { search.value = ""; });
   selectCategory("All");
+  writeFilterURL();
 }
 
 buttons.forEach((button) => button.addEventListener("click", () => {
   selectCategory(button.getAttribute("data-category") ?? "All");
+  writeFilterURL();
   document.getElementById("latest-news")?.scrollIntoView({ block: "start" });
 }));
 
@@ -85,6 +125,7 @@ searches.forEach((search) => search.addEventListener("input", () => {
     if (other !== search) other.value = searchText;
   });
   filterStories();
+  writeFilterURL("replace");
 }));
 
 clearButton?.addEventListener("click", resetFilters);
@@ -114,6 +155,9 @@ document.addEventListener("keydown", (event) => {
   event.preventDefault();
   visibleSearch.focus();
 });
+
+window.addEventListener("popstate", restoreFilterURL);
+restoreFilterURL();
 
 document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
   const status = document.querySelector("[data-form-status]");

@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
 const publicDemoRoutes = [
@@ -32,7 +33,14 @@ test.describe("M05 public static editorial demonstration", () => {
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
       await expect(page.locator("main#main")).toHaveCount(1);
       await expect(page.locator('nav[aria-label="Security mock previews"]')).toHaveCount(0);
-      await expect(page.locator("form, input, textarea")).toHaveCount(0);
+      await expect(page.locator("form")).toHaveCount(0);
+      if (path.endsWith("/articles/new")) {
+        await expect(page.locator("[data-m05-local-editor] input")).toHaveCount(3);
+        await expect(page.locator("[data-m05-local-editor] textarea")).toHaveCount(2);
+        await expect(page.getByText("NO CLOUD SAVE", { exact: true })).toBeVisible();
+      } else {
+        await expect(page.locator("input, textarea")).toHaveCount(0);
+      }
       const buttons = page.locator(".m05-workspace button");
       for (const button of await buttons.all()) {
         await expect(button).toBeDisabled();
@@ -47,6 +55,64 @@ test.describe("M05 public static editorial demonstration", () => {
       expect(response?.headers()["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
     });
   }
+
+  test("article draft locally previews original text and downloads Markdown, without API calls or persistence", async ({ page }) => {
+    const externalRequests = [];
+    const sentMutations = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (url.origin !== "http://127.0.0.1:4321") externalRequests.push(request.url());
+      if (!["GET", "HEAD"].includes(request.method())) sentMutations.push(request.url());
+    });
+    await page.goto("/demo/editorial/articles/new");
+    const lab = page.locator("[data-m05-local-editor]");
+    const exportButton = lab.getByRole("button", { name: "Export Markdown (.md)" });
+    await expect(exportButton).toBeDisabled();
+    await lab.locator("[data-m05-draft-title]").fill("Original security research article");
+    await lab.locator("[data-m05-draft-author]").fill("CoinBlink Research");
+    await lab.locator("[data-m05-draft-summary]").fill("An original overview of security practices and independently verifiable research.");
+    await lab.locator("[data-m05-draft-body]").fill("An independently authored draft that must be fact checked and cleared for reuse before publication.");
+    await lab.locator("[data-m05-draft-source]").fill("javascript:alert(1)");
+    await expect(exportButton).toBeDisabled();
+    await lab.locator("[data-m05-draft-source]").fill("https://example.org/research/source");
+    await expect(exportButton).toBeEnabled();
+    await expect(lab.locator("[data-m05-preview-title]")).toHaveText("Original security research article");
+    await expect(lab.locator("[data-m05-preview-source]")).toHaveText("https://example.org/research/source");
+    await expect(lab.locator("[data-m05-preview-status]")).toContainText("NOT fact-checked or approved");
+    const [download] = await Promise.all([page.waitForEvent("download"), exportButton.click()]);
+    expect(download.suggestedFilename()).toBe("original-security-research-article.md");
+    const contents = await readFile(await download.path(), "utf8");
+    expect(contents).toContain("# Original security research article");
+    expect(contents).toContain("https://example.org/research/source");
+    expect(contents).toContain("WORKING DRAFT ONLY");
+    expect(contents).toContain("Request owner review before any publication");
+    await expect(lab.locator("[data-m05-draft-hint]")).toContainText("Nothing was published");
+    expect(sentMutations).toEqual([]);
+    expect(externalRequests).toEqual([]);
+    expect(page.url()).toBe("http://127.0.0.1:4321/demo/editorial/articles/new");
+    await page.reload();
+    await expect(lab.locator("[data-m05-draft-title]")).toHaveValue("");
+    await expect(exportButton).toBeDisabled();
+    await expect(page.getByText("MOCK / SECURITY DISABLED", { exact: true })).toBeVisible();
+  });
+
+  test("local drafting never interprets unsafe HTML and stays accessible on mobile", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/demo/editorial/articles/new");
+    const lab = page.locator("[data-m05-local-editor]");
+    await lab.locator("[data-m05-draft-title]").fill("Security notes <img src=x onerror=alert(1)>");
+    await lab.locator("[data-m05-draft-summary]").fill("This draft includes raw angle bracket input for the secure preview.");
+    await lab.locator("[data-m05-draft-body]").fill("A long enough draft with untrusted <script>console.log('x')</script> text that is not executable.");
+    await lab.locator("[data-m05-draft-source]").fill("https://example.org/original");
+    await expect(lab.locator("[data-m05-preview-title]")).toContainText("<img src=x onerror=alert(1)>");
+    await expect(lab.locator(".m05-draft-preview img, .m05-draft-preview script")).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    const accessibility = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(accessibility.violations).toEqual([]);
+    expect(await page.evaluate(() => ({ cookies: document.cookie, local: localStorage.length, session: sessionStorage.length })))
+      .toEqual({ cookies: "", local: 0, session: 0 });
+  });
 
   test("public mock routes never expose auth, recovery or real admin endpoints", async ({ request }) => {
     for (const path of [

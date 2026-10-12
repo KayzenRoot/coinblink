@@ -51,10 +51,22 @@ const shareButton = document.querySelector("[data-copy-filter-link]");
 const shareStatus = document.querySelector("[data-share-status]");
 const manualShare = document.querySelector("[data-share-manual]");
 const shareURLInput = document.querySelector("[data-share-url]");
-const sectionAnchors = new Set([
-  "#top", "#main", "#market-overview", "#radar-24h", "#categories",
-  "#latest-news", "#newsletter", "#demo-data", "#footer",
-]);
+// Never reflect arbitrary fragments into href attributes: only constant anchors
+// that exist in the local document are permitted in share/language URLs.
+function validatedSectionHash() {
+  switch (window.location.hash) {
+    case "#top": return "#top";
+    case "#main": return "#main";
+    case "#market-overview": return "#market-overview";
+    case "#radar-24h": return "#radar-24h";
+    case "#categories": return "#categories";
+    case "#latest-news": return "#latest-news";
+    case "#newsletter": return "#newsletter";
+    case "#demo-data": return "#demo-data";
+    case "#footer": return "#footer";
+    default: return "";
+  }
+}
 
 function buildViewURL(pathname = isPortuguese ? "/pt-br" : "/en") {
   // Only our two first-party routes may become link targets.
@@ -66,7 +78,7 @@ function buildViewURL(pathname = isPortuguese ? "/pt-br" : "/en") {
   }
   const query = searchText.trim().slice(0, MAX_QUERY_LENGTH);
   if (query) view.searchParams.set("q", query);
-  if (sectionAnchors.has(window.location.hash)) view.hash = window.location.hash;
+  view.hash = validatedSectionHash();
   return view;
 }
 

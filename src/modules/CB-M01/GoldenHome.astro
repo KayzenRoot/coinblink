@@ -1,6 +1,11 @@
 ---
 import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
 import "./golden-home.css";
+import { translateHome } from "./home-copy.mjs";
+
+interface Props { locale?: "en" | "pt-br"; }
+const { locale = "en" } = Astro.props;
+const t = (english: string) => translateHome(english, locale);
 
 const markets = [
   { symbol: "BTC", name: "Bitcoin", tone: "bitcoin" },
@@ -19,36 +24,36 @@ const stories = [
 ];
 ---
 
-<div class="cb-home" id="top">
-  <aside class="demo-banner" aria-label="Demonstration data notice">
+<div class="cb-home" id="top" data-locale={locale}>
+  <aside class="demo-banner" aria-label={t("Demonstration data notice")}>
     <strong>DEMO</strong>
-    <span>Illustrative only — no live prices, headlines, or external feeds are connected.</span>
+    <span>{t("Illustrative only — no live prices, headlines, or external feeds are connected.")}</span>
   </aside>
 
   <header class="cb-header">
-    <a class="brand" href="#top" aria-label="CoinBlink home">
+    <a class="brand" href="#top" aria-label={t("CoinBlink home")}>
       <img src={approvedLogo.src} width="40" height="36" alt="" />
       <span class="brand-name"><span>Coin</span><span>Blink</span><small>Crypto news in a blink.</small></span>
     </a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
-      <span aria-hidden="true">☰</span><span class="sr-only">Toggle navigation</span>
+      <span aria-hidden="true">☰</span><span class="sr-only">{t("Toggle navigation")}</span>
     </button>
-    <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation" data-primary-nav>
-      <a class="is-current" href="#top" aria-current="page">Home</a><a href="#latest-news">News</a>
-      <a href="#market-overview">Markets</a><a href="#radar-24h">Analysis</a><a href="#categories">Learn</a>
-      <a href="#demo-data">Tools</a><a href="#demo-data">Videos</a><a href="#footer">About</a>
+    <nav class="primary-nav" id="primary-nav" aria-label={t("Primary navigation")} data-primary-nav>
+      <a class="is-current" href="#top" aria-current="page">{t("Home")}</a><a href="#latest-news">{t("News")}</a>
+      <a href="#market-overview">{t("Markets")}</a><a href="#radar-24h">{t("Analysis")}</a><a href="#categories">{t("Learn")}</a>
+      <a href="#demo-data">{t("Tools")}</a><a href="#demo-data">{t("Videos")}</a><a href="#footer">{t("About")}</a>
     </nav>
     <div class="header-tools">
-      <label class="search-box"><span class="sr-only">Search demo stories</span>
+      <label class="search-box"><span class="sr-only">{t("Search demo stories")}</span>
         <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
-        <input type="search" placeholder="Search stories" autocomplete="off" maxlength="80" data-news-search />
+        <input type="search" placeholder={t("Search stories")} autocomplete="off" maxlength="80" data-news-search />
       </label>
-      <span class="language-chip" aria-label="Language: English">◎ EN</span><span class="theme-chip" aria-label="Dark theme">◐ <i></i></span>
+      <span class="language-chip" aria-label={t("Language: English")}>◎ EN</span><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
     </div>
   </header>
 
-  <main id="main" class="home-main" aria-label="CoinBlink demonstration homepage">
-    <section class="lead-grid" aria-label="Featured demonstration and market status">
+  <main id="main" class="home-main" aria-label={t("CoinBlink demonstration homepage")}>
+    <section class="lead-grid" aria-label={t("Featured demonstration and market status")}>
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
           <div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
@@ -61,84 +66,84 @@ const stories = [
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
         </div>
         <div class="hero-copy">
-          <div class="eyebrow-row"><strong>⚡ DEMO FEATURE</strong><span>Illustrative layout</span></div>
-          <h1 id="hero-title">Bitcoin market,<br />in <em>focus.</em></h1>
-          <p>This visual demo has no live market data or news connected.</p>
-          <div class="hero-actions"><a class="primary-action" href="#latest-news">Explore demo stories <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">View market panel</a></div>
+          <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>
+          <h1 id="hero-title">{t("Bitcoin market,")}<br />in <em>{t("focus.")}</em></h1>
+          <p>{t("This visual demo has no live market data or news connected.")}</p>
+          <div class="hero-actions"><a class="primary-action" href="#latest-news">{t("Explore demo stories")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">{t("View market panel")}</a></div>
         </div>
-        <div class="hero-stat"><span>DEMO · NOT LIVE</span><strong>—</strong><small>Market data not connected</small></div>
-        <p class="hero-tags" aria-hidden="true">MARKET<br />ANALYSIS<br />DIGITAL ASSETS</p>
+        <div class="hero-stat"><span>{t("DEMO · NOT LIVE")}</span><strong>—</strong><small>{t("Market data not connected")}</small></div>
+        <p class="hero-tags" aria-hidden="true">{t("MARKET")}<br />ANALYSIS<br />DIGITAL ASSETS</p>
       </article>
 
       <aside class="market-panel" id="market-overview" aria-labelledby="market-title">
-        <div class="panel-title"><div><span class="panel-eyebrow">DEMONSTRATION</span><h2 id="market-title">Market overview</h2></div><span class="offline-badge"><i></i>Offline</span></div>
-        <p class="panel-description">Market data feed is not connected.</p>
+        <div class="panel-title"><div><span class="panel-eyebrow">{t("DEMONSTRATION")}</span><h2 id="market-title">{t("Market overview")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
+        <p class="panel-description">{t("Market data feed is not connected.")}</p>
         <ul class="market-list">
           {markets.map((market) => (
             <li class="market-row">
               <span class={"coin-mark coin-" + market.tone} aria-hidden="true">{market.symbol.slice(0, 1)}</span>
               <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
               <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
-              <span class="market-value" aria-label="Unavailable">—</span>
+              <span class="market-value" aria-label={t("Unavailable")}>—</span>
             </li>
           ))}
         </ul>
-        <a class="panel-link" href="#demo-data">Data status <span aria-hidden="true">→</span></a>
+        <a class="panel-link" href="#demo-data">{t("Data status")} <span aria-hidden="true">→</span></a>
       </aside>
     </section>
 
-    <section class="ticker-strip" aria-label="Market ticker demonstration"><strong>◉ Market ticker</strong><div class="ticker-items" tabindex="0" role="region" aria-label="Scrollable market ticker demonstration">{tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>Not connected</em></span>)}</div></section>
+    <section class="ticker-strip" aria-label={t("Market ticker demonstration")}><strong>◉ {t("Market ticker")}</strong><div class="ticker-items" tabindex="0" role="region" aria-label={t("Scrollable market ticker demonstration")}>{tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
 
-    <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ Trending demo</h2>
-      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{label}<small>Demo placeholder</small></span></div>)}
+    <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {t("Trending demo")}</h2>
+      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
     </section>
 
-    <nav class="category-rail" id="categories" aria-label="Demonstration story categories">
-      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "⌘", "◎"][index]}</span>{category}<i aria-hidden="true">›</i></button>)}
+    <nav class="category-rail" id="categories" aria-label={t("Demonstration story categories")}>
+      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "⌘", "◎"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
     </nav>
 
-    <section class="content-grid" aria-label="Demonstration signals">
+    <section class="content-grid" aria-label={t("Demonstration signals")}>
       <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
-        <div class="section-heading"><div><small>DEMO · NO FEED</small><h2 id="radar-title">◉ Radar 24h</h2></div><span>Unavailable</span></div>
-        <p>Key events appear when a verified source is connected.</p><div class="empty-state"><b aria-hidden="true">⌁</b><span>No verified updates are available in this demonstration.</span></div>
+        <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{t("Unavailable")}</span></div>
+        <p>{t("Key events appear when a verified source is connected.")}</p><div class="empty-state"><b aria-hidden="true">⌁</b><span>{t("No verified updates are available in this demonstration.")}</span></div>
       </article>
       <article class="content-panel sentiment-panel" aria-labelledby="sentiment-title">
-        <div class="section-heading"><div><small>DEMO · NO FEED</small><h2 id="sentiment-title">◉ Market sentiment</h2></div><span class="offline-badge"><i></i>Offline</span></div>
-        <p>Sentiment is unavailable until an approved source is connected.</p>
-        <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label="Market sentiment unavailable"><b>—</b><small>Unavailable</small></div>
+        <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="sentiment-title">◉ {t("Market sentiment")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
+        <p>{t("Sentiment is unavailable until an approved source is connected.")}</p>
+        <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label={t("Market sentiment unavailable")}><b>—</b><small>{t("Unavailable")}</small></div>
           <ul><li>Extreme greed <b>—</b></li><li>Greed <b>—</b></li><li>Neutral <b>—</b></li><li>Fear <b>—</b></li><li>Extreme fear <b>—</b></li></ul>
         </div>
       </article>
-      <aside class="promo-panel" aria-label="CoinBlink demonstration brand panel"><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>DEMONSTRATION</small><h2>Stay ahead<br />of the next move.</h2><p>Crypto news in a blink.</p></div><a href="#demo-data">Explore the demo →</a></aside>
+      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>Crypto news in a blink.</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
     </section>
 
-    <section class="lower-grid" aria-label="Latest demonstration content">
+    <section class="lower-grid" aria-label={t("Latest demonstration content")}>
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
-        <div class="news-heading"><div><small>DEMO · NO STORIES CONNECTED</small><h2 id="news-title">Latest news</h2></div><span data-result-count aria-live="polite" aria-atomic="true">4 placeholders</span></div>
+        <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
         <div class="news-controls">
-          <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">Search demo stories</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder="Search demo stories" autocomplete="off" maxlength="80" data-news-search-mobile /></label>
-          <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">Showing all demo placeholders.</p>
-          <button class="news-clear-filters" type="button" data-clear-filters hidden>Clear filters</button>
+          <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
+          <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">{t("Showing all demo placeholders.")}</p>
+          <button class="news-clear-filters" type="button" data-clear-filters hidden>{t("Clear filters")}</button>
         </div>
         <div class="news-cards">
-          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{story.tag}</span><small>DEMO</small><h3>Editorial placeholder · no live story connected</h3><p>No factual claim or live article is represented.</p></div></article>)}
+          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}
         </div>
         <div class="news-no-results" data-news-empty role="status" hidden>
-          <strong>No demo placeholders match.</strong>
-          <p>Try another category or search term. No live news is connected.</p>
-          <button type="button" data-reset-filters>Show all placeholders</button>
+          <strong>{t("No demo placeholders match.")}</strong>
+          <p>{t("Try another category or search term. No live news is connected.")}</p>
+          <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
       </section>
       <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">
-        <span class="newsletter-icon" aria-hidden="true">✉</span><small>DEMO · DISABLED DELIVERY</small><h2 id="newsletter-title">Join the CoinBlink newsletter</h2>
-        <p>This preview will not send or store your email.</p><div class="newsletter-form" role="group" aria-label="Newsletter demo controls"><label class="sr-only" for="demo-email">Email address</label><input id="demo-email" name="email" type="email" placeholder="Email address" autocomplete="off" /><button type="button" data-demo-preview>Preview only →</button></div>
-        <p class="form-status" aria-live="polite" data-form-status>No message will be sent.</p><ul class="newsletter-promises"><li>No storage</li><li>No delivery</li><li>Demo only</li></ul>
+        <span class="newsletter-icon" aria-hidden="true">✉</span><small>{t("DEMO · DISABLED DELIVERY")}</small><h2 id="newsletter-title">{t("Join the CoinBlink newsletter")}</h2>
+        <p>{t("This preview will not send or store your email.")}</p><div class="newsletter-form" role="group" aria-label={t("Newsletter demo controls")}><label class="sr-only" for="demo-email">{t("Email address")}</label><input id="demo-email" name="email" type="email" placeholder={t("Email address")} autocomplete="off" /><button type="button" data-demo-preview>{t("Preview only")} →</button></div>
+        <p class="form-status" aria-live="polite" data-form-status>{t("No message will be sent.")}</p><ul class="newsletter-promises"><li>{t("No storage")}</li><li>{t("No delivery")}</li><li>{t("Demo only")}</li></ul>
       </section>
     </section>
 
-    <section class="data-note" id="demo-data" aria-label="Data and integration status"><b aria-hidden="true">i</b><p><strong>Data status:</strong> visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.</p><strong>MOCK MODE</strong></section>
+    <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.</p><strong>{t("MOCK MODE")}</strong></section>
   </main>
-  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · Crypto news in a blink.</a><span>Demonstration only · no live market or editorial data</span><a href="#top">Back to top ↑</a></footer>
+  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · Crypto news in a blink.</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
 <script is:inline src="/home-demo.js"></script>

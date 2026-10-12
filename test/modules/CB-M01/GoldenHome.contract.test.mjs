@@ -12,7 +12,7 @@ const visualRequestOrigin = await readFile(new URL("./visual-request-origin.mjs"
 const fixtureConfig = await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs", import.meta.url), "utf8");
 
 test("GoldenHome exposes the approved semantic page seam", () => {
-  for (const required of ['<header', '<nav', '<main id="main"', '<footer', 'aria-label="Primary navigation"']) {
+  for (const required of ['<header', '<nav', '<main id="main"', '<footer', 'aria-label={t("Primary navigation")}']) {
     assert.ok(component.includes(required), "missing semantic seam: " + required);
   }
 });

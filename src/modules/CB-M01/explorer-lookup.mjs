@@ -1,3 +1,4 @@
+/* global document */
 import { createExplorerLookup } from "./explorer-links.mjs";
 
 // Nothing is sent, logged, stored, fetched or opened until the visitor follows

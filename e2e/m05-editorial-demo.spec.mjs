@@ -35,7 +35,7 @@ test.describe("M05 public static editorial demonstration", () => {
       await expect(page.locator('nav[aria-label="Security mock previews"]')).toHaveCount(0);
       await expect(page.locator("form")).toHaveCount(0);
       if (path.endsWith("/articles/new")) {
-        await expect(page.locator("[data-m05-local-editor] input")).toHaveCount(3);
+        await expect(page.locator("[data-m05-local-editor] input")).toHaveCount(4);
         await expect(page.locator("[data-m05-local-editor] textarea")).toHaveCount(2);
         await expect(page.getByText("NO CLOUD SAVE", { exact: true })).toBeVisible();
       } else {
@@ -94,6 +94,57 @@ test.describe("M05 public static editorial demonstration", () => {
     await expect(lab.locator("[data-m05-draft-title]")).toHaveValue("");
     await expect(exportButton).toBeDisabled();
     await expect(page.getByText("MOCK / SECURITY DISABLED", { exact: true })).toBeVisible();
+  });
+
+  test("draft export can be reopened after reload and exported again without network writes", async ({ page }) => {
+    const remoteCalls = [];
+    page.on("request", request => {
+      const url = new URL(request.url());
+      if (url.origin !== "http://127.0.0.1:4321" || !["GET", "HEAD"].includes(request.method())) {
+        remoteCalls.push(request.url());
+      }
+    });
+    await page.goto("/demo/editorial/articles/new");
+    const lab = page.locator("[data-m05-local-editor]");
+    const title = lab.locator("[data-m05-draft-title]");
+    const input = lab.locator("[data-m05-import]");
+    const exportButton = lab.getByRole("button", { name: "Export Markdown (.md)" });
+    await title.fill("Verified local backup article");
+    await lab.locator("[data-m05-draft-author]").fill("Original Editorial");
+    await lab.locator("[data-m05-draft-summary]").fill("An independently written summary of the new source-backed report.");
+    await lab.locator("[data-m05-draft-body]").fill("A complete draft body that will be checked by the Owner after being saved to Markdown.");
+    await lab.locator("[data-m05-draft-source]").fill("https://example.org/source/story");
+    const [firstDownload] = await Promise.all([page.waitForEvent("download"), exportButton.click()]);
+    const original = await readFile(await firstDownload.path(), "utf8");
+
+    await page.reload();
+    await expect(lab.locator("[data-m05-draft-title]")).toHaveValue("");
+    await input.setInputFiles({ name: "verified-local-backup-article.md", mimeType: "text/markdown", buffer: Buffer.from(original) });
+    await expect(lab.locator("[data-m05-import-status]")).toContainText("Nothing was uploaded");
+    await expect(title).toHaveValue("Verified local backup article");
+    await expect(lab.locator("[data-m05-draft-author]")).toHaveValue("Original Editorial");
+    await expect(lab.locator("[data-m05-draft-source]")).toHaveValue("https://example.org/source/story");
+    await expect(exportButton).toBeEnabled();
+    await lab.locator("[data-m05-draft-body]").fill("A revised draft body that is still entirely local and requires independent verification.");
+    const [secondDownload] = await Promise.all([page.waitForEvent("download"), exportButton.click()]);
+    const revised = await readFile(await secondDownload.path(), "utf8");
+    expect(revised).toContain("A revised draft body");
+    expect(revised).toContain("WORKING DRAFT ONLY");
+    expect(remoteCalls).toEqual([]);
+
+    await title.fill("My current work must be retained");
+    await input.setInputFiles({
+      name: "untrusted.md", mimeType: "text/markdown",
+      buffer: Buffer.from("# Not CoinBlink Markdown\n<script>bad</script>"),
+    });
+    await expect(lab.locator("[data-m05-import-status]")).toContainText("Current text was kept");
+    await expect(title).toHaveValue("My current work must be retained");
+    await input.setInputFiles({
+      name: "oversize.md", mimeType: "text/markdown",
+      buffer: Buffer.from("x".repeat(65000)),
+    });
+    await expect(lab.locator("[data-m05-import-status]")).toContainText("smaller than 64 KB");
+    await expect(title).toHaveValue("My current work must be retained");
   });
 
   test("local drafting never interprets unsafe HTML and stays accessible on mobile", async ({ page }) => {

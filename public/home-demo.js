@@ -56,8 +56,11 @@ const sectionAnchors = new Set([
   "#latest-news", "#newsletter", "#demo-data", "#footer",
 ]);
 
-function buildViewURL(pathname = window.location.pathname) {
-  const view = new URL(pathname, window.location.origin);
+function buildViewURL(pathname = isPortuguese ? "/pt-br" : "/en") {
+  // Only our two first-party routes may become link targets.
+  // Never derive a destination path or origin from untrusted URL parameters.
+  const safePath = pathname === "/pt-br" ? "/pt-br" : "/en";
+  const view = new URL(safePath, window.location.origin);
   if (selected !== "All" && allowedCategories.has(selected)) {
     view.searchParams.set("category", selected);
   }

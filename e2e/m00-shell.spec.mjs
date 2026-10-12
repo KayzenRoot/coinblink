@@ -136,6 +136,52 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(nav).toBeHidden();
   });
 
+  test("shareable demo filters restore on direct URL, back navigation and forward navigation", async ({ page }) => {
+    await page.goto("/en?category=Ethereum&q=ethereum");
+    const cards = page.locator("[data-news-card]");
+    await expect(cards.filter({ visible: true })).toHaveCount(1);
+    await expect(page.locator('[data-category="Ethereum"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-news-search]")).toHaveValue("ethereum");
+    await expect(page.locator("[data-news-search-mobile]")).toHaveValue("ethereum");
+    await page.locator('[data-category="Bitcoin"]').click();
+    await expect(page).toHaveURL(/category=Bitcoin/);
+    await expect(cards.filter({ visible: true })).toHaveCount(0);
+    await page.goBack();
+    await expect(page).toHaveURL(/category=Ethereum&q=ethereum/);
+    await expect(cards.filter({ visible: true })).toHaveCount(1);
+    await expect(page.locator('[data-category="Ethereum"]')).toHaveAttribute("aria-pressed", "true");
+    await page.goForward();
+    await expect(page).toHaveURL(/category=Bitcoin/);
+    await expect(cards.filter({ visible: true })).toHaveCount(0);
+  });
+
+  test("demo search URL is bounded, safe and never writes untrusted category markup", async ({ page }) => {
+    const injected = "<img src=x onerror=alert(1)>";
+    await page.goto("/en?category=" + encodeURIComponent(injected) + "&q=" + encodeURIComponent("a".repeat(150)));
+    await expect(page.locator('[data-category="All"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-news-search]")).toHaveValue("a".repeat(80));
+    await expect(page.locator("[data-news-search-mobile]")).toHaveValue("a".repeat(80));
+    await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(0);
+    await expect(page.locator("img[onerror]")).toHaveCount(0);
+    await page.locator("[data-clear-filters]").click();
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(4);
+  });
+
+  test("typing on mobile updates URL without exposing email text in query", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    const input = page.locator("[data-news-search-mobile]");
+    await input.fill("solana");
+    await expect(page).toHaveURL(/\/en\?q=solana$/);
+    await expect(page.locator("[data-news-search]")).toHaveValue("solana");
+    await page.locator("#demo-email").fill("private@example.com");
+    await page.locator("[data-demo-preview]").click();
+    expect(page.url()).not.toContain("private");
+    expect(page.url()).not.toContain("example.com");
+    await expect(page.locator("[data-form-status]")).toContainText("No email was sent or stored.");
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

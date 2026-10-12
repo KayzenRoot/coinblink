@@ -3,7 +3,7 @@
 **State:** REVIEW_REQUIRED / INACTIVE, 2026-10-12.
 **Authorized action:** Owner requested preparation and review, **not a merge, migration or binding**.
 **Base:** canonical main `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`.
-**Reference:** [ADR-CB-0003](../../docs/architecture/ADR-CB-0003-M05-LOCAL-D1-DATA-BOUNDARY.md).
+**Reference:** [ADR-CB-0004](../../docs/architecture/ADR-CB-0004-M05-LOCAL-D1-DATA-BOUNDARY.md).
 **Existing P0 implementation:** [M05 PR #59](https://github.com/KayzenRoot/coinblink/pull/59), HEAD `a20a4bd629c3beb29dcf1e45eeac8f04465b3b8c`; never presume this open PR is already in canonical main.
 
 ## Delta, and only after separate gates

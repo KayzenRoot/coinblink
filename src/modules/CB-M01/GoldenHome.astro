@@ -48,7 +48,7 @@ const stories = [
         <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
         <input type="search" placeholder={t("Search stories")} autocomplete="off" maxlength="80" data-news-search />
       </label>
-      <a class="language-chip" href={locale === "en" ? "/pt-br" : "/en"} aria-label={locale === "en" ? "Mudar para português" : "Switch to English"}>◎ {locale === "en" ? "PT" : "EN"}</a><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
+      <a class="language-chip" href={locale === "en" ? "/pt-br" : "/en"} data-language-switch aria-label={locale === "en" ? "Mudar para português" : "Switch to English"}>◎ {locale === "en" ? "PT" : "EN"}</a><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
     </div>
   </header>
 
@@ -123,7 +123,15 @@ const stories = [
         <div class="news-controls">
           <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
           <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">{t("Showing all demo placeholders.")}</p>
-          <button class="news-clear-filters" type="button" data-clear-filters hidden>{t("Clear filters")}</button>
+          <div class="news-control-actions">
+            <button class="news-share-link" type="button" data-copy-filter-link>{t("Copy view link")}</button>
+            <button class="news-clear-filters" type="button" data-clear-filters hidden>{t("Clear filters")}</button>
+          </div>
+        </div>
+        <p class="news-share-status" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
+        <div class="news-share-manual" data-share-manual hidden>
+          <label for="news-share-url">{t("Copy this link manually")}</label>
+          <input type="url" id="news-share-url" data-share-url readonly autocomplete="off" />
         </div>
         <div class="news-cards">
           {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}

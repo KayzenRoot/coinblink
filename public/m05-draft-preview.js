@@ -159,8 +159,8 @@ if (typeof document !== "undefined") {
       const file = importInput.files?.[0];
       importInput.value = "";
       if (!file) return;
-      if (!/\.md$/iu.test(file.name) || file.size > 24000 || file.size === 0) {
-        importStatus.textContent = "Choose a CoinBlink .md draft smaller than 24 KB.";
+      if (!/\.md$/iu.test(file.name) || file.size > 64000 || file.size === 0) {
+        importStatus.textContent = "Choose a CoinBlink .md draft smaller than 64 KB.";
         return;
       }
       try {

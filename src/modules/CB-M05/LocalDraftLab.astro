@@ -1,0 +1,71 @@
+<section class="m05-draft-panel" aria-labelledby="m05-draft-lab-heading" data-m05-local-editor>
+  <div class="m05-draft-intro">
+    <div>
+      <p class="m05-draft-eyebrow">LOCAL-ONLY EDITORIAL WORKSPACE</p>
+      <h2 id="m05-draft-lab-heading">Write, preview and export a draft</h2>
+      <p>Everything stays in this browser tab until you choose to export a Markdown file. This is a public demo without a login, server storage, fact checks or publishing.</p>
+    </div>
+    <span class="m05-draft-badge">NO CLOUD SAVE</span>
+  </div>
+  <div class="m05-draft-layout">
+    <div class="m05-draft-fields" role="group" aria-label="Local draft fields">
+      <label for="m05-draft-title">Headline <span>8–140 characters</span></label>
+      <input id="m05-draft-title" data-m05-draft-title maxlength="140" type="text" autocomplete="off" placeholder="A precise, verifiable headline" />
+      <label for="m05-draft-author">Author credit <span>optional, not a login</span></label>
+      <input id="m05-draft-author" data-m05-draft-author maxlength="80" type="text" autocomplete="off" placeholder="Editorial byline" />
+      <label for="m05-draft-source">Original source URL <span>required HTTPS</span></label>
+      <input id="m05-draft-source" data-m05-draft-source maxlength="500" type="url" autocomplete="off" spellcheck="false" placeholder="https://publisher.example/original-article" />
+      <label for="m05-draft-summary">Summary <span>20–400 characters</span></label>
+      <textarea id="m05-draft-summary" data-m05-draft-summary maxlength="400" rows="3" placeholder="What happened and what is independently verified?"></textarea>
+      <label for="m05-draft-body">Article draft <span>40–12,000 characters</span></label>
+      <textarea id="m05-draft-body" data-m05-draft-body maxlength="12000" rows="8" placeholder="Write your original text and identify which claims still require verification."></textarea>
+      <div class="m05-draft-actions">
+        <button type="button" data-m05-export disabled>Export Markdown (.md)</button>
+        <span data-m05-draft-hint role="status" aria-live="polite"></span>
+      </div>
+    </div>
+    <section class="m05-draft-preview" aria-labelledby="m05-draft-preview-heading">
+      <p class="m05-draft-eyebrow">TEXT-ONLY PREVIEW · NEVER PUBLISHED</p>
+      <h3 id="m05-draft-preview-heading" data-m05-preview-title>Untitled local draft</h3>
+      <p class="m05-draft-byline" data-m05-preview-author>Unassigned author label</p>
+      <div class="m05-draft-preview-text" data-m05-preview-summary>Summary preview</div>
+      <div class="m05-draft-preview-body" data-m05-preview-body>Draft body preview</div>
+      <div class="m05-draft-source"><strong>Source:</strong> <span data-m05-preview-source>No verified HTTPS source URL</span></div>
+      <p class="m05-draft-feedback" data-m05-preview-status role="status" aria-live="polite">Complete the fields to enable local export.</p>
+    </section>
+  </div>
+  <p class="m05-draft-notice"><strong>Not saved:</strong> your text is lost if you navigate away or reload without exporting. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
+</section>
+<script is:inline type="module" src="/m05-draft-preview.js"></script>
+
+<style>
+  .m05-draft-panel { border:1px solid #2a3d32; border-radius:10px; padding:clamp(17px,2.5vw,24px); background:linear-gradient(145deg,#111d17,#0b120f); color:#f2f5f1; }
+  .m05-draft-intro { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:22px; }
+  .m05-draft-eyebrow { margin:0; color:#b8f34b; font-size:9px; font-weight:750; letter-spacing:.13em; }
+  .m05-draft-intro h2 { margin:6px 0; font-size:20px; line-height:1.3; }
+  .m05-draft-intro p:not(.m05-draft-eyebrow) { margin:0; color:#a1afa5; font-size:12px; max-width:75ch; line-height:1.55; }
+  .m05-draft-badge { flex:0 0 auto; padding:6px 10px; color:#b8f34b; font-size:10px; font-weight:700; border:1px solid #39533b; border-radius:6px; }
+  .m05-draft-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; align-items:start; }
+  .m05-draft-fields { display:grid; gap:8px; min-width:0; }
+  .m05-draft-fields label { margin-top:6px; display:flex; align-items:baseline; flex-wrap:wrap; justify-content:space-between; gap:4px; color:#f2f5f1; font-size:12px; font-weight:650; }
+  .m05-draft-fields label span { color:#a1afa5; font-weight:450; font-size:10px; }
+  .m05-draft-fields input, .m05-draft-fields textarea { width:100%; min-width:0; border:1px solid #3a4d40; border-radius:6px; padding:11px 12px; background:#0a120e; color:#f2f5f1; font:inherit; font-size:13px; resize:vertical; line-height:1.5; }
+  .m05-draft-fields input::placeholder, .m05-draft-fields textarea::placeholder { color:#8fa494; opacity:1; }
+  .m05-draft-panel input:focus-visible, .m05-draft-panel textarea:focus-visible, .m05-draft-panel button:focus-visible { outline:3px solid #b8f34b; outline-offset:2px; }
+  .m05-draft-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:10px; }
+  .m05-draft-actions button { min-height:44px; border:0; border-radius:6px; padding:10px 16px; color:#10200e; background:#b8f34b; font:inherit; font-size:12px; font-weight:800; cursor:pointer; }
+  .m05-draft-actions button:disabled { opacity:.55; cursor:not-allowed; }
+  .m05-draft-actions span { color:#a1afa5; font-size:11px; }
+  .m05-draft-preview { min-width:0; border:1px solid #304535; border-radius:8px; background:#0c1510; padding:clamp(15px,2vw,21px); overflow-wrap:anywhere; }
+  .m05-draft-preview h3 { margin:12px 0 5px; font-size:clamp(19px,2vw,26px); line-height:1.25; }
+  .m05-draft-byline { margin:0 0 20px; color:#a1afa5; font-size:11px; }
+  .m05-draft-preview-text { min-height:60px; color:#d9e7d9; font-size:13px; font-weight:600; line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .m05-draft-preview-body { min-height:140px; margin:18px 0; border-top:1px solid #2a3d32; padding-top:15px; color:#a1afa5; font-size:12px; line-height:1.8; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .m05-draft-source { border-top:1px solid #2a3d32; padding-top:13px; font-size:11px; color:#a1afa5; overflow-wrap:anywhere; }
+  .m05-draft-source strong { color:#f2f5f1; }
+  .m05-draft-feedback { margin:16px 0 0; padding:10px 12px; border:1px solid #39533b; border-radius:6px; color:#b8f34b; font-size:11px; line-height:1.5; }
+  .m05-draft-notice { margin:20px 0 0; border-left:3px solid #ffd27d; padding:10px 14px; background:#202018; color:#d3c6a8; font-size:11px; line-height:1.6; }
+  .m05-draft-notice strong { color:#ffd27d; }
+  @media(max-width:900px) { .m05-draft-layout { grid-template-columns:minmax(0,1fr); } }
+  @media(max-width:500px) { .m05-draft-panel { padding:15px; } .m05-draft-fields input, .m05-draft-fields textarea { font-size:16px; } .m05-draft-actions button { width:100%; } }
+</style>

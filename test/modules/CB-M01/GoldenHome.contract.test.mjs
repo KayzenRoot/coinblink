@@ -4,6 +4,7 @@ import test from "node:test";
 
 const componentPath = new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url);
 const component = await readFile(componentPath, "utf8");
+const clientScript = await readFile(new URL("../../../src/modules/CB-M01/golden-home-client.ts", import.meta.url), "utf8");
 const stylesheet = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
 const visualRunner = await readFile(new URL("./visual-check.mjs", import.meta.url), "utf8");
 const visualServer = await readFile(new URL("./visual-server.mjs", import.meta.url), "utf8");
@@ -24,9 +25,11 @@ test("all market and editorial samples remain visibly demonstration-only", () =>
 });
 
 test("the newsletter demo cannot submit an email address", () => {
+  assert.match(component, /<script src="\.\/golden-home-client\.ts"><\/script>/u);
+  assert.doesNotMatch(component, /<script>(.|\n)*<\/script>/u);
   assert.doesNotMatch(component, /<form\b/u, "demo email control must have no native submission behavior");
   assert.match(component, /<button type="button" data-demo-preview>/u);
-  assert.match(component, /querySelector\("\[data-demo-preview\]"\)\?\.addEventListener\("click"/u);
+  assert.match(clientScript, /querySelector\("\[data-demo-preview\]"\)\?\.addEventListener\("click"/u);
   assert.doesNotMatch(component, /action\s*=|fetch\s*\(|XMLHttpRequest|navigator\.sendBeacon/);
 });
 
@@ -49,7 +52,7 @@ test("unavailable Tools and Videos navigation routes to an explicit demo status"
 });
 
 test("mobile navigation closes after selecting a link", () => {
-  assert.match(component, /navLinks\.forEach\(\(link\) => link\.addEventListener\("click"/u);
+  assert.match(clientScript, /navLinks\.forEach\(\(link\) => link\.addEventListener\("click"/u);
   assert.match(visualRunner, /mobileNavigationLinkCloses/u);
 });
 

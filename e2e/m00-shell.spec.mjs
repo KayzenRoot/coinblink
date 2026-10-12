@@ -72,6 +72,70 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-form-status]")).toContainText("No email was sent or stored.");
   });
 
+  for (const viewport of [
+    { name: "desktop", width: 1536, height: 864, input: "[data-news-search]" },
+    { name: "mobile", width: 390, height: 844, input: "[data-news-search-mobile]" },
+  ]) {
+    test(`search, category, no-results and reset work at ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/en");
+      const input = page.locator(viewport.input);
+      await expect(input).toBeVisible();
+      const cards = page.locator("[data-news-card]");
+      await expect(cards.filter({ visible: true })).toHaveCount(4);
+
+      await input.fill("ethereum");
+      await expect(cards.filter({ visible: true })).toHaveCount(1);
+      await expect(page.locator("[data-result-count]")).toHaveText("1 placeholder");
+      await expect(page.locator("[data-news-filter-summary]")).toContainText("matching your search");
+      await expect(page.locator("[data-clear-filters]")).toBeVisible();
+
+      await page.locator('[data-category="Bitcoin"]').click();
+      await expect(cards.filter({ visible: true })).toHaveCount(0);
+      await expect(page.locator("[data-news-empty]")).toBeVisible();
+      await expect(page.locator("[data-result-count]")).toHaveText("0 placeholders");
+
+      await page.locator("[data-reset-filters]").click();
+      await expect(cards.filter({ visible: true })).toHaveCount(4);
+      await expect(page.locator("[data-news-empty]")).toBeHidden();
+      await expect(input).toHaveValue("");
+      await expect(page.locator('[data-category="All"]')).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator("[data-clear-filters]")).toBeHidden();
+      await expect(page.locator("[data-news-filter-summary]")).toHaveText("Showing all demo placeholders.");
+    });
+  }
+
+  test("keyboard shortcut focuses visible search and Escape clears demo filters", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    await page.keyboard.press("/");
+    const mobileSearch = page.locator("[data-news-search-mobile]");
+    await expect(mobileSearch).toBeFocused();
+    await mobileSearch.fill("nothing-matches");
+    await expect(page.locator("[data-news-empty]")).toBeVisible();
+    await mobileSearch.press("Escape");
+    await expect(mobileSearch).toHaveValue("");
+    await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(4);
+  });
+
+  test("mobile navigation closes on Escape and on outside pointer interaction", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    const toggle = page.locator("[data-menu-toggle]");
+    const nav = page.locator("[data-primary-nav]");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(nav).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(nav).toBeHidden();
+    await expect(toggle).toBeFocused();
+    await toggle.click();
+    await page.locator("#hero-title").click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(nav).toBeHidden();
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

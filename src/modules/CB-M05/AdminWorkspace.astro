@@ -169,9 +169,9 @@ const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
         </>
       )}
 
-      {view === "article-new" && <LocalDraftLab />}
+      {view === "article-new" && publicDemo && <LocalDraftLab />}
 
-      {view === "article-edit" && (
+      {(view === "article-edit" || (view === "article-new" && !publicDemo)) && (
         <section class="m05-panel m05-disabled-editor" aria-labelledby="m05-editor-title">
           <div class="m05-panel__heading">
             <div>

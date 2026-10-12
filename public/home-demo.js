@@ -1,3 +1,4 @@
+/* global document */
 // M01 demonstration-only UI behavior; no network calls or submissions.
 const menu = document.querySelector("[data-menu-toggle]");
   const nav = document.querySelector("[data-primary-nav]");

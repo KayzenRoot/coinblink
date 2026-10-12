@@ -48,7 +48,7 @@ const stories = [
         <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
         <input type="search" placeholder={t("Search stories")} autocomplete="off" maxlength="80" data-news-search />
       </label>
-      <span class="language-chip" aria-label={t("Language: English")}>◎ EN</span><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
+      <a class="language-chip" href={locale === "en" ? "/pt-br" : "/en"} aria-label={locale === "en" ? "Mudar para português" : "Switch to English"}>◎ {locale === "en" ? "PT" : "EN"}</a><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
     </div>
   </header>
 
@@ -67,7 +67,7 @@ const stories = [
         </div>
         <div class="hero-copy">
           <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>
-          <h1 id="hero-title">{t("Bitcoin market,")}<br />in <em>{t("focus.")}</em></h1>
+          <h1 id="hero-title">{t("Bitcoin market,")}<br />{t("in")} <em>{t("focus.")}</em></h1>
           <p>{t("This visual demo has no live market data or news connected.")}</p>
           <div class="hero-actions"><a class="primary-action" href="#latest-news">{t("Explore demo stories")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">{t("View market panel")}</a></div>
         </div>
@@ -111,7 +111,7 @@ const stories = [
         <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="sentiment-title">◉ {t("Market sentiment")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
         <p>{t("Sentiment is unavailable until an approved source is connected.")}</p>
         <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label={t("Market sentiment unavailable")}><b>—</b><small>{t("Unavailable")}</small></div>
-          <ul><li>Extreme greed <b>—</b></li><li>Greed <b>—</b></li><li>Neutral <b>—</b></li><li>Fear <b>—</b></li><li>Extreme fear <b>—</b></li></ul>
+          <ul><li>{t("Extreme greed")} <b>—</b></li><li>{t("Greed")} <b>—</b></li><li>{t("Neutral")} <b>—</b></li><li>{t("Fear")} <b>—</b></li><li>{t("Extreme fear")} <b>—</b></li></ul>
         </div>
       </article>
       <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>Crypto news in a blink.</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
@@ -141,7 +141,7 @@ const stories = [
       </section>
     </section>
 
-    <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.</p><strong>{t("MOCK MODE")}</strong></section>
+    <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>
   </main>
   <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · Crypto news in a blink.</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>

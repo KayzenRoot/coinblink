@@ -45,7 +45,7 @@ const stories = [
     <nav class="primary-nav" id="primary-nav" aria-label={t("Primary navigation")} data-primary-nav>
       <a class="is-current" href="#top" aria-current="page">{t("Home")}</a><a href="#latest-news">{t("News")}</a>
       <a href="#market-overview">{t("Markets")}</a><a href="#radar-24h">{t("Analysis")}</a><a href="#learn">{t("Learn")}</a>
-      <a href="#demo-data">{t("Tools")}</a><a href="#demo-data">{t("Videos")}</a><a href="#footer">{t("About")}</a>
+      <a href="#chain-lookup">{t("Tools")}</a><a href="#demo-data">{t("Videos")}</a><a href="#footer">{t("About")}</a>
     </nav>
     <div class="header-tools">
       <label class="search-box"><span class="sr-only">{t("Search demo stories")}</span>
@@ -206,9 +206,49 @@ const stories = [
       <p class="official-sources__disclaimer">{t("Source links are not an endorsement, a live feed or a license to republish. Check the date, context and original claims on each site.")}</p>
     </section>
 
+    <section class="chain-lookup content-panel" id="chain-lookup" aria-labelledby="chain-lookup-title">
+      <div class="chain-lookup__heading">
+        <div>
+          <small>{t("REAL UTILITY · NO API OR TRACKING")}</small>
+          <h2 id="chain-lookup-title">{t("Blockchain explorer lookup")}</h2>
+          <p>{t("Build a safe outbound link to inspect a public address or transaction in an independent explorer.")}</p>
+        </div>
+        <span class="chain-lookup__pill">{t("Read-only")}</span>
+      </div>
+      <form class="chain-lookup__form" data-explorer-form data-locale={locale} autocomplete="off" novalidate>
+        <label>
+          <span>{t("Blockchain network")}</span>
+          <select data-explorer-network>
+            <option value="bitcoin">Bitcoin</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="solana">Solana</option>
+          </select>
+        </label>
+        <label>
+          <span>{t("Look up")}</span>
+          <select data-explorer-kind>
+            <option value="address">{t("Public address")}</option>
+            <option value="transaction">{t("Transaction ID")}</option>
+          </select>
+        </label>
+        <label class="chain-lookup__value">
+          <span>{t("Paste public address or transaction ID")}</span>
+          <input data-explorer-value type="text" maxlength="110" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder={t("Public identifier only")} aria-describedby="chain-lookup-warning" />
+        </label>
+        <button type="submit">{t("Prepare explorer link")} <span aria-hidden="true">→</span></button>
+        <p class="chain-lookup__status" data-explorer-status role="status" aria-live="polite" aria-atomic="true"></p>
+        <div class="chain-lookup__result" data-explorer-result hidden>
+          <span>{t("Destination:")} <strong data-explorer-provider></strong></span>
+          <a data-explorer-link target="_blank" rel="noopener noreferrer external" referrerpolicy="no-referrer">{t("Open external explorer")} <span aria-hidden="true">↗</span></a>
+        </div>
+      </form>
+      <p class="chain-lookup__warning" id="chain-lookup-warning">{t("Public identifiers only. Never paste private keys or recovery phrases. The input stays in this page until you choose to open an external explorer. Format checking is not blockchain verification.")}</p>
+    </section>
+
     <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Tools and videos are unavailable in this demo. CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>
   </main>
   <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
 <script is:inline src="/home-demo.js"></script>
+<script>import "./explorer-lookup.mjs";</script>

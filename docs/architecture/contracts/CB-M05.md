@@ -65,7 +65,7 @@ Global #53 and Issue #6 are already merged/closed. This candidate contains own `
 
 ## Proposed local-only D1 draft persistence addendum (NOT EXECUTABLE)
 
-[ADR-CB-0003](../ADR-CB-0003-M05-LOCAL-D1-DATA-BOUNDARY.md) and the [proposed Scope Delta](../../../.engineering/proposals/CB-M05-D1-LOCAL-SCOPE-DELTA.md) propose a future `LOCAL_D1_SPIKE` limited to synthetic draft CRUD, revision integrity and restart persistence in a disposable **Windows-local Wrangler D1 state directory**. D1 `--remote`, Cloudflare resource creation, Worker preview/production bindings, exposed privileged mutations, login and publish remain excluded. Local simulation is not an authorized Owner CMS session or a LIVE content feed.
+[ADR-CB-0004](../ADR-CB-0004-M05-LOCAL-D1-DATA-BOUNDARY.md) and the [proposed Scope Delta](../../../.engineering/proposals/CB-M05-D1-LOCAL-SCOPE-DELTA.md) propose a future `LOCAL_D1_SPIKE` limited to synthetic draft CRUD, revision integrity and restart persistence in a disposable **Windows-local Wrangler D1 state directory**. D1 `--remote`, Cloudflare resource creation, Worker preview/production bindings, exposed privileged mutations, login and publish remain excluded. Local simulation is not an authorized Owner CMS session or a LIVE content feed.
 
 Data producer draft contract for later design: source-backed fields `id,title,summary,body,authorLabel,sourceUrl,locale,revision,createdAt,updatedAt`, fixed `state=draft`, fixed `mode=LOCAL_TEST`; every update needs a revision precondition and historical snapshot. All source URLs must be validated HTTPS and independent attribution/rights remain pending verification. The public M05 P0 demo must keep its existing Markdown import/export and not auto-save remotely.
 

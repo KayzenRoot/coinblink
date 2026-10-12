@@ -329,6 +329,62 @@ test.describe("CoinBlink M00 local shell", () => {
     );
   });
 
+  for (const viewport of [
+    { name: "desktop", width: 1536, height: 864 },
+    { name: "mobile", width: 390, height: 844 },
+  ]) {
+    test(`official publisher links show proper attribution and remain accessible on ${viewport.name}`, async ({ page }) => {
+      const externalRequests = [];
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      page.on("request", (request) => {
+        if (!request.url().startsWith("http://127.0.0.1:4321/")) externalRequests.push(request.url());
+      });
+      await page.goto("/pt-br#official-sources");
+      const sourceDesk = page.locator("#official-sources");
+      await expect(page.getByRole("heading", { name: "Central de fontes oficiais" })).toBeVisible();
+      await expect(sourceDesk.locator("[data-official-source]")).toHaveCount(6);
+      const domains = [
+        "bitcoincore.org", "blog.ethereum.org", "solana.com",
+        "chain.link", "www.sec.gov", "www.cftc.gov",
+      ];
+      const links = sourceDesk.locator(".official-source__foot a");
+      await expect(links).toHaveCount(6);
+      for (let index = 0; index < 6; index++) {
+        const link = links.nth(index);
+        const url = new URL(await link.getAttribute("href"));
+        expect(url.protocol).toBe("https:");
+        expect(url.hostname).toBe(domains[index]);
+        await expect(link).toHaveAttribute("target", "_blank");
+        await expect(link).toHaveAttribute("rel", /noopener noreferrer/);
+        await expect(link).toHaveAttribute("referrerpolicy", "no-referrer");
+      }
+      await expect(page.locator('[data-official-source="ethereum-foundation"] a')).toHaveAttribute(
+        "href", "https://blog.ethereum.org/pt-br/archive",
+      );
+      await expect(sourceDesk).toContainText("não importa manchetes");
+      expect(externalRequests).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+      const accessibility = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+      expect(accessibility.violations).toEqual([]);
+    });
+  }
+
+  test("the News demo links to first-party original sources without scraping or changing its four placeholders", async ({ page }) => {
+    await page.goto("/en?category=Ethereum&q=ethereum");
+    await page.getByRole("link", { name: "Browse official sources" }).click();
+    await expect(page).toHaveURL(/\/en\?category=Ethereum&q=ethereum#official-sources$/);
+    await expect(page.locator("#latest-news [data-news-card]")).toHaveCount(4);
+    await expect(page.locator("#latest-news [data-news-card]").filter({ visible: true })).toHaveCount(1);
+    await expect(page.getByRole("link", { name: "Mudar para português" })).toHaveAttribute(
+      "href", "/pt-br?category=Ethereum&q=ethereum#official-sources",
+    );
+    await expect(page.locator('[data-official-source="ethereum-foundation"] a')).toHaveAttribute(
+      "href", "https://blog.ethereum.org/archive",
+    );
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

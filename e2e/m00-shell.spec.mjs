@@ -223,6 +223,69 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(4);
   });
 
+  for (const viewport of [
+    { name: "desktop", width: 1536, height: 864 },
+    { name: "mobile", width: 390, height: 844 },
+  ]) {
+    test(`language switch keeps category, search and section at ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/en?category=Regulation&q=Regulation#latest-news");
+      const englishCards = page.locator("[data-news-card]");
+      await expect(englishCards.filter({ visible: true })).toHaveCount(1);
+      const portugueseLink = page.getByRole("link", { name: "Mudar para português" });
+      await expect(portugueseLink).toHaveAttribute("href", "/pt-br?category=Regulation&q=Regulation#latest-news");
+      await portugueseLink.click();
+      await expect(page).toHaveURL(/\/pt-br\?category=Regulation&q=Regulation#latest-news$/);
+      await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+      await expect(page.locator('[data-category="Regulation"]')).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(1);
+      await expect(page.locator("[data-news-search]")).toHaveValue("Regulation");
+      const englishLink = page.getByRole("link", { name: "Switch to English" });
+      await expect(englishLink).toHaveAttribute("href", "/en?category=Regulation&q=Regulation#latest-news");
+      await englishLink.click();
+      await expect(page).toHaveURL(/\/en\?category=Regulation&q=Regulation#latest-news$/);
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    });
+  }
+
+  test("copy-view action uses canonical URL with no unrelated query parameters", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: async (value) => { window.__lastCopiedView = value; } },
+      });
+    });
+    await page.goto("/pt-br?utm_source=external&category=Regulation&q=Regulation#latest-news");
+    await page.getByRole("button", { name: "Copiar link da seleção" }).click();
+    const copied = await page.evaluate(() => window.__lastCopiedView);
+    expect(copied).toBe(new URL("/pt-br?category=Regulation&q=Regulation#latest-news", page.url()).href);
+    expect(copied).not.toContain("utm_source");
+    await expect(page.locator("[data-share-status]")).toHaveText("Link da seleção copiado.");
+    await expect(page.locator("[data-share-manual]")).toBeHidden();
+    await page.locator('[data-category="Bitcoin"]').click();
+    await expect(page.locator("[data-share-status]")).toBeEmpty();
+  });
+
+  test("copy-view gracefully offers manual selection when clipboard is denied", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: async () => { throw new Error("permission denied"); } },
+      });
+    });
+    await page.goto("/en?category=Ethereum&q=ethereum");
+    await page.locator("[data-copy-filter-link]").click();
+    await expect(page.locator("[data-share-status]")).toContainText("Automatic copying is unavailable");
+    const manual = page.locator("[data-share-manual]");
+    await expect(manual).toBeVisible();
+    await expect(page.locator("[data-share-url]")).toHaveValue(
+      new URL("/en?category=Ethereum&q=ethereum", page.url()).href,
+    );
+    await expect(page.locator("[data-share-url]")).toBeFocused();
+    await page.locator("[data-clear-filters]").click();
+    await expect(manual).toBeHidden();
+  });
+
   test("site root redirects internally to the integrated Golden Home", async ({ request, page }) => {
     const response = await request.get("/", { maxRedirects: 0 });
     expect(response.status()).toBe(302);

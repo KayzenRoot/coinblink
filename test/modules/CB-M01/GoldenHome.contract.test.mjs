@@ -47,7 +47,7 @@ test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mar
 });
 
 test("unavailable Tools and Videos navigation routes to an explicit demo status", () => {
-  assert.match(component, /<a href="#demo-data">Tools<\/a><a href="#demo-data">Videos<\/a>/u);
+  assert.match(component, /<a href="#demo-data">\{t\("Tools"\)\}<\/a><a href="#demo-data">\{t\("Videos"\)\}<\/a>/u);
   assert.match(component, /Tools and videos are unavailable in this demo\./u);
 });
 
@@ -110,4 +110,22 @@ test("real /en route mounts GoldenHome without bypassing the common secure layou
   assert.match(sharedEnglishRoute, /<BaseLayout[\s\S]*<GoldenHome \/>[\s\S]*<\/BaseLayout>/u);
   assert.doesNotMatch(sharedEnglishRoute, /<main\b/u, "the shared route must not create a second main landmark");
   assert.match(sharedEnglishRoute, /export const prerender = false/u);
+});
+
+
+const copy = await readFile(new URL("../../../src/modules/CB-M01/home-copy.mjs", import.meta.url), "utf8");
+const ptRoute = await readFile(new URL("../../../src/pages/pt-br.astro", import.meta.url), "utf8");
+const secureLayout = await readFile(new URL("../../../src/layouts/BaseLayout.astro", import.meta.url), "utf8");
+
+test("Brazilian Portuguese uses one shared Golden Home and correct document language", () => {
+  assert.match(component, /locale\?: "en" \| "pt-br"/u);
+  assert.match(component, /data-locale=\{locale\}/u);
+  assert.match(component, /href=\{locale === "en" \? "\/pt-br" : "\/en"\}/u);
+  assert.match(ptRoute, /lang="pt-BR"/u);
+  assert.match(ptRoute, /<GoldenHome locale="pt-br"\s*\/>/u);
+  assert.match(secureLayout, /<html lang=\{lang\}>/u);
+  assert.match(copy, /"Regulation": "Regulação"/u);
+  assert.match(copy, /"DEMO · NO STORIES CONNECTED": "DEMO · SEM NOTÍCIAS CONECTADAS"/u);
+  assert.match(clientScript, /const isPortuguese = /u);
+  assert.doesNotMatch(clientScript, /\b(?:fetch\s*\(|localStorage|sessionStorage|document\.cookie)\b/u);
 });

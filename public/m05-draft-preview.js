@@ -21,7 +21,7 @@ const escapeTitleV2 = (value) => value.replace(/[&<>#]/gu, (character) => ({
 const FORMAT_V2 = "> COINBLINK LOCAL DRAFT FORMAT: 2";
 
 export function prepareLocalDraft(input) {
-  const title = clean(input.title, MAX_TITLE).replace(/\n/gu, " ");
+  const title = clean(input.title, MAX_TITLE).replaceAll("\n", " ").trim();
   const author = clean(input.author, MAX_AUTHOR);
   const summary = clean(input.summary, MAX_SUMMARY);
   const body = clean(input.body, MAX_BODY);

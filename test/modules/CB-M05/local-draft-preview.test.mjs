@@ -130,6 +130,22 @@ test("multi-line programmatic headlines are normalized before an export", () => 
   assert.deepEqual(parseLocalDraftMarkdown(draftToMarkdown(draft)), draft);
 });
 
+test("truncated multiline titles never export a non-importable trailing space", () => {
+  const cases = [
+    { input: "x".repeat(139) + "\nX", expected: "x".repeat(139) },
+    { input: "x".repeat(139) + " \nX", expected: "x".repeat(139) },
+    { input: "z".repeat(137) + "\r\nQ", expected: "z".repeat(137) + " Q" },
+    { input: "x".repeat(139) + "#", expected: "x".repeat(139) + "#" },
+  ];
+  for (const { input, expected } of cases) {
+    const draft = prepareLocalDraft({ ...valid, title: input });
+    assert.equal(draft.title, expected);
+    assert.equal(draft.ready, true);
+    const markdown = draftToMarkdown(draft);
+    assert.deepEqual(parseLocalDraftMarkdown(markdown), draft);
+  }
+});
+
 test("v2 draft sections remain lossless when summary or body contains Markdown headings", () => {
   const original = prepareLocalDraft({
     ...valid,

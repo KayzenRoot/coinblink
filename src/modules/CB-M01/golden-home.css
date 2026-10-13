@@ -772,3 +772,48 @@
 .cb-home .art-2::before { transform:rotate(23deg); border-radius:18%; }
 .cb-home .art-3::before { border-radius:12%; transform:rotate(55deg); }
 .cb-home .art-4::before { border-radius:25%; transform:rotate(-40deg); }
+
+/* CB-M01 Golden editorial thumbnails: reference-aligned desktop art at the left. */
+@media (min-width:1281px) {
+  .cb-home .news-card {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 104px;
+  }
+  .cb-home .news-art {
+    width: 76px;
+    height: 100%;
+    min-height: 104px;
+    border-right: 1px solid rgb(207 242 166 / 15%);
+    font-size: 30px;
+    box-shadow: inset 0 0 22px rgb(0 0 0 / 45%);
+  }
+  .cb-home .news-card > div:last-child {
+    min-width: 0;
+    padding: 8px 6px 6px;
+    overflow-wrap: anywhere;
+  }
+  .cb-home .news-card h3 {
+    margin-top: 5px;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  .cb-home .news-card p { font-size: 7px; line-height: 1.24; }
+  .cb-home .art-1 {
+    background: radial-gradient(circle at 47% 45%, rgb(255 214 108 / 68%), transparent 26%),
+      radial-gradient(circle at 52% 48%, #6d4315 0%, #35250f 49%, #10130e 100%);
+  }
+  .cb-home .art-2 {
+    background: linear-gradient(151deg, transparent 36%, rgb(208 223 255 / 35%) 37% 39%, transparent 40%),
+      radial-gradient(circle at 56% 35%, #45607c, #192039 54%, #091016);
+  }
+  .cb-home .art-3 {
+    background: repeating-linear-gradient(90deg, transparent 0 13px, rgb(244 220 172 / 24%) 14px 16px, transparent 17px 23px),
+      linear-gradient(180deg, #222d35, #493c2b 58%, #171714);
+  }
+  .cb-home .art-4 {
+    background: linear-gradient(148deg, transparent 27%, rgb(77 249 226 / 44%) 28% 32%, transparent 33% 50%, rgb(155 103 251 / 46%) 51% 55%, transparent 56%),
+      radial-gradient(circle at 55% 45%, #234a52, #151636 62%, #0a1116);
+  }
+}

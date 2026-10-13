@@ -273,6 +273,68 @@ try {
       assert.equal(new URL(page.url()).hash, "#market-overview", "mobile CTA must remain clickable on integrated /en");
     }
   }
+  // R24: verify the shipped lightning effect in a real browser, not only source text.
+  // Run after screenshots, so the reduced-motion probe cannot alter Golden captures.
+  await page.setViewportSize({ width: 1536, height: 864 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const animatedResponse = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
+  assert.equal(animatedResponse?.status(), 200, "R24 animation probe must use the built local route");
+  const lightningLive = await page.locator(".hero-lightning").evaluate((scene, origin) => {
+    const frames = Array.from(scene.querySelectorAll("img.hero-lightning-frame"));
+    return {
+      ariaHidden: scene.getAttribute("aria-hidden") === "true",
+      pointerEvents: globalThis.getComputedStyle(scene).pointerEvents,
+      frameCount: frames.length,
+      frameChecks: frames.map((frame) => ({
+        complete: frame.complete,
+        width: frame.naturalWidth,
+        height: frame.naturalHeight,
+        origin: new URL(frame.currentSrc).origin,
+        animationName: globalThis.getComputedStyle(frame).animationName,
+      })),
+      flashAnimation: globalThis.getComputedStyle(scene.querySelector(".hero-lightning-flash")).animationName,
+      allowedOrigin: origin,
+    };
+  }, report.origin);
+  assert.equal(lightningLive.ariaHidden, true, "lightning must remain purely decorative");
+  assert.equal(lightningLive.pointerEvents, "none");
+  assert.equal(lightningLive.frameCount, 7, "all seven local lightning frames are required");
+  for (const [index, frame] of lightningLive.frameChecks.entries()) {
+    assert.ok(frame.complete && frame.width === 1774 && frame.height === 887,
+      "R24 lightning frame " + (index + 1) + " must decode at recorded dimensions");
+    assert.equal(frame.origin, lightningLive.allowedOrigin,
+      "R24 lightning sprites must be served only by the fixture origin");
+    assert.notEqual(frame.animationName, "none",
+      "R24 normal-motion sprite must remain animated");
+  }
+  assert.equal(lightningLive.flashAnimation, "cb-lightning-scene-flash");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const lightningReduced = await page.locator(".hero-lightning").evaluate((scene) => {
+    const frames = Array.from(scene.querySelectorAll("img.hero-lightning-frame"));
+    const flash = scene.querySelector(".hero-lightning-flash");
+    return {
+      frameAnimations: frames.map((frame) => globalThis.getComputedStyle(frame).animationName),
+      frameOpacities: frames.map((frame) => Number(globalThis.getComputedStyle(frame).opacity)),
+      flashAnimation: globalThis.getComputedStyle(flash).animationName,
+      flashOpacity: Number(globalThis.getComputedStyle(flash).opacity),
+    };
+  });
+  assert.ok(lightningReduced.frameAnimations.every((name) => name === "none"),
+    "R24 prefers-reduced-motion must disable every lightning frame animation");
+  assert.equal(lightningReduced.flashAnimation, "none");
+  assert.equal(lightningReduced.flashOpacity, 0);
+  assert.ok(lightningReduced.frameOpacities.every((opacity, index) =>
+    index === 2 ? Math.abs(opacity - 0.38) < 0.001 : opacity === 0),
+  "R24 reduced motion must show only a dim static impact frame");
+  report.lightningMotionAccessibility = {
+    mode: "DEMO_LOCAL_ONLY",
+    normalAnimationFrameCount: lightningLive.frameCount,
+    allSevenImagesDecoded: true,
+    allImagesSameOrigin: true,
+    reducedMotionNoAnimations: true,
+    reducedMotionStaticImpact: true,
+  };
   assert.deepEqual(report.consoleErrors, []);
   assert.deepEqual(report.pageErrors, []);
   assert.deepEqual(report.externalRequests, [], "local screenshots must not contact an external origin");

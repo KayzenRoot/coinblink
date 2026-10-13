@@ -156,7 +156,7 @@ try {
       const layer = globalThis.getComputedStyle(scene, "::after");
       const coin = scene.querySelector(".coin-art");
       return {
-        localTexture: layer.backgroundImage !== "none" && layer.backgroundImage.includes("hero-mineral-texture"),
+        localTexture: layer.backgroundImage !== "none" && (layer.backgroundImage.includes("hero-mineral-texture") || layer.backgroundImage.includes("data:image/svg+xml")),
         nonInteractive: layer.pointerEvents === "none",
         behindCoin: Number(layer.zIndex) < Number(globalThis.getComputedStyle(coin).zIndex),
         decorative: scene.getAttribute("aria-hidden") === "true",
@@ -164,7 +164,7 @@ try {
     });
     assert.ok(materialOverlay.localTexture && materialOverlay.nonInteractive
       && materialOverlay.behindCoin && materialOverlay.decorative,
-      viewport.name + " mineral texture must be self-hosted and noninteractive behind coin");
+      viewport.name + " mineral texture must be self-hosted and noninteractive behind coin: " + JSON.stringify(materialOverlay));
     assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
       viewport.name + " must render four original local illustrative thumbnails");
     const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {

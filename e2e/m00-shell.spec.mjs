@@ -208,6 +208,15 @@ test.describe("CoinBlink M00 local shell", () => {
     });
   }
 
+  test("Portuguese search finds translated regulation category", async ({ page }) => {
+    await page.goto("/pt-br");
+    const search = page.locator("[data-news-search]");
+    await search.fill("Regulação");
+    await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(1);
+    await expect(page.locator('[data-news-card][data-category-value="Regulation"]')).toBeVisible();
+    await expect(page.locator("[data-result-count]")).toHaveText("1 exemplo");
+  });
+
   test("Portuguese category filtering preserves canonical URLs and translated status", async ({ page }) => {
     await page.goto("/pt-br?category=Regulation");
     await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");

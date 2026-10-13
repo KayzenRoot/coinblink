@@ -832,3 +832,12 @@
 @media (max-width:760px) {
   .cb-home .hero-rockscape { opacity: .64; }
 }
+
+/* CB-M01 Golden market assets: branded vector badges with no external fetch. */
+.cb-home .coin-mark { overflow:hidden; }
+.cb-home .coin-mark .market-asset-icon { display:block; width:18px; height:18px; flex:none; }
+.cb-home .coin-mark .market-asset-btc { color:#fff9e9; font-size:19px; line-height:1; font-weight:750; }
+.cb-home .coin-ethereum { background:linear-gradient(135deg,#5d658c,#969fca); }
+.cb-home .coin-solana { background:#17231f; }
+.cb-home .coin-bnb { background:#f3c73c; }
+.cb-home .coin-xrp { background:#262b2b; }

@@ -148,7 +148,33 @@ const stories = [
         <ul class="market-list">
           {markets.map((market) => (
             <li class="market-row">
-              <span class={"coin-mark coin-" + market.tone} aria-hidden="true">{market.symbol.slice(0, 1)}</span>
+              <span class={"coin-mark coin-" + market.tone} aria-hidden="true">
+                {market.symbol === "BTC" && <span class="market-asset-icon market-asset-btc">₿</span>}
+                {market.symbol === "ETH" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="M12 1 4.5 12l7.5 4.4 7.5-4.4L12 1Z" fill="#eef1ff" />
+                    <path d="m4.5 13.7 7.5 9.3 7.5-9.3-7.5 4.7-7.5-4.7Z" fill="#cbd2ff" />
+                    <path d="M12 1v15.4l7.5-4.4L12 1Z" fill="#9ba9e4" />
+                  </svg>
+                )}
+                {market.symbol === "SOL" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="M5 3.5h16l-3.8 4H1.2L5 3.5Z" fill="#9b78ff" />
+                    <path d="M5.1 10h16l-3.8 4H1.3l3.8-4Z" fill="#62edc6" />
+                    <path d="M5 16.5h16l-3.8 4H1.2l3.8-4Z" fill="#9b78ff" />
+                  </svg>
+                )}
+                {market.symbol === "BNB" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="m12 2.5 4.5 4.5-4.5 4.5L7.5 7 12 2.5Zm0 9.5 3.3 3.3-3.3 3.3-3.3-3.3L12 12Zm-7-2 3 3-3 3-3-3 3-3Zm14 0 3 3-3 3-3-3 3-3ZM12 19l2.5 2.5L12 24l-2.5-2.5L12 19Z" fill="#342702" />
+                  </svg>
+                )}
+                {market.symbol === "XRP" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="M3.2 5.5h3.1c2 0 3.1 1.5 5.7 4.3 2.6-2.8 3.7-4.3 5.7-4.3h3.1M3.2 18.5h3.1c2 0 3.1-1.5 5.7-4.3 2.6 2.8 3.7 4.3 5.7 4.3h3.1" fill="none" stroke="#f6f8f6" stroke-width="2.1" stroke-linecap="round" />
+                  </svg>
+                )}
+              </span>
               <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
               <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
               <span class="market-value" aria-label={t("Unavailable")}>—</span>

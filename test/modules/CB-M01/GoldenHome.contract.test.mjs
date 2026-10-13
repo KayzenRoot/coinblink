@@ -44,6 +44,18 @@ test("the component uses the immutable approved logo and does not flatten the Go
   assert.doesNotMatch(component, /coinblink-home-master-dark-1536x864\.jpg/);
 });
 
+test("five market badges use local vector identity rather than first letters", () => {
+  const panel = component.split('<ul class="market-list">')[1]?.split("</ul>")[0];
+  assert.ok(panel, "market panel must exist");
+  for (const symbol of ["BTC", "ETH", "SOL", "BNB", "XRP"]) {
+    assert.ok(panel.includes('market.symbol === "' + symbol + '"'), "missing visual icon for " + symbol);
+  }
+  assert.doesNotMatch(panel, /market\.symbol\.slice\(0,\s*1\)/u);
+  assert.equal((panel.match(/class="market-asset-icon"/gu) ?? []).length, 4);
+  assert.match(panel, /aria-hidden="true"/u);
+  assert.match(stylesheet, /\.cb-home \.coin-mark \.market-asset-icon \{/u);
+});
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });

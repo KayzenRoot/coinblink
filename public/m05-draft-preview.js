@@ -7,7 +7,9 @@ const MAX_SUMMARY = 400;
 const MAX_BODY = 12000;
 const MAX_SOURCE = 500;
 const clean = (value, max) => String(value ?? "").trim().slice(0, max).replace(/\r\n?/gu, "\n");
-const escapeMarkdown = (value) => value.replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+const escapeMarkdown = (value) => value.replace(/&/gu, "&amp;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+const escapeLegacyMarkdown = (value) => value.replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+const FORMAT_V2 = "> COINBLINK LOCAL DRAFT FORMAT: 2";
 
 export function prepareLocalDraft(input) {
   const title = clean(input.title, MAX_TITLE);
@@ -38,16 +40,20 @@ export function prepareLocalDraft(input) {
   });
 }
 
-export function draftToMarkdown(prepared) {
+function serializeLocalDraft(prepared, legacy = false) {
   if (!prepared.ready) throw new Error("A source-backed draft is required");
-  const title = escapeMarkdown(prepared.title.replace(/[\n#]/gu, " "));
-  const summary = escapeMarkdown(prepared.summary);
-  const body = escapeMarkdown(prepared.body);
-  const author = escapeMarkdown(prepared.author || "Not provided");
+  const encode = legacy ? escapeLegacyMarkdown : escapeMarkdown;
+  const title = encode(prepared.title.replace(/[\\n#]/gu, " "));
+  const summary = encode(prepared.summary);
+  const body = encode(prepared.body);
+  // Version 2 uses an empty author label for missing credits, rather than a
+  // sentinel that could also be an author's literal name.
+  const author = encode(legacy ? prepared.author || "Not provided" : prepared.author);
   const source = prepared.source;
   return [
     "# " + title, "",
     "> WORKING DRAFT ONLY. Not checked, approved, or published.", "",
+    ...(legacy ? [] : [FORMAT_V2, ""]),
     "**Author label:** " + author, "",
     "**Original source:** " + source, "",
     "## Summary", "", summary, "",
@@ -59,6 +65,10 @@ export function draftToMarkdown(prepared) {
   ].join("\n");
 }
 
+export function draftToMarkdown(prepared) {
+  return serializeLocalDraft(prepared);
+}
+
 // Accept only the exact, non-published CoinBlink export structure.
 // This is a data parser, not a general-purpose Markdown or HTML importer.
 export function parseLocalDraftMarkdown(raw) {
@@ -67,7 +77,9 @@ export function parseLocalDraftMarkdown(raw) {
   }
   const text = raw.replace(/^\uFEFF/u, "").replace(/\r\n?/gu, "\n");
   const header = "# ";
-  const byline = "\n\n> WORKING DRAFT ONLY. Not checked, approved, or published.\n\n**Author label:** ";
+  const isVersion2 = text.includes("\n\n> WORKING DRAFT ONLY. Not checked, approved, or published.\n\n" + FORMAT_V2 + "\n\n**Author label:** ");
+  const byline = "\n\n> WORKING DRAFT ONLY. Not checked, approved, or published.\n\n"
+    + (isVersion2 ? FORMAT_V2 + "\n\n" : "") + "**Author label:** ";
   const source = "\n\n**Original source:** ";
   const summary = "\n\n## Summary\n\n";
   const body = "\n\n## Draft\n\n";
@@ -94,16 +106,19 @@ export function parseLocalDraftMarkdown(raw) {
   }
   const [title, author, originalSource, brief, article] = values;
   // Legacy exports encoded angle brackets, and the text is never assigned to innerHTML.
-  const restore = (value) => value.replace(/&lt;/gu, "<").replace(/&gt;/gu, ">");
+  const restore = (value) => {
+    const angles = value.replace(/&lt;/gu, "<").replace(/&gt;/gu, ">");
+    return isVersion2 ? angles.replace(/&amp;/gu, "&") : angles;
+  };
   const result = prepareLocalDraft({
     title: restore(title),
-    author: restore(author) === "Not provided" ? "" : restore(author),
+    author: !isVersion2 && restore(author) === "Not provided" ? "" : restore(author),
     source: originalSource,
     summary: restore(brief),
     body: restore(article),
   });
   // Never silently truncate or partially import an unfamiliar/malformed file.
-  if (!result.ready || draftToMarkdown(result) !== text) {
+  if (!result.ready || serializeLocalDraft(result, !isVersion2) !== text) {
     throw new Error("Draft format or fields failed validation");
   }
   return result;

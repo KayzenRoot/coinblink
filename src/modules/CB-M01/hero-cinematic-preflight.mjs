@@ -6,6 +6,10 @@ export const HERO_CINEMATIC_LIMITS = Object.freeze({
     webp: "src/modules/CB-M01/hero-cinematic-original.webp",
     png: "src/modules/CB-M01/hero-cinematic-original.png",
   }),
+  previewAssetPaths: Object.freeze({
+    webp: "src/modules/CB-M01/hero-cinematic-blender.webp",
+    png: "src/modules/CB-M01/hero-cinematic-blender.png",
+  }),
   minWidth: 1536,
   minHeight: 640,
   maxWidth: 4096,
@@ -56,7 +60,8 @@ function dimensionsFromWebp(buffer) {
 export function inspectHeroCinematicCandidate(metadata, payload) {
   const failures = [];
   const candidate = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {};
-  const allowedPath = Object.values(HERO_CINEMATIC_LIMITS.assetPaths).includes(candidate.path);
+  const allowedPath = [...Object.values(HERO_CINEMATIC_LIMITS.assetPaths),
+    ...Object.values(HERO_CINEMATIC_LIMITS.previewAssetPaths)].includes(candidate.path);
   if (!allowedPath) failures.push("INVALID_LOCAL_PATH");
   if (candidate.origin !== "ORIGINAL_LOCAL_RENDER") failures.push("ORIGINAL_SOURCE_UNESTABLISHED");
   if (typeof candidate.sourceMaster !== "string" || !candidate.sourceMaster.trim()
@@ -66,7 +71,8 @@ export function inspectHeroCinematicCandidate(metadata, payload) {
 
   const buffer = Buffer.isBuffer(payload) ? payload
     : payload instanceof Uint8Array ? Buffer.from(payload) : null;
-  const max = candidate.path === HERO_CINEMATIC_LIMITS.assetPaths.webp
+  const isWebp = typeof candidate.path === "string" && candidate.path.endsWith(".webp");
+  const max = isWebp
     ? HERO_CINEMATIC_LIMITS.maxWebpBytes : HERO_CINEMATIC_LIMITS.maxPngBytes;
   if (!buffer || buffer.length === 0 || buffer.length > max) failures.push("INVALID_ASSET_BYTES");
   const digest = buffer ? createHash("sha256").update(buffer).digest("hex") : null;
@@ -76,7 +82,7 @@ export function inspectHeroCinematicCandidate(metadata, payload) {
 
   let dimensions = null;
   if (buffer) {
-    dimensions = candidate.path === HERO_CINEMATIC_LIMITS.assetPaths.webp
+    dimensions = isWebp
       ? dimensionsFromWebp(buffer) : dimensionsFromPng(buffer);
   }
   if (!dimensions) failures.push("INVALID_BINARY_SIGNATURE_OR_HEADER");

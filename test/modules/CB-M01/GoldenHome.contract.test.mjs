@@ -158,7 +158,11 @@ test("hero and promo scene metadata pin exact source fragments and deny commerci
   const [hero, promo] = registry.assets;
   assert.match(component, /<div class="hero-scene" aria-hidden="true">/u);
   assert.match(component, /<svg class="promo-scene"[^>]*aria-hidden="true"/u);
-  assert.equal(hero.form, "HTML_AND_EMBEDDED_SVGS");
+  assert.equal(hero.form, "LOCAL_BLENDER_PREVIEW_WITH_HTML_AND_EMBEDDED_SVG_FALLBACK");
+  assert.equal(registry.r25SupplementalPreview.origin, "ORIGINAL_LOCAL_RENDER");
+  assert.equal(registry.r25SupplementalPreview.previewOnly, true);
+  assert.equal(registry.r25SupplementalPreview.ownerVisualApproval, false);
+  assert.equal(registry.r25SupplementalPreview.commercialPublicationAllowed, false);
   assert.equal(promo.form, "INLINE_SVG");
   assert.equal(promo.adjacentBrandAsset.includedInSvgFragment, false);
   assert.equal(promo.adjacentBrandAsset.status, "OWNER_VISUAL_APPROVED_BUT_COMMERCIAL_CLEARANCE_PENDING");

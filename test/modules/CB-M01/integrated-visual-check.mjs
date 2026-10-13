@@ -36,6 +36,7 @@ const report = {
   visualInputState: null,
   viewports: [],
   screenshots: [],
+  renderPerformance: [],
   desktopGeometry: null,
   mobileHero: null,
   consoleErrors: [],
@@ -104,6 +105,24 @@ try {
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
+  await page.addInitScript(() => {
+    const values = { largestContentfulPaintMs: null, cumulativeLayoutShift: 0 };
+    Object.defineProperty(globalThis, "__coinblinkR25Vitals", { value: values });
+    if (globalThis.PerformanceObserver.supportedEntryTypes.includes("largest-contentful-paint")) {
+      new globalThis.PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          values.largestContentfulPaintMs = Math.round(entry.startTime * 100) / 100;
+        }
+      }).observe({ type: "largest-contentful-paint", buffered: true });
+    }
+    if (globalThis.PerformanceObserver.supportedEntryTypes.includes("layout-shift")) {
+      new globalThis.PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!entry.hadRecentInput) values.cumulativeLayoutShift += entry.value;
+        }
+      }).observe({ type: "layout-shift", buffered: true });
+    }
+  });
   page.on("console", (message) => { if (message.type() === "error") report.consoleErrors.push(message.text()); });
   page.on("pageerror", (error) => report.pageErrors.push(error.message));
   page.on("request", (request) => {
@@ -116,6 +135,38 @@ try {
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
     assert.equal(await page.title(), "CoinBlink · Crypto news in a blink");
     assert.equal(await page.locator(".cb-home").count(), 1);
+    const cinematicPreview = await page.locator(".hero-cinematic-preview img").evaluate(async (image, origin) => {
+      await image.decode();
+      const scene = image.closest(".hero-scene");
+      const rect = image.getBoundingClientRect();
+      return {
+        fullyDecoded: true,
+        complete: image.complete,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        path: new URL(image.currentSrc).pathname,
+        currentOrigin: new URL(image.currentSrc).origin,
+        allowedOrigin: origin,
+        previewActive: scene.classList.contains("has-cinematic-preview"),
+        visible: globalThis.getComputedStyle(image.parentElement).opacity !== "0",
+        widthOnScreen: rect.width,
+        heightOnScreen: rect.height,
+        loading: image.loading,
+        fetchPriority: image.fetchPriority,
+      };
+    }, report.origin);
+    assert.ok(cinematicPreview.complete && cinematicPreview.fullyDecoded
+      && cinematicPreview.width === 2560 && cinematicPreview.height === 1280,
+      viewport.name + " Blender hero preview must fully decode at 2560x1280");
+    assert.equal(cinematicPreview.currentOrigin, cinematicPreview.allowedOrigin,
+      viewport.name + " Blender preview must be served by the local fixture only");
+    assert.match(cinematicPreview.path, /\.webp$/u,
+      viewport.name + " WebP-capable browser must choose the optimized Blender derivative");
+    assert.ok(cinematicPreview.previewActive && cinematicPreview.visible
+      && cinematicPreview.widthOnScreen > 100 && cinematicPreview.heightOnScreen > 40,
+    viewport.name + " Blender preview must be visible after decode");
+    assert.equal(cinematicPreview.loading, "eager");
+    assert.equal(cinematicPreview.fetchPriority, "high");
     const bitcoinScene = await page.locator(".hero-panel .coin-art").evaluate((coin) => {
       const scene = coin.closest(".hero-scene");
       const box = coin.getBoundingClientRect();
@@ -199,6 +250,29 @@ try {
     const screenshotPath = join(screenshotDir, "golden-home-integrated-" + viewport.name + "-" + viewport.width + "x" + viewport.height + ".png");
     await page.screenshot({ path: screenshotPath, fullPage: false });
     const screenshot = await readFile(screenshotPath);
+    const performance = await page.evaluate(() => {
+      const image = globalThis.document.querySelector(".hero-cinematic-preview img");
+      const resource = image?.currentSrc
+        ? globalThis.performance.getEntriesByName(image.currentSrc).at(-1)
+        : null;
+      return {
+        largestContentfulPaintMs: globalThis.__coinblinkR25Vitals?.largestContentfulPaintMs ?? null,
+        cumulativeLayoutShift: globalThis.__coinblinkR25Vitals?.cumulativeLayoutShift ?? null,
+        previewImage: {
+          path: new URL(image.currentSrc).pathname,
+          transferredBytes: resource?.transferSize ?? null,
+          encodedBodyBytes: resource?.encodedBodySize ?? null,
+          durationMs: resource ? Math.round(resource.duration * 100) / 100 : null,
+        },
+        sameOriginTransferredBytes: globalThis.performance.getEntriesByType("resource")
+          .filter((entry) => new URL(entry.name).origin === globalThis.location.origin)
+          .reduce((total, entry) => total + entry.transferSize, 0),
+        measurement: "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals",
+      };
+    });
+    assert.ok(performance.previewImage.encodedBodyBytes === null
+      || performance.previewImage.encodedBodyBytes <= 1_500_000,
+    viewport.name + " rendered WebP resource must remain below the 1.5 MB cap");
     const headers = response.headers();
     const robotsMeta = await page.locator('meta[name="robots"]').getAttribute("content");
     assert.ok(robotsMeta && robotsMeta.includes("noindex"), "integrated /en must retain noindex");
@@ -209,11 +283,14 @@ try {
       ...viewport,
       httpStatus: response.status(),
       documentWidth: dimensions.document,
+      cinematicPreview,
+      performance,
       moduleAxeViolations: violations(moduleAxe),
       fullPageAxeViolations: violations(pageAxe),
       securityHeaders: Object.fromEntries(["content-security-policy", "x-content-type-options", "x-frame-options", "referrer-policy", "x-robots-tag"].filter((key) => headers[key]).map((key) => [key, headers[key]])),
       robotsMeta,
     });
+    report.renderPerformance.push({ viewport: viewport.name, ...performance });
     report.screenshots.push({
       file: screenshotPath.slice(repoRoot.length + 1).replaceAll("\\", "/"),
       sha256: createHash("sha256").update(screenshot).digest("hex"),
@@ -335,6 +412,28 @@ try {
     reducedMotionNoAnimations: true,
     reducedMotionStaticImpact: true,
   };
+  const fallbackPage = await context.newPage();
+  fallbackPage.on("request", (request) => {
+    if (!isFixtureOriginRequest(request.url(), report.origin)) report.externalRequests.push(request.url());
+  });
+  await fallbackPage.route(/hero-cinematic-blender[^/]*\.(?:webp|png)(?:\?.*)?$/u, (route) => route.abort());
+  const fallbackResponse = await fallbackPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
+  assert.equal(fallbackResponse?.status(), 200, "fallback probe must use the built local route");
+  report.previewFallback = await fallbackPage.locator(".hero-scene").evaluate((scene) => ({
+    previewActive: scene.classList.contains("has-cinematic-preview"),
+    previewImageComplete: scene.querySelector(".hero-cinematic-preview img").complete,
+    vectorFallbackVisible: globalThis.getComputedStyle(scene.querySelector(".coin-art")).visibility !== "hidden",
+    coinBounds: (() => {
+      const rect = scene.querySelector(".coin-art").getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    })(),
+  }));
+  assert.equal(report.previewFallback.previewActive, false);
+  assert.ok(report.previewFallback.previewImageComplete);
+  assert.ok(report.previewFallback.vectorFallbackVisible
+    && report.previewFallback.coinBounds.width > 45 && report.previewFallback.coinBounds.height > 45,
+  "local vector fallback must remain visible when both Blender formats fail");
+  await fallbackPage.close();
   assert.deepEqual(report.consoleErrors, []);
   assert.deepEqual(report.pageErrors, []);
   assert.deepEqual(report.externalRequests, [], "local screenshots must not contact an external origin");
@@ -354,6 +453,7 @@ try {
     })),
     desktopGeometry: report.desktopGeometry,
     securityHeaders: report.viewports[0]?.securityHeaders,
+    renderPerformance: report.renderPerformance,
   }));
 } catch (error) {
   runFailure = error;

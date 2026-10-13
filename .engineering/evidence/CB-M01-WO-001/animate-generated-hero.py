@@ -17,7 +17,7 @@ SCRIPT = Path(__file__).resolve()
 EVIDENCE = SCRIPT.parent
 ROOT = EVIDENCE.parents[2]
 IMAGE = ROOT / "src" / "modules" / "CB-M01" / "hero-cinematic-original.png"
-PROJECT = EVIDENCE / "hero-cinematic-animation.blend"
+PROJECT = EVIDENCE / "hero-cinematic-animation-portable.blend"
 FRAME_DIR = Path(os.environ.get("TEMP", str(EVIDENCE))) / "coinblink-cb-m01-motion-frames"
 STILL_DIR = EVIDENCE / "hero-cinematic-motion-stills"
 SPRITE_DIR = EVIDENCE / "lightning-sprites-v2"
@@ -145,6 +145,7 @@ def build_animation():
     image = bpy.data.images.load(str(IMAGE), check_existing=True)
     image.colorspace_settings.name = "sRGB"
     image.pack()
+    image.filepath = "//" + Path(os.path.relpath(IMAGE, EVIDENCE)).as_posix()
     material = bpy.data.materials.new("Unmodified generated hero pixels")
     material.use_nodes = True
     nodes = material.node_tree.nodes
@@ -170,6 +171,7 @@ def build_animation():
             raise ValueError(f"Lightning sprite canvas does not match base image: {sprite_path}")
         sprite_image.colorspace_settings.name = "sRGB"
         sprite_image.pack()
+        sprite_image.filepath = "//" + Path(os.path.relpath(sprite_path, EVIDENCE)).as_posix()
 
         sprite_mesh = mesh.copy()
         sprite = bpy.data.objects.new(f"Generated lightning sprite {index + 1:02d}", sprite_mesh)
@@ -234,7 +236,7 @@ def build_animation():
                         point.handle_right_type = "AUTO_CLAMPED"
 
     scene["workOrder"] = "CB-M01-WO-001"
-    scene["sourceImage"] = str(IMAGE.relative_to(ROOT)).replace("\\", "/")
+    scene["sourceImage"] = IMAGE.relative_to(ROOT).as_posix()
     scene["motionType"] = "2D camera push/drift with seven ImageGen lightning sprites, spatial offsets, and exposure flashes"
     scene["durationSeconds"] = 4.0
     scene["frameRate"] = 24
@@ -243,6 +245,8 @@ def build_animation():
     scene["allowedUsage"] = "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
     scene["commercialPublicationAllowed"] = False
     scene.frame_set(1)
+    scene.render.filepath = "//hero-cinematic-animation-portable-"
+    bpy.context.preferences.filepaths.save_version = 0
     bpy.ops.wm.save_as_mainfile(filepath=str(PROJECT))
     return scene
 
@@ -278,5 +282,7 @@ if MODE == "frames":
     render_frames(scene)
 elif MODE == "stills":
     render_stills(scene)
+elif MODE == "project":
+    print(f"CB_HERO_PORTABLE_PROJECT_COMPLETE path={PROJECT} packedImages=8")
 else:
     raise ValueError(f"Unsupported CB_HERO_ANIMATION_MODE: {MODE}")

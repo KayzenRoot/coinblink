@@ -1,5 +1,7 @@
 ---
 import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
+import heroCinematicBlenderPng from "./hero-cinematic-blender.png";
+import heroCinematicBlenderWebp from "./hero-cinematic-blender.webp";
 import lightningCharge from "./lightning-sprites/lightning-01-charge.png";
 import lightningDescent from "./lightning-sprites/lightning-02-descent.png";
 import lightningImpact from "./lightning-sprites/lightning-03-impact.png";
@@ -68,6 +70,10 @@ const stories = [
     <section class="lead-grid" aria-label={t("Featured demonstration and market status")}>
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
+          <picture class="hero-cinematic-preview">
+            <source type="image/webp" srcset={heroCinematicBlenderWebp.src} />
+            <img src={heroCinematicBlenderPng.src} width="2560" height="1280" alt="" loading="eager" decoding="async" fetchpriority="high" />
+          </picture>
           <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
           <!-- Independent layered illustration; Golden JPEG remains an immutable reference, not a UI background. -->
           <svg class="hero-rockscape" viewBox="0 0 760 320" preserveAspectRatio="xMidYMax slice" focusable="false" aria-hidden="true">

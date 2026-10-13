@@ -917,6 +917,24 @@
   .cb-home .hero-rockscape { opacity: .67; }
 }
 /* CB-M01 R22: independently versioned mineral texture, self-hosted SVG, demo only. */
+.cb-home .hero-cinematic-preview {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.cb-home .hero-cinematic-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.cb-home .hero-scene.has-cinematic-preview .hero-cinematic-preview { opacity: 1; }
+.cb-home .hero-scene.has-cinematic-preview > :not(.hero-cinematic-preview) { visibility: hidden; }
 .cb-home .hero-scene::after {
   content: "";
   position: absolute;

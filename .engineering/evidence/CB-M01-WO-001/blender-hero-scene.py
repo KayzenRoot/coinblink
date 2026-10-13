@@ -100,25 +100,29 @@ def add_area(name, location, target, power, color, size):
     return obj
 
 
-def add_rock(name, location, scale, mat, subdivisions=2):
+def add_rock(name, location, scale, mat, subdivisions=2, facet_mat=None):
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=subdivisions, radius=1.0, location=location)
     obj = bpy.context.object
     obj.name = name
     for vertex in obj.data.vertices:
         direction = vertex.co.normalized()
-        vertex.co += direction * random.uniform(-0.09, 0.09)
+        vertex.co += direction * random.uniform(-0.05, 0.05)
     obj.scale = scale
     obj.data.materials.append(mat)
-    for polygon in obj.data.polygons:
+    if facet_mat:
+        obj.data.materials.append(facet_mat)
+    for index, polygon in enumerate(obj.data.polygons):
         polygon.use_smooth = False
+        if facet_mat and polygon.normal.z > 0.45:
+            polygon.material_index = 1
     return obj
 
 
 def add_ridge(materials):
-    # A hand-shaped, triangulated basalt range; the left side stays low and dark.
-    xs = [-8.0 + index * 0.4 for index in range(41)]
-    ys = [3.0, 4.3, 5.9, 8.0]
-    row_factors = [1.0, 0.79, 0.58, 0.34]
+    # A layered, denser basalt range; the left side stays low and dark.
+    xs = [-8.0 + index * 0.2 for index in range(81)]
+    ys = [3.0, 3.8, 4.8, 6.0, 7.4, 8.9, 10.4]
+    row_factors = [1.0, 0.91, 0.79, 0.66, 0.52, 0.37, 0.22]
     vertices = []
     for row, y in enumerate(ys):
         for x in xs:
@@ -127,7 +131,7 @@ def add_ridge(materials):
                 + 3.1 * math.exp(-((x - 4.4) / 1.25) ** 2)
                 + 2.2 * math.exp(-((x - 6.7) / 1.4) ** 2)
             )
-            jagged = random.uniform(-0.17, 0.17)
+            jagged = random.uniform(-0.12, 0.12)
             z = 0.12 + (0.28 + peaks + jagged) * row_factors[row]
             vertices.append((x, y, max(0.08, z)))
     faces = []
@@ -152,6 +156,7 @@ def add_ridge(materials):
     for polygon in mesh.polygons:
         height = sum(mesh.vertices[index].co.z for index in polygon.vertices) / len(polygon.vertices)
         polygon.material_index = 0 if height < 0.85 else (1 if height < 1.7 else 2)
+        polygon.use_smooth = False
     return ridge
 
 
@@ -169,6 +174,27 @@ def add_polyline(name, points, bevel, mat):
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(mat)
     return obj
+
+
+def add_candlestick(name, x, y, z, height, body_mat, wick_mat):
+    """Small, self-contained 3D chart marks kept behind the physical coin."""
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=16, radius=0.018, depth=height + 0.28,
+        location=(x, y + 0.02, z + height / 2.0),
+    )
+    wick = bpy.context.object
+    wick.name = f"{name} wick"
+    wick.data.materials.append(wick_mat)
+
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(x, y, z + height / 2.0))
+    body = bpy.context.object
+    body.name = f"{name} body"
+    body.dimensions = (0.15, 0.14, height)
+    body.data.materials.append(body_mat)
+    bevel = body.modifiers.new("Soft chart candle edges", "BEVEL")
+    bevel.width = 0.025
+    bevel.segments = 2
+    body.modifiers.new("Weighted chart candle normals", "WEIGHTED_NORMAL")
 
 
 def set_keyframes(obj, data_path, values):
@@ -211,15 +237,16 @@ def build_scene():
     scene.world.use_nodes = True
     background = scene.world.node_tree.nodes.get("Background")
     background.inputs["Color"].default_value = (0.012, 0.025, 0.017, 1.0)
-    background.inputs["Strength"].default_value = 0.34
+    background.inputs["Strength"].default_value = 0.28
 
-    gold = material("Warm minted gold", (0.72, 0.40, 0.075), 0.91, 0.24, 7.0, 0.12, 0.018)
-    gold_highlight = material("Coin face highlights", (0.98, 0.72, 0.26), 0.82, 0.2)
+    gold = material("Warm minted gold", (0.68, 0.33, 0.055), 0.94, 0.22, 9.0, 0.08, 0.012)
+    gold_face = material("Engraved antique gold face", (0.39, 0.17, 0.032), 0.96, 0.27, 24.0, 0.13, 0.009)
+    gold_highlight = material("Coin relief highlights", (0.96, 0.64, 0.19), 0.9, 0.18)
     gold_edge = material("Antique gold edge grooves", (0.22, 0.105, 0.025), 0.83, 0.31)
-    rock_dark = material("Basalt shadow", (0.014, 0.035, 0.027), 0.12, 0.83, 3.2, 0.24, 0.22)
-    rock_mid = material("Basalt forest green", (0.018, 0.048, 0.031), 0.12, 0.78, 2.2, 0.28, 0.18)
-    rock_lit = material("Mineral edges", (0.065, 0.105, 0.048), 0.2, 0.64, 4.0, 0.18, 0.1)
-    ground_mat = material("Dark volcanic ground", (0.009, 0.02, 0.016), 0.08, 0.88, 1.2, 0.24, 0.13)
+    rock_dark = material("Basalt shadow", (0.012, 0.026, 0.015), 0.08, 0.91, 12.0, 0.3, 0.07)
+    rock_mid = material("Basalt forest green", (0.026, 0.061, 0.034), 0.08, 0.88, 10.0, 0.3, 0.07)
+    rock_lit = material("Mineral edges", (0.045, 0.095, 0.04), 0.12, 0.82, 14.0, 0.24, 0.05)
+    ground_mat = material("Dark volcanic ground", (0.006, 0.012, 0.007), 0.02, 0.96, 1.2, 0.12, 0.06)
     chart_mat, chart_shader = emission("Soft lime chart energy", (0.45, 1.0, 0.12), 2.1)
     chart_dim, _ = emission("Faint green chart trail", (0.14, 0.47, 0.08), 0.65)
     spark_mat, _ = emission("Quiet lime motes", (0.63, 1.0, 0.3), 0.75)
@@ -231,6 +258,25 @@ def build_scene():
 
     add_ridge((rock_dark, rock_mid, rock_lit))
 
+    # A shallow back-plane volume scatters the rim light into restrained green haze.
+    bpy.ops.mesh.primitive_cube_add(size=2.0, location=(0.0, 5.2, 3.2))
+    haze = bpy.context.object
+    haze.name = "Thin rear mountain atmosphere"
+    haze.dimensions = (17.0, 9.0, 6.0)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    haze_material = bpy.data.materials.new("Quiet green atmospheric scatter")
+    haze_material.use_nodes = True
+    haze_nodes = haze_material.node_tree.nodes
+    haze_links = haze_material.node_tree.links
+    haze_nodes.clear()
+    haze_output = haze_nodes.new("ShaderNodeOutputMaterial")
+    haze_scatter = haze_nodes.new("ShaderNodeVolumeScatter")
+    haze_scatter.inputs["Color"].default_value = (0.1, 0.22, 0.08, 1.0)
+    haze_scatter.inputs["Density"].default_value = 0.018
+    haze_scatter.inputs["Anisotropy"].default_value = 0.35
+    haze_links.new(haze_scatter.outputs["Volume"], haze_output.inputs["Volume"])
+    haze.data.materials.append(haze_material)
+
     # Low, angular foreground rocks preserve negative space on the reading side.
     for index, (x, y, z, sx, sy, sz) in enumerate((
         (-6.0, -1.8, -0.2, 1.2, 1.0, 0.42), (-4.2, -2.6, -0.22, 1.5, 0.9, 0.48),
@@ -239,14 +285,15 @@ def build_scene():
         (6.5, -1.8, -0.16, 1.4, 1.0, 0.6), (3.8, -1.45, -0.14, 0.9, 0.75, 0.44),
     )):
         add_rock(f"Foreground basalt {index + 1:02d}", (x, y, z), (sx, sy, sz),
-                 rock_dark if index % 3 else rock_mid, subdivisions=2)
+                 rock_dark if index % 3 else rock_mid, subdivisions=2, facet_mat=rock_lit)
 
     # Sparse right-side boulders carry the lime rim light while the left remains calm.
     for index, values in enumerate(((5.8, 2.2, 0.2, 1.3, 0.8, 1.1),
                                     (7.1, 1.5, 0.16, 1.1, 0.9, 0.85),
                                     (1.2, 3.1, 0.16, 1.25, 0.7, 1.3))):
         x, y, z, sx, sy, sz = values
-        add_rock(f"Ridge boulder {index + 1:02d}", (x, y, z), (sx, sy, sz), rock_mid, subdivisions=2)
+        add_rock(f"Ridge boulder {index + 1:02d}", (x, y, z), (sx, sy, sz),
+                 rock_mid, subdivisions=2, facet_mat=rock_lit)
 
     # Rising line stays behind the coin and contains no words, prices, or market claim.
     chart_points = [(-2.5, 1.4, 0.85), (-1.55, 1.35, 1.2), (-0.7, 1.3, 1.42),
@@ -257,16 +304,28 @@ def build_scene():
     add_polyline("Dim lower chart reflection", [(x, y + 0.07, z - 0.22) for x, y, z in chart_points],
                  0.013, chart_dim)
 
+    for index, (x, z, height) in enumerate((
+        (4.5, 0.86, 0.72), (5.15, 1.62, 0.92), (5.85, 2.24, 0.74),
+        (6.45, 2.56, 1.02), (7.0, 3.24, 0.78),
+    )):
+        add_candlestick(f"Background market candle {index + 1:02d}", x, 1.75, z,
+                        height, chart_dim, chart_mat)
+
     # Original extruded, ridged coin. The parent makes subtle camera-facing motion possible.
     pivot = bpy.data.objects.new("Animated Bitcoin coin pivot", None)
     bpy.context.collection.objects.link(pivot)
     pivot.location = (2.45, -0.18, 2.62)
-    pivot.rotation_euler = (math.radians(90.0), math.radians(-1.0), math.radians(-23.0))
+    # Turn the face into a clear 3/4 view so the thick, ribbed edge reads in the render.
+    pivot.rotation_euler = (math.radians(70.0), math.radians(-5.0), math.radians(-40.0))
     bpy.ops.mesh.primitive_cylinder_add(vertices=144, radius=1.88, depth=0.2, location=(0.0, 0.0, 0.0))
     coin = bpy.context.object
     coin.name = "Thick beveled gold Bitcoin coin"
     coin.parent = pivot
     coin.data.materials.append(gold)
+    coin.data.materials.append(gold_face)
+    for polygon in coin.data.polygons:
+        if abs(polygon.normal.z) > 0.96:
+            polygon.material_index = 1
     bevel = coin.modifiers.new("Rounded minted rim", "BEVEL")
     bevel.width = 0.045
     bevel.segments = 4
@@ -299,6 +358,49 @@ def build_scene():
     add_torus("Outer coin face bead", 1.73, 0.028, 0.106, gold_highlight)
     add_torus("Inner engraved coin ring", 1.53, 0.012, 0.109, gold_edge)
     add_torus("Fine inner gold ring", 1.46, 0.009, 0.111, gold_highlight)
+    add_torus("Inner relief border", 1.39, 0.009, 0.112, gold_edge)
+    add_torus("B emblem inner medallion", 0.82, 0.009, 0.112, gold_highlight)
+
+    # Fine minted radial indices add face detail that remains legible at hero scale.
+    for index in range(72):
+        angle = 2.0 * math.pi * index / 72.0
+        inner = 1.58 if index % 6 == 0 else 1.625
+        outer = 1.69
+        tick = add_polyline(
+            f"Minted face index {index + 1:02d}",
+            [(inner * math.cos(angle), inner * math.sin(angle), 0.112),
+             (outer * math.cos(angle), outer * math.sin(angle), 0.112)],
+            0.0045 if index % 6 == 0 else 0.0025,
+            gold_highlight if index % 6 == 0 else gold_edge,
+        )
+        tick.parent = pivot
+
+    # Fine radial engraving in the dark coin face creates visible minted relief.
+    for index in range(32):
+        angle = 2.0 * math.pi * index / 32.0
+        inner = 0.93 if index % 2 == 0 else 1.02
+        outer = 1.34
+        line = add_polyline(
+            f"Coin face engraving {index + 1:02d}",
+            [(inner * math.cos(angle), inner * math.sin(angle), 0.115),
+             (outer * math.cos(angle), outer * math.sin(angle), 0.115)],
+            0.0035 if index % 2 == 0 else 0.002,
+            gold_edge if index % 2 == 0 else gold_highlight,
+        )
+        line.parent = pivot
+
+    for index in range(16):
+        angle = 2.0 * math.pi * index / 16.0
+        bpy.ops.mesh.primitive_uv_sphere_add(
+            segments=12, ring_count=6, radius=0.024,
+            location=(1.43 * math.cos(angle), 1.43 * math.sin(angle), 0.125),
+        )
+        rivet = bpy.context.object
+        rivet.name = f"Coin medallion rivet {index + 1:02d}"
+        rivet.parent = pivot
+        rivet.data.materials.append(gold_highlight)
+        for face in rivet.data.polygons:
+            face.use_smooth = True
 
     # The B and two narrow stems are new geometry, not pixels taken from the reference.
     bpy.ops.object.text_add(location=(0.0, 0.0, 0.114))
@@ -339,13 +441,14 @@ def build_scene():
         mote.location = initial
         mote.keyframe_insert(data_path="location", frame=25)
 
-    key = add_area("Large warm key light", (-3.0, -5.5, 7.0), (2.3, 0.0, 2.5), 1550.0, (1.0, 0.72, 0.40), 4.5)
-    add_area("Soft frontal coin fill", (4.5, -5.0, 4.2), (2.4, 0.0, 2.6), 780.0, (1.0, 0.89, 0.65), 3.8)
-    add_area("Lime mountain rim light", (4.8, 2.2, 5.4), (3.5, 1.0, 1.8), 800.0, (0.55, 1.0, 0.24), 3.2)
-    add_area("Quiet warm backlight", (2.0, 4.0, 6.4), (2.5, 0.0, 2.3), 1500.0, (1.0, 0.58, 0.23), 2.7)
+    key = add_area("Large warm key light", (-3.0, -5.5, 7.0), (2.3, 0.0, 2.5), 1180.0, (1.0, 0.72, 0.40), 2.5)
+    add_area("Soft frontal coin fill", (4.5, -5.0, 4.2), (2.4, 0.0, 2.6), 680.0, (1.0, 0.89, 0.65), 2.1)
+    add_area("Lime mountain rim light", (4.8, 2.2, 5.4), (3.5, 1.0, 1.8), 820.0, (0.55, 1.0, 0.24), 1.8)
+    add_area("Broad lime rock wash", (0.2, -2.8, 6.2), (1.8, 2.5, 0.2), 940.0, (0.36, 1.0, 0.16), 5.8)
+    add_area("Quiet warm backlight", (2.0, 4.0, 6.4), (2.5, 0.0, 2.3), 980.0, (1.0, 0.58, 0.23), 1.7)
 
     # Smooth sweeping highlight and a restrained coin wobble: never a fast spin.
-    for frame, tilt in ((1, math.radians(-1.0)), (13, math.radians(3.5)), (25, math.radians(-1.0))):
+    for frame, tilt in ((1, math.radians(-5.0)), (13, math.radians(-1.5)), (25, math.radians(-5.0))):
         pivot.rotation_euler.y = tilt
         pivot.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
     for frame, x in ((1, -3.0), (13, 2.0), (25, -3.0)):
@@ -356,8 +459,9 @@ def build_scene():
         chart_shader.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
 
     camera_data = bpy.data.cameras.new("CoinBlink cinematic camera")
-    camera_data.type = "ORTHO"
-    camera_data.ortho_scale = 14.0
+    camera_data.type = "PERSP"
+    camera_data.lens = 48.0
+    camera_data.sensor_width = 36.0
     camera = bpy.data.objects.new("CoinBlink cinematic camera", camera_data)
     bpy.context.collection.objects.link(camera)
     camera.location = (0.0, -18.0, 7.2)
@@ -373,41 +477,66 @@ def build_scene():
     scene["commercialPublicationAllowed"] = False
     scene["construction"] = "Procedural original geometry and materials; no external textures or reference pixels"
     scene["motion"] = "24-frame restrained coin tilt, moving soft key light, chart pulse and slow particles"
-    scene.render.filepath = str(RENDER_DIR / "hero-cinematic-preview-800x400.png")
-    bpy.ops.wm.save_as_mainfile(filepath=str(EVIDENCE_DIR / "hero-cinematic-original.blend"))
+    scene.render.filepath = "//hero-cinematic-renders/hero-cinematic-blender-preview-800x400.png"
     return scene
 
 
+def configure_cycles_device(scene):
+    """Use a supported Cycles GPU when the local Blender runtime exposes one."""
+    preferences = bpy.context.preferences.addons["cycles"].preferences
+    for backend in ("HIP", "OPTIX", "CUDA", "ONEAPI"):
+        try:
+            preferences.compute_device_type = backend
+            preferences.get_devices()
+        except Exception as error:  # Blender/driver availability varies by workstation.
+            print(f"CB_HERO_GPU_BACKEND_UNAVAILABLE backend={backend} reason={error}")
+            continue
+        gpu_devices = [device for device in preferences.devices if device.type != "CPU"]
+        if gpu_devices:
+            for device in preferences.devices:
+                device.use = device.type != "CPU"
+            scene.cycles.device = "GPU"
+            print(f"CB_HERO_GPU_SELECTED backend={backend} devices={[d.name for d in gpu_devices]}")
+            return
+    scene.cycles.device = "CPU"
+    print("CB_HERO_GPU_UNAVAILABLE fallback=CPU")
+
+
 def render_mode(scene):
+    should_render = True
     if MODE == "preview":
         scene.render.resolution_x, scene.render.resolution_y = 800, 400
         scene.cycles.samples = 8
-        scene.render.filepath = str(RENDER_DIR / "hero-cinematic-preview-800x400.png")
+        scene.render.filepath = "//hero-cinematic-renders/hero-cinematic-blender-preview-800x400.png"
         scene.frame_set(1)
-        bpy.ops.render.render(write_still=True)
     elif MODE == "master":
         scene.render.resolution_x, scene.render.resolution_y = 2560, 1280
-        scene.cycles.samples = 24
-        scene.render.filepath = str(RENDER_DIR / "hero-cinematic-master-2560x1280.png")
+        scene.cycles.samples = 32
+        scene.render.filepath = "//hero-cinematic-renders/hero-cinematic-blender-master-2560x1280.png"
         scene.frame_set(1)
-        bpy.ops.render.render(write_still=True)
     elif MODE == "candidate":
         scene.render.resolution_x, scene.render.resolution_y = 1600, 800
         scene.cycles.samples = 16
-        scene.render.filepath = str(MODULE_DIR / "hero-cinematic-original.png")
+        scene.render.filepath = "//hero-cinematic-renders/hero-cinematic-blender-candidate-1600x800.png"
         scene.frame_set(1)
-        bpy.ops.render.render(write_still=True)
     elif MODE == "motion":
         frames_dir = RENDER_DIR / "motion-frames"
         frames_dir.mkdir(exist_ok=True)
         scene.render.resolution_x, scene.render.resolution_y = 640, 320
         scene.cycles.samples = 6
         scene.render.image_settings.file_format = "PNG"
-        scene.render.filepath = str(frames_dir / "frame-")
+        scene.render.filepath = "//hero-cinematic-renders/motion-frames/frame-"
         scene.frame_start, scene.frame_end = 1, 24
-        bpy.ops.render.render(animation=True)
     else:
         raise ValueError(f"Unsupported CB_HERO_RENDER_MODE: {MODE}")
+
+    configure_cycles_device(scene)
+    bpy.context.preferences.filepaths.save_version = 0
+    bpy.ops.wm.save_as_mainfile(filepath=str(EVIDENCE_DIR / "hero-cinematic-production.blend"))
+    if should_render and MODE == "motion":
+        bpy.ops.render.render(animation=True)
+    elif should_render:
+        bpy.ops.render.render(write_still=True)
     print(f"CB_HERO_RENDER_COMPLETE mode={MODE} engine={scene.render.engine} device={scene.cycles.device} ")
     print(f"CB_HERO_OUTPUT={scene.render.filepath}")
 

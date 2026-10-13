@@ -3,6 +3,16 @@
 const menu = document.querySelector("[data-menu-toggle]");
 const nav = document.querySelector("[data-primary-nav]");
 
+// R25: switch from the original vector fallback only after the local Blender
+// preview has decoded. A missing or corrupt asset leaves the existing demo art.
+const cinematicImage = document.querySelector(".hero-cinematic-preview img");
+const cinematicScene = cinematicImage?.closest(".hero-scene");
+const revealCinematicPreview = () => {
+  if (cinematicImage?.naturalWidth > 0) cinematicScene?.classList.add("has-cinematic-preview");
+};
+if (cinematicImage?.complete) revealCinematicPreview();
+else cinematicImage?.addEventListener("load", revealCinematicPreview, { once: true });
+
 function closeMenu({ returnFocus = false } = {}) {
   if (!menu || menu.getAttribute("aria-expanded") !== "true") return;
   menu.setAttribute("aria-expanded", "false");

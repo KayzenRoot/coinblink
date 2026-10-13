@@ -53,8 +53,9 @@ test("hero lightning stays decorative, timed, and respects reduced-motion prefer
   const frameMarkup = component.match(/<img class="hero-lightning-frame /gu) ?? [];
   assert.equal(frameMarkup.length, 7);
   assert.match(component, /<div class="hero-lightning" aria-hidden="true">[\s\S]*?<span class="hero-lightning-flash"><\/span>[\s\S]*?<\/div>/u);
-  assert.equal((component.match(/decoding="async"/gu) ?? []).length, 7);
-  assert.equal((component.match(/alt=""/gu) ?? []).length >= 7, true);
+  const frameElements = component.match(/<img class="hero-lightning-frame [^>]+>/gu) ?? [];
+  assert.equal(frameElements.filter((element) => element.includes('decoding="async"')).length, 7);
+  assert.equal(frameElements.filter((element) => element.includes('alt=""')).length, 7);
   assert.match(stylesheet, /\.cb-home \.hero-lightning-frame\s*\{[\s\S]*?mix-blend-mode: screen/u);
   assert.match(stylesheet, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.hero-lightning-frame--impact\s*\{\s*opacity: \.38 !important;/u);
   assert.match(stylesheet, /\.cb-home \.hero-lightning\s*\{[\s\S]*?pointer-events: none;/u);

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M01-WO-001",
+  "recordType": "R25_SAME_RENDER_EXPORTS",
+  "generatedAt": "2026-10-13T22:44:07+00:00",
+  "origin": "ORIGINAL_LOCAL_RENDER",
+  "sourceMaster": {
+    "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-blender-master-2560x1280.png",
+    "format": "PNG",
+    "dimensions": [
+      2560,
+      1280
+    ],
+    "bytes": 9848150,
+    "sha256": "935d00f5384771f2a21a83bf0ee5e077e0684146364b5c36080d64b454cca460",
+    "renderEngine": "Blender Cycles",
+    "blenderVersion": "5.2.2 LTS",
+    "device": "CPU",
+    "samples": 32,
+    "denoising": true
+  },
+  "exports": {
+    "png": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.png",
+      "format": "PNG",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "P",
+      "bytes": 774726,
+      "sha256": "bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67",
+      "fullyDecoded": true,
+      "maxBytes": 3500000,
+      "encoding": "palette PNG, median-cut, Floyd-Steinberg, optimize, compression 9",
+      "paletteColors": 256,
+      "comparisonToMaster": {
+        "meanAbsoluteErrorRgb": 1.51862,
+        "psnrDb": 38.8281
+      }
+    },
+    "webp": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
+      "format": "WEBP",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "RGB",
+      "bytes": 269828,
+      "sha256": "5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e",
+      "fullyDecoded": true,
+      "maxBytes": 1500000,
+      "encoding": "lossy WebP, method 6",
+      "quality": 96
+    }
+  },
+  "usage": {
+    "previewOnly": true,
+    "rightsStatus": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+  }
+}

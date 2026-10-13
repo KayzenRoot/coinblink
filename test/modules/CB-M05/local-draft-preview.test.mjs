@@ -79,6 +79,37 @@ test("local importer does not run HTML and maintains the original export format"
   assert.equal(draftToMarkdown(restored), original);
 });
 
+
+test("versioned local drafts preserve literal entity strings and optional author labels", () => {
+  for (const author of ["Not provided", ""]) {
+    const original = prepareLocalDraft({
+      ...valid,
+      title: "Why &lt;literal&gt; differs from <markup>",
+      author,
+      summary: "A &lt;literal&gt; spelling and a real <tag> must both survive export and import.",
+      body: "A body containing &amp;, &lt;, &gt;, &, <script> and > symbols must round-trip without changes.",
+    });
+    const markdown = draftToMarkdown(original);
+    assert.match(markdown, /COINBLINK LOCAL DRAFT FORMAT: 2/u);
+    assert.match(markdown, /&amp;lt;literal&amp;gt;/u);
+    assert.doesNotMatch(markdown, /<script>/u);
+    assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
+  }
+});
+
+test("legacy unversioned CoinBlink draft imports remain supported", () => {
+  const original = prepareLocalDraft(valid);
+  const previousFormat = draftToMarkdown(original).replace("> COINBLINK LOCAL DRAFT FORMAT: 2\n\n", "");
+  assert.deepEqual(parseLocalDraftMarkdown(previousFormat), original);
+});
+
+test("max-length HTML-like text remains importable within the 64 KB local file limit", () => {
+  const original = prepareLocalDraft({ ...valid, body: "<".repeat(12000) });
+  const markdown = draftToMarkdown(original);
+  assert.ok(markdown.length < 64000);
+  assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
+});
+
 test("importer rejects non-CoinBlink Markdown, malformed sections and oversized files", () => {
   const original = draftToMarkdown(prepareLocalDraft(valid));
   for (const raw of [

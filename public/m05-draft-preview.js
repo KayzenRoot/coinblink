@@ -22,7 +22,8 @@ const FORMAT_V2 = "> COINBLINK LOCAL DRAFT FORMAT: 2";
 
 export function prepareLocalDraft(input) {
   const title = clean(input.title, MAX_TITLE).replaceAll("\n", " ").trim();
-  const author = clean(input.author, MAX_AUTHOR);
+  // This browser field is single-line; disallow imported/programmatic section markers.
+  const author = clean(input.author, MAX_AUTHOR).replaceAll("\n", " ").trim();
   const summary = clean(input.summary, MAX_SUMMARY);
   const body = clean(input.body, MAX_BODY);
   const sourceValue = clean(input.source, MAX_SOURCE);

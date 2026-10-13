@@ -38,10 +38,15 @@ test("visual source inputs are clean relative to the commit before claiming exac
 test("visual provenance covers every rendered source and fixture configuration input", () => {
   for (const path of [
     "src/layouts/BaseLayout.astro",
+    "src/pages",
     "src/styles/global.css",
+    "public",
+    "astro.config.mjs",
     "test/modules/CB-M01/fixture/src",
     ".engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs",
     "test/modules/CB-M01/visual-check.mjs",
+    "test/modules/CB-M01/integrated-visual-check.mjs",
+    "test/modules/CB-M01/astro-integration.config.mjs",
     "test/modules/CB-M01/visual-server.mjs",
     "test/modules/CB-M01/visual-request-origin.mjs",
     "package-lock.json",

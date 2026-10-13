@@ -161,6 +161,19 @@ try {
         };
         return Object.fromEntries([".demo-banner", ".cb-header", ".brand", ".hero-panel", ".market-panel", ".ticker-strip", ".trending-strip", ".category-rail", ".content-grid", "#latest-news", ".news-cards", "#newsletter"].map((selector) => [selector, rect(selector)]));
       });
+      // Golden desktop uses a vertical editorial thumbnail beside its text,
+      // never a banner stacked over a card headline. Assert real DOM geometry.
+      report.desktopEditorialCardGeometry = await page.locator(".news-card").first().evaluate((card) => {
+        const art = card.querySelector(".news-art").getBoundingClientRect();
+        const copy = card.lastElementChild.getBoundingClientRect();
+        return { artRight: art.right, artTop: art.top, artBottom: art.bottom,
+          copyLeft: copy.left, copyTop: copy.top, copyBottom: copy.bottom };
+      });
+      assert.ok(
+        report.desktopEditorialCardGeometry.artRight <= report.desktopEditorialCardGeometry.copyLeft + 1
+          && Math.abs(report.desktopEditorialCardGeometry.artTop - report.desktopEditorialCardGeometry.copyTop) <= 1,
+        "Golden desktop editorial art must be left of and top-aligned with readable copy",
+      );
     }
     if (viewport.name === "mobile") {
       report.mobileHero = await page.locator(".hero-panel").evaluate((hero) => {

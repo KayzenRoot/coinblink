@@ -198,6 +198,36 @@ try {
       axeViolations: encodeViolations(moduleAxe),
       fullPageAxeViolations: encodeViolations(pageAxe),
     });
+    if (viewport.name === "desktop") {
+      const desktopGeometry = await page.evaluate(() => {
+        const readRect = (selector) => {
+          const rect = globalThis.document.querySelector(selector).getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+        };
+        return {
+          demoBanner: readRect(".demo-banner"),
+          header: readRect(".cb-header"),
+          hero: readRect(".hero-panel"),
+          market: readRect(".market-panel"),
+          ticker: readRect(".ticker-strip"),
+          trending: readRect(".trending-strip"),
+          categories: readRect(".category-rail"),
+          signals: readRect(".content-grid"),
+          latestNews: readRect("#latest-news"),
+          latestNewsCards: readRect(".news-cards"),
+          newsletter: readRect("#newsletter"),
+        };
+      });
+      results.at(-1).desktopGeometry = desktopGeometry;
+      interactionChecks.desktopGeometry = desktopGeometry;
+      const geometryViolations = [];
+      if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
+      if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
+      if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
+      if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
+      if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
+      assert.deepEqual(geometryViolations, [], `desktop Golden geometry failed: ${JSON.stringify(desktopGeometry)}; ${geometryViolations.join("; ")}`);
+    }
     await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
   }
 

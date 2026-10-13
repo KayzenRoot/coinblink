@@ -110,6 +110,49 @@ test("max-length HTML-like text remains importable within the 64 KB local file l
   assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
 });
 
+test("v2 draft sections remain lossless when author text contains Markdown headings", () => {
+  const original = prepareLocalDraft({
+    ...valid,
+    summary: "Summary begins here.\n\n## Draft\nThis heading is only original summary text.\n\n## Summary\nMore summary.",
+    body: "Draft opening here.\n\n## Editorial gates\nThis is user-written body text.\n\n# Top heading\nStill text, not a real publication gate.",
+  });
+  assert.equal(original.ready, true);
+  const markdown = draftToMarkdown(original);
+  assert.equal(markdown.split("\n\n## Draft\n\n").length, 2);
+  assert.equal(markdown.split("\n\n## Editorial gates\n\n").length, 2);
+  assert.match(markdown, /&#35;# Draft/u);
+  assert.match(markdown, /&#35;# Editorial gates/u);
+  assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
+});
+
+test("v2 literal heading entity escapes survive exact Markdown import", () => {
+  const original = prepareLocalDraft({
+    ...valid,
+    summary: "Literal &#35; token and heading.\n# Section heading\nAnd literal &#35; again.",
+    body: "Original tokens &#35; and &lt; remain intact.\n\n## Draft\nThis is still within the draft body.",
+  });
+  const markdown = draftToMarkdown(original);
+  assert.match(markdown, /&amp;#35;/u);
+  assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
+});
+
+test("normalized Unicode source URL must fit export format before export is enabled", () => {
+  const accepted = prepareLocalDraft({
+    ...valid,
+    source: "https://example.org/" + "é".repeat(30),
+  });
+  assert.equal(accepted.ready, true);
+  assert.deepEqual(parseLocalDraftMarkdown(draftToMarkdown(accepted)), accepted);
+
+  const expanded = prepareLocalDraft({
+    ...valid,
+    source: "https://example.org/" + "é".repeat(90),
+  });
+  assert.equal(expanded.ready, false);
+  assert.ok(expanded.errors.includes("source"));
+  assert.throws(() => draftToMarkdown(expanded), /source-backed draft/u);
+});
+
 test("importer rejects non-CoinBlink Markdown, malformed sections and oversized files", () => {
   const original = draftToMarkdown(prepareLocalDraft(valid));
   for (const raw of [

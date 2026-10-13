@@ -30,7 +30,8 @@ const report = {
   baseSha,
   headSha: null,
   route: "/en",
-  fixture: "integrated application route with only Astro dev toolbar disabled for screenshot clarity",
+  fixture: "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
+  runtime: "Wrangler 4.149.0 --local",
   origin: null,
   visualInputState: null,
   viewports: [],
@@ -218,5 +219,8 @@ try {
 } finally {
   if (browser) await browser.close();
   const stopped = await stopServer();
-  if (stopped && persistDir) await rm(persistDir, { recursive: true, force: true });
+  if (stopped && persistDir) {
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 750));
+    await rm(persistDir, { recursive: true, force: true, maxRetries: 12, retryDelay: 500 });
+  }
 }

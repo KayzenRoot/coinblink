@@ -207,6 +207,11 @@ try {
         return {
           demoBanner: readRect(".demo-banner"),
           header: readRect(".cb-header"),
+          brand: readRect(".brand"),
+          brandImage: readRect(".brand img"),
+          brandName: readRect(".brand-name"),
+          primaryNav: readRect(".primary-nav"),
+          headerTools: readRect(".header-tools"),
           hero: readRect(".hero-panel"),
           market: readRect(".market-panel"),
           ticker: readRect(".ticker-strip"),

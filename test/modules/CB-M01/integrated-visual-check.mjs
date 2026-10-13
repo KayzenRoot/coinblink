@@ -89,7 +89,8 @@ try {
   const ready = await waitForFixtureReady({ child: server, origin: report.origin + "/en" });
   assert.equal(ready.status, 200, "the integrated /en route must respond with HTTP 200");
   browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
+  const context = await browser.newContext();
+  const page = await context.newPage();
   page.on("console", (message) => { if (message.type() === "error") report.consoleErrors.push(message.text()); });
   page.on("pageerror", (error) => report.pageErrors.push(error.message));
   page.on("request", (request) => {

@@ -1050,3 +1050,16 @@
   .cb-home .hero-lightning-frame--impact { opacity: .38 !important; }
   .cb-home .hero-lightning-flash { opacity: 0 !important; }
 }
+@media (min-width: 761px) and (max-width: 850px) {
+  .cb-home .hero-cinematic-preview {
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, #000 58%);
+  }
+  .cb-home .hero-cinematic-preview img {
+    object-fit: contain;
+    object-position: right center;
+  }
+  .cb-home .hero-lightning { inset-inline-start: 55%; }
+}
+@media (max-width: 760px) {
+  .cb-home .hero-scene.has-cinematic-preview { opacity: 1; }
+}

@@ -149,8 +149,13 @@ try {
         allowedOrigin: origin,
         previewActive: scene.classList.contains("has-cinematic-preview"),
         visible: globalThis.getComputedStyle(image.parentElement).opacity !== "0",
+        sceneOpacity: globalThis.getComputedStyle(scene).opacity,
+        objectFit: globalThis.getComputedStyle(image).objectFit,
+        objectPosition: globalThis.getComputedStyle(image).objectPosition,
         widthOnScreen: rect.width,
         heightOnScreen: rect.height,
+        lightningLeft: scene.parentElement.querySelector(".hero-lightning").getBoundingClientRect().left,
+        copyRight: scene.parentElement.querySelector(".hero-copy").getBoundingClientRect().right,
         loading: image.loading,
         fetchPriority: image.fetchPriority,
       };
@@ -167,6 +172,14 @@ try {
     viewport.name + " Blender preview must be visible after decode");
     assert.equal(cinematicPreview.loading, "eager");
     assert.equal(cinematicPreview.fetchPriority, "high");
+    if (viewport.name === "tablet") {
+      assert.equal(cinematicPreview.objectFit, "contain", "tablet preview must preserve the full coin in the narrower hero");
+      assert.ok(cinematicPreview.lightningLeft >= cinematicPreview.copyRight - 1,
+        "tablet lightning overlay must stay outside the text column");
+    }
+    if (viewport.name === "mobile") {
+      assert.equal(cinematicPreview.sceneOpacity, "1", "loaded Blender preview must not inherit fallback dimming on mobile");
+    }
     const bitcoinScene = await page.locator(".hero-panel .coin-art").evaluate((coin) => {
       const scene = coin.closest(".hero-scene");
       const box = coin.getBoundingClientRect();

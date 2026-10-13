@@ -1011,7 +1011,7 @@
   77% { opacity: .02; }
 }
 @keyframes cb-lightning-scene-flash {
-  0%, 12%, 18%, 47%, 55%, 58.5%, 66.5%, 100% { opacity: 0; }
+  0%, 12%, 47%, 55%, 58.5%, 66.5%, 100% { opacity: 0; }
   12.4% { opacity: .62; }
   13.5% { opacity: .19; }
   15% { opacity: .34; }

@@ -59,3 +59,13 @@ test("hero lightning stays decorative, timed, and respects reduced-motion prefer
   assert.match(stylesheet, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.hero-lightning-frame--impact\s*\{\s*opacity: \.38 !important;/u);
   assert.match(stylesheet, /\.cb-home \.hero-lightning\s*\{[\s\S]*?pointer-events: none;/u);
 });
+
+test("scene flash keyframes do not repeat a percentage selector", () => {
+  const sceneFlash = stylesheet.match(/@keyframes cb-lightning-scene-flash\s*\{([\s\S]*?)\n\}/u)?.[1];
+  assert.ok(sceneFlash, "scene flash keyframes must exist");
+  const selectors = [...sceneFlash.matchAll(/(?:^|\})\s*([^{}]+)\s*\{[^{}]*\}/gmu)]
+    .flatMap((match) => match[1].split(",").map((selector) => selector.trim()));
+  const duplicates = selectors.filter((selector, index) => selectors.indexOf(selector) !== index);
+
+  assert.deepEqual(duplicates, []);
+});

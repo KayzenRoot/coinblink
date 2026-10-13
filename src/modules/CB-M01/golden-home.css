@@ -614,3 +614,43 @@
   .cb-home .chain-lookup__status,
   .cb-home .chain-lookup__warning { font-size:12px; }
 }
+
+/* Keep the M01 brand lockup horizontal without changing Steward-owned global styles. */
+.cb-home .brand { flex-direction:row; }
+
+@media (min-width:1281px) {
+  .cb-home .demo-banner { min-height:22px; padding-block:1px; }
+  .cb-home .cb-header { min-height:48px; gap:clamp(9px,1.1vw,17px); }
+  .cb-home .brand img { width:35px; height:31px; }
+  .cb-home .brand-name { font-size:21px; }
+  .cb-home .primary-nav { gap:8px; }
+  .cb-home .primary-nav a { min-height:36px; font-size:10px; }
+  .cb-home .header-tools { gap:9px; }
+  .cb-home .search-box { height:29px; }
+  .cb-home .home-main { padding-top:2px; }
+  .cb-home .lead-grid { gap:10px; }
+  .cb-home .hero-panel { min-height:282px; padding:20px; }
+  .cb-home .market-panel { padding:10px 12px 7px; }
+  .cb-home .panel-title h2 { font-size:14px; }
+  .cb-home .panel-description { margin:3px 0; line-height:1.25; }
+  .cb-home .market-list { gap:0; }
+  .cb-home .market-row { min-height:33px; }
+  .cb-home .market-panel>.panel-link { padding-top:4px; }
+  .cb-home .ticker-strip { min-height:30px; margin-top:6px; }
+  .cb-home .trending-strip { min-height:45px; grid-template-columns:140px repeat(5,minmax(0,1fr)); margin-top:6px; }
+  .cb-home .trend-item { min-height:35px; gap:6px; padding:3px 7px; font-size:8px; }
+  .cb-home .trend-item>b { width:22px; height:22px; }
+  .cb-home .category-rail { gap:6px; margin-top:6px; }
+  .cb-home .category-chip { min-height:39px; gap:5px; padding-inline:8px; }
+  .cb-home .content-grid { gap:8px; margin-top:7px; }
+  .cb-home .content-grid>.content-panel,.cb-home .content-grid>.promo-panel { min-height:160px; }
+  .cb-home .sentiment-content { min-height:77px; }
+  .cb-home .empty-state { min-height:70px; }
+  .cb-home .promo-panel { min-height:160px; padding:10px; }
+  .cb-home .promo-panel>img { width:54px; height:50px; }
+  .cb-home .promo-panel>a { min-height:28px; margin-top:8px; }
+  .cb-home .lower-grid { margin-top:7px; }
+  .cb-home .news-panel { padding:9px 11px 8px; }
+  .cb-home .news-heading { margin-bottom:6px; }
+  .cb-home .news-cards { gap:6px; }
+}

@@ -19,7 +19,7 @@ const markets = [
   { symbol: "XRP", name: "XRP", tone: "xrp" },
 ];
 const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
-const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "Regulation", "Web3"];
+const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
 const stories = [
   { category: "Bitcoin", tag: "MARKET", icon: "₿" },
   { category: "Ethereum", tag: "DEVELOPMENT", icon: "◆" },
@@ -99,11 +99,11 @@ const stories = [
     <section class="ticker-strip" aria-label={t("Market ticker demonstration")}><strong>◉ {t("Market ticker")}</strong><div class="ticker-items" tabindex="0" role="region" aria-label={t("Scrollable market ticker demonstration")}>{tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
 
     <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {t("Trending demo")}</h2>
-      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
+      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item", "Verified topic feed not connected"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
     </section>
 
     <nav class="category-rail" id="categories" aria-label={t("Demonstration story categories")}>
-      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "⌘", "◎"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
+      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "▣", "⌘", "◎", "✦", "◌", "⌖"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
     </nav>
 
     <section class="content-grid" aria-label={t("Demonstration signals")}>
@@ -124,6 +124,14 @@ const stories = [
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
         <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
+        <div class="news-cards">
+          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}
+        </div>
+        <div class="news-no-results" data-news-empty role="status" hidden>
+          <strong>{t("No demo placeholders match.")}</strong>
+          <p>{t("Try another category or search term. No live news is connected.")}</p>
+          <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
+        </div>
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
         <div class="news-controls">
           <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
@@ -137,14 +145,6 @@ const stories = [
         <div class="news-share-manual" data-share-manual hidden>
           <label for="news-share-url">{t("Copy this link manually")}</label>
           <input type="url" id="news-share-url" data-share-url readonly autocomplete="off" />
-        </div>
-        <div class="news-cards">
-          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}
-        </div>
-        <div class="news-no-results" data-news-empty role="status" hidden>
-          <strong>{t("No demo placeholders match.")}</strong>
-          <p>{t("Try another category or search term. No live news is connected.")}</p>
-          <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
       </section>
       <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">

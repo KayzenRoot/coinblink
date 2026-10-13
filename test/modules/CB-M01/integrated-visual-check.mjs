@@ -131,6 +131,15 @@ try {
       viewport.name + " local Bitcoin vector must stay decorative and visible");
     assert.notEqual(bitcoinScene.perspective, "none", viewport.name + " must retain scene perspective");
     assert.notEqual(bitcoinScene.transform, "none", viewport.name + " must retain coin transform");
+    const reliefLayers = await page.locator(".hero-panel svg.coin-art").evaluate((coin) => ({
+      rimCircles: coin.querySelectorAll(".coin-relief circle").length,
+      reflection: coin.querySelector(".coin-specular") !== null,
+      hidden: coin.getAttribute("aria-hidden") === "true",
+      glyph: Array.from(coin.querySelectorAll("text")).some((node) => node.textContent === "₿"),
+    }));
+    assert.ok(reliefLayers.rimCircles === 2 && reliefLayers.reflection
+      && reliefLayers.hidden && reliefLayers.glyph,
+      viewport.name + " hero must preserve original decorative minted rim and Bitcoin glyph");
     assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
       viewport.name + " must render four original local illustrative thumbnails");
     const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {

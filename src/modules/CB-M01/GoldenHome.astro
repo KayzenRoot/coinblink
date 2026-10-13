@@ -114,8 +114,28 @@ const stories = [
                 <stop offset="0%" stop-color="#fff8d6"></stop><stop offset="38%" stop-color="#f9d568"></stop>
                 <stop offset="75%" stop-color="#ca8617"></stop><stop offset="100%" stop-color="#f7cb4f"></stop>
               </linearGradient>
+              <linearGradient id="coin-side-metal" x1="0%" y1="95%" x2="100%" y2="7%">
+                <stop offset="0%" stop-color="#1b1309"></stop>
+                <stop offset="20%" stop-color="#65420f"></stop>
+                <stop offset="38%" stop-color="#e2a93b"></stop>
+                <stop offset="61%" stop-color="#8e5710"></stop>
+                <stop offset="83%" stop-color="#f7ce62"></stop>
+                <stop offset="100%" stop-color="#3c240a"></stop>
+              </linearGradient>
+              <linearGradient id="coin-reflection" x1="12%" y1="4%" x2="77%" y2="95%">
+                <stop offset="0%" stop-color="#fffce6" stop-opacity=".78"></stop>
+                <stop offset="38%" stop-color="#ffed9b" stop-opacity=".24"></stop>
+                <stop offset="100%" stop-color="#ffcc44" stop-opacity="0"></stop>
+              </linearGradient>
             </defs>
             <circle cx="150" cy="150" r="144" fill="url(#coin-aura)"></circle>
+            <!-- Original offset mint-edge layers give the Golden DEMO coin local depth. -->
+            <g class="coin-relief" aria-hidden="true">
+              <circle cx="138" cy="161" r="111" fill="#1b180d" stroke="#37501d" stroke-width="3"></circle>
+              <circle cx="139" cy="161" r="108" fill="url(#coin-side-metal)" stroke="#30200a" stroke-width="4"></circle>
+              <path d="M39 195A112 112 0 0 0 198 255" fill="none" stroke="#ffce67" stroke-opacity=".67" stroke-width="7" stroke-linecap="round"></path>
+              <path d="M51 214A105 105 0 0 0 174 263" fill="none" stroke="#3d2408" stroke-opacity=".84" stroke-width="4" stroke-linecap="round"></path>
+            </g>
             <circle cx="150" cy="150" r="112" fill="#101b0d" stroke="#a2ee43" stroke-opacity=".55" stroke-width="3"></circle>
             <circle cx="150" cy="150" r="107" fill="url(#coin-rim)" stroke="#fff2b3" stroke-opacity=".72" stroke-width="2"></circle>
             <circle cx="150" cy="150" r="101" fill="none" stroke="#4b2b07" stroke-width="9"></circle>
@@ -125,6 +145,7 @@ const stories = [
             <circle cx="150" cy="150" r="80" fill="none" stroke="#ffe9a8" stroke-opacity=".53" stroke-width="2"></circle>
             <circle cx="150" cy="150" r="75" fill="none" stroke="#5b3d09" stroke-width="2.5"></circle>
             <circle cx="150" cy="150" r="68" fill="none" stroke="#ffe4a0" stroke-opacity=".39" stroke-width="1" stroke-dasharray="1.4 5.1"></circle>
+            <path class="coin-specular" d="M86 81C116 53 168 47 209 76C177 66 141 74 116 94C98 110 91 127 86 150C76 127 78 101 86 81Z" fill="url(#coin-reflection)" opacity=".64"></path>
             <path d="M61 115A94 94 0 0 1 188 64 M233 178A95 95 0 0 1 124 242" fill="none" stroke="#fff7c7" stroke-opacity=".76" stroke-width="3" stroke-linecap="round"></path>
             <path d="M72 191A89 89 0 0 0 130 232 M208 86A88 88 0 0 1 231 120" fill="none" stroke="#402304" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"></path>
             <text x="154" y="205" fill="#452804" stroke="#4f2904" stroke-width="3" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="152" font-weight="800" text-anchor="middle">₿</text>

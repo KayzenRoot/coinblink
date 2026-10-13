@@ -117,7 +117,7 @@ test("hero and promo scene metadata pin exact source fragments and deny commerci
   assert.equal(registry.productState, "DRAFT_DEMO_ONLY_NOT_PUBLISHED");
   assert.equal(registry.source.path, "src/modules/CB-M01/GoldenHome.astro");
   assert.equal(registry.source.sha256, actualSourceSha256, "the scene parent source changed without provenance refresh");
-  assert.equal(registry.source.gitBlobSha, "3b80c5904c546b92edf26b0db77f15dcbfd7ccb6");
+  assert.equal(registry.source.gitBlobSha, "de28a505366092de64f74faafe6f1e105b75ddf9");
   assert.equal(registry.source.rasterDerivativeOfGoldenReference, false);
   assert.equal(registry.goldenReference.use, "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED");
   assert.equal(registry.sharedReleaseGate.commercialPublicationAllowed, false);
@@ -177,6 +177,18 @@ test("R19 adds a noninteractive three-quarter perspective without changing the s
   assert.match(stylesheet, /\.cb-home \.hero-scene \{ perspective: 980px/u);
   assert.match(component, /<svg class="coin-art"[^>]*aria-hidden="true"/u);
   assert.doesNotMatch(component, /<img[^>]*coinblink-home-master-dark/u);
+});
+
+test("R20 Bitcoin relief is original inline SVG with bounded local metallic depth", () => {
+  const coin = component.split('<svg class="coin-art"')[1]?.split("</svg>")[0];
+  assert.ok(coin, "Bitcoin SVG must exist");
+  for (const name of ["coin-relief", "coin-side-metal", "coin-reflection", "coin-specular"]) {
+    assert.ok(coin.includes(name), "missing original relief layer " + name);
+  }
+  assert.equal((coin.match(/<circle cx="13[89]" cy="161"/gu) ?? []).length, 2);
+  assert.match(coin, /<g class="coin-relief" aria-hidden="true">/u);
+  assert.match(coin, /<text x="150" y="201"[^>]*>₿<\/text>/u);
+  assert.doesNotMatch(coin, /<image|<script|https?:\/\//iu);
 });
 
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {

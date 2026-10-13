@@ -43,7 +43,7 @@ export function prepareLocalDraft(input) {
 function serializeLocalDraft(prepared, legacy = false) {
   if (!prepared.ready) throw new Error("A source-backed draft is required");
   const encode = legacy ? escapeLegacyMarkdown : escapeMarkdown;
-  const title = encode(prepared.title.replace(/[\\n#]/gu, " "));
+  const title = encode(prepared.title.replace(/[\n#]/gu, " "));
   const summary = encode(prepared.summary);
   const body = encode(prepared.body);
   // Version 2 uses an empty author label for missing credits, rather than a
@@ -72,7 +72,7 @@ export function draftToMarkdown(prepared) {
 // Accept only the exact, non-published CoinBlink export structure.
 // This is a data parser, not a general-purpose Markdown or HTML importer.
 export function parseLocalDraftMarkdown(raw) {
-  if (typeof raw !== "string" || raw.length > 20000 || raw.includes("\0")) {
+  if (typeof raw !== "string" || raw.length > 64000 || raw.includes("\0")) {
     throw new Error("Unsupported or oversized Markdown draft");
   }
   const text = raw.replace(/^\uFEFF/u, "").replace(/\r\n?/gu, "\n");

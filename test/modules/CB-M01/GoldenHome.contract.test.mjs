@@ -146,7 +146,9 @@ test("hero and promo scene metadata pin exact source fragments and deny commerci
     assert.equal(asset.allowedUsage, "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY");
     assert.equal(asset.lightThemeApproval, "NOT_APPROVED");
     assert.ok(asset.assetId && asset.sourceValidationDate && asset.viewBoxes.length > 0);
-    assert.doesNotMatch(slice, /<image\\b|https?:\\/\\//iu, "scene cannot load externally hosted media");
+    assert.equal(slice.includes("<image"), false, "scene must not embed remote images");
+    assert.equal(slice.includes("http://"), false, "scene must not contain remote HTTP URLs");
+    assert.equal(slice.includes("https://"), false, "scene must not contain remote HTTPS URLs");
   }
   const [hero, promo] = registry.assets;
   assert.match(component, /<div class="hero-scene" aria-hidden="true">/u);

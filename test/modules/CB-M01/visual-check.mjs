@@ -149,6 +149,7 @@ try {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto(origin, { waitUntil: "networkidle" });
     assert.equal(await page.title(), "CoinBlink Golden Home · isolated module fixture");
+    assert.equal(await page.locator("astro-dev-toolbar").count(), 0, "captured visual fixtures must not include Astro's development toolbar");
     assert.equal(await page.locator("#main").count(), 1);
     for (const section of ["#market-overview", "#radar-24h", "#latest-news", "#newsletter", "#demo-data"]) {
       assert.equal(await page.locator(section).count(), 1, "missing " + section);

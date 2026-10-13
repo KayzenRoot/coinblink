@@ -61,6 +61,32 @@ const stories = [
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
           <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
+          <!-- Independent layered illustration; Golden JPEG remains an immutable reference, not a UI background. -->
+          <svg class="hero-rockscape" viewBox="0 0 760 320" preserveAspectRatio="xMidYMax slice" focusable="false" aria-hidden="true">
+            <defs>
+              <linearGradient id="hero-rock-back" x1="0" y1="0" x2=".5" y2="1">
+                <stop offset="0%" stop-color="#3b6244"></stop><stop offset="52%" stop-color="#172c24"></stop><stop offset="100%" stop-color="#071510"></stop>
+              </linearGradient>
+              <linearGradient id="hero-rock-front" x1="0" y1="0" x2=".9" y2="1">
+                <stop offset="0%" stop-color="#355038"></stop><stop offset="35%" stop-color="#152b23"></stop><stop offset="100%" stop-color="#030b09"></stop>
+              </linearGradient>
+              <linearGradient id="hero-rock-rim" x1="0" y1="0" x2="1" y2=".5">
+                <stop offset="0%" stop-color="#9cfd55" stop-opacity=".03"></stop><stop offset="56%" stop-color="#bafa68" stop-opacity=".6"></stop><stop offset="100%" stop-color="#e7ffab" stop-opacity=".05"></stop>
+              </linearGradient>
+              <radialGradient id="hero-rock-haze">
+                <stop offset="0%" stop-color="#a1ff53" stop-opacity=".2"></stop><stop offset="100%" stop-color="#a1ff53" stop-opacity="0"></stop>
+              </radialGradient>
+            </defs>
+            <ellipse cx="505" cy="213" rx="277" ry="129" fill="url(#hero-rock-haze)"></ellipse>
+            <path d="M0 265 83 232 153 255 258 131 302 182 394 95 456 168 546 72 610 140 668 116 760 190V320H0Z" fill="url(#hero-rock-back)" opacity=".88"></path>
+            <path d="m258 131-23 53 24-24 24 16 19 6m92-87-25 56 22-23 21 8 44 32m90-96-29 68 23-25 24 12 46 13" fill="#70846c" opacity=".32"></path>
+            <path d="m153 255 105-124 44 51 92-87 62 73 90-96 64 68 58-24 92 74" fill="none" stroke="url(#hero-rock-rim)" stroke-width="2.1" stroke-linejoin="round"></path>
+            <path d="m0 302 115-48 54 19 93-84 81 75 75-110 85 90 70-61 91 70 56-38 40 27V320H0Z" fill="url(#hero-rock-front)"></path>
+            <path d="m262 189-22 55 24-24 38 44m116-110-38 70 39-30 33 41m121-52-24 42 28-10 31 32" fill="#a2bb91" opacity=".22"></path>
+            <path d="m115 254 54 19 93-84 81 75 75-110 85 90 70-61 91 70" fill="none" stroke="url(#hero-rock-rim)" stroke-width="2.5" stroke-linejoin="round"></path>
+            <path d="M0 319 86 298 162 312 254 268 309 294 378 261 470 301 546 253 628 290 690 265 760 286V320H0Z" fill="#050b09" opacity=".95"></path>
+            <path d="m88 304 38-12 18 9m127-26 34 15 30-22m144 30 35-35 28 10m86 18 37-18 20 5" fill="none" stroke="#9fed57" stroke-width="1.4" stroke-opacity=".27"></path>
+          </svg>
           <svg class="scene-energy" viewBox="0 0 600 300" focusable="false">
             <defs><linearGradient id="energy-line" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#75b83a" stop-opacity=".05"></stop><stop offset="54%" stop-color="#b8f34b" stop-opacity=".82"></stop><stop offset="100%" stop-color="#efffa2"></stop></linearGradient></defs>
             <path class="energy-trail" d="M24 274 C103 268 109 231 176 218 S258 170 302 166 S380 111 431 101 S493 54 553 29"></path>

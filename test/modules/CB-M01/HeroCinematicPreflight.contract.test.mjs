@@ -1,0 +1,81 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+import { HERO_CINEMATIC_LIMITS, inspectHeroCinematicCandidate } from "../../../src/modules/CB-M01/hero-cinematic-preflight.mjs";
+
+const source = await readFile(new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url), "utf8");
+const css = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
+
+function minimalHeaderFixture(format, width = 1600, height = 800) {
+  if (format === "webp") {
+    const bytes = Buffer.alloc(30);
+    bytes.write("RIFF", 0, "ascii");
+    bytes.writeUInt32LE(bytes.length - 8, 4);
+    bytes.write("WEBPVP8X", 8, "ascii");
+    bytes.writeUInt32LE(10, 16);
+    bytes.writeUIntLE(width - 1, 24, 3);
+    bytes.writeUIntLE(height - 1, 27, 3);
+    return bytes;
+  }
+  const bytes = Buffer.alloc(33);
+  Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]).copy(bytes);
+  bytes.writeUInt32BE(13, 8);
+  bytes.write("IHDR", 12, "ascii");
+  bytes.writeUInt32BE(width, 16);
+  bytes.writeUInt32BE(height, 20);
+  return bytes;
+}
+
+function manifestFor(format, bytes, width = 1600, height = 800) {
+  return { path: HERO_CINEMATIC_LIMITS.assetPaths[format],
+    origin: "ORIGINAL_LOCAL_RENDER", sourceMaster: "local-creation.blend",
+    rightsStatus: "PENDING_OWNER_OR_LEGAL", commercialPublicationAllowed: false,
+    sha256: createHash("sha256").update(bytes).digest("hex"),
+    bytes: bytes.length, width, height };
+}
+
+test("R23 candidate preflight validates actual WebP and PNG header metadata and SHA", () => {
+  for (const format of ["webp", "png"]) {
+    const bytes = minimalHeaderFixture(format);
+    const result = inspectHeroCinematicCandidate(manifestFor(format, bytes), bytes);
+    assert.equal(result.technicalPreflightPassed, true, format + " header fixture preflight");
+    assert.equal(result.dimensions.width, 1600);
+    assert.equal(result.dimensions.height, 800);
+    assert.equal(result.releaseAllowed, false);
+    assert.equal(result.commercialPublicationAllowed, false);
+    assert.equal(result.ownerVisualApprovalRequired, true);
+  }
+});
+
+test("R23 rejects remote files, wrong magic, tampering, fake approval and wrong dimensions", () => {
+  const bytes = minimalHeaderFixture("webp");
+  const valid = manifestFor("webp", bytes);
+  const mutations = [
+    [{ ...valid, path: "https://example.test/hero.webp" }, bytes, "INVALID_LOCAL_PATH"],
+    [{ ...valid, path: "../hero.webp" }, bytes, "INVALID_LOCAL_PATH"],
+    [{ ...valid, sha256: "f".repeat(64) }, bytes, "SHA256_MISMATCH"],
+    [{ ...valid, bytes: 100 }, bytes, "BYTE_COUNT_MISMATCH"],
+    [{ ...valid, rightsStatus: "CLEARED" }, bytes, "INVALID_DEMO_RIGHTS_STATE"],
+    [{ ...valid, commercialPublicationAllowed: true }, bytes, "PUBLICATION_MUST_BE_DISABLED"],
+    [{ ...valid, sourceMaster: "https://example.test/model.blend" }, bytes, "SOURCE_MASTER_MISSING"],
+    [{ ...valid, width: 1700 }, bytes, "DIMENSION_METADATA_MISMATCH"],
+    [manifestFor("webp", minimalHeaderFixture("webp", 400, 800), 400, 800),
+      minimalHeaderFixture("webp", 400, 800), "INVALID_DIMENSIONS_OR_CROP_RATIO"],
+    [{ ...valid }, Buffer.alloc(30), "INVALID_BINARY_SIGNATURE_OR_HEADER"],
+  ];
+  for (const [meta, raw, reason] of mutations) {
+    const result = inspectHeroCinematicCandidate(meta, raw);
+    assert.equal(result.technicalPreflightPassed, false, reason);
+    assert.ok(result.failures.includes(reason), reason + ": " + result.failures.join(", "));
+    assert.equal(result.releaseAllowed, false);
+  }
+});
+
+test("R23 keeps the current vector Golden DEMO active and never self-approves a 3D asset", () => {
+  assert.match(source, /<svg class="coin-art"/u);
+  assert.match(source, /<div class="hero-scene" aria-hidden="true">/u);
+  assert.doesNotMatch(source, /hero-cinematic-original\.(?:webp|png)/u);
+  assert.match(css, /hero-mineral-texture\.svg/u);
+  assert.equal(HERO_CINEMATIC_LIMITS.commercialPublicationAllowed, false);
+});

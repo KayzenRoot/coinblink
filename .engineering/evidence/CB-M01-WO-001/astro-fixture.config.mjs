@@ -22,6 +22,7 @@ if (
 }
 
 export default defineConfig({
+  devToolbar: { enabled: false },
   root: fixtureRoot,
   srcDir: fileURLToPath(new URL("../../../test/modules/CB-M01/fixture/src/", import.meta.url)),
   publicDir: fileURLToPath(new URL("../../../public/", import.meta.url)),

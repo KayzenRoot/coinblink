@@ -130,6 +130,24 @@ test("multi-line programmatic headlines are normalized before an export", () => 
   assert.deepEqual(parseLocalDraftMarkdown(draftToMarkdown(draft)), draft);
 });
 
+test("single-line author credits cannot inject reserved Markdown metadata sections", () => {
+  const originals = [
+    "Writer\n\n**Original source:** https://example.net/fake",
+    "Reporter\r\n**Original source:** wrong-source",
+    "A".repeat(79) + "\nX",
+    "Byline\n\n## Summary\n\nA second summary",
+  ];
+  for (const rawAuthor of originals) {
+    const draft = prepareLocalDraft({ ...valid, author: rawAuthor });
+    assert.equal(draft.ready, true);
+    assert.doesNotMatch(draft.author, /\n/u);
+    assert.equal(draft.author, draft.author.trim());
+    const markdown = draftToMarkdown(draft);
+    assert.equal(markdown.split("\n\n**Original source:** ").length, 2);
+    assert.deepEqual(parseLocalDraftMarkdown(markdown), draft);
+  }
+});
+
 test("truncated multiline titles never export a non-importable trailing space", () => {
   const cases = [
     { input: "x".repeat(139) + "\nX", expected: "x".repeat(139) },

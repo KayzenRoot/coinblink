@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="320" viewBox="0 0 760 320" aria-hidden="true" focusable="false">
+  <!-- CoinBlink CB-M01 R22: original local deterministic rock-material overlay; DEMO only. -->
+  <defs>
+    <clipPath id="mineral-mountain-mask">
+      <path d="M0 265 83 232 153 255 258 131 302 182 394 95 456 168 546 72 610 140 668 116 760 190V320H0Z"/>
+      <path d="m0 302 115-48 54 19 93-84 81 75 75-110 85 90 70-61 91 70 56-38 40 27V320H0Z"/>
+    </clipPath>
+    <filter id="mineral-grain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.047 0.092" numOctaves="3" seed="22" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values=".54 .08 .02 0 0 .42 .10 .02 0 0 .31 .08 .01 0 0 .76 0 0 0 -.25"/>
+    </filter>
+    <linearGradient id="mineral-rimlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c3f293" stop-opacity="0"/>
+      <stop offset="58%" stop-color="#b4e86b" stop-opacity=".28"/>
+      <stop offset="100%" stop-color="#97ca68" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#mineral-mountain-mask)">
+    <rect x="0" y="65" width="760" height="255" filter="url(#mineral-grain)"/>
+    <path d="M206 250 258 131 279 184 302 182 340 263M343 269 394 95 417 150 456 168 501 255M496 283 546 72 575 146 610 140 670 253" fill="none" stroke="url(#mineral-rimlight)" stroke-width="2"/>
+    <path d="m270 218 18-22 15 18m97-22 18-20 14 23m124-17 24-18 13 30" fill="none" stroke="#e6f9bc" stroke-opacity=".13" stroke-width="1.2"/>
+  </g>
+</svg>

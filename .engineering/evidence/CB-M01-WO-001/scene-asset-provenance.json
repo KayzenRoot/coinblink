@@ -136,5 +136,31 @@
       "sourceValidationDate": "2026-10-13",
       "evidenceCommit": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb"
     }
+  ],
+  "supplementalAssets": [
+    {
+      "assetId": "CB-M01-DEMO-ROCK-MATERIAL-R22",
+      "version": "1.0.0",
+      "path": "src/modules/CB-M01/hero-mineral-texture.svg",
+      "gitBlobSha": "b978c22c30ae8eb9e89bc0f144597a78092a93e4",
+      "sha256": "59dbe7af801c0ebbc5896728a2d0c4d2c95aaf04fd27d46a60ad5c0c793a563c",
+      "byteLength": 1589,
+      "dimensions": {
+        "width": 760,
+        "height": 320
+      },
+      "format": "SVG",
+      "origin": "ORIGINAL_SELF_AUTHORED_FIXED_SEED_VECTOR_FILTER",
+      "seed": 22,
+      "role": "DECORATIVE_CLIPPED_MINERAL_SURFACE_ONLY",
+      "altTextMode": "PARENT_HERO_SCENE_ARIA_HIDDEN",
+      "productionReady": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "commercialPublicationAllowed": false,
+      "ownerVisualApproval": false,
+      "sourceMaster": "SELF_CONTAINED_VECTOR_ASSET",
+      "relationToGolden": "VISUAL_REFERENCE_ONLY_NO_RASTER_EXTRACTION",
+      "sourceValidationDate": "2026-10-13"
+    }
   ]
 }

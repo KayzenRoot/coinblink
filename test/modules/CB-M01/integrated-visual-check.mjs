@@ -152,6 +152,19 @@ try {
       && mountainLayers.mist && mountainLayers.decorative && mountainLayers.externalImages === 0
       && mountainLayers.svgWidth > 40,
       viewport.name + " rockscape facets and mist must remain local, visible and decorative");
+    const materialOverlay = await page.locator(".hero-scene").evaluate((scene) => {
+      const layer = globalThis.getComputedStyle(scene, "::after");
+      const coin = scene.querySelector(".coin-art");
+      return {
+        localTexture: layer.backgroundImage !== "none" && layer.backgroundImage.includes("hero-mineral-texture"),
+        nonInteractive: layer.pointerEvents === "none",
+        behindCoin: Number(layer.zIndex) < Number(globalThis.getComputedStyle(coin).zIndex),
+        decorative: scene.getAttribute("aria-hidden") === "true",
+      };
+    });
+    assert.ok(materialOverlay.localTexture && materialOverlay.nonInteractive
+      && materialOverlay.behindCoin && materialOverlay.decorative,
+      viewport.name + " mineral texture must be self-hosted and noninteractive behind coin");
     assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
       viewport.name + " must render four original local illustrative thumbnails");
     const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {

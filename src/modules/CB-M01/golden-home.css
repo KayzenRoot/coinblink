@@ -916,3 +916,19 @@
 @media (max-width:760px) {
   .cb-home .hero-rockscape { opacity: .67; }
 }
+/* CB-M01 R22: independently versioned mineral texture, self-hosted SVG, demo only. */
+.cb-home .hero-scene::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: url("./hero-mineral-texture.svg") center bottom / cover no-repeat;
+  opacity: .73;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+.cb-home .coin-art { z-index: 2; }
+.cb-home .scene-energy, .cb-home .scene-arrow, .cb-home .candle { z-index: 3; }
+@media (max-width: 760px) {
+  .cb-home .hero-scene::after { opacity: .5; }
+}

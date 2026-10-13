@@ -204,6 +204,27 @@ test("R21 rockscape has layered source-owned facets and no external texture depe
   assert.doesNotMatch(scene, /<image|<script|https?:\/\//iu);
 });
 
+test("R22 independently versioned mineral asset is locally hashed and fail-closed", async () => {
+  const reg = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/scene-asset-provenance.json", import.meta.url), "utf8"));
+  assert.equal(reg.assets.length, 2, "embedded hero and promo source fragments must remain unchanged");
+  assert.equal(reg.supplementalAssets.length, 1);
+  const art = reg.supplementalAssets[0];
+  const svg = await readFile(new URL("../../../src/modules/CB-M01/hero-mineral-texture.svg", import.meta.url), "utf8");
+  assert.equal(art.path, "src/modules/CB-M01/hero-mineral-texture.svg");
+  assert.equal(art.sha256, createHash("sha256").update(svg, "utf8").digest("hex"));
+  assert.equal(art.byteLength, Buffer.byteLength(svg, "utf8"));
+  assert.equal(art.commercialPublicationAllowed, false);
+  assert.equal(art.productionReady, false);
+  assert.equal(art.ownerVisualApproval, false);
+  assert.ok(svg.includes('seed="22"') && svg.includes('type="fractalNoise"'));
+  assert.ok(svg.includes('clip-path="url(#mineral-mountain-mask)"'));
+  assert.equal(svg.includes("<image"), false);
+  assert.equal(svg.includes("<script"), false);
+  assert.equal(svg.includes("https://"), false);
+  assert.ok(stylesheet.includes('url("./hero-mineral-texture.svg")'));
+  assert.ok(stylesheet.includes("CB-M01 R22: independently versioned mineral texture"));
+});
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });

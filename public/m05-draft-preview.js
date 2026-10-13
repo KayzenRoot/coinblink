@@ -7,7 +7,11 @@ const MAX_SUMMARY = 400;
 const MAX_BODY = 12000;
 const MAX_SOURCE = 500;
 const clean = (value, max) => String(value ?? "").trim().slice(0, max).replace(/\r\n?/gu, "\n");
-const escapeMarkdown = (value) => value.replace(/&/gu, "&amp;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+const escapeMarkdown = (value) => value
+  .replace(/&/gu, "&amp;")
+  .replace(/</gu, "&lt;")
+  .replace(/>/gu, "&gt;")
+  .replace(/^#/gmu, "&#35;");
 const escapeLegacyMarkdown = (value) => value.replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
 const FORMAT_V2 = "> COINBLINK LOCAL DRAFT FORMAT: 2";
 
@@ -23,7 +27,7 @@ export function prepareLocalDraft(input) {
       const parsed = new URL(sourceValue);
       if (parsed.protocol === "https:" && !parsed.username && !parsed.password
         && parsed.hostname.includes(".") && !parsed.hostname.endsWith(".")
-        && !/\s/u.test(sourceValue)) {
+        && !/\s/u.test(sourceValue) && parsed.href.length <= MAX_SOURCE) {
         source = parsed.href;
       }
     } catch { /* Invalid source addresses never reach an outbound link. */ }
@@ -108,7 +112,10 @@ export function parseLocalDraftMarkdown(raw) {
   // Legacy exports encoded angle brackets, and the text is never assigned to innerHTML.
   const restore = (value) => {
     const angles = value.replace(/&lt;/gu, "<").replace(/&gt;/gu, ">");
-    return isVersion2 ? angles.replace(/&amp;/gu, "&") : angles;
+    // Decode the v2 heading escape before ampersands: literal &#35;
+    // must not be mistaken for an originally encoded leading '#'.
+    const restored = isVersion2 ? angles.replace(/^&#35;/gmu, "#") : angles;
+    return isVersion2 ? restored.replace(/&amp;/gu, "&") : restored;
   };
   const result = prepareLocalDraft({
     title: restore(title),

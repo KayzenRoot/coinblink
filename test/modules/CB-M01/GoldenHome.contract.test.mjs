@@ -48,6 +48,15 @@ test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mar
   assert.match(component, />₿<\/text>/u);
 });
 
+test("original layered rockscape stays decorative, noninteractive and independent of Golden raster", () => {
+  assert.match(component, /<svg class="hero-rockscape" viewBox="0 0 760 320"[^>]*focusable="false" aria-hidden="true">/u);
+  for (const id of ["hero-rock-back", "hero-rock-front", "hero-rock-rim", "hero-rock-haze"]) {
+    assert.ok(component.includes('id="' + id + '"'), "missing layered rockscape definition: " + id);
+  }
+  assert.match(stylesheet, /\.cb-home \.hero-rockscape \{[\s\S]*?pointer-events: none;/u);
+  assert.doesNotMatch(component, /<img[^>]+coinblink-home-master-dark-1536x864\.jpg/u);
+});
+
 test("Tools opens the working read-only lookup while Videos remains disconnected", () => {
   assert.match(component, /<a href="#chain-lookup">\{t\("Tools"\)\}<\/a><a href="#demo-data">\{t\("Videos"\)\}<\/a>/u);
   assert.match(component, /data-explorer-form/u);

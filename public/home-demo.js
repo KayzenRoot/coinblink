@@ -145,7 +145,8 @@ function filterStories() {
   let visible = 0;
   cards.forEach((card) => {
     const matchesCategory = selected === "All" || card.getAttribute("data-category-value") === selected;
-    const searchableText = (card.getAttribute("data-category-value") ?? "") + " " + card.textContent;
+    const category = card.getAttribute("data-category-value") ?? "";
+    const searchableText = category + " " + displayCategory(category) + " " + card.textContent;
     const matchesQuery = !query || searchableText.toLocaleLowerCase("en").includes(query);
     card.hidden = !(matchesCategory && matchesQuery);
     if (!card.hidden) visible += 1;

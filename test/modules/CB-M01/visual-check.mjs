@@ -201,6 +201,49 @@ try {
     await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
   }
 
+  const mobileHeroGeometry = [];
+  for (const width of [390, 360, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto(origin, { waitUntil: "networkidle" });
+    const geometry = await page.locator(".hero-panel").evaluate((hero) => {
+      const readRect = (element) => {
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+      };
+      const overlaps = (first, second) => first.left < second.right && first.right > second.left && first.top < second.bottom && first.bottom > second.top;
+      const ctas = [...hero.querySelectorAll(".hero-actions a")].map((element) => ({
+        label: element.textContent.trim(),
+        rect: readRect(element),
+        minHeight: Number.parseFloat(globalThis.getComputedStyle(element).minHeight),
+      }));
+      const statusElement = hero.querySelector(".hero-stat");
+      const coinElement = hero.querySelector(".coin-art");
+      const status = readRect(statusElement);
+      const coin = readRect(coinElement);
+      const heroRect = readRect(hero);
+      return {
+        hero: heroRect,
+        ctas,
+        status,
+        coin,
+        ctaStatusOverlap: ctas.some(({ rect }) => overlaps(rect, status)),
+        ctaCoinOverlap: ctas.some(({ rect }) => overlaps(rect, coin)),
+        statusCoinOverlap: overlaps(status, coin),
+        ctasWithinHero: ctas.every(({ rect }) => rect.left >= heroRect.left && rect.right <= heroRect.right && rect.top >= heroRect.top && rect.bottom <= heroRect.bottom),
+      };
+    });
+    const violations = [];
+    if (geometry.ctas.length !== 2) violations.push("both hero actions must exist");
+    if (geometry.ctas.some(({ minHeight }) => minHeight < 44)) violations.push("CTA touch target is under 44px");
+    if (geometry.ctaStatusOverlap) violations.push("hero actions overlap the demo status");
+    if (geometry.ctaCoinOverlap) violations.push("hero actions overlap decorative coin art");
+    if (geometry.statusCoinOverlap) violations.push("demo status overlaps decorative coin art");
+    if (!geometry.ctasWithinHero) violations.push("hero action extends outside the panel");
+    assert.deepEqual(violations, [], `mobile hero geometry failed at ${width}px: ${JSON.stringify(geometry)}`);
+    mobileHeroGeometry.push({ width, ...geometry });
+  }
+  interactionChecks.mobileHeroGeometry = mobileHeroGeometry;
+
   for (const width of [850, 851, 1024, 1050, 1051]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(origin, { waitUntil: "networkidle" });

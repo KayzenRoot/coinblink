@@ -1,12 +1,12 @@
 {
   "status": "passed",
-  "generatedAt": "2026-10-13T21:09:49.878Z",
+  "generatedAt": "2026-10-13T21:26:08.788Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "592a77395010671a23d5c29f827792cad7e5a1ec",
+  "headSha": "cba620d9c9b344b871882f759cdc857ac031744d",
   "route": "/en",
   "fixture": "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
   "runtime": "Wrangler 4.149.0 --local",
-  "origin": "http://127.0.0.1:52422",
+  "origin": "http://127.0.0.1:65346",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -91,8 +91,8 @@
   "screenshots": [
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
-      "sha256": "d5890c596c20e47b333570cf2b437cc3c727da18ff2fa10bd433cd2d53c678de",
-      "bytes": 735101
+      "sha256": "404f2ae8834d182e30bfbf73e369e5278728ba4038badd224c7e2315d5150950",
+      "bytes": 725709
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
@@ -101,8 +101,8 @@
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
-      "sha256": "0df37ff8b5bc07e4a4aac4cc4ad340b2785807e9b7da755abce9c0df14186697",
-      "bytes": 195549
+      "sha256": "605a2143fddaebc0cdaf77a203b9eb3b3375c539c5134457fcab7a64a159b47e",
+      "bytes": 199264
     }
   ],
   "desktopGeometry": {

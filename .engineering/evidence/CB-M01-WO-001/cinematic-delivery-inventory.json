@@ -2,38 +2,38 @@
   "schemaVersion": 1,
   "workOrder": "CB-M01-WO-001",
   "recordType": "R23_LOCAL_DELIVERY_INVENTORY",
-  "capturedAt": "2026-10-13T21:18:48+00:00",
+  "capturedAt": "2026-10-13T21:32:10+00:00",
   "repository": "KayzenRoot/coinblink",
   "branch": "codex/cb-m01-wo-001-impl-20261011",
   "baseHeadAtInventory": "a0b9bec58e7594a4efeed20ded33daae6f569a2a",
-  "snapshotHeadAtInventory": "592a77395010671a23d5c29f827792cad7e5a1ec",
-  "remoteTrackingHeadAtInventory": "a0b9bec58e7594a4efeed20ded33daae6f569a2a",
+  "snapshotHeadAtInventory": "cba620d9c9b344b871882f759cdc857ac031744d",
+  "remoteTrackingHeadAtInventory": "1af136f908993c2d1df32f945ad9b0241810ef9e",
   "liveRemoteWasSeparatelyChecked": true,
   "files": [
     {
       "path": ".engineering/evidence/CB-M01-WO-001/R23_LOCAL_DELIVERY_RECONCILIATION.md",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 7771,
-      "sha256": "9e12afdcbf1996125cfcd710ea0af2a6ade73f343d291a2ac2d74dd0aa494ed6",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 7982,
+      "sha256": "21dc953c50f7ec29b9eb1766b156dba6582a2349e423c95b5d6563ad81e3997a",
       "suffix": ".md"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/animate-generated-hero.py",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 11960,
       "sha256": "5b5b3731d46a06187af3bd5fe07a6aa61bbbfb2b3ca25e4887b3dcaa3b76d776",
       "suffix": ".py"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/blender-hero-scene.py",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 18156,
       "sha256": "55351bb809e3e61d3f6121ea7cf1dc58f95a08df741e3ace02ff6b5c3c1c4fab",
       "suffix": ".py"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-lightning.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 2500979,
       "sha256": "eef98ad0ba91fe267751bc6d57608878b2c2b3acf09d583a08a251b9aa3299a3",
       "suffix": ".png",
@@ -57,7 +57,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 2349624,
       "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
       "suffix": ".png",
@@ -74,7 +74,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-contact-sheet.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 1796606,
       "sha256": "bcd9b47bf2b2bd65b0fb689ca5e12a759cee7fe229dd50271414f827aef9f52f",
       "suffix": ".png",
@@ -91,7 +91,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 21557886,
       "sha256": "7dd348ca3158c3f56630ba97006c9aaed6e72cdbeb1250597af3d3aff4ba5c3c",
       "suffix": ".webp",
@@ -108,7 +108,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-001.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 663517,
       "sha256": "e298068d164fa26b35d8652d87e6dd836bee1eb4f003548253d7080bf8f5f9ac",
       "suffix": ".png",
@@ -125,7 +125,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-018.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 669584,
       "sha256": "6a23bc2d55e5532b7fac84975ea70c4d3f39fd706d5558d4130f294f47893ddc",
       "suffix": ".png",
@@ -142,7 +142,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-020.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 672561,
       "sha256": "b8effc13d540b9c8eba1cd9214b0392d2ff0aec1e3f3e3c89944fe63b585e5d6",
       "suffix": ".png",
@@ -159,7 +159,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-022.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 685554,
       "sha256": "513f5a87bc6762c7759eb7e280e0db41650da8ce286e0206cb7a37b600675477",
       "suffix": ".png",
@@ -176,7 +176,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-023.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 690253,
       "sha256": "a49be2bf9a5c58e9edfcb5b693e3b1dfd003d3940b2822190718cb2effda9ff3",
       "suffix": ".png",
@@ -193,7 +193,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-024.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 682218,
       "sha256": "b84d1cf5b8b073b2fe2261c7c249e27a488952f65d8c6cd45f229bd67e435270",
       "suffix": ".png",
@@ -210,7 +210,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-028.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 673182,
       "sha256": "76573cba2008572c2cf167cf598cbaebc4cdeca7e2f59f1e899ec78c45521ab2",
       "suffix": ".png",
@@ -227,7 +227,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-048.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 666224,
       "sha256": "ff37838d60fef921c5546ec61e4a92cc3b228379d921e90ea5aa5e54c2c5ac2b",
       "suffix": ".png",
@@ -244,7 +244,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-060.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 688488,
       "sha256": "54210a47803b1c2be567d388107c7da08f8deaa84137c085a4531c07ecba4e3c",
       "suffix": ".png",
@@ -261,7 +261,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-072.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 684140,
       "sha256": "8b4fc72d39f992734539a4948d5f3fb41e5881b8c952225dfd3e9e765ad6849a",
       "suffix": ".png",
@@ -278,7 +278,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-076.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 664199,
       "sha256": "5bf44b40a72fe09954d0ccf45ecb9a428bc8289b4dc178dc4fd0c4401f07d1f1",
       "suffix": ".png",
@@ -295,7 +295,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-stills/frame-096.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 664055,
       "sha256": "b33d5ebefc251a154c76184f74de856d4afe583c8768852eb2cf9a11366402d4",
       "suffix": ".png",
@@ -312,7 +312,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-original.blend",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 225357,
       "sha256": "2582212c9e13651a87bd1c8e63adfc57c0d6b5e47f8f0c4073e4f4c4b615eda1",
       "suffix": ".blend",
@@ -320,7 +320,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-preview-800x400.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 962711,
       "sha256": "fa6d8fde030fd98bb9dc750c6301ef3236fc0f76f2db6e81b37f0593cc7d5c97",
       "suffix": ".png",
@@ -339,19 +339,19 @@
       "path": ".engineering/evidence/CB-M01-WO-001/integrated-visual-check.json",
       "statusAtInventory": "MODIFIED_OR_STAGED",
       "bytes": 7008,
-      "sha256": "d3c8d42876e8f12ed078b23611ee4e47e5154fc0864863987fd2627ecd6c7be7",
+      "sha256": "5b111a0201ddbf9a9928cfbf92a3ed9dfba954d915e05b285d60932155a3399a",
       "suffix": ".json"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/inventory-cinematic-delivery.py",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 5858,
       "sha256": "a5be11dd37b07f37df3f59baef31330a7455071bd1e92f039801a5b1691ed0b7",
       "suffix": ".py"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprite-contact-sheet.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 125139,
       "sha256": "f3b66144cf173e2e19384c1091a05a1e4a06aa4da56d3f14f9e65affc7d48712",
       "suffix": ".png",
@@ -501,7 +501,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-01-charge.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 745212,
       "sha256": "e0423810771931020587ded64b972c53569995a84504e079e15a09a246346355",
       "suffix": ".png",
@@ -518,7 +518,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-02-descent.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 726894,
       "sha256": "36375e2c04c334fcfa0ba14ffca89be4524501157fc201706c497c5fb0f186bb",
       "suffix": ".png",
@@ -535,7 +535,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-03-impact.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 1049569,
       "sha256": "21c0f331040e72f398eaa7c3215e91dfde0211c4ae2a062fa243470f74a39714",
       "suffix": ".png",
@@ -552,7 +552,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-04-afterglow.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 615718,
       "sha256": "5a621e84f01ce97b634b66bded9d546918d55b306d653fef465c52cce92f5ed9",
       "suffix": ".png",
@@ -569,7 +569,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-05-secondary-right.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 447319,
       "sha256": "27ce2920559050f3308c8b03cbfc1e1f5391964df01b9bdff533dbf0da92f619",
       "suffix": ".png",
@@ -586,7 +586,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-06-secondary-left.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 700852,
       "sha256": "d85928311d3deacaf1cae0ad19559bc56926600fa0aeb871a0a38f83b1d854e4",
       "suffix": ".png",
@@ -603,7 +603,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/lightning-07-fade.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 578985,
       "sha256": "1bac6ccd11b8016b540d040fb1cfca00567e1243e402e566f2f7c133e588e962",
       "suffix": ".png",
@@ -620,7 +620,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/package-hero-motion.py",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 10027,
       "sha256": "94bcb0d5949fc370766c418d0f955a2681d10929bf97de5bca3fb3c917f846c7",
       "suffix": ".py"
@@ -635,8 +635,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-desktop.png",
       "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 740155,
-      "sha256": "baa690459e146871b680f628215758c6f81445cbae4c4244d8863fccf81c08b7",
+      "bytes": 725662,
+      "sha256": "60a65e1180ef8f0350e988b7a183cad493202abad3be780a0be05a1f0bdb59cb",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -652,8 +652,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
       "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 735101,
-      "sha256": "d5890c596c20e47b333570cf2b437cc3c727da18ff2fa10bd433cd2d53c678de",
+      "bytes": 725709,
+      "sha256": "404f2ae8834d182e30bfbf73e369e5278728ba4038badd224c7e2315d5150950",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -669,8 +669,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
       "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 195549,
-      "sha256": "0df37ff8b5bc07e4a4aac4cc4ad340b2785807e9b7da755abce9c0df14186697",
+      "bytes": 199264,
+      "sha256": "605a2143fddaebc0cdaf77a203b9eb3b3375c539c5134457fcab7a64a159b47e",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -685,7 +685,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 477284,
       "sha256": "daa568d19c296519cdb995649180af7de0e7b4bf69fd2ab5d2316fa3225b533b",
       "suffix": ".png",
@@ -702,7 +702,7 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-mobile.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 195273,
       "sha256": "e0f057b5452d2f20ccc51f644ba436c1d86c1be7400f65f6a30f2dc9c07b809f",
       "suffix": ".png",
@@ -720,8 +720,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-tablet.png",
       "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 477089,
-      "sha256": "3990e5e038df140347d9b69ab39a0459c2b6cf2a9623acf8049ead8ef970b510",
+      "bytes": 480996,
+      "sha256": "12ae803a9be5e251885398b34a623aa2b9efc6b494e7f8159f98c42c6be13da5",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -737,8 +737,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/visual-check.json",
       "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 15875,
-      "sha256": "9d7d2d3e4f47c34635a2dd9791b044781a0db783b35739775aa3de3b00717724",
+      "bytes": 15876,
+      "sha256": "cf9cf0561f95303eb50a3095ca14d5d939a9fd2b59a339e38edf6f4cc46e5556",
       "suffix": ".json"
     },
     {
@@ -751,8 +751,8 @@
     {
       "path": "src/modules/CB-M01/golden-home.css",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 54637,
-      "sha256": "27038a0d36c058a2f164cb7c8f8a62b38e34372080e1beb95b403344398c395d",
+      "bytes": 54632,
+      "sha256": "149a61c83c5b4fafaa56ceda5febfa2f125408a0eb7e83c6192a1d551bee93d4",
       "suffix": ".css"
     },
     {
@@ -925,13 +925,13 @@
     {
       "path": "test/modules/CB-M01/HeroLightningSprites.contract.test.mjs",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 4268,
-      "sha256": "08dd68f91373e5b7f5e1249cf3f9b38c735e70e834c7c088914c3bba62fd7798",
+      "bytes": 4812,
+      "sha256": "8ab2dd5257460df79b0f3c783fad4d8d8d312fab6a39742f04d3aadd8c80c063",
       "suffix": ".mjs"
     }
   ],
   "fileCount": 64,
-  "bytesTotal": 52687434,
+  "bytesTotal": 52671922,
   "localOnlyScratch": {
     "files": [
       {

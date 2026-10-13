@@ -39,13 +39,13 @@ The existing candidate guard still prevents `hero-cinematic-original.png` or `.w
 
 ## Local validation
 
-Validation ran on Windows with Node.js 22.19.0 and npm 10.9.3 at source HEAD `592a77395010671a23d5c29f827792cad7e5a1ec`.
+Validation ran on Windows with Node.js 22.19.0 and npm 10.9.3 at source HEAD `cba620d9c9b344b871882f759cdc857ac031744d`.
 
-- `npm test`: **PASS** — unit suite 182/182; build completed and reported no SESSION, data, service, or production bindings; Playwright E2E 34/34. The isolated and integrated visual checks captured desktop 1536×864, tablet 768×1024, and mobile 390×844. Both reports record zero Axe violations, zero browser/page errors, and no external requests.
+- `npm test`: **PASS** — unit suite 183/183; build completed and reported no SESSION, data, service, or production bindings; Playwright E2E 34/34. The isolated and integrated visual checks captured desktop 1536×864, tablet 768×1024, and mobile 390×844. Both reports record zero Axe violations, zero browser/page errors, and no external requests.
 - `npm run lint`: **PASS** — ESLint completed with `--max-warnings=0`.
 - `npm run typecheck`: **PASS** — 76 files, 0 errors, 0 warnings, 0 hints.
 - Python syntax compilation: **PASS** — all four pipeline/inventory scripts compile, including the revised inventory script.
-- The initial pre-commit visual run rejected dirty source inputs as designed. After source commit `592a773`, the complete test run and both exact-HEAD visual checks passed.
+- The initial pre-commit visual run rejected dirty source inputs as designed. SonarCloud identified a duplicated `18%` selector in the newly added scene-flash keyframes on intermediate remote head `1af136f); a regression test reproduced it red-first, and the corrected code passes the full suite at `cba620d`. The final hosted analysis result is recorded separately in the PR checks.
 - The actual image candidates still fail the required original-local-render preflight with `ORIGINAL_SOURCE_UNESTABLISHED`; the existing vector demo and generated lightning overlays remain the active visual.
 - The 2560×1280 Blender master was not produced, Blender could not be used to reopen/resave the animation project, and the local animation `.blend` remains withheld due embedded absolute paths. These are delivery limitations, not passing validation claims.
 

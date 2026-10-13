@@ -213,6 +213,10 @@ test("R22 independently versioned mineral asset is locally hashed and fail-close
   assert.equal(art.path, "src/modules/CB-M01/hero-mineral-texture.svg");
   assert.equal(art.sha256, createHash("sha256").update(svg, "utf8").digest("hex"));
   assert.equal(art.byteLength, Buffer.byteLength(svg, "utf8"));
+  const attr = await readFile(new URL("../../../src/modules/CB-M01/.gitattributes", import.meta.url), "utf8");
+  assert.ok(attr.split(/\r?\n/u).includes("hero-mineral-texture.svg text eol=lf"),
+    "cross-platform source SHA-256 needs invariant LF checkout on Windows");
+  assert.equal(art.checkoutEOL, "LF_ENFORCED_BY_LOCAL_GITATTRIBUTES");
   assert.equal(art.commercialPublicationAllowed, false);
   assert.equal(art.productionReady, false);
   assert.equal(art.ownerVisualApproval, false);

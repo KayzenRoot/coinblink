@@ -160,7 +160,8 @@
       "ownerVisualApproval": false,
       "sourceMaster": "SELF_CONTAINED_VECTOR_ASSET",
       "relationToGolden": "VISUAL_REFERENCE_ONLY_NO_RASTER_EXTRACTION",
-      "sourceValidationDate": "2026-10-13"
+      "sourceValidationDate": "2026-10-13",
+      "checkoutEOL": "LF_ENFORCED_BY_LOCAL_GITATTRIBUTES"
     }
   ]
 }

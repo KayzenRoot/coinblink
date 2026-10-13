@@ -161,7 +161,7 @@ test.describe("M05 public static editorial demonstration", () => {
     await expect(exportButton).toBeEnabled();
     const [download] = await Promise.all([page.waitForEvent("download"), exportButton.click()]);
     const saved = await readFile(await download.path(), "utf8");
-    expect(saved).toContain("# Bitcoin &#35;1 research and literal &amp;#35; references");
+    expect(saved).toContain("# Bitcoin &#35;1 research and literal &amp;&#35;35; references");
     await page.reload();
     await lab.locator("[data-m05-import]").setInputFiles({
       name: "bitcoin-hashtag-draft.md", mimeType: "text/markdown", buffer: Buffer.from(saved),

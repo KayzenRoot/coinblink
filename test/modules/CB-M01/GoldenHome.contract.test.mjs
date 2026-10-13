@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -68,6 +69,44 @@ test("four editorial thumbnails are original, local and clearly DEMO-only", asyn
   assert.doesNotMatch(artwork, /<script|<image|https?:\/\/|fetch\(/iu);
   assert.match(component, /Editorial placeholder · no live story connected/u);
   assert.match(stylesheet, /\.cb-home \.news-art \.editorial-artwork/u);
+});
+
+test("R15 decorative editorial assets have fail-closed provenance and exact-source SHA-256", async () => {
+  const registry = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/editorial-asset-provenance.json", import.meta.url), "utf8"));
+  const source = await readFile(new URL("../../../src/modules/CB-M01/EditorialArtwork.astro", import.meta.url), "utf8");
+  const actualSha256 = createHash("sha256").update(source, "utf8").digest("hex");
+
+  assert.equal(registry.workOrder, "CB-M01-WO-001");
+  assert.equal(registry.productState, "DRAFT_DEMO_ONLY_NOT_PUBLISHED");
+  assert.equal(registry.sharedSource.path, "src/modules/CB-M01/EditorialArtwork.astro");
+  assert.equal(registry.sharedSource.sha256, actualSha256, "source changed without provenance refresh");
+  assert.equal(registry.sharedSource.gitBlobSha, "f02b58375e548a89d86b677463439730e94f7687");
+  assert.equal(registry.sharedSource.derivativeOfGoldenRaster, false);
+  assert.equal(registry.assets.length, 4);
+
+  const expectedVariants = ["bitcoin", "ethereum", "policy", "ecosystem"];
+  assert.deepEqual(registry.assets.map((entry) => entry.variant), expectedVariants);
+  assert.equal(new Set(registry.assets.map((entry) => entry.assetId)).size, 4);
+  for (const entry of registry.assets) {
+    assert.equal(entry.sourceSha256, actualSha256);
+    assert.equal(entry.sourceGitBlobSha, registry.sharedSource.gitBlobSha);
+    assert.equal(entry.sourcePath, registry.sharedSource.path);
+    assert.equal(entry.viewBox, "0 0 80 110");
+    assert.equal(entry.exportFormat, "ASTRO_INLINE_SVG");
+    assert.equal(entry.altTextMode, "DECORATIVE_ARIA_HIDDEN");
+    assert.equal(entry.rightsReview, "PENDING_OWNER_OR_LEGAL");
+    assert.equal(entry.licenseOrTrademarkClearance, "NOT_ESTABLISHED");
+    assert.equal(entry.commercialPublicationAllowed, false);
+    assert.equal(entry.ownerVisualApproval, false);
+    assert.equal(entry.liveNewsEligible, false);
+    assert.equal(entry.allowedUsage, "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY");
+    assert.equal(entry.lightVariant, "NOT_APPROVED");
+    assert.equal(entry.evidence.commit, "33b8aa8b34aaca94d01487c93fe0a2617dbe5400");
+    assert.equal(entry.evidence.runId, 38409789009);
+    assert.ok(entry.sourceMaster && entry.creatorTool && entry.designGoldenReference);
+    assert.ok(source.includes('variant === "' + entry.variant + '"'));
+  }
+  assert.match(component, /Editorial placeholder · no live story connected/u);
 });
 
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {

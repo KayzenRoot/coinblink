@@ -110,6 +110,26 @@ test("max-length HTML-like text remains importable within the 64 KB local file l
   assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
 });
 
+test("v2 export preserves hashtags and literal hash entity text in headlines", () => {
+  const draft = prepareLocalDraft({
+    ...valid,
+    title: "#Bitcoin #1 and literal &#35; BTC research",
+  });
+  const markdown = draftToMarkdown(draft);
+  assert.match(markdown, /^# &#35;Bitcoin &#35;1 and literal &amp;#35; BTC research/mu);
+  assert.deepEqual(parseLocalDraftMarkdown(markdown), draft);
+  assert.equal(parseLocalDraftMarkdown(markdown).title, draft.title);
+});
+
+test("multi-line programmatic headlines are normalized before an export", () => {
+  const draft = prepareLocalDraft({
+    ...valid,
+    title: "Bitcoin's first line\nSecond #heading",
+  });
+  assert.equal(draft.title, "Bitcoin's first line Second #heading");
+  assert.deepEqual(parseLocalDraftMarkdown(draftToMarkdown(draft)), draft);
+});
+
 test("v2 draft sections remain lossless when summary or body contains Markdown headings", () => {
   const original = prepareLocalDraft({
     ...valid,

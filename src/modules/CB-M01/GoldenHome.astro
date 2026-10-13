@@ -109,7 +109,7 @@ const stories = [
     </section>
 
     <nav class="category-rail" id="categories" aria-label={t("Demonstration story categories")}>
-      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "▣", "⌘", "◎", "✦", "◌", "⌖"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
+      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category} data-category-label={t(category)}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "▣", "⌘", "◎", "✦", "◌", "⌖"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
     </nav>
 
     <section class="content-grid" aria-label={t("Demonstration signals")}>

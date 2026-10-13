@@ -23,11 +23,6 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 const isPortuguese = document.querySelector(".cb-home")?.getAttribute("data-locale") === "pt-br";
-const localizedCategories = {
-  All: "Todas",
-  Regulation: "Regulação",
-};
-const displayCategory = (id) => isPortuguese ? (localizedCategories[id] ?? id) : id;
 const placeholderCount = (n) => isPortuguese
   ? String(n) + (n === 1 ? " exemplo" : " exemplos")
   : String(n) + (n === 1 ? " placeholder" : " placeholders");
@@ -35,6 +30,12 @@ const placeholderCount = (n) => isPortuguese
 let selected = "All";
 let searchText = "";
 const buttons = [...document.querySelectorAll("[data-category]")];
+// Read the translation once from the server-rendered chip; URL IDs remain canonical.
+const localizedCategories = new Map(buttons.map((button) => [
+  button.getAttribute("data-category"),
+  button.getAttribute("data-category-label") ?? button.getAttribute("data-category"),
+]));
+const displayCategory = (id) => isPortuguese ? (localizedCategories.get(id) ?? id) : id;
 const cards = [...document.querySelectorAll("[data-news-card]")];
 const searches = [
   document.querySelector("[data-news-search]"),

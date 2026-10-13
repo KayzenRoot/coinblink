@@ -217,6 +217,24 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-result-count]")).toHaveText("1 exemplo");
   });
 
+  test("Portuguese category summaries use visible translated labels and canonical URLs", async ({ page }) => {
+    await page.goto("/pt-br");
+    for (const [id, label] of [
+      ["AI x Crypto", "IA e cripto"],
+      ["Market Analysis", "Análise de mercado"],
+      ["Guides", "Guias"],
+    ]) {
+      const chip = page.locator('[data-category="' + id + '"]');
+      await expect(chip).toHaveAttribute("data-category-label", label);
+      await expect(chip).toContainText(label);
+      await chip.click();
+      await expect(chip).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator("[data-news-filter-summary]")).toContainText("em " + label + ".");
+      expect(new URL(page.url()).searchParams.get("category")).toBe(id);
+      await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(0);
+    }
+  });
+
   test("Portuguese category filtering preserves canonical URLs and translated status", async ({ page }) => {
     await page.goto("/pt-br?category=Regulation");
     await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");

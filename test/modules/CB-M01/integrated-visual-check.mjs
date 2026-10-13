@@ -45,6 +45,7 @@ const report = {
 let server;
 let browser;
 let persistDir;
+let runFailure = null;
 
 async function availablePort() {
   const listener = createServer();
@@ -214,13 +215,47 @@ try {
     securityHeaders: report.viewports[0]?.securityHeaders,
   }));
 } catch (error) {
-  await saveReport("failed", error);
+  runFailure = error;
+  try {
+    await saveReport("failed", error);
+  } catch (reportError) {
+    console.error("Unable to save the original visual-run failure:", reportError);
+  }
   throw error;
 } finally {
-  if (browser) await browser.close();
-  const stopped = await stopServer();
+  let cleanupFailure = null;
+  if (browser) {
+    try {
+      await browser.close();
+    } catch (error) {
+      cleanupFailure ??= error;
+    }
+  }
+  let stopped = false;
+  try {
+    stopped = await stopServer();
+    if (!stopped) cleanupFailure ??= new Error("Wrangler local process did not exit; temporary data retained");
+  } catch (error) {
+    cleanupFailure ??= error;
+  }
   if (stopped && persistDir) {
-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 750));
-    await rm(persistDir, { recursive: true, force: true, maxRetries: 12, retryDelay: 500 });
+    try {
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 750));
+      await rm(persistDir, { recursive: true, force: true, maxRetries: 12, retryDelay: 500 });
+    } catch (error) {
+      cleanupFailure ??= error;
+    }
+  }
+  if (cleanupFailure) {
+    if (runFailure) {
+      console.error("Additional cleanup failure (original visual-run error retained):", cleanupFailure);
+    } else {
+      try {
+        await saveReport("failed", cleanupFailure);
+      } catch (reportError) {
+        console.error("Unable to save visual-run cleanup failure:", reportError);
+      }
+      throw cleanupFailure;
+    }
   }
 }

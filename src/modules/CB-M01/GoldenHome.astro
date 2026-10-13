@@ -60,18 +60,49 @@ const stories = [
     <section class="lead-grid" aria-label={t("Featured demonstration and market status")}>
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
-          <div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
+          <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
           <svg class="scene-energy" viewBox="0 0 600 300" focusable="false">
             <defs><linearGradient id="energy-line" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#75b83a" stop-opacity=".05"></stop><stop offset="54%" stop-color="#b8f34b" stop-opacity=".82"></stop><stop offset="100%" stop-color="#efffa2"></stop></linearGradient></defs>
             <path class="energy-trail" d="M24 274 C103 268 109 231 176 218 S258 170 302 166 S380 111 431 101 S493 54 553 29"></path>
             <path class="energy-arrow" d="M516 31 555 27 548 66"></path>
           </svg>
-          <svg class="coin-art" viewBox="0 0 300 300">
-            <defs><radialGradient id="coin-face" cx="34%" cy="27%"><stop offset="0%" stop-color="#fff0a1"></stop><stop offset="36%" stop-color="#e8b927"></stop><stop offset="74%" stop-color="#8c5b08"></stop><stop offset="100%" stop-color="#21190b"></stop></radialGradient></defs>
-            <circle cx="150" cy="150" r="115" fill="#9cff3a" opacity=".16"></circle><circle cx="150" cy="150" r="108" fill="#17140c" stroke="#b8f34b" stroke-width="5"></circle>
-            <circle cx="150" cy="150" r="92" fill="url(#coin-face)" stroke="#ffe27d" stroke-width="4"></circle><circle cx="150" cy="150" r="78" fill="none" stroke="#ffeaa2" stroke-opacity=".55" stroke-width="2"></circle><circle cx="150" cy="150" r="69" fill="none" stroke="#fff0a1" stroke-opacity=".25" stroke-width="1.5" stroke-dasharray="2 5"></circle>
-            <path d="M82 118c17-29 44-45 76-47M217 181c-15 28-42 46-73 49" fill="none" stroke="#fff0a1" stroke-opacity=".36" stroke-width="3" stroke-linecap="round"></path>
-            <text x="150" y="204" fill="#fff0a1" stroke="#8a5a08" stroke-width="1.5" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="154" font-weight="700" text-anchor="middle">₿</text>
+          <svg class="coin-art" viewBox="0 0 300 300" focusable="false" aria-hidden="true">
+            <defs>
+              <radialGradient id="coin-aura" cx="50%" cy="52%" r="50%">
+                <stop offset="0%" stop-color="#c8ff75" stop-opacity=".36"></stop>
+                <stop offset="67%" stop-color="#85e845" stop-opacity=".13"></stop>
+                <stop offset="100%" stop-color="#70c743" stop-opacity="0"></stop>
+              </radialGradient>
+              <linearGradient id="coin-rim" x1="5%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stop-color="#fff4bc"></stop><stop offset="18%" stop-color="#d6a72b"></stop>
+                <stop offset="45%" stop-color="#7d4a08"></stop><stop offset="70%" stop-color="#ffdf70"></stop>
+                <stop offset="100%" stop-color="#5e3304"></stop>
+              </linearGradient>
+              <radialGradient id="coin-face" cx="31%" cy="24%" r="75%">
+                <stop offset="0%" stop-color="#fff2b5"></stop><stop offset="31%" stop-color="#e5b739"></stop>
+                <stop offset="62%" stop-color="#a96b0d"></stop><stop offset="87%" stop-color="#6b400a"></stop>
+                <stop offset="100%" stop-color="#281d0d"></stop>
+              </radialGradient>
+              <linearGradient id="coin-glyph" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fff8d6"></stop><stop offset="38%" stop-color="#f9d568"></stop>
+                <stop offset="75%" stop-color="#ca8617"></stop><stop offset="100%" stop-color="#f7cb4f"></stop>
+              </linearGradient>
+            </defs>
+            <circle cx="150" cy="150" r="144" fill="url(#coin-aura)"></circle>
+            <circle cx="150" cy="150" r="112" fill="#101b0d" stroke="#a2ee43" stroke-opacity=".55" stroke-width="3"></circle>
+            <circle cx="150" cy="150" r="107" fill="url(#coin-rim)" stroke="#fff2b3" stroke-opacity=".72" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="101" fill="none" stroke="#4b2b07" stroke-width="9"></circle>
+            <circle cx="150" cy="150" r="101" fill="none" stroke="#ffdc74" stroke-width="5" stroke-dasharray="1.8 3.7" stroke-opacity=".83"></circle>
+            <circle cx="150" cy="150" r="94" fill="#302208" stroke="#f8d76a" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="89" fill="url(#coin-face)" stroke="#ffdf80" stroke-width="2.2"></circle>
+            <circle cx="150" cy="150" r="80" fill="none" stroke="#ffe9a8" stroke-opacity=".53" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="75" fill="none" stroke="#5b3d09" stroke-width="2.5"></circle>
+            <circle cx="150" cy="150" r="68" fill="none" stroke="#ffe4a0" stroke-opacity=".39" stroke-width="1" stroke-dasharray="1.4 5.1"></circle>
+            <path d="M61 115A94 94 0 0 1 188 64 M233 178A95 95 0 0 1 124 242" fill="none" stroke="#fff7c7" stroke-opacity=".76" stroke-width="3" stroke-linecap="round"></path>
+            <path d="M72 191A89 89 0 0 0 130 232 M208 86A88 88 0 0 1 231 120" fill="none" stroke="#402304" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"></path>
+            <text x="154" y="205" fill="#452804" stroke="#4f2904" stroke-width="3" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="152" font-weight="800" text-anchor="middle">₿</text>
+            <text x="150" y="201" fill="url(#coin-glyph)" stroke="#fff1b1" stroke-opacity=".64" stroke-width=".8" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="152" font-weight="800" text-anchor="middle">₿</text>
+            <path d="M85 104Q142 51 204 82" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="8" stroke-linecap="round"></path>
           </svg>
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
         </div>

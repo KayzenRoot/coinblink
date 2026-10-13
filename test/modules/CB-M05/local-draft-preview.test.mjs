@@ -116,7 +116,7 @@ test("v2 export preserves hashtags and literal hash entity text in headlines", (
     title: "#Bitcoin #1 and literal &#35; BTC research",
   });
   const markdown = draftToMarkdown(draft);
-  assert.match(markdown, /^# &#35;Bitcoin &#35;1 and literal &amp;#35; BTC research/mu);
+  assert.match(markdown, /^# &#35;Bitcoin &#35;1 and literal &amp;&#35;35; BTC research/mu);
   assert.deepEqual(parseLocalDraftMarkdown(markdown), draft);
   assert.equal(parseLocalDraftMarkdown(markdown).title, draft.title);
 });

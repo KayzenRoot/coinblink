@@ -1,12 +1,12 @@
 {
   "status": "passed",
-  "generatedAt": "2026-10-13T09:49:45.635Z",
+  "generatedAt": "2026-10-13T21:09:49.878Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "8aee74af58bf79400432b12688dc566da53c2995",
+  "headSha": "592a77395010671a23d5c29f827792cad7e5a1ec",
   "route": "/en",
   "fixture": "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
   "runtime": "Wrangler 4.149.0 --local",
-  "origin": "http://127.0.0.1:56293",
+  "origin": "http://127.0.0.1:52422",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -91,18 +91,18 @@
   "screenshots": [
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
-      "sha256": "8b39082744788b83c71dd0b2ae7822a9111852d3ba8081b73f54b8b51dd68679",
-      "bytes": 616752
+      "sha256": "d5890c596c20e47b333570cf2b437cc3c727da18ff2fa10bd433cd2d53c678de",
+      "bytes": 735101
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
-      "sha256": "dfdf475a65224ea7f6daa8d055e4e25413bbbaf59000b1df9f9c61f5d95ac408",
-      "bytes": 429751
+      "sha256": "daa568d19c296519cdb995649180af7de0e7b4bf69fd2ab5d2316fa3225b533b",
+      "bytes": 477284
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
-      "sha256": "77160607289e69059139b1919800e2be855558240a14b078b6bb38505ac4a879",
-      "bytes": 182690
+      "sha256": "0df37ff8b5bc07e4a4aac4cc4ad340b2785807e9b7da755abce9c0df14186697",
+      "bytes": 195549
     }
   ],
   "desktopGeometry": {
@@ -117,78 +117,78 @@
       "x": 43.765625,
       "y": 22,
       "width": 1448.46875,
-      "height": 48,
-      "bottom": 70
+      "height": 49,
+      "bottom": 71
     },
     ".brand": {
       "x": 43.765625,
-      "y": 30,
-      "width": 195,
-      "height": 31,
-      "bottom": 61
+      "y": 22,
+      "width": 295,
+      "height": 48,
+      "bottom": 70
     },
     ".hero-panel": {
       "x": 43.765625,
-      "y": 72,
+      "y": 73,
       "width": 1089.734375,
       "height": 282,
-      "bottom": 354
+      "bottom": 355
     },
     ".market-panel": {
       "x": 1143.5,
-      "y": 72,
+      "y": 73,
       "width": 348.71875,
       "height": 282,
-      "bottom": 354
+      "bottom": 355
     },
     ".ticker-strip": {
       "x": 43.765625,
-      "y": 360,
+      "y": 361,
       "width": 1448.46875,
       "height": 30,
-      "bottom": 390
+      "bottom": 391
     },
     ".trending-strip": {
       "x": 43.765625,
-      "y": 396,
+      "y": 397,
       "width": 1448.46875,
       "height": 45,
-      "bottom": 441
+      "bottom": 442
     },
     ".category-rail": {
       "x": 43.765625,
-      "y": 456,
+      "y": 457,
       "width": 1448.46875,
       "height": 50,
-      "bottom": 506
+      "bottom": 507
     },
     ".content-grid": {
       "x": 43.765625,
-      "y": 517,
+      "y": 518,
       "width": 1448.46875,
       "height": 190,
-      "bottom": 707
+      "bottom": 708
     },
     "#latest-news": {
       "x": 43.765625,
-      "y": 714,
+      "y": 715,
       "width": 983.625,
-      "height": 231.84375,
-      "bottom": 945.84375
+      "height": 228,
+      "bottom": 943
     },
     ".news-cards": {
       "x": 55.765625,
-      "y": 752.5,
+      "y": 747.5,
       "width": 959.625,
-      "height": 103.84375,
-      "bottom": 856.34375
+      "height": 106,
+      "bottom": 853.5
     },
     "#newsletter": {
       "x": 1036.390625,
-      "y": 714,
+      "y": 715,
       "width": 455.828125,
-      "height": 231.84375,
-      "bottom": 945.84375
+      "height": 228,
+      "bottom": 943
     }
   },
   "mobileHero": {
@@ -220,11 +220,11 @@
       "height": 50
     },
     "coin": {
-      "left": 235.1322479248047,
-      "right": 363.2740173339844,
-      "top": 433.92913818359375,
-      "bottom": 562.0708618164062,
-      "height": 128.1417236328125
+      "left": 235.88331604003906,
+      "right": 363.53814697265625,
+      "top": 433.67730712890625,
+      "bottom": 561.3076782226562,
+      "height": 127.63037109375
     },
     "ctaStatusOverlap": false,
     "ctaCoinOverlap": false,
@@ -232,5 +232,13 @@
   },
   "consoleErrors": [],
   "pageErrors": [],
-  "externalRequests": []
+  "externalRequests": [],
+  "desktopEditorialCardGeometry": {
+    "artRight": 132.765625,
+    "artTop": 748.5,
+    "artBottom": 852.5,
+    "copyLeft": 132.765625,
+    "copyTop": 748.5,
+    "copyBottom": 852.5
+  }
 }

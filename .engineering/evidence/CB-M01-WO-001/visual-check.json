@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-13T09:49:46.317Z",
+  "generatedAt": "2026-10-13T21:09:51.083Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "8aee74af58bf79400432b12688dc566da53c2995",
+  "headSha": "592a77395010671a23d5c29f827792cad7e5a1ec",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -31,7 +31,7 @@
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:56295",
+  "origin": "http://127.0.0.1:52423",
   "viewports": [
     {
       "name": "desktop",
@@ -53,33 +53,33 @@
           "left": 43.765625,
           "top": 22,
           "right": 1492.234375,
-          "bottom": 70,
+          "bottom": 71,
           "width": 1448.46875,
-          "height": 48
+          "height": 49
         },
         "brand": {
           "left": 43.765625,
-          "top": 30,
-          "right": 238.765625,
-          "bottom": 61,
-          "width": 195,
-          "height": 31
+          "top": 22,
+          "right": 338.765625,
+          "bottom": 70,
+          "width": 295,
+          "height": 48
         },
         "brandImage": {
           "left": 43.765625,
-          "top": 30,
-          "right": 78.765625,
-          "bottom": 61,
-          "width": 35,
-          "height": 31
+          "top": 22,
+          "right": 113.765625,
+          "bottom": 70,
+          "width": 70,
+          "height": 48
         },
         "brandName": {
-          "left": 86.765625,
-          "top": 30.625,
-          "right": 180.34375,
-          "bottom": 60.375,
-          "width": 93.578125,
-          "height": 29.75
+          "left": 121.765625,
+          "top": 26.984375,
+          "right": 237.828125,
+          "bottom": 65.015625,
+          "width": 116.0625,
+          "height": 38.03125
         },
         "trendingItems": 5,
         "categoryLabels": [
@@ -96,95 +96,95 @@
           "Guides"
         ],
         "primaryNav": {
-          "left": 255.65625,
-          "top": 27.5,
+          "left": 355.65625,
+          "top": 28,
           "right": 1115.6875,
-          "bottom": 63.5,
-          "width": 860.03125,
+          "bottom": 64,
+          "width": 760.03125,
           "height": 36
         },
         "headerTools": {
           "left": 1132.578125,
-          "top": 27.5,
+          "top": 28,
           "right": 1492.234375,
-          "bottom": 63.5,
+          "bottom": 64,
           "width": 359.65625,
           "height": 36
         },
         "hero": {
           "left": 43.765625,
-          "top": 72,
+          "top": 73,
           "right": 1133.5,
-          "bottom": 354,
+          "bottom": 355,
           "width": 1089.734375,
           "height": 282
         },
         "market": {
           "left": 1143.5,
-          "top": 72,
+          "top": 73,
           "right": 1492.21875,
-          "bottom": 354,
+          "bottom": 355,
           "width": 348.71875,
           "height": 282
         },
         "ticker": {
           "left": 43.765625,
-          "top": 360,
+          "top": 361,
           "right": 1492.234375,
-          "bottom": 390,
+          "bottom": 391,
           "width": 1448.46875,
           "height": 30
         },
         "trending": {
           "left": 43.765625,
-          "top": 396,
+          "top": 397,
           "right": 1492.234375,
-          "bottom": 441,
+          "bottom": 442,
           "width": 1448.46875,
           "height": 45
         },
         "categories": {
           "left": 43.765625,
-          "top": 456,
+          "top": 457,
           "right": 1492.234375,
-          "bottom": 506,
+          "bottom": 507,
           "width": 1448.46875,
           "height": 50
         },
         "signals": {
           "left": 43.765625,
-          "top": 517,
+          "top": 518,
           "right": 1492.234375,
-          "bottom": 707,
+          "bottom": 708,
           "width": 1448.46875,
           "height": 190
         },
         "latestNews": {
           "left": 43.765625,
-          "top": 714,
+          "top": 715,
           "right": 1027.390625,
-          "bottom": 945.84375,
+          "bottom": 943,
           "width": 983.625,
-          "height": 231.84375
+          "height": 228
         },
         "latestNewsCards": {
           "left": 55.765625,
-          "top": 752.5,
+          "top": 747.5,
           "right": 1015.390625,
-          "bottom": 856.34375,
+          "bottom": 853.5,
           "width": 959.625,
-          "height": 103.84375
+          "height": 106
         },
         "newsletter": {
           "left": 1036.390625,
-          "top": 714,
+          "top": 715,
           "right": 1492.21875,
-          "bottom": 945.84375,
+          "bottom": 943,
           "width": 455.828125,
-          "height": 231.84375
+          "height": 228
         }
       },
-      "screenshotSha256": "c3668c3e41783375177544d2c3d231ab82ef35bf437c935fff26c97750a0ada5"
+      "screenshotSha256": "baa690459e146871b680f628215758c6f81445cbae4c4244d8863fccf81c08b7"
     },
     {
       "name": "tablet",
@@ -193,7 +193,7 @@
       "documentWidth": 768,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "7b26c7bc731fef734e6d1bdb1aeaac097f2e376c4732b248966111c2decd1584"
+      "screenshotSha256": "3990e5e038df140347d9b69ab39a0459c2b6cf2a9623acf8049ead8ef970b510"
     },
     {
       "name": "mobile",
@@ -202,7 +202,7 @@
       "documentWidth": 390,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "863843513fe3c4702e1e7640348987c33ec3f8e87df08f987a4bf5e2390ebdb7"
+      "screenshotSha256": "e0f057b5452d2f20ccc51f644ba436c1d86c1be7400f65f6a30f2dc9c07b809f"
     }
   ],
   "interactionChecks": {
@@ -281,33 +281,33 @@
         "left": 43.765625,
         "top": 22,
         "right": 1492.234375,
-        "bottom": 70,
+        "bottom": 71,
         "width": 1448.46875,
-        "height": 48
+        "height": 49
       },
       "brand": {
         "left": 43.765625,
-        "top": 30,
-        "right": 238.765625,
-        "bottom": 61,
-        "width": 195,
-        "height": 31
+        "top": 22,
+        "right": 338.765625,
+        "bottom": 70,
+        "width": 295,
+        "height": 48
       },
       "brandImage": {
         "left": 43.765625,
-        "top": 30,
-        "right": 78.765625,
-        "bottom": 61,
-        "width": 35,
-        "height": 31
+        "top": 22,
+        "right": 113.765625,
+        "bottom": 70,
+        "width": 70,
+        "height": 48
       },
       "brandName": {
-        "left": 86.765625,
-        "top": 30.625,
-        "right": 180.34375,
-        "bottom": 60.375,
-        "width": 93.578125,
-        "height": 29.75
+        "left": 121.765625,
+        "top": 26.984375,
+        "right": 237.828125,
+        "bottom": 65.015625,
+        "width": 116.0625,
+        "height": 38.03125
       },
       "trendingItems": 5,
       "categoryLabels": [
@@ -324,92 +324,92 @@
         "Guides"
       ],
       "primaryNav": {
-        "left": 255.65625,
-        "top": 27.5,
+        "left": 355.65625,
+        "top": 28,
         "right": 1115.6875,
-        "bottom": 63.5,
-        "width": 860.03125,
+        "bottom": 64,
+        "width": 760.03125,
         "height": 36
       },
       "headerTools": {
         "left": 1132.578125,
-        "top": 27.5,
+        "top": 28,
         "right": 1492.234375,
-        "bottom": 63.5,
+        "bottom": 64,
         "width": 359.65625,
         "height": 36
       },
       "hero": {
         "left": 43.765625,
-        "top": 72,
+        "top": 73,
         "right": 1133.5,
-        "bottom": 354,
+        "bottom": 355,
         "width": 1089.734375,
         "height": 282
       },
       "market": {
         "left": 1143.5,
-        "top": 72,
+        "top": 73,
         "right": 1492.21875,
-        "bottom": 354,
+        "bottom": 355,
         "width": 348.71875,
         "height": 282
       },
       "ticker": {
         "left": 43.765625,
-        "top": 360,
+        "top": 361,
         "right": 1492.234375,
-        "bottom": 390,
+        "bottom": 391,
         "width": 1448.46875,
         "height": 30
       },
       "trending": {
         "left": 43.765625,
-        "top": 396,
+        "top": 397,
         "right": 1492.234375,
-        "bottom": 441,
+        "bottom": 442,
         "width": 1448.46875,
         "height": 45
       },
       "categories": {
         "left": 43.765625,
-        "top": 456,
+        "top": 457,
         "right": 1492.234375,
-        "bottom": 506,
+        "bottom": 507,
         "width": 1448.46875,
         "height": 50
       },
       "signals": {
         "left": 43.765625,
-        "top": 517,
+        "top": 518,
         "right": 1492.234375,
-        "bottom": 707,
+        "bottom": 708,
         "width": 1448.46875,
         "height": 190
       },
       "latestNews": {
         "left": 43.765625,
-        "top": 714,
+        "top": 715,
         "right": 1027.390625,
-        "bottom": 945.84375,
+        "bottom": 943,
         "width": 983.625,
-        "height": 231.84375
+        "height": 228
       },
       "latestNewsCards": {
         "left": 55.765625,
-        "top": 752.5,
+        "top": 747.5,
         "right": 1015.390625,
-        "bottom": 856.34375,
+        "bottom": 853.5,
         "width": 959.625,
-        "height": 103.84375
+        "height": 106
       },
       "newsletter": {
         "left": 1036.390625,
-        "top": 714,
+        "top": 715,
         "right": 1492.21875,
-        "bottom": 945.84375,
+        "bottom": 943,
         "width": 455.828125,
-        "height": 231.84375
+        "height": 228
       }
     },
     "mobileHeroGeometry": [
@@ -458,12 +458,12 @@
           "height": 50
         },
         "coin": {
-          "left": 235.1322479248047,
-          "top": 433.92913818359375,
-          "right": 363.2740173339844,
-          "bottom": 562.0708618164062,
-          "width": 128.1417694091797,
-          "height": 128.1417236328125
+          "left": 235.88331604003906,
+          "top": 433.67730712890625,
+          "right": 363.53814697265625,
+          "bottom": 561.3076782226562,
+          "width": 127.65483093261719,
+          "height": 127.63037109375
         },
         "ctaStatusOverlap": false,
         "ctaCoinOverlap": false,
@@ -515,12 +515,12 @@
           "height": 50
         },
         "coin": {
-          "left": 207.06777954101562,
-          "top": 434.3646545410156,
-          "right": 334.7447204589844,
-          "bottom": 562.0416259765625,
-          "width": 127.67694091796875,
-          "height": 127.67697143554688
+          "left": 207.87403869628906,
+          "top": 434.1172180175781,
+          "right": 334.94537353515625,
+          "bottom": 561.2813720703125,
+          "width": 127.07133483886719,
+          "height": 127.16415405273438
         },
         "ctaStatusOverlap": false,
         "ctaCoinOverlap": false,
@@ -572,12 +572,12 @@
           "height": 50
         },
         "coin": {
-          "left": 182.3680419921875,
-          "top": 447.6649169921875,
-          "right": 295.8507080078125,
-          "bottom": 561.1475830078125,
-          "width": 113.482666015625,
-          "height": 113.482666015625
+          "left": 183.06500244140625,
+          "top": 447.5395202636719,
+          "right": 295.94879150390625,
+          "bottom": 560.4775390625,
+          "width": 112.8837890625,
+          "height": 112.93801879882812
         },
         "ctaStatusOverlap": false,
         "ctaCoinOverlap": false,
@@ -600,18 +600,18 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 10ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 22ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 21ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 16ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 18ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 20ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 22ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 21ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 19ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"
 }

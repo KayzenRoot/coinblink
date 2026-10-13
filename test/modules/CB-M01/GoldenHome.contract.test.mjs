@@ -56,6 +56,20 @@ test("five market badges use local vector identity rather than first letters", (
   assert.match(stylesheet, /\.cb-home \.coin-mark \.market-asset-icon \{/u);
 });
 
+test("four editorial thumbnails are original, local and clearly DEMO-only", async () => {
+  const artwork = await readFile(new URL("../../../src/modules/CB-M01/EditorialArtwork.astro", import.meta.url), "utf8");
+  assert.match(component, /import EditorialArtwork from "\.\/EditorialArtwork\.astro"/u);
+  assert.match(component, /<EditorialArtwork variant=\{story\.artwork/u);
+  for (const [tag, variant] of [["MARKET", "bitcoin"], ["DEVELOPMENT", "ethereum"], ["POLICY", "policy"], ["ECOSYSTEM", "ecosystem"]]) {
+    assert.ok(component.includes('tag: "' + tag + '", artwork: "' + variant + '"'), "missing decorative variant " + variant);
+    assert.ok(artwork.includes('variant === "' + variant + '"'), "missing artwork variant " + variant);
+  }
+  assert.match(artwork, /<svg class="editorial-artwork"[^>]+focusable="false" aria-hidden="true">/u);
+  assert.doesNotMatch(artwork, /<script|<image|https?:\/\/|fetch\(/iu);
+  assert.match(component, /Editorial placeholder · no live story connected/u);
+  assert.match(stylesheet, /\.cb-home \.news-art \.editorial-artwork/u);
+});
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });

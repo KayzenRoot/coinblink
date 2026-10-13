@@ -1,5 +1,6 @@
 ---
 import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
+import EditorialArtwork from "./EditorialArtwork.astro";
 import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
 import { getLearningTopics } from "./learning-topics.mjs";
@@ -21,10 +22,10 @@ const markets = [
 const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
 const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
 const stories = [
-  { category: "Bitcoin", tag: "MARKET", icon: "₿" },
-  { category: "Ethereum", tag: "DEVELOPMENT", icon: "◆" },
-  { category: "Regulation", tag: "POLICY", icon: "⌘" },
-  { category: "Altcoins", tag: "ECOSYSTEM", icon: "◈" },
+  { category: "Bitcoin", tag: "MARKET", artwork: "bitcoin" },
+  { category: "Ethereum", tag: "DEVELOPMENT", artwork: "ethereum" },
+  { category: "Regulation", tag: "POLICY", artwork: "policy" },
+  { category: "Altcoins", tag: "ECOSYSTEM", artwork: "ecosystem" },
 ];
 ---
 
@@ -249,7 +250,7 @@ const stories = [
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
         <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
         <div class="news-cards">
-          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true">{story.icon}</div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}
+          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true"><EditorialArtwork variant={story.artwork as "bitcoin" | "ethereum" | "policy" | "ecosystem"} /></div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}
         </div>
         <div class="news-no-results" data-news-empty role="status" hidden>
           <strong>{t("No demo placeholders match.")}</strong>

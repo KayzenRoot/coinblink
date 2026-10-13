@@ -116,6 +116,8 @@ try {
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
     assert.equal(await page.title(), "CoinBlink · Crypto news in a blink");
     assert.equal(await page.locator(".cb-home").count(), 1);
+    assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
+      viewport.name + " must render four original local illustrative thumbnails");
     assert.equal(await page.locator("astro-dev-toolbar").count(), 0, "visual evidence must exclude the development toolbar");
     const dimensions = await page.evaluate(() => ({
       viewport: globalThis.document.documentElement.clientWidth,

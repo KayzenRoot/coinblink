@@ -906,3 +906,13 @@
 @media (max-width:480px) {
   .cb-home .coin-art { transform: rotate(-9deg) rotateY(-8deg); }
 }
+
+/* CB-M01 R21: noninteractive faceted rock material and restrained atmospheric haze. */
+.cb-home .hero-rockscape {
+  opacity: .93;
+  filter: drop-shadow(0 4px 7px rgb(0 0 0 / 37%))
+    drop-shadow(0 0 9px rgb(124 204 68 / 10%));
+}
+@media (max-width:760px) {
+  .cb-home .hero-rockscape { opacity: .67; }
+}

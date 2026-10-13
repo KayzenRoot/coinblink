@@ -6,14 +6,14 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "de28a505366092de64f74faafe6f1e105b75ddf9",
-    "sha256": "8a0d3b5085a951662707331aeb5f51553559ed5097ca9f35ebfb4ac75d599df5",
+    "gitBlobSha": "808cbb76915e9936d41a7eac66675ed78da22f1c",
+    "sha256": "9516ca55ef577a59dd0ec33c5030c346977a7774d5e2b11bcd7e3f69d655a8f1",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
     "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
     "rasterDerivativeOfGoldenReference": false,
-    "changeRecord": "R20 implementation prepared relative to predecessor 32b2934988515c465ef452ccb2d994af41e3e735; exact source Git blob and PR compare identify published revision."
+    "changeRecord": "R21 dimensional faceted rockscape and atmospheric haze, derived from predecessor 887c7c73ae2570f7c2826ceb3d4c4748cdfa9e9f; exact source Git blob identifies new content."
   },
   "goldenReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -29,7 +29,7 @@
       768,
       390
     ],
-    "status": "HISTORICAL_R17_CI_SUCCESS_R20_REQUIRES_FRESH_EXACT_HEAD"
+    "status": "HISTORICAL_R17_CI_SUCCESS_R21_REQUIRES_FRESH_EXACT_HEAD"
   },
   "sharedReleaseGate": {
     "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -50,15 +50,15 @@
   "assets": [
     {
       "assetId": "CB-M01-DEMO-HERO-SCENE",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "region": "hero",
-      "description": "Original local stylized Bitcoin scene with offset minted-metal back face, curved gold rim and separate specular reflection; not a photorealistic production render.",
+      "description": "Original in-repository decorative rocky landscape with faceted shading, lime atmospheric ground mist, 3/4 styled Bitcoin coin and chart overlays. Not cinematic photorealistic Golden parity.",
       "sourceFragment": {
         "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
         "endMarker": "        <div class=\"hero-copy\">",
         "includeEndMarker": false,
-        "sha256": "72e024b6e3a53a22cc4f962fd1bb85b22f2e0a7b40b7dff51345c593be8ef7a1",
-        "sourceByteLength": 9204
+        "sha256": "ebbdb4599f48bd2f9cfc3a509651e9da74a7753b06bec5f4e425c79d89050ba1",
+        "sourceByteLength": 11495
       },
       "form": "HTML_AND_EMBEDDED_SVGS",
       "viewBoxes": [
@@ -71,10 +71,10 @@
       "lightThemeApproval": "NOT_APPROVED",
       "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
       "physicalImageAsset": "NONE",
-      "visualComparison": "R20 exact-head responsive screenshot review pending; no pixel parity or Owner approval claimed",
+      "visualComparison": "R21 exact-HEAD responsive screenshot comparison pending; NOT Owner visual acceptance",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "de28a505366092de64f74faafe6f1e105b75ddf9",
+      "sourceGitBlobSha": "808cbb76915e9936d41a7eac66675ed78da22f1c",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -120,7 +120,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "de28a505366092de64f74faafe6f1e105b75ddf9",
+      "sourceGitBlobSha": "808cbb76915e9936d41a7eac66675ed78da22f1c",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",

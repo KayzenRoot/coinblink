@@ -77,12 +77,40 @@ const stories = [
               <radialGradient id="hero-rock-haze">
                 <stop offset="0%" stop-color="#a1ff53" stop-opacity=".2"></stop><stop offset="100%" stop-color="#a1ff53" stop-opacity="0"></stop>
               </radialGradient>
+              <linearGradient id="hero-facet-lit" x1="0%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stop-color="#9eaf7d"></stop>
+                <stop offset="39%" stop-color="#334d39"></stop>
+                <stop offset="100%" stop-color="#071b14"></stop>
+              </linearGradient>
+              <linearGradient id="hero-facet-shadow" x1="0%" y1="5%" x2="95%" y2="100%">
+                <stop offset="0%" stop-color="#0d211b"></stop>
+                <stop offset="100%" stop-color="#020b09"></stop>
+              </linearGradient>
+              <radialGradient id="hero-ground-mist">
+                <stop offset="0%" stop-color="#a8eb74" stop-opacity=".32"></stop>
+                <stop offset="100%" stop-color="#6bb157" stop-opacity="0"></stop>
+              </radialGradient>
             </defs>
             <ellipse cx="505" cy="213" rx="277" ry="129" fill="url(#hero-rock-haze)"></ellipse>
             <path d="M0 265 83 232 153 255 258 131 302 182 394 95 456 168 546 72 610 140 668 116 760 190V320H0Z" fill="url(#hero-rock-back)" opacity=".88"></path>
+            <!-- Original faceted slopes introduce material depth without external textures. -->
+            <g class="hero-rock-facets-back" opacity=".77">
+              <path d="M258 131 302 182 279 224 250 199 221 230Z" fill="url(#hero-facet-lit)" opacity=".35"></path>
+              <path d="M394 95 456 168 445 215 393 148 365 184Z" fill="url(#hero-facet-shadow)" opacity=".75"></path>
+              <path d="M546 72 610 140 588 175 548 116 518 151Z" fill="url(#hero-facet-lit)" opacity=".38"></path>
+              <path d="M546 72 569 114 546 151 523 173 501 188Z" fill="url(#hero-facet-shadow)" opacity=".44"></path>
+            </g>
             <path d="m258 131-23 53 24-24 24 16 19 6m92-87-25 56 22-23 21 8 44 32m90-96-29 68 23-25 24 12 46 13" fill="#70846c" opacity=".32"></path>
             <path d="m153 255 105-124 44 51 92-87 62 73 90-96 64 68 58-24 92 74" fill="none" stroke="url(#hero-rock-rim)" stroke-width="2.1" stroke-linejoin="round"></path>
             <path d="m0 302 115-48 54 19 93-84 81 75 75-110 85 90 70-61 91 70 56-38 40 27V320H0Z" fill="url(#hero-rock-front)"></path>
+            <g class="hero-rock-facets-front" opacity=".82">
+              <path d="M262 189 343 264 308 302 264 236 226 271Z" fill="url(#hero-facet-lit)" opacity=".39"></path>
+              <path d="M418 154 503 244 477 293 419 208 380 246Z" fill="url(#hero-facet-shadow)" opacity=".77"></path>
+              <path d="M573 183 664 253 630 292 574 232 546 264Z" fill="url(#hero-facet-lit)" opacity=".29"></path>
+              <path d="M115 254 169 273 141 290 116 278 95 297Z" fill="url(#hero-facet-shadow)" opacity=".62"></path>
+              <path d="m240 243 25-17 15 29m119-38 23-18 15 20m134 15 20-16 18 19" stroke="#c4d8a9" stroke-opacity=".24" stroke-width="1.4" fill="none"></path>
+            </g>
+            <ellipse class="hero-ridge-mist" cx="518" cy="286" rx="232" ry="30" fill="url(#hero-ground-mist)" opacity=".52"></ellipse>
             <path d="m262 189-22 55 24-24 38 44m116-110-38 70 39-30 33 41m121-52-24 42 28-10 31 32" fill="#a2bb91" opacity=".22"></path>
             <path d="m115 254 54 19 93-84 81 75 75-110 85 90 70-61 91 70" fill="none" stroke="url(#hero-rock-rim)" stroke-width="2.5" stroke-linejoin="round"></path>
             <path d="M0 319 86 298 162 312 254 268 309 294 378 261 470 301 546 253 628 290 690 265 760 286V320H0Z" fill="#050b09" opacity=".95"></path>

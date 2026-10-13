@@ -140,6 +140,18 @@ try {
     assert.ok(reliefLayers.rimCircles === 2 && reliefLayers.reflection
       && reliefLayers.hidden && reliefLayers.glyph,
       viewport.name + " hero must preserve original decorative minted rim and Bitcoin glyph");
+    const mountainLayers = await page.locator(".hero-panel .hero-rockscape").evaluate((art) => ({
+      backgroundFacets: art.querySelectorAll(".hero-rock-facets-back path").length,
+      foregroundFacets: art.querySelectorAll(".hero-rock-facets-front path").length,
+      mist: art.querySelector(".hero-ridge-mist") !== null,
+      decorative: art.getAttribute("aria-hidden") === "true",
+      externalImages: art.querySelectorAll("image").length,
+      svgWidth: art.getBoundingClientRect().width,
+    }));
+    assert.ok(mountainLayers.backgroundFacets >= 4 && mountainLayers.foregroundFacets >= 4
+      && mountainLayers.mist && mountainLayers.decorative && mountainLayers.externalImages === 0
+      && mountainLayers.svgWidth > 40,
+      viewport.name + " rockscape facets and mist must remain local, visible and decorative");
     assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
       viewport.name + " must render four original local illustrative thumbnails");
     const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {

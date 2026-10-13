@@ -117,7 +117,7 @@ test("hero and promo scene metadata pin exact source fragments and deny commerci
   assert.equal(registry.productState, "DRAFT_DEMO_ONLY_NOT_PUBLISHED");
   assert.equal(registry.source.path, "src/modules/CB-M01/GoldenHome.astro");
   assert.equal(registry.source.sha256, actualSourceSha256, "the scene parent source changed without provenance refresh");
-  assert.equal(registry.source.gitBlobSha, "de28a505366092de64f74faafe6f1e105b75ddf9");
+  assert.equal(registry.source.gitBlobSha, "808cbb76915e9936d41a7eac66675ed78da22f1c");
   assert.equal(registry.source.rasterDerivativeOfGoldenReference, false);
   assert.equal(registry.goldenReference.use, "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED");
   assert.equal(registry.sharedReleaseGate.commercialPublicationAllowed, false);
@@ -189,6 +189,19 @@ test("R20 Bitcoin relief is original inline SVG with bounded local metallic dept
   assert.match(coin, /<g class="coin-relief" aria-hidden="true">/u);
   assert.match(coin, /<text x="150" y="201"[^>]*>₿<\/text>/u);
   assert.doesNotMatch(coin, /<image|<script|https?:\/\//iu);
+});
+
+test("R21 rockscape has layered source-owned facets and no external texture dependencies", () => {
+  const scene = component.split('<svg class="hero-rockscape"')[1]?.split("</svg>")[0];
+  assert.ok(scene, "rockscape SVG required");
+  for (const marker of ["hero-facet-lit", "hero-facet-shadow", "hero-ground-mist",
+    "hero-rock-facets-back", "hero-rock-facets-front", "hero-ridge-mist"]) {
+    assert.ok(scene.includes(marker), "missing original rockscape layer: " + marker);
+  }
+  assert.match(stylesheet, /CB-M01 R21: noninteractive faceted rock material/u);
+  assert.match(stylesheet, /\.cb-home \.hero-rockscape \{[\s\S]*?opacity: \.93;/u);
+  assert.match(component, /<div class="hero-scene" aria-hidden="true">/u);
+  assert.doesNotMatch(scene, /<image|<script|https?:\/\//iu);
 });
 
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {

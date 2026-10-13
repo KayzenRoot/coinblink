@@ -13,10 +13,15 @@ const escapeMarkdown = (value) => value
   .replace(/>/gu, "&gt;")
   .replace(/^#/gmu, "&#35;");
 const escapeLegacyMarkdown = (value) => value.replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+// A heading's '#' must be encoded even when it is not the first character.
+// Use a single pass so literal "&#35;" remains distinguishable from a real '#'.
+const escapeTitleV2 = (value) => value.replace(/[&<>#]/gu, (character) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", "#": "&#35;",
+})[character]);
 const FORMAT_V2 = "> COINBLINK LOCAL DRAFT FORMAT: 2";
 
 export function prepareLocalDraft(input) {
-  const title = clean(input.title, MAX_TITLE);
+  const title = clean(input.title, MAX_TITLE).replace(/\n/gu, " ");
   const author = clean(input.author, MAX_AUTHOR);
   const summary = clean(input.summary, MAX_SUMMARY);
   const body = clean(input.body, MAX_BODY);
@@ -47,7 +52,7 @@ export function prepareLocalDraft(input) {
 function serializeLocalDraft(prepared, legacy = false) {
   if (!prepared.ready) throw new Error("A source-backed draft is required");
   const encode = legacy ? escapeLegacyMarkdown : escapeMarkdown;
-  const title = encode(prepared.title.replace(/[\n#]/gu, " "));
+  const title = legacy ? encode(prepared.title.replace(/[\n#]/gu, " ")) : escapeTitleV2(prepared.title);
   const summary = encode(prepared.summary);
   const body = encode(prepared.body);
   // Version 2 uses an empty author label for missing credits, rather than a
@@ -110,15 +115,15 @@ export function parseLocalDraftMarkdown(raw) {
   }
   const [title, author, originalSource, brief, article] = values;
   // Legacy exports encoded angle brackets, and the text is never assigned to innerHTML.
-  const restore = (value) => {
+  const restore = (value, isTitle = false) => {
     const angles = value.replace(/&lt;/gu, "<").replace(/&gt;/gu, ">");
     // Decode the v2 heading escape before ampersands: literal &#35;
     // must not be mistaken for an originally encoded leading '#'.
-    const restored = isVersion2 ? angles.replace(/^&#35;/gmu, "#") : angles;
+    const restored = isVersion2 ? angles.replace(isTitle ? /&#35;/gu : /^&#35;/gmu, "#") : angles;
     return isVersion2 ? restored.replace(/&amp;/gu, "&") : restored;
   };
   const result = prepareLocalDraft({
-    title: restore(title),
+    title: restore(title, true),
     author: !isVersion2 && restore(author) === "Not provided" ? "" : restore(author),
     source: originalSource,
     summary: restore(brief),

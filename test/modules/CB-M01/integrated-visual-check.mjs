@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { spawn } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { execFileSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
@@ -42,6 +43,7 @@ const report = {
 };
 let server;
 let browser;
+let persistDir;
 
 async function availablePort() {
   const listener = createServer();
@@ -62,10 +64,14 @@ async function saveReport(status, failure = null) {
 }
 
 async function stopServer() {
-  if (!server || server.exitCode !== null || server.signalCode !== null) return;
+  if (!server || server.exitCode !== null || server.signalCode !== null) return true;
   server.kill();
   await Promise.race([once(server, "exit"), new Promise((resolveExit) => setTimeout(resolveExit, 3_000))]);
-  if (server.exitCode === null && server.signalCode === null) server.kill("SIGKILL");
+  if (server.exitCode === null && server.signalCode === null) {
+    server.kill("SIGKILL");
+    await Promise.race([once(server, "exit"), new Promise((resolveExit) => setTimeout(resolveExit, 3_000))]);
+  }
+  return server.exitCode !== null || server.signalCode !== null;
 }
 
 await mkdir(screenshotDir, { recursive: true });
@@ -77,9 +83,14 @@ try {
   const port = await availablePort();
   report.origin = "http://127.0.0.1:" + port;
   const astroCli = join(repoRoot, "node_modules", "astro", "bin", "astro.mjs");
+  const wranglerCli = join(repoRoot, "node_modules", "wrangler", "bin", "wrangler.js");
   const config = join("test", "modules", "CB-M01", "astro-integration.config.mjs");
   const safeEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/(TOKEN|SECRET|PASSWORD|CREDENTIAL|CLOUDFLARE|PRIVATE_KEY)/iu.test(key)));
-  server = spawn(process.execPath, [astroCli, "dev", "--config=" + config, "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+  safeEnv.CI = "true";
+  safeEnv.WRANGLER_SEND_METRICS = "false";
+  execFileSync(process.execPath, [astroCli, "build", "--config=" + config], { cwd: repoRoot, env: safeEnv, stdio: "ignore", windowsHide: true });
+  persistDir = await mkdtemp(join(tmpdir(), "coinblink-m01-wrangler-local-"));
+  server = spawn(process.execPath, [wranglerCli, "dev", "--config", "./dist/server/wrangler.json", "--local", "--ip", "127.0.0.1", "--port", String(port), "--persist-to", persistDir, "--show-interactive-dev-session=false", "--log-level", "error"], {
     cwd: repoRoot,
     windowsHide: true,
     stdio: ["ignore", "ignore", "ignore"],
@@ -206,5 +217,6 @@ try {
   throw error;
 } finally {
   if (browser) await browser.close();
-  await stopServer();
+  const stopped = await stopServer();
+  if (stopped && persistDir) await rm(persistDir, { recursive: true, force: true });
 }

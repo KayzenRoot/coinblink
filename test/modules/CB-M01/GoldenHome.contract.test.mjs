@@ -171,6 +171,14 @@ test("R18 promo atmosphere stays decorative, local and subordinate to DEMO copy"
   assert.match(stylesheet, /\.cb-home \.promo-scene \{[\s\S]*?drop-shadow/u);
 });
 
+test("R19 adds a noninteractive three-quarter perspective without changing the source art", () => {
+  assert.match(stylesheet, /CB-M01 R19: subtle three-quarter metallic coin perspective/u);
+  assert.match(stylesheet, /\.cb-home \.coin-art \{[\s\S]*?rotateY\(-16deg\)/u);
+  assert.match(stylesheet, /\.cb-home \.hero-scene \{ perspective: 980px/u);
+  assert.match(component, /<svg class="coin-art"[^>]*aria-hidden="true"/u);
+  assert.doesNotMatch(component, /<img[^>]*coinblink-home-master-dark/u);
+});
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });

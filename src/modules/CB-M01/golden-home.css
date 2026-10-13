@@ -885,3 +885,24 @@
   .cb-home .promo-scene { right: 0; width: 46%; opacity: .82; }
   .cb-home .promo-panel::before { opacity: .72; }
 }
+
+/* CB-M01 R19: subtle three-quarter metallic coin perspective; unchanged original SVG provenance. */
+.cb-home .hero-scene { perspective: 980px; perspective-origin: 69% 52%; }
+.cb-home .coin-art {
+  transform-origin: 50% 50%;
+  transform: translateY(-48%) rotate(-9deg) rotateY(-16deg) rotateX(4deg);
+  filter: drop-shadow(-12px 16px 10px rgb(0 0 0 / 76%))
+    drop-shadow(-5px 6px 1px rgb(92 56 13 / 32%))
+    drop-shadow(0 0 14px rgb(155 242 61 / 26%));
+}
+.cb-home .scene-aura {
+  background:
+    radial-gradient(ellipse at 69% 42%, rgb(244 207 99 / 12%), transparent 27%),
+    radial-gradient(ellipse at 68% 58%, rgb(154 245 65 / 19%), transparent 42%);
+}
+@media (max-width:760px) {
+  .cb-home .coin-art { transform: translateY(-48%) rotate(-9deg) rotateY(-9deg); }
+}
+@media (max-width:480px) {
+  .cb-home .coin-art { transform: rotate(-9deg) rotateY(-8deg); }
+}

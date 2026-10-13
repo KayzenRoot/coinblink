@@ -116,6 +116,21 @@ try {
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
     assert.equal(await page.title(), "CoinBlink · Crypto news in a blink");
     assert.equal(await page.locator(".cb-home").count(), 1);
+    const bitcoinScene = await page.locator(".hero-panel .coin-art").evaluate((coin) => {
+      const scene = coin.closest(".hero-scene");
+      const box = coin.getBoundingClientRect();
+      return {
+        decorative: coin.getAttribute("aria-hidden") === "true",
+        present: box.width > 45 && box.height > 45,
+        perspective: globalThis.getComputedStyle(scene).perspective,
+        transform: globalThis.getComputedStyle(coin).transform,
+        imageCount: coin.querySelectorAll("image").length,
+      };
+    });
+    assert.ok(bitcoinScene.decorative && bitcoinScene.present && bitcoinScene.imageCount === 0,
+      viewport.name + " local Bitcoin vector must stay decorative and visible");
+    assert.notEqual(bitcoinScene.perspective, "none", viewport.name + " must retain scene perspective");
+    assert.notEqual(bitcoinScene.transform, "none", viewport.name + " must retain coin transform");
     assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
       viewport.name + " must render four original local illustrative thumbnails");
     const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {

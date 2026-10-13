@@ -109,6 +109,54 @@ test("R15 decorative editorial assets have fail-closed provenance and exact-sour
   assert.match(component, /Editorial placeholder · no live story connected/u);
 });
 
+test("hero and promo scene metadata pin exact source fragments and deny commercial publishing", async () => {
+  const registry = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/scene-asset-provenance.json", import.meta.url), "utf8"));
+  const actualSourceSha256 = createHash("sha256").update(component, "utf8").digest("hex");
+  assert.equal(registry.schemaVersion, 1);
+  assert.equal(registry.workOrder, "CB-M01-WO-001");
+  assert.equal(registry.productState, "DRAFT_DEMO_ONLY_NOT_PUBLISHED");
+  assert.equal(registry.source.path, "src/modules/CB-M01/GoldenHome.astro");
+  assert.equal(registry.source.sha256, actualSourceSha256, "the scene parent source changed without provenance refresh");
+  assert.equal(registry.source.gitBlobSha, "3b80c5904c546b92edf26b0db77f15dcbfd7ccb6");
+  assert.equal(registry.source.rasterDerivativeOfGoldenReference, false);
+  assert.equal(registry.goldenReference.use, "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED");
+  assert.equal(registry.sharedReleaseGate.commercialPublicationAllowed, false);
+  assert.equal(registry.sharedReleaseGate.ownerVisualApproval, false);
+  assert.equal(registry.assets.length, 2);
+  assert.deepEqual(registry.assets.map((a) => a.region), ["hero", "promo"]);
+  assert.equal(new Set(registry.assets.map((a) => a.assetId)).size, 2);
+  for (const asset of registry.assets) {
+    const { startMarker, endMarker, includeEndMarker, sha256, sourceByteLength } = asset.sourceFragment;
+    const start = component.indexOf(startMarker);
+    const end = component.indexOf(endMarker, start + startMarker.length);
+    assert.ok(start >= 0 && end > start, "missing bounded fragment: " + asset.region);
+    assert.equal(component.indexOf(startMarker, start + 1), -1, "duplicate asset fragment: " + asset.region);
+    const slice = component.slice(start, end + (includeEndMarker ? endMarker.length : 0));
+    assert.equal(Buffer.byteLength(slice, "utf8"), sourceByteLength);
+    assert.equal(createHash("sha256").update(slice, "utf8").digest("hex"), sha256,
+      "undocumented source fragment change: " + asset.region);
+    assert.equal(asset.sourceGitBlobSha, registry.source.gitBlobSha);
+    assert.equal(asset.sourcePath, registry.source.path);
+    assert.equal(asset.rightsReview, "PENDING_OWNER_OR_LEGAL");
+    assert.equal(asset.licenseOrTrademarkClearance, "NOT_ESTABLISHED");
+    assert.equal(asset.ownerVisualApproval, false);
+    assert.equal(asset.commercialPublicationAllowed, false);
+    assert.equal(asset.liveEditorialEligible, false);
+    assert.equal(asset.advertisingEligible, false);
+    assert.equal(asset.allowedUsage, "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY");
+    assert.equal(asset.lightThemeApproval, "NOT_APPROVED");
+    assert.ok(asset.assetId && asset.sourceValidationDate && asset.viewBoxes.length > 0);
+    assert.doesNotMatch(slice, /<image\\b|https?:\\/\\//iu, "scene cannot load externally hosted media");
+  }
+  const [hero, promo] = registry.assets;
+  assert.match(component, /<div class="hero-scene" aria-hidden="true">/u);
+  assert.match(component, /<svg class="promo-scene"[^>]*aria-hidden="true"/u);
+  assert.equal(hero.form, "HTML_AND_EMBEDDED_SVGS");
+  assert.equal(promo.form, "INLINE_SVG");
+  assert.equal(promo.adjacentBrandAsset.includedInSvgFragment, false);
+  assert.equal(promo.adjacentBrandAsset.status, "OWNER_VISUAL_APPROVED_BUT_COMMERCIAL_CLEARANCE_PENDING");
+});
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });

@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M01-WO-001",
+  "recordType": "ORIGINAL_DECORATIVE_SCENE_PROVENANCE",
+  "productState": "DRAFT_DEMO_ONLY_NOT_PUBLISHED",
+  "provenanceRecordedAt": "2026-10-13",
+  "source": {
+    "path": "src/modules/CB-M01/GoldenHome.astro",
+    "gitBlobSha": "3b80c5904c546b92edf26b0db77f15dcbfd7ccb6",
+    "sha256": "31245a2c991701b37416a0fc0f799ac60ba0b66203c86f5bb65617f005fb34f3",
+    "changeSourceCommit": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb",
+    "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
+    "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
+    "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
+    "rasterDerivativeOfGoldenReference": false
+  },
+  "goldenReference": {
+    "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+    "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8",
+    "use": "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED"
+  },
+  "technicalEvidence": {
+    "head": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb",
+    "runId": 38418108360,
+    "artifactId": 11824059839,
+    "screenshotWidths": [
+      1536,
+      768,
+      390
+    ],
+    "status": "CI_SUCCESS_NOT_GOLDEN_PARITY_OR_OWNER_ACCEPTANCE"
+  },
+  "sharedReleaseGate": {
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "liveEditorialEligible": false,
+    "advertisingEligible": false,
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+  },
+  "limitations": [
+    "Two logical scenes are embedded in a larger Astro source file; their digest covers exact source fragments, not raster screenshots.",
+    "The hero contains multiple vector/DOM layers; it is not a single downloadable bitmap or a photorealistic Bitcoin render.",
+    "The promo uses the approved visual logo outside its SVG scene, but the brand's commercial rights clearance remains pending.",
+    "Owner Golden 1:1 visual acceptance, image licensing/trademark checks, public production release and any advertising purpose require separate approval.",
+    "CI accessibility, hashes and screenshots establish repeatability and change detection, not artwork licensing or permission to publish."
+  ],
+  "assets": [
+    {
+      "assetId": "CB-M01-DEMO-HERO-SCENE",
+      "version": "0.1.0",
+      "region": "hero",
+      "description": "Composited original editorial Bitcoin illustration: decorative mountain layers, chart energy and stylized golden Bitcoin SVG.",
+      "sourceFragment": {
+        "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
+        "endMarker": "        <div class=\"hero-copy\">",
+        "includeEndMarker": false,
+        "sha256": "60b57a8661ada0e85fbde9dd4fe0bec8f1fdb5008bd45425a3eaf94d6eea17a5",
+        "sourceByteLength": 7452
+      },
+      "form": "HTML_AND_EMBEDDED_SVGS",
+      "viewBoxes": [
+        "0 0 760 320",
+        "0 0 600 300",
+        "0 0 300 300"
+      ],
+      "altTextMode": "DECORATIVE_PARENT_ARIA_HIDDEN",
+      "themeVariant": "DARK_DEMO_ONLY",
+      "lightThemeApproval": "NOT_APPROVED",
+      "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
+      "physicalImageAsset": "NONE",
+      "visualComparison": "R15 exact-head screenshots, non-pixel-parity",
+      "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "3b80c5904c546b92edf26b0db77f15dcbfd7ccb6",
+      "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "liveEditorialEligible": false,
+      "advertisingEligible": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "locales": [
+        "en",
+        "pt-br"
+      ],
+      "sourceValidationDate": "2026-10-13",
+      "evidenceCommit": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb"
+    },
+    {
+      "assetId": "CB-M01-DEMO-PROMO-SCENE",
+      "version": "0.1.0",
+      "region": "promo",
+      "description": "Original decorative lime planetary halo, mountainous landscape and tiny anonymous silhouette inside the CoinBlink mock promo.",
+      "sourceFragment": {
+        "startMarker": "<svg class=\"promo-scene\"",
+        "endMarker": "</svg>",
+        "includeEndMarker": true,
+        "sha256": "3701e88f907d15c9c45570016697fa34ca30a98934859a9cf47c15ba45322dbf",
+        "sourceByteLength": 2230
+      },
+      "form": "INLINE_SVG",
+      "viewBoxes": [
+        "0 0 360 180"
+      ],
+      "altTextMode": "DECORATIVE_SVG_ARIA_HIDDEN",
+      "themeVariant": "DARK_DEMO_ONLY",
+      "lightThemeApproval": "NOT_APPROVED",
+      "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
+      "physicalImageAsset": "NONE",
+      "visualComparison": "R15 exact-head screenshots, non-pixel-parity",
+      "adjacentBrandAsset": {
+        "path": "assets/reference/coinblink-logo-approved-original-1179x1040.jpg",
+        "sha256": "126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0",
+        "status": "OWNER_VISUAL_APPROVED_BUT_COMMERCIAL_CLEARANCE_PENDING",
+        "includedInSvgFragment": false
+      },
+      "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "3b80c5904c546b92edf26b0db77f15dcbfd7ccb6",
+      "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "liveEditorialEligible": false,
+      "advertisingEligible": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "locales": [
+        "en",
+        "pt-br"
+      ],
+      "sourceValidationDate": "2026-10-13",
+      "evidenceCommit": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb"
+    }
+  ]
+}

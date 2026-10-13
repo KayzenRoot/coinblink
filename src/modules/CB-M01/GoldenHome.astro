@@ -146,16 +146,51 @@ const stories = [
     <section class="content-grid" aria-label={t("Demonstration signals")}>
       <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
         <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{t("Unavailable")}</span></div>
-        <p>{t("Key events appear when a verified source is connected.")}</p><div class="empty-state"><b aria-hidden="true">⌁</b><span>{t("No verified updates are available in this demonstration.")}</span></div>
+        <p>{t("Key events appear when a verified source is connected.")}</p><div class="empty-state radar-empty">
+          <svg class="radar-tracks" viewBox="0 0 390 108" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="radar-trail-light" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#9fe75a" stop-opacity=".75"></stop><stop offset="100%" stop-color="#9fe75a" stop-opacity=".06"></stop></linearGradient></defs>
+            <path class="radar-spine" d="M35 6V103"></path>
+            {[18, 38, 58, 78, 98].map((y) => (
+              <g><circle cx="35" cy={y} r="4" class="radar-node"></circle><path d={`M45 ${y}H376`} class="radar-track"></path></g>
+            ))}
+          </svg>
+          <b aria-hidden="true">⌁</b><span>{t("No verified updates are available in this demonstration.")}</span>
+        </div>
       </article>
       <article class="content-panel sentiment-panel" aria-labelledby="sentiment-title">
         <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="sentiment-title">◉ {t("Market sentiment")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
         <p>{t("Sentiment is unavailable until an approved source is connected.")}</p>
-        <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label={t("Market sentiment unavailable")}><b>—</b><small>{t("Unavailable")}</small></div>
+        <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label={t("Market sentiment unavailable")}>
+            <svg class="sentiment-arc" viewBox="0 0 130 96" aria-hidden="true" focusable="false">
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#26362c" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#d56451" stroke-opacity=".4" stroke-width="12" stroke-dasharray="22 142"></path>
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#ebbb58" stroke-opacity=".43" stroke-width="12" stroke-dasharray="27 137" stroke-dashoffset="-30"></path>
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#a1ef58" stroke-opacity=".48" stroke-width="12" stroke-dasharray="66 98" stroke-dashoffset="-89"></path>
+            </svg>
+            <b>—</b><small>{t("Unavailable")}</small>
+          </div>
           <ul><li>{t("Extreme greed")} <b>—</b></li><li>{t("Greed")} <b>—</b></li><li>{t("Neutral")} <b>—</b></li><li>{t("Fear")} <b>—</b></li><li>{t("Extreme fear")} <b>—</b></li></ul>
         </div>
       </article>
-      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><svg class="promo-scene" viewBox="0 0 360 180" focusable="false" aria-hidden="true"><defs><linearGradient id="promo-ridge" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b8f34b" stop-opacity=".4"></stop><stop offset="100%" stop-color="#101b14" stop-opacity=".05"></stop></linearGradient></defs><circle cx="247" cy="73" r="42" fill="none" stroke="#b8f34b" stroke-opacity=".48" stroke-width="2"></circle><circle cx="247" cy="73" r="31" fill="none" stroke="#d9ff96" stroke-opacity=".35" stroke-width="1"></circle><path d="M0 171 70 122l35 28 63-72 34 43 42-34 46 39 70-62v116H0Z" fill="#0b130e" stroke="url(#promo-ridge)" stroke-width="2"></path><path d="m0 171 78-31 44 16 57-40 39 22 53-34 45 34 44-27v60H0Z" fill="#18261a" opacity=".9"></path><path d="M173 119c20-15 43-19 69-12 23 6 37 18 46 37" fill="none" stroke="#b8f34b" stroke-opacity=".65" stroke-width="2"></path></svg><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
+      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><svg class="promo-scene" viewBox="0 0 360 180" focusable="false" aria-hidden="true">
+        <defs>
+          <radialGradient id="promo-sky-light" cx="73%" cy="42%" r="51%"><stop offset="0%" stop-color="#b6ff67" stop-opacity=".44"></stop><stop offset="38%" stop-color="#559a36" stop-opacity=".13"></stop><stop offset="100%" stop-color="#07130c" stop-opacity="0"></stop></radialGradient>
+          <linearGradient id="promo-ridge" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b8f34b" stop-opacity=".57"></stop><stop offset="100%" stop-color="#101b14" stop-opacity=".05"></stop></linearGradient>
+          <linearGradient id="promo-horizon" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#9fe364"></stop><stop offset="100%" stop-color="#142b1b"></stop></linearGradient>
+        </defs>
+        <rect x="0" y="0" width="360" height="180" fill="url(#promo-sky-light)"></rect>
+        <circle cx="262" cy="70" r="57" fill="none" stroke="#a3f75a" stroke-opacity=".24" stroke-width="2"></circle>
+        <circle cx="262" cy="70" r="45" fill="none" stroke="#c1ff8c" stroke-opacity=".52" stroke-width="1.7"></circle>
+        <circle cx="262" cy="70" r="32" fill="none" stroke="#d9ff96" stroke-opacity=".36" stroke-width="1"></circle>
+        <path d="M0 171 66 107 102 140 172 62 207 114 254 79 296 112 360 49V180H0Z" fill="#0e1d13" stroke="url(#promo-ridge)" stroke-width="2"></path>
+        <path d="m0 177 70-43 42 27 53-56 49 44 54-38 48 29 44-25v65H0Z" fill="#1c301e" stroke="#a2d97d" stroke-opacity=".32" stroke-width="1"></path>
+        <path d="m49 170 51-21 30 20 52-32 39 23 47-28 54 37 38-16v27H0Z" fill="#08140d"></path>
+        <path d="m174 63-19 49 17-12 9 16 7-30m67-6-13 23 10-8 14 15" fill="none" stroke="#b8f34b" stroke-opacity=".46" stroke-width="1.3"></path>
+        <path d="M193 173Q257 124 335 156" fill="none" stroke="#a6f564" stroke-opacity=".62" stroke-width="1.8"></path>
+        <path d="M257 145l-2-17 4-6 3 6-2 17 6 18-6-2-3-11-4 11-6 2Z" fill="#d5ffac" fill-opacity=".72"></path>
+        <circle cx="258" cy="116" r="5" fill="#d5ffac" fill-opacity=".75"></circle>
+        <path d="M0 178H360" stroke="url(#promo-horizon)" stroke-opacity=".55" stroke-width="1.5"></path>
+      </svg><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>

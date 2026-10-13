@@ -61,10 +61,16 @@ const stories = [
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
           <div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
+          <svg class="scene-energy" viewBox="0 0 600 300" focusable="false">
+            <defs><linearGradient id="energy-line" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#75b83a" stop-opacity=".05"></stop><stop offset="54%" stop-color="#b8f34b" stop-opacity=".82"></stop><stop offset="100%" stop-color="#efffa2"></stop></linearGradient></defs>
+            <path class="energy-trail" d="M24 274 C103 268 109 231 176 218 S258 170 302 166 S380 111 431 101 S493 54 553 29"></path>
+            <path class="energy-arrow" d="M516 31 555 27 548 66"></path>
+          </svg>
           <svg class="coin-art" viewBox="0 0 300 300">
             <defs><radialGradient id="coin-face" cx="34%" cy="27%"><stop offset="0%" stop-color="#fff0a1"></stop><stop offset="36%" stop-color="#e8b927"></stop><stop offset="74%" stop-color="#8c5b08"></stop><stop offset="100%" stop-color="#21190b"></stop></radialGradient></defs>
             <circle cx="150" cy="150" r="115" fill="#9cff3a" opacity=".16"></circle><circle cx="150" cy="150" r="108" fill="#17140c" stroke="#b8f34b" stroke-width="5"></circle>
-            <circle cx="150" cy="150" r="92" fill="url(#coin-face)" stroke="#ffe27d" stroke-width="4"></circle><circle cx="150" cy="150" r="78" fill="none" stroke="#ffeaa2" stroke-opacity=".55" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="92" fill="url(#coin-face)" stroke="#ffe27d" stroke-width="4"></circle><circle cx="150" cy="150" r="78" fill="none" stroke="#ffeaa2" stroke-opacity=".55" stroke-width="2"></circle><circle cx="150" cy="150" r="69" fill="none" stroke="#fff0a1" stroke-opacity=".25" stroke-width="1.5" stroke-dasharray="2 5"></circle>
+            <path d="M82 118c17-29 44-45 76-47M217 181c-15 28-42 46-73 49" fill="none" stroke="#fff0a1" stroke-opacity=".36" stroke-width="3" stroke-linecap="round"></path>
             <text x="150" y="204" fill="#fff0a1" stroke="#8a5a08" stroke-width="1.5" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="154" font-weight="700" text-anchor="middle">₿</text>
           </svg>
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
@@ -118,7 +124,7 @@ const stories = [
           <ul><li>{t("Extreme greed")} <b>—</b></li><li>{t("Greed")} <b>—</b></li><li>{t("Neutral")} <b>—</b></li><li>{t("Fear")} <b>—</b></li><li>{t("Extreme fear")} <b>—</b></li></ul>
         </div>
       </article>
-      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
+      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><svg class="promo-scene" viewBox="0 0 360 180" focusable="false" aria-hidden="true"><defs><linearGradient id="promo-ridge" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b8f34b" stop-opacity=".4"></stop><stop offset="100%" stop-color="#101b14" stop-opacity=".05"></stop></linearGradient></defs><circle cx="247" cy="73" r="42" fill="none" stroke="#b8f34b" stroke-opacity=".48" stroke-width="2"></circle><circle cx="247" cy="73" r="31" fill="none" stroke="#d9ff96" stroke-opacity=".35" stroke-width="1"></circle><path d="M0 171 70 122l35 28 63-72 34 43 42-34 46 39 70-62v116H0Z" fill="#0b130e" stroke="url(#promo-ridge)" stroke-width="2"></path><path d="m0 171 78-31 44 16 57-40 39 22 53-34 45 34 44-27v60H0Z" fill="#18261a" opacity=".9"></path><path d="M173 119c20-15 43-19 69-12 23 6 37 18 46 37" fill="none" stroke="#b8f34b" stroke-opacity=".65" stroke-width="2"></path></svg><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>

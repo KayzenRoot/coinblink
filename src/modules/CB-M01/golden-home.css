@@ -640,17 +640,54 @@
   .cb-home .trending-strip { min-height:45px; grid-template-columns:140px repeat(5,minmax(0,1fr)); margin-top:6px; }
   .cb-home .trend-item { min-height:35px; gap:6px; padding:3px 7px; font-size:8px; }
   .cb-home .trend-item>b { width:22px; height:22px; }
-  .cb-home .category-rail { gap:6px; margin-top:6px; }
-  .cb-home .category-chip { min-height:39px; gap:5px; padding-inline:8px; }
-  .cb-home .content-grid { gap:8px; margin-top:7px; }
-  .cb-home .content-grid>.content-panel,.cb-home .content-grid>.promo-panel { min-height:160px; }
+  .cb-home .category-rail { gap:6px; margin-top:15px; }
+  .cb-home .category-chip { min-height:48px; gap:5px; padding-inline:8px; }
+  .cb-home .content-grid { gap:8px; margin-top:11px; }
+  .cb-home .content-grid>.content-panel,.cb-home .content-grid>.promo-panel { min-height:190px; }
   .cb-home .sentiment-content { min-height:77px; }
   .cb-home .empty-state { min-height:70px; }
-  .cb-home .promo-panel { min-height:160px; padding:10px; }
+  .cb-home .promo-panel { min-height:190px; padding:10px; }
   .cb-home .promo-panel>img { width:54px; height:50px; }
   .cb-home .promo-panel>a { min-height:28px; margin-top:8px; }
   .cb-home .lower-grid { margin-top:7px; }
   .cb-home .news-panel { padding:9px 11px 8px; }
   .cb-home .news-heading { margin-bottom:6px; }
+  .cb-home .news-heading>div { display:flex; align-items:baseline; gap:9px; }
+  .cb-home .news-heading h2 { margin:0; }
   .cb-home .news-cards { gap:6px; }
+}
+
+.cb-home .scene-energy {
+  position:absolute;
+  z-index:0;
+  inset:0;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  pointer-events:none;
+}
+.cb-home .scene-energy path { fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.cb-home .energy-trail {
+  stroke:url("#energy-line");
+  stroke-width:5;
+  filter:drop-shadow(0 0 9px rgb(184 243 75 / 72%));
+  opacity:.8;
+}
+.cb-home .energy-arrow {
+  stroke:#caff70;
+  stroke-width:6;
+  filter:drop-shadow(0 0 8px rgb(184 243 75 / 70%));
+}
+.cb-home .promo-scene {
+  position:absolute;
+  z-index:0;
+  right:0;
+  bottom:0;
+  width:48%;
+  height:100%;
+  opacity:.82;
+  pointer-events:none;
+}
+@media (max-width:760px) {
+  .cb-home .scene-energy { display:none; }
 }

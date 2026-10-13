@@ -651,7 +651,7 @@
   .cb-home .promo-panel>a { min-height:28px; margin-top:8px; }
   .cb-home .lower-grid { margin-top:7px; }
   .cb-home .news-panel { padding:9px 11px 8px; }
-  .cb-home .news-heading { margin-bottom:6px; }
+  .cb-home .news-heading { margin-bottom:0; }
   .cb-home .news-heading>div { display:flex; align-items:baseline; gap:9px; }
   .cb-home .news-heading h2 { margin:0; }
   .cb-home .news-cards { gap:6px; }

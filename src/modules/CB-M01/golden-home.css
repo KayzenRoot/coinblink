@@ -621,8 +621,10 @@
 @media (min-width:1281px) {
   .cb-home .demo-banner { min-height:22px; padding-block:1px; }
   .cb-home .cb-header { min-height:48px; gap:clamp(9px,1.1vw,17px); }
-  .cb-home .brand img { width:35px; height:31px; }
-  .cb-home .brand-name { font-size:21px; }
+  /* Golden desktop lockup: visible eye, legible wordmark and reference-like nav rhythm. */
+  .cb-home .brand { min-width:295px; }
+  .cb-home .brand img { width:70px; height:48px; }
+  .cb-home .brand-name { font-size:30px; }
   .cb-home .primary-nav { gap:8px; }
   .cb-home .primary-nav a { min-height:36px; font-size:10px; }
   .cb-home .header-tools { gap:9px; }

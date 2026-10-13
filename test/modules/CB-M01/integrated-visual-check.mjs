@@ -221,7 +221,7 @@ try {
   } catch (reportError) {
     console.error("Unable to save the original visual-run failure:", reportError);
   }
-  throw error;
+  // Defer the rethrow until after every cleanup attempt.
 } finally {
   let cleanupFailure = null;
   if (browser) {
@@ -255,7 +255,8 @@ try {
       } catch (reportError) {
         console.error("Unable to save visual-run cleanup failure:", reportError);
       }
-      throw cleanupFailure;
+      runFailure = cleanupFailure;
     }
   }
 }
+if (runFailure) throw runFailure;

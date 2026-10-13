@@ -6,6 +6,7 @@ import { HERO_CINEMATIC_LIMITS, inspectHeroCinematicCandidate } from "../../../s
 
 const source = await readFile(new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url), "utf8");
 const css = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
+const generatedProvenance = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-provenance.json", import.meta.url), "utf8"));
 
 function minimalHeaderFixture(format, width = 1600, height = 800) {
   if (format === "webp") {
@@ -35,7 +36,7 @@ function manifestFor(format, bytes, width = 1600, height = 800) {
     bytes: bytes.length, width, height };
 }
 
-test("R23 candidate preflight validates actual WebP and PNG header metadata and SHA", () => {
+test("R23 candidate preflight validates synthetic WebP and PNG header fixtures", () => {
   for (const format of ["webp", "png"]) {
     const bytes = minimalHeaderFixture(format);
     const result = inspectHeroCinematicCandidate(manifestFor(format, bytes), bytes);
@@ -45,6 +46,34 @@ test("R23 candidate preflight validates actual WebP and PNG header metadata and 
     assert.equal(result.releaseAllowed, false);
     assert.equal(result.commercialPublicationAllowed, false);
     assert.equal(result.ownerVisualApprovalRequired, true);
+  }
+});
+
+test("R23 rejects the actual ImageGen candidates at the original-local-render gate", async () => {
+  for (const format of ["png", "webp"]) {
+    const candidate = generatedProvenance.outputs[format];
+    const bytes = await readFile(new URL("../../../" + candidate.path, import.meta.url));
+    const result = inspectHeroCinematicCandidate({
+      path: candidate.path,
+      origin: generatedProvenance.origin,
+      sourceMaster: generatedProvenance.generatedSource.path,
+      rightsStatus: generatedProvenance.rights.review,
+      commercialPublicationAllowed: generatedProvenance.rights.commercialPublicationAllowed,
+      sha256: candidate.sha256,
+      bytes: candidate.bytes,
+      width: generatedProvenance.generatedSource.dimensions[0],
+      height: generatedProvenance.generatedSource.dimensions[1],
+    }, bytes);
+
+    assert.equal(result.technicalPreflightPassed, false);
+    assert.deepEqual(result.failures, ["ORIGINAL_SOURCE_UNESTABLISHED"]);
+    assert.equal(result.observedSha256, candidate.sha256);
+    assert.deepEqual(result.dimensions, {
+      width: generatedProvenance.generatedSource.dimensions[0],
+      height: generatedProvenance.generatedSource.dimensions[1],
+      format,
+    });
+    assert.equal(result.releaseAllowed, false);
   }
 });
 

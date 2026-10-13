@@ -117,7 +117,12 @@ test("hero and promo scene metadata pin exact source fragments and deny commerci
   assert.equal(registry.productState, "DRAFT_DEMO_ONLY_NOT_PUBLISHED");
   assert.equal(registry.source.path, "src/modules/CB-M01/GoldenHome.astro");
   assert.equal(registry.source.sha256, actualSourceSha256, "the scene parent source changed without provenance refresh");
-  assert.equal(registry.source.gitBlobSha, "808cbb76915e9936d41a7eac66675ed78da22f1c");
+  const sourceBytes = Buffer.from(component, "utf8");
+  const expectedGitBlobSha = createHash("sha1")
+    .update(Buffer.from("blob " + sourceBytes.length + "\0", "utf8"))
+    .update(sourceBytes)
+    .digest("hex");
+  assert.equal(registry.source.gitBlobSha, expectedGitBlobSha, "the scene source Git blob changed without provenance refresh");
   assert.equal(registry.source.rasterDerivativeOfGoldenReference, false);
   assert.equal(registry.goldenReference.use, "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED");
   assert.equal(registry.sharedReleaseGate.commercialPublicationAllowed, false);

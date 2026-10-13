@@ -1,5 +1,12 @@
 ---
 import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
+import lightningCharge from "./lightning-sprites/lightning-01-charge.png";
+import lightningDescent from "./lightning-sprites/lightning-02-descent.png";
+import lightningImpact from "./lightning-sprites/lightning-03-impact.png";
+import lightningAfterglow from "./lightning-sprites/lightning-04-afterglow.png";
+import lightningSecondaryRight from "./lightning-sprites/lightning-05-secondary-right.png";
+import lightningSecondaryLeft from "./lightning-sprites/lightning-06-secondary-left.png";
+import lightningGroundFade from "./lightning-sprites/lightning-07-ground-fade.png";
 import EditorialArtwork from "./EditorialArtwork.astro";
 import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
@@ -181,6 +188,16 @@ const stories = [
             <path d="M85 104Q142 51 204 82" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="8" stroke-linecap="round"></path>
           </svg>
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
+        </div>
+        <div class="hero-lightning" aria-hidden="true">
+          <img class="hero-lightning-frame hero-lightning-frame--charge" src={lightningCharge.src} alt="" decoding="async" />
+          <img class="hero-lightning-frame hero-lightning-frame--descent" src={lightningDescent.src} alt="" decoding="async" />
+          <img class="hero-lightning-frame hero-lightning-frame--impact" src={lightningImpact.src} alt="" decoding="async" />
+          <img class="hero-lightning-frame hero-lightning-frame--afterglow" src={lightningAfterglow.src} alt="" decoding="async" />
+          <img class="hero-lightning-frame hero-lightning-frame--secondary-right" src={lightningSecondaryRight.src} alt="" decoding="async" />
+          <img class="hero-lightning-frame hero-lightning-frame--secondary-left" src={lightningSecondaryLeft.src} alt="" decoding="async" />
+          <img class="hero-lightning-frame hero-lightning-frame--ground-fade" src={lightningGroundFade.src} alt="" decoding="async" />
+          <span class="hero-lightning-flash"></span>
         </div>
         <div class="hero-copy">
           <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>

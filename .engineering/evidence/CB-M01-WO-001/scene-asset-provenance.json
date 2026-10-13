@@ -6,14 +6,14 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "808cbb76915e9936d41a7eac66675ed78da22f1c",
-    "sha256": "9516ca55ef577a59dd0ec33c5030c346977a7774d5e2b11bcd7e3f69d655a8f1",
+    "gitBlobSha": "16a7c9377415e0c894b74772651a2161985db5ac",
+    "sha256": "21204008af16b00218228cf00d5fa7f9031f74cdff6f3c6a9d77210c20dcd074",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
     "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
     "rasterDerivativeOfGoldenReference": false,
-    "changeRecord": "R21 dimensional faceted rockscape and atmospheric haze, derived from predecessor 887c7c73ae2570f7c2826ceb3d4c4748cdfa9e9f; exact source Git blob identifies new content."
+    "changeRecord": "R21 dimensional faceted rockscape and atmospheric haze, derived from predecessor 887c7c73ae2570f7c2826ceb3d4c4748cdfa9e9f; R23 adds a separate seven-frame OpenAI-generated decorative lightning overlay, whose complete prompt/hash/rights record is in lightning-sprites-provenance.json; exact source Git blob identifies current content."
   },
   "goldenReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -52,13 +52,13 @@
       "assetId": "CB-M01-DEMO-HERO-SCENE",
       "version": "0.3.0",
       "region": "hero",
-      "description": "Original in-repository decorative rocky landscape with faceted shading, lime atmospheric ground mist, 3/4 styled Bitcoin coin and chart overlays. Not cinematic photorealistic Golden parity.",
+      "description": "Original in-repository decorative rocky landscape with faceted shading, lime atmospheric ground mist, 3/4 styled Bitcoin coin and chart overlays, with a separate seven-frame generated lightning overlay. Not cinematic photorealistic Golden parity.",
       "sourceFragment": {
         "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
         "endMarker": "        <div class=\"hero-copy\">",
         "includeEndMarker": false,
-        "sha256": "ebbdb4599f48bd2f9cfc3a509651e9da74a7753b06bec5f4e425c79d89050ba1",
-        "sourceByteLength": 11495
+        "sha256": "03624c9465838b38e99b1fd4ae13e776890361719d8674e9e2951979f7ebdc1b",
+        "sourceByteLength": 12550
       },
       "form": "HTML_AND_EMBEDDED_SVGS",
       "viewBoxes": [
@@ -70,11 +70,14 @@
       "themeVariant": "DARK_DEMO_ONLY",
       "lightThemeApproval": "NOT_APPROVED",
       "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
-      "physicalImageAsset": "NONE",
+      "physicalImageAsset": "SEPARATE_DECORATIVE_LIGHTNING_OVERLAY_SERIES",
+      "decorativeOverlayAssetIds": [
+        "CB-M01-DEMO-LIGHTNING-VFX"
+      ],
       "visualComparison": "R21 exact-HEAD responsive screenshot comparison pending; NOT Owner visual acceptance",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "808cbb76915e9936d41a7eac66675ed78da22f1c",
+      "sourceGitBlobSha": "16a7c9377415e0c894b74772651a2161985db5ac",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -120,7 +123,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "808cbb76915e9936d41a7eac66675ed78da22f1c",
+      "sourceGitBlobSha": "16a7c9377415e0c894b74772651a2161985db5ac",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",

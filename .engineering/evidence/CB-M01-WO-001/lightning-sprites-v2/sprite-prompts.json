@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "OpenAI built-in image_gen",
+  "modelVersion": "NOT_EXPOSED_BY_TOOL_RESULT",
+  "referenceSprite": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-03-impact.png",
+  "spriteSet": [
+    {
+      "filename": "lightning-01-charge.png",
+      "pose": "short charge filament",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, first charge frame. Input image 1 is the approved centered impact sprite; use only its lightning style, color, and scale. Create a faint, very thin branching filament at the upper end of the same strike path, around x=58% of a wide 2:1 canvas, extending only from y=7% to y=28%. Add a tiny white-green source glint at the top. Leave the rest fully transparent. Preserve true alpha. No clouds, no broad glow, no ground, no landscape, no coin, no other bolt, no detached marks, no text, no watermark."
+    },
+    {
+      "filename": "lightning-02-descent.png",
+      "pose": "descending bolt",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, descent frame. Input image 1 is the approved centered impact sprite; match its bolt path, thickness, color, and lighting. Create one narrow jagged white-core lime lightning bolt on a wide 2:1 transparent canvas, descending at x=58% from y=6% to y=61%, with only small sharp branches and a very restrained glow tight to the bolt. Leave the bottom 30% and all surrounding space fully transparent. No clouds, haze patches, ground, landscape, coin, extra bolts, text, or watermark."
+    },
+    {
+      "filename": "lightning-03-impact.png",
+      "pose": "ground impact",
+      "prompt": "Use case: precise-object-edit. Asset type: full-canvas transparent VFX overlay for a cinematic website hero. Input image 1 is an existing lightning overlay; use it only as a color and energy-style reference. Create one single, narrow jagged yellow-green lightning bolt striking the ground. Compose on a wide 2:1 transparent canvas; the bolt descends from x=58% near the top edge to a compact white-hot impact at x=58%, y=84%. Give the bolt a crisp white core, a restrained lime-green edge glow, a few fine branches, and only a small localized burst of sparks at the impact. Keep the bolt as the only visible subject. Preserve true transparency everywhere else. Change only the lightning artwork. Avoid all cloud forms, green fog, soft glowing blobs, detached marks, a second bolt, mountains, coin, landscape, shadows, text, or watermark."
+    },
+    {
+      "filename": "lightning-04-afterglow.png",
+      "pose": "fading strike",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning afterglow overlay. Input image 1 is the approved central bolt; match its exact hue and jagged path. Create the same single bolt reduced to a faint residual filament, with the lower half nearly gone and only a small soft white-green ground contact glow at x=58%, y=84%. Wide 2:1 canvas. Transparent everywhere except the thin faint bolt remnant and compact impact afterglow. Do not include clouds, broad haze, detached green blobs, mountains, coin, landscape, second bolt, text, or watermark."
+    },
+    {
+      "filename": "lightning-05-secondary-right.png",
+      "pose": "secondary right strike",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, secondary strike on the right. Input image 1 is the approved central bolt; match its color, sharp white core, lime rim, and scale. On a wide 2:1 transparent canvas, make one full-length jagged bolt that starts near x=74%, y=4% and hits ground at x=72%, y=84%, angled slightly inward. Add a tiny localized impact spark. Keep all visible pixels close to the bolt. Preserve true transparency. No clouds, haze patches, other bolts, coin, landscape, text, watermark."
+    },
+    {
+      "filename": "lightning-06-secondary-left.png",
+      "pose": "distant left strike",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, distant secondary strike on the left. Input image 1 is the approved central bolt; match its color, sharp white core, lime rim, and scale. On a wide 2:1 transparent canvas, make one narrower, distant jagged bolt that starts near x=44%, y=10% and hits ground at x=47%, y=78%. Keep all visible pixels close to the bolt; use a restrained compact impact spark. Preserve true transparency. No clouds, haze patches, other bolts, coin, landscape, text, watermark."
+    },
+    {
+      "filename": "lightning-07-ground-fade.png",
+      "pose": "ground sparks fading",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning impact fade overlay. Input image 1 is the approved lightning sprite; use its lime-white palette and spark style. Create only a compact, low-intensity burst of a few thin fading ground sparks at the bottom of a wide 2:1 transparent canvas, centered at x=58%, y=84%. No vertical bolt at all. Keep the sparks small, dim, and localized within a 12% area around the impact point; preserve true transparency everywhere else. No cloud, fog, detached glow, landscape, coin, text, watermark."
+    }
+  ]
+}

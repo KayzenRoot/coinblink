@@ -117,8 +117,8 @@ try {
     assert.equal(await page.locator(".cb-home").count(), 1);
     assert.equal(await page.locator("astro-dev-toolbar").count(), 0, "visual evidence must exclude the development toolbar");
     const dimensions = await page.evaluate(() => ({
-      viewport: document.documentElement.clientWidth,
-      document: document.documentElement.scrollWidth,
+      viewport: globalThis.document.documentElement.clientWidth,
+      document: globalThis.document.documentElement.scrollWidth,
     }));
     assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " /en horizontal overflow: " + JSON.stringify(dimensions));
     const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
@@ -155,7 +155,7 @@ try {
     if (viewport.name === "desktop") {
       report.desktopGeometry = await page.evaluate(() => {
         const rect = (selector) => {
-          const box = document.querySelector(selector).getBoundingClientRect();
+        const box = globalThis.document.querySelector(selector).getBoundingClientRect();
           return { x: box.x, y: box.y, width: box.width, height: box.height, bottom: box.bottom };
         };
         return Object.fromEntries([".demo-banner", ".cb-header", ".brand", ".hero-panel", ".market-panel", ".ticker-strip", ".trending-strip", ".category-rail", ".content-grid", "#latest-news", ".news-cards", "#newsletter"].map((selector) => [selector, rect(selector)]));
@@ -171,7 +171,7 @@ try {
         const ctas = [...hero.querySelectorAll(".hero-actions a")].map((element) => ({
           label: element.textContent.trim(),
           ...box(element),
-          minHeight: Number.parseFloat(getComputedStyle(element).minHeight),
+          minHeight: Number.parseFloat(globalThis.getComputedStyle(element).minHeight),
         }));
         const status = box(hero.querySelector(".hero-stat"));
         const coin = box(hero.querySelector(".coin-art"));

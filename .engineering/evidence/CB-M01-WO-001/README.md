@@ -274,3 +274,32 @@ The follow-up is contained in commit `c17e7f7017bccc0a7501d033430565c422f79553` 
 The regenerated `visual-check.json` has SHA-256 `6d5a44cc802bb883f852bd39255d5b5bbbaa6683c0c6617a319083924ca95d7c`. Screenshot SHA-256 remains desktop `16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898`, tablet `4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b`, and mobile `0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c`.
 
 This follow-up changes no application route, Golden asset, Context Lock or checkpoint. Fresh exact-final-HEAD CI, SonarCloud, Socket, GEF, CodeRabbit and Owner audit remain required; merge and M01 completion are not authorized by this correction delta.
+
+## Golden visual correction delta · 2026-10-13
+
+This delta addresses the visual findings on the existing M01 branch and PR #58; it does not create another Work Order or PR. The visual implementation and capture inputs were committed at code HEAD `8aee74af58bf79400432b12688dc566da53c2995`, based on canonical `main` SHA `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The report files record that source HEAD. The follow-up evidence/documentation commit is separate and does not change the captured rendering inputs.
+
+The correction removes the mobile hero/status/coin collisions, preserves 44px mobile CTA targets, keeps desktop first-fold content visible, uses a horizontal brand lockup, and separates the layered hero and promo artwork. The first fold contains five demo trend cards and ten topic categories plus the `All` control. All content remains explicitly demonstrative; no live price, headline, or external feed is implied. Original Golden JPEGs were not edited: the home master remains 1536×864, 532,365 bytes, SHA-256 `82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8`; the approved logo remains 1179×1040, 121,728 bytes, SHA-256 `126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0`.
+
+### Captures and visual checks
+
+The isolated fixture and built integrated `/en` route were captured locally at all required sizes. Integrated screenshots were produced with pinned Wrangler `4.149.0 --local`, remote bindings disabled, and no Cloudflare account call. The route returned HTTP 200 at each viewport. Module and full-page Axe reported zero violations; document widths matched viewport widths; browser console errors, page errors, and external requests were all zero. The report records CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, strict referrer policy, `X-Robots-Tag: noindex, nofollow, noarchive`, and matching robots meta. Desktop integrated geometry places the hero at y=72–354, ticker at 360–390, trending at 396–441, categories at 456–506, demo signal panels at 517–707, and news cards at y=752.5–856.34, inside the 864px fold. On mobile, both CTAs are 44px high and the geometry checks report no CTA/status/coin intersections.
+
+| Capture | Dimensions | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Isolated desktop `screenshots/golden-home-desktop.png` | 1536×864 | 616,753 | `c3668c3e41783375177544d2c3d231ab82ef35bf437c935fff26c97750a0ada5` |
+| Isolated tablet `screenshots/golden-home-tablet.png` | 768×1024 | 430,015 | `7b26c7bc731fef734e6d1bdb1aeaac097f2e376c4732b248966111c2decd1584` |
+| Isolated mobile `screenshots/golden-home-mobile.png` | 390×844 | 182,549 | `863843513fe3c4702e1e7640348987c33ec3f8e87df08f987a4bf5e2390ebdb7` |
+| Integrated desktop `screenshots/golden-home-integrated-desktop-1536x864.png` | 1536×864 | 616,752 | `8b39082744788b83c71dd0b2ae7822a9111852d3ba8081b73f54b8b51dd68679` |
+| Integrated tablet `screenshots/golden-home-integrated-tablet-768x1024.png` | 768×1024 | 429,751 | `dfdf475a65224ea7f6daa8d055e4e25413bbbaf59000b1df9f9c61f5d95ac408` |
+| Integrated mobile `screenshots/golden-home-integrated-mobile-390x844.png` | 390×844 | 182,690 | `77160607289e69059139b1919800e2be855558240a14b078b6bb38505ac4a879` |
+
+`visual-check.json` binds the fixture run to base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` and source HEAD `8aee74af58bf79400432b12688dc566da53c2995`; SHA-256 `b76c853d1f28cbb3bfa5dc496401113831bdf5b8521470c3d088776620858779`. `integrated-visual-check.json` binds the real route run to the same base and source HEAD; SHA-256 `09cf4dff918826e51c2457bcf324769851e467a533d711047c524d91766bb315`. `visual-comparison.json` SHA-256 is `f406baf8b80aeb4f1066aa179025cf00f48f19f88c6ab1187437369ff91c11d3`. The 50% overlay is `golden-home-desktop-overlay-50.png` (2,103,930 bytes; SHA-256 `0cc0d3c569cf3357b9c3d8a9fcac5663c29cea2da1405e5af6c16c8166546f9f`); the 3× absolute-difference image is `golden-home-desktop-difference-3x.png` (2,010,771 bytes; SHA-256 `f8afaf0cf9bc00308577f0188f315ff45d99cb5763333db4fb298a3893b9a89c`). The mean absolute difference is R 30.1241, G 33.0684, B 23.7283 on the 0–255 scale. These are descriptive metrics, not a pixel-parity score or acceptance gate; differences intentionally include live data replaced by truthful demo placeholders and retained safety notices. Both comparison images were visually inspected.
+
+### Local validation and remaining gates
+
+Using Node.js `v22.23.3` / npm `10.9.9`, `npm test` passed: 166/166 unit tests, production build plus the no-session/data/service/production-binding guard, and Playwright 33/33. `npm run lint` passed with zero warnings; `npm run typecheck` passed for 72 files with zero errors/warnings/hints; `npm audit --audit-level=high` reported zero vulnerabilities; the focused M01 suite passed 41/41. The built route and all screenshot evidence are local-only; no remote deployment or Cloudflare operation occurred.
+
+GEF Bootstrap `1.1.2` `doctor --target . --json` and `status --target . --json` completed read-only with `ok=true` and `effect=NONE`; the checkpoint is readable and valid and still reports M00 `M00_COMPLETE` at 5%. This managed linked worktree is not fully observable to GEF: `repository.observable=FINDING`, `dirtiness=UNKNOWN`, limits `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED`; status retains conservative `operator.stale=true` and absent drift baseline. This is a GEF observation limitation, not a clean-repository PASS. No GEF state, Context Lock, canonical checkpoint, shared files, Cloudflare resources, or Golden JPEGs were changed.
+
+The six hosted exact-HEAD checks, fresh hosted CodeRabbit review, independent audit, and Owner visual decision for this M01 correction remain external gates. This evidence is not approval to merge, promote a checkpoint, or declare M01 complete.

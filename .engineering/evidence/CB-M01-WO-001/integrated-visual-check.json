@@ -1,0 +1,236 @@
+{
+  "status": "passed",
+  "generatedAt": "2026-10-13T09:49:45.635Z",
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "headSha": "8aee74af58bf79400432b12688dc566da53c2995",
+  "route": "/en",
+  "fixture": "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
+  "runtime": "Wrangler 4.149.0 --local",
+  "origin": "http://127.0.0.1:56293",
+  "visualInputState": {
+    "status": "clean",
+    "paths": [
+      "src/modules/CB-M01",
+      "src/layouts/BaseLayout.astro",
+      "src/pages",
+      "src/styles/global.css",
+      "public",
+      "astro.config.mjs",
+      "assets/reference",
+      "test/modules/CB-M01/fixture/src",
+      ".engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs",
+      "test/modules/CB-M01/visual-check.mjs",
+      "test/modules/CB-M01/integrated-visual-check.mjs",
+      "test/modules/CB-M01/astro-integration.config.mjs",
+      "test/modules/CB-M01/visual-server.mjs",
+      "test/modules/CB-M01/visual-input-state.mjs",
+      "test/modules/CB-M01/visual-request-origin.mjs",
+      "test/modules/CB-M01/git-head.mjs",
+      "test/modules/CB-M01/GoldenHome.contract.test.mjs",
+      "test/modules/CB-M01/visual-server.test.mjs",
+      "test/modules/CB-M01/visual-input-state.test.mjs",
+      "test/modules/CB-M01/visual-request-origin.test.mjs",
+      "test/modules/CB-M01/git-head.test.mjs",
+      "package.json",
+      "package-lock.json"
+    ]
+  },
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1536,
+      "height": 864,
+      "httpStatus": 200,
+      "documentWidth": 1536,
+      "moduleAxeViolations": [],
+      "fullPageAxeViolations": [],
+      "securityHeaders": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-robots-tag": "noindex, nofollow, noarchive"
+      },
+      "robotsMeta": "noindex, nofollow, noarchive"
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "httpStatus": 200,
+      "documentWidth": 768,
+      "moduleAxeViolations": [],
+      "fullPageAxeViolations": [],
+      "securityHeaders": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-robots-tag": "noindex, nofollow, noarchive"
+      },
+      "robotsMeta": "noindex, nofollow, noarchive"
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "httpStatus": 200,
+      "documentWidth": 390,
+      "moduleAxeViolations": [],
+      "fullPageAxeViolations": [],
+      "securityHeaders": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-robots-tag": "noindex, nofollow, noarchive"
+      },
+      "robotsMeta": "noindex, nofollow, noarchive"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
+      "sha256": "8b39082744788b83c71dd0b2ae7822a9111852d3ba8081b73f54b8b51dd68679",
+      "bytes": 616752
+    },
+    {
+      "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
+      "sha256": "dfdf475a65224ea7f6daa8d055e4e25413bbbaf59000b1df9f9c61f5d95ac408",
+      "bytes": 429751
+    },
+    {
+      "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
+      "sha256": "77160607289e69059139b1919800e2be855558240a14b078b6bb38505ac4a879",
+      "bytes": 182690
+    }
+  ],
+  "desktopGeometry": {
+    ".demo-banner": {
+      "x": 0,
+      "y": 0,
+      "width": 1536,
+      "height": 22,
+      "bottom": 22
+    },
+    ".cb-header": {
+      "x": 43.765625,
+      "y": 22,
+      "width": 1448.46875,
+      "height": 48,
+      "bottom": 70
+    },
+    ".brand": {
+      "x": 43.765625,
+      "y": 30,
+      "width": 195,
+      "height": 31,
+      "bottom": 61
+    },
+    ".hero-panel": {
+      "x": 43.765625,
+      "y": 72,
+      "width": 1089.734375,
+      "height": 282,
+      "bottom": 354
+    },
+    ".market-panel": {
+      "x": 1143.5,
+      "y": 72,
+      "width": 348.71875,
+      "height": 282,
+      "bottom": 354
+    },
+    ".ticker-strip": {
+      "x": 43.765625,
+      "y": 360,
+      "width": 1448.46875,
+      "height": 30,
+      "bottom": 390
+    },
+    ".trending-strip": {
+      "x": 43.765625,
+      "y": 396,
+      "width": 1448.46875,
+      "height": 45,
+      "bottom": 441
+    },
+    ".category-rail": {
+      "x": 43.765625,
+      "y": 456,
+      "width": 1448.46875,
+      "height": 50,
+      "bottom": 506
+    },
+    ".content-grid": {
+      "x": 43.765625,
+      "y": 517,
+      "width": 1448.46875,
+      "height": 190,
+      "bottom": 707
+    },
+    "#latest-news": {
+      "x": 43.765625,
+      "y": 714,
+      "width": 983.625,
+      "height": 231.84375,
+      "bottom": 945.84375
+    },
+    ".news-cards": {
+      "x": 55.765625,
+      "y": 752.5,
+      "width": 959.625,
+      "height": 103.84375,
+      "bottom": 856.34375
+    },
+    "#newsletter": {
+      "x": 1036.390625,
+      "y": 714,
+      "width": 455.828125,
+      "height": 231.84375,
+      "bottom": 945.84375
+    }
+  },
+  "mobileHero": {
+    "ctas": [
+      {
+        "label": "Explore demo stories →",
+        "left": 35,
+        "right": 178.421875,
+        "top": 288.46875,
+        "bottom": 332.46875,
+        "height": 44,
+        "minHeight": 44
+      },
+      {
+        "label": "View market panel",
+        "left": 35,
+        "right": 150.484375,
+        "top": 340.46875,
+        "bottom": 384.46875,
+        "height": 44,
+        "minHeight": 44
+      }
+    ],
+    "status": {
+      "left": 35,
+      "right": 185,
+      "top": 496,
+      "bottom": 546,
+      "height": 50
+    },
+    "coin": {
+      "left": 235.1322479248047,
+      "right": 363.2740173339844,
+      "top": 433.92913818359375,
+      "bottom": 562.0708618164062,
+      "height": 128.1417236328125
+    },
+    "ctaStatusOverlap": false,
+    "ctaCoinOverlap": false,
+    "statusCoinOverlap": false
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "externalRequests": []
+}

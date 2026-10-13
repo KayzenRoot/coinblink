@@ -1,17 +1,22 @@
 {
-  "generatedAt": "2026-10-11T17:04:54.771Z",
+  "generatedAt": "2026-10-13T09:49:46.317Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "c17e7f7017bccc0a7501d033430565c422f79553",
+  "headSha": "8aee74af58bf79400432b12688dc566da53c2995",
   "visualInputState": {
     "status": "clean",
     "paths": [
       "src/modules/CB-M01",
       "src/layouts/BaseLayout.astro",
+      "src/pages",
       "src/styles/global.css",
+      "public",
+      "astro.config.mjs",
       "assets/reference",
       "test/modules/CB-M01/fixture/src",
       ".engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs",
       "test/modules/CB-M01/visual-check.mjs",
+      "test/modules/CB-M01/integrated-visual-check.mjs",
+      "test/modules/CB-M01/astro-integration.config.mjs",
       "test/modules/CB-M01/visual-server.mjs",
       "test/modules/CB-M01/visual-input-state.mjs",
       "test/modules/CB-M01/visual-request-origin.mjs",
@@ -26,7 +31,7 @@
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:54647",
+  "origin": "http://127.0.0.1:56295",
   "viewports": [
     {
       "name": "desktop",
@@ -34,22 +39,152 @@
       "height": 864,
       "documentWidth": 1536,
       "axeViolations": [],
-      "fullPageAxeViolations": [
-        {
-          "id": "region",
-          "impact": "moderate",
-          "description": "Ensure all page content is contained by landmarks",
-          "nodes": [
-            {
-              "target": [
-                ".skip-link"
-              ],
-              "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-            }
-          ]
+      "fullPageAxeViolations": [],
+      "desktopGeometry": {
+        "demoBanner": {
+          "left": 0,
+          "top": 0,
+          "right": 1536,
+          "bottom": 22,
+          "width": 1536,
+          "height": 22
+        },
+        "header": {
+          "left": 43.765625,
+          "top": 22,
+          "right": 1492.234375,
+          "bottom": 70,
+          "width": 1448.46875,
+          "height": 48
+        },
+        "brand": {
+          "left": 43.765625,
+          "top": 30,
+          "right": 238.765625,
+          "bottom": 61,
+          "width": 195,
+          "height": 31
+        },
+        "brandImage": {
+          "left": 43.765625,
+          "top": 30,
+          "right": 78.765625,
+          "bottom": 61,
+          "width": 35,
+          "height": 31
+        },
+        "brandName": {
+          "left": 86.765625,
+          "top": 30.625,
+          "right": 180.34375,
+          "bottom": 60.375,
+          "width": 93.578125,
+          "height": 29.75
+        },
+        "trendingItems": 5,
+        "categoryLabels": [
+          "All",
+          "Bitcoin",
+          "Ethereum",
+          "Altcoins",
+          "DeFi",
+          "NFTs",
+          "Regulation",
+          "Web3",
+          "AI x Crypto",
+          "Market Analysis",
+          "Guides"
+        ],
+        "primaryNav": {
+          "left": 255.65625,
+          "top": 27.5,
+          "right": 1115.6875,
+          "bottom": 63.5,
+          "width": 860.03125,
+          "height": 36
+        },
+        "headerTools": {
+          "left": 1132.578125,
+          "top": 27.5,
+          "right": 1492.234375,
+          "bottom": 63.5,
+          "width": 359.65625,
+          "height": 36
+        },
+        "hero": {
+          "left": 43.765625,
+          "top": 72,
+          "right": 1133.5,
+          "bottom": 354,
+          "width": 1089.734375,
+          "height": 282
+        },
+        "market": {
+          "left": 1143.5,
+          "top": 72,
+          "right": 1492.21875,
+          "bottom": 354,
+          "width": 348.71875,
+          "height": 282
+        },
+        "ticker": {
+          "left": 43.765625,
+          "top": 360,
+          "right": 1492.234375,
+          "bottom": 390,
+          "width": 1448.46875,
+          "height": 30
+        },
+        "trending": {
+          "left": 43.765625,
+          "top": 396,
+          "right": 1492.234375,
+          "bottom": 441,
+          "width": 1448.46875,
+          "height": 45
+        },
+        "categories": {
+          "left": 43.765625,
+          "top": 456,
+          "right": 1492.234375,
+          "bottom": 506,
+          "width": 1448.46875,
+          "height": 50
+        },
+        "signals": {
+          "left": 43.765625,
+          "top": 517,
+          "right": 1492.234375,
+          "bottom": 707,
+          "width": 1448.46875,
+          "height": 190
+        },
+        "latestNews": {
+          "left": 43.765625,
+          "top": 714,
+          "right": 1027.390625,
+          "bottom": 945.84375,
+          "width": 983.625,
+          "height": 231.84375
+        },
+        "latestNewsCards": {
+          "left": 55.765625,
+          "top": 752.5,
+          "right": 1015.390625,
+          "bottom": 856.34375,
+          "width": 959.625,
+          "height": 103.84375
+        },
+        "newsletter": {
+          "left": 1036.390625,
+          "top": 714,
+          "right": 1492.21875,
+          "bottom": 945.84375,
+          "width": 455.828125,
+          "height": 231.84375
         }
-      ],
-      "screenshotSha256": "16f825a0ababb9e6d4b3885a4b34c654e1e10ef6fab04bcf12f403f611f9d898"
+      },
+      "screenshotSha256": "c3668c3e41783375177544d2c3d231ab82ef35bf437c935fff26c97750a0ada5"
     },
     {
       "name": "tablet",
@@ -57,22 +192,8 @@
       "height": 1024,
       "documentWidth": 768,
       "axeViolations": [],
-      "fullPageAxeViolations": [
-        {
-          "id": "region",
-          "impact": "moderate",
-          "description": "Ensure all page content is contained by landmarks",
-          "nodes": [
-            {
-              "target": [
-                ".skip-link"
-              ],
-              "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-            }
-          ]
-        }
-      ],
-      "screenshotSha256": "4b035a96a4b6a7de8d9cbb43fe4cc02770de60ebefd5136ab7699a10acbb1b7b"
+      "fullPageAxeViolations": [],
+      "screenshotSha256": "7b26c7bc731fef734e6d1bdb1aeaac097f2e376c4732b248966111c2decd1584"
     },
     {
       "name": "mobile",
@@ -80,22 +201,8 @@
       "height": 844,
       "documentWidth": 390,
       "axeViolations": [],
-      "fullPageAxeViolations": [
-        {
-          "id": "region",
-          "impact": "moderate",
-          "description": "Ensure all page content is contained by landmarks",
-          "nodes": [
-            {
-              "target": [
-                ".skip-link"
-              ],
-              "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-            }
-          ]
-        }
-      ],
-      "screenshotSha256": "0f082143b26432dcb17d2133fd6e6c1ef793f39cc24680bf59893e9f4cbb654c"
+      "fullPageAxeViolations": [],
+      "screenshotSha256": "863843513fe3c4702e1e7640348987c33ec3f8e87df08f987a4bf5e2390ebdb7"
     }
   ],
   "interactionChecks": {
@@ -135,7 +242,7 @@
       "mobile": {
         "horizontallyScrollable": true,
         "singleRow": true,
-        "visibleItems": 4
+        "visibleItems": 5
       },
       "tablet": {
         "width": 1050,
@@ -157,9 +264,327 @@
       "combinedCategoryFilterVerified": true
     },
     "unavailableNavigation": {
-      "toolsAndVideosTarget": "#demo-data",
+      "toolsTarget": "#chain-lookup",
+      "videosTarget": "#demo-data",
       "destinationStatusVerified": true
     },
+    "desktopGeometry": {
+      "demoBanner": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 22,
+        "width": 1536,
+        "height": 22
+      },
+      "header": {
+        "left": 43.765625,
+        "top": 22,
+        "right": 1492.234375,
+        "bottom": 70,
+        "width": 1448.46875,
+        "height": 48
+      },
+      "brand": {
+        "left": 43.765625,
+        "top": 30,
+        "right": 238.765625,
+        "bottom": 61,
+        "width": 195,
+        "height": 31
+      },
+      "brandImage": {
+        "left": 43.765625,
+        "top": 30,
+        "right": 78.765625,
+        "bottom": 61,
+        "width": 35,
+        "height": 31
+      },
+      "brandName": {
+        "left": 86.765625,
+        "top": 30.625,
+        "right": 180.34375,
+        "bottom": 60.375,
+        "width": 93.578125,
+        "height": 29.75
+      },
+      "trendingItems": 5,
+      "categoryLabels": [
+        "All",
+        "Bitcoin",
+        "Ethereum",
+        "Altcoins",
+        "DeFi",
+        "NFTs",
+        "Regulation",
+        "Web3",
+        "AI x Crypto",
+        "Market Analysis",
+        "Guides"
+      ],
+      "primaryNav": {
+        "left": 255.65625,
+        "top": 27.5,
+        "right": 1115.6875,
+        "bottom": 63.5,
+        "width": 860.03125,
+        "height": 36
+      },
+      "headerTools": {
+        "left": 1132.578125,
+        "top": 27.5,
+        "right": 1492.234375,
+        "bottom": 63.5,
+        "width": 359.65625,
+        "height": 36
+      },
+      "hero": {
+        "left": 43.765625,
+        "top": 72,
+        "right": 1133.5,
+        "bottom": 354,
+        "width": 1089.734375,
+        "height": 282
+      },
+      "market": {
+        "left": 1143.5,
+        "top": 72,
+        "right": 1492.21875,
+        "bottom": 354,
+        "width": 348.71875,
+        "height": 282
+      },
+      "ticker": {
+        "left": 43.765625,
+        "top": 360,
+        "right": 1492.234375,
+        "bottom": 390,
+        "width": 1448.46875,
+        "height": 30
+      },
+      "trending": {
+        "left": 43.765625,
+        "top": 396,
+        "right": 1492.234375,
+        "bottom": 441,
+        "width": 1448.46875,
+        "height": 45
+      },
+      "categories": {
+        "left": 43.765625,
+        "top": 456,
+        "right": 1492.234375,
+        "bottom": 506,
+        "width": 1448.46875,
+        "height": 50
+      },
+      "signals": {
+        "left": 43.765625,
+        "top": 517,
+        "right": 1492.234375,
+        "bottom": 707,
+        "width": 1448.46875,
+        "height": 190
+      },
+      "latestNews": {
+        "left": 43.765625,
+        "top": 714,
+        "right": 1027.390625,
+        "bottom": 945.84375,
+        "width": 983.625,
+        "height": 231.84375
+      },
+      "latestNewsCards": {
+        "left": 55.765625,
+        "top": 752.5,
+        "right": 1015.390625,
+        "bottom": 856.34375,
+        "width": 959.625,
+        "height": 103.84375
+      },
+      "newsletter": {
+        "left": 1036.390625,
+        "top": 714,
+        "right": 1492.21875,
+        "bottom": 945.84375,
+        "width": 455.828125,
+        "height": 231.84375
+      }
+    },
+    "mobileHeroGeometry": [
+      {
+        "width": 390,
+        "hero": {
+          "left": 16,
+          "top": 105,
+          "right": 374,
+          "bottom": 565,
+          "width": 358,
+          "height": 460
+        },
+        "ctas": [
+          {
+            "label": "Explore demo stories →",
+            "rect": {
+              "left": 35,
+              "top": 288.46875,
+              "right": 178.421875,
+              "bottom": 332.46875,
+              "width": 143.421875,
+              "height": 44
+            },
+            "minHeight": 44
+          },
+          {
+            "label": "View market panel",
+            "rect": {
+              "left": 35,
+              "top": 340.46875,
+              "right": 150.484375,
+              "bottom": 384.46875,
+              "width": 115.484375,
+              "height": 44
+            },
+            "minHeight": 44
+          }
+        ],
+        "status": {
+          "left": 35,
+          "top": 496,
+          "right": 185,
+          "bottom": 546,
+          "width": 150,
+          "height": 50
+        },
+        "coin": {
+          "left": 235.1322479248047,
+          "top": 433.92913818359375,
+          "right": 363.2740173339844,
+          "bottom": 562.0708618164062,
+          "width": 128.1417694091797,
+          "height": 128.1417236328125
+        },
+        "ctaStatusOverlap": false,
+        "ctaCoinOverlap": false,
+        "statusCoinOverlap": false,
+        "ctasWithinHero": true
+      },
+      {
+        "width": 360,
+        "hero": {
+          "left": 16,
+          "top": 105,
+          "right": 344,
+          "bottom": 565,
+          "width": 328,
+          "height": 460
+        },
+        "ctas": [
+          {
+            "label": "Explore demo stories →",
+            "rect": {
+              "left": 35,
+              "top": 283.15625,
+              "right": 178.421875,
+              "bottom": 327.15625,
+              "width": 143.421875,
+              "height": 44
+            },
+            "minHeight": 44
+          },
+          {
+            "label": "View market panel",
+            "rect": {
+              "left": 35,
+              "top": 335.15625,
+              "right": 150.484375,
+              "bottom": 379.15625,
+              "width": 115.484375,
+              "height": 44
+            },
+            "minHeight": 44
+          }
+        ],
+        "status": {
+          "left": 35,
+          "top": 496,
+          "right": 184.953125,
+          "bottom": 546,
+          "width": 149.953125,
+          "height": 50
+        },
+        "coin": {
+          "left": 207.06777954101562,
+          "top": 434.3646545410156,
+          "right": 334.7447204589844,
+          "bottom": 562.0416259765625,
+          "width": 127.67694091796875,
+          "height": 127.67697143554688
+        },
+        "ctaStatusOverlap": false,
+        "ctaCoinOverlap": false,
+        "statusCoinOverlap": false,
+        "ctasWithinHero": true
+      },
+      {
+        "width": 320,
+        "hero": {
+          "left": 16,
+          "top": 105,
+          "right": 304,
+          "bottom": 565,
+          "width": 288,
+          "height": 460
+        },
+        "ctas": [
+          {
+            "label": "Explore demo stories →",
+            "rect": {
+              "left": 35,
+              "top": 282.34375,
+              "right": 178.421875,
+              "bottom": 326.34375,
+              "width": 143.421875,
+              "height": 44
+            },
+            "minHeight": 44
+          },
+          {
+            "label": "View market panel",
+            "rect": {
+              "left": 35,
+              "top": 334.34375,
+              "right": 150.484375,
+              "bottom": 378.34375,
+              "width": 115.484375,
+              "height": 44
+            },
+            "minHeight": 44
+          }
+        ],
+        "status": {
+          "left": 35,
+          "top": 496,
+          "right": 166.546875,
+          "bottom": 546,
+          "width": 131.546875,
+          "height": 50
+        },
+        "coin": {
+          "left": 182.3680419921875,
+          "top": 447.6649169921875,
+          "right": 295.8507080078125,
+          "bottom": 561.1475830078125,
+          "width": 113.482666015625,
+          "height": 113.482666015625
+        },
+        "ctaStatusOverlap": false,
+        "ctaCoinOverlap": false,
+        "statusCoinOverlap": false,
+        "ctasWithinHero": true
+      }
+    ],
     "mobileSearch": {
       "visible": false,
       "inputVisible": false,
@@ -175,17 +600,17 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 100ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 10ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 4ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 2ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"

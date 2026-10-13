@@ -147,6 +147,30 @@ test.describe("M05 public static editorial demonstration", () => {
     await expect(title).toHaveValue("My current work must be retained");
   });
 
+  test("headlines with hashtags and literal hash entities survive browser export/import", async ({ page }) => {
+    await page.goto("/demo/editorial/articles/new");
+    const lab = page.locator("[data-m05-local-editor]");
+    const headline = lab.locator("[data-m05-draft-title]");
+    const exportButton = lab.getByRole("button", { name: "Export Markdown (.md)" });
+    const originalTitle = "Bitcoin #1 research and literal &#35; references";
+    await headline.fill(originalTitle);
+    await lab.locator("[data-m05-draft-author]").fill("Local research");
+    await lab.locator("[data-m05-draft-summary]").fill("Research on stable headline metadata with Markdown formatting characters.");
+    await lab.locator("[data-m05-draft-body]").fill("An original local draft about Bitcoin #1 that has not been fact-checked or published.");
+    await lab.locator("[data-m05-draft-source]").fill("https://example.org/research/bitcoin");
+    await expect(exportButton).toBeEnabled();
+    const [download] = await Promise.all([page.waitForEvent("download"), exportButton.click()]);
+    const saved = await readFile(await download.path(), "utf8");
+    expect(saved).toContain("# Bitcoin &#35;1 research and literal &amp;#35; references");
+    await page.reload();
+    await lab.locator("[data-m05-import]").setInputFiles({
+      name: "bitcoin-hashtag-draft.md", mimeType: "text/markdown", buffer: Buffer.from(saved),
+    });
+    await expect(lab.locator("[data-m05-import-status]")).toContainText("Nothing was uploaded");
+    await expect(headline).toHaveValue(originalTitle);
+    await expect(exportButton).toBeEnabled();
+  });
+
   test("local drafting never interprets unsafe HTML and stays accessible on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/demo/editorial/articles/new");

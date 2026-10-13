@@ -110,7 +110,7 @@ test("max-length HTML-like text remains importable within the 64 KB local file l
   assert.deepEqual(parseLocalDraftMarkdown(markdown), original);
 });
 
-test("v2 draft sections remain lossless when author text contains Markdown headings", () => {
+test("v2 draft sections remain lossless when summary or body contains Markdown headings", () => {
   const original = prepareLocalDraft({
     ...valid,
     summary: "Summary begins here.\n\n## Draft\nThis heading is only original summary text.\n\n## Summary\nMore summary.",

@@ -118,6 +118,21 @@ try {
     assert.equal(await page.locator(".cb-home").count(), 1);
     assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
       viewport.name + " must render four original local illustrative thumbnails");
+    const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {
+      const parent = panel.getBoundingClientRect();
+      const cta = panel.querySelector('a[href="#demo-data"]').getBoundingClientRect();
+      const svg = panel.querySelector("svg.promo-scene");
+      const accent = globalThis.getComputedStyle(panel, "::before");
+      return {
+        ctaInside: cta.left >= parent.left - 1 && cta.right <= parent.right + 1
+          && cta.top >= parent.top - 1 && cta.bottom <= parent.bottom + 1,
+        decorative: svg.getAttribute("aria-hidden") === "true" && accent.pointerEvents === "none",
+        hasAtmosphere: accent.content !== "none" && accent.content !== "normal",
+      };
+    });
+    assert.ok(promoGeometry.ctaInside, viewport.name + " promotional CTA must remain inside its panel");
+    assert.ok(promoGeometry.decorative && promoGeometry.hasAtmosphere,
+      viewport.name + " promo atmospheric layers must be present and non-interactive");
     assert.equal(await page.locator("astro-dev-toolbar").count(), 0, "visual evidence must exclude the development toolbar");
     const dimensions = await page.evaluate(() => ({
       viewport: globalThis.document.documentElement.clientWidth,

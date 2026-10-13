@@ -852,3 +852,36 @@
   min-height: inherit;
   pointer-events: none;
 }
+
+/* CB-M01 R18: visual-only Golden promotional atmosphere.
+   Keep the reading side dark; sunlight and terrain remain behind accessible HTML copy. */
+.cb-home .promo-panel {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 89% 38%, rgb(160 234 79 / 25%), transparent 43%),
+    linear-gradient(115deg, #0a1510 0%, #0c1711 50%, #152713 100%);
+}
+.cb-home .promo-panel::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 87% 27%, rgb(234 255 171 / 29%), transparent 20%),
+    radial-gradient(ellipse at 82% 57%, rgb(145 244 71 / 17%), transparent 37%),
+    linear-gradient(125deg, transparent 53%, rgb(124 201 58 / 11%) 75%, transparent 95%);
+  mask-image: linear-gradient(90deg, transparent 29%, #000 68%);
+}
+.cb-home .promo-panel::after { z-index: 0; pointer-events: none; }
+.cb-home .promo-scene {
+  right: -1%;
+  width: 54%;
+  opacity: .98;
+  filter: drop-shadow(0 9px 9px rgb(0 0 0 / 42%))
+    drop-shadow(0 0 17px rgb(138 244 83 / 28%));
+}
+@media (max-width:760px) {
+  .cb-home .promo-scene { right: 0; width: 46%; opacity: .82; }
+  .cb-home .promo-panel::before { opacity: .72; }
+}

@@ -159,6 +159,18 @@ test("hero and promo scene metadata pin exact source fragments and deny commerci
   assert.equal(promo.adjacentBrandAsset.status, "OWNER_VISUAL_APPROVED_BUT_COMMERCIAL_CLEARANCE_PENDING");
 });
 
+test("R18 promo atmosphere stays decorative, local and subordinate to DEMO copy", () => {
+  const promo = component.split('<aside class="promo-panel"')[1]?.split("</aside>")[0];
+  assert.ok(promo, "promotional panel must exist");
+  assert.match(promo, /<svg class="promo-scene"[^>]*aria-hidden="true"/u);
+  assert.match(promo, /href="#demo-data"/u);
+  assert.match(promo, /DEMONSTRATION/u);
+  assert.doesNotMatch(promo, /<script|<image|https?:\/\//iu);
+  assert.match(stylesheet, /CB-M01 R18: visual-only Golden promotional atmosphere/u);
+  assert.match(stylesheet, /\.cb-home \.promo-panel::before \{[\s\S]*?pointer-events: none;/u);
+  assert.match(stylesheet, /\.cb-home \.promo-scene \{[\s\S]*?drop-shadow/u);
+});
+
 test("the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark", () => {
   assert.match(component, />₿<\/text>/u);
 });

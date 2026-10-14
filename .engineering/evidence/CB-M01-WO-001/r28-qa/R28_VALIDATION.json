@@ -93,6 +93,20 @@
     "webkit": "BROWSER_ENGINE_NOT_AVAILABLE",
     "installationAttempted": false
   },
+  "hostedChecks": {
+    "verifiedHead": "bc69b9b80b5661eab1a865c2b37fa167ff2a8728",
+    "runId": "38635371919",
+    "requiredChecks": {
+      "M00 and GEF (ubuntu-24.04)": "SUCCESS",
+      "M00 and GEF (windows-2022)": "SUCCESS",
+      "Docker Compose smoke (Ubuntu)": "SUCCESS",
+      "SonarCloud Code Analysis": "SUCCESS",
+      "Socket Security: Project Report": "SUCCESS",
+      "Socket Security: Pull Request Alerts": "SUCCESS"
+    },
+    "codeRabbit": "SUCCESS_WITH_REVIEW_SKIPPED_AUTOMATIC_REVIEWS_DISABLED",
+    "reviewApproval": false
+  },
   "notRunAfterStop": [
     "build",
     "E2E",

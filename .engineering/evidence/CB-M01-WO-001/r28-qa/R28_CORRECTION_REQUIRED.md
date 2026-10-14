@@ -41,7 +41,7 @@ O preloader observou sockets loopback em portas efêmeras. A amostragem de um se
 
 Após a falha limpa agregada, não executei novas tentativas, E2E, build, lint, typecheck, audit, capturas R28, perfis frios nem medição de dois ciclos da animação. Isso respeita o STOP do plano. Chromium e Edge estão disponíveis, ambos usam Blink; Firefox/Gecko e WebKit não estão disponíveis no cache local. Não instalei navegadores. O R28 não reivindica cobertura cross-browser, zoom real, acessibilidade ou desempenho.
 
-As 6 verificações hospedadas conhecidas pertencem ao HEAD anterior `0235517...`; elas não corrigem nem anulam as falhas locais. O estado exato dessas verificações para um HEAD de evidências dependerá da publicação deste registro.
+Após a publicação do pacote no commit `bc69b9b80b5661eab1a865c2b37fa167ff2a8728`, as seis verificações hospedadas requeridas passaram nesse HEAD: GEF Ubuntu, GEF Windows, Docker Compose smoke, SonarCloud e os dois checks do Socket ([run 38635371919](https://github.com/KayzenRoot/coinblink/actions/runs/38635371919)). CodeRabbit aparece como sucesso, mas informa `Review skipped: automatic reviews are disabled`; isso não é review independente. Os checks hospedados não corrigem nem anulam as falhas locais.
 
 ## Hipóteses e próximo passo mínimo
 

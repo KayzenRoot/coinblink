@@ -1,9 +1,9 @@
 # CB-VIS-WO-002 · Brand SVG · Work Order / Phase A
 
-**Status:** `OWNER_SCOPE_APPROVED / PRE_ADMISSION_CANDIDATE / NOT_EXECUTABLE`.
+**Status:** `OWNER_APPROVED / ADMITTED_PHASE_A_DEMO_ASSET_LIBRARY_ONLY / EXECUTABLE_WITHIN_BOUNDED_PATHS`. Formal admission effective after [PR #75 squash merge](https://github.com/KayzenRoot/coinblink/pull/75) readback at canonical main SHA `310969049d756b6ba5c0aff4e386c693030656a0` on 2026-10-14; Owner's subsequent “Autorizo vamos finalizar a m01” supplied the previously missing governance merge authorization. **No permission for commercial release or M01 PR #58 merge.**
 **Recorded Owner approval:** 2026-10-14, [Issue #74](https://github.com/KayzenRoot/coinblink/issues/74), exact statement in `.engineering/evidence/CB-VIS-WO-002/OWNER_PHASE_A_SCOPE_AUTHORIZATION.md`.
-**Canonical main source base:** `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; M00 COMPLETE / **5%**, `checkpointFacts.moduleAdmission["CB-M01"]="ADMITTED"`; **no separate CB-VIS-WO-002 admission on main yet**.
-**Admission proposal:** [Draft PR #75](https://github.com/KayzenRoot/coinblink/pull/75); **Owner explicitly prohibited merging that PR in this instruction**.
+**Canonical main source base:** `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; M00 COMPLETE / **5%**, `checkpointFacts.moduleAdmission["CB-M01"]="ADMITTED"`; **CB-VIS-WO-002 Phase A is now source-backed and admitted by the separate Owner-authorized PR #75 merge; this is not a new module in the 19-module completion counter**.
+**Admission provenance:** [PR #75 merged](https://github.com/KayzenRoot/coinblink/pull/75) as `310969049d756b6ba5c0aff4e386c693030656a0` after a later Owner decision authorized this narrow governance merge. Historical no-merge instruction applied before the latest authorization and did **not** permit merging M01, releasing commercially or deploying.
 
 ## Purpose and fixed visual reference
 Prepare a reusable brand library of **exactly five approved vector proposals**: symbol, dark horizontal, light horizontal, stacked and favicon asset (as a file in brand library, **not installed globally**). Maintain the frozen CoinBlink visual identity in Design Bible §3 and §16.8: horizontal eye, gold coin, lightning, lime green accents, high-contrast white/lime wordmark. Source identity is the original AI-generated JPG in `assets/reference/coinblink-logo-approved-original-1179x1040.jpg`, SHA256 `126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0`, immutable. The new vectors are a visually approved reinterpretation, **not pixel-identical**.
@@ -12,7 +12,7 @@ Approved R32 fingerprints are in `.engineering/evidence/CB-VIS-WO-002/OWNER_R32_
 
 ## Admission and execution ownership
 - The Owner has **granted the bounded Phase A scope**, distinct from approving vector sketches.
-- This file is drafted on a governance-only PR; **no code/asset-writing authority is effective until a separately authorized governed merge and post-merge readback**. CodeX/agent must halt if the postmerge source is not effective.
+- **Governance merge and post-merge readback SATISFIED** by PR #75 and main `310969049d756b6ba5c0aff4e386c693030656a0`. Following this formal status-reconciliation PR, the Codex executor may work **only** within the Phase A allowlist in an isolated branch, never main or PR #58, after confirming the latest canonical head and asset fingerprints.
 - **Once admitted only:** one Codex Desktop / admin KayzenRoot implementation agent in isolated brand worktree, with its own implementation branch and PR, never reuse PR #58 or #75 as a product-asset staging branch.
 - **Exclusive post-admission allowlist:** `public/brand/**`, `test/brand/**`, `.engineering/evidence/CB-VIS-WO-002/**`.
 - **Governance-stage paths only:** this work order, its Context Lock and the two Owner evidence documents in PR #75. These DO NOT authorize executor modification of governance records beyond evidence after admission.
@@ -35,6 +35,6 @@ Approved R32 fingerprints are in `.engineering/evidence/CB-VIS-WO-002/OWNER_R32_
 - Honest separation of owner **scope consent**, **visual consent**, **commercial rights**, and the **governed release/merge consent**.
 
 ## STOP CONDITION
-**Current governance PR:** stop once the Owner authorization, this WO and Context Lock are source-backed, reviewed and CI-checked; **do NOT merge** PR #75 under current instruction. Report `OWNER_APPROVED_PENDING_EFFECTIVE_ADMISSION`.
+**Governance-only admission:** Owner later authorized the governed merge of PR #75, which completed at canonical main `310969049d756b6ba5c0aff4e386c693030656a0`. The current narrow status-reconciliation PR only updates this stale pre-merge language. On **successful merge and post-merge readback** of this status record, proceed to isolated Phase A asset import under the explicit allowlist; **never interpret that as a GO for M01 PR #58, deploy or public brand use.**
 
 **Future import PR only after effective admission:** stop at verifiable demo-ready SVG library, tests and provenance with PR OPEN / unmerged; neither mark product DONE nor release commercially. Any missing gate -> `BLOCKED` with evidence, not a green claim.

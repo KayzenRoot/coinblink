@@ -3,6 +3,7 @@ import approvedLogo from "../../../assets/reference/coinblink-logo-approved-orig
 import heroCinematicOriginalPng from "./hero-cinematic-original.png";
 import heroCinematicOriginalWebp from "./hero-cinematic-original.webp";
 import heroCinematicMotionWebp from "./hero-cinematic-motion.webp";
+import r26MediaSelectionUrl from "./r26-media-selection.js?url";
 import promoR26Png from "./assets/r26/promo.png";
 import promoR26Webp from "./assets/r26/promo.webp";
 import bitcoinEditorialR26Png from "./assets/r26/bitcoin.png";
@@ -83,21 +84,7 @@ const editorialR26Assets = {
           <picture class="hero-cinematic-preview" data-preview-region="hero">
             <source media="(prefers-reduced-motion: no-preference)" type="image/webp" data-motion-srcset={heroCinematicMotionWebp.src} />
             <source type="image/webp" data-static-srcset={heroCinematicOriginalWebp.src} />
-            <script is:inline>
-              (() => {
-              const cinematicPicture = document.currentScript?.parentElement;
-              const cinematicMotion = cinematicPicture?.querySelector("source[data-motion-srcset]");
-              const cinematicStatic = cinematicPicture?.querySelector("source[data-static-srcset]");
-              const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-              const limitedData = connection?.saveData === true || ["slow-2g", "2g", "3g"].includes(connection?.effectiveType);
-              const allowMotion = matchMedia("(prefers-reduced-motion: no-preference)").matches && !limitedData;
-              const motionSrcset = cinematicMotion?.dataset.motionSrcset;
-              const staticSrcset = cinematicStatic?.dataset.staticSrcset;
-              if (!allowMotion) cinematicMotion?.setAttribute("media", "not all");
-              if (cinematicMotion && motionSrcset) cinematicMotion.setAttribute("srcset", motionSrcset);
-              if (cinematicStatic && staticSrcset) cinematicStatic.setAttribute("srcset", staticSrcset);
-              })();
-            </script>
+            <script is:inline src={r26MediaSelectionUrl}></script>
             <img src={heroCinematicOriginalPng.src} width="1774" height="887" alt="" loading="eager" decoding="async" fetchpriority="high" />
           </picture>
           <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
@@ -466,34 +453,5 @@ const editorialR26Assets = {
   <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
-<script is:inline>
-  (() => {
-  document.querySelectorAll("picture[data-preview-region]").forEach((picture) => {
-    const image = picture.querySelector("img");
-    const region = picture.dataset.previewRegion;
-    const parent = picture.closest(region === "promo" ? ".promo-panel" : region === "editorial" ? ".news-art" : ".hero-scene");
-    const revealImage = () => {
-      if (image?.naturalWidth && region === "promo") parent?.classList.add("has-promo-master");
-      if (image?.naturalWidth && region === "editorial") parent?.classList.add("has-editorial-master");
-    };
-    if (image?.complete) revealImage();
-    else image?.addEventListener("load", revealImage, { once: true });
-    image?.addEventListener("error", () => {
-      const failedSource = Array.from(picture.querySelectorAll("source")).find((source) =>
-        source.srcset.split(",").some((candidate) => {
-          const sourceUrl = candidate.trim().split(/\s+/u, 1)[0];
-          return sourceUrl && new URL(sourceUrl, document.baseURI).href === image.currentSrc;
-        }),
-      );
-      const staticSource = picture.querySelector("source[data-static-srcset]");
-      if (failedSource?.hasAttribute("data-motion-srcset") && staticSource && !staticSource.hasAttribute("srcset")) {
-        const staticSrcset = staticSource.dataset.staticSrcset;
-        if (staticSrcset) staticSource.setAttribute("srcset", staticSrcset);
-      }
-      failedSource?.remove();
-    });
-  });
-  })();
-</script>
 <script is:inline src="/home-demo.js"></script>
 <script is:inline type="module" src="/explorer-lookup.js"></script>

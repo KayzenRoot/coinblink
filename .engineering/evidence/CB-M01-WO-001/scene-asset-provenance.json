@@ -6,8 +6,8 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "3553b6be829d7ff7967fb3e72f07b8f06e99e0fa",
-    "sha256": "982df3537f8594173e5ede88c004b5a378c6b48dc7906776981a6614e559de4f",
+    "gitBlobSha": "02700693f1c84602098a8f749e3d1cca62504cad",
+    "sha256": "7ad96043fa7775d2f63b9023879b15d54085026eaa2bf2d33a5350253b0ecb00",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
@@ -132,8 +132,8 @@
         "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
         "endMarker": "        <div class=\"hero-copy\">",
         "includeEndMarker": false,
-        "sha256": "c35aee0d8023e938b441b359bb8101abc680559bb1361c8990a47656e3943a06",
-        "sourceByteLength": 13136
+        "sha256": "b972a5b1c19d78d04c9fec2dcd10b852f1b441150356906f17572b8c1437eb01",
+        "sourceByteLength": 12033
       },
       "form": "IMAGEGEN_STATIC_MASTER_WITH_BLENDER_MOTION_DERIVATIVE",
       "viewBoxes": [
@@ -152,7 +152,7 @@
       "visualComparison": "R25 integrated local responsive screenshots; not Owner Golden visual acceptance.",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "3553b6be829d7ff7967fb3e72f07b8f06e99e0fa",
+      "sourceGitBlobSha": "02700693f1c84602098a8f749e3d1cca62504cad",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -198,7 +198,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "3553b6be829d7ff7967fb3e72f07b8f06e99e0fa",
+      "sourceGitBlobSha": "02700693f1c84602098a8f749e3d1cca62504cad",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",

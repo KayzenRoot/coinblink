@@ -73,15 +73,20 @@ test("four editorial thumbnails are original, local and clearly DEMO-only", asyn
   assert.match(stylesheet, /\.cb-home \.news-art \.editorial-artwork/u);
 });
 
-test("R26 selects motion before image discovery only when motion and data settings allow it", () => {
+test("R26 selects motion before image discovery only when motion and data settings allow it", async () => {
+  const mediaScript = await readFile(new URL("../../../src/modules/CB-M01/r26-media-selection.js", import.meta.url), "utf8");
   assert.match(component, /data-motion-srcset=\{heroCinematicMotionWebp\.src\}/u);
   assert.match(component, /data-static-srcset=\{heroCinematicOriginalWebp\.src\}/u);
-  assert.match(component, /connection\?\.saveData === true/u);
-  assert.match(component, /\["slow-2g", "2g", "3g"\]/u);
+  assert.match(component, /import\s+r26MediaSelectionUrl\s+from\s+"\.\/r26-media-selection\.js\?url";/u);
+  assert.match(component, /<script\s+is:inline\s+src=\{r26MediaSelectionUrl\}><\/script>/u);
+  assert.doesNotMatch(component, /<script\s+is:inline\s*>[\s\S]*?<\/script>/u,
+    "the selection logic must respect the shared script-src 'self' policy");
+  assert.match(mediaScript, /connection\?\.saveData === true/u);
+  assert.match(mediaScript, /\["slow-2g", "2g", "3g"\]/u);
   assert.match(component, /prefers-reduced-motion: no-preference/u);
-  assert.match(component, /cinematicMotion\.setAttribute\("srcset", motionSrcset\)/u);
-  assert.match(component, /cinematicStatic\.setAttribute\("srcset", staticSrcset\)/u);
-  assert.match(component, /source\.srcset\.split\(","\)/u);
+  assert.match(mediaScript, /motionSource\.setAttribute\("srcset", motionSrcset\)/u);
+  assert.match(mediaScript, /staticSource\.setAttribute\("srcset", staticSrcset\)/u);
+  assert.ok(mediaScript.includes("srcset.split"));
 });
 
 test("R15 decorative editorial assets have fail-closed provenance and exact-source SHA-256", async () => {

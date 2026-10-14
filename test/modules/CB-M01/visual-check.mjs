@@ -367,8 +367,10 @@ try {
       interactionChecks.responsiveNavigation.push({ width, control: "inline navigation", allLinksVisible: true, headerRegionsOverlap: false });
       await page.getByRole("link", { name: "Tools", exact: true }).click();
       assert.equal(new URL(page.url()).hash, "#chain-lookup", "mouse can activate Tools at the desktop boundary");
-      await page.getByRole("link", { name: "About", exact: true }).focus();
-      await page.keyboard.press("Enter");
+      const aboutLink = page.getByRole("link", { name: "About", exact: true });
+      await aboutLink.focus();
+      await aboutLink.press("Enter");
+      await page.waitForURL(/#footer$/, { timeout: 5_000 });
       assert.equal(new URL(page.url()).hash, "#footer", "keyboard can activate About in the desktop navigation");
     }
   }

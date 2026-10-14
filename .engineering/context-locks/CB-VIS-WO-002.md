@@ -1,4 +1,4 @@
-# CB-VIS-WO-002 · Phase A Pre-Admission Context Lock
+# CB-VIS-WO-002 · Phase A Effective-Admission Context Lock
 
 **State:** `OWNER_APPROVED_PHASE_A / GOVERNANCE_ADMITTED_ASSET_LIBRARY / BOUNDED_EXECUTION_AFTER_STATUS_READBACK`.
 **Canonical admission source:** original pre-admission base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; **post-admission main readback `310969049d756b6ba5c0aff4e386c693030656a0`** after [PR #75 squash merge](https://github.com/KayzenRoot/coinblink/pull/75). Owner's newest authorization superseded the earlier no-merge instruction **for the admission PR only**, not for PR #58, deploy, homepage wiring or commercial publishing. This Context Lock's original source blob table remains historical and is anchored to the original pre-admission base; Codex must fetch and verify the **current** main before any write.

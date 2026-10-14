@@ -1,6 +1,6 @@
 # CB-VIS-WO-002 · Bounded brand-vector Work Order admission proposal
 
-**Status: OWNER_SCOPE_APPROVED / GOVERNANCE MERGED & EFFECTIVE FOR PHASE A ASSET LIBRARY ONLY.** Original candidate merged in [PR #75](https://github.com/KayzenRoot/coinblink/pull/75) after later Owner authorization, canonical post-merge main `310969049d756b6ba5c0aff4e386c693030656a0`. This update reconciles stale pre-merge statements; no commercial approval. This is a non-executable governance candidate. Approval of visual R32 bytes alone does not provide code scope. Based on frozen Design Bible §16.8, `CB-VIS-WO-002` (Design system, brand SVG & header), narrowed to **Phase A, assets and tests only**.
+**Status: OWNER_SCOPE_APPROVED / GOVERNANCE MERGED & EFFECTIVE FOR PHASE A ASSET LIBRARY ONLY.** Original candidate merged in [PR #75](https://github.com/KayzenRoot/coinblink/pull/75) after later Owner authorization, canonical post-merge main `310969049d756b6ba5c0aff4e386c693030656a0`. This update reconciles stale pre-merge statements; no commercial approval. This started as a non-executable governance candidate. The separate Owner's scope authorization plus governed PR #75 merge established bounded Phase A asset-library admission. This status-reconciliation PR #76 must itself be audited and merged before Codex execution is enabled. Approval of visual R32 bytes alone never granted code scope. Based on frozen Design Bible §16.8, `CB-VIS-WO-002` (Design system, brand SVG & header), narrowed to **Phase A, assets and tests only**.
 
 ## Source and authoritative inputs
 
@@ -27,7 +27,7 @@
 
 ## Admission promotion steps and exact-head controls
 
-1. **SATISFIED: Owner provided distinct explicit Phase A scope authorization** on 2026-10-14 in chat, separately recorded in Issue #74 and source-backed evidence. Owner simultaneously **forbade merge**, so source admission is still not effective.
+1. **SATISFIED:** Owner provided distinct explicit Phase A scope authorization on 2026-10-14. The historical no-merge condition was superseded for the narrow admission PR by the later Owner instruction “Autorizo vamos finalizar a m01”, as documented in PR #75. Governance admission merged successfully, source read back on main `310969049d756b6ba5c0aff4e386c693030656a0`; no M01/production merge authority follows.
 2. **PREPARED AND MERGED IN PR #75:** Governance Steward includes a bounded `.engineering/work-orders/CB-VIS-WO-002.md` and `.engineering/context-locks/CB-VIS-WO-002.md`, pinned to the main/source SHA. These are **non-executable pre-admission records** until an explicitly authorized, separately audited merge.
 3. **SATISFIED:** PR #75 was independently technically reviewed `COMMENTED`, all seven strict checks passed, and a narrow admin GO for the **governance merge only** was explicitly documented. Squash merged to main `310969049d756b6ba5c0aff4e386c693030656a0`; never generalize this to M01 merge or commercial use.
 4. Only after **effective admission under repository authority** may Codex R33 import the SVG ZIP into `public/brand/**` in its own isolated brand PR. Validate ZIP CRC, exact SHA of all 5 raw SVGs, XML/SVG security, small-icon rendering, dark/light backgrounds, browser/a11y and applicable CI.
@@ -38,4 +38,4 @@
 - `OWNER_VECTOR_APPROVAL_PENDING`: **RESOLVED** by explicit Owner acceptance of R32, version-pinned in Issue #74.
 - `BLOCKED_SCOPE_ADMISSION`: **RESOLVED for Phase A asset-library scope** via Owner-authorized governance PR #75 merge and post-merge readback. Current status-reconciliation candidate must also land with exact-head checks before Codex asset import. Scope excludes `src/**`, global favicon/header and M01 PR #58.
 - `COMMERCIAL_RIGHTS_GATE`: **PENDING** regardless of vector approval or Phase A DEMO integration.
-- This proposal does **not** authorize implementation, merge, production/public release, M01 DONE or checkpoint changes.
+- This **historical proposal** now documents an Owner-authorized Phase A governance merge already completed. Once PR #76 lands with reviewed status readback, Codex may implement an **isolated, unmerged brand asset-library PR** inside the stated allowlist. This proposal still does **not** authorize merging M01 PR #58, brand implementation, production/public release, M01 DONE or checkpoint changes.

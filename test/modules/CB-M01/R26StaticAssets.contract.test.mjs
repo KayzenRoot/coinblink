@@ -100,7 +100,7 @@ test("R26 media selection and failure recovery use a local external script under
   const component = await readFile(join(repoRoot, "src", "modules", "CB-M01", "GoldenHome.astro"), "utf8");
   const mediaScript = await readFile(join(repoRoot, "src", "modules", "CB-M01", "r26-media-selection.js"), "utf8");
 
-  assert.match(component, /import\s+r26MediaSelectionUrl\s+from\s+"\.\/r26-media-selection\.js\?url";/u);
+  assert.match(component, /import\s+r26MediaSelectionUrl\s+from\s+"\.\/r26-media-selection\.js\?url&no-inline";/u);
   assert.match(component, /<script\s+is:inline\s+src=\{r26MediaSelectionUrl\}><\/script>/u);
   assert.doesNotMatch(component, /<script\s+is:inline\s*>[\s\S]*?<\/script>/u,
     "new media selection must not rely on an inline script blocked by script-src 'self'");

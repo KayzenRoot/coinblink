@@ -77,7 +77,7 @@ test("R26 selects motion before image discovery only when motion and data settin
   const mediaScript = await readFile(new URL("../../../src/modules/CB-M01/r26-media-selection.js", import.meta.url), "utf8");
   assert.match(component, /data-motion-srcset=\{heroCinematicMotionWebp\.src\}/u);
   assert.match(component, /data-static-srcset=\{heroCinematicOriginalWebp\.src\}/u);
-  assert.match(component, /import\s+r26MediaSelectionUrl\s+from\s+"\.\/r26-media-selection\.js\?url";/u);
+  assert.match(component, /import\s+r26MediaSelectionUrl\s+from\s+"\.\/r26-media-selection\.js\?url&no-inline";/u);
   assert.match(component, /<script\s+is:inline\s+src=\{r26MediaSelectionUrl\}><\/script>/u);
   assert.doesNotMatch(component, /<script\s+is:inline\s*>[\s\S]*?<\/script>/u,
     "the selection logic must respect the shared script-src 'self' policy");

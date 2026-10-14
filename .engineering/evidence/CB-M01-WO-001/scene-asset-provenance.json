@@ -33,6 +33,14 @@
       "path": ".engineering/evidence/CB-M01-WO-001/visual-check.json",
       "sha256": "8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce"
     },
+    "hostedChecks": {
+      "runId": 38488533443,
+      "url": "https://github.com/KayzenRoot/coinblink/actions/runs/38488533443",
+      "headSha": "eb9f09e36c319c209d14427cb2a2362797c29808",
+      "conclusion": "SUCCESS",
+      "requiredChecksPassed": 6,
+      "codeRabbitStatus": "SUCCESS_STATUS_ONLY_NOT_A_SUBSTANTIVE_REVIEW"
+    },
     "screenshotWidths": [
       1536,
       768,

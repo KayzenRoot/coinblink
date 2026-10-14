@@ -1,5 +1,6 @@
 (() => {
-  const script = document.currentScript;
+  const documentRef = globalThis.document;
+  const script = documentRef.currentScript;
   const heroPicture = script?.parentElement?.matches("picture[data-preview-region='hero']")
     ? script.parentElement
     : null;
@@ -21,7 +22,7 @@
 
   const sourceMatchesCurrentImage = (source, image) => source.srcset.split(",").some((candidate) => {
     const sourceUrl = candidate.trim().split(/\s+/u, 1)[0];
-    return sourceUrl && new URL(sourceUrl, document.baseURI).href === image.currentSrc;
+    return sourceUrl && new URL(sourceUrl, documentRef.baseURI).href === image.currentSrc;
   });
 
   const revealImage = (image) => {
@@ -43,22 +44,22 @@
     failedSource.remove();
   };
 
-  document.addEventListener("load", (event) => {
-    if (event.target instanceof HTMLImageElement) revealImage(event.target);
+  documentRef.addEventListener("load", (event) => {
+    if (event.target instanceof globalThis.HTMLImageElement) revealImage(event.target);
   }, true);
-  document.addEventListener("error", (event) => {
-    if (event.target instanceof HTMLImageElement) recoverImage(event.target);
+  documentRef.addEventListener("error", (event) => {
+    if (event.target instanceof globalThis.HTMLImageElement) recoverImage(event.target);
   }, true);
 
   const initializeLoadedImages = () => {
-    document.querySelectorAll("picture[data-preview-region] img").forEach((image) => {
+    documentRef.querySelectorAll("picture[data-preview-region] img").forEach((image) => {
       if (image.complete && image.naturalWidth > 0) revealImage(image);
       else if (image.complete) recoverImage(image);
     });
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeLoadedImages, { once: true });
+  if (documentRef.readyState === "loading") {
+    documentRef.addEventListener("DOMContentLoaded", initializeLoadedImages, { once: true });
   } else {
     initializeLoadedImages();
   }

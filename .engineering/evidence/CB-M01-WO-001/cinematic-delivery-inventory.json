@@ -1,35 +1,236 @@
 {
   "schemaVersion": 1,
   "workOrder": "CB-M01-WO-001",
-  "recordType": "R23_LOCAL_DELIVERY_INVENTORY",
-  "capturedAt": "2026-10-13T21:32:10+00:00",
+  "recordType": "R25_STATIC_MASTER_AND_BLENDER_MOTION_INVENTORY",
+  "capturedAt": "2026-10-14T00:07:22+00:00",
   "repository": "KayzenRoot/coinblink",
   "branch": "codex/cb-m01-wo-001-impl-20261011",
-  "baseHeadAtInventory": "a0b9bec58e7594a4efeed20ded33daae6f569a2a",
-  "snapshotHeadAtInventory": "cba620d9c9b344b871882f759cdc857ac031744d",
-  "remoteTrackingHeadAtInventory": "1af136f908993c2d1df32f945ad9b0241810ef9e",
+  "baseHeadAtInventory": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "snapshotHeadAtInventory": "e54700ce710005687ae8c09746df227fab162936",
+  "remoteTrackingHeadAtInventory": "a1fbe8667edd1b0ec36f97b45a3d04d501351d77",
   "liveRemoteWasSeparatelyChecked": true,
+  "policy": {
+    "staticMaster": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+    "motionDerivative": "BLENDER_MOTION_DERIVATIVE",
+    "decorativeOverlays": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false
+  },
   "files": [
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/CODEX_R23_CINEMATIC_HERO.md",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 7809,
+      "sha256": "e5d5916ede2341c43dc1d2b8a9ffdf1bb98525e77c36e89dad59447b778f32ce",
+      "suffix": ".md"
+    },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/R23_LOCAL_DELIVERY_RECONCILIATION.md",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 7982,
-      "sha256": "21dc953c50f7ec29b9eb1766b156dba6582a2349e423c95b5d6563ad81e3997a",
+      "bytes": 10275,
+      "sha256": "22e2dfebaa7a686da683c0701d3e92f3c2eaeb1c43db533a8d382d0e2acda640",
+      "suffix": ".md"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/R25_CINEMATIC_ASSET_DELIVERY.md",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 7743,
+      "sha256": "9a3311290af97e5e85e32cf0f2ccecafcaba645693b837212ef73daabb0fb278",
+      "suffix": ".md"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/README.md",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 66734,
+      "sha256": "38a06ef7f20cde0d11e98cb7c0bb3773455663b630ef8af9b465b818d0deafb7",
       "suffix": ".md"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/animate-generated-hero.py",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 11960,
-      "sha256": "5b5b3731d46a06187af3bd5fe07a6aa61bbbfb2b3ca25e4887b3dcaa3b76d776",
+      "bytes": 12641,
+      "sha256": "6d6af1f843e77ede4f07b6c438a28cff57b6d2fa036e4dba03950d3e1bc96f4c",
       "suffix": ".py"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1374,
+      "sha256": "aa39519d06e248bfcca66d400237197007240fb07fde9667f52a84c8c13429c7",
+      "suffix": ".mjs"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/blender-hero-scene.py",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 18156,
-      "sha256": "55351bb809e3e61d3f6121ea7cf1dc58f95a08df741e3ace02ff6b5c3c1c4fab",
+      "bytes": 24677,
+      "sha256": "0f1b4cfa78212523190e0186dca5bf949079d735011c0da9bb93195d14ee0c4f",
       "suffix": ".py"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/derive-hero-cinematic-exports.py",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 14915,
+      "sha256": "39765c50fa9af2ccae7344737a54812f58a9e29eb37f774fcd451c1ff68fc715",
+      "suffix": ".py"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/derive-hero-motion-runtime.py",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3706,
+      "sha256": "3722db4b834088c968b224012344a543489fac59813b7a820ccf199e4af3b5dc",
+      "suffix": ".py"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/editorial-asset-provenance.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 8355,
+      "sha256": "930f5f3b674ea6ebb23749abfbddf1c43dd5919e54101661d264f63ddeb021db",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-doctor-30b0778.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3448,
+      "sha256": "b2dd3bf0488e1ebe2818f7941a8132ee5e069dc66f38bc9d3506a8446be7c717",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-doctor-d8f6aa6.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3448,
+      "sha256": "9113cbe0281cbda6ec5d8c1e849adeaec5f05ac4ee3f742e539fe97c57e4c910",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-doctor-ea380a2.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3454,
+      "sha256": "eb05f2b12dbd39ee6176a7b2299c8a4458f7f72d452bcd3e4c0ae80361462a4b",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-doctor.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3730,
+      "sha256": "9b6811eed3a80567bb955fd29f43bd0e1a55f0d03e70f269e649c5c71785cb88",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-status-30b0778.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 4041,
+      "sha256": "f49bb6b65e51bd1c8499ad85a277002756fb6fbc761edace351c0e7367b597e2",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-status-d8f6aa6.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 4041,
+      "sha256": "28fc883199b855b6bb63a7423c51db6a60386b7200ce9358467b0f04c909edd7",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-status-ea380a2.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 4047,
+      "sha256": "fdbe4cc1523e78d591af2d0ba37b7600bda2ceed4048191ff6aa7bddb489a487",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/gef-status.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3971,
+      "sha256": "350063f6be31ae1048947d3e4d17cc24a602c3ae2c9f27b3b9a88e2b39a854a1",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/golden-home-desktop-difference-3x.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2010771,
+      "sha256": "f8afaf0cf9bc00308577f0188f315ff45d99cb5763333db4fb298a3893b9a89c",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "mode": "RGBA",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/golden-home-desktop-overlay-50.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2103930,
+      "sha256": "0cc0d3c569cf3357b9c3d8a9fcac5663c29cea2da1405e5af6c16c8166546f9f",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "mode": "RGBA",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/golden-home-desktop-overlay.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1630532,
+      "sha256": "0bd7466afed096a4cfe5391c18a2e86be1929eb81d4640b2a376578e1ea0f114",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable-inspection.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3000,
+      "sha256": "b85ff2cb5f11d3026df888649ef41e51e666e107a6a633dd5db157d4502bcdb4",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 4249267,
+      "sha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+      "suffix": ".blend",
+      "blenderHeader": "(�/��A\u0006\u0001\u0000%7\u0000"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-export-report.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2380,
+      "sha256": "5726bf8aa2682354ea8b6359971083d6d758b23f3ec7de195b24af6657a03a7d",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 6200,
+      "sha256": "a19bf544ba3333639c119e4d74f53ccd9ece78ca04fa874d4ef9b1a1d45f1e1e",
+      "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-scene-inspection.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1373,
+      "sha256": "025c58140450387b095e18bf93718ee1c807f510617081575f5d37b6c89ac759",
+      "suffix": ".json"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-lightning.png",
@@ -51,8 +252,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-provenance.json",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 15551,
-      "sha256": "8d5ecc081a874b52d0e64d328da39e59eff8d4bc1baa9508a5b547ca082f4177",
+      "bytes": 27242,
+      "sha256": "045fccd557a389b99d060d9cccb51c96e323c2680d02cf99bdfcfa7b63d728d6",
       "suffix": ".json"
     },
     {
@@ -319,6 +520,48 @@
       "blenderHeader": "(�/��A\u0006\u0001\u0000�7\u0000"
     },
     {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-production.blend",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 339360,
+      "sha256": "34adf9ef2bf7d5284856143ba56209f09cb2d73504bb3d5a2ed5b084363ea560",
+      "suffix": ".blend",
+      "blenderHeader": "(�/��A\u0006\u0001\u0000�7\u0000"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-blender-master-2560x1280.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 9848150,
+      "sha256": "935d00f5384771f2a21a83bf0ee5e077e0684146364b5c36080d64b454cca460",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          2560,
+          1280
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-blender-preview-800x400.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 962713,
+      "sha256": "500b294438c3f562382a5ec5f5fdd7869e229bf78a9f2522dbccd4ba8c392c31",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          800,
+          400
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-preview-800x400.png",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
       "bytes": 962711,
@@ -336,17 +579,31 @@
       }
     },
     {
+      "path": ".engineering/evidence/CB-M01-WO-001/inspect-blender-delivery.py",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3990,
+      "sha256": "5c3655f5a25d1edc6e445615cba377ab0e0a0c82646e23f1ba68e38f75db6038",
+      "suffix": ".py"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/inspect-portable-animation.py",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2314,
+      "sha256": "19f5830b29f22e059d661256f54fdbbf39cd994a75fe6c6d8864867f7d8c6d88",
+      "suffix": ".py"
+    },
+    {
       "path": ".engineering/evidence/CB-M01-WO-001/integrated-visual-check.json",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 7008,
-      "sha256": "5b111a0201ddbf9a9928cfbf92a3ed9dfba954d915e05b285d60932155a3399a",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 12688,
+      "sha256": "972163824c53ecb0e9e51b3c578db51273070cda75a1c27847127d77aca970d7",
       "suffix": ".json"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/inventory-cinematic-delivery.py",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 5858,
-      "sha256": "a5be11dd37b07f37df3f59baef31330a7455071bd1e92f039801a5b1691ed0b7",
+      "bytes": 7085,
+      "sha256": "66b769f0ec6ecb38abc566653617a61e5802f8ed5947e7229033052221914938",
       "suffix": ".py"
     },
     {
@@ -369,8 +626,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-provenance.json",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 6520,
-      "sha256": "f4d1ca5305a40f2ee2b41f93e017b5016365ebe31aaadd3684a0cbc1583164a3",
+      "bytes": 10275,
+      "sha256": "8db81da38cf22a33b96df04121501f67b2457068853420d124587339c54641e6",
       "suffix": ".json"
     },
     {
@@ -621,22 +878,29 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/package-hero-motion.py",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 10027,
-      "sha256": "94bcb0d5949fc370766c418d0f955a2681d10929bf97de5bca3fb3c917f846c7",
+      "bytes": 10672,
+      "sha256": "992c1003df6738ca7bf86cdb6959a42b747fb2545f1b31abc13528ce4fc63df1",
       "suffix": ".py"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/r25-integrated-visual-check.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 12322,
+      "sha256": "7885474b5666c239fb8fadfd20ea098a2d273771d408f20a6c6dd27e7d4019e9",
+      "suffix": ".json"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/scene-asset-provenance.json",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 7785,
-      "sha256": "913b81bbb16c50910baea502926796da4fdcf0c6e5d4d10600f00a9a8e9a3053",
+      "bytes": 17416,
+      "sha256": "f6037f3c308f83f77a36097382adc44a67e9023eefb7d194fdea2f6733ee1e85",
       "suffix": ".json"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-desktop.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 725662,
-      "sha256": "60a65e1180ef8f0350e988b7a183cad493202abad3be780a0be05a1f0bdb59cb",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 789916,
+      "sha256": "78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -651,9 +915,9 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 725709,
-      "sha256": "404f2ae8834d182e30bfbf73e369e5278728ba4038badd224c7e2315d5150950",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 789613,
+      "sha256": "5321f1ab9582ce8ac7a36620b9b13f877f247fdde5d92374d3058e24e31a51b9",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -668,9 +932,9 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 199264,
-      "sha256": "605a2143fddaebc0cdaf77a203b9eb3b3375c539c5134457fcab7a64a159b47e",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 242653,
+      "sha256": "d16340199d9af1489ac8c8c7b11b2001dd0792ada75b495d038c1f99cd2623e1",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -686,8 +950,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 477284,
-      "sha256": "daa568d19c296519cdb995649180af7de0e7b4bf69fd2ab5d2316fa3225b533b",
+      "bytes": 491074,
+      "sha256": "6842a5060bff7c72b2e6bbd7d0dd4002c5bb492768292f6106d7a50466fdc652",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -703,8 +967,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-mobile.png",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 195273,
-      "sha256": "e0f057b5452d2f20ccc51f644ba436c1d86c1be7400f65f6a30f2dc9c07b809f",
+      "bytes": 242244,
+      "sha256": "9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -719,9 +983,60 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-tablet.png",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 480996,
-      "sha256": "12ae803a9be5e251885398b34a623aa2b9efc6b494e7f8159f98c42c6be13da5",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 491278,
+      "sha256": "d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          768,
+          1024
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/screenshots/r25-hero-desktop-1536x864.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 694898,
+      "sha256": "5bfd327a12ebbdee3991344c20eac1b9880c9eb7da17e603a304fd9ce35703bb",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/screenshots/r25-hero-mobile-390x844.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 210180,
+      "sha256": "97adf7d2d9b0ef709812550a0b5fb4cd31e91aa44f6a99fb7c33351adff330bc",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          390,
+          844
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/screenshots/r25-hero-tablet-768x1024.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 472186,
+      "sha256": "abcb511f47d17deb3b453f198e121cb6249da2eb225b973a31339f9232606deb",
       "suffix": ".png",
       "image": {
         "format": "PNG",
@@ -736,24 +1051,96 @@
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/visual-check.json",
-      "statusAtInventory": "MODIFIED_OR_STAGED",
-      "bytes": 15876,
-      "sha256": "cf9cf0561f95303eb50a3095ca14d5d939a9fd2b59a339e38edf6f4cc46e5556",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 15864,
+      "sha256": "8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce",
       "suffix": ".json"
+    },
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/visual-comparison.json",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1279,
+      "sha256": "f4965851e1832ef0ccd6a62d0f1deca43fdbe515911b40c09d59228f742da4ee",
+      "suffix": ".json"
+    },
+    {
+      "path": "src/modules/CB-M01/.gitattributes",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 38,
+      "sha256": "297f03eb0e022a62be366b992042eb48c350066b5c5fd70cb19ef2340481efd7",
+      "suffix": ""
+    },
+    {
+      "path": "src/modules/CB-M01/EditorialArtwork.astro",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 6650,
+      "sha256": "5d00601d4c56ad953ead4297d276cc366ef491089c9af6778fb5b3dc0750ae2e",
+      "suffix": ".astro"
     },
     {
       "path": "src/modules/CB-M01/GoldenHome.astro",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 36889,
-      "sha256": "21204008af16b00218228cf00d5fa7f9031f74cdff6f3c6a9d77210c20dcd074",
+      "bytes": 35890,
+      "sha256": "4a28031f88ba112fcf5cee8995e63bc2b7dca01960be9a4e78f2a9a5052846ef",
       "suffix": ".astro"
     },
     {
       "path": "src/modules/CB-M01/golden-home.css",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 54632,
-      "sha256": "149a61c83c5b4fafaa56ceda5febfa2f125408a0eb7e83c6192a1d551bee93d4",
+      "bytes": 52244,
+      "sha256": "0883a865be01c1e810846b6a74e586506d40e036f79699a1ded0f81c040cff45",
       "suffix": ".css"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.png",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 774726,
+      "sha256": "bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67",
+      "suffix": ".png",
+      "image": {
+        "format": "PNG",
+        "dimensions": [
+          2560,
+          1280
+        ],
+        "mode": "P",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 269828,
+      "sha256": "5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e",
+      "suffix": ".webp",
+      "image": {
+        "format": "WEBP",
+        "dimensions": [
+          2560,
+          1280
+        ],
+        "mode": "RGB",
+        "frameCount": 1,
+        "decodedFrameCount": 1
+      }
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1394724,
+      "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+      "suffix": ".webp",
+      "image": {
+        "format": "WEBP",
+        "dimensions": [
+          640,
+          320
+        ],
+        "mode": "RGBA",
+        "frameCount": 48,
+        "decodedFrameCount": 48
+      }
     },
     {
       "path": "src/modules/CB-M01/hero-cinematic-original.png",
@@ -788,6 +1175,34 @@
         "frameCount": 1,
         "decodedFrameCount": 1
       }
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-preflight.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 15337,
+      "sha256": "a238e40e3a5a90a89db2a1647fe8f5be30f5f215053ac7c69ec70d979c9ff032",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-mineral-texture.svg",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1589,
+      "sha256": "59dbe7af801c0ebbc5896728a2d0c4d2c95aaf04fd27d46a60ad5c0c793a563c",
+      "suffix": ".svg"
+    },
+    {
+      "path": "src/modules/CB-M01/home-copy.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 9701,
+      "sha256": "5e4dfff297ef38525c213f1752162ada682a29def7a70647555fa2d7785e3663",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "src/modules/CB-M01/learning-topics.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3683,
+      "sha256": "343c97c440e533366820dd1c21d30888501d33a7c6a5d5550d01ec94f39f5c4b",
+      "suffix": ".mjs"
     },
     {
       "path": "src/modules/CB-M01/lightning-sprites/lightning-01-charge.png",
@@ -909,78 +1324,170 @@
       }
     },
     {
+      "path": "src/modules/CB-M01/official-sources.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2480,
+      "sha256": "870328fc7ff3431ad8de5f1a6ab83ff1d2baecf1cf1c6bffafaafb513a9e65fe",
+      "suffix": ".mjs"
+    },
+    {
       "path": "test/modules/CB-M01/GoldenHome.contract.test.mjs",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 22008,
-      "sha256": "b186a60908442441b86c9023f48890e4551faf62224b0a04215e70ed491064e3",
+      "bytes": 22809,
+      "sha256": "c43432d0ce7dafa0b3722282aee588734f5a6b859fe44ec7975f3621e01689c5",
       "suffix": ".mjs"
     },
     {
       "path": "test/modules/CB-M01/HeroCinematicPreflight.contract.test.mjs",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 5469,
-      "sha256": "6e43555df6a9ab59db196125d5fb7649313c8ee587357a8e0496c56dc3affdfc",
+      "bytes": 12036,
+      "sha256": "b8605b306b43abfeec9fa8a5a16f241d665894790a020da914bf091ba801bc74",
       "suffix": ".mjs"
     },
     {
       "path": "test/modules/CB-M01/HeroLightningSprites.contract.test.mjs",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 4812,
-      "sha256": "8ab2dd5257460df79b0f3c783fad4d8d8d312fab6a39742f04d3aadd8c80c063",
+      "bytes": 5780,
+      "sha256": "a742fd205302e3aade5cb69a9d3d19e79d29bd96917939fc4b2994f2fbcbdc92",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/astro-integration.config.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 173,
+      "sha256": "d516006828193a96ebfa1d321721e002f2f792c3895cda69e86ece9073c732fc",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/explorer-links.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2664,
+      "sha256": "1cd451f8e15dfe6f27dfcee5702e2c1bb378e5b9de39dcde74b167ec6ba1f604",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/fixture/.gitignore",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 16,
+      "sha256": "3de1d3178d1a6e4b28896e3b3c750075733410bb37f17a02fded307f0482e548",
+      "suffix": ""
+    },
+    {
+      "path": "test/modules/CB-M01/fixture/src/pages/index.astro",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 313,
+      "sha256": "45798d1fc00a4b354ce5efed9f50654233c7e07725797c604eadd6e80cff185e",
+      "suffix": ".astro"
+    },
+    {
+      "path": "test/modules/CB-M01/git-head.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 2876,
+      "sha256": "7e4790f7c03f3456d3bb90c30b1fa16a95a8fcc6b2b324cc06d6ea0af4d73422",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/git-head.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3515,
+      "sha256": "f0ddd25cd7e735bd845662fc4f4da3e031f5904f442395deac7e8eef9ca3fcc5",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/integrated-visual-check.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 27033,
+      "sha256": "52a6149f66a9097b41f7a45c3225411151dd86f2272cc0932b54f059d0f26b9e",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/learning-topics.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1383,
+      "sha256": "35470fefea8b305963be21c646b5584992d458fffe638828291bc71b6ef4d10d",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/official-sources.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 1939,
+      "sha256": "c3440985fab2fa8c9b8203b6bf3d88af0600563b0ef75a1a8eaac33a720efe97",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-check.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 30176,
+      "sha256": "8453d4956fcb8e001084bbbe7190da7ab5f2628a6a7dfe4920d9d94e921e37eb",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-input-state.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3131,
+      "sha256": "558cd420c14bc47ef2a7e7502ad61c37379e8560545201c401dcbedcecd2f41a",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-input-state.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 6320,
+      "sha256": "f04deabf12e4417a69a03764d566f45b53f5b12ebc5a8905e95b7db46ecd8488",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-request-origin.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 184,
+      "sha256": "a62e222d7ee8e2479b3245285ead5f7541b41bb278a384f81a0565493aea18c1",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-request-origin.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 677,
+      "sha256": "f8505e97fdd8924cef8a4d5fa7c4b0ba043d3abec2f7c4ee2467df3e54b026f3",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-server.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 3034,
+      "sha256": "81e4f80659d6163b84dfa8a1db9c7e84a6f43aec4982b85fc76beabdb5fe223d",
+      "suffix": ".mjs"
+    },
+    {
+      "path": "test/modules/CB-M01/visual-server.test.mjs",
+      "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
+      "bytes": 5431,
+      "sha256": "acfaa18026059f3b39de8d92d62a69200fd3e466f393bc09f4d8469912de3272",
       "suffix": ".mjs"
     }
   ],
-  "fileCount": 64,
-  "bytesTotal": 52671922,
+  "fileCount": 123,
+  "bytesTotal": 78224855,
   "localOnlyScratch": {
-    "files": [
-      {
-        "path": ".engineering/evidence/CB-M01-WO-001/__pycache__/animate-generated-hero.cpython-312.pyc",
-        "bytes": 17893,
-        "sha256": "9d9dfb7b4ae4c02c6fbadeef1846e25382970a1dd55f1ac8f7e806db13106e8b",
-        "reason": "Blender autosave backup or Python bytecode cache; omitted from Git deliverables."
-      },
-      {
-        "path": ".engineering/evidence/CB-M01-WO-001/__pycache__/blender-hero-scene.cpython-312.pyc",
-        "bytes": 29546,
-        "sha256": "8b6a2eae573f179525b40034f5077da44b1f28335625c3c2e7701a408818a755",
-        "reason": "Blender autosave backup or Python bytecode cache; omitted from Git deliverables."
-      },
-      {
-        "path": ".engineering/evidence/CB-M01-WO-001/__pycache__/package-hero-motion.cpython-312.pyc",
-        "bytes": 13659,
-        "sha256": "36efd48231c05551100f1c21af0a615ca42b4dc247e15bd1c66b22806e9d7886",
-        "reason": "Blender autosave backup or Python bytecode cache; omitted from Git deliverables."
-      },
-      {
-        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation.blend1",
-        "bytes": 4249237,
-        "sha256": "738cfba9c539372909a323c44d82db590f1ecdb809f2d802c8572cd9521c19e7",
-        "reason": "Blender autosave backup or Python bytecode cache; omitted from Git deliverables."
-      },
-      {
-        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-original.blend1",
-        "bytes": 224768,
-        "sha256": "ba51e6b44febc2be540d364c99a8408d15bdbfe8adaa01313452cb1c915b9905",
-        "reason": "Blender autosave backup or Python bytecode cache; omitted from Git deliverables."
-      }
-    ],
+    "files": [],
     "temporaryMotionFrames": {
       "directory": "%TEMP%/coinblink-cb-m01-motion-frames",
-      "directoryFound": true,
-      "count": 96,
-      "bytes": 184889351,
-      "first": "frame-0001.png",
-      "last": "frame-0096.png",
+      "directoryFound": false,
+      "count": 0,
+      "bytes": 0,
+      "first": null,
+      "last": null,
       "reason": "Reproducible intermediate render frames; selected stills and final animation are retained as evidence."
     }
   },
-  "withheldFromGitHub": [
+  "withheldFromGitHub": [],
+  "historicalR23WithheldAssets": [
     {
       "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation.blend",
+      "status": "HISTORICALLY_WITHHELD_NONPORTABLE_BINARY_NOT_CURRENT_MOTION_PROJECT",
       "bytes": 4249252,
       "sha256": "125170b1433d5efe111ded1f226464215df512c8697996fde21f2cf37654dd3f",
-      "reason": "Contains absolute workstation/worktree paths in embedded image references. Blender is unavailable to resave with portable paths, so this binary is withheld from GitHub."
+      "supersededBy": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+      "currentPortableProjectSha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+      "reason": "Preserved as historical R23 provenance. It is not used by runtime or substituted for the R25 portable motion project."
     }
   ],
   "inventorySelfHash": "OMITTED_TO_AVOID_SELF_REFERENCE"

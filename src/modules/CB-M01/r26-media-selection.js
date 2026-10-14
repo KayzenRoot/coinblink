@@ -28,6 +28,7 @@
     if (!image.naturalWidth) return;
     const picture = image.closest("picture[data-preview-region]");
     const region = picture?.dataset.previewRegion;
+    if (region === "hero") picture.closest(".hero-scene")?.classList.add("has-cinematic-preview");
     if (region === "promo") picture.closest(".promo-panel")?.classList.add("has-promo-master");
     if (region === "editorial") picture.closest(".news-art")?.classList.add("has-editorial-master");
   };

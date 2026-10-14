@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "workOrder": "CB-M01-WO-001",
   "recordType": "R25_STATIC_MASTER_AND_BLENDER_MOTION_INVENTORY",
-  "capturedAt": "2026-10-14T00:07:22+00:00",
+  "capturedAt": "2026-10-14T00:13:31+00:00",
   "repository": "KayzenRoot/coinblink",
   "branch": "codex/cb-m01-wo-001-impl-20261011",
   "baseHeadAtInventory": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "snapshotHeadAtInventory": "e54700ce710005687ae8c09746df227fab162936",
-  "remoteTrackingHeadAtInventory": "a1fbe8667edd1b0ec36f97b45a3d04d501351d77",
+  "snapshotHeadAtInventory": "9ecf0c02162c9ce4eaca9accff5e8e557bf42432",
+  "remoteTrackingHeadAtInventory": "eb9f09e36c319c209d14427cb2a2362797c29808",
   "liveRemoteWasSeparatelyChecked": true,
   "policy": {
     "staticMaster": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
@@ -36,15 +36,15 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/R25_CINEMATIC_ASSET_DELIVERY.md",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 7743,
-      "sha256": "9a3311290af97e5e85e32cf0f2ccecafcaba645693b837212ef73daabb0fb278",
+      "bytes": 8314,
+      "sha256": "dde59f3bb06b94dcbcb4d1e9948a1068ef6df1aaa68850f65e6cae1961d3b939",
       "suffix": ".md"
     },
     {
       "path": ".engineering/evidence/CB-M01-WO-001/README.md",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 66734,
-      "sha256": "38a06ef7f20cde0d11e98cb7c0bb3773455663b630ef8af9b465b818d0deafb7",
+      "bytes": 67035,
+      "sha256": "763815512313218bec12bd0f593cb9a153bc23e1b4e15e0d9d94d7ff08c8dfc9",
       "suffix": ".md"
     },
     {
@@ -892,8 +892,8 @@
     {
       "path": ".engineering/evidence/CB-M01-WO-001/scene-asset-provenance.json",
       "statusAtInventory": "COMMITTED_AFTER_PR_HEAD",
-      "bytes": 17416,
-      "sha256": "f6037f3c308f83f77a36097382adc44a67e9023eefb7d194fdea2f6733ee1e85",
+      "bytes": 17752,
+      "sha256": "0f7c52990a0af0fdf05009f507ae274eaec8626cfa95621aa7195a0c7c8b5cc7",
       "suffix": ".json"
     },
     {
@@ -1465,7 +1465,7 @@
     }
   ],
   "fileCount": 123,
-  "bytesTotal": 78224855,
+  "bytesTotal": 78226063,
   "localOnlyScratch": {
     "files": [],
     "temporaryMotionFrames": {

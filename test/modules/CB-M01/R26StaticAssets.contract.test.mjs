@@ -110,4 +110,6 @@ test("R26 media selection and failure recovery use a local external script under
   assert.match(mediaScript, /data-static-srcset/u);
   assert.match(mediaScript, /addEventListener\("error"/u,
     "a failed motion source must recover to a static source while full failure preserves SVG fallback");
+  assert.match(mediaScript, /classList\.add\("has-cinematic-preview"\)/u,
+    "a recovered static hero must activate the preview layer while preserving surrounding HTML");
 });

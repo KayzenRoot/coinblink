@@ -7,7 +7,7 @@
 - Repository: `KayzenRoot/coinblink`, PR [#58](https://github.com/KayzenRoot/coinblink/pull/58)
 - Branch: `codex/cb-m01-wo-001-impl-20261011`
 - Frozen base: `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`
-- Tested code HEAD: `52eaba80a7d98d021e9a9473706f7dfb6b6bb803`
+- Tested code HEAD: `552faf6a214312fb7cb01ec0a1ba311352bc2db0`
 - Runtime: Node.js `v22.23.3`, npm `10.9.9`, Wrangler `4.149.0 --local`
 - Product state: `DEMO`; `authorizedToMerge=false`
 
@@ -33,9 +33,9 @@ WebP derivatives are 73,490–98,994 bytes each. All five PNG/WebP pairs are bel
 
 | Viewport | Size | HTTP | Document width | Axe violations | Screenshot SHA-256 |
 | --- | ---: | ---: | ---: | ---: | --- |
-| Desktop | 1536×864 | 200 | 1536 | 0 | `de02b117b4d622835aaf8f70a53d47bc86ca5b4e6fe4b5ecc87023c8ae7b393d` |
-| Tablet | 768×1024 | 200 | 768 | 0 | `a12f5caf834491f820e3ba6424a7711368f73560c0048a7935e59550edbb9c02` |
-| Mobile | 390×844 | 200 | 390 | 0 | `1dfece79a52af3f2076f717ad9771e746baab602d9644474258a82879714369d` |
+| Desktop | 1536×864 | 200 | 1536 | 0 | `22cfe08c1a6cff7022e5dfc629c34338aa2add46027784f9914d34397ca46cd9` |
+| Tablet | 768×1024 | 200 | 768 | 0 | `1d8aebc1a9de5ceee006ae8a7c649fa24b9612f83e3a3bf465fa366d1f7f513a` |
+| Mobile | 390×844 | 200 | 390 | 0 | `5cfb9bd51bbe29e18dbd6994fafd2c739342325405724eee9ada67ad77352e48` |
 
 The report records no browser console errors, page errors, or external requests. The shared `script-src 'self'` CSP remains unchanged. Hero motion decodes and is visible on the normal-motion route; `prefers-reduced-motion` and Save-Data both select the static master. A motion-load failure recovers to the static hero while retaining title and CTA (hero Axe violations: 0); full preview failure leaves the vector fallback visible. Promo and four editorial images load lazily, retain their SVG fallbacks, and remain decorative.
 
@@ -43,8 +43,8 @@ Constrained runs used 250 ms latency, 200 KB/s download, 4× CPU throttling, and
 
 | Scenario | Selected asset | Transfer | LCP | CLS | Long tasks |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Desktop 1536×864, motion allowed | 640×320 motion WebP | 1,395,024 B | 1,956 ms | 0 | 0 |
-| Mobile 390×844, emulated 3G | 1774×887 static WebP | 310,354 B | 1,444 ms | 0 | 0 |
+| Desktop 1536×864, motion allowed | 640×320 motion WebP | 1,395,024 B | 2,648 ms | 0 | 0 |
+| Mobile 390×844, emulated 3G | 1774×887 static WebP | 310,354 B | 1,552 ms | 0 | 0 |
 
 The mobile constrained run requested no motion asset. Save-Data requested one static image and no motion image. Normal desktop motion body size was 1,394,724 bytes. These results are not a claim of field performance.
 
@@ -56,11 +56,13 @@ The existing portable animation project was reopened read-only with Blender `5.2
 
 All commands below used Node.js `v22.23.3` and npm `10.9.9`:
 
-- `npm test` — passed: 192/192 unit tests, Astro/Cloudflare build, 34/34 Playwright E2E tests.
+- `npm test` — passed at code HEAD `552faf6a214312fb7cb01ec0a1ba311352bc2db0`: 192/192 unit tests, Astro/Cloudflare build, 34/34 Playwright E2E tests.
 - `npm run lint` — passed with `--max-warnings=0`.
 - `npm run typecheck` — passed: 79 Astro files, 0 errors, 0 warnings, 0 hints.
 - `npm audit --audit-level=high` — passed: 0 vulnerabilities found.
 - `node test/modules/CB-M01/integrated-visual-check.mjs` — passed as part of `npm test`; evidence report records the tested HEAD, viewports, fallbacks, reduced motion, Save-Data, constrained network, and screenshots.
+
+Hosted workflow run [38605705651](https://github.com/KayzenRoot/coinblink/actions/runs/38605705651) checked exact code HEAD `552faf6a214312fb7cb01ec0a1ba311352bc2db0` and passed on Ubuntu and Windows, including unit, build, browser, accessibility, GEF, lint, and typecheck. Docker Compose smoke, SonarCloud, and both Socket checks passed. CodeRabbit reports “Review skipped: automatic reviews are disabled”; this is not a code review. A preceding run on `8f2bd454de2768dedb3a197e59c3a01a1f0be92b` exposed a Linux-only keyboard test interaction; the test now sends Enter through the focused About link and awaits `#footer`, and the rerun passed on both platforms.
 
 The test runner regenerated the legacy R25 `visual-check.json` and R25 screenshots during the full suite; those historical files were restored unchanged after validation. R26 screenshots and the R26 report are retained separately.
 

@@ -61,6 +61,8 @@ test("four editorial thumbnails are original, local and clearly DEMO-only", asyn
   const artwork = await readFile(new URL("../../../src/modules/CB-M01/EditorialArtwork.astro", import.meta.url), "utf8");
   assert.match(component, /import EditorialArtwork from "\.\/EditorialArtwork\.astro"/u);
   assert.match(component, /<EditorialArtwork variant=\{story\.artwork/u);
+  assert.match(component, /<picture class="editorial-image" data-preview-region="editorial">/u);
+  assert.match(component, /loading="lazy" decoding="async"/u);
   for (const [tag, variant] of [["MARKET", "bitcoin"], ["DEVELOPMENT", "ethereum"], ["POLICY", "policy"], ["ECOSYSTEM", "ecosystem"]]) {
     assert.ok(component.includes('tag: "' + tag + '", artwork: "' + variant + '"'), "missing decorative variant " + variant);
     assert.ok(artwork.includes('variant === "' + variant + '"'), "missing artwork variant " + variant);
@@ -69,6 +71,17 @@ test("four editorial thumbnails are original, local and clearly DEMO-only", asyn
   assert.doesNotMatch(artwork, /<script|<image|https?:\/\/|fetch\(/iu);
   assert.match(component, /Editorial placeholder · no live story connected/u);
   assert.match(stylesheet, /\.cb-home \.news-art \.editorial-artwork/u);
+});
+
+test("R26 selects motion before image discovery only when motion and data settings allow it", () => {
+  assert.match(component, /data-motion-srcset=\{heroCinematicMotionWebp\.src\}/u);
+  assert.match(component, /data-static-srcset=\{heroCinematicOriginalWebp\.src\}/u);
+  assert.match(component, /connection\?\.saveData === true/u);
+  assert.match(component, /\["slow-2g", "2g", "3g"\]/u);
+  assert.match(component, /prefers-reduced-motion: no-preference/u);
+  assert.match(component, /cinematicMotion\.setAttribute\("srcset", motionSrcset\)/u);
+  assert.match(component, /cinematicStatic\.setAttribute\("srcset", staticSrcset\)/u);
+  assert.match(component, /source\.srcset\.split\(","\)/u);
 });
 
 test("R15 decorative editorial assets have fail-closed provenance and exact-source SHA-256", async () => {

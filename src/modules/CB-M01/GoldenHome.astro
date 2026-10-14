@@ -3,6 +3,16 @@ import approvedLogo from "../../../assets/reference/coinblink-logo-approved-orig
 import heroCinematicOriginalPng from "./hero-cinematic-original.png";
 import heroCinematicOriginalWebp from "./hero-cinematic-original.webp";
 import heroCinematicMotionWebp from "./hero-cinematic-motion.webp";
+import promoR26Png from "./assets/r26/promo.png";
+import promoR26Webp from "./assets/r26/promo.webp";
+import bitcoinEditorialR26Png from "./assets/r26/bitcoin.png";
+import bitcoinEditorialR26Webp from "./assets/r26/bitcoin.webp";
+import ethereumEditorialR26Png from "./assets/r26/ethereum.png";
+import ethereumEditorialR26Webp from "./assets/r26/ethereum.webp";
+import policyEditorialR26Png from "./assets/r26/policy.png";
+import policyEditorialR26Webp from "./assets/r26/policy.webp";
+import ecosystemEditorialR26Png from "./assets/r26/ecosystem.png";
+import ecosystemEditorialR26Webp from "./assets/r26/ecosystem.webp";
 import EditorialArtwork from "./EditorialArtwork.astro";
 import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
@@ -29,7 +39,13 @@ const stories = [
   { category: "Ethereum", tag: "DEVELOPMENT", artwork: "ethereum" },
   { category: "Regulation", tag: "POLICY", artwork: "policy" },
   { category: "Altcoins", tag: "ECOSYSTEM", artwork: "ecosystem" },
-];
+] as const;
+const editorialR26Assets = {
+  bitcoin: { png: bitcoinEditorialR26Png, webp: bitcoinEditorialR26Webp },
+  ethereum: { png: ethereumEditorialR26Png, webp: ethereumEditorialR26Webp },
+  policy: { png: policyEditorialR26Png, webp: policyEditorialR26Webp },
+  ecosystem: { png: ecosystemEditorialR26Png, webp: ecosystemEditorialR26Webp },
+};
 ---
 
 <div class="cb-home" id="top" data-locale={locale}>
@@ -64,9 +80,24 @@ const stories = [
     <section class="lead-grid" aria-label={t("Featured demonstration and market status")}>
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
-          <picture class="hero-cinematic-preview">
-            <source media="(prefers-reduced-motion: no-preference)" type="image/webp" srcset={heroCinematicMotionWebp.src} />
-            <source type="image/webp" srcset={heroCinematicOriginalWebp.src} />
+          <picture class="hero-cinematic-preview" data-preview-region="hero">
+            <source media="(prefers-reduced-motion: no-preference)" type="image/webp" data-motion-srcset={heroCinematicMotionWebp.src} />
+            <source type="image/webp" data-static-srcset={heroCinematicOriginalWebp.src} />
+            <script is:inline>
+              (() => {
+              const cinematicPicture = document.currentScript?.parentElement;
+              const cinematicMotion = cinematicPicture?.querySelector("source[data-motion-srcset]");
+              const cinematicStatic = cinematicPicture?.querySelector("source[data-static-srcset]");
+              const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+              const limitedData = connection?.saveData === true || ["slow-2g", "2g", "3g"].includes(connection?.effectiveType);
+              const allowMotion = matchMedia("(prefers-reduced-motion: no-preference)").matches && !limitedData;
+              const motionSrcset = cinematicMotion?.dataset.motionSrcset;
+              const staticSrcset = cinematicStatic?.dataset.staticSrcset;
+              if (!allowMotion) cinematicMotion?.setAttribute("media", "not all");
+              if (cinematicMotion && motionSrcset) cinematicMotion.setAttribute("srcset", motionSrcset);
+              if (cinematicStatic && staticSrcset) cinematicStatic.setAttribute("srcset", staticSrcset);
+              })();
+            </script>
             <img src={heroCinematicOriginalPng.src} width="1774" height="887" alt="" loading="eager" decoding="async" fetchpriority="high" />
           </picture>
           <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
@@ -300,14 +331,17 @@ const stories = [
         <path d="M257 145l-2-17 4-6 3 6-2 17 6 18-6-2-3-11-4 11-6 2Z" fill="#d5ffac" fill-opacity=".72"></path>
         <circle cx="258" cy="116" r="5" fill="#d5ffac" fill-opacity=".75"></circle>
         <path d="M0 178H360" stroke="url(#promo-horizon)" stroke-opacity=".55" stroke-width="1.5"></path>
-      </svg><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
+      </svg><picture class="promo-image" data-preview-region="promo"><source type="image/webp" srcset={promoR26Webp.src} /><img src={promoR26Png.src} width="1200" height="600" alt="" loading="lazy" decoding="async" /></picture><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
         <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
         <div class="news-cards">
-          {stories.map((story, index) => <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true"><EditorialArtwork variant={story.artwork as "bitcoin" | "ethereum" | "policy" | "ecosystem"} /></div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>)}
+          {stories.map((story, index) => {
+            const artwork = editorialR26Assets[story.artwork];
+            return <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true"><picture class="editorial-image" data-preview-region="editorial"><source type="image/webp" srcset={artwork.webp.src} /><img src={artwork.png.src} width="768" height="512" alt="" loading="lazy" decoding="async" /></picture><EditorialArtwork variant={story.artwork} /></div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>;
+          })}
         </div>
         <div class="news-no-results" data-news-empty role="status" hidden>
           <strong>{t("No demo placeholders match.")}</strong>
@@ -432,5 +466,34 @@ const stories = [
   <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
+<script is:inline>
+  (() => {
+  document.querySelectorAll("picture[data-preview-region]").forEach((picture) => {
+    const image = picture.querySelector("img");
+    const region = picture.dataset.previewRegion;
+    const parent = picture.closest(region === "promo" ? ".promo-panel" : region === "editorial" ? ".news-art" : ".hero-scene");
+    const revealImage = () => {
+      if (image?.naturalWidth && region === "promo") parent?.classList.add("has-promo-master");
+      if (image?.naturalWidth && region === "editorial") parent?.classList.add("has-editorial-master");
+    };
+    if (image?.complete) revealImage();
+    else image?.addEventListener("load", revealImage, { once: true });
+    image?.addEventListener("error", () => {
+      const failedSource = Array.from(picture.querySelectorAll("source")).find((source) =>
+        source.srcset.split(",").some((candidate) => {
+          const sourceUrl = candidate.trim().split(/\s+/u, 1)[0];
+          return sourceUrl && new URL(sourceUrl, document.baseURI).href === image.currentSrc;
+        }),
+      );
+      const staticSource = picture.querySelector("source[data-static-srcset]");
+      if (failedSource?.hasAttribute("data-motion-srcset") && staticSource && !staticSource.hasAttribute("srcset")) {
+        const staticSrcset = staticSource.dataset.staticSrcset;
+        if (staticSrcset) staticSource.setAttribute("srcset", staticSrcset);
+      }
+      failedSource?.remove();
+    });
+  });
+  })();
+</script>
 <script is:inline src="/home-demo.js"></script>
 <script is:inline type="module" src="/explorer-lookup.js"></script>

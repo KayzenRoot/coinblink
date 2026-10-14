@@ -964,3 +964,28 @@
 @media (max-width: 760px) {
   .cb-home .hero-scene.has-cinematic-preview { opacity: 1; }
 }
+
+/* R26: static ImageGen previews remain behind the original local SVG fallbacks. */
+.cb-home .promo-image,
+.cb-home .editorial-image {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.cb-home .promo-image img,
+.cb-home .editorial-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cb-home .promo-image img { object-position: 72% center; }
+.cb-home .promo-panel.has-promo-master .promo-image,
+.cb-home .news-art.has-editorial-master .editorial-image { opacity: 1; }
+.cb-home .promo-panel.has-promo-master .promo-scene,
+.cb-home .news-art.has-editorial-master .editorial-artwork { opacity: 0; }
+.cb-home .editorial-image img { object-position: center; }

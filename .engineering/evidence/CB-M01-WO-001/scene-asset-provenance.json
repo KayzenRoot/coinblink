@@ -6,14 +6,14 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
-    "sha256": "4a28031f88ba112fcf5cee8995e63bc2b7dca01960be9a4e78f2a9a5052846ef",
+    "gitBlobSha": "3553b6be829d7ff7967fb3e72f07b8f06e99e0fa",
+    "sha256": "982df3537f8594173e5ede88c004b5a378c6b48dc7906776981a6614e559de4f",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
     "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
     "rasterDerivativeOfGoldenReference": false,
-    "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked."
+    "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked. R26 adds original Codex ImageGen promo and editorial masters with optimized local derivatives and retained SVG failure fallbacks; all remain local DEMO only."
   },
   "goldenReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -132,8 +132,8 @@
         "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
         "endMarker": "        <div class=\"hero-copy\">",
         "includeEndMarker": false,
-        "sha256": "3d09e459fd841bb46e2fd77cece29f9a76f144052ac33807cf7e40938ba20fdb",
-        "sourceByteLength": 11915
+        "sha256": "c35aee0d8023e938b441b359bb8101abc680559bb1361c8990a47656e3943a06",
+        "sourceByteLength": 13136
       },
       "form": "IMAGEGEN_STATIC_MASTER_WITH_BLENDER_MOTION_DERIVATIVE",
       "viewBoxes": [
@@ -152,7 +152,7 @@
       "visualComparison": "R25 integrated local responsive screenshots; not Owner Golden visual acceptance.",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
+      "sourceGitBlobSha": "3553b6be829d7ff7967fb3e72f07b8f06e99e0fa",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -198,7 +198,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
+      "sourceGitBlobSha": "3553b6be829d7ff7967fb3e72f07b8f06e99e0fa",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",

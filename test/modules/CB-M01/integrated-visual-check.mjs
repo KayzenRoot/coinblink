@@ -18,7 +18,7 @@ const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const baseSha = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c";
 const evidenceRoot = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001");
 const screenshotDir = join(evidenceRoot, "screenshots");
-const reportPath = join(evidenceRoot, "integrated-visual-check.json");
+const reportPath = join(evidenceRoot, "r26-integrated-visual-check.json");
 const viewports = [
   { name: "desktop", width: 1536, height: 864 },
   { name: "tablet", width: 768, height: 1024 },
@@ -37,6 +37,10 @@ const report = {
   viewports: [],
   screenshots: [],
   renderPerformance: [],
+  constrainedNetworkPerformance: [],
+  staticAssetLoads: [],
+  saveDataBehavior: null,
+  staticFallbackBehavior: null,
   desktopGeometry: null,
   mobileHero: null,
   consoleErrors: [],
@@ -82,6 +86,7 @@ await saveReport("running");
 
 try {
   report.headSha = await readGitHead(repoRoot);
+  report.nodeVersion = process.version;
   report.visualInputState = assertVisualInputsClean(repoRoot);
   const port = await availablePort();
   report.origin = "http://127.0.0.1:" + port;
@@ -106,8 +111,14 @@ try {
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.addInitScript(() => {
-    const values = { largestContentfulPaintMs: null, cumulativeLayoutShift: 0 };
-    Object.defineProperty(globalThis, "__coinblinkR25Vitals", { value: values });
+    const values = {
+      largestContentfulPaintMs: null,
+      cumulativeLayoutShift: 0,
+      longTaskSupported: globalThis.PerformanceObserver.supportedEntryTypes.includes("longtask"),
+      longTaskCount: 0,
+      longTaskDurationMs: 0,
+    };
+    Object.defineProperty(globalThis, "__coinblinkR26Vitals", { value: values });
     if (globalThis.PerformanceObserver.supportedEntryTypes.includes("largest-contentful-paint")) {
       new globalThis.PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
@@ -121,6 +132,14 @@ try {
           if (!entry.hadRecentInput) values.cumulativeLayoutShift += entry.value;
         }
       }).observe({ type: "layout-shift", buffered: true });
+    }
+    if (values.longTaskSupported) {
+      new globalThis.PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          values.longTaskCount += 1;
+          values.longTaskDurationMs += entry.duration;
+        }
+      }).observe({ type: "longtask", buffered: true });
     }
   });
   page.on("console", (message) => { if (message.type() === "error") report.consoleErrors.push(message.text()); });
@@ -261,7 +280,7 @@ try {
       description: item.description,
       targets: item.nodes.map((node) => node.target),
     }));
-    const screenshotPath = join(screenshotDir, "golden-home-integrated-" + viewport.name + "-" + viewport.width + "x" + viewport.height + ".png");
+    const screenshotPath = join(screenshotDir, "r26-home-integrated-" + viewport.name + "-" + viewport.width + "x" + viewport.height + ".png");
     await page.screenshot({ path: screenshotPath, fullPage: false });
     const screenshot = await readFile(screenshotPath);
     const performance = await page.evaluate(() => {
@@ -270,8 +289,12 @@ try {
         ? globalThis.performance.getEntriesByName(image.currentSrc).at(-1)
         : null;
       return {
-        largestContentfulPaintMs: globalThis.__coinblinkR25Vitals?.largestContentfulPaintMs ?? null,
-        cumulativeLayoutShift: globalThis.__coinblinkR25Vitals?.cumulativeLayoutShift ?? null,
+        largestContentfulPaintMs: globalThis.__coinblinkR26Vitals?.largestContentfulPaintMs ?? null,
+        cumulativeLayoutShift: globalThis.__coinblinkR26Vitals?.cumulativeLayoutShift ?? null,
+        longTaskSupported: globalThis.__coinblinkR26Vitals?.longTaskSupported ?? false,
+        longTaskCount: globalThis.__coinblinkR26Vitals?.longTaskSupported ? globalThis.__coinblinkR26Vitals.longTaskCount : null,
+        longTaskDurationMs: globalThis.__coinblinkR26Vitals?.longTaskSupported
+          ? Math.round(globalThis.__coinblinkR26Vitals.longTaskDurationMs * 100) / 100 : null,
         previewImage: {
           path: new URL(image.currentSrc).pathname,
           transferredBytes: resource?.transferSize ?? null,
@@ -364,12 +387,12 @@ try {
       assert.equal(new URL(page.url()).hash, "#market-overview", "mobile CTA must remain clickable on integrated /en");
     }
   }
-  // R25: verify that the Blender motion derivative is local and reduced motion selects the static master.
+  // R26: verify that the Blender motion derivative is local and reduced motion selects the static master.
   // Run after screenshots, so the media preference probe cannot alter the Golden captures.
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   const animatedResponse = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
-  assert.equal(animatedResponse?.status(), 200, "R25 motion probe must use the built local route");
+  assert.equal(animatedResponse?.status(), 200, "R26 motion probe must use the built local route");
   const motionLive = await page.locator(".hero-cinematic-preview img").evaluate(async (image, origin) => {
     await image.decode();
     return {
@@ -416,6 +439,248 @@ try {
     reducedMotionDimensions: [motionReduced.width, motionReduced.height],
     reducedMotionUsesStaticMaster: true,
   };
+  const saveDataContext = await browser.newContext();
+  const saveDataPage = await saveDataContext.newPage();
+  const saveDataRequests = [];
+  saveDataPage.on("request", (request) => {
+    const url = request.url();
+    saveDataRequests.push(new URL(url).pathname);
+    if (!isFixtureOriginRequest(url, report.origin)) report.externalRequests.push(url);
+  });
+  await saveDataPage.addInitScript(() => {
+    Object.defineProperty(globalThis.navigator, "connection", {
+      configurable: true,
+      value: { saveData: true, effectiveType: "4g" },
+    });
+  });
+  const saveDataResponse = await saveDataPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
+  assert.equal(saveDataResponse?.status(), 200, "Save-Data probe must use the built local route");
+  const saveDataImage = await saveDataPage.locator(".hero-cinematic-preview img").evaluate(async (image) => {
+    await image.decode();
+    return {
+      path: new URL(image.currentSrc).pathname,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      loading: image.loading,
+    };
+  });
+  assert.match(saveDataImage.path, /hero-cinematic-original[^/]*\.webp$/u,
+    "Save-Data must select the optimized static WebP before image discovery");
+  assert.equal(saveDataRequests.some((path) => /hero-cinematic-motion[^/]*\.webp$/u.test(path)), false,
+    "Save-Data must prevent the 1.39 MB motion request");
+  report.saveDataBehavior = {
+    simulatedNavigatorConnection: { saveData: true, effectiveType: "4g" },
+    selectedPath: saveDataImage.path,
+    dimensions: [saveDataImage.width, saveDataImage.height],
+    motionRequestCount: saveDataRequests.filter((path) => /hero-cinematic-motion[^/]*\.webp$/u.test(path)).length,
+    staticRequestCount: saveDataRequests.filter((path) => /hero-cinematic-original[^/]*\.webp$/u.test(path)).length,
+  };
+  assert.equal(report.saveDataBehavior.staticRequestCount, 1);
+  await saveDataContext.close();
+
+  const assetContext = await browser.newContext();
+  const assetPage = await assetContext.newPage();
+  const assetRequestCounts = new Map();
+  assetPage.on("request", (request) => {
+    const url = request.url();
+    const pathname = new URL(url).pathname;
+    assetRequestCounts.set(pathname, (assetRequestCounts.get(pathname) ?? 0) + 1);
+    if (!isFixtureOriginRequest(url, report.origin)) report.externalRequests.push(url);
+  });
+  await assetPage.setViewportSize({ width: 1536, height: 864 });
+  const assetResponse = await assetPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
+  assert.equal(assetResponse?.status(), 200, "static asset probe must use the built local route");
+  const staticImages = assetPage.locator(".promo-image img, .editorial-image img");
+  for (let index = 0; index < await staticImages.count(); index += 1) {
+    const image = staticImages.nth(index);
+    await image.scrollIntoViewIfNeeded();
+    await image.evaluate((element) => element.decode());
+  }
+  report.staticAssetLoads = await staticImages.evaluateAll((images) => images.map((image) => {
+    const picture = image.closest("picture");
+    const region = picture.dataset.previewRegion;
+    const parent = image.closest(region === "promo" ? ".promo-panel" : ".news-art");
+    const fallback = parent.querySelector(region === "promo" ? ".promo-scene" : ".editorial-artwork");
+    const resource = globalThis.performance.getEntriesByName(image.currentSrc).at(-1);
+    return {
+      region,
+      path: new URL(image.currentSrc).pathname,
+      dimensions: [image.naturalWidth, image.naturalHeight],
+      encodedBytes: resource?.encodedBodySize ?? null,
+      loading: image.loading,
+      masterVisible: globalThis.getComputedStyle(picture).opacity === "1",
+      svgFallbackRetained: fallback !== null,
+      svgFallbackOpacity: globalThis.getComputedStyle(fallback).opacity,
+    };
+  }));
+  assert.equal(report.staticAssetLoads.length, 5);
+  const regionNames = ["promo", "editorial", "editorial", "editorial", "editorial"];
+  for (const [index, asset] of report.staticAssetLoads.entries()) {
+    assert.equal(asset.region, regionNames[index]);
+    assert.match(asset.path, /\.(?:webp|png)$/u);
+    assert.ok(asset.dimensions[0] > 0 && asset.dimensions[1] > 0);
+    assert.ok(asset.encodedBytes > 0);
+    assert.equal(asset.loading, "lazy");
+    assert.equal(asset.masterVisible, true);
+    assert.equal(asset.svgFallbackRetained, true);
+    assert.equal(asset.svgFallbackOpacity, "0");
+    assert.equal(asset.encodedBytes <= (asset.path.endsWith(".webp") ? 1_500_000 : 3_500_000), true);
+    assert.equal(assetRequestCounts.get(asset.path), 1, "each R26 static region must request one optimized image exactly once");
+  }
+  await assetContext.close();
+
+  const staticFallbackContext = await browser.newContext();
+  const staticFallbackPage = await staticFallbackContext.newPage();
+  const staticFallbackRequests = new Map();
+  staticFallbackPage.on("request", (request) => {
+    const url = request.url();
+    if (!isFixtureOriginRequest(url, report.origin)) report.externalRequests.push(url);
+  });
+  await staticFallbackPage.route(/\/(?:promo|bitcoin|ethereum|policy|ecosystem)\.[^/]+\.(?:webp|png)$/u, async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    staticFallbackRequests.set(pathname, (staticFallbackRequests.get(pathname) ?? 0) + 1);
+    await route.abort();
+  });
+  const staticFallbackResponse = await staticFallbackPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
+  assert.equal(staticFallbackResponse?.status(), 200, "static fallback probe must use the built local route");
+  const failedImages = staticFallbackPage.locator(".promo-image img, .editorial-image img");
+  for (let index = 0; index < await failedImages.count(); index += 1) {
+    await failedImages.nth(index).scrollIntoViewIfNeeded();
+  }
+  await staticFallbackPage.waitForLoadState("networkidle");
+  report.staticFallbackBehavior = await staticFallbackPage.locator(".promo-panel, .news-art").evaluateAll((regions) => regions.map((region) => {
+    const picture = region.querySelector("picture[data-preview-region]");
+    const fallback = region.querySelector(".promo-scene, .editorial-artwork");
+    const heading = region.closest(".promo-panel") ? region.querySelector("h2") : region.parentElement?.querySelector("h3");
+    return {
+      region: picture?.dataset.previewRegion ?? "editorial",
+      masterActivated: region.classList.contains("has-promo-master") || region.classList.contains("has-editorial-master"),
+      svgFallbackVisible: fallback && globalThis.getComputedStyle(fallback).opacity !== "0",
+      htmlCopyRetained: Boolean(heading?.textContent?.trim()),
+    };
+  }));
+  assert.equal(report.staticFallbackBehavior.length, 5);
+  assert.ok(report.staticFallbackBehavior.every((region) => !region.masterActivated
+    && region.svgFallbackVisible && region.htmlCopyRetained),
+  "failed static master and PNG requests must leave the original SVG and HTML copy visible");
+  assert.ok(Array.from(staticFallbackRequests.values()).every((count) => count === 1 || count === 2));
+  await staticFallbackContext.close();
+
+  for (const scenario of [
+    { name: "slow-desktop-motion-opt-in", width: 1536, height: 864, effectiveType: "4g", expected: "motion" },
+    { name: "slow-mobile-limited-connection", width: 390, height: 844, effectiveType: "3g", expected: "static" },
+  ]) {
+    const constrainedContext = await browser.newContext();
+    const constrainedPage = await constrainedContext.newPage();
+    const constrainedRequests = [];
+    await constrainedPage.addInitScript((effectiveType) => {
+      const values = {
+        largestContentfulPaintMs: null,
+        cumulativeLayoutShift: 0,
+        longTaskSupported: globalThis.PerformanceObserver.supportedEntryTypes.includes("longtask"),
+        longTaskCount: 0,
+        longTaskDurationMs: 0,
+      };
+      Object.defineProperty(globalThis, "__coinblinkR26SlowVitals", { value: values });
+      if (globalThis.PerformanceObserver.supportedEntryTypes.includes("largest-contentful-paint")) {
+        new globalThis.PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) values.largestContentfulPaintMs = Math.round(entry.startTime * 100) / 100;
+        }).observe({ type: "largest-contentful-paint", buffered: true });
+      }
+      if (globalThis.PerformanceObserver.supportedEntryTypes.includes("layout-shift")) {
+        new globalThis.PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) if (!entry.hadRecentInput) values.cumulativeLayoutShift += entry.value;
+        }).observe({ type: "layout-shift", buffered: true });
+      }
+      if (values.longTaskSupported) {
+        new globalThis.PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            values.longTaskCount += 1;
+            values.longTaskDurationMs += entry.duration;
+          }
+        }).observe({ type: "longtask", buffered: true });
+      }
+      Object.defineProperty(globalThis.navigator, "connection", {
+        configurable: true,
+        value: { saveData: false, effectiveType },
+      });
+    }, scenario.effectiveType);
+    constrainedPage.on("request", (request) => {
+      const url = request.url();
+      constrainedRequests.push(new URL(url).pathname);
+      if (!isFixtureOriginRequest(url, report.origin)) report.externalRequests.push(url);
+    });
+    await constrainedPage.setViewportSize({ width: scenario.width, height: scenario.height });
+    const cdp = await constrainedContext.newCDPSession(constrainedPage);
+    await cdp.send("Network.enable");
+    await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
+    await cdp.send("Network.emulateNetworkConditions", {
+      offline: false,
+      latency: 250,
+      downloadThroughput: 200_000,
+      uploadThroughput: 80_000,
+      connectionType: "cellular3g",
+    });
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    const constrainedResponse = await constrainedPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
+    assert.equal(constrainedResponse?.status(), 200, scenario.name + " must use the built local route");
+    const constrainedImage = await constrainedPage.locator(".hero-cinematic-preview img").evaluate(async (image) => {
+      const start = globalThis.performance.now();
+      await image.decode();
+      const decodePromiseResolutionMs = Math.round((globalThis.performance.now() - start) * 100) / 100;
+      const resource = globalThis.performance.getEntriesByName(image.currentSrc).at(-1);
+      return {
+        path: new URL(image.currentSrc).pathname,
+        dimensions: [image.naturalWidth, image.naturalHeight],
+        encodedBodyBytes: resource?.encodedBodySize ?? null,
+        transferredBytes: resource?.transferSize ?? null,
+        resourceDurationMs: resource ? Math.round(resource.duration * 100) / 100 : null,
+        decodePromiseResolutionMs,
+      };
+    });
+    const motionRequestCount = constrainedRequests.filter((path) => /hero-cinematic-motion[^/]*\.webp$/u.test(path)).length;
+    const staticRequestCount = constrainedRequests.filter((path) => /hero-cinematic-original[^/]*\.webp$/u.test(path)).length;
+    if (scenario.expected === "motion") {
+      assert.match(constrainedImage.path, /hero-cinematic-motion[^/]*\.webp$/u);
+      assert.equal(motionRequestCount, 1, "motion candidate must be requested exactly once under the controlled slow link");
+      assert.equal(constrainedImage.encodedBodyBytes, 1_394_724);
+    } else {
+      assert.match(constrainedImage.path, /hero-cinematic-original[^/]*\.webp$/u);
+      assert.equal(motionRequestCount, 0, "3G mobile must not request the 1.39 MB motion image");
+      assert.equal(staticRequestCount, 1);
+    }
+    assert.ok(constrainedImage.encodedBodyBytes > 0 && constrainedImage.encodedBodyBytes <= 1_500_000);
+    const vitals = await constrainedPage.evaluate(() => globalThis.__coinblinkR26SlowVitals);
+    report.constrainedNetworkPerformance.push({
+      scenario: scenario.name,
+      viewport: { width: scenario.width, height: scenario.height },
+      conditions: {
+        latencyMs: 250,
+        downloadBytesPerSecond: 200_000,
+        uploadBytesPerSecond: 80_000,
+        connectionType: "cellular3g",
+        emulatedEffectiveType: scenario.effectiveType,
+        cpuThrottlingRate: 4,
+        cacheDisabled: true,
+        measurementClass: "SYNTHETIC_LOCAL_LAB_ONLY_NOT_FIELD_CWV",
+      },
+      selectedPath: constrainedImage.path,
+      imageDimensions: constrainedImage.dimensions,
+      encodedBodyBytes: constrainedImage.encodedBodyBytes,
+      transferredBytes: constrainedImage.transferredBytes,
+      resourceDurationMs: constrainedImage.resourceDurationMs,
+      decodePromiseResolutionMs: constrainedImage.decodePromiseResolutionMs,
+      motionRequestCount,
+      staticRequestCount,
+      largestContentfulPaintMs: vitals.largestContentfulPaintMs,
+      cumulativeLayoutShift: Math.round(vitals.cumulativeLayoutShift * 10_000) / 10_000,
+      longTaskSupported: vitals.longTaskSupported,
+      longTaskCount: vitals.longTaskSupported ? vitals.longTaskCount : null,
+      longTaskDurationMs: vitals.longTaskSupported ? Math.round(vitals.longTaskDurationMs * 100) / 100 : null,
+    });
+    await constrainedContext.close();
+  }
+
   const partialFailurePage = await context.newPage();
   let motionRequests = 0;
   let staticRequests = 0;

@@ -51,9 +51,13 @@ test("seven generated lightning stills remain inventoried as Blender motion inpu
   assert.equal(motionProvenance.animationProject.imageDependenciesPacked, true);
 });
 
-test("normal motion uses the local Blender derivative and reduced motion selects the static master", () => {
-  assert.match(component, /<source media="\(prefers-reduced-motion: no-preference\)" type="image\/webp" srcset=\{heroCinematicMotionWebp\.src\}/u);
-  assert.match(component, /<source type="image\/webp" srcset=\{heroCinematicOriginalWebp\.src\}/u);
+test("normal motion uses the local Blender derivative and reduced motion selects the static master", async () => {
+  const mediaScript = await readFile(new URL("../../../src/modules/CB-M01/r26-media-selection.js", import.meta.url), "utf8");
+  assert.ok(component.includes('<source media="(prefers-reduced-motion: no-preference)" type="image/webp" data-motion-srcset={heroCinematicMotionWebp.src}'));
+  assert.ok(component.includes('<source type="image/webp" data-static-srcset={heroCinematicOriginalWebp.src}'));
+  assert.ok(component.includes("<script is:inline src={r26MediaSelectionUrl}></script>"));
+  assert.ok(mediaScript.includes('motionSource.setAttribute("srcset", motionSrcset)'));
+  assert.ok(mediaScript.includes('staticSource.setAttribute("srcset", staticSrcset)'));
   assert.match(component, /<img src=\{heroCinematicOriginalPng\.src\} width="1774" height="887" alt=""/u);
   assert.match(component, /<div class="hero-scene" aria-hidden="true">/u);
   assert.doesNotMatch(component, /hero-lightning|lightning-sprites\//u);

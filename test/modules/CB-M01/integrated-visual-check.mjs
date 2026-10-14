@@ -416,6 +416,61 @@ try {
     reducedMotionDimensions: [motionReduced.width, motionReduced.height],
     reducedMotionUsesStaticMaster: true,
   };
+  const partialFailurePage = await context.newPage();
+  let motionRequests = 0;
+  let staticRequests = 0;
+  partialFailurePage.on("request", (request) => {
+    if (!isFixtureOriginRequest(request.url(), report.origin)) report.externalRequests.push(request.url());
+  });
+  await partialFailurePage.route(/hero-cinematic-(?:original|motion)[^/]*\.(?:webp|png)(?:\?.*)?$/u, async (route) => {
+    if (route.request().url().includes("hero-cinematic-motion")) {
+      motionRequests += 1;
+      await route.abort();
+      return;
+    }
+    staticRequests += 1;
+    await route.continue();
+  });
+  const partialFailureResponse = await partialFailurePage.goto(report.origin + "/en", { waitUntil: "networkidle" });
+  assert.equal(partialFailureResponse?.status(), 200, "partial-failure probe must use the built local route");
+  await partialFailurePage.waitForFunction(() => {
+    const image = globalThis.document.querySelector(".hero-cinematic-preview img");
+    return image?.complete && image.naturalWidth > 0 && image.currentSrc.includes("hero-cinematic-original");
+  }, null, { timeout: 5_000 });
+  const partialFailureRecovery = await partialFailurePage.locator(".hero-cinematic-preview img").evaluate(async (image) => {
+    await image.decode();
+    const scene = image.closest(".hero-scene");
+    const title = globalThis.document.querySelector("#hero-title");
+    const cta = globalThis.document.querySelector(".hero-actions .primary-action");
+    return {
+      staticSource: image.currentSrc.includes("hero-cinematic-original"),
+      dimensions: [image.naturalWidth, image.naturalHeight],
+      previewActive: scene.classList.contains("has-cinematic-preview"),
+      titleVisible: title.getBoundingClientRect().width > 0 && globalThis.getComputedStyle(title).color !== "rgba(0, 0, 0, 0)",
+      titleText: title.innerText,
+      ctaVisible: cta.getBoundingClientRect().width > 0 && globalThis.getComputedStyle(cta).visibility === "visible",
+      ctaHref: cta.getAttribute("href"),
+    };
+  });
+  assert.equal(motionRequests, 1, "partial-failure probe must fail only the motion request");
+  assert.ok(staticRequests > 0, "partial motion failure must request the static master");
+  assert.equal(partialFailureRecovery.staticSource, true);
+  assert.deepEqual(partialFailureRecovery.dimensions, [1774, 887]);
+  assert.equal(partialFailureRecovery.previewActive, true);
+  assert.equal(partialFailureRecovery.titleVisible, true);
+  assert.match(partialFailureRecovery.titleText, /Bitcoin market,[\s\S]*focus\./u);
+  assert.equal(partialFailureRecovery.ctaVisible, true);
+  assert.equal(partialFailureRecovery.ctaHref, "#latest-news");
+  const partialFailureAxe = await new AxeBuilder({ page: partialFailurePage }).include(".hero-panel").analyze();
+  assert.deepEqual(partialFailureAxe.violations.map((violation) => violation.id), [],
+    "static recovery must retain hero text and CTA contrast/accessibility");
+  report.partialMotionFailureRecovery = {
+    motionRequests,
+    staticRequests,
+    ...partialFailureRecovery,
+    heroAxeViolations: partialFailureAxe.violations.length,
+  };
+  await partialFailurePage.close();
   const fallbackPage = await context.newPage();
   fallbackPage.on("request", (request) => {
     if (!isFixtureOriginRequest(request.url(), report.origin)) report.externalRequests.push(request.url());

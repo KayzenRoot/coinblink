@@ -21,15 +21,82 @@
     "use": "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED"
   },
   "technicalEvidence": {
-    "head": null,
+    "head": "7153d8c91c60b7592dbaa4fbc80d5e11b578c31a",
     "runId": null,
     "artifactId": null,
+    "captureDate": "2026-10-13",
+    "integratedVisualReport": {
+      "path": ".engineering/evidence/CB-M01-WO-001/integrated-visual-check.json",
+      "sha256": "972163824c53ecb0e9e51b3c578db51273070cda75a1c27847127d77aca970d7"
+    },
+    "isolatedVisualReport": {
+      "path": ".engineering/evidence/CB-M01-WO-001/visual-check.json",
+      "sha256": "8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce"
+    },
     "screenshotWidths": [
       1536,
       768,
       390
     ],
-    "status": "R25_LOCAL_CAPTURE_PENDING"
+    "screenshots": [
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "bytes": 789613,
+        "sha256": "5321f1ab9582ce8ac7a36620b9b13f877f247fdde5d92374d3058e24e31a51b9"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
+        "dimensions": [
+          768,
+          1024
+        ],
+        "bytes": 491074,
+        "sha256": "6842a5060bff7c72b2e6bbd7d0dd4002c5bb492768292f6106d7a50466fdc652"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
+        "dimensions": [
+          390,
+          844
+        ],
+        "bytes": 242653,
+        "sha256": "d16340199d9af1489ac8c8c7b11b2001dd0792ada75b495d038c1f99cd2623e1"
+      }
+    ],
+    "isolatedScreenshots": [
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-desktop.png",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "bytes": 789916,
+        "sha256": "78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-tablet.png",
+        "dimensions": [
+          768,
+          1024
+        ],
+        "bytes": 491278,
+        "sha256": "d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-mobile.png",
+        "dimensions": [
+          390,
+          844
+        ],
+        "bytes": 242244,
+        "sha256": "9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe"
+      }
+    ],
+    "status": "R25_LOCAL_CAPTURE_PASSED"
   },
   "sharedReleaseGate": {
     "rightsReview": "PENDING_OWNER_OR_LEGAL",

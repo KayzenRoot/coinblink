@@ -303,3 +303,25 @@ Using Node.js `v22.23.3` / npm `10.9.9`, `npm test` passed: 166/166 unit tests, 
 GEF Bootstrap `1.1.2` `doctor --target . --json` and `status --target . --json` completed read-only with `ok=true` and `effect=NONE`; the checkpoint is readable and valid and still reports M00 `M00_COMPLETE` at 5%. This managed linked worktree is not fully observable to GEF: `repository.observable=FINDING`, `dirtiness=UNKNOWN`, limits `GIT_DIRECTORY_NOT_A_DIRECTORY` and `WORKING_TREE_NOT_OBSERVED`; status retains conservative `operator.stale=true` and absent drift baseline. This is a GEF observation limitation, not a clean-repository PASS. No GEF state, Context Lock, canonical checkpoint, shared files, Cloudflare resources, or Golden JPEGs were changed.
 
 The six hosted exact-HEAD checks, fresh hosted CodeRabbit review, independent audit, and Owner visual decision for this M01 correction remain external gates. This evidence is not approval to merge, promote a checkpoint, or declare M01 complete.
+
+## R25 approved static master and Blender motion · 2026-10-13
+
+Owner-directed R25 correction on the existing PR #58. Code commit `7153d8c91c60b7592dbaa4fbc80d5e11b578c31a` is based on canonical `main` `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The static hero remains the approved image-pipeline original; Blender is used only for a motion derivative. The original Golden Home and Logo JPEG bytes and their manifest were unchanged. The static master and reduced-motion source are 1774×887; normal motion is local WebP 640×320, 48 frames/4,000 ms, 1,394,724 bytes, SHA-256 `0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a`.
+
+The integrated `/en` route was run with Wrangler `4.149.0 --local`, remote bindings disabled, and no Cloudflare account call. Both current reports bind to the code commit above and base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`: `integrated-visual-check.json` SHA-256 `972163824c53ecb0e9e51b3c578db51273070cda75a1c27847127d77aca970d7`; `visual-check.json` SHA-256 `8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce`. `/en` returned HTTP 200 at desktop 1536×864, tablet 768×1024, and mobile 390×844. Each capture had zero module/full-page Axe violations, zero overflow, zero console/page errors, and zero external requests. CSP, `nosniff`, frame denial, strict referrer policy, noindex header and robots meta were present. Screenshots were visually inspected:
+
+| Integrated capture | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `screenshots/golden-home-integrated-desktop-1536x864.png` | 789,613 | `5321f1ab9582ce8ac7a36620b9b13f877f247fdde5d92374d3058e24e31a51b9` |
+| `screenshots/golden-home-integrated-tablet-768x1024.png` | 491,074 | `6842a5060bff7c72b2e6bbd7d0dd4002c5bb492768292f6106d7a50466fdc652` |
+| `screenshots/golden-home-integrated-mobile-390x844.png` | 242,653 | `d16340199d9af1489ac8c8c7b11b2001dd0792ada75b495d038c1f99cd2623e1` |
+
+The isolated module captures were also regenerated, inspected, and passed the same viewport, Axe, error, request-origin, and overflow checks. `visual-check.json` is SHA-256 `8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce`.
+
+| Isolated capture | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `screenshots/golden-home-desktop.png` | 789,916 | `78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96` |
+| `screenshots/golden-home-tablet.png` | 491,278 | `d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01` |
+| `screenshots/golden-home-mobile.png` | 242,244 | `9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe` |
+
+Node.js `v22.23.3` / npm `10.9.9`: `npm test` passed (185/185 unit/subtests; build and binding guard passed; Playwright 34/34), `npm run lint` passed with zero warnings, `npm run typecheck` passed (76 files; zero diagnostics), and `npm audit --audit-level=high` found zero vulnerabilities. The runtime derivative generator reproduced the exact WebP hash and byte count. The portable `.blend` was not reopened because Blender was unavailable; only the recorded path audit, packed-image metadata, and binary/hash provenance were checked. Rights remain pending; Owner visual approval, commercial publication, and publication permission are false. Hosted exact-head checks and review remain pending until this correction is pushed. No merge, deployment, route integration, or checkpoint promotion is claimed.

@@ -37,6 +37,30 @@ The source animation preview is 1600×800, 96 frames, 4,000 ms. The runtime deri
 
 ## Evidence and validation
 
-The current detailed manifests are `hero-cinematic-imagegen-provenance.json`, `hero-cinematic-blender-provenance.json`, `lightning-sprites-provenance.json`, `hero-cinematic-animation-portable-inspection.json`, and `cinematic-delivery-inventory.json`. The exact local screenshots, axe checks, responsive geometry, browser errors, runtime binding checks, and test results will be summarized here after the fresh R25 integrated run. Historical R23/R25-pre-correction results remain in Git history and are not current validation.
+The current detailed manifests are `hero-cinematic-imagegen-provenance.json`, `hero-cinematic-blender-provenance.json`, `lightning-sprites-provenance.json`, `hero-cinematic-animation-portable-inspection.json`, and `cinematic-delivery-inventory.json`. The current R25 local capture and validation are recorded below and in `integrated-visual-check.json`; historical R23/R25-pre-correction results remain historical and are not presented as current validation.
 
 No merge, deployment, main-branch modification, ruleset change, checkpoint update, rights clearance, Owner visual approval, or publication permission was performed.
+
+## Fresh R25 local capture · code HEAD `7153d8c91c60b7592dbaa4fbc80d5e11b578c31a` · 2026-10-13
+
+The built integrated `/en` route was run in local Wrangler mode with remote bindings disabled. The current visual report and screenshots bind to code HEAD `7153d8c91c60b7592dbaa4fbc80d5e11b578c31a`, based on `main` SHA `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. I visually inspected the three newly captured screenshots. The browser selected the 640×320, 48-frame, 4,000 ms Blender motion derivative under `prefers-reduced-motion: no-preference`, and selected the 1774×887 static master under `prefers-reduced-motion: reduce`.
+
+| Integrated `/en` capture | Dimensions | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Desktop `screenshots/golden-home-integrated-desktop-1536x864.png` | 1536×864 | 789,613 | `5321f1ab9582ce8ac7a36620b9b13f877f247fdde5d92374d3058e24e31a51b9` |
+| Tablet `screenshots/golden-home-integrated-tablet-768x1024.png` | 768×1024 | 491,074 | `6842a5060bff7c72b2e6bbd7d0dd4002c5bb492768292f6106d7a50466fdc652` |
+| Mobile `screenshots/golden-home-integrated-mobile-390x844.png` | 390×844 | 242,653 | `d16340199d9af1489ac8c8c7b11b2001dd0792ada75b495d038c1f99cd2623e1` |
+
+The isolated module captures were also regenerated and visually inspected:
+
+| Isolated capture | Dimensions | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Desktop `screenshots/golden-home-desktop.png` | 1536×864 | 789,916 | `78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96` |
+| Tablet `screenshots/golden-home-tablet.png` | 768×1024 | 491,278 | `d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01` |
+| Mobile `screenshots/golden-home-mobile.png` | 390×844 | 242,244 | `9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe` |
+
+`integrated-visual-check.json` SHA-256: `972163824c53ecb0e9e51b3c578db51273070cda75a1c27847127d77aca970d7`. The isolated module `visual-check.json` SHA-256 is `8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce`; both reports say `passed` and identify the same base and code HEAD. All three route responses were HTTP 200, document widths matched their viewport widths, module and full-page Axe each reported zero violations, and console errors, page errors, and external requests were zero. The reports record CSP, `nosniff`, frame denial, strict referrer policy, `X-Robots-Tag: noindex, nofollow, noarchive`, and the matching robots meta. Local single-pass LCP was 480 ms desktop, 172 ms tablet, and 112 ms mobile, with CLS 0; these are local lab observations, not field Core Web Vitals.
+
+Node.js `v22.23.3` / npm `10.9.9` validation on that code HEAD passed: `npm test` (185/185 unit/subtests; Astro build and no-binding guard passed; Playwright 34/34), `npm run lint` (zero warnings), `npm run typecheck` (76 files; zero errors, warnings, or hints), and `npm audit --audit-level=high` (zero vulnerabilities). The new deterministic derivative script reproduced the runtime WebP byte-for-byte: 1,394,724 bytes, SHA-256 `0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a`.
+
+The original Golden home and logo JPEGs remain unchanged and their integrity test passed in the full suite. Blender itself was unavailable, so the portable `.blend` was not reopened in Blender; only its recorded path audit, packed-image metadata, and binary/hash provenance were checked. Rights review remains pending, and Owner visual approval, commercial publication, and publication permission remain false. This local evidence does not authorize merge, route changes, deployment, or checkpoint promotion. Exact-head hosted CI and the PR's review/audit gates remain pending after publication.

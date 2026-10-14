@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-13T21:26:10.072Z",
+  "generatedAt": "2026-10-14T00:02:23.472Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "cba620d9c9b344b871882f759cdc857ac031744d",
+  "headSha": "7153d8c91c60b7592dbaa4fbc80d5e11b578c31a",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -31,7 +31,7 @@
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:65347",
+  "origin": "http://127.0.0.1:61415",
   "viewports": [
     {
       "name": "desktop",
@@ -184,7 +184,7 @@
           "height": 228
         }
       },
-      "screenshotSha256": "60a65e1180ef8f0350e988b7a183cad493202abad3be780a0be05a1f0bdb59cb"
+      "screenshotSha256": "78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96"
     },
     {
       "name": "tablet",
@@ -193,7 +193,7 @@
       "documentWidth": 768,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "12ae803a9be5e251885398b34a623aa2b9efc6b494e7f8159f98c42c6be13da5"
+      "screenshotSha256": "d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01"
     },
     {
       "name": "mobile",
@@ -202,7 +202,7 @@
       "documentWidth": 390,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "e0f057b5452d2f20ccc51f644ba436c1d86c1be7400f65f6a30f2dc9c07b809f"
+      "screenshotSha256": "9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe"
     }
   ],
   "interactionChecks": {
@@ -600,18 +600,18 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 23ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 17ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 23ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 23ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 20ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 14ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 14ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 22ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"
 }

@@ -1,12 +1,12 @@
 {
   "status": "passed",
-  "generatedAt": "2026-10-13T21:26:08.788Z",
+  "generatedAt": "2026-10-14T00:02:22.602Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "cba620d9c9b344b871882f759cdc857ac031744d",
+  "headSha": "7153d8c91c60b7592dbaa4fbc80d5e11b578c31a",
   "route": "/en",
   "fixture": "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
   "runtime": "Wrangler 4.149.0 --local",
-  "origin": "http://127.0.0.1:65346",
+  "origin": "http://127.0.0.1:61414",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -42,6 +42,39 @@
       "height": 864,
       "httpStatus": 200,
       "documentWidth": 1536,
+      "cinematicPreview": {
+        "fullyDecoded": true,
+        "complete": true,
+        "width": 640,
+        "height": 320,
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "currentOrigin": "http://127.0.0.1:61414",
+        "allowedOrigin": "http://127.0.0.1:61414",
+        "previewActive": true,
+        "visible": true,
+        "sceneOpacity": "1",
+        "objectFit": "cover",
+        "objectPosition": "50% 50%",
+        "widthOnScreen": 728.796875,
+        "heightOnScreen": 280,
+        "selectedSource": "http://127.0.0.1:61414/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "visibleArtworkStart": 826.4053125,
+        "copyRight": 567.671875,
+        "loading": "eager",
+        "fetchPriority": "high"
+      },
+      "performance": {
+        "largestContentfulPaintMs": 480,
+        "cumulativeLayoutShift": 0,
+        "previewImage": {
+          "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "transferredBytes": 1395024,
+          "encodedBodyBytes": 1394724,
+          "durationMs": 64.6
+        },
+        "sameOriginTransferredBytes": 1536265,
+        "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+      },
       "moduleAxeViolations": [],
       "fullPageAxeViolations": [],
       "securityHeaders": {
@@ -59,6 +92,39 @@
       "height": 1024,
       "httpStatus": 200,
       "documentWidth": 768,
+      "cinematicPreview": {
+        "fullyDecoded": true,
+        "complete": true,
+        "width": 640,
+        "height": 320,
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "currentOrigin": "http://127.0.0.1:61414",
+        "allowedOrigin": "http://127.0.0.1:61414",
+        "previewActive": true,
+        "visible": true,
+        "sceneOpacity": "1",
+        "objectFit": "contain",
+        "objectPosition": "100% 50%",
+        "widthOnScreen": 307.96875,
+        "heightOnScreen": 320,
+        "selectedSource": "http://127.0.0.1:61414/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "visibleArtworkStart": 353.16875,
+        "copyRight": 273.265625,
+        "loading": "eager",
+        "fetchPriority": "high"
+      },
+      "performance": {
+        "largestContentfulPaintMs": 172,
+        "cumulativeLayoutShift": 0,
+        "previewImage": {
+          "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "transferredBytes": 0,
+          "encodedBodyBytes": 1394724,
+          "durationMs": 0
+        },
+        "sameOriginTransferredBytes": 900,
+        "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+      },
       "moduleAxeViolations": [],
       "fullPageAxeViolations": [],
       "securityHeaders": {
@@ -76,6 +142,39 @@
       "height": 844,
       "httpStatus": 200,
       "documentWidth": 390,
+      "cinematicPreview": {
+        "fullyDecoded": true,
+        "complete": true,
+        "width": 640,
+        "height": 320,
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "currentOrigin": "http://127.0.0.1:61414",
+        "allowedOrigin": "http://127.0.0.1:61414",
+        "previewActive": true,
+        "visible": true,
+        "sceneOpacity": "1",
+        "objectFit": "cover",
+        "objectPosition": "50% 50%",
+        "widthOnScreen": 356,
+        "heightOnScreen": 183.203125,
+        "selectedSource": "http://127.0.0.1:61414/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "visibleArtworkStart": 223.48,
+        "copyRight": 355,
+        "loading": "eager",
+        "fetchPriority": "high"
+      },
+      "performance": {
+        "largestContentfulPaintMs": 112,
+        "cumulativeLayoutShift": 0,
+        "previewImage": {
+          "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "transferredBytes": 0,
+          "encodedBodyBytes": 1394724,
+          "durationMs": 0
+        },
+        "sameOriginTransferredBytes": 900,
+        "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+      },
       "moduleAxeViolations": [],
       "fullPageAxeViolations": [],
       "securityHeaders": {
@@ -91,18 +190,59 @@
   "screenshots": [
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
-      "sha256": "404f2ae8834d182e30bfbf73e369e5278728ba4038badd224c7e2315d5150950",
-      "bytes": 725709
+      "sha256": "5321f1ab9582ce8ac7a36620b9b13f877f247fdde5d92374d3058e24e31a51b9",
+      "bytes": 789613
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
-      "sha256": "daa568d19c296519cdb995649180af7de0e7b4bf69fd2ab5d2316fa3225b533b",
-      "bytes": 477284
+      "sha256": "6842a5060bff7c72b2e6bbd7d0dd4002c5bb492768292f6106d7a50466fdc652",
+      "bytes": 491074
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
-      "sha256": "605a2143fddaebc0cdaf77a203b9eb3b3375c539c5134457fcab7a64a159b47e",
-      "bytes": 199264
+      "sha256": "d16340199d9af1489ac8c8c7b11b2001dd0792ada75b495d038c1f99cd2623e1",
+      "bytes": 242653
+    }
+  ],
+  "renderPerformance": [
+    {
+      "viewport": "desktop",
+      "largestContentfulPaintMs": 480,
+      "cumulativeLayoutShift": 0,
+      "previewImage": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferredBytes": 1395024,
+        "encodedBodyBytes": 1394724,
+        "durationMs": 64.6
+      },
+      "sameOriginTransferredBytes": 1536265,
+      "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+    },
+    {
+      "viewport": "tablet",
+      "largestContentfulPaintMs": 172,
+      "cumulativeLayoutShift": 0,
+      "previewImage": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferredBytes": 0,
+        "encodedBodyBytes": 1394724,
+        "durationMs": 0
+      },
+      "sameOriginTransferredBytes": 900,
+      "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+    },
+    {
+      "viewport": "mobile",
+      "largestContentfulPaintMs": 112,
+      "cumulativeLayoutShift": 0,
+      "previewImage": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferredBytes": 0,
+        "encodedBodyBytes": 1394724,
+        "durationMs": 0
+      },
+      "sameOriginTransferredBytes": 900,
+      "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
     }
   ],
   "desktopGeometry": {
@@ -240,5 +380,29 @@
     "copyLeft": 132.765625,
     "copyTop": 748.5,
     "copyBottom": 852.5
+  },
+  "motionAccessibility": {
+    "mode": "DEMO_LOCAL_ONLY",
+    "normalMotionSource": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+    "normalMotionDimensions": [
+      640,
+      320
+    ],
+    "normalMotionSameOrigin": true,
+    "reducedMotionSource": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+    "reducedMotionDimensions": [
+      1774,
+      887
+    ],
+    "reducedMotionUsesStaticMaster": true
+  },
+  "previewFallback": {
+    "previewActive": false,
+    "previewImageComplete": true,
+    "vectorFallbackVisible": true,
+    "coinBounds": {
+      "width": 276.4476318359375,
+      "height": 291.78448486328125
+    }
   }
 }

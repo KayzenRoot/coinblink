@@ -95,3 +95,19 @@ test("R26 preflight rejects derivatives detached from the exact static master", 
   assert.equal(result.technicalPreflightPassed, false);
   assert.ok(result.failures.includes("DERIVATIVE_SOURCE_MISMATCH"));
 });
+
+test("R26 media selection and failure recovery use a local external script under strict CSP", async () => {
+  const component = await readFile(join(repoRoot, "src", "modules", "CB-M01", "GoldenHome.astro"), "utf8");
+  const mediaScript = await readFile(join(repoRoot, "src", "modules", "CB-M01", "r26-media-selection.js"), "utf8");
+
+  assert.match(component, /import\s+r26MediaSelectionUrl\s+from\s+"\.\/r26-media-selection\.js\?url";/u);
+  assert.match(component, /<script\s+is:inline\s+src=\{r26MediaSelectionUrl\}><\/script>/u);
+  assert.doesNotMatch(component, /<script\s+is:inline\s*>[\s\S]*?<\/script>/u,
+    "new media selection must not rely on an inline script blocked by script-src 'self'");
+  assert.match(mediaScript, /navigator\.(?:connection|mozConnection|webkitConnection)/u);
+  assert.match(mediaScript, /prefers-reduced-motion/u);
+  assert.match(mediaScript, /data-motion-srcset/u);
+  assert.match(mediaScript, /data-static-srcset/u);
+  assert.match(mediaScript, /addEventListener\("error"/u,
+    "a failed motion source must recover to a static source while full failure preserves SVG fallback");
+});

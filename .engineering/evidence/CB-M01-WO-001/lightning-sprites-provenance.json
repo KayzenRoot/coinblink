@@ -9,9 +9,10 @@
   "modelVersion": "NOT_EXPOSED_BY_TOOL_RESULT",
   "promptWorkflowEvidence": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/sprite-prompts.json",
   "sourceMaster": {
-    "type": "PROMPT_AND_GENERATED_IMPACT_REFERENCE_NOT_EDITABLE_3D",
+    "type": "DECORATIVE_OVERLAY_REFERENCE_NOT_HERO_STATIC_MASTER",
     "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-03-impact.png",
-    "editableThreeDimensionalSource": false
+    "editableThreeDimensionalSource": false,
+    "role": "IMAGE_GENERATION_STYLE_REFERENCE_ONLY"
   },
   "visualReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -21,119 +22,140 @@
   "runtime": {
     "componentPath": "src/modules/CB-M01/GoldenHome.astro",
     "stylesheetPath": "src/modules/CB-M01/golden-home.css",
-    "container": ".hero-lightning[aria-hidden=true]",
-    "frameDurationMs": 6400,
-    "loop": true,
-    "reducedMotionBehavior": "STATIC_LOW_OPACITY_IMPACT_FRAME",
+    "browserAnimation": false,
+    "directBrowserAssetRequests": false,
+    "sourceFramesLoadedByBrowser": false,
+    "blenderMotionProject": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+    "overlayRole": "PACKED_DECORATIVE_INPUTS_TO_BLENDER_MOTION_DERIVATIVE",
+    "reducedMotionBehavior": "STATIC_IMAGEGEN_MASTER_SELECTED_BY_PICTURE",
     "externalRequests": false,
     "decorativeOnly": true,
-    "runtimePathsAreExactCopiesOfEvidencePaths": true
+    "runtimePathsAreExactCopiesOfEvidencePaths": false
   },
   "aggregate": {
     "frameCount": 7,
-    "canvas": [1774, 887],
+    "canvas": [
+      1774,
+      887
+    ],
     "format": "PNG_RGBA",
-    "runtimeBytes": 2242695,
-    "maxRuntimeBytes": 2500000
+    "sourceAssetBytes": 2242695,
+    "runtimeBytes": 0,
+    "runtimeOutput": "src/modules/CB-M01/hero-cinematic-motion.webp",
+    "runtimeOutputBytes": 1979998
   },
   "frames": [
     {
       "filename": "lightning-01-charge.png",
       "pose": "short charge filament",
-      "importName": "lightningCharge",
-      "className": "hero-lightning-frame--charge",
-      "keyframeName": "cb-lightning-charge",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-01-charge.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-01-charge.png",
+      "runtimePath": null,
       "bytes": 164751,
       "sha256": "817ee5a850ccd7e84f7be7bb1138781f31bbae64c5564b5f5f98efddc7980fa1",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.971078
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.971078,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-01-charge.png"
     },
     {
       "filename": "lightning-02-descent.png",
       "pose": "descending bolt",
-      "importName": "lightningDescent",
-      "className": "hero-lightning-frame--descent",
-      "keyframeName": "cb-lightning-descent",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-02-descent.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-02-descent.png",
+      "runtimePath": null,
       "bytes": 288639,
       "sha256": "3d7449ab6ac5f484cb4e495109babef7e409cd1ba205f926759d05538e684688",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.933662
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.933662,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-02-descent.png"
     },
     {
       "filename": "lightning-03-impact.png",
       "pose": "ground impact",
-      "importName": "lightningImpact",
-      "className": "hero-lightning-frame--impact",
-      "keyframeName": "cb-lightning-impact",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-03-impact.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-03-impact.png",
+      "runtimePath": null,
       "bytes": 502026,
       "sha256": "33af3ce565eba450fcacb300865a5e69f80b6e997680ce0298aa9e669eb6c426",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.870529
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.870529,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-03-impact.png"
     },
     {
       "filename": "lightning-04-afterglow.png",
       "pose": "fading strike",
-      "importName": "lightningAfterglow",
-      "className": "hero-lightning-frame--afterglow",
-      "keyframeName": "cb-lightning-afterglow",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-04-afterglow.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-04-afterglow.png",
+      "runtimePath": null,
       "bytes": 424970,
       "sha256": "070978154a34c72bfba09d699ff679e218e0c1be4ba6c65bf42ee3122107e6f4",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.88582
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.88582,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-04-afterglow.png"
     },
     {
       "filename": "lightning-05-secondary-right.png",
       "pose": "secondary right strike",
-      "importName": "lightningSecondaryRight",
-      "className": "hero-lightning-frame--secondary-right",
-      "keyframeName": "cb-lightning-secondary-right",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-05-secondary-right.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-05-secondary-right.png",
+      "runtimePath": null,
       "bytes": 416443,
       "sha256": "127e010da9945c26ce607caf3ea54d4304a7e25c9ee26f5ace16ac8f23ce930e",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.902475
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.902475,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-05-secondary-right.png"
     },
     {
       "filename": "lightning-06-secondary-left.png",
       "pose": "distant left strike",
-      "importName": "lightningSecondaryLeft",
-      "className": "hero-lightning-frame--secondary-left",
-      "keyframeName": "cb-lightning-secondary-left",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-06-secondary-left.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-06-secondary-left.png",
+      "runtimePath": null,
       "bytes": 258384,
       "sha256": "aaa75d82ac82160a3ac4d77cbe3f91153d90f81cca3eda0dd9bec38ecff93286",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.944814
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.944814,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-06-secondary-left.png"
     },
     {
       "filename": "lightning-07-ground-fade.png",
       "pose": "ground sparks fading",
-      "importName": "lightningGroundFade",
-      "className": "hero-lightning-frame--ground-fade",
-      "keyframeName": "cb-lightning-ground-fade",
       "evidencePath": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-07-ground-fade.png",
-      "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-07-ground-fade.png",
+      "runtimePath": null,
       "bytes": 187482,
       "sha256": "30013de1a21b3446d47f112fb39b01893e1d11c88329c18f1d8a2fc308ecd2ce",
-      "dimensions": [1774, 887],
-      "transparentPixelRatio": 0.963555
+      "dimensions": [
+        1774,
+        887
+      ],
+      "transparentPixelRatio": 0.963555,
+      "role": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "packagedSourcePath": "src/modules/CB-M01/lightning-sprites/lightning-07-ground-fade.png"
     }
   ],
   "rights": {
     "review": "PENDING_OWNER_OR_LEGAL",
-    "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
     "ownerVisualApproval": false,
     "commercialPublicationAllowed": false,
+    "publicationPermission": false,
     "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
   },
   "limitations": [
@@ -141,5 +163,82 @@
     "The browser CSS sequence is a local demo effect and is not an Owner visual signoff.",
     "All seven images load as local PNG assets; measured runtime image bytes are recorded above, but no production LCP or performance approval is claimed.",
     "Commercial image rights and CoinBlink brand clearance remain pending."
+  ],
+  "assetClass": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+  "motionProject": {
+    "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+    "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json",
+    "imagesPacked": true,
+    "absoluteReferences": false,
+    "usage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+  },
+  "history": [
+    {
+      "recordType": "R25_DECORATIVE_OVERLAY_POLICY_CORRECTION",
+      "supersedes": "R23 browser CSS animation of generated still frames",
+      "previousRuntime": {
+        "componentPath": "src/modules/CB-M01/GoldenHome.astro",
+        "stylesheetPath": "src/modules/CB-M01/golden-home.css",
+        "container": ".hero-lightning[aria-hidden=true]",
+        "frameDurationMs": 6400,
+        "loop": true,
+        "reducedMotionBehavior": "STATIC_LOW_OPACITY_IMPACT_FRAME",
+        "externalRequests": false,
+        "decorativeOnly": true,
+        "runtimePathsAreExactCopiesOfEvidencePaths": true
+      },
+      "previousFrameRuntimeMapping": [
+        {
+          "filename": "lightning-01-charge.png",
+          "importName": "lightningCharge",
+          "className": "hero-lightning-frame--charge",
+          "keyframeName": "cb-lightning-charge",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-01-charge.png"
+        },
+        {
+          "filename": "lightning-02-descent.png",
+          "importName": "lightningDescent",
+          "className": "hero-lightning-frame--descent",
+          "keyframeName": "cb-lightning-descent",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-02-descent.png"
+        },
+        {
+          "filename": "lightning-03-impact.png",
+          "importName": "lightningImpact",
+          "className": "hero-lightning-frame--impact",
+          "keyframeName": "cb-lightning-impact",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-03-impact.png"
+        },
+        {
+          "filename": "lightning-04-afterglow.png",
+          "importName": "lightningAfterglow",
+          "className": "hero-lightning-frame--afterglow",
+          "keyframeName": "cb-lightning-afterglow",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-04-afterglow.png"
+        },
+        {
+          "filename": "lightning-05-secondary-right.png",
+          "importName": "lightningSecondaryRight",
+          "className": "hero-lightning-frame--secondary-right",
+          "keyframeName": "cb-lightning-secondary-right",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-05-secondary-right.png"
+        },
+        {
+          "filename": "lightning-06-secondary-left.png",
+          "importName": "lightningSecondaryLeft",
+          "className": "hero-lightning-frame--secondary-left",
+          "keyframeName": "cb-lightning-secondary-left",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-06-secondary-left.png"
+        },
+        {
+          "filename": "lightning-07-ground-fade.png",
+          "importName": "lightningGroundFade",
+          "className": "hero-lightning-frame--ground-fade",
+          "keyframeName": "cb-lightning-ground-fade",
+          "runtimePath": "src/modules/CB-M01/lightning-sprites/lightning-07-ground-fade.png"
+        }
+      ],
+      "decision": "The seven generated PNGs remain decorative source overlays packed into the Blender motion project. They are not individually loaded or animated by the browser; the hero static master and Blender motion derivative are separate assets."
+    }
   ]
 }

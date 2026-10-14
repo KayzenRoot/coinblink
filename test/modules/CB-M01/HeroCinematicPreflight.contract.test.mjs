@@ -4,10 +4,19 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { HERO_CINEMATIC_LIMITS, inspectHeroCinematicCandidate } from "../../../src/modules/CB-M01/hero-cinematic-preflight.mjs";
 
-const source = await readFile(new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url), "utf8");
-const css = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
-const generatedProvenance = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-provenance.json", import.meta.url), "utf8"));
-const blenderExportReport = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-export-report.json", import.meta.url), "utf8"));
+const evidenceRoot = new URL("../../../.engineering/evidence/CB-M01-WO-001/", import.meta.url);
+const generatedProvenance = JSON.parse(await readFile(new URL("hero-cinematic-imagegen-provenance.json", evidenceRoot), "utf8"));
+const blenderProvenance = JSON.parse(await readFile(new URL("hero-cinematic-blender-provenance.json", evidenceRoot), "utf8"));
+const portabilityReport = JSON.parse(await readFile(new URL("hero-cinematic-animation-portable-inspection.json", evidenceRoot), "utf8"));
+const sceneRegistry = JSON.parse(await readFile(new URL("scene-asset-provenance.json", evidenceRoot), "utf8"));
+
+function readRepoPath(path) {
+  return readFile(new URL("../../../" + path, import.meta.url));
+}
+
+function digest(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
 
 function minimalHeaderFixture(format, width = 1600, height = 800) {
   if (format === "webp") {
@@ -29,117 +38,164 @@ function minimalHeaderFixture(format, width = 1600, height = 800) {
   return bytes;
 }
 
-function manifestFor(format, bytes, width = 1600, height = 800) {
-  return { path: HERO_CINEMATIC_LIMITS.assetPaths[format],
-    origin: "ORIGINAL_LOCAL_RENDER", sourceMaster: "local-creation.blend",
-    rightsStatus: "PENDING_OWNER_OR_LEGAL", commercialPublicationAllowed: false,
-    sha256: createHash("sha256").update(bytes).digest("hex"),
-    bytes: bytes.length, width, height };
+function staticCandidate(format, bytes) {
+  return {
+    assetClass: "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+    path: HERO_CINEMATIC_LIMITS.staticMasterPaths[format],
+    origin: "OPENAI_IMAGE_GENERATION",
+    pipeline: "CODEX_APPROVED_IMAGE_PIPELINE",
+    sourceMaster: { path: HERO_CINEMATIC_LIMITS.staticMasterPaths.png, sha256: digest(bytes) },
+    rightsStatus: "PENDING_OWNER_OR_LEGAL",
+    ownerVisualApproval: false,
+    commercialPublicationAllowed: false,
+    publicationPermission: false,
+    sha256: digest(bytes),
+    bytes: bytes.length,
+    width: 1600,
+    height: 800,
+  };
 }
 
-test("R23 candidate preflight validates synthetic WebP and PNG header fixtures", () => {
+function staticManifestCandidate(format) {
+  const master = generatedProvenance.staticMaster;
+  return { ...master, ...master.outputs[format] };
+}
+
+test("R25 static-master preflight accepts valid PNG and WebP headers from the approved pipeline", () => {
   for (const format of ["webp", "png"]) {
     const bytes = minimalHeaderFixture(format);
-    const result = inspectHeroCinematicCandidate(manifestFor(format, bytes), bytes);
-    assert.equal(result.technicalPreflightPassed, true, format + " header fixture preflight");
+    const result = inspectHeroCinematicCandidate(staticCandidate(format, bytes), bytes, { sourceMasterBytes: bytes });
+    assert.equal(result.technicalPreflightPassed, true, format + " static-master fixture");
+    assert.equal(result.assetClass, "STATIC_MASTER_APPROVED_IMAGE_PIPELINE");
     assert.equal(result.dimensions.width, 1600);
     assert.equal(result.dimensions.height, 800);
     assert.equal(result.releaseAllowed, false);
-    assert.equal(result.commercialPublicationAllowed, false);
     assert.equal(result.ownerVisualApprovalRequired, true);
+    assert.equal(result.ownerVisualApproval, false);
+    assert.equal(result.publicationPermission, false);
+    assert.equal(result.commercialPublicationAllowed, false);
   }
 });
 
-test("R23 rejects the actual ImageGen candidates at the original-local-render gate", async () => {
+test("R25 validates the actual ImageGen master and WebP derivative against source bytes", async () => {
+  const sourceBytes = await readRepoPath(generatedProvenance.generatedSource.path);
   for (const format of ["png", "webp"]) {
-    const candidate = generatedProvenance.outputs[format];
+    const candidate = staticManifestCandidate(format);
     const bytes = await readFile(new URL("../../../" + candidate.path, import.meta.url));
-    const result = inspectHeroCinematicCandidate({
-      path: candidate.path,
-      origin: generatedProvenance.origin,
-      sourceMaster: generatedProvenance.generatedSource.path,
-      rightsStatus: generatedProvenance.rights.review,
-      commercialPublicationAllowed: generatedProvenance.rights.commercialPublicationAllowed,
-      sha256: candidate.sha256,
-      bytes: candidate.bytes,
-      width: generatedProvenance.generatedSource.dimensions[0],
-      height: generatedProvenance.generatedSource.dimensions[1],
-    }, bytes);
+    const result = inspectHeroCinematicCandidate(candidate, bytes, { sourceMasterBytes: sourceBytes });
 
-    assert.equal(result.technicalPreflightPassed, false);
-    assert.deepEqual(result.failures, ["ORIGINAL_SOURCE_UNESTABLISHED"]);
+    assert.equal(result.technicalPreflightPassed, true, format + " approved image pipeline output");
+    assert.equal(result.assetClass, "STATIC_MASTER_APPROVED_IMAGE_PIPELINE");
     assert.equal(result.observedSha256, candidate.sha256);
-    assert.deepEqual(result.dimensions, {
-      width: generatedProvenance.generatedSource.dimensions[0],
-      height: generatedProvenance.generatedSource.dimensions[1],
-      format,
-    });
+    assert.deepEqual(result.dimensions, { width: 1774, height: 887, format });
+    assert.equal(result.ownerVisualApproval, false);
+    assert.equal(result.publicationPermission, false);
+    assert.equal(result.commercialPublicationAllowed, false);
     assert.equal(result.releaseAllowed, false);
   }
 });
 
-test("R25 admits only the bounded Blender exports as preview candidates and keeps publication blocked", async () => {
-  assert.equal(blenderExportReport.origin, "ORIGINAL_LOCAL_RENDER");
-  assert.equal(blenderExportReport.sourceMaster.dimensions.join("x"), "2560x1280");
-  for (const format of ["png", "webp"]) {
-    const candidate = blenderExportReport.exports[format];
-    const bytes = await readFile(new URL("../../../" + candidate.path, import.meta.url));
-    const result = inspectHeroCinematicCandidate({
-      path: candidate.path,
-      origin: blenderExportReport.origin,
-      sourceMaster: blenderExportReport.sourceMaster.path,
-      rightsStatus: blenderExportReport.usage.rightsStatus,
-      commercialPublicationAllowed: blenderExportReport.usage.commercialPublicationAllowed,
-      sha256: candidate.sha256,
-      bytes: candidate.bytes,
-      width: candidate.dimensions[0],
-      height: candidate.dimensions[1],
-    }, bytes);
-
-    assert.equal(candidate.fullyDecoded, true, format + " export must be fully decoded by the producer");
-    assert.equal(result.technicalPreflightPassed, true, format + " Blender preview preflight");
-    assert.equal(result.observedSha256, candidate.sha256);
-    assert.equal(result.dimensions.width, 2560);
-    assert.equal(result.dimensions.height, 1280);
-    assert.equal(result.releaseAllowed, false);
-    assert.equal(result.previewOnly, true);
-    assert.equal(result.ownerVisualApprovalRequired, true);
-    assert.equal(result.commercialPublicationAllowed, false);
-    assert.ok(bytes.length <= (format === "webp" ? 1_500_000 : 3_500_000));
-  }
-});
-
-test("R23 rejects remote files, wrong magic, tampering, fake approval and wrong dimensions", () => {
-  const bytes = minimalHeaderFixture("webp");
-  const valid = manifestFor("webp", bytes);
+test("R25 static-master validation fails closed on bad origin, source, rights, path, hash, bytes, or dimensions", async () => {
+  const candidate = staticManifestCandidate("webp");
+  const bytes = await readFile(new URL("../../../" + candidate.path, import.meta.url));
+  const sourceBytes = await readFile(new URL("../../../" + generatedProvenance.generatedSource.path, import.meta.url));
   const mutations = [
-    [{ ...valid, path: "https://example.test/hero.webp" }, bytes, "INVALID_LOCAL_PATH"],
-    [{ ...valid, path: "../hero.webp" }, bytes, "INVALID_LOCAL_PATH"],
-    [{ ...valid, sha256: "f".repeat(64) }, bytes, "SHA256_MISMATCH"],
-    [{ ...valid, bytes: 100 }, bytes, "BYTE_COUNT_MISMATCH"],
-    [{ ...valid, rightsStatus: "CLEARED" }, bytes, "INVALID_DEMO_RIGHTS_STATE"],
-    [{ ...valid, commercialPublicationAllowed: true }, bytes, "PUBLICATION_MUST_BE_DISABLED"],
-    [{ ...valid, sourceMaster: "https://example.test/model.blend" }, bytes, "SOURCE_MASTER_MISSING"],
-    [{ ...valid, width: 1700 }, bytes, "DIMENSION_METADATA_MISMATCH"],
-    [manifestFor("webp", minimalHeaderFixture("webp", 400, 800), 400, 800),
-      minimalHeaderFixture("webp", 400, 800), "INVALID_DIMENSIONS_OR_CROP_RATIO"],
-    [{ ...valid }, Buffer.alloc(30), "INVALID_BINARY_SIGNATURE_OR_HEADER"],
+    [{ ...candidate, assetClass: "BLENDER_MOTION_DERIVATIVE" }, "INVALID_ASSET_CLASS"],
+    [{ ...candidate, pipeline: "UNAPPROVED_PIPELINE" }, "UNAPPROVED_IMAGE_PIPELINE"],
+    [{ ...candidate, sourceMaster: { ...candidate.sourceMaster, sha256: "f".repeat(64) } }, "SOURCE_MASTER_SHA256_MISMATCH"],
+    [{ ...candidate, path: "C:\\Users\\owner\\Desktop\\hero.webp" }, "INVALID_LOCAL_PATH"],
+    [{ ...candidate, sha256: "f".repeat(64) }, "SHA256_MISMATCH"],
+    [{ ...candidate, bytes: candidate.bytes + 1 }, "BYTE_COUNT_MISMATCH"],
+    [{ ...candidate, width: candidate.width + 1 }, "DIMENSION_METADATA_MISMATCH"],
+    [{ ...candidate, rightsStatus: "CLEARED" }, "INVALID_DEMO_RIGHTS_STATE"],
+    [{ ...candidate, ownerVisualApproval: true }, "OWNER_VISUAL_APPROVAL_MUST_REMAIN_FALSE"],
+    [{ ...candidate, commercialPublicationAllowed: true }, "PUBLICATION_MUST_BE_DISABLED"],
+    [{ ...candidate, publicationPermission: true }, "PUBLICATION_PERMISSION_MUST_BE_FALSE"],
   ];
-  for (const [meta, raw, reason] of mutations) {
-    const result = inspectHeroCinematicCandidate(meta, raw);
+
+  for (const [changed, reason] of mutations) {
+    const result = inspectHeroCinematicCandidate(changed, bytes, { sourceMasterBytes: sourceBytes });
     assert.equal(result.technicalPreflightPassed, false, reason);
     assert.ok(result.failures.includes(reason), reason + ": " + result.failures.join(", "));
     assert.equal(result.releaseAllowed, false);
   }
+  const badSource = Buffer.from(sourceBytes);
+  badSource[0] ^= 1;
+  const sourceResult = inspectHeroCinematicCandidate(candidate, bytes, { sourceMasterBytes: badSource });
+  assert.ok(sourceResult.failures.includes("SOURCE_MASTER_SHA256_MISMATCH"));
 });
 
-test("R23 keeps the current vector Golden DEMO active and never self-approves a 3D asset", () => {
-  assert.match(source, /<svg class="coin-art"/u);
-  assert.match(source, /<div class="hero-scene" aria-hidden="true">/u);
-  assert.match(source, /<picture class="hero-cinematic-preview"/u);
-  assert.match(source, /hero-cinematic-blender\.webp/u);
-  assert.match(source, /hero-cinematic-blender\.png/u);
-  assert.doesNotMatch(source, /hero-cinematic-original\.(?:webp|png)/u);
-  assert.match(css, /hero-mineral-texture\.svg/u);
-  assert.equal(HERO_CINEMATIC_LIMITS.commercialPublicationAllowed, false);
+test("R25 accepts only the portable Blender motion derivative linked to the valid static master", async () => {
+  const candidate = generatedProvenance.motionDerivative;
+  const bytes = await readFile(new URL("../../../" + candidate.path, import.meta.url));
+  const sourceMasterBytes = await readFile(new URL("../../../" + candidate.sourceMaster.path, import.meta.url));
+  const sourceProjectBytes = await readFile(new URL("../../../" + candidate.sourceProject.path, import.meta.url));
+  const contactSheetBytes = await readFile(new URL("../../../" + candidate.motionOutputs.find((output) => output.role === "CONTACT_SHEET").path, import.meta.url));
+  const evidenceMotionBytes = await readFile(new URL("../../../" + candidate.motionOutputs.find((output) => output.role === "SOURCE_ANIMATION").path, import.meta.url));
+  const result = inspectHeroCinematicCandidate(candidate, bytes, {
+    sourceMasterBytes,
+    sourceProjectBytes,
+    contactSheetBytes,
+    evidenceMotionBytes,
+  });
+
+  assert.equal(result.technicalPreflightPassed, true, result.failures.join(", "));
+  assert.equal(result.assetClass, "BLENDER_MOTION_DERIVATIVE");
+  assert.deepEqual(result.motion, { frameCount: 48, durationMs: 4000 });
+  assert.equal(result.ownerVisualApprovalRequired, true);
+  assert.equal(result.ownerVisualApproval, false);
+  assert.equal(result.commercialPublicationAllowed, false);
+  assert.equal(result.publicationPermission, false);
+  assert.equal(result.releaseAllowed, false);
+  assert.equal(blenderProvenance.animationProject.origin, "BLENDER_MOTION_DERIVATIVE");
+  assert.equal(portabilityReport.absoluteReferences, false);
+});
+
+test("R25 motion validation rejects absolute paths, missing provenance, unlisted outputs, tampering, and approval escalation", async () => {
+  const candidate = generatedProvenance.motionDerivative;
+  const bytes = await readFile(new URL("../../../" + candidate.path, import.meta.url));
+  const sourceMasterBytes = await readFile(new URL("../../../" + candidate.sourceMaster.path, import.meta.url));
+  const sourceProjectBytes = await readFile(new URL("../../../" + candidate.sourceProject.path, import.meta.url));
+  const contactOutput = candidate.motionOutputs.find((output) => output.role === "CONTACT_SHEET");
+  const sourceOutput = candidate.motionOutputs.find((output) => output.role === "SOURCE_ANIMATION");
+  const contactSheetBytes = await readFile(new URL("../../../" + contactOutput.path, import.meta.url));
+  const evidenceMotionBytes = await readFile(new URL("../../../" + sourceOutput.path, import.meta.url));
+  const artifacts = { sourceMasterBytes, sourceProjectBytes, contactSheetBytes, evidenceMotionBytes };
+  const mutations = [
+    [{ ...candidate, sourceProject: { ...candidate.sourceProject, path: "C:\\Users\\owner\\hero.blend" } }, "NONPORTABLE_BLENDER_REFERENCE"],
+    [{ ...candidate, sourceProject: { ...candidate.sourceProject, sha256: "f".repeat(64) } }, "BLENDER_SOURCE_SHA256_MISMATCH"],
+    [{ ...candidate, sourceMasterSha256: "f".repeat(64) }, "SOURCE_MASTER_MISMATCH"],
+    [{ ...candidate, motionOutputs: candidate.motionOutputs.filter((output) => output.role !== "CONTACT_SHEET") }, "MOTION_OUTPUTS_NOT_INVENTORIED"],
+    [{ ...candidate, motionOutputs: [...candidate.motionOutputs, candidate.motionOutputs[0]] }, "MOTION_OUTPUTS_NOT_INVENTORIED"],
+    [{ ...candidate, motionOutputs: candidate.motionOutputs.map((output) => output.path === candidate.path ? { ...output, role: "SOURCE_ANIMATION" } : output) }, "MOTION_OUTPUTS_NOT_INVENTORIED"],
+    [{ ...candidate, frameCount: candidate.frameCount + 1 }, "MOTION_TIMING_METADATA_MISMATCH"],
+    [{ ...candidate, durationMs: candidate.durationMs + 100 }, "MOTION_TIMING_METADATA_MISMATCH"],
+    [{ ...candidate, portability: { ...candidate.portability, allExternalReferencesRelative: false } }, "NONPORTABLE_BLENDER_REFERENCE"],
+    [{ ...candidate, portability: { ...candidate.portability, absoluteReferences: true } }, "NONPORTABLE_BLENDER_REFERENCE"],
+    [{ ...candidate, commercialPublicationAllowed: true }, "PUBLICATION_MUST_BE_DISABLED"],
+    [{ ...candidate, ownerVisualApproval: true }, "OWNER_VISUAL_APPROVAL_MUST_REMAIN_FALSE"],
+    [{ ...candidate, publicationPermission: true }, "PUBLICATION_PERMISSION_MUST_BE_FALSE"],
+  ];
+
+  for (const [changed, reason] of mutations) {
+    const result = inspectHeroCinematicCandidate(changed, bytes, artifacts);
+    assert.equal(result.technicalPreflightPassed, false, reason);
+    assert.ok(result.failures.includes(reason), reason + ": " + result.failures.join(", "));
+    assert.equal(result.releaseAllowed, false);
+  }
+  const badProject = Buffer.from(sourceProjectBytes);
+  badProject[0] ^= 1;
+  const tamperedProject = inspectHeroCinematicCandidate(candidate, bytes, { ...artifacts, sourceProjectBytes: badProject });
+  assert.ok(tamperedProject.failures.includes("BLENDER_SOURCE_SHA256_MISMATCH"));
+  const badContactSheet = Buffer.from(contactSheetBytes);
+  badContactSheet[0] ^= 1;
+  const tamperedOutput = inspectHeroCinematicCandidate(candidate, bytes, { ...artifacts, contactSheetBytes: badContactSheet });
+  assert.ok(tamperedOutput.failures.includes("MOTION_OUTPUT_INTEGRITY_MISMATCH"));
+});
+
+test("legacy Blender still exports are never used as the new static master", () => {
+  assert.equal(sceneRegistry.legacyBlenderStillExports.assetClass, "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER");
+  assert.equal(sceneRegistry.legacyBlenderStillExports.runtimeUsage, false);
+  assert.equal(HERO_CINEMATIC_LIMITS.staticMasterPaths.png, "src/modules/CB-M01/hero-cinematic-original.png");
+  assert.equal(HERO_CINEMATIC_LIMITS.motionPreviewPath, "src/modules/CB-M01/hero-cinematic-motion.webp");
 });

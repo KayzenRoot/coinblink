@@ -1,86 +1,42 @@
-# CoinBlink M01 — R25 cinematic asset delivery
+# CoinBlink M01 — R25 static master and Blender motion correction
 
-**Status:** technical demo preview ready for independent review. M01 remains incomplete; this report does not grant visual, commercial, publication, merge, or checkpoint approval.
+**Status:** local technical preview only; no rights clearance, Owner visual acceptance, publication, merge, or checkpoint promotion is granted. The PR remains open.
 
-## Scope and source
+## Policy and scope
 
+The Owner's R25 direction adopts an approved-pipeline static master and reserves Blender for motion derivatives. It supersedes the earlier R25 proposal to use a Blender still as the primary hero. The main source remains the generated OpenAI image; its provenance is still `OPENAI_IMAGE_GENERATION`, and it has not been relabeled as Blender output.
+
+- Work Order: `CB-M01-WO-001`
 - PR: [#58](https://github.com/KayzenRoot/coinblink/pull/58)
-- Authorized branch: `codex/cb-m01-wo-001-impl-20261011`
-- Starting PR head: `f79dbfced1d36cdf2705b366102a5576df3571e3`
-- Tested source head: `2668fcde6d9c3bdb068580b31492a18845d3a9f0`
-- Work order: `CB-M01-WO-001`
-- The original ImageGen assets, R23 reconciliation report, and the existing vector illustration remain historical records. The browser uses the Blender WebP with the matching PNG fallback; if both fail, the original vector scene remains visible. The seven-frame lightning effect remains separate.
+- PR branch: `codex/cb-m01-wo-001-impl-20261011`
+- Static master: `src/modules/CB-M01/hero-cinematic-original.png` (1774×887, 2,349,624 bytes, SHA-256 `a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c`)
+- Static WebP: `src/modules/CB-M01/hero-cinematic-original.webp` (1774×887, 310,054 bytes, SHA-256 `56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b`)
+- Blender motion runtime derivative: `src/modules/CB-M01/hero-cinematic-motion.webp` (640×320, 48 frames, 4,000 ms, 1,394,724 bytes, SHA-256 `0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a`)
+- Portable Blender source: `hero-cinematic-animation-portable.blend` (SHA-256 `898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec`)
 
-## Blender master and scene inspection
+The static source and output hashes match the exact bytes. The static master is selected by default and for reduced-motion users; the optional motion derivative is selected only for `prefers-reduced-motion: no-preference`. Copy remains accessible HTML outside the decorative image. The generated lightning PNGs are decorative Blender inputs packed in the portable project, not individual browser requests or CSS animation frames.
 
-Blender 5.2.2 LTS rendered an original Cycles master at 2560×1280, 32 samples, denoising enabled. The computer has AMD Vega 8 and Radeon 535 graphics; Blender reported no supported Cycles GPU backend and selected CPU. This is consistent with the documented Cycles GPU requirements for supported AMD backends ([Blender manual](https://docs.blender.org/manual/pt/4.5/render/cycles/gpu_rendering.html)).
+## Separate historical Blender still exports
 
-- Master: `hero-cinematic-renders/hero-cinematic-blender-master-2560x1280.png`
-- Master SHA-256: `935d00f5384771f2a21a83bf0ee5e077e0684146364b5c36080d64b454cca460` (9,848,150 bytes)
-- Saved scene: `hero-cinematic-production.blend`
-- Scene inspection: `hero-cinematic-blender-scene-inspection.json`
-- Production scene SHA-256: `34adf9ef2bf7d5284856143ba56209f09cb2d73504bb3d5a2ed5b084363ea560`
-- Scene script SHA-256: `9d5d1a7d7849fa933edca5a9aab957557dd2829526b59d5d13190e9346f027ea`
+The files `hero-cinematic-blender.png` and `hero-cinematic-blender.webp` are genuine Blender Cycles still exports. They are classified as `BLENDER_CYCLES_STILL_RENDER_NOT_MASTER`, retained for provenance, and not used by the runtime. The static ImageGen master is the source of record for the still hero.
 
-The fresh-process inspection found 216 scene objects, 102 meshes, five area lights, a 48 mm perspective camera, a 144+ vertex beveled Bitcoin mesh with 0.2 scene-unit thickness, metallic values 0.94 and 0.96, a raised/extruded Bitcoin glyph, a 960-face ridge, ground, and 11 faceted rocks. The saved scene uses a relative render path.
+## Motion traceability and portability
 
-The render is an original procedural 3D study, not a raster copy of the Golden reference. It places open copy space at left and the coin to the right. The mountains and rocks remain more stylized than the photographic detail in the Golden reference; visual fidelity remains for independent review.
+The Blender project is recorded as `BLENDER_MOTION_DERIVATIVE` and links to the static master by exact SHA-256. Its inspection report records 96 source frames at 24 fps, 1600×800, eight packed external images, relative image references, and zero linked libraries. The report was checked for drive-letter, UNC, and absolute image paths. Blender was unavailable in this run, so the binary was not reopened; this limitation is recorded and no independent Blender launch is claimed.
 
-## Derived files and traceability
+The source animation preview is 1600×800, 96 frames, 4,000 ms. The runtime derivative samples every other source frame and resizes to 640×320 with Lanczos, preserving 4,000 ms total duration. The runtime WebP ANMF frame table was parsed and verified as 48 frames totaling 4,000 ms. The contact sheet remains separate evidence.
 
-Both runtime exports were fully decoded and derived from the same Blender master without resizing. Their signatures, dimensions, SHA-256, and byte counts are in `hero-cinematic-blender-export-report.json` and `hero-cinematic-blender-provenance.json`.
+## Rights, approval, and publication gates
 
-| File | Dimensions | Bytes | SHA-256 | Result |
-|---|---:|---:|---|---|
-| `src/modules/CB-M01/hero-cinematic-blender.webp` | 2560×1280 | 269,828 | `5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e` | below 1,500,000-byte cap |
-| `src/modules/CB-M01/hero-cinematic-blender.png` | 2560×1280 | 774,726 | `bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67` | below 3,500,000-byte cap |
+- Rights review: `PENDING_OWNER_OR_LEGAL`.
+- Owner visual approval: `false`.
+- Commercial publication allowed: `false`.
+- Publication permission: `false`.
+- Allowed use: local/nonpublic demo preview only.
+- No production data, external service, deploy, or publication is authorized by this evidence.
 
-The PNG derivative records mean absolute RGB error 1.51862 and PSNR 38.8281 dB against the master. The WebP is quality 96. The browser chose WebP in all captured viewports.
+## Evidence and validation
 
-`scene-asset-provenance.json` retains the pre-R25 source hashes in its history, records the exact current hero fragment, and links the new render separately as `ORIGINAL_LOCAL_RENDER`. The prior ImageGen provenance stays `OPENAI_IMAGE_GENERATION`; neither file is relabeled as a Blender render.
+The current detailed manifests are `hero-cinematic-imagegen-provenance.json`, `hero-cinematic-blender-provenance.json`, `lightning-sprites-provenance.json`, `hero-cinematic-animation-portable-inspection.json`, and `cinematic-delivery-inventory.json`. The exact local screenshots, axe checks, responsive geometry, browser errors, runtime binding checks, and test results will be summarized here after the fresh R25 integrated run. Historical R23/R25-pre-correction results remain in Git history and are not current validation.
 
-## Animation project portability
-
-`hero-cinematic-animation-portable.blend` opens in a fresh Blender 5.2.2 process. Its 96-frame, 24 fps, 1600×800 project has a relative output path, eight packed external image assets, eight relative image references, and no linked libraries. The inspection is `hero-cinematic-animation-portable-inspection.json`; project SHA-256 is `898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec`.
-
-This is the existing image-and-lightning sprite composite made portable; it is not a newly animated version of the 3D coin scene.
-
-## Integrated preview and validation
-
-The R25 report and responsive screenshots are retained separately from prior visual evidence:
-
-- `r25-integrated-visual-check.json`
-- `screenshots/r25-hero-desktop-1536x864.png`
-- `screenshots/r25-hero-tablet-768x1024.png`
-- `screenshots/r25-hero-mobile-390x844.png`
-
-The integrated browser pass used desktop 1536×864, tablet 768×1024, and mobile 390×844. It confirmed full image decode, same-origin assets, no horizontal overflow, zero axe violations for the module and page at each size, and no external requests. At tablet width, the preview uses `contain` so the coin is not clipped and the lightning layer begins beyond the copy column. Mobile displays the preview at full scene opacity. A simulated failure of both image formats left the original vector coin visible. Reduced motion disabled all seven lightning animations and the flash, leaving only the static impact layer.
-
-Single-pass local lab metrics (not field Core Web Vitals):
-
-| Viewport | LCP | CLS | WebP encoded bytes |
-|---|---:|---:|---:|
-| Desktop | 1,740 ms | 0 | 269,828 |
-| Tablet | 560 ms | 0 | 269,828 |
-| Mobile | 440 ms | 0 | 269,828 |
-
-## Tests
-
-All final source tests were run on tested source head `2668fcde6d9c3bdb068580b31492a18845d3a9f0`, under Node.js 22.19.0:
-
-- `npm.cmd test` — passed: 184/184 unit tests, Astro production build, and 34/34 Playwright E2E tests.
-- `npm.cmd run lint` — passed with zero warnings.
-- `npm.cmd run typecheck` — passed: 76 files, zero errors, warnings, or hints.
-- Blender scene inspection — passed in a fresh Blender process.
-- Portable animation inspection — passed in a fresh Blender process.
-- Export preflight and full image decoding — passed; both size limits met.
-- Integrated visual pass — passed at all three viewports, including fallback and reduced-motion probes.
-
-## Governance and remaining review
-
-- Usage remains `LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY`.
-- Rights review remains `PENDING_OWNER_OR_LEGAL`; owner visual approval is false.
-- Commercial publication is false; live market or editorial data was not connected.
-- `authorizedToMerge=false`.
-- No merge, deploy, ruleset, permissions, workflow, main-branch, or checkpoint change was made.
-- This evidence does not mark M01 complete and does not authorize publication. A separate visual and rights review is still required.
+No merge, deployment, main-branch modification, ruleset change, checkpoint update, rights clearance, Owner visual approval, or publication permission was performed.

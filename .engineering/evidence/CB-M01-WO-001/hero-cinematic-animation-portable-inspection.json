@@ -93,5 +93,13 @@
     "previewOnly": true,
     "ownerVisualApproval": false,
     "commercialPublicationAllowed": false
+  },
+  "absoluteReferences": false,
+  "pathAudit": {
+    "method": "Inspect every FILE image relativePath in this report for drive-letter, UNC and non-Blender absolute paths",
+    "absoluteReferences": false,
+    "checkedFileReferences": 8,
+    "blenderExecutableReopenedInThisRun": false,
+    "limitation": "The installed Blender executable is unavailable in this environment; the committed portable inspection report was checked and the .blend binary SHA-256 was verified."
   }
 }

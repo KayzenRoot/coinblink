@@ -1,3 +1,4 @@
+> **Historical R23 procedure. Superseded by the Owner R25 policy.** Do not apply its Blender-still-as-master gate to the current hero. The current static master is the approved-pipeline ImageGen asset; Blender is used for motion derivatives only.
 # CODEX LOCAL · COINBLINK · CB-M01-WO-001 · R23 CINEMATIC HERO ASSET
 **Status:** READY-TO-EXECUTE LOCALLY WHEN DESKTOP/CODEX IS AVAILABLE. This document is an execution prompt, not authorization to merge, publish or change gates.
 

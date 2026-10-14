@@ -154,19 +154,20 @@ try {
         objectPosition: globalThis.getComputedStyle(image).objectPosition,
         widthOnScreen: rect.width,
         heightOnScreen: rect.height,
-        lightningLeft: scene.parentElement.querySelector(".hero-lightning").getBoundingClientRect().left,
+        selectedSource: image.currentSrc,
+        visibleArtworkStart: image.getBoundingClientRect().left + image.getBoundingClientRect().width * 0.58,
         copyRight: scene.parentElement.querySelector(".hero-copy").getBoundingClientRect().right,
         loading: image.loading,
         fetchPriority: image.fetchPriority,
       };
     }, report.origin);
     assert.ok(cinematicPreview.complete && cinematicPreview.fullyDecoded
-      && cinematicPreview.width === 2560 && cinematicPreview.height === 1280,
-      viewport.name + " Blender hero preview must fully decode at 2560x1280");
+      && cinematicPreview.width === 640 && cinematicPreview.height === 320,
+      viewport.name + " Blender motion derivative must fully decode at 640x320");
     assert.equal(cinematicPreview.currentOrigin, cinematicPreview.allowedOrigin,
       viewport.name + " Blender preview must be served by the local fixture only");
-    assert.match(cinematicPreview.path, /\.webp$/u,
-      viewport.name + " WebP-capable browser must choose the optimized Blender derivative");
+    assert.match(cinematicPreview.path, /hero-cinematic-motion[^/]*\.webp$/u,
+      viewport.name + " no-preference browser must choose the local Blender motion derivative");
     assert.ok(cinematicPreview.previewActive && cinematicPreview.visible
       && cinematicPreview.widthOnScreen > 100 && cinematicPreview.heightOnScreen > 40,
     viewport.name + " Blender preview must be visible after decode");
@@ -174,11 +175,11 @@ try {
     assert.equal(cinematicPreview.fetchPriority, "high");
     if (viewport.name === "tablet") {
       assert.equal(cinematicPreview.objectFit, "contain", "tablet preview must preserve the full coin in the narrower hero");
-      assert.ok(cinematicPreview.lightningLeft >= cinematicPreview.copyRight - 1,
-        "tablet lightning overlay must stay outside the text column");
+      assert.ok(cinematicPreview.visibleArtworkStart >= cinematicPreview.copyRight - 1,
+        "tablet motion art must remain behind the text-free part of the masked image");
     }
     if (viewport.name === "mobile") {
-      assert.equal(cinematicPreview.sceneOpacity, "1", "loaded Blender preview must not inherit fallback dimming on mobile");
+      assert.equal(cinematicPreview.sceneOpacity, "1", "loaded Blender motion must not inherit fallback dimming on mobile");
     }
     const bitcoinScene = await page.locator(".hero-panel .coin-art").evaluate((coin) => {
       const scene = coin.closest(".hero-scene");
@@ -363,73 +364,63 @@ try {
       assert.equal(new URL(page.url()).hash, "#market-overview", "mobile CTA must remain clickable on integrated /en");
     }
   }
-  // R24: verify the shipped lightning effect in a real browser, not only source text.
-  // Run after screenshots, so the reduced-motion probe cannot alter Golden captures.
+  // R25: verify that the Blender motion derivative is local and reduced motion selects the static master.
+  // Run after screenshots, so the media preference probe cannot alter the Golden captures.
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   const animatedResponse = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
-  assert.equal(animatedResponse?.status(), 200, "R24 animation probe must use the built local route");
-  const lightningLive = await page.locator(".hero-lightning").evaluate((scene, origin) => {
-    const frames = Array.from(scene.querySelectorAll("img.hero-lightning-frame"));
+  assert.equal(animatedResponse?.status(), 200, "R25 motion probe must use the built local route");
+  const motionLive = await page.locator(".hero-cinematic-preview img").evaluate(async (image, origin) => {
+    await image.decode();
     return {
-      ariaHidden: scene.getAttribute("aria-hidden") === "true",
-      pointerEvents: globalThis.getComputedStyle(scene).pointerEvents,
-      frameCount: frames.length,
-      frameChecks: frames.map((frame) => ({
-        complete: frame.complete,
-        width: frame.naturalWidth,
-        height: frame.naturalHeight,
-        origin: new URL(frame.currentSrc).origin,
-        animationName: globalThis.getComputedStyle(frame).animationName,
-      })),
-      flashAnimation: globalThis.getComputedStyle(scene.querySelector(".hero-lightning-flash")).animationName,
+      decorative: image.closest(".hero-scene").getAttribute("aria-hidden") === "true",
+      path: new URL(image.currentSrc).pathname,
+      origin: new URL(image.currentSrc).origin,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      motionSource: image.currentSrc.includes("hero-cinematic-motion"),
+      animationDisabledInCss: globalThis.getComputedStyle(image).animationName === "none",
       allowedOrigin: origin,
     };
   }, report.origin);
-  assert.equal(lightningLive.ariaHidden, true, "lightning must remain purely decorative");
-  assert.equal(lightningLive.pointerEvents, "none");
-  assert.equal(lightningLive.frameCount, 7, "all seven local lightning frames are required");
-  for (const [index, frame] of lightningLive.frameChecks.entries()) {
-    assert.ok(frame.complete && frame.width === 1774 && frame.height === 887,
-      "R24 lightning frame " + (index + 1) + " must decode at recorded dimensions");
-    assert.equal(frame.origin, lightningLive.allowedOrigin,
-      "R24 lightning sprites must be served only by the fixture origin");
-    assert.notEqual(frame.animationName, "none",
-      "R24 normal-motion sprite must remain animated");
-  }
-  assert.equal(lightningLive.flashAnimation, "cb-lightning-scene-flash");
+  assert.equal(motionLive.decorative, true, "cinematic artwork must remain decorative");
+  assert.equal(motionLive.motionSource, true, "no-preference must use the Blender motion derivative");
+  assert.equal(motionLive.width, 640);
+  assert.equal(motionLive.height, 320);
+  assert.equal(motionLive.origin, motionLive.allowedOrigin, "motion must load from the local app origin");
+  assert.equal(motionLive.animationDisabledInCss, true, "motion is a Blender-rendered asset, not CSS-generated frames");
 
   await page.emulateMedia({ reducedMotion: "reduce" });
-  const lightningReduced = await page.locator(".hero-lightning").evaluate((scene) => {
-    const frames = Array.from(scene.querySelectorAll("img.hero-lightning-frame"));
-    const flash = scene.querySelector(".hero-lightning-flash");
+  await page.waitForFunction(() => globalThis.document.querySelector(".hero-cinematic-preview img")?.currentSrc.includes("hero-cinematic-original"));
+  const motionReduced = await page.locator(".hero-cinematic-preview img").evaluate(async (image, origin) => {
+    await image.decode();
     return {
-      frameAnimations: frames.map((frame) => globalThis.getComputedStyle(frame).animationName),
-      frameOpacities: frames.map((frame) => Number(globalThis.getComputedStyle(frame).opacity)),
-      flashAnimation: globalThis.getComputedStyle(flash).animationName,
-      flashOpacity: Number(globalThis.getComputedStyle(flash).opacity),
+      path: new URL(image.currentSrc).pathname,
+      origin: new URL(image.currentSrc).origin,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      staticSource: image.currentSrc.includes("hero-cinematic-original"),
+      allowedOrigin: origin,
     };
-  });
-  assert.ok(lightningReduced.frameAnimations.every((name) => name === "none"),
-    "R24 prefers-reduced-motion must disable every lightning frame animation");
-  assert.equal(lightningReduced.flashAnimation, "none");
-  assert.equal(lightningReduced.flashOpacity, 0);
-  assert.ok(lightningReduced.frameOpacities.every((opacity, index) =>
-    index === 2 ? Math.abs(opacity - 0.38) < 0.001 : opacity === 0),
-  "R24 reduced motion must show only a dim static impact frame");
-  report.lightningMotionAccessibility = {
+  }, report.origin);
+  assert.equal(motionReduced.staticSource, true, "prefers-reduced-motion must use the static master");
+  assert.equal(motionReduced.width, 1774);
+  assert.equal(motionReduced.height, 887);
+  assert.equal(motionReduced.origin, motionReduced.allowedOrigin);
+  report.motionAccessibility = {
     mode: "DEMO_LOCAL_ONLY",
-    normalAnimationFrameCount: lightningLive.frameCount,
-    allSevenImagesDecoded: true,
-    allImagesSameOrigin: true,
-    reducedMotionNoAnimations: true,
-    reducedMotionStaticImpact: true,
+    normalMotionSource: motionLive.path,
+    normalMotionDimensions: [motionLive.width, motionLive.height],
+    normalMotionSameOrigin: true,
+    reducedMotionSource: motionReduced.path,
+    reducedMotionDimensions: [motionReduced.width, motionReduced.height],
+    reducedMotionUsesStaticMaster: true,
   };
   const fallbackPage = await context.newPage();
   fallbackPage.on("request", (request) => {
     if (!isFixtureOriginRequest(request.url(), report.origin)) report.externalRequests.push(request.url());
   });
-  await fallbackPage.route(/hero-cinematic-blender[^/]*\.(?:webp|png)(?:\?.*)?$/u, (route) => route.abort());
+  await fallbackPage.route(/hero-cinematic-(?:original|motion)[^/]*\.(?:webp|png)(?:\?.*)?$/u, (route) => route.abort());
   const fallbackResponse = await fallbackPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
   assert.equal(fallbackResponse?.status(), 200, "fallback probe must use the built local route");
   report.previewFallback = await fallbackPage.locator(".hero-scene").evaluate((scene) => ({
@@ -445,7 +436,7 @@ try {
   assert.ok(report.previewFallback.previewImageComplete);
   assert.ok(report.previewFallback.vectorFallbackVisible
     && report.previewFallback.coinBounds.width > 45 && report.previewFallback.coinBounds.height > 45,
-  "local vector fallback must remain visible when both Blender formats fail");
+  "local vector fallback must remain visible when static and motion assets fail");
   await fallbackPage.close();
   assert.deepEqual(report.consoleErrors, []);
   assert.deepEqual(report.pageErrors, []);

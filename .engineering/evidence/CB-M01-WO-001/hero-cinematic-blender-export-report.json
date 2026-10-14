@@ -1,24 +1,9 @@
 {
   "schemaVersion": 1,
   "workOrder": "CB-M01-WO-001",
-  "recordType": "R25_SAME_RENDER_EXPORTS",
+  "recordType": "R25_BLENDER_STILL_EXPORTS_NOT_MASTER",
   "generatedAt": "2026-10-13T22:44:07+00:00",
-  "origin": "ORIGINAL_LOCAL_RENDER",
-  "sourceMaster": {
-    "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-blender-master-2560x1280.png",
-    "format": "PNG",
-    "dimensions": [
-      2560,
-      1280
-    ],
-    "bytes": 9848150,
-    "sha256": "935d00f5384771f2a21a83bf0ee5e077e0684146364b5c36080d64b454cca460",
-    "renderEngine": "Blender Cycles",
-    "blenderVersion": "5.2.2 LTS",
-    "device": "CPU",
-    "samples": 32,
-    "denoising": true
-  },
+  "origin": "BLENDER_CYCLES_STILL_RENDER",
   "exports": {
     "png": {
       "path": "src/modules/CB-M01/hero-cinematic-blender.png",
@@ -37,7 +22,10 @@
       "comparisonToMaster": {
         "meanAbsoluteErrorRgb": 1.51862,
         "psnrDb": 38.8281
-      }
+      },
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
     },
     "webp": {
       "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
@@ -52,7 +40,10 @@
       "fullyDecoded": true,
       "maxBytes": 1500000,
       "encoding": "lossy WebP, method 6",
-      "quality": 96
+      "quality": 96,
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
     }
   },
   "usage": {
@@ -60,6 +51,27 @@
     "rightsStatus": "PENDING_OWNER_OR_LEGAL",
     "ownerVisualApproval": false,
     "commercialPublicationAllowed": false,
-    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+    "runtimeUsage": false,
+    "staticMaster": false,
+    "publicationPermission": false
+  },
+  "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+  "role": "LEGACY_STILL_EXPORTS_NOT_RUNTIME",
+  "runtimeUsage": false,
+  "legacyStillRender": {
+    "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-renders/hero-cinematic-blender-master-2560x1280.png",
+    "format": "PNG",
+    "dimensions": [
+      2560,
+      1280
+    ],
+    "bytes": 9848150,
+    "sha256": "935d00f5384771f2a21a83bf0ee5e077e0684146364b5c36080d64b454cca460",
+    "renderEngine": "Blender Cycles",
+    "blenderVersion": "5.2.2 LTS",
+    "device": "CPU",
+    "samples": 32,
+    "denoising": true
   }
 }

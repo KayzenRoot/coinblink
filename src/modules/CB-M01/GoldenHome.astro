@@ -1,14 +1,8 @@
 ---
 import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
-import heroCinematicBlenderPng from "./hero-cinematic-blender.png";
-import heroCinematicBlenderWebp from "./hero-cinematic-blender.webp";
-import lightningCharge from "./lightning-sprites/lightning-01-charge.png";
-import lightningDescent from "./lightning-sprites/lightning-02-descent.png";
-import lightningImpact from "./lightning-sprites/lightning-03-impact.png";
-import lightningAfterglow from "./lightning-sprites/lightning-04-afterglow.png";
-import lightningSecondaryRight from "./lightning-sprites/lightning-05-secondary-right.png";
-import lightningSecondaryLeft from "./lightning-sprites/lightning-06-secondary-left.png";
-import lightningGroundFade from "./lightning-sprites/lightning-07-ground-fade.png";
+import heroCinematicOriginalPng from "./hero-cinematic-original.png";
+import heroCinematicOriginalWebp from "./hero-cinematic-original.webp";
+import heroCinematicMotionWebp from "./hero-cinematic-motion.webp";
 import EditorialArtwork from "./EditorialArtwork.astro";
 import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
@@ -71,8 +65,9 @@ const stories = [
       <article class="hero-panel" aria-labelledby="hero-title">
         <div class="hero-scene" aria-hidden="true">
           <picture class="hero-cinematic-preview">
-            <source type="image/webp" srcset={heroCinematicBlenderWebp.src} />
-            <img src={heroCinematicBlenderPng.src} width="2560" height="1280" alt="" loading="eager" decoding="async" fetchpriority="high" />
+            <source media="(prefers-reduced-motion: no-preference)" type="image/webp" srcset={heroCinematicMotionWebp.src} />
+            <source type="image/webp" srcset={heroCinematicOriginalWebp.src} />
+            <img src={heroCinematicOriginalPng.src} width="1774" height="887" alt="" loading="eager" decoding="async" fetchpriority="high" />
           </picture>
           <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
           <!-- Independent layered illustration; Golden JPEG remains an immutable reference, not a UI background. -->
@@ -194,16 +189,6 @@ const stories = [
             <path d="M85 104Q142 51 204 82" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="8" stroke-linecap="round"></path>
           </svg>
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
-        </div>
-        <div class="hero-lightning" aria-hidden="true">
-          <img class="hero-lightning-frame hero-lightning-frame--charge" src={lightningCharge.src} alt="" decoding="async" />
-          <img class="hero-lightning-frame hero-lightning-frame--descent" src={lightningDescent.src} alt="" decoding="async" />
-          <img class="hero-lightning-frame hero-lightning-frame--impact" src={lightningImpact.src} alt="" decoding="async" />
-          <img class="hero-lightning-frame hero-lightning-frame--afterglow" src={lightningAfterglow.src} alt="" decoding="async" />
-          <img class="hero-lightning-frame hero-lightning-frame--secondary-right" src={lightningSecondaryRight.src} alt="" decoding="async" />
-          <img class="hero-lightning-frame hero-lightning-frame--secondary-left" src={lightningSecondaryLeft.src} alt="" decoding="async" />
-          <img class="hero-lightning-frame hero-lightning-frame--ground-fade" src={lightningGroundFade.src} alt="" decoding="async" />
-          <span class="hero-lightning-flash"></span>
         </div>
         <div class="hero-copy">
           <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>

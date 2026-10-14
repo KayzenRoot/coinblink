@@ -1,4 +1,4 @@
-"""Package the generated hero and seven-sprite lightning animation preview."""
+"""Historical R23 packager; the Owner-approved R25 asset model supersedes this script."""
 
 from __future__ import annotations
 
@@ -21,6 +21,14 @@ SPRITE_CONTACT = EVIDENCE / "lightning-sprite-contact-sheet.png"
 MANIFEST = EVIDENCE / "hero-cinematic-imagegen-provenance.json"
 SPRITES = EVIDENCE / "lightning-sprites-v2"
 SPRITE_PROMPTS = SPRITES / "sprite-prompts.json"
+
+# This historical generator rewrites the old origin gate and browser-sprite
+# manifest. Fail before touching any artifacts once an R25 manifest exists.
+if MANIFEST.is_file() and "staticMaster" in json.loads(MANIFEST.read_text(encoding="utf-8")):
+    raise SystemExit(
+        "R23 packager is superseded by the R25 static-master/Blender-motion policy; "
+        "do not overwrite current provenance."
+    )
 
 
 def sha256(path: Path) -> str:
@@ -173,7 +181,7 @@ manifest = {
     },
     "technicalPreflight": {
         "status": "NOT_RUN_ORIGIN_SCHEMA_MISMATCH",
-        "reason": "Existing R23 binary preflight accepts ORIGINAL_LOCAL_RENDER; do not relabel this OpenAI-generated source to pass it.",
+        "reason": "Historical R23 result only. The Owner R25 policy accepts an approved-pipeline static master and does not require a Blender-origin still.",
     },
     "rights": {
         "review": "PENDING_OWNER_OR_LEGAL",

@@ -1,4 +1,4 @@
-"""Inventory generated CB-M01 R23 files and local-only render scratch."""
+"""Inventory the CB-M01 R25 static master, Blender motion, and local-only scratch."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ SCRIPT = Path(__file__).resolve()
 EVIDENCE_DIR = SCRIPT.parent
 ROOT = EVIDENCE_DIR.parents[2]
 OUTPUT = EVIDENCE_DIR / "cinematic-delivery-inventory.json"
-BASE_HEAD = "a0b9bec58e7594a4efeed20ded33daae6f569a2a"
+BASE_HEAD = "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c"
 BRANCH = "codex/cb-m01-wo-001-impl-20261011"
 ALLOWED_ROOTS = (
     ".engineering/evidence/CB-M01-WO-001/",
@@ -126,7 +126,7 @@ if withheld_blend_path.is_file():
 payload = {
     "schemaVersion": 1,
     "workOrder": "CB-M01-WO-001",
-    "recordType": "R23_LOCAL_DELIVERY_INVENTORY",
+    "recordType": "R25_STATIC_MASTER_AND_BLENDER_MOTION_INVENTORY",
     "capturedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     "repository": "KayzenRoot/coinblink",
     "branch": BRANCH,
@@ -134,6 +134,15 @@ payload = {
     "snapshotHeadAtInventory": git("rev-parse", "HEAD"),
     "remoteTrackingHeadAtInventory": git("rev-parse", "origin/" + BRANCH),
     "liveRemoteWasSeparatelyChecked": True,
+    "policy": {
+        "staticMaster": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+        "motionDerivative": "BLENDER_MOTION_DERIVATIVE",
+        "decorativeOverlays": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+        "rightsReview": "PENDING_OWNER_OR_LEGAL",
+        "ownerVisualApproval": False,
+        "commercialPublicationAllowed": False,
+        "publicationPermission": False,
+    },
     "files": records,
     "fileCount": len(records),
     "bytesTotal": sum(int(record["bytes"]) for record in records),
@@ -142,6 +151,15 @@ payload = {
         "temporaryMotionFrames": temp_frames,
     },
     "withheldFromGitHub": withheld_from_github,
+    "historicalR23WithheldAssets": [{
+        "path": WITHHELD_BLEND,
+        "status": "HISTORICALLY_WITHHELD_NONPORTABLE_BINARY_NOT_CURRENT_MOTION_PROJECT",
+        "bytes": 4249252,
+        "sha256": "125170b1433d5efe111ded1f226464215df512c8697996fde21f2cf37654dd3f",
+        "supersededBy": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+        "currentPortableProjectSha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+        "reason": "Preserved as historical R23 provenance. It is not used by runtime or substituted for the R25 portable motion project.",
+    }],
     "inventorySelfHash": "OMITTED_TO_AVOID_SELF_REFERENCE",
 }
 OUTPUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")

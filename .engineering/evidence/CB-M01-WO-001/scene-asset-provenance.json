@@ -6,14 +6,14 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "1e6ccf0fc538359f9a537198b764deeca95c6fae",
-    "sha256": "2ab1da6ffec00290253fbeb057d0bf90aabeca13c049ab89d2f5fe552d055f93",
+    "gitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
+    "sha256": "4a28031f88ba112fcf5cee8995e63bc2b7dca01960be9a4e78f2a9a5052846ef",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
     "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
     "rasterDerivativeOfGoldenReference": false,
-    "changeRecord": "R21 dimensional faceted rockscape and atmospheric haze, derived from predecessor 887c7c73ae2570f7c2826ceb3d4c4748cdfa9e9f; R23 adds a separate seven-frame OpenAI-generated decorative lightning overlay, whose complete prompt/hash/rights record is in lightning-sprites-provenance.json; exact source Git blob identifies current content. R25 adds a local Blender Cycles render as a decorative hero preview; the original vector scene remains the load-failure fallback, and the seven-frame lightning overlay remains separate."
+    "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked."
   },
   "goldenReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -21,15 +21,15 @@
     "use": "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED"
   },
   "technicalEvidence": {
-    "head": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb",
-    "runId": 38418108360,
-    "artifactId": 11824059839,
+    "head": null,
+    "runId": null,
+    "artifactId": null,
     "screenshotWidths": [
       1536,
       768,
       390
     ],
-    "status": "HISTORICAL_R17_CI_SUCCESS_R21_REQUIRES_FRESH_EXACT_HEAD"
+    "status": "R25_LOCAL_CAPTURE_PENDING"
   },
   "sharedReleaseGate": {
     "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -52,15 +52,15 @@
       "assetId": "CB-M01-DEMO-HERO-SCENE",
       "version": "0.4.0",
       "region": "hero",
-      "description": "Original decorative mountain and Bitcoin scene with a separate, optional locally rendered Blender Cycles hero preview; original vector illustration remains the fail-safe fallback. Not Golden visual approval.",
+      "description": "Decorative CoinBlink hero using an approved-pipeline static ImageGen master with an optional Blender-rendered motion derivative; accessible HTML copy remains outside the decorative artwork. Not Golden visual approval.",
       "sourceFragment": {
         "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
         "endMarker": "        <div class=\"hero-copy\">",
         "includeEndMarker": false,
-        "sha256": "0c10ba2f2ed221b786ab3ecf44c9ab09d5873c0a5b70db25e9150abdf8446a53",
-        "sourceByteLength": 12843
+        "sha256": "3d09e459fd841bb46e2fd77cece29f9a76f144052ac33807cf7e40938ba20fdb",
+        "sourceByteLength": 11915
       },
-      "form": "LOCAL_BLENDER_PREVIEW_WITH_HTML_AND_EMBEDDED_SVG_FALLBACK",
+      "form": "IMAGEGEN_STATIC_MASTER_WITH_BLENDER_MOTION_DERIVATIVE",
       "viewBoxes": [
         "0 0 760 320",
         "0 0 600 300",
@@ -70,14 +70,14 @@
       "themeVariant": "DARK_DEMO_ONLY",
       "lightThemeApproval": "NOT_APPROVED",
       "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
-      "physicalImageAsset": "SEPARATE_ORIGINAL_BLENDER_CYCLES_HERO_RENDER",
+      "physicalImageAsset": "STATIC_IMAGEGEN_MASTER_PLUS_BLENDER_MOTION_DERIVATIVE",
       "decorativeOverlayAssetIds": [
         "CB-M01-DEMO-LIGHTNING-VFX"
       ],
-      "visualComparison": "R21 exact-HEAD responsive screenshot comparison pending; NOT Owner visual acceptance",
+      "visualComparison": "R25 integrated local responsive screenshots; not Owner Golden visual acceptance.",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "1e6ccf0fc538359f9a537198b764deeca95c6fae",
+      "sourceGitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -123,7 +123,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "1e6ccf0fc538359f9a537198b764deeca95c6fae",
+      "sourceGitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -181,12 +181,42 @@
         "sourceByteLength": 12550
       },
       "capturedBy": "R25 provenance update; preserves the previous exact source digests"
+    },
+    {
+      "recordType": "R25_STATIC_MASTER_AND_MOTION_POLICY_ADOPTION",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
+      "staticMaster": {
+        "path": "src/modules/CB-M01/hero-cinematic-original.png",
+        "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+        "origin": "OPENAI_IMAGE_GENERATION"
+      },
+      "motionDerivative": {
+        "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+        "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+        "origin": "BLENDER_MOTION_DERIVATIVE"
+      },
+      "legacyBlenderStillExports": {
+        "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+        "runtimeUsage": false
+      },
+      "decorativeOverlayClass": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "rights": {
+        "ownerVisualApproval": false,
+        "commercialPublicationAllowed": false,
+        "publicationPermission": false
+      },
+      "recordedAt": "2026-10-13T23:43:22.602Z"
     }
   ],
   "r25SupplementalPreview": {
-    "assetId": "CB-M01-DEMO-HERO-BLENDER-RENDER",
-    "origin": "ORIGINAL_LOCAL_RENDER",
+    "assetId": "CB-M01-DEMO-HERO-BLENDER-LEGACY-STILLS",
+    "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+    "origin": "BLENDER_CYCLES_STILL_RENDER",
     "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json",
+    "runtimeUsage": false,
+    "staticMaster": false,
+    "role": "LEGACY_BLENDER_STILL_EXPORTS_NOT_USED_BY_RUNTIME",
     "png": {
       "path": "src/modules/CB-M01/hero-cinematic-blender.png",
       "format": "PNG",
@@ -204,7 +234,10 @@
       "comparisonToMaster": {
         "meanAbsoluteErrorRgb": 1.51862,
         "psnrDb": 38.8281
-      }
+      },
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
     },
     "webp": {
       "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
@@ -219,11 +252,111 @@
       "fullyDecoded": true,
       "maxBytes": 1500000,
       "encoding": "lossy WebP, method 6",
-      "quality": 96
+      "quality": 96,
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
     },
-    "previewOnly": true,
     "rightsReview": "PENDING_OWNER_OR_LEGAL",
     "ownerVisualApproval": false,
-    "commercialPublicationAllowed": false
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false
+  },
+  "cinematicAssetPolicy": {
+    "decision": "R25_OWNER_DIRECTION",
+    "staticMaster": {
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "pipeline": "CODEX_APPROVED_IMAGE_PIPELINE",
+      "path": "src/modules/CB-M01/hero-cinematic-original.png",
+      "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+      "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-provenance.json#staticMaster"
+    },
+    "motionDerivative": {
+      "assetClass": "BLENDER_MOTION_DERIVATIVE",
+      "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+      "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+      "sourceProject": {
+        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+        "sha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+        "bytes": 4249267
+      },
+      "absoluteReferences": false,
+      "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json#animationProject",
+      "dimensions": [
+        640,
+        320
+      ]
+    },
+    "decorativeOverlays": {
+      "assetClass": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "count": 7,
+      "individualBrowserAnimation": false,
+      "packedIntoMotionProject": true,
+      "provenance": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-provenance.json"
+    },
+    "rights": {
+      "review": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "advertisingEligible": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+    }
+  },
+  "legacyBlenderStillExports": {
+    "assetId": "CB-M01-DEMO-HERO-BLENDER-LEGACY-STILLS",
+    "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+    "origin": "BLENDER_CYCLES_STILL_RENDER",
+    "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json",
+    "runtimeUsage": false,
+    "staticMaster": false,
+    "role": "LEGACY_BLENDER_STILL_EXPORTS_NOT_USED_BY_RUNTIME",
+    "png": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.png",
+      "format": "PNG",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "P",
+      "bytes": 774726,
+      "sha256": "bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67",
+      "fullyDecoded": true,
+      "maxBytes": 3500000,
+      "encoding": "palette PNG, median-cut, Floyd-Steinberg, optimize, compression 9",
+      "paletteColors": 256,
+      "comparisonToMaster": {
+        "meanAbsoluteErrorRgb": 1.51862,
+        "psnrDb": 38.8281
+      },
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
+    },
+    "webp": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
+      "format": "WEBP",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "RGB",
+      "bytes": 269828,
+      "sha256": "5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e",
+      "fullyDecoded": true,
+      "maxBytes": 1500000,
+      "encoding": "lossy WebP, method 6",
+      "quality": 96,
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
+    },
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false
   }
 }

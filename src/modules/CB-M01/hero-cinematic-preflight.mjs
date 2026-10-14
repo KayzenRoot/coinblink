@@ -1,15 +1,18 @@
 import { createHash } from "node:crypto";
 
-// CB-M01 R23: binary-only preflight. A passing result is never approval to publish.
 export const HERO_CINEMATIC_LIMITS = Object.freeze({
-  assetPaths: Object.freeze({
+  staticMasterPaths: Object.freeze({
     webp: "src/modules/CB-M01/hero-cinematic-original.webp",
     png: "src/modules/CB-M01/hero-cinematic-original.png",
   }),
-  previewAssetPaths: Object.freeze({
-    webp: "src/modules/CB-M01/hero-cinematic-blender.webp",
-    png: "src/modules/CB-M01/hero-cinematic-blender.png",
-  }),
+  staticSourcePaths: Object.freeze([
+    ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
+    "src/modules/CB-M01/hero-cinematic-original.png",
+  ]),
+  motionPreviewPath: "src/modules/CB-M01/hero-cinematic-motion.webp",
+  evidenceMotionPath: ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
+  motionContactSheetPath: ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-contact-sheet.png",
+  motionProjectPath: ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
   minWidth: 1536,
   minHeight: 640,
   maxWidth: 4096,
@@ -18,9 +21,16 @@ export const HERO_CINEMATIC_LIMITS = Object.freeze({
   maxAspectRatio: 3.3,
   maxWebpBytes: 1_500_000,
   maxPngBytes: 3_500_000,
+  maxMotionWebpBytes: 1_500_000,
   sourceMasterRequired: true,
   commercialPublicationAllowed: false,
 });
+
+const STATIC_MASTER_CLASS = "STATIC_MASTER_APPROVED_IMAGE_PIPELINE";
+const BLENDER_MOTION_CLASS = "BLENDER_MOTION_DERIVATIVE";
+const IMAGEGEN_ORIGIN = "OPENAI_IMAGE_GENERATION";
+const APPROVED_IMAGE_PIPELINE = "CODEX_APPROVED_IMAGE_PIPELINE";
+const PENDING_RIGHTS = "PENDING_OWNER_OR_LEGAL";
 
 function dimensionsFromPng(buffer) {
   const signature = [137, 80, 78, 71, 13, 10, 26, 10];
@@ -54,41 +64,96 @@ function dimensionsFromWebp(buffer) {
   return null;
 }
 
-// This checks bytes, format header, declared SHA-256, dimensions and bounded path.
-// Decodability, Golden fidelity, rights, final owner approval and production release
-// require independent checks. Never promote these metadata fields into authority.
-export function inspectHeroCinematicCandidate(metadata, payload) {
-  const failures = [];
-  const candidate = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {};
-  const allowedPath = [...Object.values(HERO_CINEMATIC_LIMITS.assetPaths),
-    ...Object.values(HERO_CINEMATIC_LIMITS.previewAssetPaths)].includes(candidate.path);
-  if (!allowedPath) failures.push("INVALID_LOCAL_PATH");
-  if (candidate.origin !== "ORIGINAL_LOCAL_RENDER") failures.push("ORIGINAL_SOURCE_UNESTABLISHED");
-  if (typeof candidate.sourceMaster !== "string" || !candidate.sourceMaster.trim()
-    || candidate.sourceMaster.includes("://")) failures.push("SOURCE_MASTER_MISSING");
-  if (candidate.rightsStatus !== "PENDING_OWNER_OR_LEGAL") failures.push("INVALID_DEMO_RIGHTS_STATE");
-  if (candidate.commercialPublicationAllowed !== false) failures.push("PUBLICATION_MUST_BE_DISABLED");
+function animationMetadataFromWebp(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 12 || buffer.toString("ascii", 0, 4) !== "RIFF"
+    || buffer.toString("ascii", 8, 12) !== "WEBP" || buffer.readUInt32LE(4) + 8 !== buffer.length) return null;
+  const durations = [];
+  let offset = 12;
+  while (offset + 8 <= buffer.length) {
+    const tag = buffer.toString("ascii", offset, offset + 4);
+    const size = buffer.readUInt32LE(offset + 4);
+    const payload = offset + 8;
+    if (payload + size > buffer.length) return null;
+    if (tag === "ANMF") {
+      if (size < 16) return null;
+      durations.push(buffer.readUIntLE(payload + 12, 3));
+    }
+    offset = payload + size + (size % 2);
+  }
+  if (offset !== buffer.length || durations.length === 0) return null;
+  return { frameCount: durations.length, durationMs: durations.reduce((sum, duration) => sum + duration, 0) };
+}
 
-  const buffer = Buffer.isBuffer(payload) ? payload
-    : payload instanceof Uint8Array ? Buffer.from(payload) : null;
+function isSha256(value) {
+  return typeof value === "string" && /^[0-9a-f]{64}$/u.test(value);
+}
+
+function isCanonicalRepoPath(value) {
+  return typeof value === "string" && value.length > 0 && !value.includes("\\")
+    && !value.startsWith("/") && !/^[a-z]:/iu.test(value) && !value.includes("://")
+    && !value.split("/").includes("..");
+}
+
+function isPortableBlenderPath(value) {
+  if (typeof value !== "string" || value.length === 0 || value.includes("://")
+    || /^[a-z]:[\\/]/iu.test(value) || value.startsWith("\\\\")) return false;
+  const relative = value.startsWith("//") ? value.slice(2) : value;
+  return relative.length > 0 && !relative.startsWith("/");
+}
+
+function asBuffer(payload) {
+  if (Buffer.isBuffer(payload)) return payload;
+  if (payload instanceof Uint8Array) return Buffer.from(payload);
+  return null;
+}
+
+function failureResult(failures, details = {}) {
+  return Object.freeze({
+    technicalPreflightPassed: failures.length === 0,
+    failures: Object.freeze([...new Set(failures)]),
+    previewOnly: true,
+    ownerVisualApprovalRequired: true,
+    ownerVisualApproval: false,
+    commercialRightsClearanceRequired: true,
+    commercialPublicationAllowed: false,
+    publicationPermission: false,
+    releaseAllowed: false,
+    ...details,
+  });
+}
+
+function validateRights(candidate, failures) {
+  if (candidate.rightsStatus !== PENDING_RIGHTS) failures.push("INVALID_DEMO_RIGHTS_STATE");
+  if (candidate.ownerVisualApproval !== false) failures.push("OWNER_VISUAL_APPROVAL_MUST_REMAIN_FALSE");
+  if (candidate.commercialPublicationAllowed !== false) failures.push("PUBLICATION_MUST_BE_DISABLED");
+  if (candidate.publicationPermission !== false) failures.push("PUBLICATION_PERMISSION_MUST_BE_FALSE");
+}
+
+function validateImage(candidate, payload, allowedPaths, {
+  allowLargeMotion = false,
+  minWidth = HERO_CINEMATIC_LIMITS.minWidth,
+  minHeight = HERO_CINEMATIC_LIMITS.minHeight,
+} = {}) {
+  const failures = [];
+  if (!allowedPaths.includes(candidate.path) || !isCanonicalRepoPath(candidate.path)) {
+    failures.push("INVALID_LOCAL_PATH");
+  }
+  const buffer = asBuffer(payload);
   const isWebp = typeof candidate.path === "string" && candidate.path.endsWith(".webp");
-  const max = isWebp
-    ? HERO_CINEMATIC_LIMITS.maxWebpBytes : HERO_CINEMATIC_LIMITS.maxPngBytes;
-  if (!buffer || buffer.length === 0 || buffer.length > max) failures.push("INVALID_ASSET_BYTES");
+  const isPng = typeof candidate.path === "string" && candidate.path.endsWith(".png");
+  const maxBytes = allowLargeMotion && isWebp ? HERO_CINEMATIC_LIMITS.maxMotionWebpBytes
+    : isWebp ? HERO_CINEMATIC_LIMITS.maxWebpBytes : HERO_CINEMATIC_LIMITS.maxPngBytes;
+  if (!buffer || buffer.length === 0 || buffer.length > maxBytes) failures.push("INVALID_ASSET_BYTES");
   const digest = buffer ? createHash("sha256").update(buffer).digest("hex") : null;
-  if (typeof candidate.sha256 !== "string" || !/^[0-9a-f]{64}$/u.test(candidate.sha256)
-    || candidate.sha256 !== digest) failures.push("SHA256_MISMATCH");
+  if (!isSha256(candidate.sha256) || candidate.sha256 !== digest) failures.push("SHA256_MISMATCH");
   if (!buffer || candidate.bytes !== buffer.length) failures.push("BYTE_COUNT_MISMATCH");
 
   let dimensions = null;
-  if (buffer) {
-    dimensions = isWebp
-      ? dimensionsFromWebp(buffer) : dimensionsFromPng(buffer);
-  }
+  if (buffer) dimensions = isWebp ? dimensionsFromWebp(buffer) : isPng ? dimensionsFromPng(buffer) : null;
   if (!dimensions) failures.push("INVALID_BINARY_SIGNATURE_OR_HEADER");
   if (dimensions && (!Number.isInteger(dimensions.width) || !Number.isInteger(dimensions.height)
-    || dimensions.width < HERO_CINEMATIC_LIMITS.minWidth
-    || dimensions.height < HERO_CINEMATIC_LIMITS.minHeight
+    || dimensions.width < minWidth
+    || dimensions.height < minHeight
     || dimensions.width > HERO_CINEMATIC_LIMITS.maxWidth
     || dimensions.height > HERO_CINEMATIC_LIMITS.maxHeight
     || dimensions.width / dimensions.height < HERO_CINEMATIC_LIMITS.minAspectRatio
@@ -98,17 +163,155 @@ export function inspectHeroCinematicCandidate(metadata, payload) {
   if (dimensions && (candidate.width !== dimensions.width || candidate.height !== dimensions.height)) {
     failures.push("DIMENSION_METADATA_MISMATCH");
   }
+  return { failures, buffer, digest, dimensions };
+}
 
-  return Object.freeze({
-    technicalPreflightPassed: failures.length === 0,
-    failures: Object.freeze(failures),
-    observedSha256: digest,
-    dimensions: dimensions && Object.freeze(dimensions),
-    previewOnly: true,
-    ownerVisualApprovalRequired: true,
-    independentReviewRequired: true,
-    commercialRightsClearanceRequired: true,
-    commercialPublicationAllowed: false,
-    releaseAllowed: false,
+function validateStaticMaster(candidate, payload, sourceMasterBytes) {
+  const failures = [];
+  const image = validateImage(candidate, payload, Object.values(HERO_CINEMATIC_LIMITS.staticMasterPaths));
+  failures.push(...image.failures);
+  if (candidate.assetClass !== STATIC_MASTER_CLASS) failures.push("INVALID_ASSET_CLASS");
+  if (candidate.origin !== IMAGEGEN_ORIGIN || candidate.pipeline !== APPROVED_IMAGE_PIPELINE) {
+    failures.push("UNAPPROVED_IMAGE_PIPELINE");
+  }
+
+  const sourceBytes = asBuffer(sourceMasterBytes);
+  const source = candidate.sourceMaster && typeof candidate.sourceMaster === "object"
+    ? candidate.sourceMaster : {};
+  if (!HERO_CINEMATIC_LIMITS.staticSourcePaths.includes(source.path) || !isCanonicalRepoPath(source.path)) {
+    failures.push("SOURCE_MASTER_MISSING");
+  }
+  const sourceDigest = sourceBytes ? createHash("sha256").update(sourceBytes).digest("hex") : null;
+  if (!sourceBytes || !isSha256(source.sha256) || source.sha256 !== sourceDigest) {
+    failures.push("SOURCE_MASTER_SHA256_MISMATCH");
+  }
+  validateRights(candidate, failures);
+
+  return failureResult(failures, {
+    assetClass: candidate.assetClass,
+    observedSha256: image.digest,
+    dimensions: image.dimensions && Object.freeze(image.dimensions),
   });
+}
+
+function validateMotionDerivative(candidate, payload, artifacts = {}) {
+  const failures = [];
+  const image = validateImage(candidate, payload, [HERO_CINEMATIC_LIMITS.motionPreviewPath], {
+    allowLargeMotion: true,
+    minWidth: 640,
+    minHeight: 320,
+  });
+  failures.push(...image.failures);
+  const runtimeAnimation = animationMetadataFromWebp(image.buffer);
+  if (candidate.assetClass !== BLENDER_MOTION_CLASS || candidate.origin !== BLENDER_MOTION_CLASS) {
+    failures.push("INVALID_ASSET_CLASS");
+  }
+  if (typeof candidate.blenderVersion !== "string" || !candidate.blenderVersion.trim()) {
+    failures.push("BLENDER_SOURCE_MISSING");
+  }
+
+  const staticMaster = candidate.sourceMaster && typeof candidate.sourceMaster === "object"
+    ? candidate.sourceMaster : {};
+  const sourceMasterResult = validateStaticMaster(staticMaster, artifacts.sourceMasterBytes,
+    artifacts.sourceMasterBytes);
+  if (!sourceMasterResult.technicalPreflightPassed
+    || staticMaster.path !== HERO_CINEMATIC_LIMITS.staticMasterPaths.png
+    || staticMaster.sha256 !== candidate.sourceMasterSha256) {
+    failures.push("SOURCE_MASTER_MISMATCH");
+  }
+
+  const project = candidate.sourceProject && typeof candidate.sourceProject === "object"
+    ? candidate.sourceProject : {};
+  if (project.path !== HERO_CINEMATIC_LIMITS.motionProjectPath || !isCanonicalRepoPath(project.path)) {
+    failures.push("NONPORTABLE_BLENDER_REFERENCE");
+  }
+  const projectBytes = asBuffer(artifacts.sourceProjectBytes);
+  const projectDigest = projectBytes ? createHash("sha256").update(projectBytes).digest("hex") : null;
+  if (!projectBytes || !isSha256(project.sha256) || project.sha256 !== projectDigest) {
+    failures.push("BLENDER_SOURCE_SHA256_MISMATCH");
+  }
+
+  const portability = candidate.portability && typeof candidate.portability === "object"
+    ? candidate.portability : {};
+  const fileImages = Array.isArray(portability.images)
+    ? portability.images.filter((imageRecord) => imageRecord.source === "FILE") : [];
+  const invalidReferences = fileImages.some((imageRecord) => !isPortableBlenderPath(imageRecord.relativePath));
+  if (portability.status !== "passed" || portability.absoluteReferences !== false
+    || portability.allExternalReferencesRelative !== true || portability.allExternalImagesPacked !== true
+    || portability.linkedLibraries !== 0 || fileImages.length === 0 || invalidReferences) {
+    failures.push("NONPORTABLE_BLENDER_REFERENCE");
+  }
+
+  const outputs = Array.isArray(candidate.motionOutputs) ? candidate.motionOutputs : [];
+  const expectedOutputPaths = [HERO_CINEMATIC_LIMITS.motionPreviewPath,
+    HERO_CINEMATIC_LIMITS.evidenceMotionPath, HERO_CINEMATIC_LIMITS.motionContactSheetPath];
+  const expectedRoles = new Map([
+    [HERO_CINEMATIC_LIMITS.motionPreviewPath, "RUNTIME_PREVIEW"],
+    [HERO_CINEMATIC_LIMITS.evidenceMotionPath, "SOURCE_ANIMATION"],
+    [HERO_CINEMATIC_LIMITS.motionContactSheetPath, "CONTACT_SHEET"],
+  ]);
+  const outputPaths = outputs.map((output) => output?.path);
+  if (outputs.length !== expectedOutputPaths.length
+    || new Set(outputPaths).size !== outputs.length
+    || expectedOutputPaths.some((path) => !outputPaths.includes(path))
+    || outputs.some((output) => expectedRoles.get(output?.path) !== output?.role)) {
+    failures.push("MOTION_OUTPUTS_NOT_INVENTORIED");
+  }
+  for (const output of outputs) {
+    if (!output || !expectedOutputPaths.includes(output.path)
+      || !isCanonicalRepoPath(output.path)) {
+      failures.push("MOTION_OUTPUTS_NOT_INVENTORIED");
+      continue;
+    }
+    const outputBytes = output.path === candidate.path ? image.buffer
+      : output.path === HERO_CINEMATIC_LIMITS.evidenceMotionPath ? asBuffer(artifacts.evidenceMotionBytes)
+        : asBuffer(artifacts.contactSheetBytes);
+    const outputDigest = outputBytes ? createHash("sha256").update(outputBytes).digest("hex") : null;
+    if (!outputBytes || output.bytes !== outputBytes.length || output.sha256 !== outputDigest) {
+      failures.push("MOTION_OUTPUT_INTEGRITY_MISMATCH");
+      continue;
+    }
+    const outputDimensions = output.path.endsWith(".webp") ? dimensionsFromWebp(outputBytes) : dimensionsFromPng(outputBytes);
+    if (!outputDimensions || output.width !== outputDimensions.width || output.height !== outputDimensions.height) {
+      failures.push("MOTION_OUTPUT_DIMENSIONS_MISMATCH");
+    }
+  }
+  const preview = outputs.find((output) => output?.path === candidate.path);
+  if (!preview || preview.frameCount !== candidate.frameCount || preview.durationMs !== candidate.durationMs
+    || !Number.isInteger(candidate.frameCount) || candidate.frameCount < 1
+    || !Number.isInteger(candidate.durationMs) || candidate.durationMs < 1
+    || !runtimeAnimation || runtimeAnimation.frameCount !== candidate.frameCount
+    || runtimeAnimation.durationMs !== candidate.durationMs) {
+    failures.push("MOTION_TIMING_METADATA_MISMATCH");
+  }
+  const sourceAnimation = outputs.find((output) => output?.path === HERO_CINEMATIC_LIMITS.evidenceMotionPath);
+  const sourceAnimationMetadata = sourceAnimation
+    ? animationMetadataFromWebp(asBuffer(artifacts.evidenceMotionBytes)) : null;
+  if (!sourceAnimation || !Number.isInteger(sourceAnimation.frameCount) || sourceAnimation.frameCount < candidate.frameCount
+    || sourceAnimation.durationMs !== candidate.durationMs || !sourceAnimationMetadata
+    || sourceAnimationMetadata.frameCount !== sourceAnimation.frameCount
+    || sourceAnimationMetadata.durationMs !== sourceAnimation.durationMs) {
+    failures.push("MOTION_TIMING_METADATA_MISMATCH");
+  }
+  validateRights(candidate, failures);
+
+  return failureResult(failures, {
+    assetClass: candidate.assetClass,
+    observedSha256: image.digest,
+    dimensions: image.dimensions && Object.freeze(image.dimensions),
+    motion: Object.freeze({ frameCount: candidate.frameCount, durationMs: candidate.durationMs }),
+    sourceProjectSha256: projectDigest,
+  });
+}
+
+// The preflight establishes local technical integrity only; it never approves rights or release.
+export function inspectHeroCinematicCandidate(metadata, payload, artifacts = {}) {
+  const candidate = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {};
+  if (candidate.assetClass === STATIC_MASTER_CLASS) {
+    return validateStaticMaster(candidate, payload, artifacts.sourceMasterBytes);
+  }
+  if (candidate.assetClass === BLENDER_MOTION_CLASS) {
+    return validateMotionDerivative(candidate, payload, artifacts);
+  }
+  return failureResult(["INVALID_ASSET_CLASS"], { assetClass: candidate.assetClass ?? null });
 }

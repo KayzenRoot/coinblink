@@ -917,6 +917,7 @@
   .cb-home .hero-rockscape { opacity: .67; }
 }
 /* CB-M01 R22: independently versioned mineral texture, self-hosted SVG, demo only. */
+/* CB-M01 R25: approved-pipeline static master with an optional Blender motion derivative. */
 .cb-home .hero-cinematic-preview {
   position: absolute;
   z-index: 0;
@@ -951,105 +952,6 @@
   .cb-home .hero-scene::after { opacity: .5; }
 }
 
-/* CB-M01: seven generated alpha sprites create one restrained, looping hero storm. */
-.cb-home .hero-lightning {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.cb-home .hero-lightning-frame {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-  opacity: 0;
-  mix-blend-mode: screen;
-  filter: drop-shadow(0 0 7px rgb(173 255 82 / 70%));
-}
-.cb-home .hero-lightning-frame--charge { animation: cb-lightning-charge 6.4s linear infinite; }
-.cb-home .hero-lightning-frame--descent { animation: cb-lightning-descent 6.4s linear infinite; }
-.cb-home .hero-lightning-frame--impact { animation: cb-lightning-impact 6.4s linear infinite; }
-.cb-home .hero-lightning-frame--afterglow { animation: cb-lightning-afterglow 6.4s linear infinite; }
-.cb-home .hero-lightning-frame--secondary-right { animation: cb-lightning-secondary-right 6.4s linear infinite; }
-.cb-home .hero-lightning-frame--secondary-left { animation: cb-lightning-secondary-left 6.4s linear infinite; }
-.cb-home .hero-lightning-frame--ground-fade { animation: cb-lightning-ground-fade 6.4s linear infinite; }
-.cb-home .hero-lightning-flash {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  background:
-    radial-gradient(ellipse at 58% 84%, rgb(242 255 214 / 92%) 0, rgb(154 255 74 / 35%) 14%, transparent 46%),
-    linear-gradient(90deg, transparent 35%, rgb(226 255 205 / 24%) 66%, rgb(226 255 205 / 7%));
-  mix-blend-mode: screen;
-  animation: cb-lightning-scene-flash 6.4s linear infinite;
-}
-@keyframes cb-lightning-charge {
-  0%, .8%, 5.5%, 100% { opacity: 0; }
-  1.4%, 4% { opacity: .62; }
-  4.8% { opacity: .14; }
-}
-@keyframes cb-lightning-descent {
-  0%, 5%, 12.5%, 100% { opacity: 0; }
-  5.5%, 10% { opacity: .96; }
-  11.5% { opacity: .62; }
-  12.2% { opacity: .08; }
-}
-@keyframes cb-lightning-impact {
-  0%, 12%, 18.5%, 100% { opacity: 0; }
-  12.4%, 14% { opacity: 1; }
-  15% { opacity: .58; }
-  16% { opacity: .92; }
-  17.2% { opacity: .62; }
-  18% { opacity: .16; }
-}
-@keyframes cb-lightning-afterglow {
-  0%, 18%, 30%, 100% { opacity: 0; }
-  18.5% { opacity: .76; }
-  22% { opacity: .42; }
-  29% { opacity: .06; }
-}
-@keyframes cb-lightning-secondary-right {
-  0%, 47%, 55%, 100% { opacity: 0; }
-  47.5%, 53% { opacity: .92; }
-  54% { opacity: .2; }
-}
-@keyframes cb-lightning-secondary-left {
-  0%, 58.5%, 66.5%, 100% { opacity: 0; }
-  59%, 64% { opacity: .8; }
-  65.8% { opacity: .16; }
-}
-@keyframes cb-lightning-ground-fade {
-  0%, 66%, 78%, 100% { opacity: 0; }
-  67% { opacity: .5; }
-  71% { opacity: .3; }
-  77% { opacity: .02; }
-}
-@keyframes cb-lightning-scene-flash {
-  0%, 12%, 47%, 55%, 58.5%, 66.5%, 100% { opacity: 0; }
-  12.4% { opacity: .62; }
-  13.5% { opacity: .19; }
-  15% { opacity: .34; }
-  16.5% { opacity: .06; }
-  18% { opacity: 0; }
-  47.5% { opacity: .26; }
-  49% { opacity: .04; }
-  59% { opacity: .2; }
-  60.5% { opacity: .02; }
-}
-@media (max-width: 760px) {
-  .cb-home .hero-lightning { inset: 60% 0 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cb-home .hero-lightning-frame,
-  .cb-home .hero-lightning-flash { animation: none !important; }
-  .cb-home .hero-lightning-frame { opacity: 0 !important; }
-  .cb-home .hero-lightning-frame--impact { opacity: .38 !important; }
-  .cb-home .hero-lightning-flash { opacity: 0 !important; }
-}
 @media (min-width: 761px) and (max-width: 850px) {
   .cb-home .hero-cinematic-preview {
     mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, #000 58%);
@@ -1058,7 +960,6 @@
     object-fit: contain;
     object-position: right center;
   }
-  .cb-home .hero-lightning { inset-inline-start: 55%; }
 }
 @media (max-width: 760px) {
   .cb-home .hero-scene.has-cinematic-preview { opacity: 1; }

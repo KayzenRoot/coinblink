@@ -1,3 +1,4 @@
+> **R25 correction (current policy and status):** The R23 delivery narrative below is historical and is superseded for the current hero. The adopted primary still is the approved-pipeline ImageGen static master (`src/modules/CB-M01/hero-cinematic-original.png` / `.webp`). Blender is used for motion only; the portable motion project is `hero-cinematic-animation-portable.blend`, classified as `BLENDER_MOTION_DERIVATIVE`. The seven generated lightning PNGs are decorative inputs packed into that project and are not browser animation frames. The old Blender still exports remain separate historical assets and are not used at runtime. Rights remain pending; Owner visual approval and publication permission remain false. See `R25_CINEMATIC_ASSET_DELIVERY.md` and the current JSON provenance files.
 # R23 cinematic delivery reconciliation
 
 **State:** local artifacts and the seven-frame demo effect are inventoried for PR review. The cinematic image candidate remains blocked by its recorded origin and missing 2K local render master. This report is not M01 completion, visual approval, commercial clearance, or publication approval.
@@ -52,3 +53,11 @@ Validation ran on Windows with Node.js 22.19.0 and npm 10.9.3 at source HEAD `cb
 ## Boundaries
 
 No merge, deployment, main-branch modification, ruleset change, checkpoint update, or publication/visual approval was performed. CB-M01 remains admitted and not complete; `authorizedToMerge=false`.
+
+## R25 append-only correction
+
+The former R23 policy required a Blender-origin still and rejected the actual ImageGen source as `ORIGINAL_SOURCE_UNESTABLISHED`. The Owner's R25 direction supersedes that rule: the generated image is the static master, while Blender produces the motion derivative. This correction does not alter or relabel the original ImageGen provenance.
+
+The portable motion project is `hero-cinematic-animation-portable.blend` (SHA-256 `898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec`). Its committed inspection report lists every file image path as a Blender-relative path, all external images packed, and zero linked libraries. The current JSON report's path audit found no drive-letter, UNC, or absolute file-image references among the inspected FILE references. Blender is not installed in the current execution environment, so this run did not reopen the binary; the report and binary SHA were verified. The earlier nonportable `hero-cinematic-animation.blend` remains a historical R23 item and was withheld; do not substitute it for the portable project.
+
+The seven sprite PNGs remain documented as OpenAI-generated decorative inputs to the Blender project. They are no longer imported by `GoldenHome.astro` or animated by CSS. Their exact source hashes and prompt lineage are preserved. The static master, motion derivative, decorative overlays, rights, Owner visual approval, and publication permission are separate fields in the R25 provenance.

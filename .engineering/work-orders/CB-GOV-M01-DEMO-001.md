@@ -1,6 +1,10 @@
 # CB-GOV-M01-DEMO-001 — Work Order: narrow M01 DEMO integration decision
 
-**Status:** CANDIDATE / NOT EFFECTIVE. **Risk:** ELEVATED (public source visibility, rights and integration governance). **Owner:** KayzenRoot. **Base main:** `85ece8e63e56ac8006701eda121f462d901d2d2f`. **Parent:** existing `CB-M01-WO-001`; Issues #8, #60, #72; PR #58. **Decision owner:** KayzenRoot; **governance preparer:** ChatGPT, technical merge executor only after separate GO.
+**Status:** CANDIDATE / ROUTE_B_SELECTED_FOR_PREPARATION / NOT EFFECTIVE AS MERGE AUTHORITY. **Risk:** ELEVATED (public source visibility, rights and integration governance). **Owner:** KayzenRoot. **Base main:** `85ece8e63e56ac8006701eda121f462d901d2d2f`. **Parent:** existing `CB-M01-WO-001`; Issues #8, #60, #72; PR #58. **Decision owner:** KayzenRoot; **governance preparer:** ChatGPT, technical merge executor only after separate GO.
+
+## OWNER SELECTION AND AUTHORITY BOUNDARY
+
+On 2026-10-15 the Owner selected retaining `KayzenRoot/coinblink` **PUBLIC** and preparing a source-only M01 DEMO integration into protected `main` without deployment, with rights and gates preserved. Selection **does not** grant `authorizedToMerge=true`, waive Issue #72, change commercial publication flags, or authorize public site deployment. This Work Order is for preparing that conditional integration decision, not for executing the product merge. Route B selection is pinned in the proposal and will be copied to Issues #60/#72.
 
 ## OBJECTIVE
 Prepare the *smallest safe decision* that permits accelerating CoinBlink M01 DEMO integration **after** selecting a truthfully private staging destination or consciously approving a public-code integration. Disambiguate repository visibility from deployment exposure. Preserve the approved Golden visual, all mandatory exact-head checks, security, rights and checkpoint authority.
@@ -23,7 +27,7 @@ No changes to PR #58, #59, #77, #79, app routes, assets, source bytes, tests, wo
 
 ## REQUIREMENTS
 1. Document actual GitHub repo visibility and caveat that past public Git objects may persist outside GitHub control.
-2. Offer exactly three mutually distinct paths: actually-private isolated staging, public source-only integration with explicit acknowledgement and rights decision, or no merge until rights resolved.
+2. Preserve the three recorded alternatives, but mark **public source-only integration (Route B)** as Owner-selected **for preparation**; require exact-SHA later integration GO and asset-level rights resolution before any merge.
 3. Preserve no deployment, no production credentials, no LIVE claims, no commercial rights, no checkpoint advancement.
 4. Keep rights review per asset and stop on HIGH/CRITICAL security defects.
 5. Use one consolidated Evidence Bundle and existing CI where source/input SHA identical. Final target commit requires current strict seven contexts and substantive technical audit. CodeRabbit skipped green isn't technical review.
@@ -43,7 +47,7 @@ Do not edit the canonical Source Pack or checkpoint in this proposal. Code and d
 - Live public/private fact verified twice (GitHub repository metadata).
 - Verified SHA pointers, Source Lock, proposed write allowlist and no forbidden changes.
 - Risks of public repository and public preview clearly distinguished.
-- Exact decision and non-deploy gates for A/B/C documented.
+- Route B explicitly selected for preparation only, with public GitHub code/asset exposure acknowledged; non-deploy gates and exact rights-aware integration conditions documented; alternatives A/C remain informative.
 - Work Order and candidate docs PR with no merge, no code changes.
 - Protected required checks at docs PR exact HEAD, then a technical review and separate Owner decision before any merge.
 - Identified next code step is bounded, actionable and does not change `authorizedToMerge=false` by itself.
@@ -58,4 +62,4 @@ Three candidate Markdown documents; one draft PR and cross-linked Issue #60 note
 Brazilian Portuguese: verdict, exact HEAD/base, changed files, host check statuses, unresolved external gates, recommended A/B/C decision, STOP. Do not represent same-account COMMENT or skipped CodeRabbit as independent GitHub APPROVED.
 
 ## STOP CONDITION
-Stop at **OWNER_DECISION_REQUIRED** with documentation-only candidate PR open, unmerged. Do not set `authorizedToMerge=true`, merge M01 or the governance PR, create a private repo, change repo visibility, or deploy without separate explicit user decision.
+Stop at **ROUTE_B_PREPARED__RIGHTS_AND_EXACT_SHA_GO_PENDING** with documentation-only candidate PR open, unmerged. Do not set `authorizedToMerge=true`, merge M01 or the governance PR, create a private repo, change repo visibility, or deploy without separate explicit user decision.

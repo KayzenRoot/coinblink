@@ -20,7 +20,7 @@ P0 is limited to accessible, responsive, publicly visible MOCK / SECURITY DISABL
 | References, citations and human claim review queue | R46–R48 completed with unit tests and exact-head CI | Owner should confirm labels and UX |
 | No CMS storage, auth, credential, live publication, providers | Code-scoped no-network/mock contracts | Negative security review at integration |
 | Exact-head Ubuntu+Windows GEF, Docker, SonarCloud and Socket | 6/6 SUCCESS at P0 HEAD 3991540f... | Repeat only if HEAD changes |
-| Open inline review threads | 8 total, 0 unresolved (read 2026-10-15) | Do not treat auto-review skip as independent approval |
+| Open inline review threads | 8 total, 0 unresolved (read 2026-10-15) | No second human reviewer required; skipped bot statuses are not substantive evidence |
 | Explicit Owner visual/functional sign-off | NOT RECORDED for complete final R48 P0 | One grouped product acceptance, not many per-feature approvals |
 | Separate Integration Steward review of shared route and no-deploy controls | OPEN, depends on repository integration decisions | No protected main merge until verified |
 | M05 P0 formally accepted/merged | NO / NO | Separate Owner exact-head integration GO, no inferred permission |
@@ -41,7 +41,7 @@ P0 is limited to accessible, responsive, publicly visible MOCK / SECURITY DISABL
 | Encrypted provider vault and root key custody | Separate key/provider approval, negative tests, rotation | NOT ADMITTED |
 | Actual publishing and outbound provider integrations | Factual/IP/legal release gates, exact Owner go/no-go | NOT AUTHORIZED |
 | Private environment, deploy trigger safety | Verify Cloudflare/GitHub linked auto-deploy, staging privacy | UNVERIFIED |
-| CodeRabbit independent substantive review | Cannot infer an APPROVED state from skipped CodeRabbit checks | PENDING AS APPLICABLE |
+| Sole-administrator threat/security review | KayzenRoot records conclusions and unresolved risks supported by automated tests; CodeRabbit skipped status never implies approval | OWNER REVIEW FOR FINAL HEAD PENDING |
 
 This is one cohesive P1 *planning* packet; avoid unrelated micro-PRs. Existing PR #70 is a separate proposal for a **local-only D1 experiment** and does not supply these gates or authorize P1 migrations.
 

@@ -34,6 +34,39 @@ test('FAIL-01 rejects any remote flag or remote config property', () => {
   assert.throws(() => assertLocalD1Command(d1Args(['--remote']), { repositoryRoot, configRelative }), /remote/i);
 });
 
+test('FAIL-01 accepts only the exact D1 argument grammar and rejects alternate, duplicate, and unsafe arguments', () => {
+  const context = { repositoryRoot, configRelative };
+  const validFileArgs = d1Args();
+  validFileArgs[validFileArgs.indexOf('--command')] = '--file';
+  validFileArgs[validFileArgs.indexOf('SELECT 1')] = 'test/modules/CB-M05/p1a-local-fixtures/schema.sql';
+  assert.equal(assertLocalD1Command(validFileArgs, context), true);
+  const unauthorizedFileArgs = [...validFileArgs];
+  unauthorizedFileArgs[9] = '../../wrangler.jsonc';
+  assert.throws(() => assertLocalD1Command(unauthorizedFileArgs, context));
+
+  for (const extraArguments of [
+    ['--remote=true'], ['--remote', 'true'], ['--env=prod'], ['--env', 'prod'], ['--config=wrangler.jsonc'],
+    ['--local=true'], ['--persist-to=.wrangler/p1a-local-state/other/case'], ['--command=SELECT 1'],
+    ['--unknown-flag'], ['--'], ['--config', configRelative], ['--command', 'SELECT 2'],
+    ['--file', 'test/modules/CB-M05/p1a-local-fixtures/seed.sql'], ['--local'], ['--json'],
+  ]) {
+    assert.throws(() => assertLocalD1Command(d1Args(extraArguments), context), undefined, 'must reject ' + extraArguments.join(' '));
+  }
+
+  for (const [needle, replacement] of [
+    ['--config', '--config=wrangler.jsonc'],
+    ['test/modules/CB-M05/p1a-local-fixtures/wrangler.local.jsonc', '--remote'],
+    ['.wrangler/p1a-local-state/test-run/case-a', '../outside'],
+    ['.wrangler/p1a-local-state/test-run/case-a', '.wrangler/p1a-local-state/../outside'],
+    ['.wrangler/p1a-local-state/test-run/case-a', path.resolve(repositoryRoot, '.wrangler/p1a-local-state/case-a')],
+    ['SELECT 1', '--remote=true'],
+  ]) {
+    const args = d1Args();
+    args[args.indexOf(needle)] = replacement;
+    assert.throws(() => assertLocalD1Command(args, context), undefined, 'must reject replacement ' + replacement);
+  }
+});
+
 test('FAIL-01 rejects missing, extra, or non-synthetic database bindings', () => {
   assert.throws(() => assertSyntheticD1Config({ ...config, d1_databases: [] }), /binding/i);
   assert.throws(() => assertSyntheticD1Config({ ...config, d1_databases: [...config.d1_databases, ...config.d1_databases] }), /exactly one/i);

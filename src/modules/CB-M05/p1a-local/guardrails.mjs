@@ -7,6 +7,11 @@ export const SYNTHETIC_DATABASE_ID = '00000000-0000-4000-8000-000000000084';
 
 const allowedConfigKeys = new Set(['name', 'compatibility_date', 'd1_databases']);
 const allowedDatabaseKeys = new Set(['binding', 'database_name', 'database_id']);
+const LOCAL_D1_CONFIG = 'test/modules/CB-M05/p1a-local-fixtures/wrangler.local.jsonc';
+const LOCAL_D1_SQL_FIXTURES = new Set([
+  'test/modules/CB-M05/p1a-local-fixtures/schema.sql',
+  'test/modules/CB-M05/p1a-local-fixtures/seed.sql',
+]);
 const forbiddenKeys = new Set([
   'remote', 'account_id', 'zone_id', 'routes', 'workers_dev', 'vars', 'services',
   'queues', 'r2_buckets', 'durable_objects', 'triggers', 'secrets',
@@ -59,32 +64,67 @@ export function assertSyntheticD1Config(config) {
 }
 
 export function assertLocalD1Command(args, { repositoryRoot, configRelative }) {
-  if (!Array.isArray(args) || args.slice(0, 3).join(' ') !== 'd1 execute ' + SYNTHETIC_BINDING) {
-    throw new Error('Only the dedicated synthetic D1 execute command is allowed');
+  if (!Array.isArray(args) || !args.every((arg) => typeof arg === 'string')) {
+    throw new Error('D1 arguments must match the exact local allowlist grammar');
   }
-  if (args.includes('--remote') || args.includes('--preview')) {
+  if (args.some((arg) => /^--(?:remote|preview)(?:=|$)/i.test(arg))) {
     throw new Error('Remote or preview D1 execution is forbidden');
   }
-  if (!args.includes('--local')) throw new Error('D1 command must include --local');
-  const configIndex = args.indexOf('--config');
-  if (configIndex < 0 || args[configIndex + 1] !== configRelative) {
+  if (args.filter((arg) => arg === '--local').length !== 1 || args[3] !== '--local') {
+    throw new Error('D1 command must include exactly one --local flag');
+  }
+  if (
+    args[4] !== '--config' || args[5] !== LOCAL_D1_CONFIG || configRelative !== LOCAL_D1_CONFIG
+  ) {
     throw new Error('D1 command must use the dedicated local fixture config');
   }
-  const persistIndex = args.indexOf('--persist-to');
-  if (persistIndex < 0 || !args[persistIndex + 1]) {
-    throw new Error('D1 command must use disposable local persistence');
+  if (args.length !== 11) {
+    throw new Error('D1 arguments must match the exact local allowlist grammar');
   }
-  const persistPath = path.resolve(repositoryRoot, args[persistIndex + 1]);
-  const relative = path.relative(repositoryRoot, persistPath).split(path.sep).join('/');
-  if (!relative.startsWith('.wrangler/p1a-local-state/')) {
-    throw new Error('D1 persistence must stay under .wrangler/p1a-local-state');
+  if (
+    args[0] !== 'd1' || args[1] !== 'execute' || args[2] !== SYNTHETIC_BINDING ||
+    args[6] !== '--persist-to' || args[10] !== '--json'
+  ) {
+    throw new Error('D1 arguments must match the exact local allowlist grammar');
   }
-  if (args.includes('--account-id') || args.includes('--profile') || args.includes('--env')) {
-    throw new Error('Credential, profile, and environment selectors are forbidden');
+  if (typeof repositoryRoot !== 'string' || !path.isAbsolute(repositoryRoot)) {
+    throw new Error('D1 repository root must be an absolute local path');
   }
-  const hasCommand = args.includes('--command');
-  const hasFile = args.includes('--file');
-  if (hasCommand === hasFile) throw new Error('D1 command must have exactly one SQL input');
+
+  const stateRelative = args[7];
+  const stateSegments = stateRelative.split(/[\\/]/);
+  if (
+    path.isAbsolute(stateRelative) ||
+    stateSegments.length !== 4 ||
+    stateSegments[0] !== '.wrangler' || stateSegments[1] !== 'p1a-local-state' ||
+    stateSegments.slice(2).some((segment) => !/^[a-z0-9][a-z0-9._-]*$/i.test(segment))
+  ) {
+    throw new Error('D1 persistence path is outside the exact ignored local fixture root');
+  }
+  const resolvedRoot = path.resolve(repositoryRoot);
+  const resolvedState = path.resolve(resolvedRoot, stateRelative);
+  const relativeState = path.relative(resolvedRoot, resolvedState);
+  if (
+    !relativeState || relativeState === '..' || relativeState.startsWith('..' + path.sep) ||
+    path.isAbsolute(relativeState) || relativeState.split(path.sep).join('/') !== stateRelative
+  ) {
+    throw new Error('D1 persistence path traverses outside the repository fixture root');
+  }
+
+  const inputFlag = args[8];
+  const inputValue = args[9];
+  if (!inputValue || inputValue.startsWith('-')) {
+    throw new Error('D1 input values cannot be missing or look like command-line options');
+  }
+  if (inputFlag === '--command') {
+    assertSyntheticPayload(inputValue);
+  } else if (inputFlag === '--file') {
+    if (!LOCAL_D1_SQL_FIXTURES.has(inputValue)) {
+      throw new Error('D1 file input must be an exact authorized synthetic SQL fixture');
+    }
+  } else {
+    throw new Error('D1 arguments must contain exactly one allowlisted SQL input');
+  }
   return true;
 }
 

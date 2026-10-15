@@ -122,7 +122,13 @@ async function runConcurrentOwnerClaims(stateRelative, contenderCount) {
           if (!allArrived) return Response.json({ kind: 'barrier-timeout', arrived }, { status: 425 });
           try {
             const result = await env.${SYNTHETIC_BINDING}.prepare('INSERT INTO owner_claims (owner_id, owner_key, created_at) VALUES (?, ?, ?) ON CONFLICT(owner_id) DO NOTHING').bind(1, input.key, input.createdAt).run();
-            return Response.json({ kind: 'completed', changes: result.meta.changes });
+            if (result.meta.changes === 1) {
+              return Response.json({ kind: 'owner-created', changes: 1 }, { status: 201 });
+            }
+            if (result.meta.changes === 0) {
+              return Response.json({ kind: 'owner-already-claimed', changes: 0 }, { status: 409 });
+            }
+            return Response.json({ kind: 'unexpected-change-count', changes: result.meta.changes }, { status: 500 });
           } catch (error) {
             const message = String(error);
             if (/SQLITE_BUSY|database is locked/i.test(message)) return Response.json({ kind: 'contention-rejected' }, { status: 409 });
@@ -161,25 +167,34 @@ async function runConcurrentOwnerClaims(stateRelative, contenderCount) {
       }).then(async (response) => ({ status: response.status, body: await response.json() }))));
     const barrierTimeouts = attempts.filter((attempt) => attempt.status === 425);
     assert.equal(barrierTimeouts.length, 0, 'All independent local D1 requests must reach the concurrency barrier');
-    const unexpected = attempts.filter((attempt) => attempt.status !== 200 && attempt.status !== 409);
+    const unexpected = attempts.filter((attempt) => attempt.status !== 201 && attempt.status !== 409);
     assert.equal(unexpected.length, 0, 'No unexpected D1 request errors: ' + JSON.stringify(unexpected.slice(0, 3)));
     const result = await miniflare.dispatchFetch('http://fixture.invalid/count');
     assert.equal(result.status, 200);
     const { rows, count } = await result.json();
     assert.equal(count, 1, 'The actual local D1 primary key must commit exactly one synthetic Owner');
     assert.equal(rows[0].owner_id, 1);
-    return { completed: attempts.filter((attempt) => attempt.status === 200).length, busyRejected: attempts.filter((attempt) => attempt.status === 409).length, persistedOwners: count };
+    return { attempts, persistedOwners: count };
   } finally {
     await miniflare.dispose();
   }
 }
 
 for (const contenders of [2, 10, 100]) {
-  test('D1_LOCAL OWNER-01: ' + contenders + ' concurrent independent workerd D1 requests commit at most one Owner', async () => {
+  test('D1_LOCAL OWNER-01: ' + contenders + ' concurrent independent workerd D1 requests create exactly one Owner and deny the rest', async () => {
     const state = stateFor('owner-' + contenders);
     const outcome = await runConcurrentOwnerClaims(state, contenders);
     assert.equal(outcome.persistedOwners, 1);
-    assert.equal(outcome.completed + outcome.busyRejected, contenders, 'Every independent request must finish or be rejected by SQLite contention');
+    const created = outcome.attempts.filter((attempt) =>
+      attempt.status === 201 && attempt.body.kind === 'owner-created' && attempt.body.changes === 1);
+    const rejected = outcome.attempts.filter((attempt) =>
+      attempt.status === 409 && (
+        (attempt.body.kind === 'owner-already-claimed' && attempt.body.changes === 0) ||
+        attempt.body.kind === 'contention-rejected'
+      ));
+    assert.equal(created.length, 1, 'Exactly one concurrent request must report a durable Owner creation with changes=1');
+    assert.equal(rejected.length, contenders - 1, 'Every other concurrent Owner claim must be explicitly denied');
+    assert.equal(created.length + rejected.length, contenders, 'No concurrent claim may have an ambiguous outcome');
   }, { timeout: 120000 });
 }
 

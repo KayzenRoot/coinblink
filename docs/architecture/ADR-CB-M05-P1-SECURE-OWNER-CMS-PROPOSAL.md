@@ -34,6 +34,8 @@ Hard invariants:
 
 All selections are PROPOSED and require Owner review. This document intentionally does not say the current mock has working auth.
 
+**One-human Owner review decision (2026-10-15):** KayzenRoot is the only human administrator and final security reviewer. No separate human reviewer, second GitHub account or paid review bot is mandatory. Technical security analysis may be assisted by ChatGPT/Codex, but verified tests, negative cases, exact-head checks, rights decisions and Owner authorization remain required. This review-policy clarification becomes canonical only after the separate governance PR #82 is protected-merged; neither it nor this draft authorizes P1 code.
+
 ## 3. Threat model and security boundary
 
 Actors: real Owner; unauthenticated visitor; malicious submitter; stolen browser session; leaked source commit; compromised or reused passkey/recovery device; malicious insider or addon; bot exploiting setup race, CSRF, origin mix-up or server-side action; compromised DB dump; leaked encrypted third-party token; provider admin with misconfigured permissions.
@@ -118,7 +120,7 @@ Observability: redacted security event taxonomy, audit retention window, access-
 
 ## 8. Required acceptance and STOP CONDITION
 
-BEFORE ANY P1 CODE: (a) Owner names and approves auth, DB, recovery and secrets approach in a separate explicit decision; (b) Integration Steward reviews P1 route/migration/CI ownership, costs, rollback and Cloudflare plan capabilities; (c) independent security/DoD review and canonical Source Pack/Context Lock admission updated by reviewed protected merge; (d) exact-head required checks GREEN. PR #70 remains local-D1-only proposal and cannot silently serve as P1 admission.
+BEFORE ANY P1 CODE: (a) Owner names and approves auth, DB, recovery and secrets approach in a separate explicit decision; (b) Integration Steward reviews P1 route/migration/CI ownership, costs, rollback and Cloudflare plan capabilities; (c) sole-administrator KayzenRoot security/DoD review with threat-model notes, adversarial and exact-HEAD automated test evidence, and canonical Source Pack/Context Lock admission updated by a protected reviewed merge; (d) exact-head required checks GREEN. PR #70 remains local-D1-only proposal and cannot silently serve as P1 admission.
 
 For P1 implementation completion: 1/1 Owner race under concurrent bootstrap; no public signup; passkey assertion UV/challenge/origin replay tests; recovery safe under compromise; cookie, CSRF, step-up, rate limits and revocation; unauthorized HTML/API reads and mutations denied; revised article saves, version conflict, revision rollback and integrity; audit and idempotent review transitions; ciphertext-only DB test, secret GET denial and key rotation; synthetic restore test; accessibility + browsers + exact-head Linux/Windows/Docker/GEF/SonarCloud/Socket; owner product/security validation. Only after these and deploy-specific acceptance may a separate release be considered.
 

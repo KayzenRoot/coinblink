@@ -1,4 +1,4 @@
-/* global document, MutationObserver, Event */
+/* global document, MutationObserver */
 // Local-only find and replace for M05 drafts. No storage, network or HTML rendering.
 export const MAX_SEARCH_LENGTH = 100;
 export const MAX_REPLACEMENT_LENGTH = 200;

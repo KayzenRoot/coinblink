@@ -57,6 +57,8 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   </div>
   <p class="m05-draft-notice"><strong>Not saved online:</strong> export to .md before closing or reloading, then import that file to resume. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
 </section>
+<details class="m05-tool-disclosure" data-m05-tool-disclosure="m05-local-search">
+  <summary><span class="m05-tool-label">Find and replace</span><span class="m05-tool-description">Locate or replace wording within the current draft.</span></summary>
 <section class="m05-local-search" data-m05-local-search aria-labelledby="m05-local-search-heading">
   <div class="m05-local-search-heading">
     <h3 id="m05-local-search-heading">Find and replace in this draft</h3>
@@ -82,8 +84,11 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   <p class="m05-local-search-note">Only your current article body changes. Re-export the Markdown file to keep the edits. Search results do not verify facts, citations or rights.</p>
   <p class="m05-local-search-status" data-m05-search-status role="status" aria-live="polite"></p>
 </section>
+</details>
 <script is:inline type="module" src="/m05-draft-preview.js"></script>
 <script is:inline type="module" src={metricsScriptUrl}></script>
+<details class="m05-tool-disclosure" data-m05-tool-disclosure="m05-editorial-panel">
+  <summary><span class="m05-tool-label">Editorial preparation checklist</span><span class="m05-tool-description">Review completeness and human follow-ups.</span></summary>
 <section class="m05-editorial-panel" data-m05-editorial-checklist aria-labelledby="m05-editorial-heading">
   <div class="m05-editorial-heading">
     <div><p class="m05-editorial-eyebrow">LOCAL EDITORIAL REVIEW · MOCK</p>
@@ -102,7 +107,10 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   </ul>
   <p class="m05-editorial-note" role="status" aria-live="polite" data-m05-editorial-note>Nothing is saved or verified online.</p>
 </section>
+</details>
 <script is:inline type="module" src={searchScriptUrl}></script>
+<details class="m05-tool-disclosure" data-m05-tool-disclosure="m05-sources-panel">
+  <summary><span class="m05-tool-label">Sources and citations</span><span class="m05-tool-description">Add references and insert local footnotes.</span></summary>
 <section class="m05-sources-panel" data-m05-sources-panel aria-labelledby="m05-source-panel-title">
   <div class="m05-sources-heading">
     <div>
@@ -128,8 +136,11 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   <p class="m05-sources-caution">These are unverified reference notes, not evidence that a claim is true or that content reuse is licensed. Removing a source also removes its matching citation markers. Re-export the Markdown file to preserve edits.</p>
   <p class="m05-sources-status" data-m05-source-status role="status" aria-live="polite"></p>
 </section>
+</details>
 <script is:inline type="module" src={editorialScriptUrl}></script>
 <script is:inline type="module" src={sourcesScriptUrl}></script>
+<details class="m05-tool-disclosure" data-m05-tool-disclosure="m05-audit-panel">
+  <summary><span class="m05-tool-label">Citation quality signals</span><span class="m05-tool-description">Inspect orphaned citations and missing source notes.</span></summary>
 <section class="m05-audit-panel" data-m05-citation-audit aria-labelledby="m05-audit-title">
   <div class="m05-audit-header">
     <div>
@@ -145,7 +156,10 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   </ul>
   <p class="m05-audit-footnote" role="status" aria-live="polite" data-m05-audit-status>Local text scan only. No provider or source is accessed.</p>
 </section>
+</details>
 <script is:inline type="module" src={auditScriptUrl}></script>
+<details class="m05-tool-disclosure" data-m05-tool-disclosure="m05-claim-panel">
+  <summary><span class="m05-tool-label">Claims requiring human review</span><span class="m05-tool-description">Track open questions and linked references.</span></summary>
 <section class="m05-claim-panel" data-m05-claim-panel aria-labelledby="m05-claim-heading">
   <div class="m05-claim-header">
     <div>
@@ -173,6 +187,7 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   <p class="m05-claim-caution">“Review noted” is a personal note, not evidence of fact-checking, source validity, rights clearance, owner approval or publication. If a source note is removed, the related claim is flagged as missing its reference. Re-export the Markdown file to keep your edits.</p>
   <p class="m05-claim-status" data-m05-claim-status role="status" aria-live="polite"></p>
 </section>
+</details>
 <script is:inline type="module" src={claimScriptUrl}></script>
 
 <style>
@@ -288,6 +303,15 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   .m05-claim-list li span { display:block; margin-bottom:7px; }
   .m05-claim-status { min-height:1.6em; color:#b8f34b; font-size:11px; line-height:1.6; }
   @media(max-width:540px) { .m05-claim-fields { grid-template-columns:minmax(0,1fr); } }
+  .m05-tool-disclosure { margin-top:12px; border:1px solid #3d5a45; border-radius:10px; background:#0b1710; color:#f1f5f1; overflow:hidden; }
+  .m05-tool-disclosure > summary { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; column-gap:18px; row-gap:5px; min-height:53px; padding:13px 18px; cursor:pointer; user-select:none; }
+  .m05-tool-disclosure > summary::marker { color:#b8f34b; }
+  .m05-tool-disclosure > summary:focus-visible { outline:3px solid #b8f34b; outline-offset:-4px; border-radius:8px; }
+  .m05-tool-disclosure[open] > summary { background:#182c1f; border-bottom:1px solid #39573f; }
+  .m05-tool-label { font-weight:750; font-size:13px; color:#eef7ed; }
+  .m05-tool-description { font-size:11px; line-height:1.45; color:#b8c8b7; }
+  .m05-tool-disclosure > section { margin:0; border:0; border-radius:0; background:transparent; }
+  @media(max-width:540px) { .m05-tool-disclosure > summary { padding:14px; } .m05-tool-description { width:100%; } }
   @media(max-width:900px) { .m05-draft-layout { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:500px) { .m05-draft-panel { padding:15px; } .m05-draft-fields input, .m05-draft-fields textarea { font-size:16px; } .m05-draft-actions button { width:100%; } }
 </style>

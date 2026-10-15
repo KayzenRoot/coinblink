@@ -1,7 +1,9 @@
 # CB-GOV-M01-DEMO-001 — Candidate Context Lock
 
-**State:** PROPOSED / NON-EFFECTIVE / OWNER DECISION PENDING.
+**State:** PROPOSED / ROUTE_B_SELECTED_FOR_PREPARATION / NON-EFFECTIVE MERGE AUTHORITY.
 **Repository:** `KayzenRoot/coinblink`, **verified current `visibility=public` and `private=false`** from GitHub authenticated repo metadata on 2026-10-15. **Main commit pinned:** `85ece8e63e56ac8006701eda121f462d901d2d2f`.
+**Owner route choice (2026-10-15):** Keep CoinBlink repository **PUBLIC**, prepare M01 DEMO code integration into protected `main` with **NO DEPLOY**, **NO COMMERCIAL PUBLICATION**, and all rights/DoD/CI/Owner exact-SHA gates before merging. This is a binding preparation preference, **not** an authorized merge. Issues #60/#72 are the current cross-references. If any subsequent Owner decision changes branch/repo visibility or integration scope, refresh this lock.
+
 **Parent product PR #58:** `c7c8ee2239d3e4468d80f06efe345b2849a20ede`; latest technical-delta COMMENT review `5533812621`. **No product merge authorized.**
 
 ## Canonical Git blob SHA-1 inputs at base
@@ -40,4 +42,4 @@ Only:
 Prior to any future merge or code transfer check: live GitHub repo `private/visibility`; actual target destination visibility; `main` and product PR head SHA; Git blobs above; protected ruleset and checked statuses; exact deploy behavior; updated Issue #72 decisions. On divergence, create the smallest Context Lock delta and perform only relevant re-review. Do not ignore HIGH/CRITICAL findings; do not assume private hosting from an access-restricted GitHub branch or Preview URL.
 
 ## STOP
-End at a **documentation-only, draft PR** and Owner selection gate. No governance document in this candidate authorizes integration or commercial use. Product `authorizedToMerge=false` remains unchanged, and no checkpoint promotion is proposed.
+End at a **documentation-only, draft PR** and the rights plus final exact-SHA admin GO gates. Route B has already been selected for *preparation*, so do not ask for a redundant A/B/C selection. No governance document in this candidate authorizes integration or commercial use. Product `authorizedToMerge=false` remains unchanged, and no checkpoint promotion is proposed.

@@ -38,11 +38,45 @@
       <div class="m05-draft-preview-body" data-m05-preview-body>Draft body preview</div>
       <div class="m05-draft-source"><strong>Source:</strong> <span data-m05-preview-source>No verified HTTPS source URL</span></div>
       <p class="m05-draft-feedback" data-m05-preview-status role="status" aria-live="polite">Complete the fields to enable local export.</p>
+      <div class="m05-draft-metrics" data-m05-local-metrics aria-label="Local drafting indicators" aria-live="polite">
+        <div><strong data-m05-metric-words>0</strong><span>Draft words</span></div>
+        <div><strong data-m05-metric-characters>0</strong><span>Characters</span></div>
+        <div><strong data-m05-metric-minutes>0</strong><span>Est. reading min</span></div>
+      </div>
+      <p class="m05-draft-metrics-note">Reading time is an estimate, not a fact-check, source verification, approval or publication.</p>
     </section>
   </div>
   <p class="m05-draft-notice"><strong>Not saved online:</strong> export to .md before closing or reloading, then import that file to resume. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
 </section>
 <script is:inline type="module" src="/m05-draft-preview.js"></script>
+<script>
+  import { measureLocalDraft } from "./local-draft-metrics.mjs";
+
+  // The existing local-only editor remains responsible for import/export.
+  // A MutationObserver updates metrics after asynchronous local file imports,
+  // without touching the source file, storage, network or publishing paths.
+  const root = document.querySelector("[data-m05-local-editor]");
+  const body = root?.querySelector<HTMLTextAreaElement>("[data-m05-draft-body]");
+  const preview = root?.querySelector("[data-m05-preview-body]");
+  const words = root?.querySelector<HTMLElement>("[data-m05-metric-words]");
+  const characters = root?.querySelector<HTMLElement>("[data-m05-metric-characters]");
+  const minutes = root?.querySelector<HTMLElement>("[data-m05-metric-minutes]");
+
+  if (body && words && characters && minutes) {
+    const update = () => {
+      const result = measureLocalDraft(body.value);
+      words.textContent = String(result.words);
+      characters.textContent = String(result.characters);
+      minutes.textContent = String(result.estimatedMinutes);
+    };
+    body.addEventListener("input", update);
+    if (preview) {
+      const observer = new MutationObserver(update);
+      observer.observe(preview, { childList: true, characterData: true, subtree: true });
+    }
+    update();
+  }
+</script>
 
 <style>
   .m05-draft-panel { border:1px solid #2a3d32; border-radius:10px; padding:clamp(17px,2.5vw,24px); background:linear-gradient(145deg,#111d17,#0b120f); color:#f2f5f1; }
@@ -77,6 +111,11 @@
   .m05-draft-feedback { margin:16px 0 0; padding:10px 12px; border:1px solid #39533b; border-radius:6px; color:#b8f34b; font-size:11px; line-height:1.5; }
   .m05-draft-notice { margin:20px 0 0; border-left:3px solid #ffd27d; padding:10px 14px; background:#202018; color:#d3c6a8; font-size:11px; line-height:1.6; }
   .m05-draft-notice strong { color:#ffd27d; }
+  .m05-draft-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:12px; }
+  .m05-draft-metrics>div { display:grid; gap:3px; padding:9px; border:1px solid #304535; border-radius:6px; background:#101c14; }
+  .m05-draft-metrics strong { color:#b8f34b; font-size:18px; font-variant-numeric:tabular-nums; }
+  .m05-draft-metrics span { color:#b8bfb7; font-size:10px; line-height:1.35; }
+  .m05-draft-metrics-note { margin:9px 0 0; color:#a1afa5; font-size:10px; line-height:1.5; }
   @media(max-width:900px) { .m05-draft-layout { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:500px) { .m05-draft-panel { padding:15px; } .m05-draft-fields input, .m05-draft-fields textarea { font-size:16px; } .m05-draft-actions button { width:100%; } }
 </style>

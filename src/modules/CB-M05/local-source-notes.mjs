@@ -1,4 +1,4 @@
-/* global document, MutationObserver, Event */
+/* global document, MutationObserver */
 // M05 P0: local-only source notes. This module NEVER fetches sources or verifies claims.
 // References are plain-text footnotes in the article body so v2 Markdown export/import
 // preserves them without touching shared public routes, parsers, or persistent storage.

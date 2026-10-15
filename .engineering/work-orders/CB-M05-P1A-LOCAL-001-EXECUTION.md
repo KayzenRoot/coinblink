@@ -15,7 +15,7 @@ Implement and RUN a bounded security/data test harness against **actual Wrangler
 - test/modules/CB-M05/p1a-*.test.mjs : Node built-in runner and/or local emulated D1 harness tests; descriptive test names distinguish simulation vs real D1.
 - test/modules/CB-M05/p1a-local-fixtures/** : fake SQL schema, fixture data and a dedicated wrangler.local.jsonc with synthetic database ID. No production binding or secret.
 - .engineering/evidence/CB-M05-P1A-LOCAL-001.md : measured execution readback, results, risks and STOP.
-- Local untracked persistence path .local-p1a-d1-state/** (MUST remain untracked/ignored; before execution verify current .gitignore covers it; if not, stop and request separate Integration Steward change).
+- Local untracked persistence path .wrangler/p1a-local-state/** (MUST remain untracked/ignored; before execution verify current .gitignore covers it; if not, stop and request separate Integration Steward change).
 
 ### Integration Steward-only shared paths
 
@@ -25,7 +25,7 @@ src/pages/**, public/**, global middleware, root wrangler.jsonc, package.json, p
 
 1. Check git status clean, current main commit, local Node >=22.19.0 <23, npm dependency lock, and npm exec --no -- wrangler --version matching pinned 4.149.0. Do not run npm install unless dependencies already available or approved.
 2. Read existing production wrangler.jsonc READ-ONLY; create standalone TEST-only wrangler.local.jsonc under allowed fixtures. Verify it contains only synthetic D1 binding name/id, no remote=true, production account info, route, zone, credential, custom domain, or triggers.
-3. Before each command, verify local option --local, explicit fixture --config and --persist-to .local-p1a-d1-state; refuse commands containing --remote, d1 create, deploy, publish, login, api token or a real resource ID. No command in this Work Order authorizes remote Cloudflare.
+3. Before each command, verify local option --local, explicit fixture --config and --persist-to .wrangler/p1a-local-state; refuse commands containing --remote, d1 create, deploy, publish, login, api token or a real resource ID. No command in this Work Order authorizes remote Cloudflare.
 4. Run deterministic synthetic SQL and guards; for concurrent singleton tests use truly concurrent separate local D1 connections/requests. If only one synchronous SQLite client is used, label it a preliminary model, not a D1 concurrency PASS. CLI worker runtime may need a future Steward-owned harness; if so mark NOT_EXECUTED, do not fake passing behavior.
 5. Tests: one-Owner constraint 2/10/100 concurrent contenders, two distinct fake recovery devices and revocation, atomic one-time challenge consume, wrong origin/RP/time/replay, synthetic hash-only sessions and revocation, atomic version compare-and-swap, downstream failure rollback, restore and fail-closed errors. Real WebAuthn signatures, step-up authentication, cookies and vault are explicitly NOT IMPLEMENTED.
 6. Execute npm run lint, npm run typecheck, npm run test:unit and npm run build only after verifying these scripts are non-deploying; run full available local tests and then create an ordinary guarded PR; expect exact HEAD hosted Ubuntu/Windows/GEF/Docker/SonarCloud/Socket CI. Never weaken existing checks.

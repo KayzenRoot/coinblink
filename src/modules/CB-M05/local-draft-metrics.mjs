@@ -1,3 +1,4 @@
+/* global document, MutationObserver */
 // Read-only, deterministic editorial drafting indicators for the P0 local DEMO.
 // No persistence, credential access, network requests, publication or fact-checking.
 export const DEMO_READING_SPEED_WPM = 200;

@@ -4,6 +4,7 @@ import searchScriptUrl from "./local-draft-search.mjs?url&no-inline";
 import editorialScriptUrl from "./local-editorial-checklist.mjs?url&no-inline";
 import sourcesScriptUrl from "./local-source-notes.mjs?url&no-inline";
 import auditScriptUrl from "./local-citation-audit.mjs?url&no-inline";
+import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
 ---
 <section class="m05-draft-panel" aria-labelledby="m05-draft-lab-heading" data-m05-local-editor>
   <div class="m05-draft-intro">
@@ -145,6 +146,34 @@ import auditScriptUrl from "./local-citation-audit.mjs?url&no-inline";
   <p class="m05-audit-footnote" role="status" aria-live="polite" data-m05-audit-status>Local text scan only. No provider or source is accessed.</p>
 </section>
 <script is:inline type="module" src={auditScriptUrl}></script>
+<section class="m05-claim-panel" data-m05-claim-panel aria-labelledby="m05-claim-heading">
+  <div class="m05-claim-header">
+    <div>
+      <p class="m05-claim-eyebrow">EDITORIAL CLAIM QUEUE · LOCAL-ONLY MOCK</p>
+      <h3 id="m05-claim-heading">Claims awaiting human review</h3>
+    </div>
+    <strong class="m05-claim-count" data-m05-claim-count>0 / 12</strong>
+  </div>
+  <p class="m05-claim-description">Write an assertion that needs independent checking and optionally attach an existing local source note. The review queue is embedded in the current article body, so it survives local Markdown export and import.</p>
+  <div class="m05-claim-fields">
+    <label for="m05-claim-statement">Assertion to review
+      <input id="m05-claim-statement" type="text" data-m05-claim-input maxlength="220" autocomplete="off" placeholder="State the specific assertion, 10 to 220 characters" />
+    </label>
+    <label for="m05-claim-reference">Optional reference note
+      <select id="m05-claim-reference" data-m05-claim-source>
+        <option value="">No source linked yet</option>
+      </select>
+    </label>
+  </div>
+  <button class="m05-claim-add" type="button" data-m05-claim-add disabled>Add to local review queue</button>
+  <h4 class="m05-claim-list-title">Editorial review notes</h4>
+  <ol class="m05-claim-list" data-m05-claim-list aria-label="Assertions needing human review">
+    <li>No claim-review notes added yet.</li>
+  </ol>
+  <p class="m05-claim-caution">“Review noted” is a personal note, not evidence of fact-checking, source validity, rights clearance, owner approval or publication. If a source note is removed, the related claim is flagged as missing its reference. Re-export the Markdown file to keep your edits.</p>
+  <p class="m05-claim-status" data-m05-claim-status role="status" aria-live="polite"></p>
+</section>
+<script is:inline type="module" src={claimScriptUrl}></script>
 
 <style>
   .m05-draft-panel { border:1px solid #2a3d32; border-radius:10px; padding:clamp(17px,2.5vw,24px); background:linear-gradient(145deg,#111d17,#0b120f); color:#f2f5f1; }
@@ -242,6 +271,23 @@ import auditScriptUrl from "./local-citation-audit.mjs?url&no-inline";
   .m05-audit-list-title { margin:16px 0 8px; font-size:12px; }
   .m05-audit-list { margin:0; padding-left:19px; display:grid; gap:8px; font-size:11px; color:#f1f4f0; line-height:1.65; overflow-wrap:anywhere; }
   .m05-audit-footnote { color:#b8f34b; }
+  .m05-claim-panel { margin-top:16px; padding:clamp(14px,2vw,22px); border:1px solid #526c52; border-radius:9px; background:linear-gradient(145deg,#13261a,#0d1510); color:#f2f5f1; }
+  .m05-claim-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .m05-claim-eyebrow { margin:0; color:#b8f34b; font-size:10px; font-weight:750; letter-spacing:.11em; }
+  .m05-claim-header h3 { margin:5px 0 0; font-size:16px; line-height:1.4; }
+  .m05-claim-count { padding:8px 12px; border:1px solid #526e50; border-radius:7px; font-size:13px; color:#b8f34b; font-variant-numeric:tabular-nums; }
+  .m05-claim-description, .m05-claim-caution { max-width:86ch; margin:12px 0; font-size:11px; line-height:1.65; color:#c0d1c2; }
+  .m05-claim-fields { margin:15px 0 12px; display:grid; grid-template-columns:2fr 1fr; gap:12px; }
+  .m05-claim-fields label { display:grid; gap:7px; font-size:11px; font-weight:650; }
+  .m05-claim-fields input, .m05-claim-fields select { min-width:0; width:100%; padding:11px 12px; border:1px solid #486149; border-radius:6px; background:#09120c; color:#f2f5f1; font:inherit; font-size:12px; }
+  .m05-claim-panel input:focus-visible, .m05-claim-panel select:focus-visible, .m05-claim-panel button:focus-visible { outline:3px solid #b8f34b; outline-offset:2px; }
+  .m05-claim-add, .m05-claim-list button { min-height:38px; margin:0 8px 6px 0; padding:8px 12px; border:1px solid #5d7759; border-radius:6px; color:#f6f9f5; background:#263d2a; font:inherit; font-size:11px; font-weight:650; cursor:pointer; }
+  .m05-claim-add:disabled { opacity:.5; cursor:not-allowed; }
+  .m05-claim-list-title { margin:20px 0 9px; font-size:12px; }
+  .m05-claim-list { padding-left:19px; display:grid; gap:12px; font-size:11px; line-height:1.7; overflow-wrap:anywhere; }
+  .m05-claim-list li span { display:block; margin-bottom:7px; }
+  .m05-claim-status { min-height:1.6em; color:#b8f34b; font-size:11px; line-height:1.6; }
+  @media(max-width:540px) { .m05-claim-fields { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:900px) { .m05-draft-layout { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:500px) { .m05-draft-panel { padding:15px; } .m05-draft-fields input, .m05-draft-fields textarea { font-size:16px; } .m05-draft-actions button { width:100%; } }
 </style>

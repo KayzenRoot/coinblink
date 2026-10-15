@@ -1,3 +1,6 @@
+---
+import metricsScriptUrl from "./local-draft-metrics.mjs?url&no-inline";
+---
 <section class="m05-draft-panel" aria-labelledby="m05-draft-lab-heading" data-m05-local-editor>
   <div class="m05-draft-intro">
     <div>
@@ -49,34 +52,7 @@
   <p class="m05-draft-notice"><strong>Not saved online:</strong> export to .md before closing or reloading, then import that file to resume. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
 </section>
 <script is:inline type="module" src="/m05-draft-preview.js"></script>
-<script>
-  import { measureLocalDraft } from "./local-draft-metrics.mjs";
-
-  // The existing local-only editor remains responsible for import/export.
-  // A MutationObserver updates metrics after asynchronous local file imports,
-  // without touching the source file, storage, network or publishing paths.
-  const root = document.querySelector("[data-m05-local-editor]");
-  const body = root?.querySelector<HTMLTextAreaElement>("[data-m05-draft-body]");
-  const preview = root?.querySelector("[data-m05-preview-body]");
-  const words = root?.querySelector<HTMLElement>("[data-m05-metric-words]");
-  const characters = root?.querySelector<HTMLElement>("[data-m05-metric-characters]");
-  const minutes = root?.querySelector<HTMLElement>("[data-m05-metric-minutes]");
-
-  if (body && words && characters && minutes) {
-    const update = () => {
-      const result = measureLocalDraft(body.value);
-      words.textContent = String(result.words);
-      characters.textContent = String(result.characters);
-      minutes.textContent = String(result.estimatedMinutes);
-    };
-    body.addEventListener("input", update);
-    if (preview) {
-      const observer = new MutationObserver(update);
-      observer.observe(preview, { childList: true, characterData: true, subtree: true });
-    }
-    update();
-  }
-</script>
+<script is:inline type="module" src={metricsScriptUrl}></script>
 
 <style>
   .m05-draft-panel { border:1px solid #2a3d32; border-radius:10px; padding:clamp(17px,2.5vw,24px); background:linear-gradient(145deg,#111d17,#0b120f); color:#f2f5f1; }

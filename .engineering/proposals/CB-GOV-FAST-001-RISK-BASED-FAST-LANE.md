@@ -1,0 +1,53 @@
+# CB-GOV-FAST-001 — Risk-based fast lane (PROPOSED, NOT EFFECTIVE)
+
+**Risk:** ELEVATED (governance process). **Owner request:** 2026-10-15, accelerate CoinBlink, relax repeated GEF analysis, conduct deep final audit. **Current authority:** `main` at `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8`; checkpoint M00_COMPLETE/5%, M01+M05 admitted within existing scopes, CB-VIS-WO-002 Phase A DEMO library admitted. **Disposition:** proposal only until an exact-head-reviewed, Owner-authorized PR merge and post-merge readback. This text does not rewrite or weaken any existing source, GEF CLI, ruleset, CI, safety gate, Work Order, or checkpoint.
+
+## Problem, measurable hypothesis and success criteria
+
+R34 ended with no new code after tests; R35 successfully moved into PR #77, while PR #58 and #59 accumulated repeated evidence rounds. The repeated GEF/DoD review of unchanged sources and passing tests wastes development time. Accelerate **authorized local implementation**, not commercial release, source licensing, or privileged operations.
+
+**Proposed 30-task pilot metrics** (capture actual evidence; no fabricated expected gains): elapsed time from code start to first working preview; ratio of agent turns spent implementing/tests versus repeating reviews; CI minutes per accepted feature; duplicated unchanged-fingerprint GEF calls; defects caught before protected-main merge; escaped HIGH/CRITICAL defects; time spent on correction rounds. Baseline before and compare after; rollback to prior cadence if escaping defects increase, required checks regress, or time savings are not demonstrated.
+
+## Candidate fast-lane rules
+
+1. **Admission stays real.** Read the canonical source hierarchy/checkpoint/ADRs once per execution session, pin the current `main` SHA and Git blob hashes of material sources. A planned module is not automatically executable. Check source-delta fingerprints again only if a governing file or base commit changes. Stale authority is a STOP until refreshed, not an excuse to reset the whole implementation unrelated to the delta.
+2. **One admitted WO, larger execution batches.** Inside an admitted WO, run 2–4 cohesive, dependency-ordered implementation milestones in a single local Codex worktree with stable ID and one PR. No micro-approval for each internal local commit. Keep shared files under Integration Steward, serial integration, and module boundaries unchanged.
+3. **Targeted checks per milestone.** After each logical code change run typecheck/build or affected unit tests as relevant. Record command/exit code and touched paths in an append-only (or explicitly versioned) journal. At PR publication or materially changed final HEAD run full prescribed unit+lint+typecheck/build+relevant E2E/axe/security/GEF; all existing strict status checks remain mandatory for protected merge. Never defer known HIGH/CRITICAL vulnerability, auth bypass, data leak, migration corruption or contract break.
+4. **Deduplicate read-only GEF observations.** Cache immutable `doctor/status` results keyed by executable GEF version, machine checkpoint blob SHA, Source Pack relevant blob SHAs, git base, config hashes and host environment. Reuse only where those inputs actually match, mark reused evidence with original timestamp and provenance, run again whenever key changes, before final required attestations, or if GEF policy requires a fresh run. This is **runner orchestration**, not alteration to pinned GEF 1.1.2.
+5. **Review material deltas, not unchanged history.** A completed technical audit may be referenced for the same exact commit; if code changes, review changed diff + affected risk surfaces and rerun relevant tests. A new final HEAD still needs protected exact-head CI. Do not claim a `CodeRabbit=success` skipped/rate-limited run is substantive review. If the required external review context is obsolete, create a **separate ruleset/ADR proposal** (with replacement assurance) and do not mutate live ruleset from this proposal.
+6. **No ritual checkpoint promotions.** Stage proposed checkpoint deltas only after actual DoD evidence. Promote canonical checkpoint once after an approved integration/release action, and only record completed modules. Progress remains 5% unless objectively demonstrated.
+7. **Recovery instead of stopping work altogether.** On an external non-security blocker, record explicit `BLOCKED_EXTERNAL` with precise artifact and resume another **already admitted**, non-overlapping task within the same authorized batch. Do not invent new admissions, provider permissions or rights.
+8. **Cost and operator efficiency.** Prefer Codex Desktop LOCAL, isolated branches, native deterministic tools, one bounded Docker/Playwright queue, artifact hashes not repeated screenshots where unchanged, incremental developer journal, then compact final Evidence Bundle. Avoid redundant Cloudflare Preview deployments when app/build inputs and prior validated preview remain byte-identical.
+9. **Audit at sensible gates.** Small evidence-based review for LOW, STANDARD checks for public UI/state, comprehensive elevated review for shared platform/rights/migration; HIGH_ASSURANCE remains strict. At integration: independent technical/delta audit and admin GO/NO-GO based on current exact HEAD. At version final: broad security/regression/recovery/rights/deployment/DoD audit. Do not postpone mandatory risk mitigation to this final audit.
+
+## Risk matrix
+
+| Risk | Scope examples | During coding | Before integration |
+| --- | --- | --- | --- |
+| LOW | pure text, docs, safe styling, owned static fixture | fingerprint preflight; targeted test or deterministic content checks | current HEAD required CI; focused change audit |
+| STANDARD | admitted public UI, client-side DEMO workflow, accessible navigation | targeted unit, typecheck/build, smoke at material milestone | complete required CI, module E2E/security contract checks, audit and Owner integration decision |
+| ELEVATED | shared route/CI changes, rights-sensitive media, data storage or migration | explicit approved contract/ADR; no unsafe change without approval; tests at each material stage | broad relevant regressions, policy/security/rollback proof, independent analysis and Owner GO |
+| HIGH_ASSURANCE | privileged authentication/vault, irreversible money/signing, security-critical production | separately approved security architecture/authority; threat model, negative testing and stop on gaps | strongest reviews, adversarial tests, recovery evidence; no auto-enable or fail-open |
+
+## Applying to current PRs
+
+- **#77 brand**: exact approved R32 bytes, manifest and tests; existing narrow demo-only technical audit for `e5e250985bade5ffdf975a735566969dcf874bb6` can be referenced while unchanged. Stacked logo dark-surface-only, Issue #72 unresolved, no global favicon/header, no merge.
+- **#58 M01**: owner-approved DEMO visual, not rights-cleared. Avoid duplicate artwork/testing passes. Rebase/synchronize against current main via normal merge/fast-forward (no force-push); only if authorized by Integration Steward; run affected+final full checks. No commercial use or merge without separate decision.
+- **#59 M05**: admitted P0 local mock editor only. Fix module-specific defects within existing scope; do not implement P1 auth, vault, D1, real admin, provider integration or publish until separate security/data ADR is approved.
+- **Future M02/M03**: contracts/admission may be prepared as governance proposals, but no code until formal effective admission.
+
+## Non-negotiable constraints / safety
+
+Existing `main` ruleset #24888106 stays active: PR+strict HEAD checks, permitted squash, thread resolution, no bypass actors, deletion/non-fast-forward protected. The owner-solo approval count configuration remains as actually installed. `CodeRabbit` currently reports green with auto-reviews disabled, **not an independent audit**; changes to required contexts require a separate ruleset decision/proof. No self-issued `APPROVED` review, no fabricated external approvals, no force-push, no production deployment, no paid bindings, no secret exposure, no unapproved migrations, no legal clearance inference and no change of Golden master pixels.
+
+## Adoption, pilot, audit and rollback
+
+**Phase 0, in this PR:** documentation-only Work Order + Context Lock + candidate policy; no effective process change. Run CI and audit exact HEAD, request specific Owner GO before merging. Existing work already independently admitted may continue under existing rules meanwhile.
+
+**Phase 1, after authorized merge:** use local orchestrator prompts on admitted LOW/STANDARD WOs, one journal + one PR, with full end-of-PR CI. No new GEF CLI/ruleset code change required for avoiding duplicate conversational round trips. If a tool insists on uncached freshness, honor it and log precisely why.
+
+**Phase 2, separate future WO if evidence supports it:** automate stable fingerprints/cache and hosted status consolidation; if rule change is truly necessary, show exact original/proposed JSON and replacement assurance and obtain Owner authorization before any provider mutation.
+
+**Stop/rollback:** revert fast-lane operator practice (not git history) if a governing blob changes unexpectedly, required CI fails, credential/payment/auth/security gate appears, candidate scope exceeds admitted ownership, HIGH/CRITICAL defect exists, or an Owner veto is issued. Continue work only in another already admitted safe scope; do not relabel failure as success.
+
+**Status:** PROPOSED / NOT EFFECTIVE. **Admin review language:** Brazilian Portuguese.

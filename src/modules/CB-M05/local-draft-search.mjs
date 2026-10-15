@@ -53,15 +53,16 @@ export function replaceAllInLocalDraft(body, query, replacement, options = {}) {
 if (typeof document !== "undefined") {
   const root = document.querySelector("[data-m05-local-editor]");
   const body = root?.querySelector("[data-m05-draft-body]");
+  const toolbar = document.querySelector("[data-m05-local-search]");
   const preview = root?.querySelector("[data-m05-preview-body]");
-  const findInput = root?.querySelector("[data-m05-search-query]");
-  const replaceInput = root?.querySelector("[data-m05-search-replacement]");
-  const matchCount = root?.querySelector("[data-m05-search-count]");
-  const status = root?.querySelector("[data-m05-search-status]");
-  const caseToggle = root?.querySelector("[data-m05-search-case]");
-  const findButton = root?.querySelector("[data-m05-search-next]");
-  const replaceSelectedButton = root?.querySelector("[data-m05-replace-selected]");
-  const replaceAllButton = root?.querySelector("[data-m05-replace-all]");
+  const findInput = toolbar?.querySelector("[data-m05-search-query]");
+  const replaceInput = toolbar?.querySelector("[data-m05-search-replacement]");
+  const matchCount = toolbar?.querySelector("[data-m05-search-count]");
+  const status = toolbar?.querySelector("[data-m05-search-status]");
+  const caseToggle = toolbar?.querySelector("[data-m05-search-case]");
+  const findButton = toolbar?.querySelector("[data-m05-search-next]");
+  const replaceSelectedButton = toolbar?.querySelector("[data-m05-replace-selected]");
+  const replaceAllButton = toolbar?.querySelector("[data-m05-replace-all]");
 
   if (body && findInput && replaceInput && matchCount && status && caseToggle
       && findButton && replaceSelectedButton && replaceAllButton) {

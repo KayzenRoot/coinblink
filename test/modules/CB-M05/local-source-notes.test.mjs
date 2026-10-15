@@ -112,6 +112,10 @@ test("the UI is scoped outside the original editor, CSP-safe, and makes no exter
   assert.match(component, /src=\{sourcesScriptUrl\}/u);
   assert.match(component, /\?url&no-inline/u);
   assert.match(component, /aria-live="polite"/u);
+  assert.match(component, /data-m05-source-add disabled/u, "empty demo action must begin disabled");
+  assert.match(module, /name\.addEventListener\("input", render\)/u);
+  assert.match(module, /url\.addEventListener\("input", render\)/u);
+  assert.match(module, /addButton\.disabled = !canAdd/u);
   assert.match(module, /MutationObserver\(render\)/u);
   assert.match(module, /textContent/u);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML)\b/u);

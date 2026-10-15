@@ -1,6 +1,61 @@
 /* global document, MutationObserver */
 // Heuristic local citation hygiene. No network calls, storage, providers, approval or fact checking.
-import { LOCAL_SOURCE_HEADING, listLocalSources, MAX_LOCAL_ARTICLE_LENGTH } from "./local-source-notes.mjs";
+// This URL-bundled module must be standalone: relative imports from the emitted
+// /_astro/ asset would cause 404 errors under strict CSP. Mirror the exact
+// definition format of local-source-notes.mjs, never trusting user-edited text.
+const LOCAL_SOURCE_HEADING = "### CoinBlink source notes (unverified)";
+const MAX_LOCAL_ARTICLE_LENGTH = 12000;
+const MAX_LOCAL_SOURCES = 12;
+
+function parseSourceNotes(body) {
+  if (typeof body !== "string" || body.length > MAX_LOCAL_ARTICLE_LENGTH) {
+    throw new RangeError("Local article exceeds the size limit");
+  }
+  const position = body.lastIndexOf(APPENDIX_MARKER);
+  if (position < 0) {
+    if (body.includes(LOCAL_SOURCE_HEADING)) {
+      throw new RangeError("Malformed source-note section");
+    }
+    return Object.freeze({ prose: body, sources: Object.freeze([]) });
+  }
+  const prose = body.slice(0, position);
+  const suffix = body.slice(position + APPENDIX_MARKER.length);
+  if (prose.includes(LOCAL_SOURCE_HEADING) || !suffix || suffix.endsWith("\n\n")) {
+    throw new RangeError("Duplicate or malformed source-note section");
+  }
+  const lines = suffix.endsWith("\n") ? suffix.slice(0, -1).split("\n") : suffix.split("\n");
+  if (lines.length < 1 || lines.length > MAX_LOCAL_SOURCES) {
+    throw new RangeError("Invalid reference count");
+  }
+  const ids = new Set();
+  const urls = new Set();
+  const sources = [];
+  for (const line of lines) {
+    const matched = /^\[\^cb([1-9]|1[0-2])\]: (.+) \| (https:\/\/\S+)$/u.exec(line);
+    if (!matched) throw new RangeError("Malformed source note");
+    const id = Number(matched[1]);
+    const title = matched[2];
+    const rawUrl = matched[3];
+    if (title.length < 1 || title.length > 90 || title !== title.trim()
+      || /[\r\n\t|<>]/u.test(title) || /[\[\]\\]/u.test(title)
+      || rawUrl.length > 500 || /[\s|<>]/u.test(rawUrl)) {
+      throw new RangeError("Invalid source label or URL");
+    }
+    let url;
+    try { url = new URL(rawUrl); }
+    catch { throw new RangeError("Invalid source URL"); }
+    if (url.protocol !== "https:" || url.username || url.password
+        || !url.hostname.includes(".") || url.hostname.endsWith(".")
+        || url.href.length > 500 || url.href !== rawUrl
+        || ids.has(id) || urls.has(rawUrl)) {
+      throw new RangeError("Noncanonical or duplicate source note");
+    }
+    ids.add(id);
+    urls.add(rawUrl);
+    sources.push(Object.freeze({ id, title, url: rawUrl }));
+  }
+  return Object.freeze({ prose, sources: Object.freeze(sources) });
+}
 
 export const MAX_CITATION_HINTS = 8;
 export const LOCAL_CITATION_AUDIT_STATUS = "LOCAL_HEURISTIC_ONLY_NOT_FACT_CHECKED";
@@ -50,9 +105,9 @@ export function analyzeLocalCitationHygiene(body) {
     });
   }
 
-  let sources;
+  let parsed;
   try {
-    sources = listLocalSources(body);
+    parsed = parseSourceNotes(body);
   } catch {
     return Object.freeze({
       status: "MALFORMED_SOURCE_NOTES_REPAIR_REQUIRED", malformedNotes: true,
@@ -61,8 +116,7 @@ export function analyzeLocalCitationHygiene(body) {
     });
   }
 
-  const idx = body.lastIndexOf(APPENDIX_MARKER);
-  const prose = idx < 0 ? body : body.slice(0, idx);
+  const { prose, sources } = parsed;
   const used = new Set();
   for (const match of prose.matchAll(MARKER_PATTERN)) used.add(Number(match[1]));
   const known = new Set(sources.map((source) => source.id));

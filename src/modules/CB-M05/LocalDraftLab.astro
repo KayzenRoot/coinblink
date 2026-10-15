@@ -33,31 +33,7 @@ import searchScriptUrl from "./local-draft-search.mjs?url&no-inline";
         <button type="button" data-m05-export disabled>Export Markdown (.md)</button>
         <span data-m05-draft-hint role="status" aria-live="polite"></span>
       </div>
-      <section class="m05-local-search" aria-labelledby="m05-local-search-heading">
-        <div class="m05-local-search-heading">
-          <h3 id="m05-local-search-heading">Find and replace in this draft</h3>
-          <span><strong data-m05-search-count>0</strong> matches</span>
-        </div>
-        <div class="m05-local-search-fields">
-          <label for="m05-local-find">Find in article body
-            <input id="m05-local-find" type="search" maxlength="100" data-m05-search-query autocomplete="off" placeholder="Exact text to find" />
-          </label>
-          <label for="m05-local-replace">Replace with
-            <input id="m05-local-replace" type="text" maxlength="200" data-m05-search-replacement autocomplete="off" placeholder="Replacement text" />
-          </label>
-        </div>
-        <label class="m05-local-search-case" for="m05-local-case">
-          <input id="m05-local-case" type="checkbox" data-m05-search-case />
-          Match uppercase and lowercase exactly
-        </label>
-        <div class="m05-local-search-actions">
-          <button type="button" data-m05-search-next disabled>Find next</button>
-          <button type="button" data-m05-replace-selected disabled>Replace selected</button>
-          <button type="button" data-m05-replace-all disabled>Replace all</button>
-        </div>
-        <p class="m05-local-search-note">Only your current article body changes. Re-export the Markdown file to keep the edits. Search results do not verify facts, citations or rights.</p>
-        <p class="m05-local-search-status" data-m05-search-status role="status" aria-live="polite"></p>
-      </section>
+
     </div>
     <section class="m05-draft-preview" aria-labelledby="m05-draft-preview-heading">
       <p class="m05-draft-eyebrow">TEXT-ONLY PREVIEW · NEVER PUBLISHED</p>
@@ -76,6 +52,31 @@ import searchScriptUrl from "./local-draft-search.mjs?url&no-inline";
     </section>
   </div>
   <p class="m05-draft-notice"><strong>Not saved online:</strong> export to .md before closing or reloading, then import that file to resume. Export is not evidence of factual accuracy, content rights, approval or publication. Never enter passwords, API tokens, private keys or sensitive information.</p>
+</section>
+<section class="m05-local-search" data-m05-local-search aria-labelledby="m05-local-search-heading">
+  <div class="m05-local-search-heading">
+    <h3 id="m05-local-search-heading">Find and replace in this draft</h3>
+    <span><strong data-m05-search-count>0</strong> matches</span>
+  </div>
+  <div class="m05-local-search-fields">
+    <label for="m05-local-find">Find in article body
+      <input id="m05-local-find" type="search" maxlength="100" data-m05-search-query autocomplete="off" placeholder="Exact text to find" />
+    </label>
+    <label for="m05-local-replace">Replace with
+      <input id="m05-local-replace" type="text" maxlength="200" data-m05-search-replacement autocomplete="off" placeholder="Replacement text" />
+    </label>
+  </div>
+  <label class="m05-local-search-case" for="m05-local-case">
+    <input id="m05-local-case" type="checkbox" data-m05-search-case />
+    Match uppercase and lowercase exactly
+  </label>
+  <div class="m05-local-search-actions">
+    <button type="button" data-m05-search-next disabled>Find next</button>
+    <button type="button" data-m05-replace-selected disabled>Replace selected</button>
+    <button type="button" data-m05-replace-all disabled>Replace all</button>
+  </div>
+  <p class="m05-local-search-note">Only your current article body changes. Re-export the Markdown file to keep the edits. Search results do not verify facts, citations or rights.</p>
+  <p class="m05-local-search-status" data-m05-search-status role="status" aria-live="polite"></p>
 </section>
 <script is:inline type="module" src="/m05-draft-preview.js"></script>
 <script is:inline type="module" src={metricsScriptUrl}></script>

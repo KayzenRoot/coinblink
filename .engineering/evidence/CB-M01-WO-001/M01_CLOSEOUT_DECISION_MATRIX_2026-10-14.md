@@ -39,3 +39,37 @@
 ### Technical STOP CONDITION
 
 `M01_DEMO_TECHNICALLY_READY` can be supported by existing evidence, but **`M01_FORMALLY_COMPLETE=false`** and **`M01_PR58_MERGE_AUTHORIZED=false`** until the frozen DoD, rights/branding and governance steps above are met. Do not invent progress percentages or collapse these distinctions. The requested next phase is to **remove the shortest actual blockers**, not to recreate stills or animation loops.
+
+## R35 exact-head readback and closeout addendum · 2026-10-15
+
+This addendum records a fresh, read-only GitHub readback and local Node 22 validation. The six browser screenshots and two machine-readable reports under [`r35-browser-qa/`](./r35-browser-qa/) were added as versioned evidence; all earlier evidence remains intact.
+
+### Authority and PR state
+
+- Authenticated GitHub account: `KayzenRoot`. Canonical `main` at readback: `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8`. The merged admission PRs #75 and #76 are present on that main. The checkpoint remains `M00_COMPLETE`, `IMPLEMENTATION_IN_PROGRESS`, 5%; no checkpoint file was changed.
+- PR [#58](https://github.com/KayzenRoot/coinblink/pull/58) remains OPEN, not draft, at code HEAD `45b128e898a9daf880cda18ab44bcbe038c2e129`. Remote branch and local branch matched before this evidence-only commit. Its base is still `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; it is two commits behind current `main` and GitHub reports `BEHIND`. No rebase or base update was performed.
+- Issue [#72](https://github.com/KayzenRoot/coinblink/issues/72) remains OPEN. Rights remain `PENDING_OWNER_OR_LEGAL`; `commercialPublicationAllowed=false`; `authorizedToMerge=false`. The Owner's acceptance remains scoped to DEMO.
+- The earlier “finish PR #76” next-action text above is historical and superseded: #76 is merged. The separate brand asset import is in draft PR [#77](https://github.com/KayzenRoot/coinblink/pull/77); no brand/header/favicon files were mixed into #58.
+
+### Validation at the code HEAD before this evidence commit
+
+On Node.js `v22.23.3`, local `npm ci`, `npm test`, `npm run lint`, and `npm run typecheck` passed. `npm test` reported 192/192 Node tests, the Astro build and no-session-binding guard passed, and Playwright E2E passed 34/34. Typecheck covered 79 files with zero errors, warnings, or hints. These local runs validate code HEAD `45b128e`; they do not by themselves validate the evidence commit that follows.
+
+GitHub reported all six required checks successful on that same code HEAD: [Ubuntu GEF](https://github.com/KayzenRoot/coinblink/actions/runs/38655185285/job/116163138878), [Windows GEF](https://github.com/KayzenRoot/coinblink/actions/runs/38655185285/job/116163138984), [Docker smoke](https://github.com/KayzenRoot/coinblink/actions/runs/38655185285/job/116163138850), [SonarCloud](https://github.com/KayzenRoot/coinblink/runs/116163476733), [Socket PR Alerts](https://github.com/KayzenRoot/coinblink/runs/116163145607), and [Socket Project Report](https://github.com/KayzenRoot/coinblink/runs/116163129576). CodeRabbit's green commit status says “Review skipped: automatic reviews are disabled”; this is **not** a review. The PR had no unresolved review threads at readback. All hosted evidence above predates this evidence-only commit and must be refreshed at its resulting exact HEAD.
+
+### R35 browser evidence
+
+Both reports say `passed`, use base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` and code HEAD `45b128e898a9daf880cda18ab44bcbe038c2e129`, and cover desktop, tablet, and mobile. The integrated `/en` route report recorded zero console errors, page errors, and external requests; reduced-motion used the static master. The isolated fixture report is explicitly separate and does not claim shared-route integration. Report SHA-256 values below are for the exact LF-normalized bytes staged for GitHub: `integrated-visual-check.json` `ffee814077d7f2d5e0f1f3789750685feb289b9ed066dfbcca8ef08fa9742d59`; `visual-check.json` `7c04bbb7c08dd0bdbb51a1289679316f173037ea26524b6f2111c2b83ea6cb97`.
+
+| Capture | Viewport | SHA-256 |
+|---|---:|---|
+| Integrated | 1536×864 | `d8ac859713579d80ccd714df526b40b9e79edee653d80652b5ff2444db782d53` |
+| Integrated | 768×1024 | `8b430a3ba8de28fd2a715ca4bd9e2c020e3b5666a1bb0233e75664be812e9067` |
+| Integrated | 390×844 | `b16bd137efa09251f9616ee40e829e68e4fe114d7c0d49548344a073e2de3347` |
+| Fixture | 1536×864 | `a0facfd3f601fed2467940f804ef2655b7bc42294632c56216ba12c4703f80b0` |
+| Fixture | 768×1024 | `6465b5de497569143ae59731f30184a84947ee0eaf6f26c4016adf1924b9a0d8` |
+| Fixture | 390×844 | `ea39f0c44592384c5d679027d93aac675f959395800fd57c58e5ecff101782ad` |
+
+### R35 outcome
+
+No M01 regression requiring an application-code correction was reproduced. The evidence supports `M01_DEMO_READY_FOR_OWNER_ADMIN_DECISION`; it does **not** change the status to DONE. Live provider rights/data, commercial rights, the strict-base update, fresh exact-head checks/review, and an explicit scoped administrative decision remain outstanding. `M01_FORMALLY_COMPLETE=false`; `M01_PR58_MERGE_AUTHORIZED=false`; no merge, deploy, or checkpoint promotion occurred.

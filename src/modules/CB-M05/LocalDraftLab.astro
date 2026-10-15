@@ -3,6 +3,7 @@ import metricsScriptUrl from "./local-draft-metrics.mjs?url&no-inline";
 import searchScriptUrl from "./local-draft-search.mjs?url&no-inline";
 import editorialScriptUrl from "./local-editorial-checklist.mjs?url&no-inline";
 import sourcesScriptUrl from "./local-source-notes.mjs?url&no-inline";
+import auditScriptUrl from "./local-citation-audit.mjs?url&no-inline";
 ---
 <section class="m05-draft-panel" aria-labelledby="m05-draft-lab-heading" data-m05-local-editor>
   <div class="m05-draft-intro">
@@ -128,6 +129,22 @@ import sourcesScriptUrl from "./local-source-notes.mjs?url&no-inline";
 </section>
 <script is:inline type="module" src={editorialScriptUrl}></script>
 <script is:inline type="module" src={sourcesScriptUrl}></script>
+<section class="m05-audit-panel" data-m05-citation-audit aria-labelledby="m05-audit-title">
+  <div class="m05-audit-header">
+    <div>
+      <p class="m05-audit-eyebrow">LOCAL SOURCE HYGIENE · HEURISTIC DEMO</p>
+      <h3 id="m05-audit-title">Citation consistency and claims to review</h3>
+    </div>
+    <strong class="m05-audit-counter" data-m05-audit-count>0 review signal(s)</strong>
+  </div>
+  <p class="m05-audit-description">Highlights citation IDs without source notes, unused references, explicit TODO/source placeholders, and some numerical claims with no local citation marker. A marker is not evidence that any claim is correct.</p>
+  <h4 class="m05-audit-list-title">Review signals</h4>
+  <ul class="m05-audit-list" data-m05-audit-findings aria-label="Citation and editorial review signals">
+    <li>Enter a draft to see structural review signals.</li>
+  </ul>
+  <p class="m05-audit-footnote" role="status" aria-live="polite" data-m05-audit-status>Local text scan only. No provider or source is accessed.</p>
+</section>
+<script is:inline type="module" src={auditScriptUrl}></script>
 
 <style>
   .m05-draft-panel { border:1px solid #2a3d32; border-radius:10px; padding:clamp(17px,2.5vw,24px); background:linear-gradient(145deg,#111d17,#0b120f); color:#f2f5f1; }
@@ -216,6 +233,15 @@ import sourcesScriptUrl from "./local-source-notes.mjs?url&no-inline";
   .m05-sources-caution { margin:14px 0 0; }
   .m05-sources-status { margin:9px 0 0; min-height:1.5em; color:#b8f34b; font-size:11px; line-height:1.6; }
   @media(max-width:540px) { .m05-sources-fields { grid-template-columns:minmax(0,1fr); } }
+  .m05-audit-panel { margin-top:16px; padding:clamp(14px,2vw,22px); border:1px solid #53694c; border-radius:9px; background:linear-gradient(135deg,#15241c,#0c1610); color:#f2f5f1; }
+  .m05-audit-header { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+  .m05-audit-eyebrow { margin:0; font-size:10px; font-weight:750; letter-spacing:.1em; color:#b8f34b; }
+  .m05-audit-header h3 { margin:5px 0 0; font-size:16px; line-height:1.4; }
+  .m05-audit-counter { padding:8px 12px; border:1px solid #526e50; border-radius:7px; color:#b8f34b; font-size:12px; font-variant-numeric:tabular-nums; }
+  .m05-audit-description, .m05-audit-footnote { max-width:87ch; margin:12px 0; color:#c0d1c2; font-size:11px; line-height:1.7; }
+  .m05-audit-list-title { margin:16px 0 8px; font-size:12px; }
+  .m05-audit-list { margin:0; padding-left:19px; display:grid; gap:8px; font-size:11px; color:#f1f4f0; line-height:1.65; overflow-wrap:anywhere; }
+  .m05-audit-footnote { color:#b8f34b; }
   @media(max-width:900px) { .m05-draft-layout { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:500px) { .m05-draft-panel { padding:15px; } .m05-draft-fields input, .m05-draft-fields textarea { font-size:16px; } .m05-draft-actions button { width:100%; } }
 </style>

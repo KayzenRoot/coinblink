@@ -33,7 +33,7 @@ Module test agent MAY write only:
 3. test/modules/CB-M05/p1a-local-fixtures/** (synthetic SQL, local-only Wrangler JSONC config, fake fixture-only data).
 4. .engineering/evidence/CB-M05-P1A-LOCAL-001.md (measured test evidence, not assertions of future results).
 
-No tracked DB state file is permitted. A disposable untracked .local-p1a-d1-state directory may be used ONLY after verifying .gitignore excludes it. The agent may not edit .gitignore; request separate Integration Steward path authorization if necessary.
+No tracked DB state file is permitted. A disposable untracked .wrangler/p1a-local-state directory may be used ONLY after verifying .gitignore excludes it. The agent may not edit .gitignore; request separate Integration Steward path authorization if necessary.
 
 Integration Steward (the KayzenRoot-controlled integration role, not a separate human account) owns ALL shared source paths: src/pages, public, global middleware, package manifests, global config, root Wrangler, production SQL migrations, CI/workflows, scripts, Docker and .engineering/CHECKPOINT.json. The existing P0 PR #59 is a different branch and must not be amended by this work.
 

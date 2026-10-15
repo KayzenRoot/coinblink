@@ -5,11 +5,11 @@
 Running 7 tests using 1 worker
 
   ✓  1 e2e/m00-shell.spec.mjs:43:5 › CoinBlink M00 local shell › renders accessibly at desktop-1536x864 (2.7s)
-  ✓  2 e2e/m00-shell.spec.mjs:43:5 › CoinBlink M00 local shell › renders accessibly at tablet-768x1024 (2.6s)
-  ✓  3 e2e/m00-shell.spec.mjs:43:5 › CoinBlink M00 local shell › renders accessibly at mobile-390x844 (2.2s)
-  ✓  4 e2e/m00-shell.spec.mjs:88:3 › CoinBlink M00 local shell › health and preview status expose only sanitized development metadata (159ms)
-  ✓  5 e2e/m00-shell.spec.mjs:117:3 › CoinBlink M00 local shell › unknown routes return an honest accessible 404 (541ms)
-  ✓  6 e2e/m00-shell.spec.mjs:124:3 › CoinBlink M00 local shell › all application routes include the security response headers (298ms)
-  ✓  7 e2e/m00-shell.spec.mjs:137:3 › CoinBlink M00 local shell › robots.txt allows crawlers to read noindex signals without claiming privacy (103ms)
+  ✓  2 e2e/m00-shell.spec.mjs:43:5 › CoinBlink M00 local shell › renders accessibly at tablet-768x1024 (2.5s)
+  ✓  3 e2e/m00-shell.spec.mjs:43:5 › CoinBlink M00 local shell › renders accessibly at mobile-390x844 (2.0s)
+  ✓  4 e2e/m00-shell.spec.mjs:88:3 › CoinBlink M00 local shell › health and preview status expose only sanitized development metadata (142ms)
+  ✓  5 e2e/m00-shell.spec.mjs:117:3 › CoinBlink M00 local shell › unknown routes return an honest accessible 404 (471ms)
+  ✓  6 e2e/m00-shell.spec.mjs:124:3 › CoinBlink M00 local shell › all application routes include the security response headers (277ms)
+  ✓  7 e2e/m00-shell.spec.mjs:137:3 › CoinBlink M00 local shell › robots.txt allows crawlers to read noindex signals without claiming privacy (87ms)
 
-  7 passed (15.7s)
+  7 passed (15.0s)

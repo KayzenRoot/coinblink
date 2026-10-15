@@ -6,7 +6,7 @@
 
 ## Scope
 
-The isolated brand-library change imports only the five owner-approved R32 SVG byte streams into public/brand/**. Tests and browser harness are under test/brand/**; this bundle is under .engineering/evidence/CB-VIS-WO-002/**.
+The isolated brand-library change imports only the five owner-approved R32 SVG byte streams into public/brand/**. A scoped `.gitattributes` preserves their bytes across Windows checkouts. Tests and browser harness are under test/brand/**; this bundle is under .engineering/evidence/CB-VIS-WO-002/**.
 
 No application/header integration, global favicon installation, golden-reference modification, merge, deploy, commercial release, checkpoint edit, or ruleset change is authorized or performed.
 

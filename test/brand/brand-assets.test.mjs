@@ -45,6 +45,11 @@ test("brand library contains the five byte-identical owner-approved SVGs", async
   }
 });
 
+test("Git must not convert approved SVG bytes on Windows checkouts", async () => {
+  const attributes = await readFile(path.join(REPOSITORY_ROOT, "public/brand/.gitattributes"), "utf8");
+  assert.match(attributes, /^\*\.svg\s+-text\s*$/m);
+});
+
 test("each SVG is structurally bounded and contains no active, remote, or embedded content", async () => {
   for (const [filename, expected] of Object.entries(EXPECTED_ASSETS)) {
     const source = await readFile(path.join(REPOSITORY_ROOT, "public/brand", filename), "utf8");

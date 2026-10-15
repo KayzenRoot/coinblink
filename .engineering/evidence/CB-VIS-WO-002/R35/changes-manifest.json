@@ -5,33 +5,33 @@
   "branch": "codex/cb-vis-wo-002-phase-a-r35-20261014",
   "baseSha": "5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8",
   "headSha": null,
-  "headShaNote": "Read the exact published head from the PR API; this inventory hashes committed Git blobs and excludes itself to avoid self-reference.",
+  "headShaNote": "Read the exact published head from the PR API; this inventory hashes staged Git blobs and excludes itself to avoid self-reference.",
   "scopeAllowlist": [
     "public/brand/**",
     "test/brand/**",
     ".engineering/evidence/CB-VIS-WO-002/**"
   ],
-  "fileCount": 33,
+  "fileCount": 34,
   "files": [
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/EVIDENCE_BUNDLE.md",
-      "bytes": 1866,
-      "sha256": "8e6134f2fa3687e823d8e8d1f770d54dbcb889ca8300520bc3ea1fea1b473c4f"
+      "bytes": 1940,
+      "sha256": "ec2451096e13ab5c6310d698835c82629a990fa6e5d50459ca638b53539a71f4"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json",
       "bytes": 2310,
-      "sha256": "a37b02610e28b35208be73caacb40431f35793d6a88c3c6b48faba6927d5b0df"
+      "sha256": "81c183d2a98860059e3ffedd5e203e1b2892980d4cd6eec789c1fd4faae617df"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.log",
       "bytes": 2310,
-      "sha256": "a37b02610e28b35208be73caacb40431f35793d6a88c3c6b48faba6927d5b0df"
+      "sha256": "81c183d2a98860059e3ffedd5e203e1b2892980d4cd6eec789c1fd4faae617df"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/build.log",
       "bytes": 847,
-      "sha256": "aeb08fd72951514b3990b54bf01b31b78677b48f1dc53ae70c1c4312b5175698"
+      "sha256": "a8067242cc7d6f7571dd84cb48ffb24d3d2d7a1904d321211f4d490ac8fed606"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/checkpoint-delta-PROPOSED.md",
@@ -40,13 +40,13 @@
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/e2e-tests.log",
-      "bytes": 1019,
-      "sha256": "b745a49ff75e3f082d35058b8dfbfc82c4b032bdd235d578700f7bb416293e9f"
+      "bytes": 1018,
+      "sha256": "27dd8f7dc6598063e44c7ab88f992d42c664163b9303c705d80c041a81485e43"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/execution-journal.md",
-      "bytes": 3459,
-      "sha256": "5c329c53eb131b949b0a6fcadaa166db492efebb5f3f33a9b63b74357b95d175"
+      "bytes": 4052,
+      "sha256": "9f1a51243268a830daf5b83773aa74f3b515ad8e6bdc308031ee706681282394"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-doctor.log",
@@ -65,8 +65,8 @@
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/review-and-blockers.md",
-      "bytes": 1962,
-      "sha256": "890cd38bc9f2f8a27ea0a06b9943e87222fd554ad9899d19e2494b52b875a613"
+      "bytes": 2277,
+      "sha256": "df293770010051adee19f89407663b4f2b6b449de80f2c7d08196cdc78663a70"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/run-browser-qa.mjs",
@@ -115,23 +115,28 @@
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/tests-and-ci.json",
-      "bytes": 3614,
-      "sha256": "df57286dc7c95742edf656b23ca453832abd769cca81fd45b2ca05b06ab219df"
+      "bytes": 4149,
+      "sha256": "fb4d0f67bd97925cbd68bf2f78a05b31aad30d4e77c45c63a32de3c2ac88b108"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/typecheck.log",
       "bytes": 199,
-      "sha256": "b8895c5d3d7443b6ded931c34e943ac62a211b7eca509f7dba0e6ecb30fa712b"
+      "sha256": "55d62228aa90ff892621ba6d158a37521a4a00346395ba4fe435cc23971802d5"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/unit-tests.log",
-      "bytes": 28362,
-      "sha256": "5e27b1895964fbdf58a3b117b71a159e0123b1f67a485ed00a42aea0beca2b0a"
+      "bytes": 28544,
+      "sha256": "71ddecb1d237cd4cff52a40430f060efbd9dd64b67bf6cc052335540c3955f87"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/visual-proof-index.md",
       "bytes": 2532,
       "sha256": "e75ade18fd6eca9fe32ed5da3072b71e80397d17f0258944d7a3388ea3516597"
+    },
+    {
+      "path": "public/brand/.gitattributes",
+      "bytes": 12,
+      "sha256": "3369a3581c57be1493bf784cb80bd185a64b90675070f201b913d218f9ceb2e6"
     },
     {
       "path": "public/brand/brand-manifest.json",
@@ -165,8 +170,8 @@
     },
     {
       "path": "test/brand/brand-assets.test.mjs",
-      "bytes": 6060,
-      "sha256": "156ffa315cc95bfde82739b194482cbe6567ccfcf0bc571c5bf29c2c7366494b"
+      "bytes": 6305,
+      "sha256": "259de496883525b7007bf33eef31c9128f4ff5e1d0e52ad8af2efbe16cdc65f5"
     },
     {
       "path": "test/brand/render-harness.html",

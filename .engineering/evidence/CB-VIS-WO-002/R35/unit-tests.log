@@ -5,767 +5,773 @@ TAP version 13
 # Subtest: brand library contains the five byte-identical owner-approved SVGs
 ok 1 - brand library contains the five byte-identical owner-approved SVGs
   ---
-  duration_ms: 52.965081
+  duration_ms: 48.844538
+  type: 'test'
+  ...
+# Subtest: Git must not convert approved SVG bytes on Windows checkouts
+ok 2 - Git must not convert approved SVG bytes on Windows checkouts
+  ---
+  duration_ms: 10.403918
   type: 'test'
   ...
 # Subtest: each SVG is structurally bounded and contains no active, remote, or embedded content
-ok 2 - each SVG is structurally bounded and contains no active, remote, or embedded content
+ok 3 - each SVG is structurally bounded and contains no active, remote, or embedded content
   ---
-  duration_ms: 54.030187
+  duration_ms: 46.220402
   type: 'test'
   ...
 # Subtest: SVG security checks reject active content, event handlers, links, and XML entities
-ok 3 - SVG security checks reject active content, event handlers, links, and XML entities
+ok 4 - SVG security checks reject active content, event handlers, links, and XML entities
   ---
-  duration_ms: 1.332297
+  duration_ms: 1.283756
   type: 'test'
   ...
 # Subtest: standard SVG namespace and local fragment paint servers remain allowed
-ok 4 - standard SVG namespace and local fragment paint servers remain allowed
+ok 5 - standard SVG namespace and local fragment paint servers remain allowed
   ---
-  duration_ms: 0.308342
+  duration_ms: 0.462868
   type: 'test'
   ...
 # Subtest: manifest records demo-only rights and keeps site, header, and favicon wiring disabled
-ok 5 - manifest records demo-only rights and keeps site, header, and favicon wiring disabled
+ok 6 - manifest records demo-only rights and keeps site, header, and favicon wiring disabled
   ---
-  duration_ms: 15.960391
+  duration_ms: 13.583127
   type: 'test'
   ...
 # Subtest: golden raster reference remains unchanged
-ok 6 - golden raster reference remains unchanged
+ok 7 - golden raster reference remains unchanged
   ---
-  duration_ms: 14.881721
+  duration_ms: 12.666172
   type: 'test'
   ...
 # Subtest: changing even one byte breaks the pinned vector identity
-ok 7 - changing even one byte breaks the pinned vector identity
+ok 8 - changing even one byte breaks the pinned vector identity
   ---
-  duration_ms: 11.497834
+  duration_ms: 7.982273
   type: 'test'
   ...
 # Subtest: test/brand/svg-security.mjs
 ok 2 - test/brand/svg-security.mjs
   ---
-  duration_ms: 88.568721
+  duration_ms: 83.130407
   type: 'test'
   ...
 # Subtest: rejects missing Owner authorization, Workers Free plan, IAM, isolation, and credentials
-ok 9 - rejects missing Owner authorization, Workers Free plan, IAM, isolation, and credentials
+ok 10 - rejects missing Owner authorization, Workers Free plan, IAM, isolation, and credentials
   ---
-  duration_ms: 7.449348
+  duration_ms: 6.419342
   type: 'test'
   ...
 # Subtest: accepts exact Owner-attested Workers Free plan and protected authorization
-ok 10 - accepts exact Owner-attested Workers Free plan and protected authorization
+ok 11 - accepts exact Owner-attested Workers Free plan and protected authorization
   ---
-  duration_ms: 1.896276
+  duration_ms: 2.17333
   type: 'test'
   ...
 # Subtest: accepts Free-only Owner approval without account-wide zero-cap attestations
-ok 11 - accepts Free-only Owner approval without account-wide zero-cap attestations
+ok 12 - accepts Free-only Owner approval without account-wide zero-cap attestations
   ---
-  duration_ms: 0.405355
+  duration_ms: 0.4392
   type: 'test'
   ...
 # Subtest: fails closed if any one external authorization fact changes
-ok 12 - fails closed if any one external authorization fact changes
+ok 13 - fails closed if any one external authorization fact changes
   ---
-  duration_ms: 0.792604
+  duration_ms: 0.971977
   type: 'test'
   ...
 # Subtest: delete requires a managed Preview name, never an arbitrary Worker name
-ok 13 - delete requires a managed Preview name, never an arbitrary Worker name
+ok 14 - delete requires a managed Preview name, never an arbitrary Worker name
   ---
-  duration_ms: 0.88127
+  duration_ms: 0.82685
   type: 'test'
   ...
 # Subtest: Preview names are run-derived and reject malformed or zero run identifiers
-ok 14 - Preview names are run-derived and reject malformed or zero run identifiers
+ok 15 - Preview names are run-derived and reject malformed or zero run identifiers
   ---
-  duration_ms: 1.586912
+  duration_ms: 1.878455
   type: 'test'
   ...
 # Subtest: canonical-main identity requires the exact current repository SHA
-ok 15 - canonical-main identity requires the exact current repository SHA
+ok 16 - canonical-main identity requires the exact current repository SHA
   ---
-  duration_ms: 0.731082
+  duration_ms: 0.826749
   type: 'test'
   ...
 # Subtest: preview main guard logs a fixed message for malformed multiline identity input
-ok 16 - preview main guard logs a fixed message for malformed multiline identity input
+ok 17 - preview main guard logs a fixed message for malformed multiline identity input
   ---
-  duration_ms: 121.897654
+  duration_ms: 120.862968
   type: 'test'
   ...
 # Subtest: preview main guard uses a read-only GitHub token without logging credentials or API response data
-ok 17 - preview main guard uses a read-only GitHub token without logging credentials or API response data
+ok 18 - preview main guard uses a read-only GitHub token without logging credentials or API response data
   ---
-  duration_ms: 82.092379
+  duration_ms: 67.756685
   type: 'test'
   ...
 # Subtest: current-main guard checks GitHub's branch tip and fails closed on unavailable or invalid data
-ok 18 - current-main guard checks GitHub's branch tip and fails closed on unavailable or invalid data
+ok 19 - current-main guard checks GitHub's branch tip and fails closed on unavailable or invalid data
   ---
-  duration_ms: 6.154759
+  duration_ms: 5.502449
   type: 'test'
   ...
 # Subtest: preview main guard reports only a safe HTTP status when GitHub lookup fails
-ok 19 - preview main guard reports only a safe HTTP status when GitHub lookup fails
+ok 20 - preview main guard reports only a safe HTTP status when GitHub lookup fails
   ---
-  duration_ms: 2.404957
+  duration_ms: 2.685244
   type: 'test'
   ...
 # Subtest: source Wrangler config declares isolated empty Previews and only static assets
-ok 20 - source Wrangler config declares isolated empty Previews and only static assets
+ok 21 - source Wrangler config declares isolated empty Previews and only static assets
   ---
-  duration_ms: 4.51068
+  duration_ms: 5.198914
   type: 'test'
   ...
 # Subtest: rejects any top-level production data/resource binding
-ok 21 - rejects any top-level production data/resource binding
+ok 22 - rejects any top-level production data/resource binding
   ---
-  duration_ms: 8.828523
+  duration_ms: 7.862829
   type: 'test'
   ...
 # Subtest: rejects preview bindings, vars, and any non-empty dashboard-derived preview configuration
-ok 22 - rejects preview bindings, vars, and any non-empty dashboard-derived preview configuration
+ok 23 - rejects preview bindings, vars, and any non-empty dashboard-derived preview configuration
   ---
-  duration_ms: 3.187672
+  duration_ms: 2.416883
   type: 'test'
   ...
 # Subtest: static and Worker responses carry noindex controls without treating them as access control
-ok 23 - static and Worker responses carry noindex controls without treating them as access control
+ok 24 - static and Worker responses carry noindex controls without treating them as access control
   ---
-  duration_ms: 25.670418
+  duration_ms: 22.244383
   type: 'test'
   ...
 # Subtest: accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resources
-ok 24 - accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resources
+ok 25 - accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resources
   ---
-  duration_ms: 6.033734
+  duration_ms: 4.194999
   type: 'test'
   ...
 # Subtest: accepts Wrangler 4.149.0 structured output-file events and exact dedicated Worker identity
-ok 25 - accepts Wrangler 4.149.0 structured output-file events and exact dedicated Worker identity
+ok 26 - accepts Wrangler 4.149.0 structured output-file events and exact dedicated Worker identity
   ---
-  duration_ms: 2.827948
+  duration_ms: 1.621235
   type: 'test'
   ...
 # Subtest: accepts the immutable Preview URL's eight-character prefix for a UUID deployment ID
-ok 26 - accepts the immutable Preview URL's eight-character prefix for a UUID deployment ID
+ok 27 - accepts the immutable Preview URL's eight-character prefix for a UUID deployment ID
   ---
-  duration_ms: 0.946621
+  duration_ms: 0.77146
   type: 'test'
   ...
 # Subtest: rejects an immutable Preview URL whose short deployment prefix differs from its UUID
-ok 27 - rejects an immutable Preview URL whose short deployment prefix differs from its UUID
+ok 28 - rejects an immutable Preview URL whose short deployment prefix differs from its UUID
   ---
-  duration_ms: 1.703394
+  duration_ms: 2.190444
   type: 'test'
   ...
 # Subtest: structured output events reject wrong Worker, Preview name, and URL identities
-ok 28 - structured output events reject wrong Worker, Preview name, and URL identities
+ok 29 - structured output events reject wrong Worker, Preview name, and URL identities
   ---
-  duration_ms: 1.373288
+  duration_ms: 2.107075
   type: 'test'
   ...
 # Subtest: structured output event stream rejects missing, duplicate, malformed, and unrelated records
-ok 29 - structured output event stream rejects missing, duplicate, malformed, and unrelated records
+ok 30 - structured output event stream rejects missing, duplicate, malformed, and unrelated records
   ---
-  duration_ms: 2.342012
+  duration_ms: 2.000988
   type: 'test'
   ...
 # Subtest: rejects output targeting a different Worker or Preview name
-ok 30 - rejects output targeting a different Worker or Preview name
+ok 31 - rejects output targeting a different Worker or Preview name
   ---
-  duration_ms: 1.772641
+  duration_ms: 1.236332
   type: 'test'
   ...
 # Subtest: rejects duplicate, unsafe, or identity-mismatched Preview URLs
-ok 31 - rejects duplicate, unsafe, or identity-mismatched Preview URLs
+ok 32 - rejects duplicate, unsafe, or identity-mismatched Preview URLs
   ---
-  duration_ms: 1.574698
+  duration_ms: 2.21219
   type: 'test'
   ...
 # Subtest: rejects the unrelated flattened output-file event format
-ok 32 - rejects the unrelated flattened output-file event format
+ok 33 - rejects the unrelated flattened output-file event format
   ---
-  duration_ms: 0.796622
+  duration_ms: 1.450075
   type: 'test'
   ...
 # Subtest: accepts the Wrangler CLI progress line with exact Preview and Worker identities
-ok 33 - accepts the Wrangler CLI progress line with exact Preview and Worker identities
+ok 34 - accepts the Wrangler CLI progress line with exact Preview and Worker identities
   ---
-  duration_ms: 3.320105
+  duration_ms: 3.646834
   type: 'test'
   ...
 # Subtest: accepts quoted Wrangler progress identifiers and terminal color codes
-ok 34 - accepts quoted Wrangler progress identifiers and terminal color codes
+ok 35 - accepts quoted Wrangler progress identifiers and terminal color codes
   ---
-  duration_ms: 2.769445
+  duration_ms: 4.529371
   type: 'test'
   ...
 # Subtest: rejects unrecognized text around Wrangler Preview JSON
-ok 35 - rejects unrecognized text around Wrangler Preview JSON
+ok 36 - rejects unrecognized text around Wrangler Preview JSON
   ---
-  duration_ms: 2.715183
+  duration_ms: 3.073194
   type: 'test'
   ...
 # Subtest: redacts token-like values from rejected Wrangler progress diagnostics
-ok 36 - redacts token-like values from rejected Wrangler progress diagnostics
+ok 37 - redacts token-like values from rejected Wrangler progress diagnostics
   ---
-  duration_ms: 1.575029
+  duration_ms: 2.092611
   type: 'test'
   ...
 # Subtest: redacts an unterminated quoted tail in rejected Wrangler output
-ok 37 - redacts an unterminated quoted tail in rejected Wrangler output
+ok 38 - redacts an unterminated quoted tail in rejected Wrangler output
   ---
-  duration_ms: 0.788907
+  duration_ms: 1.007338
   type: 'test'
   ...
 # Subtest: rejects unrelated Wrangler progress lines before valid Preview JSON
-ok 38 - rejects unrelated Wrangler progress lines before valid Preview JSON
+ok 39 - rejects unrelated Wrangler progress lines before valid Preview JSON
   ---
-  duration_ms: 1.0221
+  duration_ms: 1.50261
   type: 'test'
   ...
 # Subtest: accepts only HTTPS workers.dev origins for smoke targets
-ok 39 - accepts only HTTPS workers.dev origins for smoke targets
+ok 40 - accepts only HTTPS workers.dev origins for smoke targets
   ---
-  duration_ms: 2.996012
+  duration_ms: 3.917068
   type: 'test'
   ...
 # Subtest: checks exact SHA, preview environment, noindex, robots, and 404 on both real URL slots
-ok 40 - checks exact SHA, preview environment, noindex, robots, and 404 on both real URL slots
+ok 41 - checks exact SHA, preview environment, noindex, robots, and 404 on both real URL slots
   ---
-  duration_ms: 79.416186
+  duration_ms: 79.915759
   type: 'test'
   ...
 # Subtest: rejects robots directives that block crawlers from reading noindex signals
-ok 41 - rejects robots directives that block crawlers from reading noindex signals
+ok 42 - rejects robots directives that block crawlers from reading noindex signals
   ---
-  duration_ms: 19.894973
+  duration_ms: 9.705684
   type: 'test'
   ...
 # Subtest: rejects a stale health SHA and non-404 unknown routes
-ok 42 - rejects a stale health SHA and non-404 unknown routes
+ok 43 - rejects a stale health SHA and non-404 unknown routes
   ---
-  duration_ms: 10.341261
+  duration_ms: 10.539843
   type: 'test'
   ...
 # Subtest: workflow step parser stops at unnamed YAML steps
-ok 43 - workflow step parser stops at unnamed YAML steps
+ok 44 - workflow step parser stops at unnamed YAML steps
   ---
-  duration_ms: 4.583936
+  duration_ms: 5.772843
   type: 'test'
   ...
 # Subtest: deployment workflow is manual-only and defaults to a closed action
-ok 44 - deployment workflow is manual-only and defaults to a closed action
+ok 45 - deployment workflow is manual-only and defaults to a closed action
   ---
-  duration_ms: 0.974475
+  duration_ms: 1.08644
   type: 'test'
   ...
 # Subtest: preflight has read-only repository access and receives no Cloudflare credentials
-ok 45 - preflight has read-only repository access and receives no Cloudflare credentials
+ok 46 - preflight has read-only repository access and receives no Cloudflare credentials
   ---
-  duration_ms: 1.166469
+  duration_ms: 0.907901
   type: 'test'
   ...
 # Subtest: Cloudflare commands sit behind Owner/environment gates and use separate command option sets
-ok 46 - Cloudflare commands sit behind Owner/environment gates and use separate command option sets
+ok 47 - Cloudflare commands sit behind Owner/environment gates and use separate command option sets
   ---
-  duration_ms: 4.314385
+  duration_ms: 3.27774
   type: 'test'
   ...
 # Subtest: pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete flags without provider calls
-ok 47 - pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete flags without provider calls
+ok 48 - pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete flags without provider calls
   ---
-  duration_ms: 6440.134907
+  duration_ms: 6638.454005
   type: 'test'
   ...
 # Subtest: rollback documentation uses only supported Wrangler Preview delete options
-ok 48 - rollback documentation uses only supported Wrangler Preview delete options
+ok 49 - rollback documentation uses only supported Wrangler Preview delete options
   ---
-  duration_ms: 1.140006
+  duration_ms: 0.85687
   type: 'test'
   ...
 # Subtest: exact-main rechecks run immediately before provider steps without Cloudflare credentials
-ok 49 - exact-main rechecks run immediately before provider steps without Cloudflare credentials
+ok 50 - exact-main rechecks run immediately before provider steps without Cloudflare credentials
   ---
-  duration_ms: 1.549349
+  duration_ms: 1.138348
   type: 'test'
   ...
 # Subtest: workflow compiles the exact SHA and verifies both actual URL slots after deployment
-ok 50 - workflow compiles the exact SHA and verifies both actual URL slots after deployment
+ok 51 - workflow compiles the exact SHA and verifies both actual URL slots after deployment
   ---
-  duration_ms: 0.741955
+  duration_ms: 0.492236
   type: 'test'
   ...
 # Subtest: CI checks out the event's exact commit and verifies HEAD
-ok 51 - CI checks out the event's exact commit and verifies HEAD
+ok 52 - CI checks out the event's exact commit and verifies HEAD
   ---
-  duration_ms: 12.065069
+  duration_ms: 10.930309
   type: 'test'
   ...
 # Subtest: CI checkout does not persist credentials while pull request code runs
-ok 52 - CI checkout does not persist credentials while pull request code runs
+ok 53 - CI checkout does not persist credentials while pull request code runs
   ---
-  duration_ms: 6.529012
+  duration_ms: 7.83836
   type: 'test'
   ...
 # Subtest: the workflow contract test locates steps in a CRLF checkout
-ok 53 - the workflow contract test locates steps in a CRLF checkout
+ok 54 - the workflow contract test locates steps in a CRLF checkout
   ---
-  duration_ms: 9.578289
+  duration_ms: 12.091924
   type: 'test'
   ...
 # Subtest: the exact-head verifier accepts matching HEAD and rejects a mismatch
-ok 54 - the exact-head verifier accepts matching HEAD and rejects a mismatch
+ok 55 - the exact-head verifier accepts matching HEAD and rejects a mismatch
   ---
-  duration_ms: 611.863587
+  duration_ms: 610.144126
   type: 'test'
   ...
 # Subtest: evergreen governance tests pass after unrelated work and a later checkpoint delta
-ok 55 - evergreen governance tests pass after unrelated work and a later checkpoint delta
+ok 56 - evergreen governance tests pass after unrelated work and a later checkpoint delta
   ---
-  duration_ms: 8349.473066
+  duration_ms: 9573.350693
   type: 'test'
   ...
 # Subtest: the pinned GEF CLI exposes its verified version and command surface
-ok 56 - the pinned GEF CLI exposes its verified version and command surface
+ok 57 - the pinned GEF CLI exposes its verified version and command surface
   ---
-  duration_ms: 430.827658
+  duration_ms: 403.173142
   type: 'test'
   ...
 # Subtest: preflight validates the post-merge M00 checkpoint and preserves admission provenance and scope
-ok 57 - preflight validates the post-merge M00 checkpoint and preserves admission provenance and scope
+ok 58 - preflight validates the post-merge M00 checkpoint and preserves admission provenance and scope
   ---
-  duration_ms: 1128.481788
+  duration_ms: 1119.62605
   type: 'test'
   ...
 # Subtest: governed init apply succeeds in a disposable target and refuses clobber
-ok 58 - governed init apply succeeds in a disposable target and refuses clobber
+ok 59 - governed init apply succeeds in a disposable target and refuses clobber
   ---
-  duration_ms: 1649.330576
+  duration_ms: 1928.261055
   type: 'test'
   ...
 # Subtest: the official GEF tarball and npm SLSA provenance match the pinned source
-ok 59 - the official GEF tarball and npm SLSA provenance match the pinned source
+ok 60 - the official GEF tarball and npm SLSA provenance match the pinned source
   ---
-  duration_ms: 5216.894919
+  duration_ms: 4968.180175
   type: 'test'
   ...
 # Subtest: global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission
-ok 60 - global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission
+ok 61 - global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission
   ---
-  duration_ms: 51.173393
+  duration_ms: 35.118369
   type: 'test'
   ...
 # Subtest: Golden bytes, single Owner and source-backed article still have hard module gates
-ok 61 - Golden bytes, single Owner and source-backed article still have hard module gates
+ok 62 - Golden bytes, single Owner and source-backed article still have hard module gates
   ---
-  duration_ms: 19.453442
+  duration_ms: 24.844908
   type: 'test'
   ...
 # Subtest: Golden reference manifest and original JPEG bytes match the approved masters
-ok 62 - Golden reference manifest and original JPEG bytes match the approved masters
+ok 63 - Golden reference manifest and original JPEG bytes match the approved masters
   ---
-  duration_ms: 42.730677
+  duration_ms: 55.750648
   type: 'test'
   ...
 # Subtest: frozen PR \#42 verifier ignores inherited Git repository-location overrides
-ok 63 - frozen PR \#42 verifier ignores inherited Git repository-location overrides
+ok 64 - frozen PR \#42 verifier ignores inherited Git repository-location overrides
   ---
-  duration_ms: 5433.753973
+  duration_ms: 5889.717591
   type: 'test'
   ...
 # Subtest: parallel governance matrix preserves exactly the existing 19 module and issue identities
-ok 64 - parallel governance matrix preserves exactly the existing 19 module and issue identities
+ok 65 - parallel governance matrix preserves exactly the existing 19 module and issue identities
   ---
-  duration_ms: 58.149533
+  duration_ms: 57.091806
   type: 'test'
   ...
 # Subtest: canonical checkpoint can advance while the archived parallel proposal stays non-authoritative
-ok 65 - canonical checkpoint can advance while the archived parallel proposal stays non-authoritative
+ok 66 - canonical checkpoint can advance while the archived parallel proposal stays non-authoritative
   ---
-  duration_ms: 8.554166
+  duration_ms: 11.282356
   type: 'test'
   ...
 # Subtest: module and integration dependency graphs are complete, acyclic, and wave-consistent
-ok 66 - module and integration dependency graphs are complete, acyclic, and wave-consistent
+ok 67 - module and integration dependency graphs are complete, acyclic, and wave-consistent
   ---
-  duration_ms: 2.101196
+  duration_ms: 2.496398
   type: 'test'
   ...
 # Subtest: module-exclusive ownership roots are pairwise disjoint across Windows and Linux path rules
-ok 67 - module-exclusive ownership roots are pairwise disjoint across Windows and Linux path rules
+ok 68 - module-exclusive ownership roots are pairwise disjoint across Windows and Linux path rules
   ---
-  duration_ms: 47.730594
+  duration_ms: 46.412812
   type: 'test'
   ...
 # Subtest: future Work Order branch and worktree names are unique and refuse pre-existing allocations
-ok 68 - future Work Order branch and worktree names are unique and refuse pre-existing allocations
+ok 69 - future Work Order branch and worktree names are unique and refuse pre-existing allocations
   ---
-  duration_ms: 5.209394
+  duration_ms: 4.648902
   type: 'test'
   ...
 # Subtest: WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively
-ok 69 - WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively
+ok 70 - WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively
   ---
-  duration_ms: 2.877333
+  duration_ms: 1.898346
   type: 'test'
   ...
 # Subtest: branch collision inspection reads local and all remote refs from the supplied Git worktree
-ok 70 - branch collision inspection reads local and all remote refs from the supplied Git worktree
+ok 71 - branch collision inspection reads local and all remote refs from the supplied Git worktree
   ---
-  duration_ms: 186.459144
+  duration_ms: 205.82089
   type: 'test'
   ...
 # Subtest: deterministic fakes remain local and test jobs have no provider credentials
-ok 71 - deterministic fakes remain local and test jobs have no provider credentials
+ok 72 - deterministic fakes remain local and test jobs have no provider credentials
   ---
-  duration_ms: 8.580121
+  duration_ms: 9.963167
   type: 'test'
   ...
 # Subtest: contract register records proposal-only producer seams for all 19 modules without inventing approved schemas
-ok 72 - contract register records proposal-only producer seams for all 19 modules without inventing approved schemas
+ok 73 - contract register records proposal-only producer seams for all 19 modules without inventing approved schemas
   ---
-  duration_ms: 1.824656
+  duration_ms: 2.571982
   type: 'test'
   ...
 # Subtest: Context Lock source fingerprints and external Issue snapshots are complete and traceable
-ok 73 - Context Lock source fingerprints and external Issue snapshots are complete and traceable
+ok 74 - Context Lock source fingerprints and external Issue snapshots are complete and traceable
   ---
-  duration_ms: 12814.049331
+  duration_ms: 12127.982833
   type: 'test'
   ...
 # Subtest: correction evidence keeps the worktree identity logical and identifies PR \#42
-ok 74 - correction evidence keeps the worktree identity logical and identifies PR \#42
+ok 75 - correction evidence keeps the worktree identity logical and identifies PR \#42
   ---
-  duration_ms: 9.541868
+  duration_ms: 8.096227
   type: 'test'
   ...
 # Subtest: active Work Order ownership accepts only its supplied module paths and approved deletions
-ok 75 - active Work Order ownership accepts only its supplied module paths and approved deletions
+ok 76 - active Work Order ownership accepts only its supplied module paths and approved deletions
   ---
-  duration_ms: 0.782916
+  duration_ms: 0.644778
   type: 'test'
   ...
 # Subtest: active Work Order ownership rejects outside paths and unexplained deletions
-ok 76 - active Work Order ownership rejects outside paths and unexplained deletions
+ok 77 - active Work Order ownership rejects outside paths and unexplained deletions
   ---
-  duration_ms: 0.806002
+  duration_ms: 0.708845
   type: 'test'
   ...
 # Subtest: exact path-set validator rejects omitted, extra, duplicate, and untracked deletion paths
-ok 77 - exact path-set validator rejects omitted, extra, duplicate, and untracked deletion paths
+ok 78 - exact path-set validator rejects omitted, extra, duplicate, and untracked deletion paths
   ---
-  duration_ms: 2.512172
+  duration_ms: 2.310359
   type: 'test'
   ...
 # Subtest: NUL-delimited name-status parser models deletions and renames as delete-plus-add
-ok 78 - NUL-delimited name-status parser models deletions and renames as delete-plus-add
+ok 79 - NUL-delimited name-status parser models deletions and renames as delete-plus-add
   ---
-  duration_ms: 1.376445
+  duration_ms: 0.935374
   type: 'test'
   ...
 # Subtest: fingerprint consistency rejects staged-index and unstaged working-tree mutations
-ok 79 - fingerprint consistency rejects staged-index and unstaged working-tree mutations
+ok 80 - fingerprint consistency rejects staged-index and unstaged working-tree mutations
   ---
-  duration_ms: 1.033674
+  duration_ms: 0.600701
   type: 'test'
   ...
 # Subtest: the execution Context Lock binds canonical source bytes at the admitted main SHA
-ok 80 - the execution Context Lock binds canonical source bytes at the admitted main SHA
+ok 81 - the execution Context Lock binds canonical source bytes at the admitted main SHA
   ---
-  duration_ms: 8068.540435
+  duration_ms: 8144.555658
   type: 'test'
   ...
 # Subtest: the selected Matt Pocock skills are pinned and discoverable as Codex project skills
-ok 81 - the selected Matt Pocock skills are pinned and discoverable as Codex project skills
+ok 82 - the selected Matt Pocock skills are pinned and discoverable as Codex project skills
   ---
-  duration_ms: 176.865333
+  duration_ms: 143.029392
   type: 'test'
   ...
 # Subtest: pre-admission contract draft never grants application-code authorization
-ok 82 - pre-admission contract draft never grants application-code authorization
+ok 83 - pre-admission contract draft never grants application-code authorization
   ---
-  duration_ms: 23.303145
+  duration_ms: 24.240243
   type: 'test'
   ...
 # Subtest: Golden contract references agree with the actual imported original JPEG bytes
-ok 83 - Golden contract references agree with the actual imported original JPEG bytes
+ok 84 - Golden contract references agree with the actual imported original JPEG bytes
   ---
-  duration_ms: 45.71732
+  duration_ms: 43.39288
   type: 'test'
   ...
 # Subtest: M05 retains sole-Owner security and nonfunctional P0 boundaries
-ok 84 - M05 retains sole-Owner security and nonfunctional P0 boundaries
+ok 85 - M05 retains sole-Owner security and nonfunctional P0 boundaries
   ---
-  duration_ms: 10.650731
+  duration_ms: 10.72513
   type: 'test'
   ...
 # Subtest: historical proposal remains safe after future module admissions
-ok 85 - historical proposal remains safe after future module admissions
+ok 86 - historical proposal remains safe after future module admissions
   ---
-  duration_ms: 0.62421
+  duration_ms: 0.897229
   type: 'test'
   ...
 # warning: in the working copy of 'removed.txt', LF will be replaced by CRLF the next time Git touches it
 # warning: in the working copy of '.gitattributes', LF will be replaced by CRLF the next time Git touches it
 # Subtest: P1 preparation Context Lock binds its frozen table to the exact merged main SHA
-ok 86 - P1 preparation Context Lock binds its frozen table to the exact merged main SHA
+ok 87 - P1 preparation Context Lock binds its frozen table to the exact merged main SHA
   ---
-  duration_ms: 5953.069655
+  duration_ms: 6076.569118
   type: 'test'
   ...
 # Subtest: P1 Evidence Bundle exactly covers its frozen source snapshot and candidate blob fingerprints
-ok 87 - P1 Evidence Bundle exactly covers its frozen source snapshot and candidate blob fingerprints
+ok 88 - P1 Evidence Bundle exactly covers its frozen source snapshot and candidate blob fingerprints
   ---
-  duration_ms: 10293.189812
+  duration_ms: 9874.270476
   type: 'test'
   ...
 # Subtest: fingerprint path coverage rejects omissions, extras, duplicates, and unlisted deletions
-ok 88 - fingerprint path coverage rejects omissions, extras, duplicates, and unlisted deletions
+ok 89 - fingerprint path coverage rejects omissions, extras, duplicates, and unlisted deletions
   ---
-  duration_ms: 4.524361
+  duration_ms: 3.82219
   type: 'test'
   ...
 # Subtest: fingerprint path coverage detects tracked deletions against a frozen Git base
-ok 89 - fingerprint path coverage detects tracked deletions against a frozen Git base
+ok 90 - fingerprint path coverage detects tracked deletions against a frozen Git base
   ---
-  duration_ms: 133.565061
+  duration_ms: 135.017169
   type: 'test'
   ...
 # Subtest: working-tree consistency rejects unstaged edits and honors Git line-ending normalization
-ok 90 - working-tree consistency rejects unstaged edits and honors Git line-ending normalization
+ok 91 - working-tree consistency rejects unstaged edits and honors Git line-ending normalization
   ---
-  duration_ms: 47.102452
+  duration_ms: 47.515313
   type: 'test'
   ...
 # Subtest: P1 preparation leaves checkpoint, historical lock, and Work Order authority frozen
-ok 91 - P1 preparation leaves checkpoint, historical lock, and Work Order authority frozen
+ok 92 - P1 preparation leaves checkpoint, historical lock, and Work Order authority frozen
   ---
-  duration_ms: 0.331048
+  duration_ms: 0.273753
   type: 'test'
   ...
 # Subtest: P1 Evidence Bundle states the Cloudflare credential boundary accurately
-ok 92 - P1 Evidence Bundle states the Cloudflare credential boundary accurately
+ok 93 - P1 Evidence Bundle states the Cloudflare credential boundary accurately
   ---
-  duration_ms: 0.255247
+  duration_ms: 0.208554
   type: 'test'
   ...
 # Subtest: M00 completion is read from canonical checkpoint, not historical proposal snapshot
-ok 93 - M00 completion is read from canonical checkpoint, not historical proposal snapshot
+ok 94 - M00 completion is read from canonical checkpoint, not historical proposal snapshot
   ---
-  duration_ms: 9.986997
+  duration_ms: 7.911469
   type: 'test'
   ...
 # Subtest: canonical M00 completion remains true after progress advances through M01
-ok 94 - canonical M00 completion remains true after progress advances through M01
+ok 95 - canonical M00 completion remains true after progress advances through M01
   ---
-  duration_ms: 1.623788
+  duration_ms: 1.502931
   type: 'test'
   ...
 # Subtest: planner rejects canonical completed-through progress that contradicts the checkpoint percentage
-ok 95 - planner rejects canonical completed-through progress that contradicts the checkpoint percentage
+ok 96 - planner rejects canonical completed-through progress that contradicts the checkpoint percentage
   ---
-  duration_ms: 1.663366
+  duration_ms: 1.594553
   type: 'test'
   ...
 # Subtest: stale proposal cannot authorize app code after M00 is complete
-ok 96 - stale proposal cannot authorize app code after M00 is complete
+ok 97 - stale proposal cannot authorize app code after M00 is complete
   ---
-  duration_ms: 3.458468
+  duration_ms: 2.907075
   type: 'test'
   ...
 # Subtest: valid admitted independent modules schedule concurrently without exceeding host slots
-ok 97 - valid admitted independent modules schedule concurrently without exceeding host slots
+ok 98 - valid admitted independent modules schedule concurrently without exceeding host slots
   ---
-  duration_ms: 2.315544
+  duration_ms: 2.196517
   type: 'test'
   ...
 # Subtest: candidate admission is not planner-eligible before canonical main readback
-ok 98 - candidate admission is not planner-eligible before canonical main readback
+ok 99 - candidate admission is not planner-eligible before canonical main readback
   ---
-  duration_ms: 1.98317
+  duration_ms: 2.100741
   type: 'test'
   ...
 # Subtest: canonical main admission readback allows the same candidate after merge
-ok 99 - canonical main admission readback allows the same candidate after merge
+ok 100 - canonical main admission readback allows the same candidate after merge
   ---
-  duration_ms: 1.366467
+  duration_ms: 1.260482
   type: 'test'
   ...
 # Subtest: canonical main checkpoint lookup is fixed, read-only, unauthenticated, and fails closed
-ok 100 - canonical main checkpoint lookup is fixed, read-only, unauthenticated, and fails closed
+ok 101 - canonical main checkpoint lookup is fixed, read-only, unauthenticated, and fails closed
   ---
-  duration_ms: 84.670162
+  duration_ms: 72.52292
   type: 'test'
   ...
 # Subtest: canonical main checkpoint read rejects unsupported schema and foreign project identity
-ok 101 - canonical main checkpoint read rejects unsupported schema and foreign project identity
+ok 102 - canonical main checkpoint read rejects unsupported schema and foreign project identity
   ---
-  duration_ms: 13.040114
+  duration_ms: 10.061865
   type: 'test'
   ...
 # Subtest: never treat active module admission alone as dependency completion
-ok 102 - never treat active module admission alone as dependency completion
+ok 103 - never treat active module admission alone as dependency completion
   ---
-  duration_ms: 1.883093
+  duration_ms: 1.865179
   type: 'test'
   ...
 # Subtest: invalid module count, M18 admission and unsafe limits fail closed
-ok 103 - invalid module count, M18 admission and unsafe limits fail closed
+ok 104 - invalid module count, M18 admission and unsafe limits fail closed
   ---
-  duration_ms: 1.69069
+  duration_ms: 1.464395
   type: 'test'
   ...
 # Subtest: planner rejects a candidate or canonical checkpoint with the wrong project schema
-ok 104 - planner rejects a candidate or canonical checkpoint with the wrong project schema
+ok 105 - planner rejects a candidate or canonical checkpoint with the wrong project schema
   ---
-  duration_ms: 1.231338
+  duration_ms: 0.992078
   type: 'test'
   ...
 # Subtest: checkpoint admission registry matches the exact canonical module ID set
-ok 105 - checkpoint admission registry matches the exact canonical module ID set
+ok 106 - checkpoint admission registry matches the exact canonical module ID set
   ---
-  duration_ms: 5.155267
+  duration_ms: 4.042466
   type: 'test'
   ...
 # Subtest: resource-aware authoring is not hard-capped to two agents
-ok 106 - resource-aware authoring is not hard-capped to two agents
+ok 107 - resource-aware authoring is not hard-capped to two agents
   ---
-  duration_ms: 0.546847
+  duration_ms: 0.517737
   type: 'test'
   ...
 # Subtest: M00 completion requires all canonical completion facts to agree
-ok 107 - M00 completion requires all canonical completion facts to agree
+ok 108 - M00 completion requires all canonical completion facts to agree
   ---
-  duration_ms: 2.751468
+  duration_ms: 2.541185
   type: 'test'
   ...
 # Subtest: every global source and adoption gate is independently required
-ok 108 - every global source and adoption gate is independently required
+ok 109 - every global source and adoption gate is independently required
   ---
-  duration_ms: 3.409798
+  duration_ms: 2.565829
   type: 'test'
   ...
 # Subtest: resource floor can yield zero active agents without claiming a slot
-ok 109 - resource floor can yield zero active agents without claiming a slot
+ok 110 - resource floor can yield zero active agents without claiming a slot
   ---
-  duration_ms: 1.865467
+  duration_ms: 1.834168
   type: 'test'
   ...
 # Subtest: integration contracts are reported separately from authoring blockers
-ok 110 - integration contracts are reported separately from authoring blockers
+ok 111 - integration contracts are reported separately from authoring blockers
   ---
-  duration_ms: 1.375724
+  duration_ms: 1.302594
   type: 'test'
   ...
 # Subtest: CLI gate evidence parser accepts explicit module gates and rejects malformed input
-ok 111 - CLI gate evidence parser accepts explicit module gates and rejects malformed input
+ok 112 - CLI gate evidence parser accepts explicit module gates and rejects malformed input
   ---
-  duration_ms: 1.575932
+  duration_ms: 1.663369
   type: 'test'
   ...
 # Subtest: malformed gate evidence errors do not expose input or parser details
-ok 112 - malformed gate evidence errors do not expose input or parser details
+ok 113 - malformed gate evidence errors do not expose input or parser details
   ---
-  duration_ms: 0.682757
+  duration_ms: 0.72546
   type: 'test'
   ...
 # Subtest: global source gate recognizes only explicit global approval and freeze status
-ok 113 - global source gate recognizes only explicit global approval and freeze status
+ok 114 - global source gate recognizes only explicit global approval and freeze status
   ---
-  duration_ms: 0.979898
+  duration_ms: 1.071976
   type: 'test'
   ...
 # Subtest: parallel ADR gate accepts only the exact Owner-approved adoption status
-ok 114 - parallel ADR gate accepts only the exact Owner-approved adoption status
+ok 115 - parallel ADR gate accepts only the exact Owner-approved adoption status
   ---
-  duration_ms: 0.695332
+  duration_ms: 0.740499
   type: 'test'
   ...
 # Subtest: Issue \#6 lookup uses a fixed unauthenticated read and fails closed
-ok 115 - Issue \#6 lookup uses a fixed unauthenticated read and fails closed
+ok 116 - Issue \#6 lookup uses a fixed unauthenticated read and fails closed
   ---
-  duration_ms: 5.684602
+  duration_ms: 4.424336
   type: 'test'
   ...
 # Subtest: blocks a cross-origin redirect from a document subresource before fetching its destination
-ok 116 - blocks a cross-origin redirect from a document subresource before fetching its destination
+ok 117 - blocks a cross-origin redirect from a document subresource before fetching its destination
   ---
-  duration_ms: 1029.647184
+  duration_ms: 1035.296333
   type: 'test'
   ...
 # Subtest: registers the Service Worker fixture when a regular context explicitly allows it
-ok 117 - registers the Service Worker fixture when a regular context explicitly allows it
+ok 118 - registers the Service Worker fixture when a regular context explicitly allows it
   ---
-  duration_ms: 716.275483
+  duration_ms: 755.03297
   type: 'test'
   ...
 # Subtest: blocks Service Worker registration in an evidence browser context
-ok 118 - blocks Service Worker registration in an evidence browser context
+ok 119 - blocks Service Worker registration in an evidence browser context
   ---
-  duration_ms: 648.065317
+  duration_ms: 652.408743
   type: 'test'
   ...
 # Subtest: blocks a cross-origin navigation redirect before fetching its destination
-ok 119 - blocks a cross-origin navigation redirect before fetching its destination
+ok 120 - blocks a cross-origin navigation redirect before fetching its destination
   ---
-  duration_ms: 170.177917
+  duration_ms: 138.164307
   type: 'test'
   ...
 # Subtest: clears only stale success/failure artifacts before a fresh evidence capture
-ok 120 - clears only stale success/failure artifacts before a fresh evidence capture
+ok 121 - clears only stale success/failure artifacts before a fresh evidence capture
   ---
-  duration_ms: 30.040746
+  duration_ms: 24.189092
   type: 'test'
   ...
 # Subtest: checks stable and immutable build identity before clearing prior evidence
-ok 121 - checks stable and immutable build identity before clearing prior evidence
+ok 122 - checks stable and immutable build identity before clearing prior evidence
   ---
-  duration_ms: 10.48922
+  duration_ms: 7.998797
   type: 'test'
   ...
 # Subtest: accepts the approved static asset binding
-ok 122 - accepts the approved static asset binding
+ok 123 - accepts the approved static asset binding
   ---
-  duration_ms: 179.999928
+  duration_ms: 121.808795
   type: 'test'
   ...
 # Subtest: accepts only loopback spellings normalized by Windows and Linux builds
-ok 123 - accepts only loopback spellings normalized by Windows and Linux builds
+ok 124 - accepts only loopback spellings normalized by Windows and Linux builds
   ---
-  duration_ms: 239.037281
+  duration_ms: 275.785267
   type: 'test'
   ...
 # Subtest: rejects a SESSION binding nested in a namespace list
-ok 124 - rejects a SESSION binding nested in a namespace list
+ok 125 - rejects a SESSION binding nested in a namespace list
   ---
-  duration_ms: 168.407024
+  duration_ms: 133.378826
   type: 'test'
   ...
 # Subtest: rejects a data binding added to the Preview block
-ok 125 - rejects a data binding added to the Preview block
+ok 126 - rejects a data binding added to the Preview block
   ---
-  duration_ms: 166.182375
+  duration_ms: 117.492449
   type: 'test'
   ...
 # Subtest: rejects unreviewed top-level variables
-ok 126 - rejects unreviewed top-level variables
+ok 127 - rejects unreviewed top-level variables
   ---
-  duration_ms: 188.830158
+  duration_ms: 138.064075
   type: 'test'
   ...
-1..126
-# tests 126
+1..127
+# tests 127
 # suites 0
-# pass 126
+# pass 127
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 23699.018719
+# duration_ms 23252.447744

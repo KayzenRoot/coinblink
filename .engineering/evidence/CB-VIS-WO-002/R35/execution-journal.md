@@ -22,10 +22,12 @@
 3. Added Node built-in security and provenance tests plus an isolated browser-only QA harness.
 4. Repaired the manifest JSON syntax error found during validation before running the suite.
 5. Visual review against the unchanged Golden raster found that the stacked mark's “Coin” wordmark has low contrast on light surfaces. Kept the five approved SVG byte streams intact and limited that asset's manifest recommendation to dark backgrounds; no header or global favicon wiring was added.
-6. Final local validation passed on Node 22.23.3 / npm 10.9.3: unit 126/126, lint, Astro typecheck (49 files; 0 diagnostics), build, E2E 7/7, and isolated browser QA (three exact viewport plus three full-page captures). See tests-and-ci.json and the logs in this folder.
+6. Final local validation passed on Node 22.23.3 / npm 10.9.3: unit 127/127 (brand 8/8), lint, Astro typecheck (49 files; 0 diagnostics), build, E2E 7/7, and isolated browser QA (three exact viewport plus three full-page captures). See tests-and-ci.json and the logs in this folder.
 7. GEF doctor and status both returned read-only `SUCCEEDED`. The Docker mount prevented GEF from resolving the Windows worktree `.git` pointer, so GEF reported repository state UNKNOWN; host Git independently confirmed the intended branch and allowlisted paths.
 8. PR #58 and #59 were read-only rechecked and remain OPEN, at heads 45b128e898a9daf880cda18ab44bcbe038c2e129 and eac6e0bc675864fa2190b4b6d9b37cbec13ffd02. Their six non-CodeRabbit checks pass; CodeRabbit did not perform a substantive review on either.
-9. The exact published brand PR head and its hosted checks are read from the GitHub PR API after push; those live results, the PR URL, and completion time are summarized in the final report rather than embedded self-referentially in the commit.
+9. Draft PR #77 was opened at head 5cc3f8ae77877b239d00d252ef710a91b0be1254. Its first Ubuntu, Docker, SonarCloud, and Socket checks passed, but Windows exposed a real checkout-byte issue (4,071 vs. 4,042 bytes) because the repo has `core.autocrlf=true` and no SVG text attribute.
+10. Added `public/brand/.gitattributes` with `*.svg -text` plus a regression test. With the Windows Git configuration active, `git check-attr --cached` reports `text: unset` and checkout-index restores the five exact byte lengths. The full local validation was rerun; corrected-head hosted checks remain pending.
+11. The final published head and its hosted checks are read from the GitHub PR API after pushing this correction; live results and the PR URL are summarized in the final report rather than embedded self-referentially in the commit.
 
 ## Boundary
 

@@ -1,0 +1,11 @@
+{
+  "name": "coinblink-m05-p1a-synthetic-local",
+  "compatibility_date": "2026-10-13",
+  "d1_databases": [
+    {
+      "binding": "CB_M05_P1A_LOCAL",
+      "database_name": "coinblink-m05-p1a-synthetic-local",
+      "database_id": "00000000-0000-4000-8000-000000000084"
+    }
+  ]
+}

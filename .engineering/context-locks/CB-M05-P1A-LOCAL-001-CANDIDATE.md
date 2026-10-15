@@ -1,8 +1,8 @@
 # CB-M05-P1A-LOCAL-001 | Proposed Context Lock
 
 Status: CANDIDATE, NOT EFFECTIVE. Prepared 2026-10-15.
-Frozen main SHA: 85ece8e63e56ac8006701eda121f462d901d2d2f.
-Parent proposal: draft PR #81, preceding head b6c78a05ff34ce759f46be9ca6fe2aced0013a84. Re-audit final HEAD after this change.
+Proposed source main SHA after protected solo-admin governance PR #82: 983108c5ccbcb69d437f7110b59f9460019c00eb. Original proposal base: 85ece8e63e56ac8006701eda121f462d901d2d2f; retained as provenance. This remains a proposed, not an effective execution Context Lock.
+Parent proposal: PR #81; initial draft head b6c78a05ff34ce759f46be9ca6fe2aced0013a84 is historical provenance. Git branch was non-force merged with the approved sole-admin main and requires fresh exact-HEAD CI/review before any documentation integration.
 P0 separate PR #59 current HEAD c0946706186bccd5b4fc96632b05a28151086d35. PR #70 remains a distinct unadopted local-only D1 candidate.
 Owner decision: Issue #12 R51, passkey as primary and a separate second recovery authenticator; Cloudflare D1 local emulator only, synthetic data only.
 
@@ -44,7 +44,7 @@ Every result must identify actual executable, OS, toolchain, Git HEAD, fixture, 
 - No Cloudflare account API, D1 --remote/create, Worker/Pages deploy, DNS, real database ID, paid resource, production route or publish endpoint.
 - Do not run undocumented npm workflows that could deploy. No auth cookies, signup, privileged mutations, vault, publication or artificial checkpoint promotion.
 - Prior GitHub connector write for a synthetic SQLite/auth harness was REFUSED. Do not bypass by alternate Git write API, another account, renamed content, hidden paths or indirect deployment. Use a supported local execution route only after explicit reviewed admission.
-- Cloudflare Git-linked auto-deploy/webhook state remains unverified. Do not merge any PR as an incidental consequence of P1-A preparation.
-- This candidate requires KayzenRoot's final exact-HEAD threat/technical review (with automated negative-test evidence; no second human reviewer), separate Owner protected documentation merge GO, effective Security/Data ADR, Integration Steward ownership, post-merge canonical readback and an admitted work-order Context Lock before executable P1-A tests can be credited. The solo-admin policy first becomes canonical through PR #82.
+- Owner-visible Cloudflare account had one Worker with no Workers Builds Git repository; GitHub repository Settings > Webhooks displayed zero entries; checked deployment workflow was manual only. These findings narrow deployment risk in the inspected accounts but cannot inventory every external GitHub App or cloud account. Never deploy by inference.
+- This candidate requires KayzenRoot's final exact-HEAD threat/technical review (with automated negative-test evidence; no second human reviewer), separate Owner protected documentation merge GO, effective Security/Data ADR, Integration Steward ownership, post-merge canonical readback and an admitted work-order Context Lock before executable P1-A tests can be credited. The solo-admin policy became canonical through protected PR #82 on main at 983108c5ccbcb69d437f7110b59f9460019c00eb; no second human reviewer is required.
 
 Canonical checkpoint remains M00_COMPLETE / 5%; M05 P0 MOCK admitted, P1 not admitted. Neither this document nor passing doc CI changes those facts.

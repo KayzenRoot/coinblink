@@ -254,3 +254,23 @@ GitHub exact-head run [#38151299670](https://github.com/KayzenRoot/coinblink/act
 ## CodeRabbit GEF-attribution correction · 2026-10-11
 
 The full local CodeRabbit review on evidence HEAD `70bd67307313f4b821abb57dc8e8a7cc59aa6ab7` raised one MINOR documentation finding in `.engineering/work-orders/CB-M05-WO-001.md`: it attributed the GEF readback to `b015b53`, although the redacted GEF artifacts represent normal-clone HEAD `685817c45d30fdca2953172438c1172d3529a9e5`. The Work Order now states both SHAs in their correct roles. No product/test source, Context Lock or checkpoint changed. Fresh CI and CodeRabbit review are required on the resulting documentation HEAD.
+
+## R35 exact-head readback and P0 closeout addendum · 2026-10-15
+
+This append-only update records the current PR and main readback plus local Node 22 validation. It does not change the admitted scope: `P0_STATIC_NON_PRIVILEGED_CMS_UI_MOCK_ONLY`.
+
+### Authority and PR state
+
+- Authenticated GitHub account: `KayzenRoot`. Canonical `main` at readback: `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8`. Checkpoint remains `M00_COMPLETE`, `IMPLEMENTATION_IN_PROGRESS`, 5%; no checkpoint file was changed.
+- PR [#59](https://github.com/KayzenRoot/coinblink/pull/59) remains OPEN and was not draft at readback, at code HEAD `eac6e0bc675864fa2190b4b6d9b37cbec13ffd02`. The local and remote branch matched before this evidence-only commit. Its base remains `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`, two commits behind current `main`; no rebase or base update was performed. All eight review threads were resolved at readback.
+- The PR's latest six required checks were successful on that exact code HEAD: [Ubuntu GEF](https://github.com/KayzenRoot/coinblink/actions/runs/38336190128/job/115096841763), [Windows GEF](https://github.com/KayzenRoot/coinblink/actions/runs/38336190128/job/115096842113), [Docker smoke](https://github.com/KayzenRoot/coinblink/actions/runs/38336190128/job/115096842085), [SonarCloud](https://github.com/KayzenRoot/coinblink/runs/115096861970), [Socket PR Alerts](https://github.com/KayzenRoot/coinblink/runs/115096704402), and [Socket Project Report](https://github.com/KayzenRoot/coinblink/runs/115096687612). CodeRabbit's green status says “Review rate limited”; it is **not** a substantive review. These runs predate this evidence-only commit and must be refreshed at the resulting exact HEAD.
+
+### Local validation at the code HEAD before this evidence commit
+
+On Node.js `v22.23.3` with npm `10.9.9`, `npm ci` completed (437 packages added, 448 audited, zero reported vulnerabilities). `npm test` passed 158/158 Node tests, the Astro build and no-session-binding guard, and Playwright E2E 20/20. `npm run lint` passed. `npm run typecheck` passed for 65 files with zero errors, warnings, or hints. The component visual harness passed eight mock views × three viewport sizes (24 Axe runs), with zero Axe violations/errors/overflow as recorded by its run output. These results validate code HEAD `eac6e0b`, not the evidence commit that follows.
+
+The local Docker daemon read-only probe did not return; no local Docker result is claimed. The successful hosted Docker check above is the exact older code HEAD's evidence. A fresh hosted run is required for the new evidence HEAD.
+
+### R35 disposition
+
+No P0 regression was reproduced, so no application-code correction was made. M05 remains a non-routed, static mock; authentication, sessions, recovery, persistence, database, secret vault, provider bindings, and privileged behavior remain unimplemented and out of this admission. `M05_P0_MOCK_ONLY=true`; `M05_FORMALLY_COMPLETE=false`; `authorizedToMerge=false`. No merge, deploy, or checkpoint promotion occurred.

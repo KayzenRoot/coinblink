@@ -45,6 +45,6 @@ Every result must identify actual executable, OS, toolchain, Git HEAD, fixture, 
 - Do not run undocumented npm workflows that could deploy. No auth cookies, signup, privileged mutations, vault, publication or artificial checkpoint promotion.
 - Prior GitHub connector write for a synthetic SQLite/auth harness was REFUSED. Do not bypass by alternate Git write API, another account, renamed content, hidden paths or indirect deployment. Use a supported local execution route only after explicit reviewed admission.
 - Cloudflare Git-linked auto-deploy/webhook state remains unverified. Do not merge any PR as an incidental consequence of P1-A preparation.
-- This candidate requires final exact-HEAD review, separate Owner protected documentation merge GO, effective Security/Data ADR, Integration Steward ownership, post-merge canonical readback and an admitted work-order Context Lock before executable P1-A tests can be credited.
+- This candidate requires KayzenRoot's final exact-HEAD threat/technical review (with automated negative-test evidence; no second human reviewer), separate Owner protected documentation merge GO, effective Security/Data ADR, Integration Steward ownership, post-merge canonical readback and an admitted work-order Context Lock before executable P1-A tests can be credited. The solo-admin policy first becomes canonical through PR #82.
 
 Canonical checkpoint remains M00_COMPLETE / 5%; M05 P0 MOCK admitted, P1 not admitted. Neither this document nor passing doc CI changes those facts.

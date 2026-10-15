@@ -5,7 +5,7 @@
   "branch": "codex/cb-vis-wo-002-phase-a-r35-20261014",
   "baseSha": "5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8",
   "headSha": null,
-  "headShaNote": "Read the exact published head from the PR API; the manifest is intentionally excluded from its own hash inventory.",
+  "headShaNote": "Read the exact published head from the PR API; this inventory hashes committed Git blobs and excludes itself to avoid self-reference.",
   "scopeAllowlist": [
     "public/brand/**",
     "test/brand/**",
@@ -13,6 +13,126 @@
   ],
   "fileCount": 33,
   "files": [
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/EVIDENCE_BUNDLE.md",
+      "bytes": 1866,
+      "sha256": "8e6134f2fa3687e823d8e8d1f770d54dbcb889ca8300520bc3ea1fea1b473c4f"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json",
+      "bytes": 2310,
+      "sha256": "a37b02610e28b35208be73caacb40431f35793d6a88c3c6b48faba6927d5b0df"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.log",
+      "bytes": 2310,
+      "sha256": "a37b02610e28b35208be73caacb40431f35793d6a88c3c6b48faba6927d5b0df"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/build.log",
+      "bytes": 847,
+      "sha256": "aeb08fd72951514b3990b54bf01b31b78677b48f1dc53ae70c1c4312b5175698"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/checkpoint-delta-PROPOSED.md",
+      "bytes": 600,
+      "sha256": "90d113f49386770b0d31a3fccdc28b73f5d681064288fe75a7d37f65340f0ef8"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/e2e-tests.log",
+      "bytes": 1019,
+      "sha256": "b745a49ff75e3f082d35058b8dfbfc82c4b032bdd235d578700f7bb416293e9f"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/execution-journal.md",
+      "bytes": 3459,
+      "sha256": "5c329c53eb131b949b0a6fcadaa166db492efebb5f3f33a9b63b74357b95d175"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-doctor.log",
+      "bytes": 3826,
+      "sha256": "aaaafcf7dcc6039f44206c84b3d3287e76a6723c2987da32c237ba730a309794"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-status.log",
+      "bytes": 3974,
+      "sha256": "488f0bfafb2c19c82db7954d9dd9b3cab77aabdfc3c7d0a070a6182930a09a24"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/lint.log",
+      "bytes": 51,
+      "sha256": "9e4ab8823086319a197a00a5dcf33fe95d7b9aecce554dfb28ad5f2c5bd54499"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/review-and-blockers.md",
+      "bytes": 1962,
+      "sha256": "890cd38bc9f2f8a27ea0a06b9943e87222fd554ad9899d19e2494b52b875a613"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/run-browser-qa.mjs",
+      "bytes": 7370,
+      "sha256": "5ecff518a2376481e8e93b0fc5a4e097a376af6ab5a6d123c873ecd3ce5222a4"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864-full.png",
+      "bytes": 1027903,
+      "sha256": "028c84752a44c5579c52db38de0c932dd73675f41ae1935478a6309af3550b1e"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864.png",
+      "bytes": 288312,
+      "sha256": "686950c0fa5252b5c11079f7bca600e867cc5005c2d2e80d72cadf957114bced"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844-full.png",
+      "bytes": 887876,
+      "sha256": "d057a70e88e903196ee6656e745c22a195a72ce05d25dce7d1b1d4d3132f193b"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844.png",
+      "bytes": 109318,
+      "sha256": "ca030ab0269d1a261776064c85fcac8e56398327d470aa852d7b6e91de685113"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024-full.png",
+      "bytes": 807982,
+      "sha256": "76365ccf22f063c7861c367a5391d5149390b7fdc903cf29d96ac4c6d0a3f38b"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024.png",
+      "bytes": 255881,
+      "sha256": "25b38677b826a6f97485cfd963f4d3209075e8bd83a0816b453e92382e5218cf"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/security-a11y-qa.md",
+      "bytes": 2346,
+      "sha256": "2dc99f299580dd296f3e0d63b3670dcb3731bf648b6872291cb4917468d5568f"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/source-lock.json",
+      "bytes": 2701,
+      "sha256": "57597920de1d4e88528623169cd886427af25abb6fc15dc69eb5186e2c63ef4d"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/tests-and-ci.json",
+      "bytes": 3614,
+      "sha256": "df57286dc7c95742edf656b23ca453832abd769cca81fd45b2ca05b06ab219df"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/typecheck.log",
+      "bytes": 199,
+      "sha256": "b8895c5d3d7443b6ded931c34e943ac62a211b7eca509f7dba0e6ecb30fa712b"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/unit-tests.log",
+      "bytes": 28362,
+      "sha256": "5e27b1895964fbdf58a3b117b71a159e0123b1f67a485ed00a42aea0beca2b0a"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/visual-proof-index.md",
+      "bytes": 2532,
+      "sha256": "e75ade18fd6eca9fe32ed5da3072b71e80397d17f0258944d7a3388ea3516597"
+    },
     {
       "path": "public/brand/brand-manifest.json",
       "bytes": 3952,
@@ -57,126 +177,6 @@
       "path": "test/brand/svg-security.mjs",
       "bytes": 2559,
       "sha256": "99a005b67b9cd370b54692bda40a3a30f5e68a58ea8fb486e146cdc1cb882edb"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json",
-      "bytes": 2310,
-      "sha256": "a37b02610e28b35208be73caacb40431f35793d6a88c3c6b48faba6927d5b0df"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.log",
-      "bytes": 2310,
-      "sha256": "a37b02610e28b35208be73caacb40431f35793d6a88c3c6b48faba6927d5b0df"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/build.log",
-      "bytes": 848,
-      "sha256": "a93871055923c04c920717053bd9618feb4e5a9e8a512cd07591e98e2e371d36"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/checkpoint-delta-PROPOSED.md",
-      "bytes": 600,
-      "sha256": "90d113f49386770b0d31a3fccdc28b73f5d681064288fe75a7d37f65340f0ef8"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/e2e-tests.log",
-      "bytes": 1020,
-      "sha256": "f23299c632bc837883ebcaa3c18a7a80da8876343a4f86e220c419f60c3592e6"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/EVIDENCE_BUNDLE.md",
-      "bytes": 1870,
-      "sha256": "62904b593bbc7529ef2287c333f753979d312af8b86598c3ab7a2dbf74930dff"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/execution-journal.md",
-      "bytes": 3465,
-      "sha256": "45bb72076a2681b59d461bd794ec89c560587f9d52533b0ed3119ff6ae2c927e"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-doctor.log",
-      "bytes": 3827,
-      "sha256": "73659495c9bc1ab00f0704a2f95568a0a3c3a4e351cb4fc5dbe7bcc2c1f1698b"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-status.log",
-      "bytes": 3975,
-      "sha256": "02ed01f922dafe79b8a691b77f649e207d5a5e932b7611898fee0d3519226bc0"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/lint.log",
-      "bytes": 53,
-      "sha256": "3d211043f9e082c83105511e872199ae626b7d2ebe77fe90e50c93417e710a68"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/review-and-blockers.md",
-      "bytes": 1962,
-      "sha256": "890cd38bc9f2f8a27ea0a06b9943e87222fd554ad9899d19e2494b52b875a613"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/run-browser-qa.mjs",
-      "bytes": 7370,
-      "sha256": "5ecff518a2376481e8e93b0fc5a4e097a376af6ab5a6d123c873ecd3ce5222a4"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/security-a11y-qa.md",
-      "bytes": 2346,
-      "sha256": "2dc99f299580dd296f3e0d63b3670dcb3731bf648b6872291cb4917468d5568f"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/source-lock.json",
-      "bytes": 2701,
-      "sha256": "57597920de1d4e88528623169cd886427af25abb6fc15dc69eb5186e2c63ef4d"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/tests-and-ci.json",
-      "bytes": 3462,
-      "sha256": "64d76f545c49c646289b5d614acbf4fb81ff77e237447248926eb211b268c8d5"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/typecheck.log",
-      "bytes": 202,
-      "sha256": "d792643ebd650ed117fb0c666f2296baa3a152ffe18eb3464ee73dfc47a20411"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/unit-tests.log",
-      "bytes": 28363,
-      "sha256": "9fb72d1ea9a58e74caaa7ab8e75da58a842404c7747596ebe1d57ad7a432ad73"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/visual-proof-index.md",
-      "bytes": 2532,
-      "sha256": "e75ade18fd6eca9fe32ed5da3072b71e80397d17f0258944d7a3388ea3516597"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864-full.png",
-      "bytes": 1027903,
-      "sha256": "028c84752a44c5579c52db38de0c932dd73675f41ae1935478a6309af3550b1e"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864.png",
-      "bytes": 288312,
-      "sha256": "686950c0fa5252b5c11079f7bca600e867cc5005c2d2e80d72cadf957114bced"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844-full.png",
-      "bytes": 887876,
-      "sha256": "d057a70e88e903196ee6656e745c22a195a72ce05d25dce7d1b1d4d3132f193b"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844.png",
-      "bytes": 109318,
-      "sha256": "ca030ab0269d1a261776064c85fcac8e56398327d470aa852d7b6e91de685113"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024-full.png",
-      "bytes": 807982,
-      "sha256": "76365ccf22f063c7861c367a5391d5149390b7fdc903cf29d96ac4c6d0a3f38b"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024.png",
-      "bytes": 255881,
-      "sha256": "25b38677b826a6f97485cfd963f4d3209075e8bd83a0816b453e92382e5218cf"
     }
   ],
   "selfHashExcluded": true,

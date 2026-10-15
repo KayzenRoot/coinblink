@@ -1,6 +1,8 @@
-# CB-GOV-FAST-001 — Candidate Context Lock (documentation-only)
+# CB-GOV-FAST-001 — Operational pilot Context Lock (documentation-only)
 
-**State:** PROPOSED / NOT EFFECTIVE. **Repository:** `KayzenRoot/coinblink`. **Base branch:** `main`. **Exact base commit:** `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8` (verified 2026-10-15 against GitHub live main before branch creation).
+**State:** `PHASE_1_PILOT_AUTHORIZED_BY_MERGED_PR`. **Repository:** `KayzenRoot/coinblink`. **Post-merge readback:** PR [#78](https://github.com/KayzenRoot/coinblink/pull/78) merged at `main` SHA `85ece8e63e56ac8006701eda121f462d901d2d2f` on 2026-10-15. **Original PR #78 candidate base:** `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8` (the immutable source anchors below are Git blob SHA-1s from that base).
+
+**Bounded effect:** the merge authorizes only the Phase 1 local operating pilot for already-admitted LOW/STANDARD Work Orders. It does not admit code or change any Work Order scope, GEF CLI/runtime, required checks, ruleset, security/legal gate, or checkpoint. Pilot metrics are not complete.
 
 ## Verified immutable source anchors (Git blob SHA-1 at base)
 
@@ -32,4 +34,4 @@
 
 If the actual `main` commit, GEF version, governing content hashes, ruleset, Scope/DoD/Architecture or relevant ADR differs at implementation/merging time, mark candidate `STALE`, compare the actual delta, update this Context Lock with tested authoritative facts, and obtain a fresh exact-head audit. Do not blindly rewrite accepted upstream decisions. A successful local `doctor/status` is read-only evidence, never admission or approval.
 
-**STOP:** draft docs PR only. Effective fast-lane policy requires Owner/admin specific authorized merge after exact-head CI and review; code-level automation and ruleset changes are separately scoped. Proposed checkpoint delta: NO_CHANGE.
+**STOP:** operate the pilot only within pre-existing admitted LOW/STANDARD scopes; stop on stale authority, required-check failure, credential/payment/auth/security gate, scope or ownership conflict, HIGH/CRITICAL defect, or Owner veto. No GEF CLI/runtime, ruleset, workflow, required-check, checkpoint, product-merge, or commercial-rights change is authorized here. Checkpoint delta: `NO_CHANGE`.

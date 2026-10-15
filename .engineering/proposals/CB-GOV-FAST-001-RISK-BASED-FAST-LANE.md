@@ -1,6 +1,6 @@
-# CB-GOV-FAST-001 — Risk-based fast lane (PROPOSED, NOT EFFECTIVE)
+# CB-GOV-FAST-001 — Risk-based fast lane (Phase 1 pilot authorized)
 
-**Risk:** ELEVATED (governance process). **Owner request:** 2026-10-15, accelerate CoinBlink, relax repeated GEF analysis, conduct deep final audit. **Current authority:** `main` at `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8`; checkpoint M00_COMPLETE/5%, M01+M05 admitted within existing scopes, CB-VIS-WO-002 Phase A DEMO library admitted. **Disposition:** proposal only until an exact-head-reviewed, Owner-authorized PR merge and post-merge readback. This text does not rewrite or weaken any existing source, GEF CLI, ruleset, CI, safety gate, Work Order, or checkpoint.
+**Risk:** ELEVATED (governance process). **Owner request:** 2026-10-15, accelerate CoinBlink, reduce repeated no-change GEF discussion, and retain a deep final audit. **Post-merge authority:** PR [#78](https://github.com/KayzenRoot/coinblink/pull/78) merged on 2026-10-15 at `85ece8e63e56ac8006701eda121f462d901d2d2f`; live `main` was read back at that SHA. The merge authorizes the Phase 1 local pilot for already-admitted LOW/STANDARD Work Orders. The 30-task metrics remain proposed and incomplete. No GEF CLI/runtime, ruleset, required-check, scope/admission, safety-gate, or checkpoint change is made or implied.
 
 ## Problem, measurable hypothesis and success criteria
 
@@ -42,12 +42,12 @@ Existing `main` ruleset #24888106 stays active: PR+strict HEAD checks, permitted
 
 ## Adoption, pilot, audit and rollback
 
-**Phase 0, in this PR:** documentation-only Work Order + Context Lock + candidate policy; no effective process change. Run CI and audit exact HEAD, request specific Owner GO before merging. Existing work already independently admitted may continue under existing rules meanwhile.
+**Phase 0 (PR #78, completed):** documentation-only Work Order, Context Lock, and candidate policy were reviewed and merged. At that candidate stage no operational change was effective; the authorized merge and live readback now enable the bounded Phase 1 pilot described below. Existing independently admitted work could continue under its existing rules during Phase 0.
 
-**Phase 1, after authorized merge:** use local orchestrator prompts on admitted LOW/STANDARD WOs, one journal + one PR, with full end-of-PR CI. No new GEF CLI/ruleset code change required for avoiding duplicate conversational round trips. If a tool insists on uncached freshness, honor it and log precisely why.
+**Phase 1 (authorized by merged PR #78):** use local orchestrator prompts on already-admitted LOW/STANDARD WOs, one journal + one PR, with full end-of-PR CI. No GEF CLI/runtime, ruleset, or required-check change is required to avoid duplicate conversational round trips. If a tool insists on uncached freshness, honor it and log precisely why. No pilot-completion or productivity result is claimed until measured.
 
 **Phase 2, separate future WO if evidence supports it:** automate stable fingerprints/cache and hosted status consolidation; if rule change is truly necessary, show exact original/proposed JSON and replacement assurance and obtain Owner authorization before any provider mutation.
 
 **Stop/rollback:** revert fast-lane operator practice (not git history) if a governing blob changes unexpectedly, required CI fails, credential/payment/auth/security gate appears, candidate scope exceeds admitted ownership, HIGH/CRITICAL defect exists, or an Owner veto is issued. Continue work only in another already admitted safe scope; do not relabel failure as success.
 
-**Status:** PROPOSED / NOT EFFECTIVE. **Admin review language:** Brazilian Portuguese.
+**Status:** PHASE_1_PILOT_AUTHORIZED; 30-task evaluation remains INCOMPLETE. **Admin review language:** Brazilian Portuguese.

@@ -1,6 +1,8 @@
 # CB-GOV-FAST-001 — Process acceleration design Work Order
 
-**Status:** PROPOSED / NOT ADMITTED / NOT EXECUTABLE AS NEW POLICY. **Risk:** ELEVATED. **Owner request:** 2026-10-15: reduce repetitive GEF governance, accelerate implementation, perform deep audit at final version without postponing critical security checks. **Base main SHA:** `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8`.
+**Status:** `PHASE_1_PILOT_AUTHORIZED_BY_MERGED_PR`; documentation-only governance Work Order. **Risk:** ELEVATED. **Owner request:** 2026-10-15: reduce repetitive no-change GEF discussion, accelerate already-admitted implementation, and perform deep final audit without postponing critical security checks. **Original PR #78 base SHA:** `5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8`. **Post-merge readback:** PR #78 merged and current `main` verified at `85ece8e63e56ac8006701eda121f462d901d2d2f` on 2026-10-15.
+
+The merge authorizes only the Phase 1 local pilot inside existing admitted LOW/STANDARD Work Orders. It does not admit code, change any scope, GEF CLI/runtime, ruleset, required checks, legal/security gate, or checkpoint. The proposed 30-task evaluation has not completed.
 
 ## OBJECTIVE
 Propose a documented risk-based CoinBlink-specific fast lane that eliminates duplicate no-change audit loops, allows multi-milestone implementation **inside existing admitted WOs**, and preserves final exact-head CI, Owner go/no-go, source protections, and P1/HIGH_ASSURANCE gates.
@@ -34,7 +36,7 @@ One GitHub admin account, module-local worktrees, one Integration Steward for sh
 No destructive edits, no force-push, no breaking required checks, no external provider mutations, no hidden deployment. Documents are in English; operational review and outcome in Brazilian Portuguese.
 
 ## ACCEPTANCE CRITERIA
-A) All doc paths in this PR are docs-only and correctly marked PROPOSED, non-effective.
+A) At the original PR #78 head, all three paths were documentation-only and correctly marked PROPOSED/non-effective. That merge gate is now satisfied for the bounded Phase 1 pilot; this does not authorize GEF/runtime, ruleset, required-check, scope, or checkpoint changes.
 B) Source and ruleset/current checkpoint values verified against base SHA and included in Context Lock.
 C) Policy specifies exactly which intermediate validation may be cached and final validations that may not.
 D) New pilot can be stopped without rollback of application code; no scope relaxation of P1 security/legal.
@@ -51,4 +53,4 @@ Proposal `.engineering/proposals/CB-GOV-FAST-001-RISK-BASED-FAST-LANE.md`; this 
 Brazilian Portuguese: VERDICT (`APPROVED`, `CORRECTION REQUIRED`, or `BLOCKED`), source SHA, changed paths, checks and proof, residual risks, next exact action. Technical approval is not GitHub review approval or merge authority.
 
 ## STOP CONDITION
-Stop after publishing the documentation-only draft PR and its verification evidence. Do **not** merge, modify live ruleset, declare new process effective, start a new unadmitted product module, or claim a production release. Reconcile current `main` SHA/fingerprints before later authorizing any merge.
+Operate only the Phase 1 local pilot inside pre-existing admitted LOW/STANDARD WOs. Stop on stale source authority, required-check failure, credential/payment/auth/security gate, scope/ownership conflict, HIGH/CRITICAL defect, or Owner veto. Do **not** change GEF CLI/runtime, ruleset, workflows/required checks, checkpoint, product-merge authority, or rights status. The 30-task metrics remain incomplete; this Work Order does not claim a completed pilot or productivity result.

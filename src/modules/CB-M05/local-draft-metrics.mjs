@@ -14,3 +14,30 @@ export function measureLocalDraft(body) {
 
   return Object.freeze({ words, characters, estimatedMinutes });
 }
+
+// This file is also served as a same-origin external module asset in the DEMO.
+// Keep the pure exports usable by Node tests, and never persist or transmit data.
+if (typeof document !== "undefined") {
+  const root = document.querySelector("[data-m05-local-editor]");
+  const body = root?.querySelector("[data-m05-draft-body]");
+  const preview = root?.querySelector("[data-m05-preview-body]");
+  const words = root?.querySelector("[data-m05-metric-words]");
+  const characters = root?.querySelector("[data-m05-metric-characters]");
+  const minutes = root?.querySelector("[data-m05-metric-minutes]");
+
+  if (body && words && characters && minutes) {
+    const update = () => {
+      const result = measureLocalDraft(body.value);
+      words.textContent = String(result.words);
+      characters.textContent = String(result.characters);
+      minutes.textContent = String(result.estimatedMinutes);
+    };
+    body.addEventListener("input", update);
+    // React to the existing async local Markdown import, not a server request.
+    if (preview && typeof MutationObserver !== "undefined") {
+      const observer = new MutationObserver(update);
+      observer.observe(preview, { childList: true, characterData: true, subtree: true });
+    }
+    update();
+  }
+}

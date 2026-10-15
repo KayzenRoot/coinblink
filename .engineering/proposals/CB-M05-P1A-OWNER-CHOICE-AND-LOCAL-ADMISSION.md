@@ -29,7 +29,7 @@ This approval is a decision on technology and limited local test preparation. It
 2. Explicit module Path Contract and local Context Lock specify source SHA, permitted paths and STOP condition. Integration Steward reserves shared migrations, Cloudflare configuration, Astro routes and package changes.
 3. Tests are local-only and fake-only: owner uniqueness under contested requests, replay/expiry/origin/RP challenge guards, recovery with two separate simulated devices, optimistic concurrency and rollback with no nontransactional partial writes.
 4. Before any privileged backend code: threat and recovery review; test-only code is not a substitute for a real cryptographic proof.
-5. Exact-head CI Ubuntu+Windows, Docker, SonarCloud and Socket success, owner review of outputs and independent security review where required.
+5. Exact-head CI Ubuntu+Windows, Docker, SonarCloud and Socket success, plus sole-administrator KayzenRoot's documented threat/security review and decision. A second human reviewer is not required; self-approval in GitHub is not assumed.
 6. No public site deploy, provider provisioning, real credential, paid plan, public admin endpoint or publishing step.
 
 ## Execution state after current Owner authorization

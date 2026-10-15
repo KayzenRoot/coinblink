@@ -167,7 +167,14 @@ if (typeof document !== "undefined") {
       try {
         const refs = listLocalSources(body.value);
         count.textContent = String(refs.length) + " / " + String(MAX_LOCAL_SOURCES);
-        addButton.disabled = refs.length >= MAX_LOCAL_SOURCES;
+        // Keep all actions disabled on an empty demo; enable only when a new
+        // reference can actually be appended without violating draft limits.
+        let canAdd = false;
+        if (refs.length < MAX_LOCAL_SOURCES && name.value.trim() && url.value) {
+          try { canAdd = Boolean(addLocalSource(body.value, name.value, url.value)); }
+          catch { canAdd = false; }
+        }
+        addButton.disabled = !canAdd;
         if (!refs.length) {
           const empty = document.createElement("li");
           empty.textContent = "No extra references yet. Your original source field remains separate.";
@@ -224,12 +231,15 @@ if (typeof document !== "undefined") {
         apply(result.value);
         name.value = "";
         url.value = "";
+        render();
         report("Reference added to article body. Insert a citation and re-export Markdown to keep it.");
         name.focus();
       } catch {
         report("Enter a distinct HTTPS URL and plain-text label; max 12 sources and 12,000 draft characters.");
       }
     });
+    name.addEventListener("input", render);
+    url.addEventListener("input", render);
     body.addEventListener("input", render);
     if (preview && typeof MutationObserver !== "undefined") {
       new MutationObserver(render).observe(preview, { childList: true, characterData: true, subtree: true });

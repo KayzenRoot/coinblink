@@ -32,7 +32,12 @@ test("drafting indicators are explicitly local, non-published and accessible in 
   assert.match(source, /data-m05-metric-minutes/u);
   assert.match(source, /aria-live="polite"/u);
   assert.match(source, /estimate.*not.*fact.check/u);
-  assert.match(source, /MutationObserver/u);
-  assert.match(source, /measureLocalDraft/u);
+  assert.match(source, /\?url&no-inline/u);
+  assert.match(source, /src=\{metricsScriptUrl\}/u);
+  assert.doesNotMatch(source, /<script>\s*import /u, "a bundled inline metrics script would violate CSP");
+  const externalModule = readFileSync(resolve("src/modules/CB-M05/local-draft-metrics.mjs"), "utf8");
+  assert.match(externalModule, /MutationObserver/u);
+  assert.match(externalModule, /measureLocalDraft/u);
+  assert.doesNotMatch(externalModule, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\()\b/u);
   assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon)\b/u);
 });

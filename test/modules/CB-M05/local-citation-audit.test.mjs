@@ -115,6 +115,8 @@ test("review dashboard remains outside editor fields, local, CSP-safe and text-o
   assert.match(component, /\?url&no-inline/u);
   assert.match(module, /textContent/u);
   assert.match(module, /new MutationObserver\(render\)/u);
+  assert.doesNotMatch(module, /\\bimport\\s+(?:\\{|\\*|["'])/u, "URL-served browser module must not load unresolved relative imports");
+  assert.match(module, /parseSourceNotes/u);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML)\b/u);
   assert.doesNotMatch(component, /<script>\s*import /u);
 });

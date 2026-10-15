@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-10-15T02:10:21.867Z",
+  "browser": "156.0.8078.4",
+  "baseUrl": "http://127.0.0.1:33375",
+  "externalRequests": [],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864.png",
+      "captureType": "viewport",
+      "bytes": 288312,
+      "sha256": "686950c0fa5252b5c11079f7bca600e867cc5005c2d2e80d72cadf957114bced",
+      "viewport": "1536x864",
+      "imageCount": 38,
+      "assetsXmlParsed": 5,
+      "sizeSamples": 38
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864-full.png",
+      "captureType": "fullPage",
+      "bytes": 1027903,
+      "sha256": "028c84752a44c5579c52db38de0c932dd73675f41ae1935478a6309af3550b1e",
+      "viewport": "1536x864",
+      "imageCount": 38,
+      "assetsXmlParsed": 5,
+      "sizeSamples": 38
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024.png",
+      "captureType": "viewport",
+      "bytes": 255881,
+      "sha256": "25b38677b826a6f97485cfd963f4d3209075e8bd83a0816b453e92382e5218cf",
+      "viewport": "768x1024",
+      "imageCount": 38,
+      "assetsXmlParsed": 5,
+      "sizeSamples": 38
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024-full.png",
+      "captureType": "fullPage",
+      "bytes": 807982,
+      "sha256": "76365ccf22f063c7861c367a5391d5149390b7fdc903cf29d96ac4c6d0a3f38b",
+      "viewport": "768x1024",
+      "imageCount": 38,
+      "assetsXmlParsed": 5,
+      "sizeSamples": 38
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844.png",
+      "captureType": "viewport",
+      "bytes": 109318,
+      "sha256": "ca030ab0269d1a261776064c85fcac8e56398327d470aa852d7b6e91de685113",
+      "viewport": "390x844",
+      "imageCount": 38,
+      "assetsXmlParsed": 5,
+      "sizeSamples": 38
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844-full.png",
+      "captureType": "fullPage",
+      "bytes": 887876,
+      "sha256": "d057a70e88e903196ee6656e745c22a195a72ce05d25dce7d1b1d4d3132f193b",
+      "viewport": "390x844",
+      "imageCount": 38,
+      "assetsXmlParsed": 5,
+      "sizeSamples": 38
+    }
+  ]
+}

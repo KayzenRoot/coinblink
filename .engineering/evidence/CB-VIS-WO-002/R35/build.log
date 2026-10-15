@@ -1,0 +1,20 @@
+> coinblink@0.1.0 build
+> astro build && node scripts/assert-no-session-binding.mjs
+
+02:09:39 [types] Generated 288ms
+02:09:39 [build] output: "server"
+02:09:39 [build] mode: "server"
+02:09:39 [build] directory: /workspace/dist/
+02:09:39 [build] adapter: @astrojs/cloudflare
+02:09:39 [build] Collecting build info...
+02:09:39 [build] ✓ Completed in 484ms.
+02:09:40 [build] Building server entrypoints...
+02:09:41 [vite] ✓ built in 967ms
+02:09:42 [vite] ✓ built in 1.29s
+02:09:43 [vite] ✓ built in 322ms
+02:09:43 [build] Rearranging server assets...
+02:09:43 [build] ✓ Completed in 3.27s.
+02:09:43 [@astrojs/cloudflare] Injected immutable Cache-Control for /_astro/* into _headers.
+02:09:43 [build] Server built in 4.72s
+02:09:43 [build] Complete!
+No SESSION, data, service, or production bindings in /workspace/dist/server/wrangler.json

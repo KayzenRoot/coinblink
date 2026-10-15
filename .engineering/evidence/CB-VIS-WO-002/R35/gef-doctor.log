@@ -1,0 +1,141 @@
+> coinblink@0.1.0 gef
+> gef doctor
+
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "commandId": "gef.doctor.run",
+  "contractVersion": "1.0",
+  "terminal": "SUCCEEDED",
+  "value": {
+    "commandId": "gef.doctor.run",
+    "effect": "NONE",
+    "doctor": {
+      "verb": "doctor",
+      "readOnly": true,
+      "target": {
+        "targetRef": "/workspace",
+        "exists": true,
+        "isDirectory": true
+      },
+      "findings": [
+        {
+          "id": "toolchain.node",
+          "state": "HEALTHY"
+        },
+        {
+          "id": "toolchain.platform",
+          "state": "HEALTHY"
+        },
+        {
+          "id": "toolchain.git",
+          "state": "FINDING"
+        },
+        {
+          "id": "repository.observable",
+          "state": "FINDING"
+        }
+      ],
+      "remediation": [
+        {
+          "finding": "toolchain.git",
+          "risk": "REVIEW_REQUIRED",
+          "automatic": false,
+          "previewRequired": true
+        },
+        {
+          "finding": "repository.observable",
+          "risk": "REVIEW_REQUIRED",
+          "automatic": false,
+          "previewRequired": true
+        }
+      ],
+      "invariants": [
+        {
+          "name": "platform.supported",
+          "pass": true,
+          "actual": true,
+          "expected": true
+        },
+        {
+          "name": "toolchain.nodeMajor",
+          "pass": true,
+          "actual": true,
+          "expected": true
+        },
+        {
+          "name": "toolchain.git",
+          "pass": false,
+          "actual": false,
+          "expected": true
+        }
+      ],
+      "security": {
+        "dependency": {
+          "manifestDigest": "0c16820bff7fb5d8cc99b6e18f451b6fe458e835d4a7b2412c1aafd1f3d07438",
+          "lockDigest": "79255c007f327d69714b76ba401e87261ae557f725af89a117b5afd609be3bd8",
+          "auditCritical": 0,
+          "provenance": "unverified",
+          "state": "REVIEW",
+          "digest": "f17177028f4bfb04441f812ab685740bec5c6021b0f6665cd93472263f12a925"
+        },
+        "github": {
+          "immutableRef": false,
+          "untrustedFork": false,
+          "writePermission": false,
+          "state": "REVIEW",
+          "digest": "e8bdac1d7bae065e4b2ebfdc858b7d2483542bc9f508b747dd1e829ca146b328"
+        },
+        "safety": {
+          "classification": "NONE",
+          "confirmation": "AUTO",
+          "requested": "AUTO",
+          "restricted": false,
+          "minimum": [],
+          "state": "READY",
+          "digest": "b43e5565fe5d5ec78fde469fd614e6f533ed2946eaab6f035986377b34c06dd5"
+        }
+      },
+      "capabilities": {
+        "capabilities": [
+          "toolchain.node",
+          "toolchain.platform"
+        ],
+        "unknown": [
+          "repository.observable",
+          "toolchain.git"
+        ],
+        "state": "DEGRADED",
+        "digest": "4dc13ee58b902eaaa764d337cf489c0186c4d62bbd73b6f4aa8049f65e01c76a"
+      },
+      "toolchain": {
+        "git": {
+          "toolId": "git",
+          "presence": "UNAVAILABLE",
+          "probeStatus": "NOT_REQUIRED",
+          "compatibility": "NOT_CHECKED",
+          "gaps": [
+            "gef.cli.git.physical_path_writable_by_process"
+          ]
+        }
+      },
+      "governance": {
+        "source": ".engineering/CHECKPOINT.json",
+        "present": true,
+        "readable": true,
+        "valid": true,
+        "observationLimits": []
+      },
+      "integrity": {
+        "root": "99a1727ea413d2fd40d0cb13a4980293f388fcc89318e245739ca5358e78851c",
+        "schema": 1,
+        "digest": "7e74d3a544e1d81bdb057efdc9daabad76c7f2775456cb80a9c3162c5b42660d"
+      },
+      "observationLimits": [
+        "GIT_DIRECTORY_NOT_A_DIRECTORY",
+        "WORKING_TREE_NOT_OBSERVED"
+      ]
+    },
+    "doctorDigest": "18c3f425a25dad38f5eb6f5e537c62e104a79fcb11a6c32ec06d7ad3d9ed6329"
+  }
+}

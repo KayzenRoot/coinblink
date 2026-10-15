@@ -17,7 +17,7 @@ The logical Integration Steward is a responsibility assigned to KayzenRoot/Codex
 - Any Wrangler config must be a synthetic-only file inside test/modules/CB-M05/p1a-local-fixtures/, NEVER edit the root wrangler.jsonc. Use a dedicated synthetic database binding name CB_M05_P1A_LOCAL and a placeholder database ID with no real Cloudflare target; explicitly disallow remote=true.
 - Local D1 command MUST contain --local, --config for this fixture, and --persist-to for a disposable Git-ignored path. Example future CLI invocation, NOT executed by this ADR:
 
-    npm exec --no -- wrangler d1 execute CB_M05_P1A_LOCAL --local --config test/modules/CB-M05/p1a-local-fixtures/wrangler.local.jsonc --persist-to .local-p1a-d1-state --file test/modules/CB-M05/p1a-local-fixtures/schema.sql
+    npm exec --no -- wrangler d1 execute CB_M05_P1A_LOCAL --local --config test/modules/CB-M05/p1a-local-fixtures/wrangler.local.jsonc --persist-to .wrangler/p1a-local-state --file test/modules/CB-M05/p1a-local-fixtures/schema.sql
 
 - Executor must inspect pinned CLI help and test config before executing; if requiring Cloudflare login, remote account, credential, deployment or paid provisioning, STOP.
 - Fixtures MUST be fake (TEST device labels, example.test URLs, fabricated articles) and must not contain a real CPF, passkey, token, key, account, session or customer data.

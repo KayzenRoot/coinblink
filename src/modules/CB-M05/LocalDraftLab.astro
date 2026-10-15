@@ -2,6 +2,7 @@
 import metricsScriptUrl from "./local-draft-metrics.mjs?url&no-inline";
 import searchScriptUrl from "./local-draft-search.mjs?url&no-inline";
 import editorialScriptUrl from "./local-editorial-checklist.mjs?url&no-inline";
+import sourcesScriptUrl from "./local-source-notes.mjs?url&no-inline";
 ---
 <section class="m05-draft-panel" aria-labelledby="m05-draft-lab-heading" data-m05-local-editor>
   <div class="m05-draft-intro">
@@ -100,7 +101,33 @@ import editorialScriptUrl from "./local-editorial-checklist.mjs?url&no-inline";
   <p class="m05-editorial-note" role="status" aria-live="polite" data-m05-editorial-note>Nothing is saved or verified online.</p>
 </section>
 <script is:inline type="module" src={searchScriptUrl}></script>
+<section class="m05-sources-panel" data-m05-sources-panel aria-labelledby="m05-source-panel-title">
+  <div class="m05-sources-heading">
+    <div>
+      <p class="m05-sources-eyebrow">SOURCE DESK · LOCAL-ONLY DEMO</p>
+      <h3 id="m05-source-panel-title">Citations and reference notes</h3>
+    </div>
+    <strong class="m05-sources-count" data-m05-source-count aria-label="Number of local references">0 / 12</strong>
+  </div>
+  <p class="m05-sources-description">Add up to 12 HTTPS reference notes and insert matching footnote markers in the article. The notes are part of the article body, so they travel with your local .md export/import. No URLs are opened, checked or uploaded.</p>
+  <div class="m05-sources-fields">
+    <label for="m05-sources-title">Source name
+      <input id="m05-sources-title" data-m05-source-label maxlength="90" type="text" autocomplete="off" placeholder="Publisher or report title" />
+    </label>
+    <label for="m05-sources-url">Source URL (HTTPS)
+      <input id="m05-sources-url" data-m05-source-url maxlength="500" type="url" autocomplete="off" spellcheck="false" placeholder="https://publisher.example/report" />
+    </label>
+  </div>
+  <button class="m05-sources-add" type="button" data-m05-source-add>Add source note to draft</button>
+  <h4 class="m05-sources-list-title">References in this draft</h4>
+  <ol class="m05-sources-list" data-m05-source-list aria-label="Local source notes">
+    <li>No extra references added yet.</li>
+  </ol>
+  <p class="m05-sources-caution">These are unverified reference notes, not evidence that a claim is true or that content reuse is licensed. Removing a source also removes its matching citation markers. Re-export the Markdown file to preserve edits.</p>
+  <p class="m05-sources-status" data-m05-source-status role="status" aria-live="polite"></p>
+</section>
 <script is:inline type="module" src={editorialScriptUrl}></script>
+<script is:inline type="module" src={sourcesScriptUrl}></script>
 
 <style>
   .m05-draft-panel { border:1px solid #2a3d32; border-radius:10px; padding:clamp(17px,2.5vw,24px); background:linear-gradient(145deg,#111d17,#0b120f); color:#f2f5f1; }
@@ -169,6 +196,26 @@ import editorialScriptUrl from "./local-editorial-checklist.mjs?url&no-inline";
   .m05-editorial-findings-heading { margin:17px 0 7px; font-size:12px; }
   .m05-editorial-findings { padding-left:19px; margin:0; display:grid; gap:6px; color:#cfdbd0; font-size:11px; line-height:1.6; }
   .m05-editorial-note { margin:13px 0 0; min-height:1.5em; color:#b8f34b; font-size:11px; line-height:1.5; }
+  .m05-sources-panel { margin-top:16px; padding:clamp(14px,2vw,22px); border:1px solid #42674b; border-radius:9px; background:linear-gradient(135deg,#14241a,#0a140f); color:#f2f5f1; }
+  .m05-sources-heading { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+  .m05-sources-eyebrow { margin:0; font-size:10px; font-weight:750; letter-spacing:.1em; color:#b8f34b; }
+  .m05-sources-heading h3 { margin:5px 0 0; font-size:16px; }
+  .m05-sources-count { padding:8px 12px; border:1px solid #45684d; border-radius:7px; font-variant-numeric:tabular-nums; color:#b8f34b; font-size:15px; }
+  .m05-sources-description, .m05-sources-caution { max-width:86ch; color:#c0d1c2; font-size:11px; line-height:1.65; }
+  .m05-sources-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0 12px; }
+  .m05-sources-fields label { display:grid; gap:7px; color:#f2f5f1; font-size:12px; font-weight:650; }
+  .m05-sources-fields input { width:100%; min-width:0; padding:11px 12px; border:1px solid #3e5b45; border-radius:6px; background:#0a120e; color:#f2f5f1; font:inherit; font-size:13px; }
+  .m05-sources-panel input:focus-visible, .m05-sources-panel button:focus-visible { outline:3px solid #b8f34b; outline-offset:3px; }
+  .m05-sources-add, .m05-sources-list button { padding:9px 11px; min-height:39px; border:1px solid #527751; border-radius:6px; background:#243e29; color:#f4f8f3; cursor:pointer; font:inherit; font-size:11px; font-weight:650; }
+  .m05-sources-add:disabled { opacity:.45; cursor:not-allowed; }
+  .m05-sources-list-title { margin:20px 0 8px; font-size:12px; }
+  .m05-sources-list { padding-left:19px; display:grid; gap:12px; }
+  .m05-sources-list li { font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+  .m05-sources-list li span { display:block; margin:0 0 7px; }
+  .m05-sources-list button { margin:0 7px 5px 0; }
+  .m05-sources-caution { margin:14px 0 0; }
+  .m05-sources-status { margin:9px 0 0; min-height:1.5em; color:#b8f34b; font-size:11px; line-height:1.6; }
+  @media(max-width:540px) { .m05-sources-fields { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:900px) { .m05-draft-layout { grid-template-columns:minmax(0,1fr); } }
   @media(max-width:500px) { .m05-draft-panel { padding:15px; } .m05-draft-fields input, .m05-draft-fields textarea { font-size:16px; } .m05-draft-actions button { width:100%; } }
 </style>

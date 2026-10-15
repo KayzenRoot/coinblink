@@ -126,7 +126,8 @@ import searchScriptUrl from "./local-draft-search.mjs?url&no-inline";
   .m05-local-search-heading span { color:#b8f34b; font-size:11px; }
   .m05-local-search-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
   .m05-local-search-fields label { display:grid; gap:7px; margin:0; font-size:11px; }
-  .m05-local-search-fields input { font-size:13px; }
+  .m05-local-search-fields input { width:100%; min-width:0; border:1px solid #3a4d40; border-radius:6px; background:#0a120e; color:#f2f5f1; padding:10px 12px; font:inherit; font-size:13px; }
+  .m05-local-search input:focus-visible, .m05-local-search button:focus-visible { outline:3px solid #b8f34b; outline-offset:2px; }
   .m05-local-search-case { display:flex !important; justify-content:flex-start !important; align-items:center !important; gap:9px !important; margin:13px 0 !important; color:#d9e7d9; font-size:11px; }
   .m05-local-search-case input { width:17px !important; height:17px; min-width:17px; accent-color:#b8f34b; }
   .m05-local-search-actions { display:flex; flex-wrap:wrap; gap:8px; }

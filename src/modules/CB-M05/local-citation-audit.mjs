@@ -37,7 +37,7 @@ function parseSourceNotes(body) {
     const title = matched[2];
     const rawUrl = matched[3];
     if (title.length < 1 || title.length > 90 || title !== title.trim()
-      || /[\r\n\t|<>]/u.test(title) || /[\[\]\\]/u.test(title)
+      || /[\r\n\t|<>]/u.test(title) || title.includes("[") || title.includes("]") || title.includes("\\")
       || rawUrl.length > 500 || /[\s|<>]/u.test(rawUrl)) {
       throw new RangeError("Invalid source label or URL");
     }

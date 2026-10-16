@@ -1,6 +1,6 @@
 # CB-M05-P1B-VERIFIER-001 — Supply-chain preflight Evidence Bundle
 
-**Status:** DOC-ONLY CANDIDATE, not an effective product/security decision. **Base main:** `2d59c065e5b55d9e3d68abc838007441e570cc48`. **Scope:** one WebAuthn server-side verifier version evaluation, no npm package changes, no code. **Checkpoint Delta:** `{}`.
+**Status:** DOC-ONLY CANDIDATE, not an effective product/security decision. **Base main:** `2d59c065e5b55d9e3d68abc838007441e570cc48`. **Scope:** one WebAuthn server-side verifier version evaluation and Context Lock, no npm package changes, no code. **Checkpoint Delta:** `{}`.
 
 ## Repository facts actually read
 | Item | Verified value |
@@ -36,4 +36,4 @@
 | Product real auth / remote D1 / deploy | NOT_AUTHORIZED | separate admission and go-live, not part of this increment |
 
 ## Proposed reviewer outcome
-`CANDIDATE_RECOMMENDED`, limited to exact version 14.0.3 **for developer-local proof only**. Security dependency and LOCAL harness execution require explicit Owner GO on the final candidate SHA, updated Context Lock, reviewed Integration Steward dependency lane and reproducible tests. This PR must stay DRAFT until reviewed. No fake claim of implementation, no change to M01 rights, M05 product completion or checkpoint.
+`CANDIDATE_RECOMMENDED`, limited to exact version 14.0.3 **for developer-local proof only**. Security dependency and LOCAL harness execution require explicit Owner GO on the final candidate SHA, updated Context Lock, reviewed Integration Steward dependency lane and reproducible tests. This PR changes exactly three Markdown files (verifier evaluation, Evidence Bundle and Context Lock) and must stay DRAFT until reviewed. No fake claim of implementation, no change to M01 rights, M05 product completion or checkpoint.

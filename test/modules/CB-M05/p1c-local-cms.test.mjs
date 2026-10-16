@@ -465,8 +465,8 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
     } catch {
       const text = await page.locator('#message').textContent();
       const contextDetails = await page.evaluate(() => ({
-        secure: window.isSecureContext,
-        credentialApi: typeof navigator.credentials?.get,
+        secure: globalThis.isSecureContext,
+        credentialApi: typeof globalThis.navigator?.credentials?.get,
       }));
       throw new Error('Chromium test-passkey login did not reach session: ' + JSON.stringify({
         message: text, contextDetails, routes: routeStatuses,

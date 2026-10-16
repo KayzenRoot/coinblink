@@ -40,9 +40,13 @@ The assistant's temporary container reports Node `v22.16.0`, npm `10.9.2`. Both 
 | WebAuthn signed registration/assertion and negative tests | NOT_EXECUTED | Real signatures, not Boolean mock |
 | D1-local atomic nonce/session/recovery tests | NOT_EXECUTED | Wranglers' local emulator |
 | M05 P0, P1-A regression on implementation HEAD | NOT_EXECUTED | Re-run after actual code change |
-| Hosted exact-HEAD CI for this R72 PR | PENDING | GitHub run after branch creation |
+| Hosted CI for earlier R72 HEAD `27f4f5b8b8fd39a8ff37e95993e623766df6448e` | PASS_ON_PRIOR_HEAD | GitHub Actions #38880254534 completed SUCCESS, six checks completed/success, CodeRabbit status success with automated review skipped; not evidence for the new commit |
 | Privileged P1 product/auth/cloud/deploy | NOT_AUTHORIZED | Future separate gates |
 | Checkpoint Delta | `{}` | M00_COMPLETE / 5% unchanged |
 
 **Verdict:** `SOURCE_PREFLIGHT_READY / DEPENDENCY_CANDIDATE_READ_ONLY / IMPLEMENTATION_BLOCKED_PENDING_EXPLICIT_OWNER_GO`.
 **STOP:** DRAFT proposal cannot install dependencies or execute P1-B crypto/security code; do not classify a successful docs CI as cryptographic proof.
+
+## CI evidence reconciliation (R72 Correction Delta)
+
+The pre-existing evidence table was created before the PR checks completed; the previous `PENDING` is now historical, not a current result. The exact pre-correction SHA `27f4f5b8b8fd39a8ff37e95993e623766df6448e` passed [workflow #38880254534](https://github.com/KayzenRoot/coinblink/actions/runs/38880254534) with all six required hosted check-runs successful and zero unresolved review threads. This document change necessarily creates a **new PR HEAD**: re-run/re-read the exact new HEAD checks, conflicts, source fingerprints and discussions and record the outcome as a PR audit comment. Do not attribute the prior CI outcome to this new commit. This remains a docs-only evidence correction and grants no Owner merge GO or cryptographic implementation authorization.

@@ -115,6 +115,7 @@ test('M05 LOCAL CMS 01: hard isolation and two cryptographically enrolled synthe
     await ctx.db.prepare('UPDATE cms_credentials SET revoked_at=5 WHERE credential_id=?')
       .bind(ctx.recovery.id).run();
     assert.equal((await ctx.run('/local/challenge', 'POST', { credentialId: ctx.recovery.id })).status, 403);
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, recovery)).status, 401, 'revoking a credential revokes its live session access');
   } finally { await ctx.mf.dispose(); }
 });
 
@@ -183,6 +184,10 @@ test('M05 LOCAL CMS 03: protected draft write, revision history, optimistic conf
     assert.equal((await ctx.run('/local/articles', 'GET', undefined, loginInfo)).status, 200);
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    await assert.rejects(ctx.db.prepare('UPDATE cms_draft_revisions SET title=? WHERE draft_id=? AND revision=1')
+      .bind('Tampered history', info.id).run(), /immutable/i);
+    await assert.rejects(ctx.db.prepare('DELETE FROM cms_draft_revisions WHERE draft_id=? AND revision=1')
+      .bind(info.id).run(), /immutable/i);
     assert.equal((await ctx.run('/local/logout', 'POST', {}, loginInfo)).status, 200);
     assert.equal((await ctx.run('/local/articles', 'GET', undefined, loginInfo)).status, 401);
     assert.equal((await ctx.run('/local/articles/' + info.id, 'PATCH', {

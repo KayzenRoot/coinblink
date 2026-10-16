@@ -1,6 +1,7 @@
 // Local-only test CMS vertical slice. NOT imported by Astro, Workers or public routes.
 // No cloud account, deployment binding, real Owner credentials or publishing.
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
+import { renderLocalCmsUi } from './local-cms-ui.mjs';
 
 export const CMS_TEST_ORIGIN = 'https://owner.example.test';
 export const CMS_TEST_RP_ID = 'owner.example.test';
@@ -96,6 +97,29 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
     const currentTime = nowEpoch(now);
     const route = new URL(request.url).pathname;
     const method = request.method;
+    if (route === '/local/ui' && method === 'GET') {
+      const nonce = randomToken();
+      const csp = [
+        "default-src 'none'",
+        "base-uri 'none'",
+        "frame-ancestors 'none'",
+        "form-action 'none'",
+        "connect-src 'self'",
+        "script-src 'nonce-" + nonce + "'",
+        "style-src 'nonce-" + nonce + "'",
+      ].join('; ');
+      return new Response(renderLocalCmsUi(nonce), {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Content-Security-Policy': csp,
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+          'X-Robots-Tag': 'noindex, nofollow, noarchive',
+          'Referrer-Policy': 'no-referrer',
+        },
+      });
+    }
     try {
       if (route === '/local/challenge' && method === 'POST') {
         if (!ownerOrigin(request)) return denied();

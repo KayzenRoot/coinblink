@@ -27,9 +27,9 @@
     "moduleAdmission": {
       "CB-M00": "ADMITTED",
       "CB-M01": "ADMITTED",
-      "CB-M02": "ADMITTED",
-      "CB-M03": "ADMITTED",
-      "CB-M04": "ADMITTED",
+      "CB-M02": "NOT_ADMITTED",
+      "CB-M03": "NOT_ADMITTED",
+      "CB-M04": "NOT_ADMITTED",
       "CB-M05": "ADMITTED",
       "CB-M06": "NOT_ADMITTED",
       "CB-M07": "NOT_ADMITTED",
@@ -66,45 +66,6 @@
         "contractProposalHead": "772f2d11f26f798e0917067319991079974eb849",
         "scope": "P0_STATIC_NON_PRIVILEGED_CMS_UI_MOCK_ONLY",
         "privilegedAuthVaultDatabaseCodeGate": "NOT_AUTHORIZED_UNTIL_SEPARATE_OWNER_APPROVED_SECURITY_DATA_ADR"
-      },
-      "CB-M02": {
-        "workOrder": "CB-M02-WO-001",
-        "contract": "docs/architecture/contracts/CB-M02.md",
-        "contextLock": ".engineering/context-locks/CB-M02-WO-001.md",
-        "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
-        "scope": "P0_OFFLINE_MOCK_ONLY",
-        "governanceMainSha": "28e20b3bafef940e465d6d2a7ba938ae8e393e74",
-        "preparationPullRequest": 92,
-        "preparationHeadSha": "520c9f9b4c10d0b4fd085acfd81270bdd420e24d",
-        "predecessorMergeRequired": true,
-        "unmetIntegrationDependencies": "ISOLATED_OFFLINE_FIXTURES_ONLY_UNTIL_PRODUCER_AND_RIGHTS_GATES_PASS",
-        "runtimeAndSharedIntegration": "NOT_AUTHORIZED_BY_ADMISSION"
-      },
-      "CB-M03": {
-        "workOrder": "CB-M03-WO-001",
-        "contract": "docs/architecture/contracts/CB-M03.md",
-        "contextLock": ".engineering/context-locks/CB-M03-WO-001.md",
-        "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
-        "scope": "P0_OFFLINE_MOCK_ONLY",
-        "governanceMainSha": "28e20b3bafef940e465d6d2a7ba938ae8e393e74",
-        "preparationPullRequest": 93,
-        "preparationHeadSha": "7c1d554e882064cf11be0d46fcfe9bff14a02064",
-        "predecessorMergeRequired": true,
-        "unmetIntegrationDependencies": "ISOLATED_OFFLINE_FIXTURES_ONLY_UNTIL_PRODUCER_AND_RIGHTS_GATES_PASS",
-        "runtimeAndSharedIntegration": "NOT_AUTHORIZED_BY_ADMISSION"
-      },
-      "CB-M04": {
-        "workOrder": "CB-M04-WO-001",
-        "contract": "docs/architecture/contracts/CB-M04.md",
-        "contextLock": ".engineering/context-locks/CB-M04-WO-001.md",
-        "status": "EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE",
-        "scope": "P0_OFFLINE_MOCK_ONLY",
-        "governanceMainSha": "28e20b3bafef940e465d6d2a7ba938ae8e393e74",
-        "preparationPullRequest": 94,
-        "preparationHeadSha": "280b0bbe6b6204aa8af8061423c7a3369cd50d4",
-        "predecessorMergeRequired": true,
-        "unmetIntegrationDependencies": "ISOLATED_OFFLINE_FIXTURES_ONLY_UNTIL_PRODUCER_AND_RIGHTS_GATES_PASS",
-        "runtimeAndSharedIntegration": "NOT_AUTHORIZED_BY_ADMISSION"
       }
     }
   },

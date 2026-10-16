@@ -234,7 +234,7 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
   const active = document.activeElement;
-  if (active?.matches("input, textarea, select") || active?.isContentEditable) return;
+  if (active?.matches("input, textarea, select, button, a[href], [role=button], [role=link]") || active?.isContentEditable) return;
   const visibleSearch = searches.find((search) => search.getClientRects().length > 0);
   if (!visibleSearch) return;
   event.preventDefault();

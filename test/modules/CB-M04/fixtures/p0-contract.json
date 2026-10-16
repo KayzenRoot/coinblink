@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "module": "CB-M04",
+  "kind": "NON_EXECUTABLE_CONTRACT_FIXTURE",
+  "admission": "NOT_ADMITTED",
+  "mode": "MOCK",
+  "networkCalls": 0,
+  "observations": [
+    {
+      "asset": "BTC",
+      "pair": "BTC/USD",
+      "currency": "USD",
+      "unit": "USD_PER_BTC",
+      "numericValue": 12345,
+      "asOf": "2025-01-01T00:00:00Z",
+      "provider": "synthetic-market.example.test",
+      "licenseStatus": "NOT_CLEARED",
+      "freshness": "STALE",
+      "displayMode": "MOCK",
+      "isTradable": false,
+      "attribution": "Artificial historical example; NOT actual market data"
+    }
+  ],
+  "cases": [
+    {
+      "name": "mock-never-live",
+      "input": "MOCK",
+      "display": "DEMO_ONLY"
+    },
+    {
+      "name": "stale-data",
+      "input": "STALE",
+      "display": "STALE_BADGE"
+    },
+    {
+      "name": "missing-price",
+      "input": "UNAVAILABLE",
+      "display": "NO_QUOTE"
+    },
+    {
+      "name": "rights-denied",
+      "input": "NOT_CLEARED",
+      "display": "BLOCKED"
+    },
+    {
+      "name": "timeout",
+      "input": "TIMEOUT",
+      "display": "SOURCE_UNAVAILABLE"
+    },
+    {
+      "name": "provider-budget",
+      "input": "COST_GATE",
+      "display": "DISABLED"
+    }
+  ]
+}

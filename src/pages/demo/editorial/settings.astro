@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import AdminWorkspace from "../../../modules/CB-M05/AdminWorkspace.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="CoinBlink · Editorial workspace prototype (MOCK)"
+  description="Presentation-only CoinBlink editorial prototype. Security disabled; no account, publication, content storage or external data integrations."
+>
+  <AdminWorkspace view="settings" publicDemo={true} />
+</BaseLayout>

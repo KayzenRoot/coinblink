@@ -161,6 +161,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     try {
       await api('/local/logout', 'POST', {});
       csrf = null;
+      ui.form.reset();
+      ui.draftId.value = '';
+      ui.revision.value = '0';
+      ui.save.textContent = 'Create draft';
       ui.form.hidden = true;
       ui.logout.hidden = true;
       ui.refresh.hidden = true;

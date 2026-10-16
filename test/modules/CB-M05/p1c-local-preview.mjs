@@ -26,8 +26,10 @@ const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
 async function applySchema(db, persistent) {
   const existing = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cms_owner'").first();
   if (existing && persistent) {
-    const version = await db.prepare('PRAGMA user_version').first();
-    assert.equal(version?.user_version, 1, 'existing persistent local schema is unsupported; refusing to modify it');
+    // D1 deliberately rejects PRAGMA user_version writes; use an isolated table
+    // owned only by this preview harness to version its persistent schema.
+    const version = await db.prepare('SELECT schema_version FROM cms_local_preview_metadata WHERE id=1').first();
+    assert.equal(version?.schema_version, 1, 'existing persistent local schema is unsupported; refusing to modify it');
     for (const table of ['cms_owner','cms_credentials','cms_challenges','cms_sessions','cms_drafts','cms_draft_revisions']) {
       const present = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").bind(table).first();
       assert.equal(present?.name, table, 'local database has missing table ' + table);
@@ -41,7 +43,13 @@ async function applySchema(db, persistent) {
     .map(statement => statement.trim()).filter(Boolean);
   assert.ok(statements.length >= 8);
   for (const statement of statements) await db.prepare(statement).run();
-  if (persistent) await db.prepare('PRAGMA user_version=1').run();
+  if (persistent) {
+    await db.prepare(`CREATE TABLE cms_local_preview_metadata (
+      id INTEGER PRIMARY KEY CHECK(id=1),
+      schema_version INTEGER NOT NULL CHECK(schema_version=1)
+    )`).run();
+    await db.prepare('INSERT INTO cms_local_preview_metadata(id,schema_version) VALUES(1,1)').run();
+  }
   return true;
 }
 

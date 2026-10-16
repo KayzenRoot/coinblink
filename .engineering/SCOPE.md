@@ -6,20 +6,20 @@ This status becomes canonical only after a reviewed merge. The Owner instructed 
 
 ## Approved staging and product boundary
 
-- First beta: M01 exact Golden Home and logo from original hash-verified JPEGs, M05 one-human-Owner CMS/Settings and the M02/M03 article workflow with real license-backed evidence and explicit publish approval. The article and its source integrations cannot be declared LIVE using fixtures.
+- First beta: M01 exact Golden Home and logo from original hash-verified JPEGs, M05 one-human-Owner CMS/Settings and the M02/M03 article workflow with traceable primary-source evidence and explicit publish approval. The article and its source integrations cannot be declared LIVE using fixtures.
 - Preserve the existing 19 product module IDs and all previously planned functionality. No feature removal: later module waves add live markets, source connectors, evidence, analytics, social, localization, media, advertising, subscriptions, API, billing and ops. M18 remains FUTURE, not authorized for token issuance.
 - M00 foundation remains complete with Docker local and isolated Cloudflare Workers Free Preview. Keep the US$10 alert unchanged; no paid upgrade or production deployment authorization.
 - Codex Desktop LOCAL may execute several independently admitted modules concurrently using separate worktrees, agents, Work Orders and PRs, with shared paths owned by the Integration Steward and serial main merges.
 - Golden original bytes are required for real M01 visual implementation. M05 P0 may start with clearly mocked non-privileged UI only under its own admitted Work Order; M05 P1 password, MFA, secure recovery and secrets vault require independently approved auth/data/security ADR. No mock UI may be presented as working protected authentication.
-- All other module code requires its own admitted Work Order, frozen interface and dependency evidence. Future provider secrets, licensed sources, D1/R2/Queues, paid APIs, messaging, social publication, production release and legal/token functionality require separate review and explicit consent.
+- All other module code requires its own admitted Work Order, frozen interface and dependency evidence. Future provider secrets, external-source connectors, D1/R2/Queues, paid APIs, messaging, social publication, production release and legal/token functionality require separate review and explicit consent.
 
 ## Frozen product invariants
 
-One human Owner, no public admin signup, English canonical plus planned pt-BR/es, licensed factual article sources, Owner editorial publishing approval, no fake live prices or news, unchanged approved Golden identity, accessibility on desktop/mobile, strict secrets redaction, no automatic paid services, GEF/CI/security reviews on exact HEAD.
+One human Owner, no public admin signup, English canonical plus planned pt-BR/es, traceable factual article sources, Owner editorial publishing approval, no fake live prices or news, unchanged approved Golden identity, accessibility on desktop/mobile, strict secrets redaction, no automatic paid services, GEF/CI/security reviews on exact HEAD.
 
 ## Deferred implementation decisions
 
-Database and migration topology, chosen auth/MFA/session provider, separate KEK or scoped vault, live data licensing, analytics legal consent, social provider permissions, production routing, paid plan and monetization are NOT selected by this source freeze. Each remains a module/provider decision with security proof.
+Database and migration topology, chosen auth/MFA/session provider, separate KEK or scoped vault, live provider access, privacy consent, social provider permissions, production routing, paid plan and monetization are NOT selected by this source freeze. Each remains a module/provider decision with security proof.
 
 ## Historical M00-only source boundary, retained below
 

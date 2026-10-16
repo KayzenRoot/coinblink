@@ -25,6 +25,12 @@ This register **preserves the exact distinction between owner-approved direction
 
 **Governance:** Owner future approvals must promote individual decisions via GEF rules; this ledger captures observed directions only. The past ideas Master is preserved intact for traceability, not promoted to engineering requirements.
 
+## Brand registration timing directive · 2026-10-16
+
+| ID | Topic | State | Current authority / details |
+|---|---|---|---|
+| CB-DEC-048 | M01 registration and INPI paperwork timing | OWNER DIRECTED / EFFECTIVE IN CANONICAL SOURCES ONLY AFTER REVIEWED MERGE | The Owner explicitly deferred formal CoinBlink trademark registration/INPI filings, class strategy and comprehensive registration dossier until after the application has been operating and a concrete need arises. These formalities are not M01 **DEMO-only build/technical QA** gates. Preserve the existing `CB-DEC-001` identity and unresolved similarity/third-party-rights risks, including apparent earlier name use, and preserve provenance/licensing requirements for actually used assets and published content. Trademark deferral is **not** evidence of exclusivity, rights clearance, safe commercial use, a grant of publication/deploy permission or an Owner GO for PR #58. See Issue #72 and `CB-GOV-M01-TRADEMARK-DEFERRAL-001`; checkpoint `NO_CHANGE`. |
+
 ## Owner-approved product and delivery directions · 2026-10-08
 
 | ID | Topic | State | Evidence / boundary |

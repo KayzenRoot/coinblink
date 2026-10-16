@@ -2,6 +2,19 @@
 
 **Status: OWNER_APPROVED_GLOBAL / FROZEN.**
 
+## Current protected-main readback · 2026-10-15
+
+Read-only source readback at protected `main` SHA `58321c21508bd6089de1c1a77c21f93a4f0b856a`: the canonical checkpoint is unchanged at `M00_COMPLETE` / `IMPLEMENTATION_IN_PROGRESS`, `completedThroughModule=CB-M00`, 5%, 19 module identities and `activeWorkOrder=NONE`. M01 and M05 are admitted only within their bounded Work Orders; M01 remains incomplete with PR #58 open. PR #59 has merged at this main SHA and supplies only the M05 P0 static, nonprivileged `MOCK / SECURITY DISABLED` UI. That merge is not the Owner's acceptance of the mock, not M05 completion, and not P1 authorization. M05 privileged auth/session/MFA/recovery/persistence/database/vault work remains not admitted. M02–M04 and M06–M17 remain not admitted; M18 remains future/not admitted. Issue #72 is open, rights remain pending, and commercial publication remains disallowed.
+
+The Owner's sole-administrator directive is effective through merged PR #82: `KayzenRoot` is the sole human administrator and reviewer; a second GitHub approver or external review is not mandatory. Protected pull requests, required automated checks, resolved threads, proportionate security evidence and the Owner's recorded decision on the exact final SHA remain required. This proposed source correction does not itself change canonical policy, admit work, mark modules done, change the checkpoint, clear rights or authorize merge/deploy.
+## Historical module-admission readback snapshot · 2026-10-11
+
+**Historical protected-main readback as of 2026-10-11 at 07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c:** Exactly 19 module IDs, M00 COMPLETE / 5% (last completed), M01 ADMITTED within reviewed Golden Home/local-safe scope, and M05 ADMITTED **only P0 static nonprivileged CMS MOCK / SECURITY DISABLED**. M02–M04 and M06–M17 are NOT_ADMITTED; M18 is FUTURE_NOT_ADMITTED. `activeWorkOrder=NONE`; no M01/M05 implementation is DONE. Admission PR #56 merged as `c4ba069f1dfaddc8273001950805e8a18125db66`; PR #57 merged as `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. The checkpoint's `EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE` was a historical condition satisfied by those admission merges, not a completion claim. At that snapshot, implementation PR #58/#59 were OPEN; PR #59 later merged at main `58321c21508bd6089de1c1a77c21f93a4f0b856a`. M05 P1 auth/session/MFA/DB/vault, paid resources, production and additional module code require their own approvals.
+
+**Chronology:** Any older lines below claiming M01–M17 NOT_ADMITTED are dated M00-only or global-staging baseline statements from 2026-10-08/10, preserved as historical evidence. They are **not the current effective module-admission map** and do not override the machine checkpoint. This source clarification does not itself admit new work or change 5%.
+
+## Historical original staged-baseline wording (before M01/M05 admissions)
+
 This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
 
 ## Approved staging and product boundary
@@ -42,4 +55,4 @@ Complete Golden Homepage rendering (M01), public article/CMS/business data, root
 Existing module contracts M01–M18 remain PLANNED/NOT_ADMITTED, globally open. Existing planning Issue #6 remains open. Closing M00 scope does not freeze the whole product. If actual GEF v1.1.2 doctor/preflight **requires** global approved product sources even for this slice, report the missing gate rather than silently promoting those broader draft decisions.
 
 ## Staged admission
-P0 local and CI is independent of Cloudflare account credentials; P1 remote Preview needs separate authorization; P2 exact-head audit, independent review and visual acceptance. The Owner approved this bounded M00 scope in PR #30 comment 6067708856. Independent review and Git merge make the approved source pack canonical on `main`; separate GEF `doctor`/checkpoint validation and an evidence-backed Work Order admission gate executable implementation. GEF validation does not grant or revoke the Owner's scope approval.
+P0 local and CI is independent of Cloudflare account credentials; P1 remote Preview needs separate authorization; P2 exact-head audit, recorded Owner-led review and visual acceptance. The Owner approved this bounded M00 scope in PR #30 comment 6067708856. A protected Git merge makes the approved source pack canonical on `main`; separate GEF `doctor`/checkpoint validation and an evidence-backed Work Order admission gate executable implementation. GEF validation does not grant or revoke the Owner's scope approval.

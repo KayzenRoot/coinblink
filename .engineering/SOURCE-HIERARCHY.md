@@ -1,5 +1,11 @@
 # CoinBlink · GEF Source Hierarchy and Decision Authority
 
+## Current protected-main readback · 2026-10-15
+
+This factual readback was taken from protected `main` at `58321c21508bd6089de1c1a77c21f93a4f0b856a`. The canonical machine checkpoint remains `M00_COMPLETE`, `IMPLEMENTATION_IN_PROGRESS`, `completedThroughModule=CB-M00`, 5%, 19 module identities, and `activeWorkOrder=NONE`; this candidate does not edit or promote it. M01 and M05 are admitted only within their bounded Work Orders. M01 implementation PR #58 remains open and M01 is not complete. PR #59 merged at this main SHA and contains the bounded M05 P0 static, nonprivileged CMS mock; its `MOCK / SECURITY DISABLED` UI is not authentication or proof of final Owner acceptance. M05 P1 privileged identity, sessions, MFA/recovery, persistence, database and vault remain not admitted. M02–M04 and M06–M17 remain not admitted; M18 remains future/not admitted. Issue #72 rights review remains pending and commercial publication remains disallowed.
+
+PR #82's effective sole-administrator directive names `KayzenRoot` as the only human administrator, decision-maker and reviewer. A distinct second GitHub approver is not required; protected PR/squash, required checks, thread resolution, proportional security evidence, and a recorded Owner decision on the exact final SHA remain. This candidate is a readback and proposed source clarification; it does not grant module authority, mark M01/M05 done, change the checkpoint, clear rights, or authorize merge or deployment.
+
 ## Owner directive · Single-administrator security and review model · 2026-10-15
 
 **CURRENT OWNER DECISION:** `KayzenRoot` is the **sole human administrator, product/security decision-maker and reviewer** for CoinBlink. A second GitHub account, an outside human reviewer, a commercial review bot or an independent-party approval is **not required** for documentation, governance, mock work or future security-sensitive work. The Owner may voluntarily request external assessment, but it is optional and must not become an implicit release/admission blocker. This replaces earlier **prescriptive** references to mandatory "independent review", "independent assurance" or separate reviewer approvals across M05 and the project's general workflow. Earlier references retained in historical evidence are provenance, not current review obligations.
@@ -9,6 +15,11 @@
 **Practical solo-admin review flow:** ChatGPT/Codex may produce analysis, code and test evidence; `KayzenRoot` makes the final human review/GO or NO-GO call. GitHub's solo-maintainer ruleset may require **zero independent PR approvers** and still require protected PR, squash-only merge, mandatory status checks and thread resolution. The Owner's final review is documented via traceable comment/approval decision on an exact immutable commit SHA; do not demand GitHub self-approval on a PR authored by the same person, as that may not be supported. This is not permission to claim unexecuted security tests have passed.
 
 **Scope:** This is a process/authority clarification for all CoinBlink modules, including M05 P0/P1 and the proposed P1-A local synthetic D1 path. It does **not** make draft PR #81's Security/Data ADR effective, alter the canonical `.engineering/CHECKPOINT.json`, approve/merge a specific PR, provision Cloudflare resources or deploy. Any earlier rule requiring independent human review should now be interpreted as requiring a **recorded sole-Owner security review plus strong automated evidence**, after this clarification is protected-merged.
+## Historical module-admission readback snapshot · 2026-10-11
+
+**Historical protected-main readback at 07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c:** Exactly 19 module IDs, M00 COMPLETE / 5% (last completed), M01 ADMITTED within reviewed Golden Home/local-safe scope, and M05 ADMITTED **only P0 static nonprivileged CMS MOCK / SECURITY DISABLED**. M02–M04 and M06–M17 were NOT_ADMITTED; M18 was FUTURE_NOT_ADMITTED. `activeWorkOrder=NONE`; no M01/M05 implementation was DONE. Admission PR #56 merged as `c4ba069f1dfaddc8273001950805e8a18125db66`; PR #57 merged as `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. At that snapshot, implementation PRs #58/#59 were open; PR #59 later merged at `58321c21508bd6089de1c1a77c21f93a4f0b856a`. M05 P1 auth/session/MFA/DB/vault, paid resources, production and additional module code required separate approvals.
+
+**Chronology:** Older lines below that say M01–M17 are NOT_ADMITTED are dated M00-only or global-staging baseline statements from 2026-10-08/10, preserved as historical evidence. They are **not the current effective module-admission map** and do not override the machine checkpoint. This source clarification does not itself admit new work or change 5%.
 
 ## Owner-approved M00 Free-only cost interpretation · 2026-10-10
 
@@ -16,7 +27,7 @@
 
 The Free-only Owner directive is effective as an operational authorization immediately. This source clarification was integrated through a separate traceable governance PR and did **not** itself promote `.engineering/CHECKPOINT.json`, M00 completion, global Issue #6 or M01+ code admissions. See `.engineering/evidence/CB-M00-WO-001-FREE-OWNER-DECISION.md`.
 
-## M00 checkpoint promotion · Owner go/no-go 2026-10-10
+## Historical M00 checkpoint promotion snapshot · Owner go/no-go 2026-10-10
 
 **Effective only on merge of the reviewed checkpoint-promotion PR:** `.engineering/CHECKPOINT.json` now projects `M00_COMPLETE`, `completedThroughModule=CB-M00`, `previewDeployment=PREVIEW_VERIFIED`, `activeWorkOrder=NONE`, overall **5%** (`floor(1 / 19 × 100)`). The Owner explicitly directed immediate finalization and movement out of the zero checkpoint in this conversation on 2026-10-10; this final M00-only promotion uses the [audited closeout evidence merged in PR #50](https://github.com/KayzenRoot/coinblink/pull/50) at main `9379bc22569d0e1ce391079a56f3147cfaa9f0f6`, [protected Preview run #38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) for unchanged app/build SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`, and authenticated read-only provider binding inventory `ASSETS` only. The M00 demo-only screenshots were accepted; **no claim of Golden Home M01 fidelity**. Docker local `coinblink-local` is healthy on 127.0.0.1:3187 per candidate evidence. Final exact-head CI/audit must pass before merge.
 

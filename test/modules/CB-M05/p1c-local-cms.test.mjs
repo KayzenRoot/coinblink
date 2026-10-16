@@ -441,6 +441,27 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     assert.equal(element('revision').value, '0', 'revision state resets on confirmed logout');
     assert.equal(element('history-list').children.length, 0);
     assert.equal(element('save').textContent, 'Create draft');
+    // Simulate an older tab showing draft text after the server-side session
+    // has already been revoked. A denied authenticated refresh must clear it.
+    formFields.title.value = 'Private draft must not remain visible on unauthorized refresh';
+    formFields.body.value = 'Confidential offline fixture';
+    element('draft').hidden = false;
+    element('logout').hidden = false;
+    element('refresh').hidden = false;
+    element('draft-id').value = 'stale-draft-id';
+    element('revision').value = '9';
+    element('items').children.push({ textContent: 'Stale draft title' });
+    await element('refresh').handlers.click();
+    assert.equal(element('draft').hidden, true, 'HTTP 401 hides editor');
+    assert.equal(element('logout').hidden, true, 'HTTP 401 clears stale privileged UI');
+    assert.equal(element('refresh').hidden, true, 'HTTP 401 disables stale reads');
+    assert.deepEqual(Object.values(formFields).map(field => field.value), ['', '', '', '', ''],
+      'HTTP 401 removes all draft text from visible and hidden DOM');
+    assert.equal(element('draft-id').value, '');
+    assert.equal(element('revision').value, '0');
+    assert.equal(element('items').children.length, 0, 'HTTP 401 removes stale list');
+    assert.equal(element('session-status').textContent, 'Not authenticated');
+    assert.match(element('message').textContent, /Could not refresh local drafts/);
   } finally { await ctx.mf.dispose(); }
 });
 

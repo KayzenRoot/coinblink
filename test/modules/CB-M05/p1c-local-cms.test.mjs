@@ -212,3 +212,31 @@ test('M05 LOCAL CMS 04: same signed challenge concurrent login creates at most o
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first()).n, 1);
   } finally { await ctx.mf.dispose(); }
 });
+
+
+test('M05 LOCAL CMS 05: WebAuthn sign counter persists, rejects replay with fresh challenge, and advances', async () => {
+  const ctx = await setup();
+  try {
+    async function signWithCounter(counter) {
+      const challengeResponse = await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id });
+      assert.equal(challengeResponse.status, 200);
+      const { challenge } = await challengeResponse.json();
+      const response = makeAuthenticationResponse(ctx.primary, { challenge, counter });
+      return ctx.run('/local/login', 'POST', { challenge, credentialId: ctx.primary.id, response });
+    }
+    assert.equal((await signWithCounter(1)).status, 200);
+    assert.equal((await ctx.db.prepare('SELECT sign_count FROM cms_credentials WHERE credential_id=?')
+      .bind(ctx.primary.id).first()).sign_count, 1);
+    const replayedCounter = await signWithCounter(1);
+    assert.notEqual(replayedCounter.status, 200);
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first()).n, 1);
+    assert.equal((await ctx.db.prepare('SELECT sign_count FROM cms_credentials WHERE credential_id=?')
+      .bind(ctx.primary.id).first()).sign_count, 1);
+    assert.equal((await signWithCounter(2)).status, 200);
+    assert.equal((await ctx.db.prepare('SELECT sign_count FROM cms_credentials WHERE credential_id=?')
+      .bind(ctx.primary.id).first()).sign_count, 2);
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first()).n, 2);
+    const zeroAfterIncrement = await signWithCounter(0);
+    assert.notEqual(zeroAfterIncrement.status, 200, 'counter rollback to zero is rejected');
+  } finally { await ctx.mf.dispose(); }
+});

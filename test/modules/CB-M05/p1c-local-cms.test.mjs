@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { Script, runInNewContext } from 'node:vm';
 import { LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
@@ -557,4 +558,49 @@ test('M05 LOCAL CMS 10: interactive preview bootstrap opens an isolated browser 
     });
     assert.equal(denied, 401, 'preview logout invalidates server session');
   } finally { await preview.close(); }
+});
+
+
+test('M05 LOCAL CMS 11: opted-in local D1 keeps drafts across restarts, rotates disposable passkeys, rejects parallel writers', { timeout: 120_000 }, async () => {
+  const persistenceRoot = mkdtempSync(path.join(tmpdir(), 'coinblink-m05-persistent-test-'));
+  let first, second;
+  try {
+    first = await startLocalCmsPreview({ headless: true, persistLocal: true, persistenceRoot });
+    await first.page.locator('#login').click();
+    await first.page.getByText('Local test session active').waitFor({ timeout: 15_000 });
+    await first.page.locator('[name="title"]').fill(sampleDraft.title);
+    await first.page.locator('[name="summary"]').fill(sampleDraft.summary);
+    await first.page.locator('[name="body"]').fill(sampleDraft.body);
+    await first.page.locator('[name="sourceUrl"]').fill(sampleDraft.sourceUrl);
+    await first.page.locator('[name="authorLabel"]').fill(sampleDraft.authorLabel);
+    await first.page.locator('#save').click();
+    await first.page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 15_000 });
+    const firstCredential = first.primaryId;
+    assert.equal((await first.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+
+    await assert.rejects(
+      startLocalCmsPreview({ headless: true, persistLocal: true, persistenceRoot }),
+      /EEXIST|single-writer-lock/,
+      'parallel writers cannot open the same local D1'
+    );
+    await first.close();
+    first = null;
+
+    second = await startLocalCmsPreview({ headless: true, persistLocal: true, persistenceRoot });
+    assert.notEqual(second.primaryId, firstCredential, 'test passkeys rotate on restart');
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1,
+      'draft rows survive browser and D1 restarts in opted-in mode');
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 1);
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_credentials WHERE revoked_at IS NULL').first()).n, 2);
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NULL').first()).n, 0);
+    await second.page.locator('#login').click();
+    await second.page.getByText('Local test session active').waitFor({ timeout: 15_000 });
+    assert.match(await second.page.locator('#items button').first().innerText(), /Local CMS protects this example draft/);
+    await second.page.locator('#logout').click();
+    await second.page.getByText('Not authenticated').waitFor({ timeout: 15_000 });
+  } finally {
+    if (second) await second.close();
+    if (first) await first.close();
+    rmSync(persistenceRoot, { recursive: true, force: true });
+  }
 });

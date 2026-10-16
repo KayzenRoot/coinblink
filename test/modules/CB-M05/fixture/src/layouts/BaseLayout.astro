@@ -1,0 +1,40 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="fixture-skip-link" href="#main">Skip to content</a>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root { color-scheme: dark; }
+  html { min-width: 320px; background: #080d0b; }
+  body { min-width: 320px; margin: 0; background: #080d0b; }
+  .fixture-skip-link {
+    position: fixed;
+    z-index: 10;
+    top: 8px;
+    left: 8px;
+    transform: translateY(-160%);
+    border: 2px solid #b8f34b;
+    border-radius: 4px;
+    background: #080d0b;
+    color: #f2f5f1;
+    padding: 8px 12px;
+  }
+  .fixture-skip-link:focus { transform: translateY(0); }
+</style>

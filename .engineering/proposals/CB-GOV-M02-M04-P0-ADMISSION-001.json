@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "changeId": "CB-GOV-M02-M04-P0-ADMISSION-001",
+  "state": "STAGED_PROPOSAL_NOT_EFFECTIVE",
+  "sourceMainSha": "28e20b3bafef940e465d6d2a7ba938ae8e393e74",
+  "checkpointPath": ".engineering/CHECKPOINT.json",
+  "targetScope": "P0_OFFLINE_MOCK_ONLY",
+  "ownerAuthorization": "PREPARATION_ONLY_NO_MERGE",
+  "admissionEffect": "ONLY_AFTER_ALL_PREDECESSORS_MERGED_EXACT_HEAD_CI_INDEPENDENT_AUDIT_AND_NEW_OWNER_GO",
+  "requiredPriorMerges": [
+    {
+      "module": "CB-M02",
+      "pullRequest": 92,
+      "headSha": "520c9f9b4c10d0b4fd085acfd81270bdd420e24d",
+      "files": [
+        {
+          "path": ".engineering/work-orders/CB-M02-WO-001.md",
+          "gitBlobSha1": "78b508818f1afd837d210a419dbec968ae1b6efb"
+        },
+        {
+          "path": ".engineering/context-locks/CB-M02-WO-001.md",
+          "gitBlobSha1": "6a5f2ed6af0fcf95c6f2689fadc6d23e4b476a25"
+        },
+        {
+          "path": "docs/architecture/contracts/CB-M02.md",
+          "gitBlobSha1": "b9a6c2bd5177066c966a45524a18ae0d080d8252"
+        },
+        {
+          "path": "test/modules/CB-M02/fixture-contract.test.mjs",
+          "gitBlobSha1": "ab9c19b2c8b9a174beda0a656cf32b6f81412090"
+        },
+        {
+          "path": "test/modules/CB-M02/fixtures/p0-contract.json",
+          "gitBlobSha1": "ba8a9b639b427b77049fc8286ffb30530400af25"
+        }
+      ]
+    },
+    {
+      "module": "CB-M03",
+      "pullRequest": 93,
+      "headSha": "7c1d554e882064cf11be0d46fcfe9bff14a02064",
+      "files": [
+        {
+          "path": ".engineering/work-orders/CB-M03-WO-001.md",
+          "gitBlobSha1": "454b4ace85ae1c00933f599c82a1f555f27b156f"
+        },
+        {
+          "path": ".engineering/context-locks/CB-M03-WO-001.md",
+          "gitBlobSha1": "1a789ff82b3b0e8548f1e58df4c214b3089d0708"
+        },
+        {
+          "path": "docs/architecture/contracts/CB-M03.md",
+          "gitBlobSha1": "d2e5b92ba0eace6f109a252e9e4e264758066b7e"
+        },
+        {
+          "path": "test/modules/CB-M03/fixture-contract.test.mjs",
+          "gitBlobSha1": "8fdb830aa666d4ca73090055a1b2956b55991e95"
+        },
+        {
+          "path": "test/modules/CB-M03/fixtures/p0-contract.json",
+          "gitBlobSha1": "47b8575f76eaeece474b849a06773f92f84b71b8"
+        }
+      ]
+    },
+    {
+      "module": "CB-M04",
+      "pullRequest": 94,
+      "headSha": "280b0bbe6b6204aa8af8061423c7a3369cd50d4e",
+      "files": [
+        {
+          "path": ".engineering/work-orders/CB-M04-WO-001.md",
+          "gitBlobSha1": "2d7c88ca8a574c28ba9d9f816985507f7b72b1e1"
+        },
+        {
+          "path": ".engineering/context-locks/CB-M04-WO-001.md",
+          "gitBlobSha1": "93e69746322a9359343f38049b01ab2f03a2a997"
+        },
+        {
+          "path": "docs/architecture/contracts/CB-M04.md",
+          "gitBlobSha1": "7eafae37ec056e4b5a06f563f32bf995a427654a"
+        },
+        {
+          "path": "test/modules/CB-M04/fixture-contract.test.mjs",
+          "gitBlobSha1": "57a200e7e4bea4d372d5847cc43abbe6b179c91a"
+        },
+        {
+          "path": "test/modules/CB-M04/fixtures/p0-contract.json",
+          "gitBlobSha1": "60ae3fb83089aa08c57263101025ae9dd30a6830"
+        }
+      ]
+    }
+  ],
+  "dependenciesStillGated": [
+    "M01 Golden Home integration #58",
+    "M05 local CMS/security P1 #91",
+    "Licensed sources and provider rights",
+    "Provider APIs, external secrets, authenticated publication, production deploy"
+  ],
+  "mustNotChange": {
+    "overallCompletionPercent": 5,
+    "completedThroughModule": "CB-M00",
+    "preserveModuleAdmissions": [
+      "CB-M00",
+      "CB-M01",
+      "CB-M05"
+    ],
+    "futureModule": "CB-M18"
+  },
+  "whenEligible": "Integration Steward refreshes Context Locks and applies only three checkpoint admission+evidence entries in this PR; final exact-head CI/review required.",
+  "stopCondition": "PREPARED_AWAITING_THREE_INDEPENDENT_PROTECTED_MERGES_AND_STEWARD_CHECKPOINT_DELTA"
+}

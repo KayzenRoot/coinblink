@@ -63,3 +63,9 @@ Brazilian Portuguese: verdict, exact HEAD/base, changed files, host check status
 
 ## STOP CONDITION
 Stop at **ROUTE_B_PREPARED__RIGHTS_AND_EXACT_SHA_GO_PENDING** with documentation-only candidate PR open, unmerged. Do not set `authorizedToMerge=true`, merge M01 or the governance PR, create a private repo, change repo visibility, or deploy without separate explicit user decision.
+
+## R70 live source correction · 2026-10-15
+
+The `85ece8e…` base and PR #58 `c7c8ee…` references above are historical. Current GitHub `main` is `58321c21508bd6089de1c1a77c21f93a4f0b856a`; the repository remains PUBLIC. PR #80 was synchronized in its own worktree by an ordinary merge of that main at `f0f4e527652b11305c488c2af31997e9e5d91b2c`; it remains an OPEN/DRAFT documentation candidate. Its proposed paths and no-deploy/no-rights/no-checkpoint boundaries are unchanged.
+
+Current PR #58 is OPEN at `18e00f6180dfcb1003a1291739479c26af01c946` with base `58321c2…`; this Work Order does not authorize its merge. PR #59 and #85 are already in current main. The active ruleset, strict seven checks, Source Hierarchy, Owner single-account process, protected squash merge, and resolved-thread policy remain in effect; CodeRabbit skipped status is not review. Rights Issue #72 remains OPEN and pending, including name/logo/asset review and official INPI database query. Route B remains preparation only; `authorizedToMerge=false`, `commercialPublicationAllowed=false`, and the checkpoint stays M00 COMPLETE / 5%.

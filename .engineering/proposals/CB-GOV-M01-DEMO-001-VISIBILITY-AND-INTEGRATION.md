@@ -67,3 +67,9 @@ Continue within the already admitted M01 WO and safe DEMO testing locally; avoid
 **STOP:** This is a **proposal only**. With Route B chosen for planning, remain `BLOCKED_RIGHTS_AND_EXACT_SHA_OWNER_GO` **for integration only**, while already admitted safe development may continue.
 
 **Default fields:** `authorizedToMerge=false`, `rightsReview=PENDING_OWNER_OR_LEGAL`, `commercialPublicationAllowed=false`, `M01_FORMALLY_COMPLETE=false`, `checkpoint=M00_COMPLETE/5%`.
+
+## R70 current-source and decision-status readback · 2026-10-15
+
+This addendum supersedes the older “current #58” SHA/base and preserves all earlier gate decisions. The product `main` is now `58321c21508bd6089de1c1a77c21f93a4f0b856a`; repository metadata still confirms `visibility=public` / `private=false`. PR #80 remains OPEN/DRAFT, its isolated branch was ordinarily synchronized to current main, and only the three existing governance-document paths are changed. The latest M01 PR #58 candidate is `18e00f6180dfcb1003a1291739479c26af01c946` on that main; its exact-head checks are tracked on the PR, and this visibility proposal does not authorize that PR's merge.
+
+The public web preliminary search recorded in [Issue #72 comment #6205739844](https://github.com/KayzenRoot/coinblink/issues/72#issuecomment-6205739844) did not identify a verifiable official record in open search results, but it was **not** a completed query of the official INPI case database and is not clearance. Asset-level rights remain `PENDING_OWNER_OR_LEGAL`; `commercialPublicationAllowed=false` and `authorizedToMerge=false`. Route B remains selected for preparation only. No public-code merge, deployment, commercial use, visibility change, or checkpoint promotion is authorized by this document.

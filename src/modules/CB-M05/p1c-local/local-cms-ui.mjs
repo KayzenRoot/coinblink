@@ -14,6 +14,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
+    history: document.getElementById('history'),
+    historyList: document.getElementById('history-list'),
   };
   let csrf = null;
   const decode = (s) => {
@@ -50,6 +52,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.draftId.value = draft.id;
     ui.revision.value = String(draft.revision);
     ui.save.textContent = 'Save new revision';
+    ui.history.hidden = false;
+    ui.historyList.replaceChildren();
   }
   async function refresh() {
     const { drafts } = await api('/local/articles');
@@ -113,6 +117,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     } finally { ui.login.disabled = false; }
   });
   ui.refresh.addEventListener('click', () => refresh().catch(() => message('Could not refresh local drafts')));
+  ui.history.addEventListener('click', async () => {
+    const id = ui.draftId.value;
+    if (!id) return;
+    try {
+      const { revisions } = await api('/local/articles/' + encodeURIComponent(id) + '/revisions');
+      ui.historyList.replaceChildren();
+      for (const revision of revisions) {
+        const item = document.createElement('li');
+        item.textContent = 'Revision ' + revision.revision + ' · ' + revision.title;
+        ui.historyList.append(item);
+      }
+      message('Read-only revision history loaded: ' + revisions.length + ' versions');
+    } catch { message('Could not load revision history'); }
+  });
   ui.form.addEventListener('submit', async (event) => {
     event.preventDefault();
     ui.save.disabled = true;
@@ -134,17 +152,27 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
   document.getElementById('new-draft').addEventListener('click', () => {
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
+    ui.history.hidden = true;
+    ui.historyList.replaceChildren();
     ui.save.textContent = 'Create draft'; message('New unsaved local draft');
   });
   ui.logout.addEventListener('click', async () => {
-    try { await api('/local/logout', 'POST', {}); } catch { /* fail closed locally */ }
-    csrf = null;
-    ui.form.hidden = true;
-    ui.logout.hidden = true;
-    ui.refresh.hidden = true;
-    ui.items.replaceChildren();
-    ui.status.textContent = 'Not authenticated';
-    message('Local test session ended');
+    ui.logout.disabled = true;
+    try {
+      await api('/local/logout', 'POST', {});
+      csrf = null;
+      ui.form.hidden = true;
+      ui.logout.hidden = true;
+      ui.refresh.hidden = true;
+      ui.history.hidden = true;
+      ui.historyList.replaceChildren();
+      ui.items.replaceChildren();
+      ui.status.textContent = 'Not authenticated';
+      message('Local test session ended');
+    } catch {
+      // HttpOnly cookies cannot be cleared by JS: never falsely claim server revocation.
+      message('Logout not confirmed. Session may remain active; retry sign out or close this disposable browser.');
+    } finally { ui.logout.disabled = false; }
   });
 `;
 
@@ -200,6 +228,8 @@ footer{padding:24px 0;color:#b9c8bd}
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>
 <button id="new-draft" type="button">New draft</button>
+<button id="history" type="button" hidden>View revision history</button>
+<ul id="history-list" aria-label="Read-only draft revision history"></ul>
 </fieldset></form></section>
 <footer>Test data only · no publication capability · server-side authorization required on every request.</footer>
 </main>

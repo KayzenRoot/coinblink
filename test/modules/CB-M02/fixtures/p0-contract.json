@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "module": "CB-M02",
+  "kind": "NON_EXECUTABLE_CONTRACT_FIXTURE",
+  "admission": "NOT_ADMITTED",
+  "mode": "MOCK",
+  "networkCalls": 0,
+  "publicItems": [],
+  "privateCandidates": [
+    {
+      "id": "synthetic-article-001",
+      "locale": "en",
+      "status": "draft",
+      "publicVisible": false,
+      "title": "Demonstration draft: no live news",
+      "summary": "Offline contract specimen only. Never publish as fact.",
+      "slug": "demo-draft-001",
+      "source": {
+        "originalUrl": "https://source.example.test/item/001",
+        "licenseStatus": "NOT_CLEARED",
+        "attribution": "Synthetic test provider",
+        "retrievedAt": "2025-01-01T12:00:00Z"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "mock-draft-hidden",
+      "status": "DENIED_PUBLIC",
+      "publicCount": 0
+    },
+    {
+      "name": "empty-feed",
+      "status": "EMPTY",
+      "publicCount": 0
+    },
+    {
+      "name": "invalid-slug",
+      "status": "BAD_REQUEST",
+      "publicCount": 0
+    },
+    {
+      "name": "unavailable",
+      "status": "UNAVAILABLE",
+      "publicCount": 0
+    },
+    {
+      "name": "unlicensed-source",
+      "status": "DENIED_RIGHTS",
+      "publicCount": 0
+    }
+  ]
+}

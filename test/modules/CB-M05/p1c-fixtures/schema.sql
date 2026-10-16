@@ -10,7 +10,8 @@ CREATE TABLE cms_credentials (
   credential_id TEXT PRIMARY KEY,
   owner_id INTEGER NOT NULL CHECK (owner_id = 1),
   public_key BLOB NOT NULL,
-  sign_count INTEGER NOT NULL DEFAULT 0,
+  sign_count INTEGER NOT NULL DEFAULT 0 CHECK (sign_count BETWEEN 0 AND 4294967295),
+  last_auth_marker TEXT,
   device_kind TEXT NOT NULL CHECK (device_kind IN ('primary','recovery')),
   revoked_at INTEGER,
   FOREIGN KEY (owner_id) REFERENCES cms_owner(owner_id)

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isGlobalApprovalStatus, isParallelAdrApproved } from '../scripts/plan-parallel-modules.mjs';
 
@@ -27,14 +27,41 @@ test('global staged baseline preserves canonical CB-M01 admission and proposes o
   }
   for (let i=1; i<=17; i++) {
     const id = 'CB-M' + String(i).padStart(2, '0');
-    const expected = ['CB-M01', 'CB-M05'].includes(id) ? 'ADMITTED' : 'NOT_ADMITTED';
-    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' is outside the M05 admission delta; M01 is inherited from canonical main');
+    const expected = ['CB-M01', 'CB-M02', 'CB-M03', 'CB-M04', 'CB-M05'].includes(id) ? 'ADMITTED' : 'NOT_ADMITTED';
+    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' admission registry is restricted to the inherited M01/M05 and the proposed M02-M04 P0 scope');
     if (expected === 'ADMITTED') {
       const proof = cp.checkpointFacts.moduleAdmissionEvidence?.[id];
       assert.equal(proof?.workOrder, id + '-WO-001', id + ' needs a module-specific reviewed Work Order');
       assert.equal(proof?.contract, 'docs/architecture/contracts/' + id + '.md', id + ' needs the matching producer contract');
       assert.equal(proof?.contextLock, '.engineering/context-locks/' + id + '-WO-001.md', id + ' needs the matching Context Lock');
       assert.match(proof?.status ?? '', /EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE/u);
+      if (['CB-M02', 'CB-M03', 'CB-M04'].includes(id)) {
+        const candidates = {
+          'CB-M02': { pr: 92, sha: '520c9f9b4c10d0b4fd085acfd81270bdd420e24d' },
+          'CB-M03': { pr: 93, sha: '7c1d554e882064cf11be0d46fcfe9bff14a02064' },
+          'CB-M04': { pr: 94, sha: '280b0bbe6b6204aa8af8061423c7a3369cd50d4' },
+        };
+        assert.equal(proof.scope, 'P0_OFFLINE_MOCK_ONLY', id + ' admission must be mock-only');
+        assert.equal(proof.preparationPullRequest, candidates[id].pr, id + ' must cite the reviewed predecessor PR');
+        assert.equal(proof.preparationHeadSha, candidates[id].sha, id + ' must bind the audited preparation SHA');
+        assert.equal(proof.predecessorMergeRequired, true, id + ' must remain predecessor-gated');
+        assert.equal(proof.runtimeAndSharedIntegration, 'NOT_AUTHORIZED_BY_ADMISSION');
+        for (const relativePath of [
+          '.engineering/work-orders/' + id + '-WO-001.md',
+          proof.contextLock,
+          proof.contract,
+          'test/modules/' + id + '/fixtures/p0-contract.json',
+          'test/modules/' + id + '/fixture-contract.test.mjs',
+        ]) {
+          assert.equal(existsSync(resolve(process.cwd(), relativePath)), true,
+            id + ' MUST NOT become ADMITTED before its preparation PR has merged: ' + relativePath);
+        }
+        const fixture = JSON.parse(read('test/modules/' + id + '/fixtures/p0-contract.json'));
+        assert.equal(fixture.mode, 'MOCK');
+        assert.equal(fixture.kind, 'NON_EXECUTABLE_CONTRACT_FIXTURE');
+        assert.equal(fixture.networkCalls, 0);
+        assert.equal(fixture.admission, 'NOT_ADMITTED', 'historical fixture is not live admission evidence');
+      }
       if (id === 'CB-M05') {
         assert.equal(proof?.governanceMainSha, 'e40d36b2a589596869eb296696e917f724d5be65', 'preserve the original M05 proposal base');
         assert.equal(proof?.synchronizedFromMainSha, 'c4ba069f1dfaddc8273001950805e8a18125db66', 'record the actual M01-first main sync');

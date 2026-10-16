@@ -71,7 +71,7 @@ async function session(request, db, secret, now) {
   if (!/^[0-9a-f]{64}$/.test(raw)) return null;
   const sessionDigest = await keyedDigest(secret, raw);
   const record = await db.prepare(
-    'SELECT session_digest, csrf_digest FROM cms_sessions WHERE session_digest=? AND owner_id=1 AND revoked_at IS NULL AND expires_at>?'
+    'SELECT s.session_digest,s.csrf_digest FROM cms_sessions s JOIN cms_credentials c ON s.credential_id=c.credential_id WHERE s.session_digest=? AND s.owner_id=1 AND s.revoked_at IS NULL AND s.expires_at>? AND c.revoked_at IS NULL'
   ).bind(sessionDigest, now).first();
   if (!record) return null;
   return { ...record, digest: sessionDigest };
@@ -152,8 +152,8 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
                  AND expires_at>? AND origin=? AND rp_id=?`
           ).bind(currentTime, marker, challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID),
           db.prepare(
-            `INSERT INTO cms_sessions(session_digest,csrf_digest,owner_id,issued_at,expires_at,challenge_digest)
-              SELECT ?,?,1,?,?,challenge_digest FROM cms_challenges
+            `INSERT INTO cms_sessions(session_digest,csrf_digest,owner_id,issued_at,expires_at,challenge_digest,credential_id)
+              SELECT ?,?,1,?,?,challenge_digest,credential_id FROM cms_challenges
               WHERE challenge_digest=? AND credential_id=? AND consume_marker=? AND consumed_at=?`
           ).bind(tokenDigest, csrfDigest, currentTime, currentTime + 1200, challengeDigest, input.credentialId, marker, currentTime),
         ]);

@@ -166,11 +166,25 @@ test('M05 LOCAL CMS 03: protected draft write, revision history, optimistic conf
     assert.equal((await ctx.run('/local/articles', 'POST', draftInput, {
       ...loginInfo, fetchSite: 'cross-site',
     })).status, 403);
+    const invalidCreate = await ctx.run('/local/articles', 'POST', {
+      ...draftInput, sourceUrl: 'not-a-url', idempotencyKey: seedIdempotency(),
+    }, loginInfo);
+    assert.equal(invalidCreate.status, 400, 'malformed source is a client error, not HTTP 500');
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0,
+      'invalid input does not create an article');
+    assert.equal((await ctx.run('/local/articles', 'POST', {
+      ...draftInput, sourceUrl: 'http://example.test/insecure', idempotencyKey: seedIdempotency(),
+    }, loginInfo)).status, 400, 'insecure source URL is rejected');
     const created = await ctx.run('/local/articles', 'POST', draftInput, loginInfo);
     assert.equal(created.status, 201);
     const info = await created.json();
     assert.equal(info.revision, 1);
     assert.equal(info.status, 'draft');
+    assert.equal((await ctx.run('/local/articles/' + info.id, 'PATCH', {
+      ...draftInput, expectedRevision: 1, sourceUrl: 'not-a-url',
+      idempotencyKey: seedIdempotency(),
+    }, loginInfo)).status, 400, 'invalid update must not mutate stored drafts');
+    assert.equal((await ctx.db.prepare('SELECT revision FROM cms_drafts WHERE id=?').bind(info.id).first()).revision, 1);
     assert.equal((await ctx.run('/local/articles', 'POST', draftInput, loginInfo)).status, 409);
     const wrongRevision = await ctx.run('/local/articles/' + info.id, 'PATCH', {
       ...draftInput, expectedRevision: 8, idempotencyKey: seedIdempotency(),

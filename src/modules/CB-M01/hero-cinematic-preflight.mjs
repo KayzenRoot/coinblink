@@ -129,27 +129,31 @@ function validateRights(candidate, failures) {
   if (candidate.publicationPermission !== false) failures.push("PUBLICATION_PERMISSION_MUST_BE_FALSE");
 }
 
-function validateImage(candidate, payload, allowedPaths, {
-  allowLargeMotion = false,
-  minWidth = HERO_CINEMATIC_LIMITS.minWidth,
-  minHeight = HERO_CINEMATIC_LIMITS.minHeight,
-} = {}) {
-  const failures = [];
-  if (!allowedPaths.includes(candidate.path) || !isCanonicalRepoPath(candidate.path)) {
-    failures.push("INVALID_LOCAL_PATH");
-  }
-  const buffer = asBuffer(payload);
-  const isWebp = typeof candidate.path === "string" && candidate.path.endsWith(".webp");
-  const isPng = typeof candidate.path === "string" && candidate.path.endsWith(".png");
-  const maxBytes = allowLargeMotion && isWebp ? HERO_CINEMATIC_LIMITS.maxMotionWebpBytes
-    : isWebp ? HERO_CINEMATIC_LIMITS.maxWebpBytes : HERO_CINEMATIC_LIMITS.maxPngBytes;
-  if (!buffer || buffer.length === 0 || buffer.length > maxBytes) failures.push("INVALID_ASSET_BYTES");
+function imageFormatFromPath(path) {
+  if (typeof path !== "string") return null;
+  if (path.endsWith(".webp")) return "webp";
+  if (path.endsWith(".png")) return "png";
+  return null;
+}
+
+function maxImageBytes(format, allowLargeMotion) {
+  if (allowLargeMotion && format === "webp") return HERO_CINEMATIC_LIMITS.maxMotionWebpBytes;
+  if (format === "webp") return HERO_CINEMATIC_LIMITS.maxWebpBytes;
+  return HERO_CINEMATIC_LIMITS.maxPngBytes;
+}
+
+function validateImageBytes(candidate, buffer, byteLimit, failures) {
+  if (!buffer || buffer.length === 0 || buffer.length > byteLimit) failures.push("INVALID_ASSET_BYTES");
   const digest = buffer ? createHash("sha256").update(buffer).digest("hex") : null;
   if (!isSha256(candidate.sha256) || candidate.sha256 !== digest) failures.push("SHA256_MISMATCH");
   if (!buffer || candidate.bytes !== buffer.length) failures.push("BYTE_COUNT_MISMATCH");
+  return digest;
+}
 
+function validateImageDimensions(candidate, buffer, format, minWidth, minHeight, failures) {
   let dimensions = null;
-  if (buffer) dimensions = isWebp ? dimensionsFromWebp(buffer) : isPng ? dimensionsFromPng(buffer) : null;
+  if (buffer && format === "webp") dimensions = dimensionsFromWebp(buffer);
+  else if (buffer && format === "png") dimensions = dimensionsFromPng(buffer);
   if (!dimensions) failures.push("INVALID_BINARY_SIGNATURE_OR_HEADER");
   if (dimensions && (!Number.isInteger(dimensions.width) || !Number.isInteger(dimensions.height)
     || dimensions.width < minWidth
@@ -163,6 +167,22 @@ function validateImage(candidate, payload, allowedPaths, {
   if (dimensions && (candidate.width !== dimensions.width || candidate.height !== dimensions.height)) {
     failures.push("DIMENSION_METADATA_MISMATCH");
   }
+  return dimensions;
+}
+
+function validateImage(candidate, payload, allowedPaths, {
+  allowLargeMotion = false,
+  minWidth = HERO_CINEMATIC_LIMITS.minWidth,
+  minHeight = HERO_CINEMATIC_LIMITS.minHeight,
+} = {}) {
+  const failures = [];
+  if (!allowedPaths.includes(candidate.path) || !isCanonicalRepoPath(candidate.path)) {
+    failures.push("INVALID_LOCAL_PATH");
+  }
+  const buffer = asBuffer(payload);
+  const format = imageFormatFromPath(candidate.path);
+  const digest = validateImageBytes(candidate, buffer, maxImageBytes(format, allowLargeMotion), failures);
+  const dimensions = validateImageDimensions(candidate, buffer, format, minWidth, minHeight, failures);
   return { failures, buffer, digest, dimensions };
 }
 
@@ -194,32 +214,27 @@ function validateStaticMaster(candidate, payload, sourceMasterBytes) {
   });
 }
 
-function validateMotionDerivative(candidate, payload, artifacts = {}) {
-  const failures = [];
-  const image = validateImage(candidate, payload, [HERO_CINEMATIC_LIMITS.motionPreviewPath], {
-    allowLargeMotion: true,
-    minWidth: 640,
-    minHeight: 320,
-  });
-  failures.push(...image.failures);
-  const runtimeAnimation = animationMetadataFromWebp(image.buffer);
+function validateMotionIdentity(candidate, failures) {
   if (candidate.assetClass !== BLENDER_MOTION_CLASS || candidate.origin !== BLENDER_MOTION_CLASS) {
     failures.push("INVALID_ASSET_CLASS");
   }
   if (typeof candidate.blenderVersion !== "string" || !candidate.blenderVersion.trim()) {
     failures.push("BLENDER_SOURCE_MISSING");
   }
+}
 
+function validateMotionSourceMaster(candidate, artifacts, failures) {
   const staticMaster = candidate.sourceMaster && typeof candidate.sourceMaster === "object"
     ? candidate.sourceMaster : {};
-  const sourceMasterResult = validateStaticMaster(staticMaster, artifacts.sourceMasterBytes,
-    artifacts.sourceMasterBytes);
-  if (!sourceMasterResult.technicalPreflightPassed
+  const result = validateStaticMaster(staticMaster, artifacts.sourceMasterBytes, artifacts.sourceMasterBytes);
+  if (!result.technicalPreflightPassed
     || staticMaster.path !== HERO_CINEMATIC_LIMITS.staticMasterPaths.png
     || staticMaster.sha256 !== candidate.sourceMasterSha256) {
     failures.push("SOURCE_MASTER_MISMATCH");
   }
+}
 
+function validateMotionSourceProject(candidate, artifacts, failures) {
   const project = candidate.sourceProject && typeof candidate.sourceProject === "object"
     ? candidate.sourceProject : {};
   if (project.path !== HERO_CINEMATIC_LIMITS.motionProjectPath || !isCanonicalRepoPath(project.path)) {
@@ -230,7 +245,10 @@ function validateMotionDerivative(candidate, payload, artifacts = {}) {
   if (!projectBytes || !isSha256(project.sha256) || project.sha256 !== projectDigest) {
     failures.push("BLENDER_SOURCE_SHA256_MISMATCH");
   }
+  return projectDigest;
+}
 
+function validateMotionPortability(candidate, failures) {
   const portability = candidate.portability && typeof candidate.portability === "object"
     ? candidate.portability : {};
   const fileImages = Array.isArray(portability.images)
@@ -241,41 +259,64 @@ function validateMotionDerivative(candidate, payload, artifacts = {}) {
     || portability.linkedLibraries !== 0 || fileImages.length === 0 || invalidReferences) {
     failures.push("NONPORTABLE_BLENDER_REFERENCE");
   }
+}
 
-  const outputs = Array.isArray(candidate.motionOutputs) ? candidate.motionOutputs : [];
-  const expectedOutputPaths = [HERO_CINEMATIC_LIMITS.motionPreviewPath,
+function expectedMotionOutputPaths() {
+  return [HERO_CINEMATIC_LIMITS.motionPreviewPath,
     HERO_CINEMATIC_LIMITS.evidenceMotionPath, HERO_CINEMATIC_LIMITS.motionContactSheetPath];
-  const expectedRoles = new Map([
+}
+
+function expectedMotionOutputRoles() {
+  return new Map([
     [HERO_CINEMATIC_LIMITS.motionPreviewPath, "RUNTIME_PREVIEW"],
     [HERO_CINEMATIC_LIMITS.evidenceMotionPath, "SOURCE_ANIMATION"],
     [HERO_CINEMATIC_LIMITS.motionContactSheetPath, "CONTACT_SHEET"],
   ]);
+}
+
+function validateMotionOutputInventory(outputs, expectedPaths, failures) {
   const outputPaths = outputs.map((output) => output?.path);
-  if (outputs.length !== expectedOutputPaths.length
+  const expectedRoles = expectedMotionOutputRoles();
+  if (outputs.length !== expectedPaths.length
     || new Set(outputPaths).size !== outputs.length
-    || expectedOutputPaths.some((path) => !outputPaths.includes(path))
+    || expectedPaths.some((path) => !outputPaths.includes(path))
     || outputs.some((output) => expectedRoles.get(output?.path) !== output?.role)) {
     failures.push("MOTION_OUTPUTS_NOT_INVENTORIED");
   }
-  for (const output of outputs) {
-    if (!output || !expectedOutputPaths.includes(output.path)
-      || !isCanonicalRepoPath(output.path)) {
-      failures.push("MOTION_OUTPUTS_NOT_INVENTORIED");
-      continue;
-    }
-    const outputBytes = output.path === candidate.path ? image.buffer
-      : output.path === HERO_CINEMATIC_LIMITS.evidenceMotionPath ? asBuffer(artifacts.evidenceMotionBytes)
-        : asBuffer(artifacts.contactSheetBytes);
-    const outputDigest = outputBytes ? createHash("sha256").update(outputBytes).digest("hex") : null;
-    if (!outputBytes || output.bytes !== outputBytes.length || output.sha256 !== outputDigest) {
-      failures.push("MOTION_OUTPUT_INTEGRITY_MISMATCH");
-      continue;
-    }
-    const outputDimensions = output.path.endsWith(".webp") ? dimensionsFromWebp(outputBytes) : dimensionsFromPng(outputBytes);
-    if (!outputDimensions || output.width !== outputDimensions.width || output.height !== outputDimensions.height) {
-      failures.push("MOTION_OUTPUT_DIMENSIONS_MISMATCH");
-    }
+}
+
+function bytesForMotionOutput(output, candidate, image, artifacts) {
+  if (output.path === candidate.path) return image.buffer;
+  if (output.path === HERO_CINEMATIC_LIMITS.evidenceMotionPath) return asBuffer(artifacts.evidenceMotionBytes);
+  return asBuffer(artifacts.contactSheetBytes);
+}
+
+function validateMotionOutput(output, candidate, image, artifacts, expectedPaths, failures) {
+  if (!output || !expectedPaths.includes(output.path) || !isCanonicalRepoPath(output.path)) {
+    failures.push("MOTION_OUTPUTS_NOT_INVENTORIED");
+    return;
   }
+  const outputBytes = bytesForMotionOutput(output, candidate, image, artifacts);
+  const outputDigest = outputBytes ? createHash("sha256").update(outputBytes).digest("hex") : null;
+  if (!outputBytes || output.bytes !== outputBytes.length || output.sha256 !== outputDigest) {
+    failures.push("MOTION_OUTPUT_INTEGRITY_MISMATCH");
+    return;
+  }
+  const outputDimensions = output.path.endsWith(".webp") ? dimensionsFromWebp(outputBytes) : dimensionsFromPng(outputBytes);
+  if (!outputDimensions || output.width !== outputDimensions.width || output.height !== outputDimensions.height) {
+    failures.push("MOTION_OUTPUT_DIMENSIONS_MISMATCH");
+  }
+}
+
+function validateMotionOutputs(candidate, image, artifacts, failures) {
+  const outputs = Array.isArray(candidate.motionOutputs) ? candidate.motionOutputs : [];
+  const expectedPaths = expectedMotionOutputPaths();
+  validateMotionOutputInventory(outputs, expectedPaths, failures);
+  for (const output of outputs) validateMotionOutput(output, candidate, image, artifacts, expectedPaths, failures);
+  return outputs;
+}
+
+function validateMotionTiming(candidate, outputs, artifacts, runtimeAnimation, failures) {
   const preview = outputs.find((output) => output?.path === candidate.path);
   if (!preview || preview.frameCount !== candidate.frameCount || preview.durationMs !== candidate.durationMs
     || !Number.isInteger(candidate.frameCount) || candidate.frameCount < 1
@@ -293,6 +334,23 @@ function validateMotionDerivative(candidate, payload, artifacts = {}) {
     || sourceAnimationMetadata.durationMs !== sourceAnimation.durationMs) {
     failures.push("MOTION_TIMING_METADATA_MISMATCH");
   }
+}
+
+function validateMotionDerivative(candidate, payload, artifacts = {}) {
+  const failures = [];
+  const image = validateImage(candidate, payload, [HERO_CINEMATIC_LIMITS.motionPreviewPath], {
+    allowLargeMotion: true,
+    minWidth: 640,
+    minHeight: 320,
+  });
+  failures.push(...image.failures);
+  const runtimeAnimation = animationMetadataFromWebp(image.buffer);
+  validateMotionIdentity(candidate, failures);
+  validateMotionSourceMaster(candidate, artifacts, failures);
+  const projectDigest = validateMotionSourceProject(candidate, artifacts, failures);
+  validateMotionPortability(candidate, failures);
+  const outputs = validateMotionOutputs(candidate, image, artifacts, failures);
+  validateMotionTiming(candidate, outputs, artifacts, runtimeAnimation, failures);
   validateRights(candidate, failures);
 
   return failureResult(failures, {

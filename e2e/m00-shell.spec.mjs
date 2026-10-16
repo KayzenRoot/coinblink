@@ -118,6 +118,17 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(4);
   });
 
+  test("slash search shortcut does not steal focus from interactive mobile navigation", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    const toggle = page.locator("[data-menu-toggle]");
+    await toggle.focus();
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press("/");
+    await expect(toggle).toBeFocused();
+    await expect(page.locator("[data-news-search-mobile]")).not.toBeFocused();
+  });
+
   test("mobile navigation closes on Escape and on outside pointer interaction", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en");

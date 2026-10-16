@@ -428,12 +428,19 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     await element('logout').handlers.click();
     assert.equal(element('draft').hidden, false, 'failed logout cannot claim revocation');
     assert.match(element('message').textContent, /Logout not confirmed/);
+    assert.equal(formFields.title.value, 'Updated local UI revision, protected by D1', 'unconfirmed logout retains editable data for safe retry');
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NULL').first()).n, 1);
     fetcher.failLogout = false;
     await element('logout').handlers.click();
     assert.equal(element('draft').hidden, true);
     assert.equal(element('items').children.length, 0);
     assert.equal(element('session-status').textContent, 'Not authenticated');
+    assert.deepEqual(Object.values(formFields).map(field => field.value), ['', '', '', '', ''],
+      'successful logout purges local draft text from hidden DOM, not only hides the form');
+    assert.equal(element('draft-id').value, '', 'draft identifier must not survive logout');
+    assert.equal(element('revision').value, '0', 'revision state resets on confirmed logout');
+    assert.equal(element('history-list').children.length, 0);
+    assert.equal(element('save').textContent, 'Create draft');
   } finally { await ctx.mf.dispose(); }
 });
 

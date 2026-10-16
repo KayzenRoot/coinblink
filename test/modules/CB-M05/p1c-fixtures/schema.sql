@@ -33,12 +33,14 @@ CREATE TABLE cms_sessions (
   session_digest TEXT PRIMARY KEY CHECK (length(session_digest) = 64),
   csrf_digest TEXT NOT NULL CHECK (length(csrf_digest) = 64),
   owner_id INTEGER NOT NULL CHECK (owner_id = 1),
+  credential_id TEXT NOT NULL,
   issued_at INTEGER NOT NULL,
   expires_at INTEGER NOT NULL,
   revoked_at INTEGER,
   challenge_digest TEXT NOT NULL UNIQUE,
   FOREIGN KEY (owner_id) REFERENCES cms_owner(owner_id),
-  FOREIGN KEY (challenge_digest) REFERENCES cms_challenges(challenge_digest)
+  FOREIGN KEY (challenge_digest) REFERENCES cms_challenges(challenge_digest),
+  FOREIGN KEY (credential_id) REFERENCES cms_credentials(credential_id)
 );
 
 CREATE TABLE cms_drafts (
@@ -73,3 +75,13 @@ CREATE TABLE cms_draft_revisions (
   FOREIGN KEY (draft_id) REFERENCES cms_drafts(id),
   FOREIGN KEY (actor_owner_id) REFERENCES cms_owner(owner_id)
 );
+
+-- Revision snapshots are append-only, including against accidental direct SQL mutation.
+CREATE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
+BEGIN
+  SELECT RAISE(ABORT, 'local CMS revisions are immutable');
+END;
+CREATE TRIGGER cms_revision_no_delete BEFORE DELETE ON cms_draft_revisions
+BEGIN
+  SELECT RAISE(ABORT, 'local CMS revisions are immutable');
+END;

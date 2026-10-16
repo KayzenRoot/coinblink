@@ -4,6 +4,12 @@
 
 This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
 
+## M01 brand-registration timing — Owner direction, 2026-10-16
+
+**Effective only after reviewed governance integration.** Formal INPI trademark application/registration, fees, Nice-class filing strategy, and comprehensive registrability research are **FUTURE / OWNER-OPTIONAL** activities, not prerequisites for implementing, locally testing, auditing, or reporting the M01 **DEMO-only technical deliverable**. The Owner plans to revisit formal brand registration only after the application has been operating and a business need is identified. Do not create repeated INPI paperwork or claim an application has been filed.
+
+**Not deferred or waived:** evidence of authorship/origin and applicable third-party permissions for actual logo/art/fonts/icons, and licensing/provenance of genuinely published news/data. The open rights issue #72 remains an asset-level risk/decision record. Evidence of possible earlier public use of the CoinBlink name in a related crypto field requires proportionate conflict assessment before outward-facing commercial use; delaying registration does not establish freedom to use a mark. Until separately authorized, no automatic commercial publication, provider integration, remote deploy or claim of registered/exclusive trademark. This timing clarification alone does not approve merging M01 PR #58, declare M01 formally DONE, change the checkpoint, or change M05/R75.
+
 ## Approved staging and product boundary
 
 - First beta: M01 exact Golden Home and logo from original hash-verified JPEGs, M05 one-human-Owner CMS/Settings and the M02/M03 article workflow with real license-backed evidence and explicit publish approval. The article and its source integrations cannot be declared LIVE using fixtures.

@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS one_time_challenges (
   rp_id TEXT NOT NULL,
   issued_at INTEGER NOT NULL,
   expires_at INTEGER NOT NULL,
-  consumed_at INTEGER
+  consumed_at INTEGER,
+  consumption_id TEXT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS synthetic_sessions (
@@ -42,8 +43,10 @@ CREATE TABLE IF NOT EXISTS synthetic_sessions (
   expires_at INTEGER NOT NULL,
   revoked_at INTEGER,
   rotated_from TEXT,
+  challenge_hash TEXT UNIQUE,
   FOREIGN KEY (owner_id) REFERENCES owner_claims(owner_id),
-  FOREIGN KEY (rotated_from) REFERENCES synthetic_sessions(token_digest)
+  FOREIGN KEY (rotated_from) REFERENCES synthetic_sessions(token_digest),
+  FOREIGN KEY (challenge_hash) REFERENCES one_time_challenges(challenge_hash)
 );
 
 CREATE TABLE IF NOT EXISTS synthetic_session_failure_switch (

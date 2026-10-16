@@ -36,10 +36,6 @@ const ignoredStateRoot = '.wrangler/p1b-local-state';
 const runId = new Date().toISOString().replace(/[^0-9TZ]/g, '') + '-' + randomUUID().slice(0, 8);
 const wranglerScript = path.join(repositoryRoot, 'node_modules/wrangler/bin/wrangler.js');
 
-assertP1BSyntheticD1Config(config);
-assert.match(readFileSync(path.join(repositoryRoot, '.gitignore'), 'utf8'), /^\.wrangler\/$/m);
-assert.ok(existsSync(wranglerScript), 'Wrangler must already exist in node_modules; no install fallback is allowed here');
-
 function safeEnvironment() {
   const env = { ...process.env, WRANGLER_SEND_METRICS: 'false', NO_UPDATE_NOTIFIER: '1', CI: '1' };
   for (const key of Object.keys(env)) {
@@ -108,6 +104,24 @@ function quoteSql(value) {
 
 function challengeHash(challenge) {
   return createHash('sha256').update(challenge, 'utf8').digest('hex');
+}
+
+function atomicSessionInput(hash, overrides = {}) {
+  const token = randomBytes(32);
+  const csrf = randomBytes(32);
+  const digestKey = randomBytes(32);
+  return {
+    challengeHash: hash,
+    action: challengeAction,
+    audience: challengeAudience,
+    origin: SYNTHETIC_ORIGIN,
+    rpId: SYNTHETIC_RP_ID,
+    now: testTime + 1,
+    expiresAt: testTime + 3600,
+    tokenDigest: createHmac('sha256', digestKey).update(token).digest('hex'),
+    csrfDigest: createHash('sha256').update(csrf).digest('hex'),
+    ...overrides,
+  };
 }
 
 async function registeredCredential(authenticator) {
@@ -219,18 +233,24 @@ function makeWorkerScript() {
         }
         if (url.pathname === '/atomic-session' && request.method === 'POST') {
           const input = await request.json();
+          const expected = Number.isInteger(input.expected) && input.expected > 1 ? input.expected : 1;
+          const ready = await waitAtBarrier('atomic-session-' + expected, expected);
+          if (!ready) return Response.json({ kind: 'barrier-timeout' }, { status: 425 });
+          const consumptionId = crypto.randomUUID();
           try {
             const result = await env.${P1B_SYNTHETIC_BINDING}.batch([
               env.${P1B_SYNTHETIC_BINDING}.prepare(
-                'UPDATE one_time_challenges SET consumed_at = ? WHERE challenge_hash = ? AND action = ? AND audience = ? AND origin = ? AND rp_id = ? AND consumed_at IS NULL AND expires_at > ?'
-              ).bind(input.now, input.challengeHash, input.action, input.audience, input.origin, input.rpId, input.now),
+                'UPDATE one_time_challenges SET consumed_at = ?, consumption_id = ? WHERE challenge_hash = ? AND action = ? AND audience = ? AND origin = ? AND rp_id = ? AND consumed_at IS NULL AND expires_at > ?'
+              ).bind(input.now, consumptionId, input.challengeHash, input.action, input.audience, input.origin, input.rpId, input.now),
               env.${P1B_SYNTHETIC_BINDING}.prepare(
-                'INSERT INTO synthetic_sessions (token_digest, csrf_digest, owner_id, created_at, expires_at) VALUES (?, ?, 1, ?, ?)'
-              ).bind(input.tokenDigest, input.csrfDigest, input.now, input.expiresAt),
+                'INSERT INTO synthetic_sessions (token_digest, csrf_digest, owner_id, created_at, expires_at, challenge_hash) SELECT ?, ?, 1, ?, ?, challenge_hash FROM one_time_challenges WHERE challenge_hash = ? AND consumption_id = ? AND consumed_at = ? AND action = ? AND audience = ? AND origin = ? AND rp_id = ? AND expires_at > ?'
+              ).bind(input.tokenDigest, input.csrfDigest, input.now, input.expiresAt, input.challengeHash, consumptionId, input.now, input.action, input.audience, input.origin, input.rpId, input.now),
             ]);
             const consumed = result[0]?.meta?.changes === 1;
-            if (consumed) return Response.json({ kind: 'session-created', changes: 1 }, { status: 201 });
-            return Response.json({ kind: 'challenge-denied', changes: 0 }, { status: 409 });
+            const sessionCreated = result[1]?.meta?.changes === 1;
+            if (consumed && sessionCreated) return Response.json({ kind: 'session-created', changes: 1 }, { status: 201 });
+            if (!consumed && !sessionCreated) return Response.json({ kind: 'challenge-denied', changes: 0 }, { status: 409 });
+            return Response.json({ kind: 'atomic-session-invariant-failed' }, { status: 500 });
           } catch (error) {
             return Response.json({
               kind: /synthetic session insert failed/i.test(String(error)) ? 'session-insert-failed' : 'atomic-batch-failed',
@@ -531,10 +551,11 @@ test('D1_LOCAL D1-01: challenge consume and session creation roll back together 
     assert.equal(failed.status, 409);
     assert.equal(failed.body.kind, 'session-insert-failed');
     const afterFailure = await runLocalSql(miniflare, [
-      'SELECT consumed_at FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(hash),
+      'SELECT consumed_at, consumption_id FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(hash),
       'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE token_digest = ' + quoteSql(tokenDigest),
     ]);
     assert.equal(rowsAt(afterFailure, 0)[0].consumed_at, null);
+    assert.equal(rowsAt(afterFailure, 0)[0].consumption_id, null);
     assert.equal(rowsAt(afterFailure, 1)[0].count, 0);
 
     await runLocalSql(miniflare, ['UPDATE synthetic_session_failure_switch SET enabled = 0 WHERE id = 1']);
@@ -542,14 +563,142 @@ test('D1_LOCAL D1-01: challenge consume and session creation roll back together 
     assert.equal(retried.status, 201);
     assert.equal(retried.body.kind, 'session-created');
     const afterRetry = await runLocalSql(miniflare, [
-      'SELECT consumed_at FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(hash),
+      'SELECT consumed_at, consumption_id FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(hash),
       'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE token_digest = ' + quoteSql(tokenDigest),
     ]);
     assert.equal(rowsAt(afterRetry, 0)[0].consumed_at, testTime + 1);
+    assert.equal(typeof rowsAt(afterRetry, 0)[0].consumption_id, 'string');
+    assert.notEqual(rowsAt(afterRetry, 0)[0].consumption_id, '');
     assert.equal(rowsAt(afterRetry, 1)[0].count, 1);
   } finally {
     await miniflare.dispose();
   }
+});
+
+test('D1_LOCAL D1-02: consumed, expired, and divergent challenges persist no session', async () => {
+  const state = stateFor('atomic-session-ineligible-challenges');
+  const cases = [
+    { name: 'consumed', consumedAt: testTime },
+    { name: 'expired', expiresAt: testTime + 1 },
+    { name: 'action', action: 'different-action' },
+    { name: 'audience', audience: 'different-audience' },
+    { name: 'origin', origin: 'https://different.invalid' },
+    { name: 'rp-id', rpId: 'different.invalid' },
+  ].map((item) => ({ ...item, hash: challengeHash(randomBytes(32).toString('base64url')) }));
+  const miniflare = await createLocalD1(state, 'atomic-session-ineligible');
+  try {
+    const inserts = ["INSERT INTO owner_claims (owner_id, owner_key, created_at) VALUES (1, 'TEST-ATOMIC-OWNER', " + testTime + ')'];
+    for (const item of cases) {
+      const action = item.action || challengeAction;
+      const audience = item.audience || challengeAudience;
+      const origin = item.origin || SYNTHETIC_ORIGIN;
+      const rpId = item.rpId || SYNTHETIC_RP_ID;
+      const expiresAt = item.expiresAt ?? testTime + 90;
+      const consumedAt = item.consumedAt === undefined ? 'NULL' : String(item.consumedAt);
+      const consumptionId = item.consumedAt === undefined ? 'NULL' : quoteSql('previous-' + item.name);
+      inserts.push(
+        'INSERT INTO one_time_challenges (challenge_hash, action, audience, origin, rp_id, issued_at, expires_at, consumed_at, consumption_id) VALUES (' +
+        [item.hash, action, audience, origin, rpId].map(quoteSql).join(', ') + ', ' + testTime + ', ' + expiresAt + ', ' + consumedAt + ', ' + consumptionId + ')'
+      );
+    }
+    await runLocalSql(miniflare, inserts);
+    const initialSessions = await runLocalSql(miniflare, ['SELECT COUNT(*) AS count FROM synthetic_sessions']);
+    assert.equal(rowsAt(initialSessions, 0)[0].count, 0);
+
+    for (const item of cases) {
+      const input = atomicSessionInput(item.hash);
+      const denied = await postJson(miniflare, '/atomic-session', input);
+      assert.equal(denied.status, 409, item.name + ' challenge must be denied');
+      assert.equal(denied.body.kind, 'challenge-denied', item.name + ' challenge must fail closed');
+      const afterAttempt = await runLocalSql(miniflare, [
+        'SELECT consumed_at, consumption_id FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(item.hash),
+        'SELECT COUNT(*) AS count FROM synthetic_sessions',
+        'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE token_digest = ' + quoteSql(input.tokenDigest),
+      ]);
+      assert.equal(rowsAt(afterAttempt, 0)[0].consumed_at, item.consumedAt ?? null, item.name + ' challenge consumption must remain coherent');
+      assert.equal(rowsAt(afterAttempt, 0)[0].consumption_id, item.consumedAt === undefined ? null : 'previous-' + item.name);
+      assert.equal(rowsAt(afterAttempt, 1)[0].count, rowsAt(initialSessions, 0)[0].count, item.name + ' challenge must not change the session count');
+      assert.equal(rowsAt(afterAttempt, 2)[0].count, 0, item.name + ' challenge token digest must not be persisted');
+    }
+  } finally {
+    await miniflare.dispose();
+  }
+});
+
+test('D1_LOCAL D1-03: replay with fresh session tokens leaves the session count unchanged', async () => {
+  const state = stateFor('atomic-session-fresh-token-replay');
+  const hash = challengeHash(randomBytes(32).toString('base64url'));
+  const miniflare = await createLocalD1(state, 'atomic-session-replay');
+  try {
+    await runLocalSql(miniflare, [
+      "INSERT INTO owner_claims (owner_id, owner_key, created_at) VALUES (1, 'TEST-ATOMIC-OWNER', " + testTime + ')',
+      'INSERT INTO one_time_challenges (challenge_hash, action, audience, origin, rp_id, issued_at, expires_at) VALUES (' +
+        [hash, challengeAction, challengeAudience, SYNTHETIC_ORIGIN, SYNTHETIC_RP_ID].map(quoteSql).join(', ') + ', ' + testTime + ', ' + (testTime + 90) + ')',
+    ]);
+    const firstInput = atomicSessionInput(hash);
+    const first = await postJson(miniflare, '/atomic-session', firstInput);
+    assert.equal(first.status, 201);
+    assert.equal(first.body.kind, 'session-created');
+
+    const replayInput = atomicSessionInput(hash);
+    assert.notEqual(replayInput.tokenDigest, firstInput.tokenDigest, 'replay must use a fresh session token digest');
+    const replay = await postJson(miniflare, '/atomic-session', replayInput);
+    assert.equal(replay.status, 409);
+    assert.equal(replay.body.kind, 'challenge-denied');
+    const afterReplay = await runLocalSql(miniflare, [
+      'SELECT consumed_at, consumption_id FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(hash),
+      'SELECT COUNT(*) AS count FROM synthetic_sessions',
+      'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE token_digest = ' + quoteSql(replayInput.tokenDigest),
+    ]);
+    assert.equal(rowsAt(afterReplay, 0)[0].consumed_at, testTime + 1);
+    assert.notEqual(rowsAt(afterReplay, 0)[0].consumption_id, null, 'the first request must own the persisted consumption marker');
+    assert.equal(rowsAt(afterReplay, 1)[0].count, 1, 'replay must not change the persisted session count');
+    assert.equal(rowsAt(afterReplay, 2)[0].count, 0, 'fresh replay token digest must not be persisted');
+  } finally {
+    await miniflare.dispose();
+  }
+});
+
+test('D1_LOCAL D1-04: concurrent atomic session attempts create one session and deny every loser', async () => {
+  const state = stateFor('atomic-session-concurrent');
+  const hash = challengeHash(randomBytes(32).toString('base64url'));
+  const contenders = 10;
+  const miniflare = await createLocalD1(state, 'atomic-session-concurrent');
+  try {
+    await runLocalSql(miniflare, [
+      "INSERT INTO owner_claims (owner_id, owner_key, created_at) VALUES (1, 'TEST-ATOMIC-OWNER', " + testTime + ')',
+      'INSERT INTO one_time_challenges (challenge_hash, action, audience, origin, rp_id, issued_at, expires_at) VALUES (' +
+        [hash, challengeAction, challengeAudience, SYNTHETIC_ORIGIN, SYNTHETIC_RP_ID].map(quoteSql).join(', ') + ', ' + testTime + ', ' + (testTime + 90) + ')',
+    ]);
+    const inputs = Array.from({ length: contenders }, () => atomicSessionInput(hash, { expected: contenders }));
+    const attempts = await Promise.all(inputs.map((input) => postJson(miniflare, '/atomic-session', input)));
+    assert.equal(attempts.filter((attempt) => attempt.status === 425).length, 0, 'all requests must reach the local D1 barrier');
+    const created = attempts.filter((attempt) => attempt.status === 201 && attempt.body.kind === 'session-created' && attempt.body.changes === 1);
+    const rejected = attempts.filter((attempt) => attempt.status === 409 && attempt.body.kind === 'challenge-denied');
+    assert.equal(created.length, 1, 'exactly one request must create the session');
+    assert.equal(rejected.length, contenders - 1, 'every losing attempt must be explicitly denied');
+    assert.equal(created.length + rejected.length, contenders, 'every concurrent attempt must have a defined outcome');
+
+    const afterAttempts = await runLocalSql(miniflare, [
+      'SELECT consumed_at, consumption_id FROM one_time_challenges WHERE challenge_hash = ' + quoteSql(hash),
+      'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE challenge_hash = ' + quoteSql(hash),
+      'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE token_digest IN (' + inputs.map((input) => quoteSql(input.tokenDigest)).join(', ') + ')',
+      ...inputs.map((input) => 'SELECT COUNT(*) AS count FROM synthetic_sessions WHERE token_digest = ' + quoteSql(input.tokenDigest)),
+    ]);
+    assert.equal(rowsAt(afterAttempts, 0)[0].consumed_at, testTime + 1);
+    assert.notEqual(rowsAt(afterAttempts, 0)[0].consumption_id, null);
+    assert.equal(rowsAt(afterAttempts, 1)[0].count, 1, 'the database must persist exactly one session for the challenge');
+    assert.equal(rowsAt(afterAttempts, 2)[0].count, 1, 'exactly one contender token digest may persist');
+    assert.equal(afterAttempts.slice(3).filter((result) => result.results[0]?.count === 1).length, 1, 'only the winning token digest may persist');
+  } finally {
+    await miniflare.dispose();
+  }
+});
+
+test('D1_LOCAL SEC-00: fixture invariants and Wrangler availability are asserted inside the test', () => {
+  assertP1BSyntheticD1Config(config);
+  assert.match(readFileSync(path.join(repositoryRoot, '.gitignore'), 'utf8'), /^\.wrangler\/$/m);
+  assert.ok(existsSync(wranglerScript), 'Wrangler must already exist in node_modules; no install fallback is allowed here');
 });
 
 test('D1_LOCAL SEC-01: Wrangler LOCAL smoke uses the exact fixture and the runner strips Cloudflare environment names', () => {

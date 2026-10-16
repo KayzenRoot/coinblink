@@ -342,6 +342,9 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
       const method = options?.method || 'GET';
       const body = options?.body ? JSON.parse(options.body) : undefined;
       const headers = options?.headers || {};
+      if (url === '/local/logout' && fetcher.failLogout) {
+        return new Response(JSON.stringify({ error: 'Injected test-only network denial' }), { status: 503 });
+      }
       const res = await ctx.run(url, method, body, {
         cookie: fetcher.cookie,
         csrf: headers['X-CB-CSRF'] || '',
@@ -351,6 +354,7 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
       return res;
     };
     fetcher.cookie = '';
+    fetcher.failLogout = false;
     const credentialApi = {
       async get({ publicKey }) {
         assert.equal(publicKey.rpId, CMS_TEST_RP_ID);
@@ -402,6 +406,15 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     await element('draft').handlers.submit({ preventDefault() {} });
     assert.equal(element('revision').value, '2');
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    await element('history').handlers.click();
+    assert.equal(element('history-list').children.length, 2);
+    assert.match(element('history-list').children[0].textContent, /Revision 2/);
+    fetcher.failLogout = true;
+    await element('logout').handlers.click();
+    assert.equal(element('draft').hidden, false, 'failed logout cannot claim revocation');
+    assert.match(element('message').textContent, /Logout not confirmed/);
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NULL').first()).n, 1);
+    fetcher.failLogout = false;
     await element('logout').handlers.click();
     assert.equal(element('draft').hidden, true);
     assert.equal(element('items').children.length, 0);
@@ -499,6 +512,10 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
     await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout: 10_000 });
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    await page.locator('#history').click();
+    await page.getByText('Read-only revision history loaded: 2 versions').waitFor({ timeout: 10_000 });
+    assert.equal(await page.locator('#history-list li').count(), 2);
+    assert.match(await page.locator('#history-list li').first().innerText(), /Revision 2/);
     const { sign_count: signCount } = await ctx.db.prepare(
       'SELECT sign_count FROM cms_credentials WHERE credential_id=?'
     ).bind(ctx.primary.id).first();

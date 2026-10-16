@@ -73,3 +73,33 @@ Both reports say `passed`, use base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` a
 ### R35 outcome
 
 No M01 regression requiring an application-code correction was reproduced. The evidence supports `M01_DEMO_READY_FOR_OWNER_ADMIN_DECISION`; it does **not** change the status to DONE. Live provider rights/data, commercial rights, the strict-base update, fresh exact-head checks/review, and an explicit scoped administrative decision remain outstanding. `M01_FORMALLY_COMPLETE=false`; `M01_PR58_MERGE_AUTHORIZED=false`; no merge, deploy, or checkpoint promotion occurred.
+
+
+## R36 live closeout readback · 2026-10-15
+
+This append-only refresh supersedes the earlier R35 snapshot for current-state claims; the R35 evidence above remains historical and unchanged.
+
+### Current authority and exact PR state
+
+- Authenticated account: **KayzenRoot**. Canonical origin/main and PR #58 base at readback: **495a85e86e5db9ec5fb69f2b4c56230ba0dd8138**, after PR #85 was integrated. The current .engineering/CHECKPOINT.json still says **M00_COMPLETE**, **IMPLEMENTATION_IN_PROGRESS**, **completedThroughModule=CB-M00**, **overallCompletionPercent=5**; its admission map lists M01 and M05 as **ADMITTED**. No checkpoint change is proposed.
+- PR [#58](https://github.com/KayzenRoot/coinblink/pull/58) is OPEN, non-draft, CLEAN, at exact HEAD **a578c1abe412e39e1269f6d80d63d892d766e2a1**, based on that exact main. The feature branch was clean before this evidence-only update.
+- Live ruleset [#24888106](https://github.com/KayzenRoot/coinblink/rules/24888106) remains active only for refs/heads/main: bypass list empty; PR/squash and resolved-thread rules preserved; seven strict required contexts; deletion and non-fast-forward protections. It was read-only and not changed.
+- At that HEAD, all seven required ruleset contexts were green: M00 and GEF (ubuntu-24.04), M00 and GEF (windows-2022), Docker Compose smoke (Ubuntu), SonarCloud Code Analysis, Socket Security: Pull Request Alerts, Socket Security: Project Report, and CodeRabbit. The GEF workflow [#38819210803](https://github.com/KayzenRoot/coinblink/actions/runs/38819210803) passed its Ubuntu, Windows, and Docker jobs; the live PR check rollup separately reported all six execution contexts successful. CodeRabbit's green status reports that automated review is skipped/disabled; it is not a substantive review. The review-thread API reports 10/10 resolved.
+- Owner-account review [R68](https://github.com/KayzenRoot/coinblink/pull/58#pullrequestreview-5540865856) is COMMENTED, not an eligible independent GitHub APPROVED review and not a merge decision. Issue [#8 comment R69](https://github.com/KayzenRoot/coinblink/issues/8#issuecomment-6203916613) calls the exact state M01_DEMO_TECHNICALLY_READY=true; it does not claim formal M01 completion or authorize merge. Any checks on this documentation commit must be read again at its new exact HEAD.
+
+### Closeout matrix
+
+| Requirement | R36 state | Evidence and remaining gate |
+|---|---|---|
+| Responsive Golden-inspired homepage, truthful demo states, local interactions and existing visual QA | DONE_EVIDENCED_FOR_DEMO | Existing code/evidence and Owner's visual acceptance are scoped to DEMO. No new art or application-code change was needed. |
+| Integration Steward review of the shared route delta | REVIEWED_READ_ONLY | This readback reviewed the existing BaseLayout, /en, /pt-br, and root-route diff. /en composes GoldenHome; /pt-br uses the localized shell; / redirects only to /en. Copy identifies the data as illustrative. No shared route was modified by this addendum. |
+| Live price/news/article API or external browser session integration | NOT_IMPLEMENTED | A deterministic search of M01, route/layout, and demo helper sources found no fetch, XHR, WebSocket, EventSource, localStorage, or sessionStorage calls. Static official-source and block-explorer destination URLs remain; they are links, not a live feed, and do not establish licensing. |
+| Workflow/deployment safety for this PR | PASS_WITH_SCOPE | PR #58 changes no .github/workflows/**, Wrangler, Compose, package manifest, or Astro configuration. The Preview workflow is manual (workflow_dispatch) and defaults to not-authorized; it was not dispatched in this execution. This is a configuration review, not a claim of deployment authorization. |
+| Source-backed / licensed commercial assets, mark and distribution rights | BLOCKED_RIGHTS | Issue [#72](https://github.com/KayzenRoot/coinblink/issues/72) remains OPEN; its latest rights triage keeps rightsReview=PENDING_OWNER_OR_LEGAL, commercialPublicationAllowed=false, and authorizedToMerge=false. No asset-level clearance is recorded here. |
+| Formal M01 DoD and checkpoint transition | NOT_DONE | DEMO readiness does not satisfy all product, rights, release, and governance gates. No checkpoint delta is authorized or included. |
+| M05 P1-A local synthetic boundary | DONE_LIMITED_TO_LOCAL_SYNTHETIC_TESTS | PR [#85](https://github.com/KayzenRoot/coinblink/pull/85) head 56674339a51c5ff82ab2fa4783e382dfdc736764 was merged at main 495a85e86e5db9ec5fb69f2b4c56230ba0dd8138; post-merge run [#38815600853](https://github.com/KayzenRoot/coinblink/actions/runs/38815600853) succeeded. Issue [#84 R67](https://github.com/KayzenRoot/coinblink/issues/84#issuecomment-6205138388) records 1 HTTP 201 plus N-1 HTTP 409 at 2/10/100 concurrency, 6/6 guard tests and 10/10 local D1 cases. The local unit suite was 113/134; 21 offline-environment failures remain failures, not passes. Lint/typecheck/build and exact-head hosted CI passed. This proves local synthetic contracts only: no WebAuthn, real session, remote D1, privileged CMS or production deployment. |
+| M05 P0 mock UI / M05 P1-B | P0_OWNER_DECISION_PENDING / P1-B_NOT_ADMITTED | PR [#59](https://github.com/KayzenRoot/coinblink/pull/59) remains OPEN at **18278d2a3145e000cf76b754a5c6afb9ce377a74**; its seven required contexts are green, but Owner acceptance and exact-SHA merge GO are absent. The existing secure-owner-CMS ADR is a proposal; no P1-B implementation authority or real authentication is claimed. |
+
+### R36 outcome
+
+**M01_DEMO_READY_FOR_OWNER_ADMIN_DECISION=true**; **M01_FORMALLY_DONE=false**; **M01_PR58_MERGE_AUTHORIZED=false**; **sharedReleaseGate.commercialPublicationAllowed=false**. Rights, any applicable source/provider authorization, an explicit SHA-scoped administrative decision, and fresh checks on this evidence HEAD remain separate gates. No merge, deploy, ruleset edit, collaborator/reviewer addition, or checkpoint promotion occurred in this closeout update.

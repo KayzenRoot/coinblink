@@ -103,3 +103,40 @@ This append-only refresh supersedes the earlier R35 snapshot for current-state c
 ### R36 outcome
 
 **M01_DEMO_READY_FOR_OWNER_ADMIN_DECISION=true**; **M01_FORMALLY_DONE=false**; **M01_PR58_MERGE_AUTHORIZED=false**; **sharedReleaseGate.commercialPublicationAllowed=false**. Rights, any applicable source/provider authorization, an explicit SHA-scoped administrative decision, and fresh checks on this evidence HEAD remain separate gates. No merge, deploy, ruleset edit, collaborator/reviewer addition, or checkpoint promotion occurred in this closeout update.
+
+## R70 correction · live closeout readback · 2026-10-15
+
+This addendum supersedes R36/R35 current-state claims where refs changed; those entries remain historical evidence. It records a read-only refresh plus a documentation-only update in this PR. No new M01 visual or code regression was found or claimed.
+
+### Exact base, branch and governance state
+
+- GitHub API and `git fetch origin` in the CoinBlink product clone both verified `main` at **58321c21508bd6089de1c1a77c21f93a4f0b856a**. The separate research checkout has a different origin and was excluded from product-repository evidence.
+- PR #59 is already merged in this main; the R70 operation did not merge it. Main's checkpoint file is unchanged from this branch's `origin/main`: M00 is complete, implementation is in progress, completion remains 5%, M01/M05 remain admitted, and M01 is not marked done.
+- PR [#58](https://github.com/KayzenRoot/coinblink/pull/58) remains OPEN and non-draft. At live readback before this documentation push, the remote head was `7acc01b7b965d8b3a4265622656496774a9c345b` and GitHub still showed its base as `495a85e86e5db9ec5fb69f2b4c56230ba0dd8138`. The branch had a normal merge of current main, local HEAD `8f58e583916e9fd23b274a7de7c0b69fe0534031`, with no conflicts or force-push. The exact R70 doc-only HEAD is established by the commit that follows this addendum.
+- PR #58's 188-path feature diff remains distinct from the R70 documentation update. The update touches only `.engineering/context-locks/CB-M01-WO-001.md` and this matrix; no `src/modules/CB-M01/**`, M01 test, Golden image, route, workflow, package, or checkpoint file changed.
+- Six hosted execution checks on the old remote HEAD `7acc01b…` were successful (Ubuntu and Windows GEF/M00, Docker smoke, SonarCloud, Socket PR Alerts, Socket Project Report). CodeRabbit's status description was “Review skipped: automatic reviews are disabled,” not a substantive review. GitHub had no review decision or pending review requests. These results are historical for `7acc01b` and do not attest to the new R70 HEAD; read back exact-head statuses before Owner review.
+- PR #82's effective single-owner directive supersedes old requests in historical material for a second/external reviewer. No reviewer was added or requested, and this update does not issue an Owner/admin merge decision.
+
+### Current closeout and external gates
+
+| Requirement | R70 state | Evidence and remaining gate |
+|---|---|---|
+| Responsive Golden-inspired DEMO and existing M01 local interactions | **DONE_EVIDENCED_FOR_DEMO** | Existing M01 code and historical Node 22/browser evidence remain the source; no regression or changed code required a rerun. Exact new-head hosted checks remain outstanding after this documentation update. |
+| Main-base synchronization | **LOCAL_MERGE_READY_FOR_PUBLICATION** | Current main `58321c2…` is in local PR branch via ordinary merge commit `8f58e58…`; publish only by normal fast-forward after rechecking remote refs and worktree. |
+| M01 formal DoD / checkpoint | **NOT_DONE** | Main checkpoint remains M00 COMPLETE / 5%; M01 is admitted, not completed. No checkpoint delta was included. |
+| Rights and trademark | **BLOCKED_RIGHTS** | Issue [#72](https://github.com/KayzenRoot/coinblink/issues/72) remains OPEN and the latest triage is still `PENDING_OWNER_OR_LEGAL`; no asset-level clearance or verified trademark search was established. `commercialPublicationAllowed=false`, `authorizedToMerge=false`. |
+| M05 P0 UI | **MERGED_ON_MAIN; OWNER_ACCEPTANCE_NOT_RECORDED_HERE** | PR #59 is already part of current main. This is a live-state correction only; it does not represent a merge by this R70 run or claim Owner acceptance. |
+| M05 P1-A / privileged functionality | **LOCAL_SYNTHETIC_ONLY / P1-B_NOT_ADMITTED** | PR #85 supplies local synthetic D1 contract evidence only. No real WebAuthn, remote D1, credential/session service, privileged CMS or production integration is authorized. |
+
+### Commands and evidence for this update
+
+| Command or readback | Result |
+|---|---|
+| `gh api repos/KayzenRoot/coinblink/commits/main --jq .sha` | `58321c21508bd6089de1c1a77c21f93a4f0b856a` |
+| `gh pr view 58 --repo KayzenRoot/coinblink --json state,isDraft,headRefOid,baseRefOid,headRefName,baseRefName` | OPEN, non-draft; old remote head `7acc01b…`, old base `495a85e…` before this push |
+| `gh api repos/KayzenRoot/coinblink/commits/7acc01b7b965d8b3a4265622656496774a9c345b/check-runs` | 6/6 execution checks completed SUCCESS; CodeRabbit recorded separately as skipped, not review |
+| R36 source-fingerprint comparison against current main | 23/25 blob IDs unchanged; only the M05 Work Order and Context Lock changed in merged PR #59 |
+| `git diff --name-only origin/main...HEAD` before R70 append | 188 PR paths; current-main merge present locally |
+| `git diff --check` | PASS on the two-file documentation delta; no app suite rerun is represented as current-head evidence |
+
+**Outcome:** `M01_DEMO_READY_FOR_OWNER_ADMIN_DECISION=true`; `M01_FORMALLY_DONE=false`; `M01_PR58_MERGE_AUTHORIZED=false`; `sharedReleaseGate.commercialPublicationAllowed=false`. The required next evidence is the exact new PR #58 HEAD, its hosted checks, and Owner's SHA-scoped administrative decision. Rights clearance remains a separate external gate; this update does not authorize merge, deploy, commercial publication, or checkpoint promotion.

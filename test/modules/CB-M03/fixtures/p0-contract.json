@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "module": "CB-M03",
+  "kind": "NON_EXECUTABLE_CONTRACT_FIXTURE",
+  "admission": "NOT_ADMITTED",
+  "mode": "MOCK",
+  "networkCalls": 0,
+  "sources": [
+    {
+      "id": "synthetic-source-001",
+      "originUrl": "https://feed.example.test/articles/001",
+      "licensing": "NOT_CLEARED",
+      "captureMode": "DISABLED",
+      "fetchedAt": null,
+      "attribution": "Synthetic source fixture",
+      "evidenceDigest": null,
+      "redistributable": false
+    }
+  ],
+  "cases": [
+    {
+      "name": "fixture-only",
+      "input": "SYNTHETIC",
+      "state": "OFFLINE"
+    },
+    {
+      "name": "rights-unknown",
+      "input": "NOT_CLEARED",
+      "state": "DENIED"
+    },
+    {
+      "name": "duplicate-on-replay",
+      "input": "synthetic-idempotency-001",
+      "state": "DEDUPLICATED"
+    },
+    {
+      "name": "provider-unavailable",
+      "input": "OFFLINE",
+      "state": "UNAVAILABLE"
+    },
+    {
+      "name": "invalid-url",
+      "input": "INVALID",
+      "state": "BAD_REQUEST"
+    },
+    {
+      "name": "quota-denied",
+      "input": "RATE_LIMITED",
+      "state": "RETRY_AFTER"
+    }
+  ]
+}

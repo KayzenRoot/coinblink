@@ -6,7 +6,7 @@ import { isGlobalApprovalStatus, isParallelAdrApproved } from '../scripts/plan-p
 
 const read = name => readFileSync(resolve(process.cwd(), name), 'utf8');
 
-test('global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission', () => {
+test('global staged baseline preserves canonical scoped M01-M05 admissions without claiming completion', () => {
   for (const name of ['SCOPE', 'ARCHITECTURE', 'REQUIREMENTS', 'DEFINITION-OF-DONE']) {
     assert.equal(isGlobalApprovalStatus(read('.engineering/' + name + '.md')), true);
   }
@@ -27,14 +27,22 @@ test('global staged baseline preserves canonical CB-M01 admission and proposes o
   }
   for (let i=1; i<=17; i++) {
     const id = 'CB-M' + String(i).padStart(2, '0');
-    const expected = ['CB-M01', 'CB-M05'].includes(id) ? 'ADMITTED' : 'NOT_ADMITTED';
-    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' is outside the M05 admission delta; M01 is inherited from canonical main');
+    const expected = ['CB-M01', 'CB-M02', 'CB-M03', 'CB-M04', 'CB-M05'].includes(id) ? 'ADMITTED' : 'NOT_ADMITTED';
+    assert.equal(cp.checkpointFacts.moduleAdmission[id], expected, id + ' has only explicitly reviewed scoped admissions; M06-M17 remain gated');
     if (expected === 'ADMITTED') {
       const proof = cp.checkpointFacts.moduleAdmissionEvidence?.[id];
       assert.equal(proof?.workOrder, id + '-WO-001', id + ' needs a module-specific reviewed Work Order');
       assert.equal(proof?.contract, 'docs/architecture/contracts/' + id + '.md', id + ' needs the matching producer contract');
       assert.equal(proof?.contextLock, '.engineering/context-locks/' + id + '-WO-001.md', id + ' needs the matching Context Lock');
       assert.match(proof?.status ?? '', /EFFECTIVE_ONLY_AFTER_OWNER_APPROVED_REVIEWED_MERGE/u);
+      if (['CB-M02', 'CB-M03', 'CB-M04'].includes(id)) {
+        assert.equal(proof?.scope, 'P0_OFFLINE_MOCK_ONLY', id + ' must remain synthetic and offline');
+        assert.equal(proof?.governanceMainSha, 'c25daa75a5d0ad2c3ed2444c8f76caa3d1a0507e', id + ' must be based on latest protected predecessor main');
+        assert.equal(proof?.runtimeAndSharedIntegration, 'NOT_AUTHORIZED_BY_ADMISSION', id + ' cannot authorize application/shared integration');
+        assert.equal(proof?.predecessorMergeRequired, true, id + ' must follow its protected predecessor');
+        assert.match(proof?.preparationFinalHeadSha ?? '', /^[0-9a-f]{40}$/u);
+        assert.match(proof?.preparationMergeSha ?? '', /^[0-9a-f]{40}$/u);
+      }
       if (id === 'CB-M05') {
         assert.equal(proof?.governanceMainSha, 'e40d36b2a589596869eb296696e917f724d5be65', 'preserve the original M05 proposal base');
         assert.equal(proof?.synchronizedFromMainSha, 'c4ba069f1dfaddc8273001950805e8a18125db66', 'record the actual M01-first main sync');

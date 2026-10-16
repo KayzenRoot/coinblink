@@ -10,7 +10,7 @@ V1-G01: Preserve exactly 19 module identities with M00 COMPLETE/5%, M01-M17 unad
 V1-G02: M01 Golden Home and logo must use hash-verified original JPEG bytes; no regenerated substitute and no screenshot-as-functional-HTML.
 V1-G03: M05 supports one human Owner, no public privileged enrollment; negative security tests cover login, atomic bootstrap, MFA, recovery, session revocation and owner isolation before a real auth claim.
 V1-G04: Provider secrets require a write-only protected vault and external root, never exposed in GET, logs or client bundles; live vault use awaits security/provider authorization.
-V1-G05: First completed article must be licensed and source-backed, reviewed and Owner-approved; draft/mock is never counted as published LIVE.
+V1-G05: First completed article must be source-backed with verifiable attribution, reviewed and Owner-approved; draft/mock is never counted as published LIVE. Real external fetching requires actual provider access authorization, independent of module-local mocks.
 V1-G06: English is canonical; pt-BR and es translations planned with locale/SEO contracts and editorial review.
 V1-G07: Keep existing Docker localhost preview and protected Workers Free Preview isolated; require separate approval per Cloudflare run and for paid/production changes.
 V1-G08: Parallel Codex Desktop modules require global source/ADR effectivity, individual GEF admission, Work Order, Context Lock, exclusive file ownership, accepted producer contracts and bounded host resources.

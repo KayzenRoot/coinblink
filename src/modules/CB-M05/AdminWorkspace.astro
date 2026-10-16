@@ -1,0 +1,395 @@
+---
+import { ADMIN_WORKSPACE_VIEWS, getAdminWorkspaceView } from "./admin-workspace-model.mjs";
+import LocalDraftLab from "./LocalDraftLab.astro";
+
+type AdminWorkspaceView = typeof ADMIN_WORKSPACE_VIEWS[number];
+
+interface Props {
+  view: AdminWorkspaceView;
+  publicDemo?: boolean;
+}
+
+const { view, publicDemo = false } = Astro.props;
+const basePath = publicDemo ? "/demo/editorial" : "/admin";
+const model = getAdminWorkspaceView(view);
+const articleViews = ["articles", "article-new", "article-edit"].includes(view);
+const settingsViews = ["settings", "integrations"].includes(view);
+const securityViews = ["login", "setup", "recovery"].includes(view);
+
+const primaryNavigation = [
+  { label: "Articles", href: `${basePath}/articles`, active: articleViews, current: view === "articles" },
+  { label: "Settings", href: `${basePath}/settings`, active: settingsViews && view === "settings", current: view === "settings" },
+  { label: "Integrations", href: `${basePath}/settings/integrations`, active: view === "integrations", current: view === "integrations" },
+];
+
+const securityNavigation = [
+  { label: "Sign-in preview", href: `${basePath}/login`, active: view === "login" },
+  { label: "Setup preview", href: `${basePath}/setup`, active: view === "setup" },
+  { label: "Recovery preview", href: `${basePath}/recovery`, active: view === "recovery" },
+];
+
+const disconnectedModules = ["Sources", "Market data", "Media", "Distribution"];
+---
+
+<div class="m05-workspace" data-module="CB-M05" data-view={view}>
+  <header class="m05-topbar">
+    <a class="m05-brand" href="/en" aria-label="CoinBlink home">
+      <span class="m05-brand__name"><span>Coin</span><span class="m05-brand__accent">Blink</span></span>
+      <span class="m05-brand__descriptor">EDITORIAL WORKSPACE</span>
+    </a>
+    <div class="m05-topbar__context">
+      <span class="m05-topbar__module">M05 · CMS</span>
+      <span class="m05-topbar__state">Static demo</span>
+    </div>
+  </header>
+
+  <div class="m05-frame">
+    <aside class="m05-sidebar" aria-label="Editorial workspace navigation">
+      <p class="m05-sidebar__label">WORKSPACE</p>
+      <nav class="m05-nav" aria-label="Workspace">
+        {primaryNavigation.map((item) => (
+          <a class:list={["m05-nav__link", item.active && "m05-nav__link--active"]}
+            href={item.href} aria-current={item.current ? "page" : undefined}>
+            <span>{item.label}</span>
+            {item.label === "Articles" && <span class="m05-nav__badge">P0</span>}
+          </a>
+        ))}
+      </nav>
+
+      <p class="m05-sidebar__label m05-sidebar__label--spaced">NOT CONNECTED</p>
+      <ul class="m05-nav-list" aria-label="Future modules">
+        {disconnectedModules.map((label) => (
+          <li><span class="m05-nav__stub">{label}<span>Not connected</span></span></li>
+        ))}
+      </ul>
+
+      {!publicDemo && <>
+        <p class="m05-sidebar__label m05-sidebar__label--spaced">SECURITY PREVIEWS</p>
+        <nav class="m05-nav m05-nav--quiet" aria-label="Security mock previews">
+        {securityNavigation.map((item) => (
+          <a class:list={["m05-nav__link", item.active && "m05-nav__link--active"]}
+            href={item.href} aria-current={item.active ? "page" : undefined}>
+            {item.label}
+          </a>
+        ))}
+        </nav>
+      </>}
+
+      <div class="m05-sidebar__foot">
+        <span class="m05-status-dot" aria-hidden="true"></span>
+        <span>Local presentation only</span>
+      </div>
+    </aside>
+
+    <main class="m05-content" id="main">
+      <aside class="m05-safety" aria-label="Prototype safety notice">
+        <span class="m05-safety__icon" aria-hidden="true">!</span>
+        <div>
+          <strong>MOCK / SECURITY DISABLED</strong>
+          <p>{model.safetyMessage.replace("MOCK · SECURITY DISABLED — ", "")}</p>
+        </div>
+      </aside>
+
+      <header class="m05-page-heading">
+        <div>
+          <p class="m05-eyebrow">{securityViews ? "ACCESS PREVIEW" : settingsViews ? "OWNER SETTINGS" : "EDITORIAL"}</p>
+          <h1 id="m05-page-title">{model.title}</h1>
+          <p class="m05-page-heading__description">{model.description}</p>
+        </div>
+        <span class="m05-state-pill"><span aria-hidden="true"></span>{model.state === "empty" ? "Empty state" : "Unavailable"}</span>
+      </header>
+
+      {securityViews && (
+        <section class="m05-panel m05-security-panel" aria-labelledby="m05-security-title">
+          <div class="m05-panel__heading">
+            <div>
+              <p class="m05-eyebrow">SECURITY GATE</p>
+              <h2 id="m05-security-title">No sign-in or recovery is active</h2>
+            </div>
+            <span class="m05-lock-icon" aria-hidden="true">—</span>
+          </div>
+          <p class="m05-copy">This screen is a visual placeholder. It has no credential fields, account creation, email challenge, recovery code, session, or authorization check.</p>
+          <div class="m05-safety-checks" aria-label="Disabled security capabilities">
+            <span><b aria-hidden="true">×</b> Identity</span>
+            <span><b aria-hidden="true">×</b> Sessions</span>
+            <span><b aria-hidden="true">×</b> Account recovery</span>
+          </div>
+          <p class="m05-panel__footnote">A separate, reviewed security and data decision is required before any of these capabilities can be implemented.</p>
+        </section>
+      )}
+
+      {view === "articles" && (
+        <>
+          <section class="m05-panel m05-queue" aria-labelledby="m05-queue-title">
+            <div class="m05-panel__heading">
+              <div>
+                <p class="m05-eyebrow">CONTENT QUEUE</p>
+                <h2 id="m05-queue-title">No demo articles</h2>
+              </div>
+              <span class="m05-count">0 <span>records</span></span>
+            </div>
+            <div class="m05-empty-state">
+              <span class="m05-empty-state__mark" aria-hidden="true">—</span>
+              <h3>Nothing is connected yet</h3>
+              <p>There are no sample headlines, stories, sources, or market claims in this workspace.</p>
+              <a class="m05-link-button" href={`${basePath}/articles/new`}>Open the local draft workshop <span aria-hidden="true">→</span></a>
+            </div>
+          </section>
+
+          <section class="m05-panel m05-workflow" aria-labelledby="m05-workflow-title">
+            <div class="m05-panel__heading">
+              <div>
+                <p class="m05-eyebrow">PROPOSED PROCESS · NOT IMPLEMENTED</p>
+                <h2 id="m05-workflow-title">Editorial workflow</h2>
+              </div>
+              <span class="m05-state-pill m05-state-pill--muted">MOCK</span>
+            </div>
+            <ol class="m05-workflow__steps">
+              <li><span>01</span><div><strong>Draft</strong><small>Local export preview only</small></div></li>
+              <li><span>02</span><div><strong>Source check</strong><small>Not available</small></div></li>
+              <li><span>03</span><div><strong>Fact check</strong><small>Not available</small></div></li>
+              <li><span>04</span><div><strong>Owner review</strong><small>Not available</small></div></li>
+              <li><span>05</span><div><strong>Publish</strong><small>Disabled</small></div></li>
+            </ol>
+          </section>
+
+          <section class="m05-state-samples" aria-label="Static interface state examples">
+            <article class="m05-mini-card" aria-labelledby="m05-loading-title">
+              <p class="m05-eyebrow">MOCK LOADING STATE</p>
+              <h2 id="m05-loading-title">Visual sample only</h2>
+              <div class="m05-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p>No request is running; this is a static loading-state example.</p>
+            </article>
+            <article class="m05-mini-card m05-mini-card--error" aria-labelledby="m05-error-title">
+              <p class="m05-eyebrow">MOCK ERROR STATE · NO REQUEST</p>
+              <h2 id="m05-error-title">Connection unavailable example</h2>
+              <p>This static error-state example is not a real failure; no provider was contacted.</p>
+            </article>
+          </section>
+        </>
+      )}
+
+      {view === "article-new" && publicDemo && <LocalDraftLab />}
+
+      {(view === "article-edit" || (view === "article-new" && !publicDemo)) && (
+        <section class="m05-panel m05-disabled-editor" aria-labelledby="m05-editor-title">
+          <div class="m05-panel__heading">
+            <div>
+              <p class="m05-eyebrow">STATIC WORKFLOW PREVIEW</p>
+              <h2 id="m05-editor-title">{view === "article-new" ? "Draft editor unavailable" : "No draft selected"}</h2>
+            </div>
+            <span class="m05-lock-icon" aria-hidden="true">—</span>
+          </div>
+          <p class="m05-copy">{view === "article-new" ? "The mock shows where a draft workflow would begin. No title, body, source, or publication data can be entered." : "No article record exists in this mock. Editing, review, approval, and publication are not available."}</p>
+          <div class="m05-disabled-preview" aria-label="Disabled editor preview">
+            <span>EDITOR AREA</span>
+            <span>No writable fields in P0</span>
+          </div>
+          <div class="m05-disabled-actions" aria-label="Unavailable actions">
+            <button type="button" disabled>Save draft unavailable</button>
+            <button type="button" disabled>Publish unavailable</button>
+          </div>
+        </section>
+      )}
+
+      {(view === "settings" || view === "integrations") && (
+        <section class="m05-panel m05-integrations" aria-labelledby="m05-integrations-title">
+          <div class="m05-panel__heading">
+            <div>
+              <p class="m05-eyebrow">NON-SECRET SERVICE CATEGORIES</p>
+              <h2 id="m05-integrations-title">{view === "settings" ? "Connection settings" : "Available categories"}</h2>
+            </div>
+            <span class="m05-state-pill m05-state-pill--muted">No credentials</span>
+          </div>
+          <ul class="m05-provider-list">
+            {model.providers?.map((provider, index) => (
+              <li class="m05-provider-card">
+                <span class="m05-provider-card__index" aria-hidden="true">0{index + 1}</span>
+                <div class="m05-provider-card__content">
+                  <h3>{provider.name}</h3>
+                  <p>{provider.credentialState}</p>
+                </div>
+                <span class="m05-provider-card__status"><i aria-hidden="true"></i>{provider.status}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="m05-panel__footnote">No keys, tokens, secrets, connection checks, or provider requests are part of this screen.</p>
+          <div class="m05-disabled-actions" aria-label="Unavailable integration actions">
+            <button type="button" disabled>Connect unavailable in P0</button>
+            <button type="button" disabled>Test connection unavailable</button>
+          </div>
+        </section>
+      )}
+
+      <footer class="m05-content-footer">
+        <span>CoinBlink · CB-M05</span>
+        <span>Demo interface only · no account or data connected</span>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<style>
+  .m05-workspace {
+    --m05-bg: #080d0b;
+    --m05-panel: #0e1713;
+    --m05-panel-raised: #111d17;
+    --m05-border: #2a3d32;
+    --m05-lime: #b8f34b;
+    --m05-text: #f2f5f1;
+    --m05-muted: #a1afa5;
+    --m05-subtle: #84958a;
+    --m05-warning: #ffd27d;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 88% 0, rgb(76 115 67 / 12%), transparent 32rem), var(--m05-bg);
+    color: var(--m05-text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .m05-workspace *,
+  .m05-workspace *::before,
+  .m05-workspace *::after { box-sizing: border-box; }
+
+  .m05-workspace a { color: inherit; }
+  .m05-workspace a:focus-visible,
+  .m05-workspace button:focus-visible { outline: 3px solid var(--m05-lime); outline-offset: 3px; }
+
+  .m05-topbar {
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px clamp(18px, 4vw, 56px);
+    border-bottom: 1px solid rgb(156 184 160 / 15%);
+  }
+
+  .m05-brand { display: grid; gap: 3px; text-decoration: none; }
+  .m05-brand__name { font-size: 22px; font-weight: 780; letter-spacing: -0.055em; line-height: 1; }
+  .m05-brand__accent { color: var(--m05-lime); }
+  .m05-brand__descriptor { color: var(--m05-subtle); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; }
+  .m05-topbar__context { display: flex; align-items: center; gap: 10px; color: var(--m05-muted); font-size: 11px; }
+  .m05-topbar__module { color: var(--m05-lime); font-weight: 750; letter-spacing: 0.08em; }
+  .m05-topbar__state { border: 1px solid var(--m05-border); border-radius: 999px; padding: 6px 10px; }
+
+  .m05-frame { display: grid; grid-template-columns: 228px minmax(0, 1fr); min-height: calc(100vh - 76px); }
+  .m05-sidebar { display: flex; flex-direction: column; gap: 8px; padding: 24px 14px 18px; border-right: 1px solid rgb(156 184 160 / 14%); }
+  .m05-sidebar__label { margin: 0 10px 4px; color: var(--m05-subtle); font-size: 9px; font-weight: 750; letter-spacing: 0.14em; }
+  .m05-sidebar__label--spaced { margin-top: 22px; }
+  .m05-nav { display: grid; gap: 4px; }
+  .m05-nav__link { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid transparent; border-radius: 7px; color: var(--m05-muted); font-size: 12px; text-decoration: none; padding: 8px 10px; }
+  .m05-nav__link:hover { background: rgb(255 255 255 / 4%); color: var(--m05-text); }
+  .m05-nav__link--active { border-color: rgb(184 243 75 / 22%); background: rgb(184 243 75 / 7%); color: var(--m05-lime); font-weight: 680; }
+  .m05-nav__badge { border-radius: 4px; background: rgb(184 243 75 / 13%); color: var(--m05-lime); font-size: 8px; font-weight: 800; padding: 2px 5px; }
+  .m05-nav--quiet .m05-nav__link { min-height: 36px; font-size: 11px; }
+  .m05-nav-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .m05-nav__stub { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; color: #77857b; font-size: 11px; }
+  .m05-nav__stub span { color: #68776d; font-size: 9px; }
+  .m05-sidebar__foot { display: flex; align-items: center; gap: 8px; margin: auto 10px 0; padding-top: 18px; color: var(--m05-subtle); font-size: 10px; }
+  .m05-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--m05-warning); }
+
+  .m05-content { width: min(100%, 1320px); margin-inline: auto; padding: clamp(18px, 3vw, 38px); }
+  .m05-safety { display: flex; align-items: flex-start; gap: 12px; border: 1px solid rgb(249 183 74 / 32%); border-radius: 9px; background: rgb(249 183 74 / 7%); padding: 13px 15px; }
+  .m05-safety__icon { display: grid; width: 24px; height: 24px; flex: 0 0 24px; place-items: center; border: 1px solid rgb(249 183 74 / 52%); border-radius: 50%; color: var(--m05-warning); font-size: 13px; font-weight: 800; }
+  .m05-safety strong { display: block; color: var(--m05-warning); font-size: 10px; letter-spacing: 0.12em; }
+  .m05-safety p { margin: 3px 0 0; color: #d3c6a8; font-size: 11px; }
+  .m05-page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 30px 0 20px; }
+  .m05-eyebrow { margin: 0; color: var(--m05-lime); font-size: 9px; font-weight: 760; letter-spacing: 0.15em; line-height: 1.3; }
+  .m05-page-heading h1 { margin: 7px 0 5px; font-size: clamp(26px, 3vw, 36px); font-weight: 690; letter-spacing: -0.045em; line-height: 1.12; }
+  .m05-page-heading__description { max-width: 66ch; margin: 0; color: var(--m05-muted); font-size: 12px; }
+  .m05-state-pill { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; border: 1px solid rgb(184 243 75 / 24%); border-radius: 999px; background: rgb(184 243 75 / 6%); color: var(--m05-lime); font-size: 9px; font-weight: 700; letter-spacing: 0.04em; padding: 7px 10px; }
+  .m05-state-pill > span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .m05-state-pill--muted { border-color: var(--m05-border); background: transparent; color: var(--m05-muted); }
+  .m05-panel { border: 1px solid var(--m05-border); border-radius: 10px; background: linear-gradient(145deg, rgb(17 29 23 / 96%), rgb(11 18 15 / 98%)); padding: clamp(17px, 2.5vw, 24px); }
+  .m05-panel__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+  .m05-panel__heading h2 { margin: 6px 0 0; font-size: 17px; font-weight: 660; letter-spacing: -0.025em; }
+  .m05-count { color: var(--m05-lime); font-size: 19px; font-weight: 700; }
+  .m05-count span { color: var(--m05-subtle); font-size: 9px; font-weight: 500; }
+  .m05-empty-state { display: grid; justify-items: center; padding: 32px 12px 24px; text-align: center; }
+  .m05-empty-state__mark { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--m05-border); border-radius: 50%; color: var(--m05-lime); font-size: 20px; }
+  .m05-empty-state h3 { margin: 14px 0 5px; font-size: 15px; font-weight: 650; }
+  .m05-empty-state p { max-width: 48ch; margin: 0; color: var(--m05-muted); font-size: 11px; }
+  .m05-link-button { display: inline-flex; min-height: 42px; align-items: center; gap: 10px; margin-top: 17px; border: 1px solid var(--m05-border); border-radius: 6px; color: var(--m05-lime) !important; font-size: 11px; font-weight: 670; text-decoration: none; padding: 0 13px; }
+  .m05-link-button:hover { border-color: var(--m05-lime); }
+  .m05-workflow { margin-top: 14px; }
+  .m05-workflow__steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
+  .m05-workflow__steps li { display: flex; align-items: flex-start; gap: 9px; border-top: 1px solid var(--m05-border); padding-top: 12px; }
+  .m05-workflow__steps li > span { color: var(--m05-lime); font-size: 9px; font-weight: 750; }
+  .m05-workflow__steps strong { display: block; font-size: 10px; font-weight: 650; }
+  .m05-workflow__steps small { display: block; margin-top: 4px; color: var(--m05-subtle); font-size: 9px; }
+  .m05-state-samples { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+  .m05-mini-card { min-width: 0; border: 1px solid var(--m05-border); border-radius: 9px; background: var(--m05-panel); padding: 16px; }
+  .m05-mini-card h2 { margin: 7px 0 0; font-size: 13px; font-weight: 650; }
+  .m05-mini-card p:last-child { margin: 8px 0 0; color: var(--m05-muted); font-size: 10px; }
+  .m05-mini-card--error .m05-eyebrow { color: var(--m05-warning); }
+  .m05-skeleton { display: grid; gap: 6px; margin-top: 12px; }
+  .m05-skeleton span { height: 7px; border-radius: 5px; background: linear-gradient(90deg, #1b2c22, #263b2c, #1b2c22); }
+  .m05-skeleton span:nth-child(2) { width: 76%; }
+  .m05-skeleton span:nth-child(3) { width: 54%; }
+  .m05-copy { max-width: 70ch; margin: 16px 0 0; color: var(--m05-muted); font-size: 12px; }
+  .m05-lock-icon { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--m05-border); border-radius: 50%; color: var(--m05-subtle); font-size: 18px; }
+  .m05-safety-checks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .m05-safety-checks span { display: inline-flex; min-height: 34px; align-items: center; gap: 7px; border: 1px solid var(--m05-border); border-radius: 6px; color: var(--m05-muted); font-size: 10px; padding: 0 9px; }
+  .m05-safety-checks b { color: var(--m05-warning); font-size: 14px; }
+  .m05-panel__footnote { margin: 17px 0 0; border-top: 1px solid rgb(156 184 160 / 12%); padding-top: 12px; color: var(--m05-subtle); font-size: 10px; }
+  .m05-disabled-editor { min-height: 330px; }
+  .m05-disabled-preview { display: grid; min-height: 135px; align-content: center; justify-items: center; gap: 6px; margin-top: 20px; border: 1px dashed #3a4e40; border-radius: 8px; background: rgb(0 0 0 / 13%); color: var(--m05-subtle); }
+  .m05-disabled-preview span:first-child { font-size: 9px; font-weight: 750; letter-spacing: 0.16em; }
+  .m05-disabled-preview span:last-child { font-size: 11px; }
+  .m05-disabled-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+  .m05-disabled-actions button { min-height: 38px; border: 1px solid var(--m05-border); border-radius: 6px; background: #101713; color: #758278; font: inherit; font-size: 10px; padding: 0 11px; }
+  .m05-disabled-actions button:disabled { cursor: not-allowed; opacity: 0.82; }
+  .m05-provider-list { display: grid; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .m05-provider-card { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 72px; border: 1px solid rgb(156 184 160 / 15%); border-radius: 7px; background: rgb(0 0 0 / 12%); padding: 11px; }
+  .m05-provider-card__index { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 7px; background: #18241b; color: var(--m05-lime); font-size: 9px; font-weight: 760; }
+  .m05-provider-card__content h3 { margin: 0; font-size: 11px; font-weight: 650; }
+  .m05-provider-card__content p { margin: 4px 0 0; color: var(--m05-subtle); font-size: 9px; }
+  .m05-provider-card__status { display: inline-flex; align-items: center; gap: 6px; color: var(--m05-muted); font-size: 9px; white-space: nowrap; }
+  .m05-provider-card__status i { width: 6px; height: 6px; border-radius: 50%; background: var(--m05-subtle); }
+  .m05-content-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; border-top: 1px solid rgb(156 184 160 / 14%); padding-top: 12px; color: var(--m05-subtle); font-size: 9px; }
+
+  @media (max-width: 880px) {
+    .m05-frame { grid-template-columns: 190px minmax(0, 1fr); }
+    .m05-workflow__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 680px) {
+    .m05-topbar { min-height: 66px; padding-inline: 16px; }
+    .m05-brand__name { font-size: 19px; }
+    .m05-topbar__context { gap: 6px; font-size: 9px; }
+    .m05-topbar__state { padding: 5px 7px; }
+    .m05-frame { grid-template-columns: minmax(0, 1fr); }
+    .m05-sidebar { gap: 5px; overflow-x: auto; border-right: 0; border-bottom: 1px solid rgb(156 184 160 / 14%); padding: 12px 14px; }
+    .m05-sidebar__label--spaced { margin-top: 9px; }
+    .m05-sidebar__label { font-size: 8px; }
+    .m05-nav { display: flex; min-width: max-content; gap: 4px; }
+    .m05-nav__link { min-height: 38px; padding-inline: 9px; }
+    .m05-nav-list { display: flex; min-width: max-content; gap: 2px; }
+    .m05-nav__stub { gap: 6px; padding: 7px; font-size: 10px; }
+    .m05-nav__stub span { font-size: 8px; }
+    .m05-sidebar__foot { display: none; }
+    .m05-content { padding: 16px; }
+    .m05-page-heading { align-items: flex-start; flex-direction: column; margin: 22px 0 16px; }
+    .m05-page-heading h1 { font-size: 27px; }
+    .m05-state-pill { align-self: flex-start; }
+    .m05-workflow__steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .m05-state-samples { grid-template-columns: minmax(0, 1fr); }
+    .m05-provider-card { grid-template-columns: 32px minmax(0, 1fr); gap: 9px; }
+    .m05-provider-card__index { width: 28px; height: 28px; }
+    .m05-provider-card__status { grid-column: 2; }
+    .m05-content-footer { flex-direction: column; gap: 3px; }
+  }
+
+  @media (max-width: 370px) {
+    .m05-workspace { font-size: 13px; }
+    .m05-topbar { align-items: flex-start; flex-direction: column; gap: 8px; }
+    .m05-workflow__steps { grid-template-columns: minmax(0, 1fr); }
+    .m05-disabled-actions { flex-direction: column; align-items: stretch; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .m05-workspace *, .m05-workspace *::before, .m05-workspace *::after { scroll-behavior: auto; animation: none; transition: none; }
+  }
+</style>

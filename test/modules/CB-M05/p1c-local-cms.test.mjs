@@ -426,7 +426,10 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
     await context.credentials.install();
     const page = await context.newPage();
     const pageErrors = [];
+    const browserConsoleErrors = [];
+    const routeStatuses = [];
     page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('console', entry => { if (entry.type() === 'error') browserConsoleErrors.push(entry.text().slice(0, 280)); });
     const handler = createLocalCmsHandler();
     const allowed = new Set(['/local/ui', '/local/challenge', '/local/login', '/local/logout', '/local/articles']);
     await context.route('https://owner.example.test/**', async route => {
@@ -444,6 +447,8 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
         ...(postData ? { body: postData } : {}),
       });
       const response = await handler(request, ctx.env);
+      routeStatuses.push(browserRequest.method() + ' ' + url.pathname + ': ' + response.status +
+        ' origin=' + Boolean(browserHeaders.origin) + ' fetch-site=' + (browserHeaders['sec-fetch-site'] || 'missing'));
       await route.fulfill({
         status: response.status,
         headers: Object.fromEntries(response.headers.entries()),
@@ -455,7 +460,19 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
     assert.match(await page.title(), /Local CMS Test Workspace/);
     await page.locator('#credential').fill(ctx.primary.id);
     await page.locator('#login').click();
-    await page.getByText('Local test session active').waitFor({ timeout: 10_000 });
+    try {
+      await page.getByText('Local test session active').waitFor({ timeout: 10_000 });
+    } catch {
+      const text = await page.locator('#message').textContent();
+      const contextDetails = await page.evaluate(() => ({
+        secure: window.isSecureContext,
+        credentialApi: typeof navigator.credentials?.get,
+      }));
+      throw new Error('Chromium test-passkey login did not reach session: ' + JSON.stringify({
+        message: text, contextDetails, routes: routeStatuses,
+        pageErrors, consoleErrors: browserConsoleErrors,
+      }));
+    }
     assert.equal(await page.locator('#draft').isVisible(), true);
     await page.locator('[name="title"]').fill(sampleDraft.title);
     await page.locator('[name="summary"]').fill(sampleDraft.summary);

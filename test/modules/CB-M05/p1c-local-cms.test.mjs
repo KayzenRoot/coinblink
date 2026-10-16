@@ -46,7 +46,12 @@ async function setup() {
   }));
   try {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
-    await db.exec(schema);
+    // D1Database.exec() interprets comment-only and multiline SQL as separate lines.
+    // Prepare each complete allowlisted migration statement instead of using exec().
+    const statements = schema.replace(/\r/g, '').replace(/^\s*--.*$/gm, '')
+      .split(/;\s*(?=(?:CREATE|PRAGMA)\b|$)/iu).map(s => s.trim()).filter(Boolean);
+    assert.ok(statements.length >= 8, 'all local schema statements must be applied');
+    for (const statement of statements) await db.prepare(statement).run();
     const primary = makeSyntheticAuthenticator('primary');
     const recovery = makeSyntheticAuthenticator('recovery');
     await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,1)').run();

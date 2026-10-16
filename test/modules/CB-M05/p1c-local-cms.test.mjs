@@ -441,6 +441,15 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
         return;
       }
       const browserHeaders = await browserRequest.allHeaders();
+      // Playwright's intercepted Request.allHeaders() omits the browser-only
+      // Sec-Fetch-Site transport header. The test adapter may reconstruct it
+      // ONLY after verifying the initiating frame is our fixed HTTPS test RP.
+      // Production code still requires the genuine header: no fallback there.
+      if (!browserHeaders['sec-fetch-site'] && !browserRequest.isNavigationRequest()) {
+        const initiator = new URL(browserRequest.frame().url());
+        assert.equal(initiator.origin, CMS_TEST_ORIGIN, 'cross-origin initiator is not admitted');
+        browserHeaders['sec-fetch-site'] = 'same-origin';
+      }
       const postData = browserRequest.postDataBuffer();
       const request = new Request(browserRequest.url(), {
         method: browserRequest.method(), headers: browserHeaders,

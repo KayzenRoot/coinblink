@@ -240,3 +240,24 @@ test('M05 LOCAL CMS 05: WebAuthn sign counter persists, rejects replay with fres
     assert.notEqual(zeroAfterIncrement.status, 200, 'counter rollback to zero is rejected');
   } finally { await ctx.mf.dispose(); }
 });
+
+
+test('M05 LOCAL CMS 06: challenge quota bounds unauthenticated writes, expires and cleans up', async () => {
+  const ctx = await setup();
+  try {
+    const ask = () => ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id });
+    const attempts = await Promise.all(Array.from({ length: 10 }, ask));
+    assert.equal(attempts.filter(r => r.status === 200).length, 3);
+    assert.equal(attempts.filter(r => r.status === 429).length, 7);
+    assert.equal((await ctx.db.prepare(
+      'SELECT COUNT(*) AS n FROM cms_challenges WHERE credential_id=?'
+    ).bind(ctx.primary.id).first()).n, 3);
+    ctx.time(Date.now() + 91_000);
+    assert.equal((await ask()).status, 200, 'new challenge is permitted after expiry');
+    assert.equal((await ctx.db.prepare(
+      'SELECT COUNT(*) AS n FROM cms_challenges WHERE credential_id=?'
+    ).bind(ctx.primary.id).first()).n, 1, 'expired unconsumed challenges are cleaned up');
+    assert.equal((await ctx.run('/local/challenge', 'POST', { credentialId: ctx.recovery.id })).status, 200,
+      'recovery credential has an independent challenge budget');
+  } finally { await ctx.mf.dispose(); }
+});

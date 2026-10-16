@@ -1,11 +1,11 @@
 # ADR-CB-M05-P1C-001 · Single-Owner Admin Boundary (CANDIDATE)
 
-**Decision status:** PROPOSED / NOT ADOPTED. Prepared by Integration Steward on canonical main `04249d835d9c599531f8a7d93ed7ffe04740480c`. No credential, production binding, migration, real passkey, release, publication, secret, paid service or checkpoint delta is approved by writing this file. Exactly one human Owner: KayzenRoot.
+**Decision status:** PROPOSED / NOT ADOPTED. Prepared by Integration Steward on canonical main `21d9e0fca64bf30e945e6044f37fec1f92dfc8f5`. No credential, production binding, migration, real passkey, release, publication, secret, paid service or checkpoint delta is approved by writing this file. Exactly one human Owner: KayzenRoot.
 
 ## Context and evidence
 - M05 P0 nonprivileged editorial demo is canonical in main from PR #59.
 - A synthetic/local-only security laboratory has effective P1-A/P1-B Source Pack evidence. [Draft PR #91](https://github.com/KayzenRoot/coinblink/pull/91) implements isolated Local CMS with two **disposable** WebAuthn cryptographic fixtures, local D1, session revocation, revisions, tested Chromium preview. It is NOT merged, production bound, or real owner enrollment.
-- Current global DoD demands a genuinely protected Owner CMS, a licensed source-backed publication journey, full P1/P2 security, evidence and a separately reviewed checkpoint. Green checks or local fixture passkeys are not equivalent to this.
+- Current global DoD demands a genuinely protected Owner CMS, a verifiably attributed source-backed publication journey, full P1/P2 security, evidence and a separately reviewed checkpoint. Green checks or local fixture passkeys are not equivalent to this.
 - The immutable M01 Golden demo and M02/M03/M04 synthetic content are not approval to expose or republish data.
 
 ## Proposed architecture decisions requiring explicit Owner P1-C GO
@@ -18,7 +18,7 @@
 7. **Authorization:** Owner identity verified **server-side on every privileged HTML and API request**. No role spoofing from headers, browser state or demo routes; no public `/demo/editorial` route may share mutation power.
 8. **Separation:** propose protected `/admin/**` route, centralized middleware and D1 Worker bindings only in a *separate Integration Steward PR* after source contracts and explicit file ownership. All local test endpoint paths `/local/**` remain fixture-only; never expose `https://owner.example.test` as real configuration.
 9. **Vault:** P1-D separate approval, use authenticated encryption per secret, independent non-database root KEK and key rotation; UI readback metadata only. No plaintext in GitHub, browser, DB dump or telemetry. Actual provider test does not imply activation.
-10. **Editorial:** P1-E separate Owner-reviewed state machine and signed publish gate; public article path additionally waits on M02/M03 licensed source contracts, evidence/ref/source rights and correction workflow. Synthetic/mock drafts can never be published as news.
+10. **Editorial:** P1-E separate Owner-reviewed state machine and signed publish gate; public article path additionally waits on M02/M03 source contracts, verifiable evidence/attribution and correction workflow. Synthetic/mock drafts can never be published as news.
 
 ## Hard acceptance / adversarial scenarios
 - Atomic Owner-claim competition with 2, 10 and 100 independent requests: <=1 Owner, no partial signup.

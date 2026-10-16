@@ -7,6 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
+import { chromium } from '@playwright/test';
 import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 
@@ -405,4 +406,84 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     assert.equal(element('items').children.length, 0);
     assert.equal(element('session-status').textContent, 'Not authenticated');
   } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft and logout', { timeout: 90_000 }, async () => {
+  const ctx = await setup();
+  let browser;
+  try {
+    // Playwright's built-in virtual WebAuthn device signs browser-issued assertions.
+    // Private test keys exist in memory only and are never committed or logged.
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ serviceWorkers: 'block' });
+    await context.credentials.create(CMS_TEST_RP_ID, {
+      id: ctx.primary.id,
+      userHandle: randomBytes(16).toString('base64url'),
+      privateKey: ctx.primary.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64url'),
+      publicKey: ctx.primary.publicKey.export({ type: 'spki', format: 'der' }).toString('base64url'),
+      signCount: 0,
+    });
+    await context.credentials.install();
+    const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    const handler = createLocalCmsHandler();
+    const allowed = new Set(['/local/ui', '/local/challenge', '/local/login', '/local/logout', '/local/articles']);
+    await context.route('https://owner.example.test/**', async route => {
+      const browserRequest = route.request();
+      const url = new URL(browserRequest.url());
+      if (url.origin !== CMS_TEST_ORIGIN || (!allowed.has(url.pathname) &&
+          !/^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i.test(url.pathname))) {
+        await route.abort('blockedbyclient');
+        return;
+      }
+      const browserHeaders = await browserRequest.allHeaders();
+      const postData = browserRequest.postDataBuffer();
+      const request = new Request(browserRequest.url(), {
+        method: browserRequest.method(), headers: browserHeaders,
+        ...(postData ? { body: postData } : {}),
+      });
+      const response = await handler(request, ctx.env);
+      await route.fulfill({
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: Buffer.from(await response.arrayBuffer()),
+      });
+    });
+    const navigation = await page.goto(CMS_TEST_ORIGIN + '/local/ui', { waitUntil: 'domcontentloaded' });
+    assert.equal(navigation.status(), 200);
+    assert.match(await page.title(), /Local CMS Test Workspace/);
+    await page.locator('#credential').fill(ctx.primary.id);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 10_000 });
+    assert.equal(await page.locator('#draft').isVisible(), true);
+    await page.locator('[name="title"]').fill(sampleDraft.title);
+    await page.locator('[name="summary"]').fill(sampleDraft.summary);
+    await page.locator('[name="body"]').fill(sampleDraft.body);
+    await page.locator('[name="sourceUrl"]').fill(sampleDraft.sourceUrl);
+    await page.locator('[name="authorLabel"]').fill(sampleDraft.authorLabel);
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 10_000 });
+    const button = page.locator('#items button').first();
+    assert.equal(await button.count(), 1);
+    await button.click();
+    await page.locator('[name="title"]').fill('New verified browser passkey draft revision');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout: 10_000 });
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    const { sign_count: signCount } = await ctx.db.prepare(
+      'SELECT sign_count FROM cms_credentials WHERE credential_id=?'
+    ).bind(ctx.primary.id).first();
+    assert.equal(signCount, 1, 'browser credential counter persisted');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated').waitFor();
+    assert.equal(await page.locator('#draft').isHidden(), true);
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NOT NULL').first()).n, 1);
+    assert.deepEqual(pageErrors, []);
+    await context.close();
+  } finally {
+    if (browser) await browser.close();
+    await ctx.mf.dispose();
+  }
 });

@@ -8,7 +8,7 @@ import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
-import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
+import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 
 const schema = readFileSync('test/modules/CB-M05/p1c-fixtures/schema.sql', 'utf8');
@@ -92,7 +92,7 @@ async function login(ctx, authenticator = ctx.primary) {
   const challengeResult = await ctx.run('/local/challenge', 'POST', { credentialId: authenticator.id });
   assert.equal(challengeResult.status, 200);
   const challenge = await challengeResult.json();
-  const response = makeAuthenticationResponse(authenticator, { challenge: challenge.challenge });
+  const response = makeAuthenticationResponse(authenticator, { challenge: webauthnChallengeFromHex(challenge.challenge) });
   const logged = await ctx.run('/local/login', 'POST', {
     challenge: challenge.challenge, credentialId: authenticator.id, response,
   });
@@ -134,7 +134,7 @@ test('M05 LOCAL CMS 02: genuine WebAuthn signature, origin, expiry and challenge
     assert.equal(res.status, 403);
     res = await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id });
     const challenge = (await res.json()).challenge;
-    const response = makeAuthenticationResponse(ctx.primary, { challenge });
+    const response = makeAuthenticationResponse(ctx.primary, { challenge: webauthnChallengeFromHex(challenge) });
     const bad = structuredClone(response);
     bad.response.signature = tamperBase64Url(bad.response.signature, raw => {
       raw[raw.length - 1] ^= 1; return raw;
@@ -149,7 +149,7 @@ test('M05 LOCAL CMS 02: genuine WebAuthn signature, origin, expiry and challenge
     ctx.time(Date.now() + 100_000);
     assert.notEqual((await ctx.run('/local/login', 'POST', {
       credentialId: ctx.primary.id, challenge: expired,
-      response: makeAuthenticationResponse(ctx.primary, { challenge: expired }),
+      response: makeAuthenticationResponse(ctx.primary, { challenge: webauthnChallengeFromHex(expired) }),
     })).status, 200);
   } finally { await ctx.mf.dispose(); }
 });
@@ -208,7 +208,7 @@ test('M05 LOCAL CMS 04: same signed challenge concurrent login creates at most o
   const ctx = await setup();
   try {
     const challenge = (await (await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id })).json()).challenge;
-    const response = makeAuthenticationResponse(ctx.primary, { challenge });
+    const response = makeAuthenticationResponse(ctx.primary, { challenge: webauthnChallengeFromHex(challenge) });
     const attempts = await Promise.all(Array.from({ length: 10 }, () =>
       ctx.run('/local/login', 'POST', { challenge, credentialId: ctx.primary.id, response })));
     assert.equal(attempts.filter(x => x.status === 200).length, 1);
@@ -224,7 +224,7 @@ test('M05 LOCAL CMS 05: WebAuthn sign counter persists, rejects replay with fres
       const challengeResponse = await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id });
       assert.equal(challengeResponse.status, 200);
       const { challenge } = await challengeResponse.json();
-      const response = makeAuthenticationResponse(ctx.primary, { challenge, counter });
+      const response = makeAuthenticationResponse(ctx.primary, { challenge: webauthnChallengeFromHex(challenge), counter });
       return ctx.run('/local/login', 'POST', { challenge, credentialId: ctx.primary.id, response });
     }
     assert.equal((await signWithCounter(1)).status, 200);
@@ -355,7 +355,7 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
         assert.equal(publicKey.rpId, CMS_TEST_RP_ID);
         assert.equal(publicKey.userVerification, 'required');
         const challenge = Buffer.from(publicKey.challenge).toString('hex');
-        const signed = makeAuthenticationResponse(ctx.primary, { challenge });
+        const signed = makeAuthenticationResponse(ctx.primary, { challenge: webauthnChallengeFromHex(challenge) });
         const toBuffer = value => Uint8Array.from(Buffer.from(value, 'base64url')).buffer;
         return {
           id: signed.id,

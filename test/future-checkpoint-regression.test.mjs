@@ -90,7 +90,7 @@ test('evergreen governance tests pass after unrelated work and a later checkpoin
   assert.equal(result.error, undefined, 'synthetic evergreen test runner starts');
   const childOutput = `${result.stdout}\n${result.stderr}`;
   assert.match(childOutput, /parallel governance matrix preserves exactly the existing 19 module and issue identities/u);
-  assert.match(childOutput, /global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission/u);
+  assert.match(childOutput, /global staged baseline preserves canonical scoped M01-M05 admissions without claiming completion/u);
   assert.match(childOutput, /preflight validates the post-merge M00 checkpoint/u);
   assert.equal(
     result.status,

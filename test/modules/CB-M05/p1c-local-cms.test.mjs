@@ -8,6 +8,7 @@ import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
+import { startLocalCmsPreview } from './p1c-local-preview.mjs';
 import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 
@@ -512,4 +513,31 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
     if (browser) await browser.close();
     await ctx.mf.dispose();
   }
+});
+
+
+test('M05 LOCAL CMS 10: interactive preview bootstrap opens an isolated browser with disposable passkey', { timeout: 90_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true });
+  try {
+    const page = preview.page;
+    assert.match(await page.title(), /CoinBlink.*Local CMS Test Workspace/);
+    assert.equal(await page.locator('#credential').inputValue(), preview.primaryId);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 15_000 });
+    const { drafts } = await page.evaluate(async () => {
+      const response = await fetch('/local/articles', { credentials: 'same-origin' });
+      if (!response.ok) throw new Error('Session-bound D1 draft listing was rejected');
+      return response.json();
+    });
+    assert.deepEqual(drafts, [], 'preview session starts with an empty ephemeral D1');
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first()).n, 1);
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated').waitFor({ timeout: 15_000 });
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NOT NULL').first()).n, 1);
+    const denied = await page.evaluate(async () => {
+      const response = await fetch('/local/articles', { credentials: 'same-origin' });
+      return response.status;
+    });
+    assert.equal(denied, 401, 'preview logout invalidates server session');
+  } finally { await preview.close(); }
 });

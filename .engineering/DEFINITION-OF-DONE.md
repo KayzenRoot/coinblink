@@ -4,6 +4,12 @@
 
 This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
 
+## M01 completion versus brand filing — Owner direction, 2026-10-16
+
+**Effective only after approved merge of the bounded governance change.** No INPI trademark deposit, certificate of registration, fee payment, formal Nice-class filing, or comprehensive brand-registrability dossier is necessary to complete M01's **DEMO-only implementation and technical QA**. Keep implementation/visual/a11y/security and exact-HEAD test evidence. Technical completion may be reported accurately without asserting formal product release or that trademark rights are clear.
+
+M01 public/commercial release still requires a separate, evidence-based Owner risk decision on the actual name/logo/art/fonts/third-party inputs and any credible prior-name conflict; published articles and third-party data still require license/source provenance. The current rights record #72 remains OPEN and does not become `CLEARED` automatically. A targeted brand-conflict check may be indicated by evidence before launch even though **registration itself is postponed**. No commercial authorization, product merge, remote deploy, checkpoint promotion, or relaxation of M05 privileged authentication is implied.
+
 ## Approved global Definition of Done
 
 Every module receives one reviewed, admitted Work Order and fresh Context Lock with exact base SHA, dependencies, external gates, immutable source fingerprints, producer/consumer contracts, path ownership and STOP CONDITION. Separate PR and worktree, reproducible tests, Evidence Bundle and independently described audit. Mocks are never counted as LIVE, partial UI is not P1 authentication, and no unadmitted module is marked complete.

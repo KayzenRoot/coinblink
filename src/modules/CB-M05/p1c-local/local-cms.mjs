@@ -49,7 +49,7 @@ async function payload(request, max = 65_536) {
   return value;
 }
 function nowEpoch(now) { return Math.floor(now() / 1000); }
-function validId(id) { return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(id); }
+function validId(id) { return typeof id === 'string' && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(id); }
 function validIdempotency(value) { return typeof value === 'string' && /^[A-Za-z0-9_-]{16,64}$/.test(value); }
 function draftFields(value) {
   if (typeof value.title !== 'string' || value.title.trim().length < 8 || value.title.length > 140 ||
@@ -228,7 +228,8 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
         if (!Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 1 ||
             !validIdempotency(input.idempotencyKey)) return denied(400);
         const [title, summary, body, sourceUrl, authorLabel] = draftFields(input);
-        const marker = crypto.randomUUID();
+        // Stable secret-keyed marker enforces single use across revisions, not only CAS.
+        const marker = await keyedDigest(secret, 'revision:' + input.idempotencyKey);
         const results = await db.batch([
           db.prepare(
             `UPDATE cms_drafts SET title=?,summary=?,body=?,source_url=?,author_label=?,
@@ -246,9 +247,10 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
       }
 
       return denied(404);
-    } catch {
-      // Do not leak SQL, credentials or internal errors in an HTTP response.
-      return json({ error: 'Local CMS operation rejected' }, 400);
+    } catch (error) {
+      // Do not leak SQL, credentials, or internal errors in an HTTP response.
+      if (/UNIQUE constraint failed/i.test(String(error?.message || ''))) return denied(409);
+      return json({ error: 'Local CMS internal failure' }, 500);
     }
   };
 }

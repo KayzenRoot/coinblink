@@ -160,17 +160,22 @@ test('M05 LOCAL CMS 03: protected draft write, revision history, optimistic conf
     const info = await created.json();
     assert.equal(info.revision, 1);
     assert.equal(info.status, 'draft');
-    assert.equal((await ctx.run('/local/articles', 'POST', draftInput, loginInfo)).status, 400);
+    assert.equal((await ctx.run('/local/articles', 'POST', draftInput, loginInfo)).status, 409);
     const wrongRevision = await ctx.run('/local/articles/' + info.id, 'PATCH', {
       ...draftInput, expectedRevision: 8, idempotencyKey: seedIdempotency(),
     }, loginInfo);
     assert.equal(wrongRevision.status, 409);
+    const revisionKey = seedIdempotency();
     const changed = await ctx.run('/local/articles/' + info.id, 'PATCH', {
       ...draftInput, title: 'Second synthetic draft revision title',
-      expectedRevision: 1, idempotencyKey: seedIdempotency(),
+      expectedRevision: 1, idempotencyKey: revisionKey,
     }, loginInfo);
     assert.equal(changed.status, 200);
     assert.equal((await changed.json()).revision, 2);
+    const repeatedKey = await ctx.run('/local/articles/' + info.id, 'PATCH', {
+      ...draftInput, expectedRevision: 2, idempotencyKey: revisionKey,
+    }, loginInfo);
+    assert.equal(repeatedKey.status, 409, 'a revision key is single-use even at a newer version');
     const history = await ctx.run('/local/articles/' + info.id + '/revisions', 'GET', undefined, loginInfo);
     assert.equal(history.status, 200);
     const revisions = (await history.json()).revisions;

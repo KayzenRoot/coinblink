@@ -144,3 +144,56 @@ This addendum supersedes R36/R35 current-state claims where refs changed; those 
 ## R70 exact-head CI readback · 2026-10-15
 
 After the first R70 evidence push, all six execution check-runs completed successfully on exact PR #58 SHA `5e2ac4d379cd5db5de362414f1f2961ccd584446`: Ubuntu GEF, Windows GEF, Docker Compose smoke, SonarCloud, Socket PR Alerts, and Socket Project Report. Links are recorded in the corresponding Context Lock addendum. CodeRabbit is green only with “Review skipped: automatic reviews are disabled”; no substantive review is claimed. This evidence-only follow-up advances the PR to a new documentation SHA; the fresh exact-head check status for that next commit must be verified before final reporting. Product code, tests, imagery and checkpoint are unchanged.
+
+## R76 local validation refresh · 2026-10-16
+
+This append-only entry records the local candidate and evidence generated in the R76 campaign. It does not replace the live GitHub readback that must be repeated after publication.
+
+### Candidate and scope
+
+- Product `main` and PR #58 base were verified at `c5077fadd053936fa83e3beff11097505b8a093c`. At the start of this refresh, PR #58 was OPEN at remote head `51bd1dd61a0b9630eb4fd2c5b9b7021f2af77094`; the authorized feature branch was locally one commit ahead at candidate code HEAD `59762037b26e8f93be1bf164f4fc2aa706b179f8`.
+- The code commit `5976203` is limited to `src/modules/CB-M01/hero-cinematic-preflight.mjs` and `src/modules/CB-M01/r26-static-assets-preflight.mjs`. It extracts preflight helper logic to reduce the reported S3776 complexity while preserving the existing fail-closed contracts. No shared route, package, workflow, rights, Golden source, or checkpoint files were edited.
+- The closeout matrix, two browser reports, and six generated screenshots below are the only evidence paths updated by this refresh. All status claims remain DEMO-scoped; `M01_FORMALLY_DONE=false`, `M01_PR58_MERGE_AUTHORIZED=false`, `commercialPublicationAllowed=false`.
+
+### Local validation on Node.js 22
+
+Runtime: Node.js `v22.23.3`; bundled npm `10.9.9` (the repository's npm pin is not claimed).
+
+| Check | Result |
+|---|---|
+| `npm.cmd run test:unit -- --test-concurrency=1` | PASS — 291 passed, 0 failed, 0 skipped, 0 todo |
+| `npm run test:e2e` | PASS — 47 passed, one worker |
+| `npm run lint` | PASS — ESLint with zero warnings allowed |
+| `npm run typecheck` | PASS — 114 files, 0 errors, 0 warnings, 0 hints |
+| `npm run build` | PASS — Astro build and `assert-no-session-binding` guard |
+| `git diff --check` | PASS on the evidence delta |
+
+The unit suite includes M01 and local synthetic M05 coverage. It does not establish real authentication, remote D1, live market/editorial feeds, commercial rights, or production behavior.
+
+### Local Docker smoke
+
+- Docker Desktop `4.95.0.242831`, Docker Engine `29.8.2`, and Compose `v5.6.0` were read back successfully. `docker desktop update --check-only` reported that 4.95.0 is the latest available release.
+- `docker compose -p coinblink-m01-r76-20261016 up --build --detach --wait --wait-timeout 120` built and started the local candidate at code SHA `59762037b26e8f93be1bf164f4fc2aa706b179f8`. The app health check became healthy; `/health` returned 200 with the same build SHA, `/preview-status` returned `demo` with `cloudflarePreview=not-deployed`, and `/missing-route` returned 404.
+- The app remains available only on `http://127.0.0.1:3000` for local preview. This was not a deployment. The local Docker runtime recovery preserved the data disk; older socket runtime folders were quarantined rather than deleted.
+
+### Browser evidence and fingerprints
+
+Both refreshed reports are `passed`, use base `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` and code HEAD `59762037b26e8f93be1bf164f4fc2aa706b179f8`. They recorded zero axe violations, console errors, page errors, and external requests across desktop, tablet, and mobile. The integrated report's performance readings are single-run synthetic lab data, not field Core Web Vitals.
+
+| Evidence | SHA-256 |
+|---|---|
+| `visual-check.json` | `fdc9d1a25acd4ebe973f5d5accba1398de3b7fba2fd3871f0474786d44c5c2a9` |
+| `r26-integrated-visual-check.json` | `40e2228eb654cb0493f78bcb6e191bdeb9b6c75dfe9ffb6769992a4621038b5e` |
+| Fixture screenshot, desktop 1536×864 | `ad93d38a5d853df79cd66859b01048b314ecf03625fe39f70c2475e1812133b9` |
+| Fixture screenshot, tablet 768×1024 | `6b4e870396d663ced2f5ec2f97e9ba6b558282578a4a63cf9b7b87cfa38086c` |
+| Fixture screenshot, mobile 390×844 | `a3c2775e161d93cf43eecb2c81fabd9970b0960a3a61ee4c00a34ea54194d2d1` |
+| Integrated screenshot, desktop 1536×864 | `f716b5a0c296df04fa9c020d13c0c03e9e36d1791e199412c49be2f2690114f5` |
+| Integrated screenshot, tablet 768×1024 | `d2dfa0af99db4e4afd584f01c6e52aa34806bb1e31d63416e39df1cfb924d44f` |
+| Integrated screenshot, mobile 390×844 | `9ae4bc49720f7a3750f896ee73ba537c5768c9525f8b98ee17c28eda3864ae83` |
+
+### Remaining boundaries
+
+- Local GEF `doctor`/`status` commands returned successfully, but repository observability was `FINDING/DEGRADED` (`GIT_DIRECTORY_NOT_A_DIRECTORY`, `WORKING_TREE_NOT_OBSERVED`, stale operator state and unknown dirtiness). This is not recorded as a local GEF PASS; fresh hosted GEF checks on the published exact HEAD are required.
+- The previously observed SonarCloud S3776 findings in `public/explorer-links.js` and `public/home-demo.js` are outside the active M01 Context Lock. They were not edited. Any further shared/public-path correction requires the Integration Steward's scope authorization. The final hosted SonarCloud result must be checked on the published exact HEAD.
+- Issue #72 remains OPEN with `PENDING_OWNER_OR_LEGAL`; `commercialPublicationAllowed=false`. The public-repository exposure of DEMO assets while rights remain pending still requires an Owner decision. M01 is not formally complete and no merge/deploy/checkpoint action is authorized by this evidence.
+- This local candidate's hosted checks were not yet refreshed at the moment of writing. Read back all required contexts on the exact pushed HEAD before presenting PR #58 for administrative review.

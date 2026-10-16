@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-14T00:02:23.472Z",
+  "generatedAt": "2026-10-16T15:54:36.994Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "7153d8c91c60b7592dbaa4fbc80d5e11b578c31a",
+  "headSha": "59762037b26e8f93be1bf164f4fc2aa706b179f8",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -22,6 +22,14 @@
       "test/modules/CB-M01/visual-request-origin.mjs",
       "test/modules/CB-M01/git-head.mjs",
       "test/modules/CB-M01/GoldenHome.contract.test.mjs",
+      "test/modules/CB-M01/R26StaticAssets.contract.test.mjs",
+      "src/modules/CB-M01/r26-static-assets-preflight.mjs",
+      ".engineering/evidence/CB-M01-WO-001/r26-static-asset-provenance.json",
+      ".engineering/evidence/CB-M01-WO-001/r26-static-asset-derivatives.json",
+      ".engineering/evidence/CB-M01-WO-001/prepare-r26-static-assets.py",
+      ".engineering/evidence/CB-M01-WO-001/build-r26-static-asset-provenance.py",
+      ".engineering/evidence/CB-M01-WO-001/inspect-r26-portable-blend.py",
+      ".engineering/evidence/CB-M01-WO-001/r26-blender-project-inspection.json",
       "test/modules/CB-M01/visual-server.test.mjs",
       "test/modules/CB-M01/visual-input-state.test.mjs",
       "test/modules/CB-M01/visual-request-origin.test.mjs",
@@ -31,7 +39,7 @@
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:61415",
+  "origin": "http://127.0.0.1:55367",
   "viewports": [
     {
       "name": "desktop",
@@ -184,7 +192,7 @@
           "height": 228
         }
       },
-      "screenshotSha256": "78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96"
+      "screenshotSha256": "ad93d38a5d853df79cd66859b01048b314ecf03625fe39f70c2475e1812133b9"
     },
     {
       "name": "tablet",
@@ -193,7 +201,7 @@
       "documentWidth": 768,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01"
+      "screenshotSha256": "6b4e870396d663ced2f5ec2f97e9ba6b558282578a4a63ecf9b7b87cfa38086c"
     },
     {
       "name": "mobile",
@@ -202,7 +210,7 @@
       "documentWidth": 390,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe"
+      "screenshotSha256": "a3c2775e161d93cf43eecb2c81fabd9970b0960a3a61ee4c00a34ea54194d2d1"
     }
   ],
   "interactionChecks": {
@@ -600,18 +608,18 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 10ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 6ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 5ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 3ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 14ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 11ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"
 }

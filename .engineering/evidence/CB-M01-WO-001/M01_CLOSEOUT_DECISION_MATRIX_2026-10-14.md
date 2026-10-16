@@ -140,3 +140,7 @@ This addendum supersedes R36/R35 current-state claims where refs changed; those 
 | `git diff --check` | PASS on the two-file documentation delta; no app suite rerun is represented as current-head evidence |
 
 **Outcome:** `M01_DEMO_READY_FOR_OWNER_ADMIN_DECISION=true`; `M01_FORMALLY_DONE=false`; `M01_PR58_MERGE_AUTHORIZED=false`; `sharedReleaseGate.commercialPublicationAllowed=false`. The required next evidence is the exact new PR #58 HEAD, its hosted checks, and Owner's SHA-scoped administrative decision. Rights clearance remains a separate external gate; this update does not authorize merge, deploy, commercial publication, or checkpoint promotion.
+
+## R70 exact-head CI readback · 2026-10-15
+
+After the first R70 evidence push, all six execution check-runs completed successfully on exact PR #58 SHA `5e2ac4d379cd5db5de362414f1f2961ccd584446`: Ubuntu GEF, Windows GEF, Docker Compose smoke, SonarCloud, Socket PR Alerts, and Socket Project Report. Links are recorded in the corresponding Context Lock addendum. CodeRabbit is green only with “Review skipped: automatic reviews are disabled”; no substantive review is claimed. This evidence-only follow-up advances the PR to a new documentation SHA; the fresh exact-head check status for that next commit must be verified before final reporting. Product code, tests, imagery and checkpoint are unchanged.

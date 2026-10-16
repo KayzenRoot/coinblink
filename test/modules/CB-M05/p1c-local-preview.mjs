@@ -1,5 +1,5 @@
 // Disposable LOCAL CMS interactive preview. No public Astro route, remote D1, or real Owner secrets.
-// Run from repo root: node test/modules/CB-M05/p1c-local-preview.mjs
+// Run from repo root: node test/modules/CB-M05/p1c-local-preview.mjs --preview
 // Requires locally installed Playwright Chromium. Browser test credentials are synthetic/in-memory.
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -177,7 +177,8 @@ async function main() {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) &&
+    (process.argv.includes('--preview') || process.argv.includes('--smoke'))) {
   main().catch(error => {
     process.stderr.write('LOCAL CMS preview rejected: ' + (error?.message || 'unknown error') + '\n');
     process.exitCode = 1;

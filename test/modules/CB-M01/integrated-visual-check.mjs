@@ -101,11 +101,26 @@ try {
   server = spawn(process.execPath, [wranglerCli, "dev", "--config", "./dist/server/wrangler.json", "--local", "--ip", "127.0.0.1", "--port", String(port), "--persist-to", persistDir, "--show-interactive-dev-session=false", "--log-level", "error"], {
     cwd: repoRoot,
     windowsHide: true,
-    stdio: ["ignore", "ignore", "ignore"],
+    stdio: ["ignore", "ignore", "pipe"],
     env: safeEnv,
   });
+  // Diagnostics only: never treat a crashed Wrangler child as ready. Bounded
+  // stderr explains startup failures otherwise hidden by the test runner.
+  let startupDiagnostics = "";
+  server.stderr.on("data", (chunk) => {
+    startupDiagnostics = (startupDiagnostics + String(chunk)).slice(-4_000);
+  });
   await once(server, "spawn");
-  const ready = await waitForFixtureReady({ child: server, origin: report.origin + "/en" });
+  let ready;
+  try {
+    ready = await waitForFixtureReady({ child: server, origin: report.origin + "/en" });
+  } catch (error) {
+    throw new Error(
+      "Integrated visual fixture startup failed: " + String(error.message) +
+      "; Wrangler stderr tail: " + (startupDiagnostics.trim() || "(none)"),
+      { cause: error },
+    );
+  }
   assert.equal(ready.status, 200, "the integrated /en route must respond with HTTP 200");
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();

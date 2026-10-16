@@ -104,7 +104,7 @@ test("P0 workflow: removing a source preserves a human review item but clearly i
 test("P0 workflow: all drafting preparation checkboxes remain mere self-attestations", () => {
   const draft = makeArticle("An original article body with more than forty characters.");
   const result = evaluateLocalEditorialChecklist(draft, {
-    factReview: true, rightsReview: true, ownerPacket: true,
+    factReview: true, sourceAttribution: true, ownerPacket: true,
   });
   assert.equal(result.completed, result.total);
   assert.equal(result.status, "LOCAL_PREPARATION_ONLY_NOT_VERIFIED_OR_APPROVED");

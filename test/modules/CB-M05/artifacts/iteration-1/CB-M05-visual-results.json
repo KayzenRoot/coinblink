@@ -1,0 +1,342 @@
+{
+  "fixture": "M05 module component rendered in an isolated local-only Astro harness; not an application route or deployment build",
+  "baseUrl": "http://127.0.0.1:4397",
+  "mode": "MOCK / SECURITY DISABLED",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1536,
+      "height": 864
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "routeCount": 8,
+  "axeRuns": 24,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "results": [
+    {
+      "view": "login",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-login-1536x864.png",
+        "sha256": "b8aee4374c748b4e8abd8c4ca093a6d02e06ce3d727d4af2c0f4803869230959",
+        "bytes": 191645
+      }
+    },
+    {
+      "view": "setup",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-setup-1536x864.png",
+        "sha256": "9c00dd1ce3c560ceda1fc208fd4d1c9ad7be0786f627ca528cdf16df500c1c12",
+        "bytes": 192288
+      }
+    },
+    {
+      "view": "recovery",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-recovery-1536x864.png",
+        "sha256": "fe481ed6c1bafb25a87e9ec661146d1a088c94cbdacedf596c90fb3b6d086917",
+        "bytes": 191997
+      }
+    },
+    {
+      "view": "articles",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-articles-1536x864.png",
+        "sha256": "7046ef05ccba4cd6d0be87144802211dfcf7783c23242f211407eb4cf5e9adb7",
+        "bytes": 291045
+      }
+    },
+    {
+      "view": "article-new",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-article-new-1536x864.png",
+        "sha256": "a0a6f6c17db174c8dd42161eef4ebf774b2d752d1cbe8f14ca0264bc32446219",
+        "bytes": 215161
+      }
+    },
+    {
+      "view": "article-edit",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-article-edit-1536x864.png",
+        "sha256": "f033a5c5d2b2f20a086c03ea3ecd40f4c522e61332048b2b9c693f5561223eec",
+        "bytes": 212449
+      }
+    },
+    {
+      "view": "settings",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-settings-1536x864.png",
+        "sha256": "69f88d2363682d38b322be7c81b3a26faf4a9944af52fe33973cb2482d3ad22e",
+        "bytes": 238065
+      }
+    },
+    {
+      "view": "integrations",
+      "viewport": "desktop",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-integrations-1536x864.png",
+        "sha256": "0949f48f12e0ac1bbce8b6d05bf48ba9b3a88850b576fcc935ea9ad22154ace9",
+        "bytes": 237706
+      }
+    },
+    {
+      "view": "login",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "setup",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "recovery",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "articles",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-articles-768x1024.png",
+        "sha256": "56d49316dde2c120dfb869d7d19353df689b52389b8e77c17959991f8adc9b14",
+        "bytes": 240862
+      }
+    },
+    {
+      "view": "article-new",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "article-edit",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "settings",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "integrations",
+      "viewport": "tablet",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "login",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "setup",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "recovery",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "articles",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ],
+      "screenshot": {
+        "path": "CB-M05-articles-390x844.png",
+        "sha256": "9c6ce20acc921e11d903d87004fe1611cadf7252030dc336c216bd19227c0974",
+        "bytes": 239323
+      }
+    },
+    {
+      "view": "article-new",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "article-edit",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "settings",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "view": "integrations",
+      "viewport": "mobile",
+      "violations": [
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "nodes": 1
+        }
+      ]
+    }
+  ]
+}

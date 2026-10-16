@@ -1,7 +1,7 @@
 // Dedicated LOCAL D1 fixture UI. Never imported by public Astro routes.
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
-export const LOCAL_CMS_UI_SCRIPT = String.raw\`
+export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -24,7 +24,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw\`
   const encode = (buffer) => {
     let raw = '';
     for (const b of new Uint8Array(buffer)) raw += String.fromCharCode(b);
-    return btoa(raw).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_');
+    return btoa(raw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   };
   const message = (value) => { ui.message.textContent = value; };
   async function api(url, method = 'GET', body) {
@@ -146,20 +146,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw\`
     ui.status.textContent = 'Not authenticated';
     message('Local test session ended');
   });
-\`;
+`;
 
 export function renderLocalCmsUi(nonce) {
   if (typeof nonce !== 'string' || !/^[0-9a-f]{64}$/.test(nonce)) {
     throw new TypeError('Local UI requires a fresh 256-bit CSP nonce');
   }
-  return \`<!doctype html>
+  return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>CoinBlink · Local CMS Test Workspace</title>
-<style nonce="\${nonce}">
+<style nonce="${nonce}">
 :root{color-scheme:dark;font-family:system-ui,sans-serif}
 body{margin:0;background:#0d1815;color:#eaf3e8;line-height:1.5}
 main{max-width:980px;margin:auto;padding:28px 18px}
@@ -203,6 +203,6 @@ footer{padding:24px 0;color:#b9c8bd}
 </fieldset></form></section>
 <footer>Test data only · no publication capability · server-side authorization required on every request.</footer>
 </main>
-<script nonce="\${nonce}" type="module">\${LOCAL_CMS_UI_SCRIPT}</script>
-</body></html>\`;
+<script nonce="${nonce}" type="module">${LOCAL_CMS_UI_SCRIPT}</script>
+</body></html>`;
 }

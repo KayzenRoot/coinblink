@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { Script } from 'node:vm';
+import { Script, runInNewContext } from 'node:vm';
 import { LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -297,5 +297,112 @@ test('M05 LOCAL CMS 07: isolated test UI serves nonce CSP, no production import 
     assert.equal(missingGate.status, 404, 'test UI must not be accessible without local gate');
     const otherOrigin = await createLocalCmsHandler()(new Request('https://public.example.test/local/ui'), ctx.env);
     assert.equal(otherOrigin.status, 404, 'test UI must not be accessible on a public origin');
+  } finally { await ctx.mf.dispose(); }
+});
+
+
+test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs out against D1', async () => {
+  const ctx = await setup();
+  try {
+    const elements = new Map();
+    function element(id) {
+      if (!elements.has(id)) {
+        const item = {
+          id, value: '', hidden: false, disabled: false, textContent: '', children: [],
+          handlers: {},
+          addEventListener(type, fn) { this.handlers[type] = fn; },
+          append(child) { this.children.push(child); },
+          replaceChildren() { this.children = []; },
+          reset() {
+            for (const x of ['title','summary','body','sourceUrl','authorLabel']) {
+              formFields[x].value = '';
+            }
+          },
+        };
+        elements.set(id, item);
+      }
+      return elements.get(id);
+    }
+    const formFields = Object.fromEntries(
+      ['title','summary','body','sourceUrl','authorLabel'].map(name => [name, { value: '' }])
+    );
+    element('credential').value = ctx.primary.id;
+    element('draft').elements = { namedItem(name) { return formFields[name]; } };
+    const browserDocument = {
+      getElementById: element,
+      createElement: () => ({
+        textContent: '', children: [], handlers: {},
+        addEventListener(name, handler) { this.handlers[name] = handler; },
+        append(child) { this.children.push(child); },
+      }),
+    };
+    const fetcher = async (url, options) => {
+      const method = options?.method || 'GET';
+      const body = options?.body ? JSON.parse(options.body) : undefined;
+      const headers = options?.headers || {};
+      const res = await ctx.run(url, method, body, {
+        cookie: fetcher.cookie,
+        csrf: headers['X-CB-CSRF'] || '',
+      });
+      const setCookie = res.headers.get('set-cookie');
+      if (setCookie) fetcher.cookie = setCookie.split(';')[0];
+      return res;
+    };
+    fetcher.cookie = '';
+    const credentialApi = {
+      async get({ publicKey }) {
+        assert.equal(publicKey.rpId, CMS_TEST_RP_ID);
+        assert.equal(publicKey.userVerification, 'required');
+        const challenge = Buffer.from(publicKey.challenge).toString('hex');
+        const signed = makeAuthenticationResponse(ctx.primary, { challenge });
+        const toBuffer = value => Uint8Array.from(Buffer.from(value, 'base64url')).buffer;
+        return {
+          id: signed.id,
+          rawId: toBuffer(signed.rawId),
+          type: 'public-key',
+          response: {
+            clientDataJSON: toBuffer(signed.response.clientDataJSON),
+            authenticatorData: toBuffer(signed.response.authenticatorData),
+            signature: toBuffer(signed.response.signature),
+            userHandle: null,
+          },
+          getClientExtensionResults() { return {}; },
+        };
+      },
+    };
+    class FakeFormData {
+      constructor() {
+        return Object.entries(formFields).map(([name, field]) => [name, field.value]);
+      }
+    }
+    runInNewContext(LOCAL_CMS_UI_SCRIPT, {
+      document: browserDocument,
+      window: { PublicKeyCredential: function PublicKeyCredential() {} },
+      navigator: { credentials: credentialApi },
+      fetch: fetcher,
+      FormData: FakeFormData,
+      Uint8Array, crypto: globalThis.crypto,
+      atob: value => Buffer.from(value, 'base64').toString('binary'),
+      btoa: value => Buffer.from(value, 'binary').toString('base64'),
+    });
+    await element('login').handlers.click();
+    assert.match(element('session-status').textContent, /active/);
+    assert.equal(element('draft').hidden, false);
+    assert.match(element('message').textContent, /Authenticated/);
+    for (const [field, value] of Object.entries(sampleDraft)) formFields[field].value = value;
+    await element('draft').handlers.submit({ preventDefault() {} });
+    assert.equal(element('items').children.length, 1);
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    const button = element('items').children[0].children[0];
+    await button.handlers.click();
+    assert.equal(element('revision').value, '1');
+    formFields.title.value = 'Updated local UI revision, protected by D1';
+    await element('draft').handlers.submit({ preventDefault() {} });
+    assert.equal(element('revision').value, '2');
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    await element('logout').handlers.click();
+    assert.equal(element('draft').hidden, true);
+    assert.equal(element('items').children.length, 0);
+    assert.equal(element('session-status').textContent, 'Not authenticated');
   } finally { await ctx.mf.dispose(); }
 });

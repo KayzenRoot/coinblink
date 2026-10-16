@@ -1,14 +1,14 @@
 # CB-M05-P1C-OWNER-ADMIN-001 · Secure Single-Owner Admin Integration (STAGED WO)
 
-**State:** PROPOSED, NOT EXECUTABLE. **Risk:** HIGH_ASSURANCE. **Owner:** KayzenRoot. **Base:** `04249d835d9c599531f8a7d93ed7ffe04740480c`. This candidate is an execution contract, not code authority. A separate exact-SHA Owner GO and protected merge of the effective Source Pack is required before a production/privileged implementation task.
+**State:** PROPOSED, NOT EXECUTABLE. **Risk:** HIGH_ASSURANCE. **Owner:** KayzenRoot. **Base:** `21d9e0fca64bf30e945e6044f37fec1f92dfc8f5`. This candidate is an execution contract, not code authority. A separate exact-SHA Owner GO and protected merge of the effective Source Pack is required before a production/privileged implementation task.
 
 ## Product objective
-Deliver a truly protected **one-person** Owner admin, backed by server-side challenge/identity/session, with local reproducible D1 contract tests and real application routing, **without publishing a single article yet**. Maintain separate later scopes for secret vault (P1-D) and licensed editorial publish (P1-E); none may be counted DONE individually.
+Deliver a truly protected **one-person** Owner admin, backed by server-side challenge/identity/session, with local reproducible D1 contract tests and real application routing, **without publishing a single article yet**. Maintain separate later scopes for secret vault (P1-D) and source-attributed editorial publish (P1-E); none may be counted DONE individually.
 
 ## Inputs and dependencies
 - Canonical `.engineering/CHECKPOINT.json`, global Scope/Architecture/Requirements/Security/DoD, `.engineering/SOURCE-HIERARCHY.md`, M05 contract, P1-A/P1-B selected synthetic contracts and evidence, P1-C ADR candidate, threat model and Source Pack.
 - Source code baseline PR #91 is DRAFT and not merged. The executor shall not import it as if merged. First complete its existing local-only review and protected merge if separately authorized, or account for the exact tree explicitly.
-- M01 PR #58 rights gate Issue #72 remains open, with external same-name crypto-sector use leads; do not share public routes, pretend brand clearance or deploy/publish.
+- M01 PR #58 is an independent Golden Home application integration; do not edit Home-owned routes, share public mutation privileges or trigger deploy/publishing. Commercial-paperwork review was retired from engineering gates in PR #101.
 - Cloudflare Workers Free M00 Preview does not authorize admin Worker rights, provisioning D1, real operator claims or deployment.
 
 ## Proposed future scope, contingent on explicit admission
@@ -28,7 +28,7 @@ Deliver a truly protected **one-person** Owner admin, backed by server-side chal
 
 ## Exit gates (strict)
 1. Security ADR reviewed/effective (separate protected merge).
-2. All real runtime/privacy/rights/provider decisions made; grant exact file allowlist and production-binding preflight.
+2. All real runtime/privacy/security/provider-access decisions made; grant exact file allowlist and production-binding preflight.
 3. Code PR passes high assurance exact-head tests, changes only admitted files; capture full Evidence Bundle.
 4. Owner GO for protected code merge; no deploy/publication by merging. Real Owner onboarding only after security/operational approvals.
 5. M05 P1-D Vault and P1-E editorial publish flow subsequently completed and evidenced before **whole-module DONE**.

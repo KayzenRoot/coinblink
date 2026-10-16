@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { Script } from 'node:vm';
+import { LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -259,5 +261,41 @@ test('M05 LOCAL CMS 06: challenge quota bounds unauthenticated writes, expires a
     ).bind(ctx.primary.id).first()).n, 1, 'expired unconsumed challenges are cleaned up');
     assert.equal((await ctx.run('/local/challenge', 'POST', { credentialId: ctx.recovery.id })).status, 200,
       'recovery credential has an independent challenge budget');
+  } finally { await ctx.mf.dispose(); }
+});
+
+
+test('M05 LOCAL CMS 07: isolated test UI serves nonce CSP, no production import and script parses', async () => {
+  const ctx = await setup();
+  try {
+    assert.doesNotThrow(() => new Script(LOCAL_CMS_UI_SCRIPT), 'browser UI source must parse as JavaScript');
+    const ui = await ctx.run('/local/ui');
+    assert.equal(ui.status, 200);
+    assert.match(ui.headers.get('content-type'), /^text\/html/);
+    assert.equal(ui.headers.get('cache-control'), 'no-store');
+    assert.equal(ui.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+    const csp = ui.headers.get('content-security-policy');
+    assert.match(csp, /default-src 'none'/);
+    assert.match(csp, /form-action 'none'/);
+    assert.match(csp, /frame-ancestors 'none'/);
+    assert.match(csp, /connect-src 'self'/);
+    const scriptNonce = /script-src 'nonce-([0-9a-f]{64})'/.exec(csp)?.[1];
+    assert.ok(scriptNonce);
+    const markup = await ui.text();
+    assert.ok(markup.includes('<script nonce="' + scriptNonce + '" type="module">'));
+    assert.ok(markup.includes('<style nonce="' + scriptNonce + '">'));
+    assert.match(markup, /Local CMS Test Workspace/);
+    assert.match(markup, /Already enrolled disposable test passkey|already enrolled disposable test passkey/i);
+    assert.doesNotMatch(markup, /CLOUDFLARE_API_TOKEN|PRIVATE KEY-----|CMS_TEST_HMAC_KEY/);
+    assert.doesNotMatch(markup, /<script(?! nonce=)/);
+    const second = await ctx.run('/local/ui');
+    const secondCsp = second.headers.get('content-security-policy');
+    assert.notEqual(csp, secondCsp, 'fresh CSP nonce per page request');
+    const missingGate = await createLocalCmsHandler()(makeRequest('/local/ui'), {
+      ...ctx.env, CB_M05_LOCAL_TEST_ONLY: 'false',
+    });
+    assert.equal(missingGate.status, 404, 'test UI must not be accessible without local gate');
+    const otherOrigin = await createLocalCmsHandler()(new Request('https://public.example.test/local/ui'), ctx.env);
+    assert.equal(otherOrigin.status, 404, 'test UI must not be accessible on a public origin');
   } finally { await ctx.mf.dispose(); }
 });

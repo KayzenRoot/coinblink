@@ -29,6 +29,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     return btoa(raw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   };
   const message = (value) => { ui.message.textContent = value; };
+  function clearLocalSession() {
+    csrf = null;
+    ui.form.reset();
+    ui.draftId.value = '';
+    ui.revision.value = '0';
+    ui.save.textContent = 'Create draft';
+    ui.form.hidden = true;
+    ui.logout.hidden = true;
+    ui.refresh.hidden = true;
+    ui.history.hidden = true;
+    ui.historyList.replaceChildren();
+    ui.items.replaceChildren();
+    ui.status.textContent = 'Not authenticated';
+  }
   async function api(url, method = 'GET', body) {
     const headers = {};
     if (body !== undefined) {
@@ -40,7 +54,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error('Local request rejected (' + response.status + ')');
+    if (!response.ok) {
+      // Fail closed on expired/revoked sessions: do not leave private draft text
+      // readable in an old visible form after a denied authenticated read.
+      if (response.status === 401 && url.startsWith('/local/articles')) {
+        clearLocalSession();
+      }
+      throw new Error('Local request rejected (' + response.status + ')');
+    }
     return data;
   }
   function editDraft(draft) {
@@ -160,18 +181,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.logout.disabled = true;
     try {
       await api('/local/logout', 'POST', {});
-      csrf = null;
-      ui.form.reset();
-      ui.draftId.value = '';
-      ui.revision.value = '0';
-      ui.save.textContent = 'Create draft';
-      ui.form.hidden = true;
-      ui.logout.hidden = true;
-      ui.refresh.hidden = true;
-      ui.history.hidden = true;
-      ui.historyList.replaceChildren();
-      ui.items.replaceChildren();
-      ui.status.textContent = 'Not authenticated';
+      clearLocalSession();
       message('Local test session ended');
     } catch {
       // HttpOnly cookies cannot be cleared by JS: never falsely claim server revocation.

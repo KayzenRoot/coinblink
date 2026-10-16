@@ -70,7 +70,7 @@ test('P0 Steward proposal is non-effective until all three exact predecessor con
   assert.equal(proposal.sourceMainSha, '28e20b3bafef940e465d6d2a7ba938ae8e393e74');
   assert.deepEqual(proposal.requiredPriorMerges.map((entry) => entry.pullRequest), [92, 93, 94]);
   assert.equal(proposal.requiredPriorMerges.every((entry) =>
-    entry.files.every((file) => /^[0-9a-f]{40}$/u.test(file.gitBlobSha1)), true);
+    entry.files.every((file) => /^[0-9a-f]{40}$/u.test(file.gitBlobSha1))), true);
   assert.ok(['PREPARED_NOT_ADMITTED', 'ADMISSION_CANDIDATE_AWAITING_OWNER_GO_AND_MERGE'].includes(verifyAdmission(checkpoint)));
 });
 

@@ -1,12 +1,19 @@
 # CB-GOV-SOURCE-001 | Governed admission-source chronology correction
 
-**Authority:** this is a DRAFT governance clarification proposed under [Issue #66](https://github.com/KayzenRoot/coinblink/issues/66), NOT a promoted GEF admission or authority to implement another module. Baseline `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` must match protected main before any promotion.
-
-**Risk:** ELEVATED. **Status:** PROPOSED / FORMAL GEF ADMISSION PENDING. **Branch:** `codex/cb-gov-source-001`. **Owner operational account:** KayzenRoot. **Work:** documentation only, separate from the Owner Solo Gate implementation PR #65.
+**Status:** PROPOSED / ELEVATED documentation candidate / FORMAL GEF ADMISSION PENDING. **Repository:** `KayzenRoot/coinblink`. **Issue:** [#66](https://github.com/KayzenRoot/coinblink/issues/66). **Branch:** `codex/cb-gov-source-001`. **Current protected main readback:** `58321c21508bd6089de1c1a77c21f93a4f0b856a` (2026-10-15, America/Sao_Paulo). This proposal cannot admit itself and has no application-code authority.
 
 ## Objective
 
-Make seven authoritative sources unambiguous: the existing machine checkpoint at main `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c` says M00 COMPLETE/5% across 19 modules, M01 and M05 ADMITTED after actual reviewed admission merges [#56](https://github.com/KayzenRoot/coinblink/pull/56) and [#57](https://github.com/KayzenRoot/coinblink/pull/57); M05 strictly P0 STATIC MOCK/SECURITY DISABLED; M02–M04 and M06–M17 NOT_ADMITTED; M18 FUTURE_NOT_ADMITTED; activeWorkOrder NONE. Prior 2026-10-08/10 module status sentences must be explicitly historical, not erased. Implementation PRs #58/#59 remain separate and not DONE.
+Reconcile the seven source-of-authority documents with the current checkpoint, admitted module scopes, PR #59 and the sole-administrator directive merged in PR #82. Clearly separate current facts from dated history. Keep all old evidence and dates intact. PR #67 remains **DRAFT / UNMERGED** pending exact-head validation and the remaining formal GEF/Owner gates.
+
+## Current verified state
+
+- The canonical checkpoint is unchanged: M00 COMPLETE, `IMPLEMENTATION_IN_PROGRESS`, `completedThroughModule=CB-M00`, 5% across 19 modules, `activeWorkOrder=NONE`.
+- M01 and M05 remain admitted within bounded Work Orders. M01 is not complete and PR #58 remains open. PR #59 merged at this main SHA with M05 P0 static nonprivileged MOCK / SECURITY DISABLED only; merge is not the Owner's final acceptance or M05 completion.
+- M05 P1 privileged authentication/session/MFA/recovery, persistence/database and vault remain not admitted. M02–M04 and M06–M17 remain not admitted; M18 remains future/not admitted.
+- Rights Issue #72 is open, `rightsReview=PENDING_OWNER_OR_LEGAL`, `commercialPublicationAllowed=false` and `authorizedToMerge=false` for the M01 rights gate.
+- PR #82 makes KayzenRoot the single administrator and reviewer. A separate human approver is not mandatory. PR, squash-only, required checks, thread resolution, evidence and an exact-SHA Owner decision remain.
+- The active ruleset `#24888106` applies only to `refs/heads/main`, is active, has 0 required approving reviews, `require_last_push_approval=false`, `bypass_actors=[]`, seven strict required contexts, PR/squash, resolved threads, deletion and non-fast-forward protections.
 
 ## Candidate exclusive path allowlist
 
@@ -22,13 +29,20 @@ Make seven authoritative sources unambiguous: the existing machine checkpoint at
 - `.engineering/evidence/CB-GOV-SOURCE-001/README.md`
 - `.engineering/evidence/CB-GOV-SOURCE-001/CHECKPOINT-DELTA.md`
 
-No other files. No real code, workflow, package, provider, cloud or auth changes. The checkpoint source SHA and status fields remain immutable.
+No other paths. Do not change the actual `.engineering/CHECKPOINT.json`, product code, workflows, dependencies, providers, cloud resources, credentials, auth, ruleset, deployment, module progress, rights or release flags.
 
-## Acceptance
+## Acceptance and validation
 
-1. R0: verify current main SHA `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`, all eight baseline source SHA1/SHA256 fingerprints from Context Lock, actual #56/#57 merge commits and active ruleset #24888106, 1 approving reviewer required and no bypass; stale => STOP.
-2. R1: add a dated present-status section to seven source docs, preserve historical original prose, add ledger CB-DEC-048 as VERIFIED OBSERVATION not adoption of Owner Solo. No silent retroactive source grant.
-3. R2: diff checks against exact allowed paths, historical dates, semantic admission map, distinction between admitted and completed, M05 P0-only, M18 future, and nothing falsely marked LIVE.
-4. R3: Node22/npm10 GEF doctor/status, full exact-head CI Ubuntu/Windows/Docker/Sonar/Socket, hosted CodeRabbit with all actionable findings resolved, independent ELEVATED assurance and Owner SHA-bound decision. Without legitimate GitHub distinct eligible approval, remain unmerged.
+1. Pin the exact current main SHA and source fingerprints in the Context Lock. Verify PRs #56/#57, #59 and #82 and read back ruleset #24888106; stop if main moves or protections differ.
+2. Add current readback sections to the seven sources. Keep the 2026-10-08/10 and 2026-10-11 text as dated history. Add ledger entry CB-DEC-049 as a verified observation, not new Owner policy.
+3. Preserve the canonical checkpoint byte-for-byte and document a no-op delta. Keep M01/M05 admission distinct from module completion, P0 mock distinct from P1, and rights distinct from visual acceptance.
+4. Verify the exact candidate diff is limited to the eleven allowed docs. Run Node 22/npm 10 GEF doctor/status and repository checks appropriate to this documentation change; run the required exact-head Ubuntu, Windows, Docker, SonarCloud, Socket and CodeRabbit status checks. A skipped CodeRabbit review is only a status result, not substantive review.
+5. Complete the risk review as a documented KayzenRoot-led review of the exact HEAD. External review is optional; no second account or false GitHub `APPROVED` is allowed. Any later protected merge still requires a separate, explicit Owner decision on the exact SHA.
 
-**STOP CONDITION:** proposed correction is not canonical until formal GEF gate and protected-main review+merge; do not bypass rules, manufacture another reviewer, merge #65, implement M05 P1, change checkpoint or advance beyond 5%.
+## STOP CONDITION
+
+Keep the branch and PR draft. Formal GEF admission remains pending; a draft does not alter canonical sources. Do not merge, deploy, change checkpoint/ruleset/rights, start unadmitted code, or claim M01/M05 DONE. `authorizedToMerge=false`.
+
+## Original preflight provenance · 2026-10-11
+
+The initial candidate was prepared against `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`; the original locked blob table and historic module state are retained in this PR's initial Context Lock snapshot and earlier evidence. Its one-approver and distinct-reviewer criteria were superseded by the sole-administrator ruleset and PR #82 before this R70 refresh.

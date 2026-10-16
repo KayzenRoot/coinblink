@@ -1,6 +1,6 @@
 # CoinBlink · Decisions Ledger (working, 2026-10-08)
 
-**Current admission status (2026-10-11):** M00 COMPLETE/5%, M01 and M05 ADMITTED only within their reviewed scopes (M05 P0 MOCK only), M02–M04/M06–M17 NOT_ADMITTED, M18 FUTURE_NOT_ADMITTED. Historical ledger rows retain the state at their original dates; see CB-DEC-048 below.
+**Historical admission readback (2026-10-11):** M00 COMPLETE/5%, M01 and M05 ADMITTED only within their reviewed scopes (M05 P0 MOCK only), M02–M04/M06–M17 NOT_ADMITTED, M18 FUTURE_NOT_ADMITTED. Historical ledger rows retain the state at their original dates; see CB-DEC-048 below.
 
 This register **preserves the exact distinction between owner-approved direction, candidate approaches, and unapproved planning**. It does not substitute GEF governance, signed ADRs, Scope or DoD. Canonical engineering documentation and identifiers use English; historical planning and the source Visual Bible are intentionally kept in Brazilian Portuguese without rewriting owner-approved source.
 
@@ -91,3 +91,9 @@ This register **preserves the exact distinction between owner-approved direction
 | ID | Topic | State | Evidence / boundary |
 |---|---|---|---|
 | CB-DEC-048 | Effective module admissions after governed #56/#57 merges | VERIFIED EXISTING STATE, NOT NEW OWNER PRODUCT POLICY | PR #56 merged at `c4ba069f1dfaddc8273001950805e8a18125db66`; PR #57 merged at `07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c`. Machine checkpoint: M00 COMPLETE/5%; M01 ADMITTED, M05 ADMITTED only P0 MOCK/SECURITY DISABLED, remaining M02–M04/M06–M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED; `activeWorkOrder=NONE`. Implementation PRs #58/#59 OPEN, NOT DONE. Older pre-admission rows are historical. No change to Issue #6, CB-DEC-044, protected rules, real auth, provider or production approvals. |
+
+## Current protected-main readback · 2026-10-15
+
+| ID | Topic | State | Evidence / boundary |
+|---|---|---|---|
+| CB-DEC-049 | Current module and governance status after main advanced through PR #59 and #82 | VERIFIED READBACK, NOT A NEW POLICY DECISION | Read from protected main `58321c21508bd6089de1c1a77c21f93a4f0b856a`: checkpoint remains M00_COMPLETE / IMPLEMENTATION_IN_PROGRESS / 5% across 19 modules, activeWorkOrder NONE; M01 and M05 remain admitted within bounded scopes; #59 is merged with M05 P0 MOCK / SECURITY DISABLED only; M01 PR #58 remains open and incomplete; M05 P1 privileged security/backend remains not admitted; M02–M04 and M06–M17 remain NOT_ADMITTED, M18 FUTURE_NOT_ADMITTED. PR #82 establishes KayzenRoot as sole human administrator/reviewer, with no mandatory second approver; protected PR, required checks, thread resolution and an exact-SHA Owner decision remain. Rights Issue #72 is open, commercialPublicationAllowed=false. This readback does not change checkpoint, authorize merge/deploy, or clear rights. |

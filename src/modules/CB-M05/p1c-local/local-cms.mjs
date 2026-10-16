@@ -142,22 +142,49 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
           });
         } catch { return denied(); }
         if (!verified?.verified) return denied();
+        // Non-zero authenticator counters must advance monotonically. A zero-only
+        // counter is allowed for passkeys that legitimately never increment it.
+        const oldCount = Number(record.sign_count);
+        const nextCount = verified.authenticationInfo?.newCounter;
+        if (!Number.isSafeInteger(oldCount) || !Number.isSafeInteger(nextCount) ||
+            oldCount < 0 || nextCount < 0 || nextCount > 4294967295 ||
+            (oldCount > 0 && nextCount <= oldCount)) return denied();
         const token = randomToken(), csrf = randomToken(), marker = crypto.randomUUID();
         const tokenDigest = await keyedDigest(secret, token);
         const csrfDigest = await keyedDigest(secret, csrf);
+        // A unique transaction marker binds all three steps. A concurrent or
+        // counter-replayed assertion cannot mint a session with another request's
+        // challenge/credential update. D1.batch rolls back on SQL errors.
         const results = await db.batch([
           db.prepare(
             `UPDATE cms_challenges SET consumed_at=?,consume_marker=?
                WHERE challenge_digest=? AND credential_id=? AND consumed_at IS NULL
-                 AND expires_at>? AND origin=? AND rp_id=?`
-          ).bind(currentTime, marker, challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID),
+                 AND expires_at>? AND origin=? AND rp_id=?
+                 AND EXISTS (
+                   SELECT 1 FROM cms_credentials c WHERE c.credential_id=?
+                     AND c.owner_id=1 AND c.revoked_at IS NULL AND c.sign_count=?
+                 )`
+          ).bind(currentTime, marker, challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID, input.credentialId, oldCount),
+          db.prepare(
+            `UPDATE cms_credentials SET sign_count=?,last_auth_marker=?
+               WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL
+                 AND sign_count=? AND EXISTS (
+                   SELECT 1 FROM cms_challenges h WHERE h.challenge_digest=?
+                     AND h.credential_id=? AND h.consume_marker=? AND h.consumed_at=?
+                 )`
+          ).bind(nextCount, marker, input.credentialId, oldCount, challengeDigest, input.credentialId, marker, currentTime),
           db.prepare(
             `INSERT INTO cms_sessions(session_digest,csrf_digest,owner_id,issued_at,expires_at,challenge_digest,credential_id)
-              SELECT ?,?,1,?,?,challenge_digest,credential_id FROM cms_challenges
-              WHERE challenge_digest=? AND credential_id=? AND consume_marker=? AND consumed_at=?`
-          ).bind(tokenDigest, csrfDigest, currentTime, currentTime + 1200, challengeDigest, input.credentialId, marker, currentTime),
+              SELECT ?,?,1,?,?,h.challenge_digest,h.credential_id
+              FROM cms_challenges h JOIN cms_credentials c ON c.credential_id=h.credential_id
+              WHERE h.challenge_digest=? AND h.credential_id=? AND h.consume_marker=?
+                AND h.consumed_at=? AND c.last_auth_marker=? AND c.sign_count=?
+                AND c.revoked_at IS NULL`
+          ).bind(tokenDigest, csrfDigest, currentTime, currentTime + 1200,
+            challengeDigest, input.credentialId, marker, currentTime, marker, nextCount),
         ]);
-        if (results[0]?.meta?.changes !== 1 || results[1]?.meta?.changes !== 1) return denied(409);
+        if (results[0]?.meta?.changes !== 1 || results[1]?.meta?.changes !== 1 ||
+            results[2]?.meta?.changes !== 1) return denied(409);
         return json({ authenticated: true, csrf, expiresInSeconds: 1200 }, 200, {
           'Set-Cookie': COOKIE_NAME + '=' + token + '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=1200',
         });

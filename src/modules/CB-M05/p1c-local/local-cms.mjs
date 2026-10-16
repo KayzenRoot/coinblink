@@ -105,10 +105,19 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
           'SELECT credential_id FROM cms_credentials WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL'
         ).bind(input.credentialId).first();
         if (!credential) return denied();
+        // Bound outstanding challenges per credential in one atomic D1 statement.
+        // Expired, unused challenges are disposable and removed before applying quota.
+        await db.prepare('DELETE FROM cms_challenges WHERE consumed_at IS NULL AND expires_at<=?')
+          .bind(currentTime).run();
         const challenge = randomToken();
-        await db.prepare(
-          'INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,expires_at) VALUES (?,?,?,?,?)'
-        ).bind(await digest(challenge), credential.credential_id, CMS_TEST_ORIGIN, CMS_TEST_RP_ID, currentTime + 90).run();
+        const inserted = await db.prepare(
+          `INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,expires_at)
+           SELECT ?,?,?,?,? WHERE
+           (SELECT COUNT(*) FROM cms_challenges
+             WHERE credential_id=? AND consumed_at IS NULL AND expires_at>?) < 3`
+        ).bind(await digest(challenge), credential.credential_id, CMS_TEST_ORIGIN,
+          CMS_TEST_RP_ID, currentTime + 90, credential.credential_id, currentTime).run();
+        if (inserted.meta?.changes !== 1) return json({ error: 'Too many active challenges' }, 429);
         return json({ challenge, credentialId: credential.credential_id, rpId: CMS_TEST_RP_ID, userVerification: 'required' });
       }
 

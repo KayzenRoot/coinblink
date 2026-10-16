@@ -34,6 +34,16 @@ function fixedEquals(left, right) {
   for (let i = 0; i < 64; i++) difference |= left.charCodeAt(i) ^ right.charCodeAt(i);
   return difference === 0;
 }
+// WebAuthn clientDataJSON.challenge is base64url(opaque challenge bytes), not
+// the hexadecimal transport value displayed in the local fixture request.
+export function webauthnChallengeFromHex(challengeHex) {
+  if (typeof challengeHex !== 'string' || !/^[0-9a-f]{64}$/.test(challengeHex)) {
+    throw new TypeError('A valid 256-bit local challenge is required');
+  }
+  const parts = challengeHex.match(/.{2}/g);
+  const binary = String.fromCharCode(...parts.map(x => Number.parseInt(x, 16)));
+  return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
 function ownerOrigin(request) {
   return new URL(request.url).origin === CMS_TEST_ORIGIN &&
     request.headers.get('origin') === CMS_TEST_ORIGIN &&
@@ -163,7 +173,7 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
         try {
           verified = await verifyAuthenticationResponse({
             response: input.response,
-            expectedChallenge: input.challenge,
+            expectedChallenge: webauthnChallengeFromHex(input.challenge),
             expectedOrigin: CMS_TEST_ORIGIN,
             expectedRPID: CMS_TEST_RP_ID,
             requireUserVerification: true,

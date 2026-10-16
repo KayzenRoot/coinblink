@@ -51,3 +51,7 @@ Existing `main` ruleset #24888106 stays active: PR+strict HEAD checks, permitted
 **Stop/rollback:** revert fast-lane operator practice (not git history) if a governing blob changes unexpectedly, required CI fails, credential/payment/auth/security gate appears, candidate scope exceeds admitted ownership, HIGH/CRITICAL defect exists, or an Owner veto is issued. Continue work only in another already admitted safe scope; do not relabel failure as success.
 
 **Status:** PHASE_1_PILOT_AUTHORIZED; 30-task evaluation remains INCOMPLETE. **Admin review language:** Brazilian Portuguese.
+
+## R70 current-source readback · 2026-10-15
+
+This is an append-only freshness correction; the original base, Phase 1 limits, and historical pilot status are preserved. The current product `main` is `58321c21508bd6089de1c1a77c21f93a4f0b856a`. PR #82's effective single-owner governance is included. PR #59 and PR #85 are already present on main; this does not change the pilot's authority or imply completion. PR #79 remains a separate DRAFT documentation candidate, its local branch has a normal merge of current main, and no main merge was performed. The 30-task evaluation remains incomplete, with no quantified productivity result claimed. The GEF CLI/runtime, ruleset, required contexts, module admissions, checkpoint, legal gates, and product merge authority remain unchanged.

@@ -54,3 +54,9 @@ Brazilian Portuguese: VERDICT (`APPROVED`, `CORRECTION REQUIRED`, or `BLOCKED`),
 
 ## STOP CONDITION
 Operate only the Phase 1 local pilot inside pre-existing admitted LOW/STANDARD WOs. Stop on stale source authority, required-check failure, credential/payment/auth/security gate, scope/ownership conflict, HIGH/CRITICAL defect, or Owner veto. Do **not** change GEF CLI/runtime, ruleset, workflows/required checks, checkpoint, product-merge authority, or rights status. The 30-task metrics remain incomplete; this Work Order does not claim a completed pilot or productivity result.
+
+## R70 current-source correction · 2026-10-15
+
+The original post-PR-#78 readback at `85ece8e63e56ac8006701eda121f462d901d2d2f` above is historical. GitHub API and fetch now verify `main=58321c21508bd6089de1c1a77c21f93a4f0b856a`; PR #59 is merged at this main SHA and PR #85 is also on the current base. PR #82's single-owner policy is effective. PR #79 remains OPEN/DRAFT; its branch was synchronized by a regular merge of current main and its changed-path allowlist remains the original three documentation files. Its hosted checks must be re-read on the final pushed HEAD. This refresh does not change the authorized LOW/STANDARD local pilot or its incomplete 30-task evaluation.
+
+The M01 reference has also advanced: PR #58 is OPEN at current head `18e00f6180dfcb1003a1291739479c26af01c946`, based on `58321c2…`; final-head checks are being read independently from that PR. Rights Issue #72 remains OPEN and pending; `commercialPublicationAllowed=false` and `authorizedToMerge=false`. The active ruleset #24888106 remains main-only, strict, with seven required contexts and no bypass actors. No GEF/runtime, workflow, ruleset, checkpoint, rights, product, or release change is authorized here.

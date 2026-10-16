@@ -17,6 +17,7 @@ function json(data, status = 200, extra = {}) {
   return new Response(JSON.stringify(data), { status, headers: { ...DEFAULT_HEADERS, ...extra } });
 }
 function denied(status = 403) { return json({ error: 'Access denied' }, status); }
+class InvalidPayloadError extends Error {}
 function hex(bytes) { return Array.from(bytes, n => n.toString(16).padStart(2, '0')).join(''); }
 function randomToken() { const b = new Uint8Array(32); crypto.getRandomValues(b); return hex(b); }
 async function digest(value) {
@@ -52,11 +53,12 @@ function ownerOrigin(request) {
 function isJson(request) { return /^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') || ''); }
 async function payload(request, max = 65_536) {
   const length = Number(request.headers.get('content-length') || 0);
-  if (!isJson(request) || length > max) throw new Error('Invalid JSON content');
+  if (!isJson(request) || !Number.isFinite(length) || length < 0 || length > max) throw new InvalidPayloadError('Invalid JSON content');
   const raw = await request.text();
-  if (utf8.encode(raw).byteLength > max) throw new Error('Oversized request');
-  const value = JSON.parse(raw);
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Object required');
+  if (utf8.encode(raw).byteLength > max) throw new InvalidPayloadError('Oversized request');
+  let value;
+  try { value = JSON.parse(raw); } catch { throw new InvalidPayloadError('Malformed JSON content'); }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new InvalidPayloadError('Object required');
   return value;
 }
 function nowEpoch(now) { return Math.floor(now() / 1000); }
@@ -68,10 +70,11 @@ function draftFields(value) {
       typeof value.body !== 'string' || value.body.trim().length < 1 || value.body.length > 40_000 ||
       typeof value.sourceUrl !== 'string' || value.sourceUrl.length > 500 ||
       typeof value.authorLabel !== 'string' || value.authorLabel.length > 80) {
-    throw new Error('Draft fields invalid or out of bounds');
+    throw new InvalidPayloadError('Draft fields invalid or out of bounds');
   }
-  const url = new URL(value.sourceUrl);
-  if (url.protocol !== 'https:' || !url.hostname || url.username || url.password) throw new Error('HTTPS source required');
+  let url;
+  try { url = new URL(value.sourceUrl); } catch { throw new InvalidPayloadError('Invalid source URL'); }
+  if (url.protocol !== 'https:' || !url.hostname || url.username || url.password) throw new InvalidPayloadError('HTTPS source required');
   return [value.title.trim(), value.summary.trim(), value.body, url.href, value.authorLabel.trim()];
 }
 async function session(request, db, secret, now) {
@@ -319,6 +322,7 @@ export function createLocalCmsHandler({ now = Date.now } = {}) {
       return denied(404);
     } catch (error) {
       // Do not leak SQL, credentials, or internal errors in an HTTP response.
+      if (error instanceof InvalidPayloadError) return json({ error: 'Invalid request' }, 400);
       if (/UNIQUE constraint failed/i.test(String(error?.message || ''))) return denied(409);
       return json({ error: 'Local CMS internal failure' }, 500);
     }

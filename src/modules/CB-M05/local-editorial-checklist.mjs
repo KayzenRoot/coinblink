@@ -14,6 +14,50 @@ function validHttpsSource(candidate) {
   }
 }
 
+// Source and claim notes are embedded in the local .md article textarea, but
+// cannot substitute for 40 characters of original article prose. This public
+// browser script is standalone under CSP: no imports, fetch or persistence.
+const SOURCE_HEADING = "### CoinBlink source notes (unverified)";
+const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
+const SOURCE_ROW = /^\[\^cb([1-9]|1[0-2])\]: (.{1,90}) \| (https:\/\/\S+)$/u;
+const CLAIM_ROW = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
+
+function stripValidNotes(text, heading, pattern, isSource) {
+  const marker = "\n\n" + heading + "\n";
+  const at = text.lastIndexOf(marker);
+  if (at < 0) return text.includes(heading) ? null : text;
+  const article = text.slice(0, at);
+  const noteText = text.slice(at + marker.length);
+  if (article.includes(heading) || !noteText || noteText.endsWith("\n\n")) return null;
+  const rows = (noteText.endsWith("\n") ? noteText.slice(0, -1) : noteText).split("\n");
+  if (rows.length === 0 || rows.length > 12) return null;
+  const seen = new Set();
+  for (const row of rows) {
+    const match = pattern.exec(row);
+    if (!match || seen.has(match[1])) return null;
+    seen.add(match[1]);
+    if (isSource) {
+      const name = match[2];
+      const url = match[3];
+      if (name !== name.trim() || /[|<>\r\t\\]/u.test(name) || name.includes("[") || name.includes("]")
+          || !validHttpsSource(url) || new URL(url).href !== url) return null;
+    } else if (/[|<>\r]/u.test(match[4])) return null;
+  }
+  return article;
+}
+
+function editorialProse(body) {
+  if (typeof body !== "string" || body.length > 12000) return "";
+  // Partial or forged editorial headings must not count toward article length.
+  const withoutValidHeadings = body.replaceAll(SOURCE_HEADING, "").replaceAll(CLAIM_HEADING, "");
+  if (withoutValidHeadings.includes("### CoinBlink source notes")
+      || withoutValidHeadings.includes("### CoinBlink claim review queue")) return "";
+  const beforeSources = stripValidNotes(body, SOURCE_HEADING, SOURCE_ROW, true);
+  if (beforeSources === null) return "";
+  const article = stripValidNotes(beforeSources, CLAIM_HEADING, CLAIM_ROW, false);
+  return article === null ? "" : article.trim();
+}
+
 /**
  * @param {{ title?: unknown, summary?: unknown, body?: unknown, source?: unknown }} draft
  * @param {{ factReview?: boolean, sourceAttribution?: boolean, ownerPacket?: boolean }} [manual]
@@ -23,7 +67,7 @@ export function evaluateLocalEditorialChecklist(draft, manual = {}) {
   const items = [
     { id: "title", label: "Headline drafted (8+ characters)", done: value("title").length >= LIMITS.title },
     { id: "summary", label: "Summary drafted (20+ characters)", done: value("summary").length >= LIMITS.summary },
-    { id: "body", label: "Article body drafted (40+ characters)", done: value("body").length >= LIMITS.body },
+    { id: "body", label: "Article prose drafted (40+ characters; notes excluded)", done: editorialProse(value("body")).length >= LIMITS.body },
     { id: "source", label: "Original source URL format is HTTPS (not independently verified)", done: validHttpsSource(value("source")) },
     { id: "factReview", label: "I noted claims that require independent fact checking", done: manual.factReview === true },
     { id: "sourceAttribution", label: "I noted the original source and attribution in the draft", done: manual.sourceAttribution === true },

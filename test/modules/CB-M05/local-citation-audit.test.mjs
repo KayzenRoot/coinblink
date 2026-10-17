@@ -11,6 +11,7 @@ import {
 import {
   prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown,
 } from "../../../public/m05-draft-preview.js";
+import { addLocalClaimReview } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 
 const prose = "This independent CoinBlink article needs human review and attribution.";
 
@@ -80,6 +81,37 @@ test("heuristics never inspect the source-note appendix for numeric values", () 
   const audit = analyzeLocalCitationHygiene(source.value);
   assert.equal(audit.totalHints, 0);
   assert.deepEqual(audit.unusedSourceIds, [1]);
+});
+
+test("claim-review queue is metadata, not article text for citation/hint counts", () => {
+  const source = addLocalSource("The editorial summary is deliberately neutral.", "Reference", "https://example.org/original");
+  const cited = insertLocalCitation(source.value, 1, 12);
+  const queued = addLocalClaimReview(cited.value,
+    "TODO: second report estimated 88% change and mentioned [^cb9] without verification.", 1).value;
+  const audit = analyzeLocalCitationHygiene(queued);
+  assert.equal(audit.status, LOCAL_CITATION_AUDIT_STATUS);
+  assert.equal(audit.malformedNotes, false);
+  assert.equal(audit.sourceCount, 1);
+  assert.equal(audit.citedSources, 1);
+  assert.deepEqual(audit.missingDefinitionIds, []);
+  assert.deepEqual(audit.unusedSourceIds, []);
+  assert.equal(audit.totalHints, 0);
+  assert.deepEqual(audit.hints, []);
+});
+
+test("review notes cannot suppress genuine article cues and malformed queues fail closed", () => {
+  const prose = "TODO review the 31% estimate in the original article.";
+  const value = addLocalClaimReview(prose,
+    "An unrelated 77% projection is only a local review note.").value;
+  assert.equal(analyzeLocalCitationHygiene(value).totalHints, 1);
+  const clean = addLocalClaimReview("Article without unverified numerical claims.",
+    "Another 55% number belongs only to this internal note.").value;
+  assert.equal(analyzeLocalCitationHygiene(clean).totalHints, 0);
+  const tampered = clean.replace("NEEDS_HUMAN_REVIEW", "PUBLISHED");
+  const audit = analyzeLocalCitationHygiene(tampered);
+  assert.equal(audit.malformedNotes, true);
+  assert.equal(audit.status, "MALFORMED_CLAIM_NOTES_REPAIR_REQUIRED");
+  assert.equal(audit.totalHints, 0);
 });
 
 test("the output caps displayed excerpts without hiding the true number of signals", () => {

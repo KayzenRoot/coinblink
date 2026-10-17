@@ -60,6 +60,35 @@ function parseSourceNotes(body) {
 export const MAX_CITATION_HINTS = 8;
 export const LOCAL_CITATION_AUDIT_STATUS = "LOCAL_HEURISTIC_ONLY_NOT_FACT_CHECKED";
 const APPENDIX_MARKER = "\n\n" + LOCAL_SOURCE_HEADING + "\n";
+const LOCAL_CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
+const LOCAL_CLAIM_MARKER = "\n\n" + LOCAL_CLAIM_HEADING + "\n";
+const LOCAL_CLAIM_LINE = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
+
+// Ignore the editor's own review queue when counting citations and text hints.
+// Malformed or duplicate queue entries fail closed rather than appearing clean.
+function stripLocalClaimNotes(body) {
+  const start = body.lastIndexOf(LOCAL_CLAIM_MARKER);
+  if (start < 0) {
+    if (body.includes(LOCAL_CLAIM_HEADING)) throw new RangeError("Malformed claim-review queue");
+    return body;
+  }
+  const prose = body.slice(0, start);
+  const section = body.slice(start + LOCAL_CLAIM_MARKER.length);
+  if (prose.includes(LOCAL_CLAIM_HEADING) || !section) {
+    throw new RangeError("Duplicate or empty claim-review queue");
+  }
+  const entries = section.split("\n");
+  if (entries.length > 12) throw new RangeError("Claim-review queue exceeds its limit");
+  const ids = new Set();
+  for (const line of entries) {
+    const match = LOCAL_CLAIM_LINE.exec(line);
+    if (!match || ids.has(Number(match[1])) || /[|<>\r\n]/u.test(match[4])) {
+      throw new RangeError("Malformed or duplicate claim-review entry");
+    }
+    ids.add(Number(match[1]));
+  }
+  return prose;
+}
 const MARKER_PATTERN = /\[\^cb(\d+)\]/gu;
 const REVIEW_PLACEHOLDER = /\b(?:TODO|FIXME|TBD|CITATION NEEDED|SOURCE NEEDED|FONTE PENDENTE|VERIFICAR FONTE|CHECAR FONTE)\b|\[(?:citation needed|source needed|fonte\??|verificar)\]/iu;
 const NUMERIC_CLAIM = /(?:\b\d+(?:[.,]\d+)?\s*%|\b(?:R\$|US\$|\$)\s*\d+(?:[.,]\d+)?)/iu;
@@ -116,7 +145,17 @@ export function analyzeLocalCitationHygiene(body) {
     });
   }
 
-  const { prose, sources } = parsed;
+  let prose;
+  try {
+    prose = stripLocalClaimNotes(parsed.prose);
+  } catch {
+    return Object.freeze({
+      status: "MALFORMED_CLAIM_NOTES_REPAIR_REQUIRED", malformedNotes: true,
+      sourceCount: 0, citedSources: 0, missingDefinitionIds: freezeNumbers([]),
+      unusedSourceIds: freezeNumbers([]), hints: Object.freeze([]), totalHints: 0,
+    });
+  }
+  const { sources } = parsed;
   const used = new Set();
   for (const match of prose.matchAll(MARKER_PATTERN)) used.add(Number(match[1]));
   const known = new Set(sources.map((source) => source.id));
@@ -150,8 +189,8 @@ if (typeof document !== "undefined") {
       };
       if (audit.malformedNotes) {
         badge.textContent = "Repair needed";
-        status.textContent = "Cannot evaluate modified or invalid source notes. Review the article manually.";
-        note("Source notes are malformed, or the article exceeds the local size limit.");
+        status.textContent = "Cannot evaluate malformed source or claim-review notes. Review the article manually.";
+        note("Source or claim-review notes are malformed, or the article exceeds the local size limit.");
         return;
       }
       const count = audit.missingDefinitionIds.length + audit.unusedSourceIds.length + audit.totalHints;

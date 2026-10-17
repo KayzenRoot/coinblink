@@ -1,6 +1,6 @@
 # CB-M05-P1C-OWNER-ADMIN-001 · Secure Single-Owner Admin Integration (STAGED WO)
 
-**State:** PROPOSED, NOT EXECUTABLE. **Risk:** HIGH_ASSURANCE. **Owner:** KayzenRoot. **Base:** `21d9e0fca64bf30e945e6044f37fec1f92dfc8f5`. This candidate is an execution contract, not code authority. A separate exact-SHA Owner GO and protected merge of the effective Source Pack is required before a production/privileged implementation task.
+**State:** PROPOSED, NOT EXECUTABLE. **Risk:** HIGH_ASSURANCE. **Owner:** KayzenRoot. **Base:** `6919125c9a6eb593e66b2b909575534937fef76c`. This candidate is an execution contract, not code authority. A separate exact-SHA Owner GO and protected merge of the effective Source Pack is required before a production/privileged implementation task.
 
 ## Product objective
 Deliver a truly protected **one-person** Owner admin, backed by server-side challenge/identity/session, with local reproducible D1 contract tests and real application routing, **without publishing a single article yet**. Maintain separate later scopes for secret vault (P1-D) and source-attributed editorial publish (P1-E); none may be counted DONE individually.

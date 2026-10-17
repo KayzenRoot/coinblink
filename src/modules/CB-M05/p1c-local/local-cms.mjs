@@ -24,7 +24,7 @@ async function digest(value) {
   return hex(new Uint8Array(await crypto.subtle.digest('SHA-256', utf8.encode(value))));
 }
 async function keyedDigest(secretHex, value) {
-  const bytes = Uint8Array.from(secretHex.match(/.{2}/g), x => parseInt(x, 16));
+  const bytes = Uint8Array.from(secretHex.match(/.{2}/g), x => Number.parseInt(x, 16));
   const key = await crypto.subtle.importKey('raw', bytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return hex(new Uint8Array(await crypto.subtle.sign('HMAC', key, utf8.encode(value))));
 }
@@ -32,7 +32,7 @@ function fixedEquals(left, right) {
   if (typeof left !== 'string' || typeof right !== 'string') return false;
   if (left.length !== 64 || right.length !== 64) return false;
   let difference = 0;
-  for (let i = 0; i < 64; i++) difference |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  for (let i = 0; i < 64; i++) difference |= left.codePointAt(i) ^ right.codePointAt(i);
   return difference === 0;
 }
 // WebAuthn clientDataJSON.challenge is base64url(opaque challenge bytes), not
@@ -42,8 +42,8 @@ export function webauthnChallengeFromHex(challengeHex) {
     throw new TypeError('A valid 256-bit local challenge is required');
   }
   const parts = challengeHex.match(/.{2}/g);
-  const binary = String.fromCharCode(...parts.map(x => Number.parseInt(x, 16)));
-  return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const binary = String.fromCodePoint(...parts.map(x => Number.parseInt(x, 16)));
+  return btoa(binary).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
 }
 function ownerOrigin(request) {
   return new URL(request.url).origin === CMS_TEST_ORIGIN &&

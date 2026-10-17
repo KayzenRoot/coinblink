@@ -23,6 +23,28 @@ const ALLOWED_STATIC = new Set([
 ]);
 const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
 
+// The checked-in SQLite fixture has two BEGIN/END triggers. Split only
+// at statement boundaries, not at the semicolons inside trigger bodies.
+// A deterministic pass avoids a backtracking-prone lookahead over whitespace.
+function splitLocalSchemaStatements(schema) {
+  const withoutComments = schema.replaceAll('\r', '').split('\n')
+    .filter(line => !line.trimStart().startsWith('--')).join('\n');
+  const chunks = withoutComments.split(';');
+  const statements = [];
+  let pending = '';
+  for (const chunk of chunks) {
+    const trimmed = chunk.trim();
+    if (!trimmed) continue;
+    if (pending && (trimmed.startsWith('CREATE ') || trimmed.startsWith('PRAGMA '))) {
+      statements.push(pending.trim());
+      pending = '';
+    }
+    pending += (pending ? ';' : '') + chunk;
+  }
+  if (pending.trim()) statements.push(pending.trim());
+  return statements;
+}
+
 async function applySchema(db, persistent) {
   const existing = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cms_owner'").first();
   if (existing && persistent) {
@@ -38,9 +60,7 @@ async function applySchema(db, persistent) {
   }
   assert.equal(existing, null, 'database must start empty unless explicit persistent preview');
   const schema = readFileSync(SCHEMA_URL, 'utf8');
-  const statements = schema.replace(/\r/g, '').replace(/^\s*--.*$/gm, '')
-    .split(/;\s*(?=(?:CREATE|PRAGMA)\b|$)/iu)
-    .map(statement => statement.trim()).filter(Boolean);
+  const statements = splitLocalSchemaStatements(schema);
   assert.ok(statements.length >= 8);
   for (const statement of statements) await db.prepare(statement).run();
   if (persistent) {

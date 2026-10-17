@@ -1,5 +1,5 @@
 // M04 filter stays in the browser, no requests, storage or trading calls.
-for (const root of document.querySelectorAll("[data-m04-root]")) {
+for (const root of globalThis.document.querySelectorAll("[data-m04-root]")) {
   const search = root.querySelector("[data-m04-search]");
   const cards = [...root.querySelectorAll("[data-m04-entry]")];
   const count = root.querySelector("[data-m04-count]");

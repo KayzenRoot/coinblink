@@ -81,7 +81,7 @@ test("M02 isolated built Astro / Chromium accessible offline workbench", { timeo
     await search.focus();
     await search.fill("wallet");
     assert.equal(await page.locator("[data-m02-entry]:visible").count(), 1);
-    await page.locator("[data-m02-category]").selectOption("education");
+    await page.locator("select[data-m02-category]").selectOption("education");
     assert.equal(await page.locator("[data-m02-entry]:visible").count(), 0);
     assert.equal(await page.locator("[data-m02-empty]").isVisible(), true);
     await search.fill("");

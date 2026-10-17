@@ -140,9 +140,19 @@ try {
   const context = await browser.newContext();
   // Reject unexpected remote requests before bytes can leave the isolated fixture.
   // The request listener below records attempted leaks and fails the test.
-  await context.route("**/*", (route) => isFixtureOriginRequest(route.request().url(), origin)
-    ? route.continue()
-    : route.abort("blockedbyclient"));
+  const routeHandlerFailures = [];
+  await context.route("**/*", async (route) => {
+    try {
+      if (isFixtureOriginRequest(route.request().url(), origin)) {
+        await route.continue();
+        return;
+      }
+      await route.abort("blockedbyclient");
+    } catch (error) {
+      routeHandlerFailures.push(error instanceof Error ? error.message : "unknown route handler failure");
+      throw error;
+    }
+  });
   const page = await context.newPage();
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -257,20 +267,21 @@ try {
   // Exercise the real Astro->GoldenHome producer prop path with mock-only
   // fixture routes. The Golden Home visual source and approved art stay untouched.
   const producerSmoke = {};
-  for (const [route, expected, forbidden] of [
-    ["/mock-producers", {
+  const producerCases = [
+    { path: "/mock-producers", expected: {
       news: "SYNTHETIC_FIXTURE_ONLY",
       sources: "SYNTHETIC_FIXTURE_ONLY",
       markets: "SYNTHETIC_FIXTURE_ONLY",
-    }, ["PRIVATE_FIXTURE_NEVER_RENDER_THIS", "987654321", "fake-source.example.test"]],
-    ["/denied-producers", {
+    }, forbidden: ["PRIVATE_FIXTURE_NEVER_RENDER_THIS", "987654321", "fake-source.example.test"] },
+    { path: "/denied-producers", expected: {
       news: "REJECTED_LIVE_UNAUTHORIZED",
       sources: "REJECTED_INVALID_INPUT",
       markets: "EMPTY_SYNTHETIC_FIXTURE",
-    }, ["PRIVATE_LIVE_NEVER_RENDER_THIS"]],
-  ]) {
-    const response = await page.goto(origin + route, { waitUntil: "networkidle" });
-    assert.equal(response?.status(), 200, "offline producer fixture route must render: " + route);
+    }, forbidden: ["PRIVATE_LIVE_NEVER_RENDER_THIS"] },
+  ];
+  const checkProducerCase = async ({ path, expected, forbidden }) => {
+    const response = await page.goto(new URL(path, origin).href, { waitUntil: "networkidle" });
+    assert.equal(response?.status(), 200, "offline producer fixture route must render: " + path);
     const states = {
       news: await page.locator("#latest-news").getAttribute("data-m01-news-source-state"),
       sources: await page.locator("[data-m01-source-feed-state]").getAttribute("data-m01-source-feed-state"),
@@ -282,9 +293,14 @@ try {
     for (const secret of forbidden) {
       assert.equal(bodyText.includes(secret), false, "unlicensed fixture payload leaked into Home: " + secret);
     }
-    producerSmoke[route] = { statuses: states, payloadNotRendered: true, externalRequests: [] };
-  }
+    producerSmoke[path] = { statuses: states, payloadNotRendered: true, externalRequests: [] };
+  };
+  await producerCases.reduce(
+    (serialCase, producerCase) => serialCase.then(() => checkProducerCase(producerCase)),
+    Promise.resolve(),
+  );
   assert.deepEqual(externalRequests, [], "synthetic producer fixtures must not fetch any external provider");
+  assert.deepEqual(routeHandlerFailures, [], "fixture request routing must complete without errors");
   interactionChecks.syntheticProducerSmoke = producerSmoke;
 
   const mobileHeroGeometry = [];

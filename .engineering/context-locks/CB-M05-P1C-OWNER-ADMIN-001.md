@@ -2,7 +2,7 @@
 
 **Status:** DRAFT_PROPOSAL / NO CODE OR REAL OWNER CREDENTIAL AUTHORIZATION.
 **Frozen canonical main:** `6919125c9a6eb593e66b2b909575534937fef76c`.  **Canonical checkpoint blob:** `72618bef100e6f82e4655b2c6ed482794e0c4649`, `M00_COMPLETE / 5%`; M05 `ADMITTED` **only P0 MOCK**. No new runtime mode or privilege is admitted by this proposed lock.
-**Existing M05 local test-only PR #91:** HEAD `ad7ccc107d2e6c829f67fdce987ac734444cf8d8`, draft=true, NOT MERGED; changes to that HEAD invalidate any assumed code implementation baseline. Its LOCAL API is not a future privileged endpoint. All production Work Orders remain separate.
+**Existing M05 local test-only PR #91:** HEAD `8e5c8a067f649d8495c571781174cb5e08c1339c`, draft=true, NOT MERGED; changes to that HEAD invalidate any assumed code implementation baseline. Its LOCAL API is not a future privileged endpoint. All production Work Orders remain separate.
 
 ## Canonical main exact Git blob fingerprints
 - `AGENTS.md` → `4e8a6ebeb4aa18ac58171fcddf3bde762d725ca7`

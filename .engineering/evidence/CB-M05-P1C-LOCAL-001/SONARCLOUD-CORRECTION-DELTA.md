@@ -73,3 +73,12 @@ On Node.js `v22.23.3`, after these two changes:
 - `npm run build`: passed, including no-session-binding guard.
 - All eight M01 visual-check generated evidence files were restored byte-for-byte from this branch's HEAD; no M01 files remain in the diff.
 - Exact final-head SonarCloud analysis and hosted CI are pending the next non-forced push. No checkpoint delta; `CHECKPOINT_DELTA={}`.
+
+## SonarCloud readback after follow-up correction push
+
+SonarCloud's PR `91` Compute Engine report for commit `a55af604a9db973ff84b87c636ffe843160a2c19` completed successfully at `2026-10-17T21:46:55Z` (`analysisId=11170f82-3f23-464e-986f-bdf7eebea207`). The PR issue search returned **20 issues total: 18 `CLOSED/FIXED`, 2 `RESOLVED/FALSE-POSITIVE`, 0 `OPEN`**. The two findings from the preceding analysis are closed/fixed:
+
+- [`AaFLy4z72eHAxt0yR1hW`](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&issues=AaFLy4z72eHAxt0yR1hW), `javascript:S3776` — dispatcher complexity was reduced by separating fixed method/path dispatch from article-route dispatch.
+- [`AaFGCfF1TcHARY0GVQ1k`](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&issues=AaFGCfF1TcHARY0GVQ1k), `javascript:S9382` — the loop was replaced with two explicitly ordered awaits against the same mutable Playwright browser context.
+
+The two `plsql:CreateOrReplaceCheck` keys remain `RESOLVED/FALSE-POSITIVE` based on the authenticated SonarCloud issue dispositions recorded above. No scanner rules were disabled and no `NOSONAR` suppression was added. This scan covers code commit `a55af60`; a later evidence-only commit, if any, requires confirming Sonar on its own exact HEAD. GitHub's Sonar status for `a55af60` was `pass`; other hosted checks were still running when this readback was recorded. `CHECKPOINT_DELTA={}`.

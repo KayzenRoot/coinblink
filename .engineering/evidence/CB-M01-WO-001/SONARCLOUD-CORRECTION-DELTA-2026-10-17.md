@@ -16,13 +16,13 @@ Only the existing M01 test file was changed for this correction. The visual fixt
 
 | ISSUE_ID | RULE | SEVERITY | FILE:LINE | CAUSE | FIX | TEST | RESULT |
 |---|---|---|---|---|---|---|---|
-| `AaFJE-4gbbm1AbGOPb9A` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:272` | Sequential navigation and DOM assertions were expressed in a loop using `await`. | Extracted a per-route async check and chained route cases with `reduce`/`.then`, preserving page-state order and failure propagation. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
-| `AaFJE-4gbbm1AbGOPb9B` | `javascript:S6551` | MINOR | `test/modules/CB-M01/visual-check.mjs:272` | Route tuple inferred a union type and was concatenated into a URL. | Converted cases to objects with string `path`; use `new URL(path, origin).href`. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
-| `AaFJE-4gbbm1AbGOPb9C` | `javascript:S6551` | MINOR | `test/modules/CB-M01/visual-check.mjs:273` | Same implicit route-to-string conversion in the assertion message. | Assertion message now uses the typed string `path`. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
-| `AaFJE-4gbbm1AbGOPb9D` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:275` | DOM reads followed a page navigation inside the loop. | Kept each navigation and its subsequent DOM reads inside the serial per-route function. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
-| `AaFJE-4gbbm1AbGOPb9E` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:276` | Same sequential DOM-read pattern. | Same serial per-route function; no parallel page reuse. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
-| `AaFJE-4gbbm1AbGOPb9F` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:277` | Same sequential DOM-read pattern. | Same serial per-route function; no parallel page reuse. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
-| `AaFJE-4gbbm1AbGOPb9G` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:280` | Body inspection depended on the same page remaining on the current route. | Kept body inspection and assertions inside the serial per-route function. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `3f330be356e89bd25bce2dfb005a39a28dffc5e8` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9A` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:272` | Sequential navigation and DOM assertions were expressed in a loop using `await`. | Extracted a per-route async check and chained route cases with `reduce`/`.then`, preserving page-state order and failure propagation. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9B` | `javascript:S6551` | MINOR | `test/modules/CB-M01/visual-check.mjs:272` | Route tuple inferred a union type and was concatenated into a URL. | Converted cases to objects with string `path`; use `new URL(path, origin).href`. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9C` | `javascript:S6551` | MINOR | `test/modules/CB-M01/visual-check.mjs:273` | Same implicit route-to-string conversion in the assertion message. | Assertion message now uses the typed string `path`. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9D` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:275` | DOM reads followed a page navigation inside the loop. | Kept each navigation and its subsequent DOM reads inside the serial per-route function. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9E` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:276` | Same sequential DOM-read pattern. | Same serial per-route function; no parallel page reuse. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9F` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:277` | Same sequential DOM-read pattern. | Same serial per-route function; no parallel page reuse. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
+| `AaFJE-4gbbm1AbGOPb9G` | `javascript:S9382` | MINOR | `test/modules/CB-M01/visual-check.mjs:280` | Body inspection depended on the same page remaining on the current route. | Kept body inspection and assertions inside the serial per-route function. | Full Node 22 unit suite; Playwright. | Resolved; fresh Sonar analysis for PR HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110` returned 0 open issues. |
 
 The independent read-only review found the sequence and URL construction semantics preserved. The request route handler now awaits both `continue()` and `abort()`, rethrows handler failures, and the test asserts the captured failure list is empty. The existing request listener remains the single recorder for attempted external requests.
 
@@ -38,7 +38,7 @@ Commands and results on code HEAD `ae88a7b79123830be9edbd5a7135425dd86f69f0`:
 - `node --check test/modules/CB-M01/visual-check.mjs` — PASS.
 - `git diff --check` — PASS.
 - Local M01 Chromium visual evidence — desktop 1536×864, tablet 768×1024, mobile 390×844; screenshots and JSON reports are updated in this directory. Axe checks reported zero violations in the captured M01 runs.
-- SonarCloud API re-read after push returned **0 open issues** for PR #112 at `3f330be356e89bd25bce2dfb005a39a28dffc5e8`; the matching SonarCloud check was successful. The GEF Ubuntu/Windows and Docker smoke jobs for that HEAD were still in progress when this entry was written; final exact-head status must be re-read after the evidence-only commit. CodeRabbit's green status is not a substantive review when the review is skipped.
+- SonarCloud API re-read returned **0 open issues** for PR #112 at `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110`; its SonarCloud check was successful. The exact HEAD's GEF Ubuntu, GEF Windows, Docker smoke, SonarCloud, Socket Pull Request Alerts, Socket Project Report, and CodeRabbit status contexts all passed. CodeRabbit's green status is not a substantive review because automatic review was skipped.
 
 ### Updated visual evidence SHA-256
 
@@ -54,3 +54,11 @@ Commands and results on code HEAD `ae88a7b79123830be9edbd5a7135425dd86f69f0`:
 | `screenshots/r26-home-integrated-mobile-390x844.png` | 244434 | `cb46d1a09422f5071a941855c001d69e2bc87bedd09c261e2f72d36d9ce0f5ba` |
 
 No merge, deployment, checkpoint promotion, live content, external provider request, or credential was used.
+
+## Final exact-head readback
+
+- PR #112 remained open and draft at HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110`.
+- GitHub required status contexts: 7/7 PASS (GEF Ubuntu, GEF Windows, Docker Compose smoke, SonarCloud, Socket Pull Request Alerts, Socket Project Report, CodeRabbit status).
+- SonarCloud API: 0 open issues for this PR HEAD.
+- CodeRabbit status is green but its review was skipped; it is not counted as a substantive review.
+- No merge, deploy, or checkpoint change was made.

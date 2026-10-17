@@ -40,3 +40,7 @@
 **Independent unmerged security-lab dependency**: #91 reviewed test-only head `8e5c8a067f649d8495c571781174cb5e08c1339c`; 19 new Sonar findings await classification. No optimistic merge, deployment, privileged enrollment, remote D1, vault, provider resource, public routes, or real publication. This is a **proposal-document refresh** only. An effective ADR and explicit Owner security design GO must precede a **new** runnable P1-C Work Order and execution Context Lock (fresh base, file fingerprints, actual providers and concrete security test evidence). Subsequent main/PR drift invalidates this review baseline, not the historical records.
 
 **STOP unchanged:** `P1C_PROPOSAL_ONLY_AWAITING_EXACT_HEAD_CI_OWNER_REVIEW_AND_SEPARATE_SCOPE_GO`.
+
+## Independent M05 lab branch drift · 2026-10-17 (proposal dependency only)
+
+PR #91 local-only WebAuthn/D1 lab was synchronized from historical head `8e5c8a067f649d8495c571781174cb5e08c1339c` to exact new commit `28002d1de5f89b12f2ff5ad1d04b72d49cf521f2` by a **non-force ancestry merge** with protected `main=5cbb808ebcc052780ba7e4f426080ddb0ef62f64`. The original five local-only Git blobs were retained unchanged; no real Owner account or provider binding was added. This does not clear PR #91's 19 previously reported Sonar findings; its new HEAD requires fresh CI/triage and separate HIGH_ASSURANCE audit. The older #91 SHA above is historical. The proposed P1-C security scope and STOP conditions remain unchanged; never reuse this proposal file as an executable context lock.

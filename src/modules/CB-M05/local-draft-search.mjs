@@ -9,6 +9,7 @@ const ESCAPABLE = /[.*+?^$(){}|[\]\\]/gu;
 // ordinary prose find/replace. Standalone browser asset: no relative imports.
 const SOURCE_HEADING = "### CoinBlink source notes (unverified)";
 const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
+const CLAIM_HEADING_PREFIX = "### CoinBlink claim review queue";
 const SOURCE_MARKER = "\n\n" + SOURCE_HEADING + "\n";
 const CLAIM_MARKER = "\n\n" + CLAIM_HEADING + "\n";
 const SOURCE_LINE = /^\[\^cb([1-9]|1[0-2])\]: (.+) \| (https:\/\/\S+)$/u;
@@ -50,7 +51,7 @@ function editableProse(body) {
   }
   const claimAt = withClaims.lastIndexOf(CLAIM_MARKER);
   const prose = claimAt < 0 ? withClaims : withClaims.slice(0, claimAt);
-  if ((claimAt < 0 && withClaims.includes(CLAIM_HEADING))
+  if ((claimAt < 0 && withClaims.includes(CLAIM_HEADING_PREFIX))
       || (claimAt >= 0 && prose.includes(CLAIM_HEADING))) {
     throw new RangeError("Malformed or duplicate claim-review queue");
   }

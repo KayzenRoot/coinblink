@@ -249,6 +249,39 @@ try {
     await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
   }
 
+  // Exercise the real Astro->GoldenHome producer prop path with mock-only
+  // fixture routes. The Golden Home visual source and approved art stay untouched.
+  const producerSmoke = {};
+  for (const [route, expected, forbidden] of [
+    ["/mock-producers", {
+      news: "SYNTHETIC_FIXTURE_ONLY",
+      sources: "SYNTHETIC_FIXTURE_ONLY",
+      markets: "SYNTHETIC_FIXTURE_ONLY",
+    }, ["PRIVATE_FIXTURE_NEVER_RENDER_THIS", "987654321", "fake-source.example.test"]],
+    ["/denied-producers", {
+      news: "REJECTED_LIVE_UNAUTHORIZED",
+      sources: "REJECTED_INVALID_INPUT",
+      markets: "EMPTY_SYNTHETIC_FIXTURE",
+    }, ["PRIVATE_LIVE_NEVER_RENDER_THIS"]],
+  ]) {
+    const response = await page.goto(origin + route, { waitUntil: "networkidle" });
+    assert.equal(response?.status(), 200, "offline producer fixture route must render: " + route);
+    const states = {
+      news: await page.locator("#latest-news").getAttribute("data-m01-news-source-state"),
+      sources: await page.locator("[data-m01-source-feed-state]").getAttribute("data-m01-source-feed-state"),
+      markets: await page.locator("#market-overview").getAttribute("data-m01-market-source-state"),
+    };
+    assert.deepEqual(states, expected, "producer input must be isolated and fail closed in real Astro HTML");
+    const bodyText = await page.locator("body").innerText();
+    assert.match(bodyText, /DEMO/u, "a producer fixture must not remove DEMO labeling");
+    for (const secret of forbidden) {
+      assert.equal(bodyText.includes(secret), false, "unlicensed fixture payload leaked into Home: " + secret);
+    }
+    producerSmoke[route] = { statuses: states, payloadNotRendered: true, externalRequests: [] };
+  }
+  assert.deepEqual(externalRequests, [], "synthetic producer fixtures must not fetch any external provider");
+  interactionChecks.syntheticProducerSmoke = producerSmoke;
+
   const mobileHeroGeometry = [];
   for (const width of [390, 360, 320]) {
     await page.setViewportSize({ width, height: 844 });

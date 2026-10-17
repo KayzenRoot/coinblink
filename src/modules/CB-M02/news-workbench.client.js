@@ -1,5 +1,5 @@
 // CB-M02 local-only filter. DOM-only, no storage, fetch, navigation or publication.
-for (const root of document.querySelectorAll("[data-m02-root]")) {
+for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
   const search = root.querySelector("[data-m02-search]");
   const category = root.querySelector("[data-m02-category]");
   const count = root.querySelector("[data-m02-result-count]");

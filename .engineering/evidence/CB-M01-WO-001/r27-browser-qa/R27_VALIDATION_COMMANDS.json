@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "status": "R27_DEMO_QA_PASS",
+  "validationStatus": "PARTIAL_AGGREGATE_TEST_TIMEOUTS",
+  "repository": "KayzenRoot/coinblink",
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "testedHeadSha": "3da9f857c0566c499175427919873dbc7d52f145",
+  "runtime": {
+    "node": "v22.23.3",
+    "npm": "10.9.9",
+    "platform": "win32-x64"
+  },
+  "preview": {
+    "url": "http://127.0.0.1:3001/en",
+    "dockerContainer": "coinblink-m01-r26-app-1",
+    "healthStatus": 200,
+    "routeStatus": 200,
+    "leftRunning": true
+  },
+  "browserQa": {
+    "result": "PASS",
+    "browsers": {
+      "chromium": "156.0.8078.4",
+      "msedge": "155.0.4283.45",
+      "firefox": "NOT_INSTALLED_NO_DOWNLOAD_ATTEMPTED",
+      "webkit": "NOT_INSTALLED_NO_DOWNLOAD_ATTEMPTED"
+    },
+    "viewportCaptures": 6,
+    "axeViolations": 0,
+    "horizontalOverflow": false,
+    "consoleOrPageErrors": 0,
+    "externalRequests": 0,
+    "selectionCasesPassed": 7,
+    "failureCasesPassed": 5,
+    "coldCacheProfiles": 3,
+    "coldCacheRuns": 9,
+    "servedImagePathsVerified": 8,
+    "geometryMatchesR26": true,
+    "zoomCheck": "768x432 CSS viewport equivalent; browser chrome zoom not controlled"
+  },
+  "commands": [
+    {
+      "command": "node .engineering/evidence/CB-M01-WO-001/r27-browser-qa/r27-browser-performance-visual-qa.mjs",
+      "result": "PASS",
+      "details": "Chromium and Edge responsive, accessibility, media-selection, fallback, and performance scenarios"
+    },
+    {
+      "command": "node .engineering/evidence/CB-M01-WO-001/r27-browser-qa/r27-verify-served-assets.mjs",
+      "result": "PASS",
+      "details": "8/8 served image paths match source byte lengths and SHA-256"
+    },
+    {
+      "command": "npm test",
+      "result": "PARTIAL",
+      "details": "191/192; visual-check.mjs Astro fixture readiness timeout; isolated rerun passed 1/1"
+    },
+    {
+      "command": "npm run test:unit -- --test-concurrency=1",
+      "result": "PARTIAL",
+      "details": "191/192; integrated-visual-check.mjs Astro fixture readiness timeout; isolated rerun passed 1/1"
+    },
+    {
+      "command": "npm run test:e2e",
+      "result": "PARTIAL",
+      "details": "31/34; three M00 viewport screenshot timeouts in full batch; exact cases passed on isolated reruns (desktop 1/1, tablet and Portuguese mobile 2/2)"
+    },
+    {
+      "command": "npm run lint",
+      "result": "PASS",
+      "details": "Passed after browser globals annotation was added to the R27 harness"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "PASS",
+      "details": "79 files; zero diagnostics"
+    },
+    {
+      "command": "npm audit --audit-level=high",
+      "result": "PASS",
+      "details": "Zero vulnerabilities"
+    },
+    {
+      "command": "npm run build",
+      "result": "PASS",
+      "details": "Build completed"
+    },
+    {
+      "command": "Node 22 --check on both R27 .mjs scripts",
+      "result": "PASS",
+      "details": "Both scripts parsed successfully"
+    }
+  ],
+  "blender": {
+    "available": false,
+    "checked": "PATH and standard install directories",
+    "renderOrReopenAttempted": false,
+    "priorPortableBlendSha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+    "priorPortableBlendBytes": 4249267,
+    "note": "Prior R26 hash match only; no new Blender validation in R27"
+  },
+  "changes": {
+    "productSourceChanged": false,
+    "evidenceAddedUnder": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa"
+  },
+  "governance": {
+    "authorizedToMerge": false,
+    "merge": false,
+    "deployment": false,
+    "checkpointPromotion": false,
+    "rulesetChange": false,
+    "commercialOrVisualApproval": false,
+    "m01DeclaredComplete": false
+  }
+}

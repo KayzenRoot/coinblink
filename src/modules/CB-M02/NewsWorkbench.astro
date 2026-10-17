@@ -1,0 +1,45 @@
+---
+import { listMockNews, NEWS_MOCK_POLICY } from "./news-workbench.mjs";
+import newsUiUrl from "./news-workbench.client.js?url&no-inline";
+const news = listMockNews();
+const categories = ["all", "security", "protocol", "education"];
+---
+<section class="cb-m02" data-m02-root aria-labelledby="m02-title">
+  <header>
+    <small>CB-M02 · MOCK / FICTIONAL / NOT PUBLISHED</small>
+    <h2 id="m02-title">News discovery, offline demo</h2>
+    <p>Every example on this panel is invented. No current news, feed requests or publication.</p>
+    <p>Policy: <code>{NEWS_MOCK_POLICY}</code></p>
+  </header>
+  <div class="m02-controls">
+    <label>Search invented examples <input type="search" maxlength="80" data-m02-search placeholder="Try wallet" autocomplete="off" /></label>
+    <label>Example category
+      <select data-m02-category>
+        {categories.map(category => <option value={category}>{category === "all" ? "All examples" : category}</option>)}
+      </select>
+    </label>
+  </div>
+  <p role="status" aria-live="polite" data-m02-result-count>{news.items.length} fictional examples</p>
+  <div class="m02-results">
+    {news.items.map(item => (
+      <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[item.title, item.summary, item.category].join(" ").toLowerCase()}>
+        <small>MOCK · {item.category} · NOT PUBLISHED</small>
+        <h3>{item.title}</h3>
+        <p>{item.summary}</p>
+        <details><summary>Read fictional detail</summary><p>{item.body}</p><p>This is an invented teaching specimen, never licensed live news.</p></details>
+      </article>
+    ))}
+  </div>
+  <p data-m02-empty hidden>No fictional samples match. No external search was made.</p>
+</section>
+<script is:inline src={newsUiUrl}></script>
+<style>
+  .cb-m02{color:#e9f6eb;background:#111b18;border:1px solid #456e4e;border-radius:1rem;padding:1.25rem;max-width:75rem;margin:auto}
+  .cb-m02 small{color:#b0f66b}.cb-m02 h2,.cb-m02 h3{color:#d7ffa1}
+  .m02-controls{display:flex;flex-wrap:wrap;gap:1rem}.m02-controls label{display:grid;gap:.4rem;flex:1 1 13rem}
+  .m02-controls input,.m02-controls select{background:#192721;color:#fff;border:1px solid #719a79;border-radius:.5rem;padding:.7rem;width:100%}
+  .m02-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
+  .m02-results article{border:1px solid #456e4e;border-radius:.75rem;padding:1rem}
+  .cb-m02 :focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .m02-results article[hidden]{display:none}
+</style>

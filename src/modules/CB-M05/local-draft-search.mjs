@@ -8,6 +8,7 @@ const ESCAPABLE = /[.*+?^$(){}|[\]\\]/gu;
 // Protect author-controlled source footnotes and claim-review queue from
 // ordinary prose find/replace. Standalone browser asset: no relative imports.
 const SOURCE_HEADING = "### CoinBlink source notes (unverified)";
+const SOURCE_HEADING_PREFIX = "### CoinBlink source notes";
 const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
 const CLAIM_HEADING_PREFIX = "### CoinBlink claim review queue";
 const SOURCE_MARKER = "\n\n" + SOURCE_HEADING + "\n";
@@ -27,8 +28,8 @@ function readLines(section, marker, limit) {
 function editableProse(body) {
   const sourceAt = body.lastIndexOf(SOURCE_MARKER);
   const withClaims = sourceAt < 0 ? body : body.slice(0, sourceAt);
-  if ((sourceAt < 0 && body.includes(SOURCE_HEADING))
-      || (sourceAt >= 0 && withClaims.includes(SOURCE_HEADING))) {
+  if ((sourceAt < 0 && body.includes(SOURCE_HEADING_PREFIX))
+      || (sourceAt >= 0 && withClaims.includes(SOURCE_HEADING_PREFIX))) {
     throw new RangeError("Malformed or duplicate source notes");
   }
   if (sourceAt >= 0) {
@@ -52,7 +53,7 @@ function editableProse(body) {
   const claimAt = withClaims.lastIndexOf(CLAIM_MARKER);
   const prose = claimAt < 0 ? withClaims : withClaims.slice(0, claimAt);
   if ((claimAt < 0 && withClaims.includes(CLAIM_HEADING_PREFIX))
-      || (claimAt >= 0 && prose.includes(CLAIM_HEADING))) {
+      || (claimAt >= 0 && prose.includes(CLAIM_HEADING_PREFIX))) {
     throw new RangeError("Malformed or duplicate claim-review queue");
   }
   if (claimAt >= 0) {

@@ -24,7 +24,9 @@ import { getHomeProducerBoundary } from "./home-producer-boundary.mjs";
 interface Props { locale?: "en" | "pt-br"; producerFeeds?: unknown; }
 const { locale = "en", producerFeeds } = Astro.props;
 // Non-privileged producer readiness; LIVE must remain unrenderable without its own admission.
-const homeProducerBoundary = getHomeProducerBoundary(producerFeeds);
+const safeProducerFeeds = producerFeeds && typeof producerFeeds === "object"
+  && !Array.isArray(producerFeeds) ? producerFeeds : {};
+const homeProducerBoundary = getHomeProducerBoundary(safeProducerFeeds);
 const t = (english: string) => translateHome(english, locale);
 const learningTopics = getLearningTopics(locale);
 const officialSources = getOfficialSources(locale);

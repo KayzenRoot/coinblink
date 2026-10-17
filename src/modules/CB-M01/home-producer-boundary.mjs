@@ -9,11 +9,13 @@ const FEEDS = Object.freeze([
   Object.freeze({ key: "markets", producer: "CB-M04", section: "market-overview" }),
 ]);
 
+/** @param {unknown} value @returns {value is Record<string, unknown>} */
 function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     && Object.getPrototypeOf(value) === Object.prototype;
 }
 
+/** @param {unknown} candidate */
 function classify(candidate) {
   if (candidate === undefined || candidate === null) {
     return { status: "NOT_CONNECTED", fixtureCount: 0 };
@@ -40,27 +42,34 @@ function classify(candidate) {
 
 /**
  * Fail-closed metadata projection for authorized MOCK producer fixtures.
- * `feeds` is a local candidate input, not a browser/API endpoint or a promise.
- * No candidate field or payload item is copied into this public read-model.
+ * @param {unknown} feeds
+ * @returns {Readonly<{
+ *  contractVersion: string, policy: string, publicationEnabled: boolean,
+ *  advertisingEnabled: boolean, news: Readonly<HomeFeedState>,
+ *  sources: Readonly<HomeFeedState>, markets: Readonly<HomeFeedState>
+ * }>}
  */
+/** @typedef {{ producer: string, section: string, mode: "MOCK", status: string, fixtureCount: number, liveEligible: false }} HomeFeedState */
 export function getHomeProducerBoundary(feeds = {}) {
   const input = isRecord(feeds) ? feeds : {};
-  const result = {
+  /** @param {"news" | "sources" | "markets"} key */
+  const project = (key) => {
+    const producer = FEEDS.find((entry) => entry.key === key);
+    if (!producer) throw new RangeError("Unknown producer seam");
+    const classified = classify(input[key]);
+    return Object.freeze(/** @type {HomeFeedState} */ ({
+      producer: producer.producer, section: producer.section,
+      mode: "MOCK", status: classified.status,
+      fixtureCount: classified.fixtureCount, liveEligible: false,
+    }));
+  };
+  return Object.freeze({
     contractVersion: HOME_PRODUCER_CONTRACT_VERSION,
     policy: HOME_PRODUCER_POLICY,
     publicationEnabled: false,
     advertisingEnabled: false,
-  };
-  for (const feed of FEEDS) {
-    const classified = classify(input[feed.key]);
-    result[feed.key] = Object.freeze({
-      producer: feed.producer,
-      section: feed.section,
-      mode: "MOCK",
-      status: classified.status,
-      fixtureCount: classified.fixtureCount,
-      liveEligible: false,
-    });
-  }
-  return Object.freeze(result);
+    news: project("news"),
+    sources: project("sources"),
+    markets: project("markets"),
+  });
 }

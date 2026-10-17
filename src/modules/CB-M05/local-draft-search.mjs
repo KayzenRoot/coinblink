@@ -25,48 +25,54 @@ function readLines(section, marker, limit) {
   return lines;
 }
 
+function validSourceUrl(rawUrl) {
+  let url;
+  try { url = new URL(rawUrl); } catch { throw new RangeError("Invalid source-note URL"); }
+  if (url.protocol !== "https:" || !url.hostname.includes(".") || url.username || url.password
+      || url.href !== rawUrl || rawUrl.length > 500) {
+    throw new RangeError("Noncanonical source-note URL");
+  }
+}
+
+function validateSourceNotes(section) {
+  const sourceIds = new Set();
+  for (const line of readLines(section, SOURCE_MARKER, 12)) {
+    const matched = SOURCE_LINE.exec(line);
+    if (!matched || sourceIds.has(matched[1]) || matched[2].length > 90
+        || matched[2].includes("[") || matched[2].includes("]")
+        || matched[2].includes("\\") || /[|<>\r\t]/u.test(matched[2])) {
+      throw new RangeError("Invalid source-note line");
+    }
+    validSourceUrl(matched[3]);
+    sourceIds.add(matched[1]);
+  }
+}
+
+function validateClaimNotes(section) {
+  const claimIds = new Set();
+  for (const line of readLines(section, CLAIM_MARKER, 12)) {
+    const matched = CLAIM_LINE.exec(line);
+    if (!matched || claimIds.has(matched[1]) || /[|<>\r\n]/u.test(matched[4])) {
+      throw new RangeError("Invalid or duplicate claim-review item");
+    }
+    claimIds.add(matched[1]);
+  }
+}
+
 function editableProse(body) {
   const sourceAt = body.lastIndexOf(SOURCE_MARKER);
   const withClaims = sourceAt < 0 ? body : body.slice(0, sourceAt);
-  if ((sourceAt < 0 && body.includes(SOURCE_HEADING_PREFIX))
-      || (sourceAt >= 0 && withClaims.includes(SOURCE_HEADING_PREFIX))) {
+  if (withClaims.includes(SOURCE_HEADING_PREFIX)) {
     throw new RangeError("Malformed or duplicate source notes");
   }
-  if (sourceAt >= 0) {
-    const sourceIds = new Set();
-    for (const line of readLines(body.slice(sourceAt), SOURCE_MARKER, 12)) {
-      const matched = SOURCE_LINE.exec(line);
-      if (!matched || sourceIds.has(matched[1]) || matched[2].length > 90
-          || matched[2].includes("[") || matched[2].includes("]")
-          || matched[2].includes("\\") || /[|<>\r\t]/u.test(matched[2])) {
-        throw new RangeError("Invalid source-note line");
-      }
-      const rawUrl = matched[3];
-      let url;
-      try { url = new URL(rawUrl); } catch { throw new RangeError("Invalid source-note URL"); }
-      if (url.protocol !== "https:" || !url.hostname.includes(".") || url.username || url.password
-          || url.href !== rawUrl || rawUrl.length > 500) {
-        throw new RangeError("Noncanonical source-note URL");
-      }
-      sourceIds.add(matched[1]);
-    }
-  }
+  if (sourceAt >= 0) validateSourceNotes(body.slice(sourceAt));
+
   const claimAt = withClaims.lastIndexOf(CLAIM_MARKER);
   const prose = claimAt < 0 ? withClaims : withClaims.slice(0, claimAt);
-  if ((claimAt < 0 && withClaims.includes(CLAIM_HEADING_PREFIX))
-      || (claimAt >= 0 && prose.includes(CLAIM_HEADING_PREFIX))) {
+  if (prose.includes(CLAIM_HEADING_PREFIX)) {
     throw new RangeError("Malformed or duplicate claim-review queue");
   }
-  if (claimAt >= 0) {
-    const claimIds = new Set();
-    for (const line of readLines(withClaims.slice(claimAt), CLAIM_MARKER, 12)) {
-      const matched = CLAIM_LINE.exec(line);
-      if (!matched || claimIds.has(matched[1]) || /[|<>\r\n]/u.test(matched[4])) {
-        throw new RangeError("Invalid or duplicate claim-review item");
-      }
-      claimIds.add(matched[1]);
-    }
-  }
+  if (claimAt >= 0) validateClaimNotes(withClaims.slice(claimAt));
   return Object.freeze({ prose, notes: body.slice(prose.length) });
 }
 

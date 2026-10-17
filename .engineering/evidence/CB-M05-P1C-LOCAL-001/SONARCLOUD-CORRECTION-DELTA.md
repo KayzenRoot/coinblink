@@ -50,3 +50,26 @@ The coordinating agent reports an authenticated SonarCloud readback under accoun
 - [`AaFFx82AuvmeKE72znLw`](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&issues=AaFFx82AuvmeKE72znLw) — `plsql:CreateOrReplaceCheck`, original `schema.sql:85` trigger.
 
 This is a coordinator-reported authenticated UI readback, not an independent read by this worker. An unauthenticated API lookup for these issue keys returned no current issue objects after triage; the direct SonarCloud links above retain the issue references. The JavaScript findings still require exact-head reanalysis to confirm any automatic resolution; the shared virtual-authenticator `S9382` remains intentionally sequential. `CHECKPOINT_DELTA={}`.
+
+## SonarCloud PR analysis after first correction push
+
+The public SonarCloud PR issue API and Compute Engine readback for PR `91` were checked after commit `c81bba3d3a7e0aca4441ed345f0f74fe4d4f0573`. The CE report completed successfully at `2026-10-17T21:36:34Z`. It returned 20 issue records, with exactly two still `OPEN`:
+
+- [`AaFLy4z72eHAxt0yR1hW`](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&issues=AaFLy4z72eHAxt0yR1hW) — `javascript:S3776`, CRITICAL, `src/modules/CB-M05/p1c-local/local-cms.mjs:352`, complexity 16 against the limit 15. This showed that the prior handler decomposition left the route dispatcher one point above the rule threshold.
+- [`AaFGCfF1TcHARY0GVQ1k`](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&issues=AaFGCfF1TcHARY0GVQ1k) — `javascript:S9382`, MINOR, `test/modules/CB-M05/p1c-local-preview.mjs:166`, await in the loop that creates two virtual authenticators on one browser context.
+
+The two SQL findings were `RESOLVED` with resolution `FALSE-POSITIVE`; the other earlier JavaScript findings were `CLOSED/FIXED`. Corrective delta now separates article-route matching from the fixed-route map, reducing dispatcher branching, and replaces the syntactic authenticator loop with explicit primary-then-recovery awaits. The two authenticator mutations remain sequential against the shared context; no suppression was added. Focused/full tests and a fresh exact-head Sonar readback for this delta are pending. `CHECKPOINT_DELTA={}`.
+
+## Follow-up correction and local verification
+
+The dispatcher was further simplified by mapping fixed method/path pairs to handlers and extracting article path handling into `dispatchArticleRequest`. This reduced branching without changing route/method mappings, fail-closed `404` behavior, or per-route security checks. Virtual authenticators are now added with explicit awaited calls in primary-then-recovery order; both calls mutate the same browser context, so no parallelization is used. No Sonar suppressions were introduced.
+
+On Node.js `v22.23.3`, after these two changes:
+
+- `node --test test/modules/CB-M05/p1c-local-cms.test.mjs`: **14/14 passed**, covering synthetic WebAuthn, local D1 persistence and restart, browser virtual passkey flows, atomicity, and trigger preservation.
+- `npm test`: **421/421 unit tests passed**, build and no-session-binding guard passed, and **48/48 Playwright tests passed**; exit code 0.
+- `npm run lint`: passed (`eslint . --max-warnings=0`).
+- `npm run typecheck`: passed, 145 files, 0 errors, 0 warnings, 0 hints.
+- `npm run build`: passed, including no-session-binding guard.
+- All eight M01 visual-check generated evidence files were restored byte-for-byte from this branch's HEAD; no M01 files remain in the diff.
+- Exact final-head SonarCloud analysis and hosted CI are pending the next non-forced push. No checkpoint delta; `CHECKPOINT_DELTA={}`.

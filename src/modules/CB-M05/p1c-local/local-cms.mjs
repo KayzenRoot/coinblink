@@ -349,23 +349,35 @@ async function updateDraft(request, db, secret, currentTime, id) {
   return json({ id, revision: input.expectedRevision + 1, status: 'draft' });
 }
 
+const LOCAL_FIXED_ROUTES = new Map([
+  ['GET /local/ui', () => localUiResponse()],
+  ['POST /local/challenge', ({ request, db, currentTime }) => issueChallenge(request, db, currentTime)],
+  ['POST /local/login', ({ request, db, secret, currentTime }) => login(request, db, secret, currentTime)],
+  ['POST /local/logout', ({ request, db, secret, currentTime }) => logout(request, db, secret, currentTime)],
+  ['GET /local/articles', ({ request, db, secret, currentTime }) => listDrafts(request, db, secret, currentTime)],
+  ['POST /local/articles', ({ request, db, secret, currentTime }) => createDraft(request, db, secret, currentTime)],
+]);
+
+async function dispatchArticleRequest(request, db, secret, currentTime, route, method) {
+  const match = /^\/local\/articles\/([0-9a-f-]{36})(?:\/(revisions))?$/i.exec(route);
+  if (!match || !validId(match[1])) return null;
+  if (method === 'GET') {
+    return readDraft(request, db, secret, currentTime, match[1], match[2] === 'revisions');
+  }
+  if (method === 'PATCH' && !match[2]) {
+    return updateDraft(request, db, secret, currentTime, match[1]);
+  }
+  return null;
+}
+
 async function dispatchLocalRequest(request, db, secret, currentTime) {
   const route = new URL(request.url).pathname;
   const method = request.method;
-  if (route === '/local/ui' && method === 'GET') return localUiResponse();
-  if (route === '/local/challenge' && method === 'POST') return issueChallenge(request, db, currentTime);
-  if (route === '/local/login' && method === 'POST') return login(request, db, secret, currentTime);
-  if (route === '/local/logout' && method === 'POST') return logout(request, db, secret, currentTime);
-  if (route === '/local/articles' && method === 'GET') return listDrafts(request, db, secret, currentTime);
-  if (route === '/local/articles' && method === 'POST') return createDraft(request, db, secret, currentTime);
-  const match = /^\/local\/articles\/([0-9a-f-]{36})(?:\/(revisions))?$/i.exec(route);
-  if (match && validId(match[1]) && method === 'GET') {
-    return readDraft(request, db, secret, currentTime, match[1], match[2] === 'revisions');
-  }
-  if (match && validId(match[1]) && !match[2] && method === 'PATCH') {
-    return updateDraft(request, db, secret, currentTime, match[1]);
-  }
-  return denied(404);
+  const context = { request, db, secret, currentTime };
+  const fixedHandler = LOCAL_FIXED_ROUTES.get(method + ' ' + route);
+  if (fixedHandler) return fixedHandler(context);
+  const articleResponse = await dispatchArticleRequest(request, db, secret, currentTime, route, method);
+  return articleResponse ?? denied(404);
 }
 
 function handleLocalError(error) {

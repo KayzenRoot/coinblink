@@ -112,6 +112,16 @@ async function registerDisposableCredentials(db, persistent) {
   return { primary, recovery };
 }
 
+async function addVirtualAuthenticator(context, authenticator) {
+  return context.credentials.create(CMS_TEST_RP_ID, {
+    id: authenticator.id,
+    userHandle: randomBytes(16).toString('base64url'),
+    privateKey: authenticator.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64url'),
+    publicKey: authenticator.publicKey.export({ type: 'spki', format: 'der' }).toString('base64url'),
+    signCount: 0,
+  });
+}
+
 export async function startLocalCmsPreview({ headless = false, persistLocal = false, persistenceRoot } = {}) {
   if (persistenceRoot && !persistLocal) throw new Error('persistenceRoot requires explicit persistLocal');
   const stateDir = persistLocal
@@ -162,15 +172,9 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
     browser = await chromium.launch({ headless });
     const context = await browser.newContext({ serviceWorkers: 'block' });
     // The Playwright virtual authenticators are disposable; no biometric or personal key.
-    for (const authenticator of [credentials.primary, credentials.recovery]) {
-      await context.credentials.create(CMS_TEST_RP_ID, {
-        id: authenticator.id,
-        userHandle: randomBytes(16).toString('base64url'),
-        privateKey: authenticator.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64url'),
-        publicKey: authenticator.publicKey.export({ type: 'spki', format: 'der' }).toString('base64url'),
-        signCount: 0,
-      });
-    }
+    // This order is intentional because both calls mutate the same browser context.
+    await addVirtualAuthenticator(context, credentials.primary);
+    await addVirtualAuthenticator(context, credentials.recovery);
     await context.credentials.install();
 
     // The browser is network-isolated: ONLY the fixed test origin is intercepted.

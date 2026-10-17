@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
-import { safePreflightLogMessage, verifyProductionDeployEligibility } from "../scripts/assert-production-deploy-eligibility.mjs";
+import { runProductionDeployEligibility, verifyProductionDeployEligibility } from "../scripts/assert-production-deploy-eligibility.mjs";
 import { COINBLINK_REPOSITORY, MAIN_COMMIT_CHECKS, REQUIRED_CHECKS } from "../scripts/cloudflare-production-policy.mjs";
 
 const mainSha = "a".repeat(40);
@@ -199,11 +202,25 @@ test("latest rights comment selection blocks if Issue 72 changes during paginati
   }), /comments changed during the rights readback/);
 });
 
-test("preflight log messages reject control characters and oversized untrusted errors", () => {
-  assert.equal(safePreflightLogMessage(new Error("main advanced before deployment.")), "main advanced before deployment.");
-  assert.equal(safePreflightLogMessage(new Error("failure\r\n::warning::forged")), "unknown preflight failure");
-  assert.equal(safePreflightLogMessage(new Error("x".repeat(201))), "unknown preflight failure");
-  assert.equal(safePreflightLogMessage("not an Error"), "unknown preflight failure");
+test("preflight failure logs withhold untrusted event details", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "coinblink-production-preflight-"));
+  const eventPath = join(directory, "event.json");
+  const messages = [];
+  writeFileSync(eventPath, JSON.stringify({ workflow_run: {
+    event: "pull_request",
+    head_branch: "main\r\n::warning::forged",
+  } }));
+  try {
+    const exitCode = await runProductionDeployEligibility({
+      env: { GITHUB_EVENT_PATH: eventPath, GITHUB_REPOSITORY: COINBLINK_REPOSITORY },
+      logger: { log() {}, error(message) { messages.push(message); } },
+    });
+    assert.equal(exitCode, 1);
+    assert.deepEqual(messages, ["Cloudflare production preflight blocked; details withheld."]);
+    assert.equal(messages.some((message) => message.includes("forged")), false);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test("preflight rejects failed GEF and pull-request or fork-originated workflow runs before API access", async () => {

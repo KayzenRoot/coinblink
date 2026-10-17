@@ -77,3 +77,25 @@ The full-suite run on Node 22.23.3, before the final stable-comment-read hardeni
 - [ ] After protected merge, first automatic main run creates/deploys `coinblink-production`; verify exact SHA, `/health`, `/preview-status`, `/en`, same-origin asset, robots/noindex, security headers, and 404.
 
 Candidate state: `DRAFT_PR_AWAITING_EXACT_HEAD_CI_AND_OWNER_REVIEW`; `authorizedToMerge=false`; not deployed. The current rights readback is pending and blocks production eligibility until an Owner/legal clearance is recorded in Issue #72.
+
+## SonarCloud correction delta · 2026-10-17
+
+The preceding SonarCloud run on PR head `9843457dcb40827601a0fef28307fde2c9239299` failed its Quality Gate with a B Security Rating. Its relevant findings were a super-linear regular expression in the production HTML asset scan and log injection through exception text. The other annotations concerned sequential pagination/retry awaits and a re-export style suggestion; those are not security findings and the pagination/retry order is intentional.
+
+Corrections in this delta:
+
+- Replaced the global HTML attribute regular expression with a bounded, forward-only tag/attribute scan. It accepts normal quoted and unquoted attributes, recognizes only `link[href]` and `script[src]`, and still requires the fixed same-origin `/_astro/` path before fetching an asset.
+- Production preflight and smoke failures now emit fixed messages without exception contents. Tests inject CR/LF workflow data and malformed Worker URLs and prove those values are absent from logs.
+- Added a malformed 64 KB HTML attribute regression case and a spacing/quote-variant positive case.
+
+Local validation on Node `22.23.3` after the correction:
+
+| Command | Result |
+|---|---|
+| `node --test test/cloudflare-production-policy.test.mjs test/cloudflare-production-eligibility.test.mjs test/cloudflare-production-main-current.test.mjs test/cloudflare-production-smoke.test.mjs test/cloudflare-production-workflow.test.mjs` | PASS; 34/34 |
+| `npm run lint` | PASS; zero warnings |
+| `npm run typecheck` | PASS; 141 files, zero errors/warnings/hints |
+| `npm run build` | PASS; Astro Worker build completed and no SESSION, data, service, or production bindings were present |
+| `git diff --check` | PASS |
+
+The exact-head hosted checks for this correction are pending until the updated draft PR head is published. The existing full-suite limitation and prior 48/48 Playwright result above are historical evidence; the required hosted workflow must validate its full suite on the final exact HEAD. Issue #72 still blocks production eligibility; no Worker or deployment was created.

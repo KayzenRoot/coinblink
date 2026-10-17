@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { validateProductionDeploymentEnvironment } from "../scripts/assert-production-deployment-config.mjs";
-import { verifyWorkerProduction, validateProductionWorkerUrl } from "../scripts/verify-worker-production.mjs";
+import { runProductionWorkerSmoke, verifyWorkerProduction, validateProductionWorkerUrl } from "../scripts/verify-worker-production.mjs";
 import { PRODUCTION_WORKER_NAME, PRODUCTION_WORKER_URL } from "../scripts/cloudflare-production-policy.mjs";
 
 const sha = "d".repeat(40);
@@ -19,7 +19,7 @@ function headers(contentType = "application/json; charset=utf-8") {
   };
 }
 
-function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 200, redirectPath } = {}) {
+function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 200, redirectPath, homepageHtml } = {}) {
   const seenPaths = [];
   const fetchImpl = async (input, options) => {
     const url = new URL(input);
@@ -46,7 +46,7 @@ function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 
       }), { status: 200, headers: headers() });
     }
     if (url.pathname === "/en") {
-      return new Response('<html><head><title>CoinBlink</title><link rel="stylesheet" href="/_astro/site.123.css"></head><body>CoinBlink</body></html>', {
+      return new Response(homepageHtml ?? '<html><head><title>CoinBlink</title><link rel="stylesheet" href="/_astro/site.123.css"></head><body>CoinBlink</body></html>', {
         status: 200,
         headers: headers("text/html; charset=utf-8"),
       });
@@ -89,6 +89,33 @@ test("production smoke checks exact SHA, demo-only status, home HTML, same-origi
   assert.ok(seenPaths.includes("/_astro/site.123.css"));
   assert.ok(seenPaths.includes("/robots.txt"));
   assert.ok(seenPaths.includes("/missing-route"));
+});
+
+test("production smoke parses HTML attributes linearly and ignores unterminated values", async () => {
+  const { fetchImpl } = syntheticFetch({
+    homepageHtml: "<html><head><title>CoinBlink</title><link rel = 'stylesheet' href = '/_astro/site.123.css'></head><body>CoinBlink</body></html>",
+  });
+  const result = await verifyWorkerProduction({ workerUrl: PRODUCTION_WORKER_URL, expectedSha: sha, fetchImpl });
+  assert.equal(result.sha, sha);
+
+  const malformed = `<html>CoinBlink<link href="${"x".repeat(64_000)}`;
+  await assert.rejects(verifyWorkerProduction({
+    workerUrl: PRODUCTION_WORKER_URL,
+    expectedSha: sha,
+    fetchImpl: syntheticFetch({ homepageHtml: malformed }).fetchImpl,
+  }), /same-origin Astro asset/);
+});
+
+test("production smoke failure logs do not include exception text", async () => {
+  const errors = [];
+  const exitCode = await runProductionWorkerSmoke({
+    env: { COINBLINK_CF_WORKER_URL: "https://untrusted.invalid/\r\n::warning::forged", EXPECTED_MAIN_SHA: sha },
+    logger: { log() {}, error(message) { errors.push(message); } },
+    fetchImpl: syntheticFetch().fetchImpl,
+  });
+  assert.equal(exitCode, 1);
+  assert.deepEqual(errors, ["Production Worker smoke failed; details withheld."]);
+  assert.equal(errors.some((message) => message.includes("forged")), false);
 });
 
 test("production smoke rejects another Worker URL, invalid SHA, and redirects", async () => {

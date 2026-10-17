@@ -1,0 +1,27 @@
+{
+  "repository": "KayzenRoot/coinblink",
+  "pullRequest": 117,
+  "workOrder": "CB-CF-MAIN-ONLY-001",
+  "owner": "KayzenRoot",
+  "authorizationSource": "Direct Owner instructions in the Codex conversation",
+  "authorizedAtUtc": "2026-10-17",
+  "authorizationText": "EU PERMITO AUTORIZO EXPRESSAMENTE QUE TODA MODIFICAÇÃO FEITO NA MAIN DO GITHUB SEJA FEITO O DEPLOY AUTOMATICO EM PRODUÇÃO NA CLOUDFLARE",
+  "scope": "Automatically deploy commits integrated into protected main to the fixed Cloudflare production Worker",
+  "runtimeMode": "DEMO_ONLY",
+  "fixedTarget": {
+    "worker": "coinblink-production",
+    "url": "https://coinblink-production.kayzendev.workers.dev",
+    "cloudflareAccountId": "91aeaffe2456eff6bb9ce76ce177bb3f"
+  },
+  "commercialPublicationAllowed": false,
+  "rightsReview": "PENDING_OWNER_OR_LEGAL",
+  "legalClearanceInferred": false,
+  "issue72Readback": {
+    "url": "https://github.com/KayzenRoot/coinblink/issues/72#issuecomment-6225569671",
+    "decision": "COINBLINK_NAME_COMMERCIAL_CLEARANCE=PENDING_OWNER_OR_LEGAL; commercialPublicationAllowed=false; M01_DONE=false"
+  },
+  "rulesetMutation": false,
+  "checkpointMutation": false,
+  "customDomainOrDns": false,
+  "paidServices": false
+}

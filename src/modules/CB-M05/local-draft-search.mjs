@@ -37,7 +37,8 @@ function editableProse(body) {
     for (const line of readLines(body.slice(sourceAt), SOURCE_MARKER, 12)) {
       const matched = SOURCE_LINE.exec(line);
       if (!matched || sourceIds.has(matched[1]) || matched[2].length > 90
-          || /[\[\]\\|<>\r\t]/u.test(matched[2])) {
+          || matched[2].includes("[") || matched[2].includes("]")
+          || matched[2].includes("\\") || /[|<>\r\t]/u.test(matched[2])) {
         throw new RangeError("Invalid source-note line");
       }
       const rawUrl = matched[3];

@@ -1,0 +1,42 @@
+---
+import { listMockMarkets, MARKET_POLICY } from "./market-workbench.mjs";
+import marketClientUrl from "./market-workbench.client.js?url&no-inline";
+const markets = listMockMarkets();
+---
+<section class="cb-m04" data-m04-root aria-labelledby="m04-title">
+  <header>
+    <small>CB-M04 · MOCK / FICTIONAL PRICES / NOT LIVE</small>
+    <h2 id="m04-title">Markets and Radar, offline demo</h2>
+    <p>All numbers below are invented interface examples, not quotes, predictions or investment advice.</p>
+    <p>Policy: <code>{MARKET_POLICY}</code></p>
+  </header>
+  <label>Find an example asset <input type="search" maxlength="40" data-m04-search autocomplete="off" placeholder="Try ETH" /></label>
+  <p role="status" aria-live="polite" data-m04-count>{markets.items.length} fictional, stale examples</p>
+  <div class="m04-grid">
+    {markets.items.map(item => (
+      <article data-m04-entry data-m04-searchable={[item.asset, item.pair].join(" ").toUpperCase()}>
+        <small>NOT LIVE · STALE · NOT LICENSED</small>
+        <h3>{item.pair}</h3>
+        <p><strong>Fictional value: {item.imaginaryValue} {item.currency}</strong></p>
+        <p>Units: {item.unit} · Simulated date: {item.asOf}</p>
+        <p>Source: FICTIONAL · Trading: DISABLED</p>
+      </article>
+    ))}
+  </div>
+  <p data-m04-empty hidden>No example asset matches. No live quote lookup was made.</p>
+  <aside aria-label="Offline provider states">
+    <h3>Provider and rights controls, simulated only</h3>
+    <p>UNAVAILABLE · DENIED RIGHTS · COST GATE · NO QUOTE</p>
+    <p>No external exchange requests, alerts or buying and selling functionality.</p>
+  </aside>
+</section>
+<script is:inline src={marketClientUrl}></script>
+<style>
+  .cb-m04{background:#131d1b;color:#edf6ed;border:1px solid #67896e;border-radius:1rem;padding:1.25rem;max-width:75rem;margin:auto}
+  .cb-m04 small,.cb-m04 h2,.cb-m04 h3{color:#d4fa85}.cb-m04 label{display:grid;gap:.5rem}
+  .cb-m04 input{background:#20332a;color:#fff;border:1px solid #9bb89e;border-radius:.5rem;padding:.65rem;max-width:34rem}
+  .m04-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
+  .m04-grid article{border:1px solid #506b55;border-radius:.6rem;padding:1rem}
+  .m04-grid article[hidden]{display:none}
+  .cb-m04 :focus-visible{outline:3px solid #c6fa5b;outline-offset:3px}
+</style>

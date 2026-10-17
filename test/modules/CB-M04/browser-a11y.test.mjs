@@ -1,79 +1,80 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { createServer } from "node:net";
+import { execFileSync } from "node:child_process";
+import { readFile, mkdtemp, rm } from "node:fs/promises";
+import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
 
 const repo = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
+const types = { ".html": "text/html; charset=utf-8", ".js": "application/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png",
+  ".woff2": "font/woff2", ".webp": "image/webp" };
 
-async function availablePort() {
-  const server = createServer();
-  await new Promise((ok, fail) => {
-    server.once("error", fail);
-    server.listen(0, "127.0.0.1", ok);
-  });
-  const address = server.address();
-  await new Promise(ok => server.close(ok));
-  if (!address || typeof address === "string") throw new Error("no loopback port");
-  return address.port;
-}
-
-async function awaitLocalFixture(origin, child, diagnostics) {
-  for (let i = 0; i < 90; i += 1) {
-    if (child.exitCode !== null || child.signalCode) throw new Error("Astro fixture stopped: " + diagnostics().slice(-1200));
-    try {
-      const response = await fetch(origin, { signal: AbortSignal.timeout(600) });
-      if (response.status === 200) return;
-    } catch { /* local startup in progress */ }
-    await new Promise(ok => setTimeout(ok, 280));
-  }
-  throw new Error("Astro fixture timed out: " + diagnostics().slice(-1200));
-}
-
-test("M04 isolated real-browser offline mock accessibility, responsive and filtering", { timeout: 150_000 }, async () => {
-  const temp = await mkdtemp(join(tmpdir(), "coinblink-m04-a11y-"));
-  const port = await availablePort();
-  const origin = "http://127.0.0.1:" + port;
-  const forbidden = [];
-  const errors = [];
+test("M04 isolated built Astro / Chromium accessible offline workbench", { timeout: 150_000 }, async () => {
+  const temp = await mkdtemp(join(tmpdir(), "coinblink-m04-static-a11y-"));
+  const root = join(temp, "dist");
+  const deniedRequests = [];
+  const browserErrors = [];
   let browser;
-  let astro;
-  let stderr = "";
+  let server;
   try {
-    astro = spawn(process.execPath, [
-      join(repo, "node_modules", "astro", "bin", "astro.mjs"), "dev",
+    // Build a standalone STATIC fixture instead of running another astro dev:
+    // M01's visual fixture owns the dev-server lock during concurrent node --test.
+    execFileSync(process.execPath, [
+      join(repo, "node_modules", "astro", "bin", "astro.mjs"), "build",
       "--config", "test/modules/CB-M04/fixture.config.mjs",
-      "--host", "127.0.0.1", "--port", String(port), "--strictPort",
-    ], { cwd: repo, windowsHide: true, stdio: ["ignore", "ignore", "pipe"],
+    ], { cwd: repo, windowsHide: true, encoding: "utf8", timeout: 100_000,
       env: { ...process.env, CB_M04_A11Y_TEMP: temp, ASTRO_TELEMETRY_DISABLED: "1" } });
-    astro.stderr.on("data", chunk => { stderr = (stderr + chunk.toString()).slice(-3000); });
-    await awaitLocalFixture(origin, astro, () => stderr);
+    server = createServer(async (request, response) => {
+      try {
+        const name = new URL(request.url, "http://localhost").pathname;
+        const decoded = decodeURIComponent(name);
+        if (decoded.includes("..") || decoded.includes("\\") || decoded.includes("\0")) {
+          response.writeHead(400); response.end(); return;
+        }
+        const requested = join(root, decoded === "/" ? "index.html" : decoded.replace(/^\/+/, ""));
+        if (!(requested === root || requested.startsWith(root + sep))) {
+          response.writeHead(403); response.end(); return;
+        }
+        const bytes = await readFile(requested);
+        response.writeHead(200, { "content-type": types[extname(requested)] || "application/octet-stream",
+          "cache-control": "no-store" });
+        response.end(bytes);
+      } catch { response.writeHead(404); response.end(); }
+    });
+    await new Promise((ok, fail) => {
+      server.once("error", fail);
+      server.listen(0, "127.0.0.1", ok);
+    });
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const origin = "http://127.0.0.1:" + address.port;
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     page.on("request", request => {
-      if (new URL(request.url()).origin !== origin) forbidden.push(request.url());
+      if (new URL(request.url()).origin !== origin) deniedRequests.push(request.url());
     });
-    page.on("pageerror", error => errors.push(error.message));
+    page.on("pageerror", error => browserErrors.push(error.message));
     page.on("console", message => {
-      if (message.type() === "error") errors.push(message.text());
+      if (message.type() === "error") browserErrors.push(message.text());
     });
-    for (const [name, width, height] of [["desktop", 1440, 900], ["tablet", 768, 1024], ["mobile", 390, 844]]) {
+    for (const [viewport, width, height] of [["desktop", 1440, 900], ["tablet", 768, 1024], ["mobile", 390, 844]]) {
       await page.setViewportSize({ width, height });
       const response = await page.goto(origin, { waitUntil: "networkidle" });
-      assert.equal(response.status(), 200, name + " must render offline");
+      assert.equal(response?.status(), 200, viewport + ": fixture must render");
       assert.equal(await page.locator("[data-m04-root]").count(), 1);
       assert.equal(await page.locator("[data-m04-entry]").count(), 3);
       assert.match(await page.locator("[data-m04-root]").innerText(), /FICTIONAL PRICES/u);
-      assert.ok(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth),
-        name + ": no horizontal overflow");
+      assert.ok(await page.evaluate(() =>
+        globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth),
+      viewport + ": horizontal overflow");
       const axe = await new AxeBuilder({ page }).include("[data-m04-root]").analyze();
-      assert.deepEqual(axe.violations.map(v => v.id), [], name + ": axe-core accessibility");
-      await page.screenshot({ path: join(temp, "m04-" + name + ".png"), fullPage: true });
+      assert.deepEqual(axe.violations.map(v => v.id), [], viewport + ": axe violations");
+      await page.screenshot({ path: join(temp, "m04-" + viewport + ".png"), fullPage: true });
     }
     const search = page.locator("[data-m04-search]");
     await search.focus();
@@ -84,16 +85,12 @@ test("M04 isolated real-browser offline mock accessibility, responsive and filte
     assert.equal(await page.locator("[data-m04-empty]").isVisible(), true);
     await search.fill("");
     assert.equal(await page.locator("[data-m04-entry]:visible").count(), 3);
-    assert.deepEqual(forbidden, [], "must never call third-party resources");
-    assert.deepEqual(errors, [], "must not raise browser/page errors");
-    console.log("M04 real Astro/Chromium: 3 axe responsive viewports, true browser filter/empty state, zero external requests");
+    assert.deepEqual(deniedRequests, [], "external provider requests forbidden");
+    assert.deepEqual(browserErrors, [], "console/page errors forbidden");
+    console.log("M04 static Astro + real Chromium: three responsive axe passes, live in-browser controls, zero external requests");
   } finally {
     await browser?.close();
-    if (astro && astro.exitCode === null) {
-      astro.kill();
-      await new Promise(ok => { astro.once("exit", ok); setTimeout(ok, 2500); });
-      if (astro.exitCode === null) astro.kill("SIGKILL");
-    }
+    if (server) await new Promise(ok => server.close(ok));
     await rm(temp, { recursive: true, force: true });
   }
 });

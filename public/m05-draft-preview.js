@@ -28,6 +28,15 @@ const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
 const SOURCE_ROW = /^\[\^cb([1-9]|1[0-2])\]: (.{1,90}) \| (https:\/\/\S+)$/u;
 const CLAIM_ROW = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
 
+function validSourceNote(match) {
+  if (match[2] !== match[2].trim() || /[|<>\r\t\\[\]]/u.test(match[2])) return false;
+  try {
+    const url = new URL(match[3]);
+    return url.href === match[3] && url.protocol === "https:" && !url.username && !url.password
+      && url.hostname.includes(".") && !url.hostname.endsWith(".") && match[3].length <= 500;
+  } catch { return false; }
+}
+
 function validLocalNotes(rowsText, pattern, sources) {
   if (!rowsText || rowsText.endsWith("\n\n")) return false;
   const rows = (rowsText.endsWith("\n") ? rowsText.slice(0, -1) : rowsText).split("\n");
@@ -36,16 +45,8 @@ function validLocalNotes(rowsText, pattern, sources) {
   for (const row of rows) {
     const match = pattern.exec(row);
     if (!match || seen.has(match[1])) return false;
+    if (sources ? !validSourceNote(match) : /[|<>\r]/u.test(match[4])) return false;
     seen.add(match[1]);
-    if (sources) {
-      if (match[2] !== match[2].trim() || /[|<>\r\t\\[\]]/u.test(match[2])) return false;
-      try {
-        const url = new URL(match[3]);
-        if (url.href !== match[3] || url.protocol !== "https:" || url.username || url.password
-          || !url.hostname.includes(".") || url.hostname.endsWith(".")
-          || match[3].length > 500) return false;
-      } catch { return false; }
-    } else if (/[|<>\r]/u.test(match[4])) return false;
   }
   return true;
 }

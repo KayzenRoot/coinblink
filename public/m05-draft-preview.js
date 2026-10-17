@@ -20,6 +20,56 @@ const escapeTitleV2 = (value) => value.replace(/[&<>#]/gu, (character) => ({
 })[character]);
 const FORMAT_V2 = "> COINBLINK LOCAL DRAFT FORMAT: 2";
 
+// M05 P0: exporting a working draft must require actual article prose, not
+// structured local citation/claim notes appended to its Markdown textarea.
+// This public browser utility remains standalone, with zero remote requests.
+const SOURCE_HEADING = "### CoinBlink source notes (unverified)";
+const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
+const SOURCE_ROW = /^\[\^cb([1-9]|1[0-2])\]: (.{1,90}) \| (https:\/\/\S+)$/u;
+const CLAIM_ROW = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
+
+function validLocalNotes(rowsText, pattern, sources) {
+  if (!rowsText || rowsText.endsWith("\n\n")) return false;
+  const rows = (rowsText.endsWith("\n") ? rowsText.slice(0, -1) : rowsText).split("\n");
+  if (!rows.length || rows.length > 12) return false;
+  const seen = new Set();
+  for (const row of rows) {
+    const match = pattern.exec(row);
+    if (!match || seen.has(match[1])) return false;
+    seen.add(match[1]);
+    if (sources) {
+      if (match[2] !== match[2].trim() || /[|<>\r\t\\[\]]/u.test(match[2])) return false;
+      try {
+        const url = new URL(match[3]);
+        if (url.href !== match[3] || url.protocol !== "https:" || url.username || url.password
+          || !url.hostname.includes(".") || url.hostname.endsWith(".")
+          || match[3].length > 500) return false;
+      } catch { return false; }
+    } else if (/[|<>\r]/u.test(match[4])) return false;
+  }
+  return true;
+}
+
+function splitLocalAppendix(body, heading, pattern, sources) {
+  const marker = "\n\n" + heading + "\n";
+  const index = body.lastIndexOf(marker);
+  if (index < 0) return body.includes(heading) ? null : body;
+  const prose = body.slice(0, index);
+  if (prose.includes(heading) || !validLocalNotes(body.slice(index + marker.length), pattern, sources)) return null;
+  return prose;
+}
+
+function exportableArticleProse(body) {
+  // Any malformed/partial reserved section fails closed rather than padding article length.
+  const strippedHeadings = body.replaceAll(SOURCE_HEADING, "").replaceAll(CLAIM_HEADING, "");
+  if (strippedHeadings.includes("### CoinBlink source notes")
+      || strippedHeadings.includes("### CoinBlink claim review queue")) return "";
+  const beforeSources = splitLocalAppendix(body, SOURCE_HEADING, SOURCE_ROW, true);
+  if (beforeSources === null) return "";
+  return splitLocalAppendix(beforeSources, CLAIM_HEADING, CLAIM_ROW, false)?.trim() ?? "";
+}
+
+
 export function prepareLocalDraft(input) {
   const title = clean(input.title, MAX_TITLE).replaceAll("\n", " ").trim();
   // This browser field is single-line; disallow imported/programmatic section markers.
@@ -41,7 +91,7 @@ export function prepareLocalDraft(input) {
   const errors = [];
   if (title.length < 8) errors.push("title");
   if (summary.length < 20) errors.push("summary");
-  if (body.length < 40) errors.push("body");
+  if (exportableArticleProse(body).length < 40) errors.push("body");
   if (!source) errors.push("source");
   return Object.freeze({
     title, author, summary, body, source,

@@ -9,6 +9,8 @@ import {
   MAX_REPLACEMENT_LENGTH,
   MAX_SEARCH_LENGTH,
 } from "../../../src/modules/CB-M05/local-draft-search.mjs";
+import { addLocalSource, listLocalSources } from "../../../src/modules/CB-M05/local-source-notes.mjs";
+import { addLocalClaimReview, listLocalClaimReviews } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 
 test("literal find handles case sensitivity, punctuation, and multiline input", () => {
   const text = "CoinBlink. coinblink. CoinBlink.";
@@ -52,6 +54,55 @@ test("invalid, oversize and empty queries fail closed without dropping original 
   assert.throws(() => replaceAllInLocalDraft("x".repeat(MAX_DRAFT_LENGTH), "x", "xx"), RangeError);
   assert.deepEqual(replaceAllInLocalDraft("keep", "no-match", "ok"), { value: "keep", replacements: 0 });
   assert.equal(findInLocalDraft(null, "abc").count, 0);
+});
+
+test("prose find-and-replace leaves source URLs, claim queues and quoted markers intact", () => {
+  const article = "CoinBlink reports an unverified market claim about CoinBlink.";
+  const withSource = addLocalSource(article, "CoinBlink Publisher", "https://publisher.example/CoinBlink");
+  const quote = "CoinBlink mentioned a 99% claim [^cb1] that needs independent verification.";
+  const body = addLocalClaimReview(withSource.value, quote, 1).value;
+
+  assert.equal(findInLocalDraft(body, "CoinBlink").count, 2, "only prose is searchable");
+  const changed = replaceAllInLocalDraft(body, "CoinBlink", "CB");
+  assert.equal(changed.replacements, 2);
+  assert.equal(changed.value.slice(0, changed.value.indexOf("### CoinBlink claim review")),
+    "CB reports an unverified market claim about CB.\n\n");
+  assert.deepEqual(listLocalClaimReviews(changed.value).map(v => v.claim), [quote]);
+  assert.equal(listLocalClaimReviews(changed.value)[0].sourceAvailable, true);
+  assert.equal(listLocalSources(changed.value)[0].url, "https://publisher.example/CoinBlink");
+  assert.equal(findInLocalDraft(changed.value, "99%").count, 0);
+  assert.equal(findInLocalDraft(changed.value, "https://").count, 0);
+  assert.equal(replaceAllInLocalDraft(changed.value, "PUBLISHED", "ok").replacements, 0);
+});
+
+test("replacing a phrase in prose preserves Markdown metadata bytes and file round-trip", () => {
+  const prose = "Notes here are not approved. Notes need further checks.";
+  const source = addLocalSource(prose, "Original publisher", "https://news.example/Notes");
+  const body = addLocalClaimReview(source.value,
+    "Notes remain in the editorial claim queue without fact-checking.", 1).value;
+  const start = body.indexOf("\n\n### CoinBlink claim review");
+  const changed = replaceAllInLocalDraft(body, "Notes", "test("local UI has keyboard-accessible controls, same-origin external JS, and no persistence or publishing", () => {-review");
+  assert.equal(changed.replacements, 2);
+  assert.equal(changed.value.slice(start + (changed.value.indexOf("\n\n### CoinBlink claim review") - start)),
+    body.slice(start), "both metadata sections stay byte identical");
+  assert.deepEqual(listLocalClaimReviews(changed.value).map(x => x.state), ["NEEDS_HUMAN_REVIEW"]);
+  assert.equal(listLocalSources(changed.value).length, 1);
+});
+
+test("broken metadata cannot be changed through local find or replace", () => {
+  const text = addLocalClaimReview(
+    addLocalSource("Editable article sentence.", "Publisher", "https://publisher.example/news").value,
+    "A structured review that is not approved for publication.", 1).value;
+  const malformed = [
+    text.replace("NEEDS_HUMAN_REVIEW", "PUBLISHED"),
+    text.replace("[^cb1]:", "[^cb1] ->"),
+    text.replace("### CoinBlink claim review queue (local only)", "### CoinBlink claim review queue"),
+  ];
+  for (const body of malformed) {
+    assert.equal(findInLocalDraft(body, "Editable").count, 0);
+    assert.throws(() => replaceAllInLocalDraft(body, "Editable", "Changed"), RangeError);
+    assert.ok(body.startsWith("Editable article"), "rejected input must remain unmodified");
+  }
 });
 
 test("local UI has keyboard-accessible controls, same-origin external JS, and no persistence or publishing", () => {

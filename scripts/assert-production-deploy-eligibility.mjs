@@ -9,6 +9,7 @@ import {
   validateDemoDeploymentAuthorization,
   validateMainSha,
   validateMergedPullRequest,
+  validateSourceReleaseApproval,
   validateWorkflowRun,
   verifyRequiredChecks,
 } from "./cloudflare-production-policy.mjs";
@@ -148,6 +149,17 @@ export async function verifyProductionDeployEligibility({
   if (shaErrors.length > 0) throw new Error(`Deployment stopped: ${shaErrors.join("; ")}`);
 
   const pullRequest = await findMergedPullRequest(githubApi, expectedSha);
+  // A repo-wide DEMO authorization does not authorize individual releases.
+  // GitHub API observations are bounded to one complete 100-file/comment page;
+  // larger inventories fail closed rather than accepting partial evidence.
+  const [changedFiles, ownerComments] = await Promise.all([
+    githubApi(`/repos/${COINBLINK_REPOSITORY}/pulls/${pullRequest.number}/files?per_page=100`),
+    githubApi(`/repos/${COINBLINK_REPOSITORY}/issues/${pullRequest.number}/comments?per_page=100`),
+  ]);
+  const releaseErrors = validateSourceReleaseApproval({
+    pullRequest, changedFiles, comments: ownerComments,
+  });
+  if (releaseErrors.length) throw new Error(`Source release not authorized: ${releaseErrors.join("; ")}`);
   await Promise.all([
     verifyCheckContexts(githubApi, expectedSha, MAIN_COMMIT_CHECKS, "main SHA", sleep),
     verifyCheckContexts(githubApi, pullRequest.head.sha, REQUIRED_CHECKS, "merged PR head", sleep),

@@ -99,6 +99,7 @@ test("broken metadata cannot be changed through local find or replace", () => {
     text.replace("NEEDS_HUMAN_REVIEW", "PUBLISHED"),
     text.replace("[^cb1]:", "[^cb1] ->"),
     text.replace("### CoinBlink claim review queue (local only)", "### CoinBlink claim review queue"),
+    text.replace("### CoinBlink source notes (unverified)", "### CoinBlink source notes"),
   ];
   for (const body of malformed) {
     assert.equal(findInLocalDraft(body, "Editable").count, 0);

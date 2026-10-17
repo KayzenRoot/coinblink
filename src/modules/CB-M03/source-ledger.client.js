@@ -1,5 +1,5 @@
 // M03 browser-only filtering; no HTTP, storage, queue or credential access.
-for (const root of document.querySelectorAll("[data-m03-root]")) {
+for (const root of globalThis.document.querySelectorAll("[data-m03-root]")) {
   const input = root.querySelector("[data-m03-search]");
   const entries = [...root.querySelectorAll("[data-m03-entry]")];
   const count = root.querySelector("[data-m03-count]");

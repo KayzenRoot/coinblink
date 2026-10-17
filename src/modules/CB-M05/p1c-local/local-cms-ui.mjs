@@ -9,6 +9,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     refresh: document.getElementById('refresh'),
     form: document.getElementById('draft'),
     items: document.getElementById('items'),
+    search: document.getElementById('draft-search'),
     message: document.getElementById('message'),
     status: document.getElementById('session-status'),
     revision: document.getElementById('revision'),
@@ -18,6 +19,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     historyList: document.getElementById('history-list'),
   };
   let csrf = null;
+  let lastDrafts = [];
   const decode = (s) => {
     const t = s.replace(/-/g, '+').replace(/_/g, '/');
     const raw = atob(t + '='.repeat((4 - t.length % 4) % 4));
@@ -41,6 +43,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.history.hidden = true;
     ui.historyList.replaceChildren();
     ui.items.replaceChildren();
+    lastDrafts = [];
+    ui.search.value = '';
+    ui.search.hidden = true;
     ui.status.textContent = 'Not authenticated';
   }
   async function api(url, method = 'GET', body) {
@@ -76,10 +81,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.history.hidden = false;
     ui.historyList.replaceChildren();
   }
-  async function refresh() {
-    const { drafts } = await api('/local/articles');
+  function renderDraftList() {
     ui.items.replaceChildren();
-    for (const draft of drafts) {
+    const query = ui.search.value.trim().toLowerCase();
+    for (const draft of lastDrafts) {
+      if (query && !draft.title.toLowerCase().includes(query)) continue;
       const li = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
@@ -94,8 +100,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       li.append(button);
       ui.items.append(li);
     }
+  }
+  async function refresh() {
+    const { drafts } = await api('/local/articles');
+    lastDrafts = drafts;
+    renderDraftList();
     ui.status.textContent = 'Local test session active';
   }
+  ui.search.addEventListener('input', renderDraftList);
   ui.login.addEventListener('click', async () => {
     ui.login.disabled = true;
     try {
@@ -131,6 +143,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.form.hidden = false;
       ui.logout.hidden = false;
       ui.refresh.hidden = false;
+      ui.search.hidden = false;
       await refresh();
       message('Authenticated with a pre-enrolled LOCAL test credential');
     } catch (error) {
@@ -231,6 +244,8 @@ footer{padding:24px 0;color:#b9c8bd}
 <p id="message" role="status" aria-live="polite">Only disposable local data is permitted.</p>
 <section aria-label="Draft editor">
 <h2>Drafts</h2><button id="refresh" type="button" hidden>Refresh drafts</button>
+<label for="draft-search">Filter local drafts by headline
+<input id="draft-search" type="search" maxlength="100" autocomplete="off" placeholder="Search local draft titles" hidden></label>
 <ul id="items" aria-label="Saved local drafts"></ul>
 <form id="draft" hidden>
 <fieldset><legend>Create or revise a local draft</legend>

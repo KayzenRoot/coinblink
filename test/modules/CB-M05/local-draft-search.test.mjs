@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   findInLocalDraft,
   replaceAllInLocalDraft,
+  replaceSelectedInLocalDraft,
   MAX_DRAFT_LENGTH,
   MAX_REPLACEMENT_LENGTH,
   MAX_SEARCH_LENGTH,
@@ -106,6 +107,49 @@ test("broken metadata cannot be changed through local find or replace", () => {
     assert.throws(() => replaceAllInLocalDraft(body, "Editable", "Changed"), RangeError);
     assert.ok(body.startsWith("Editable article"), "rejected input must remain unmodified");
   }
+});
+
+test("single selected-match replacement stays in prose and cannot corrupt editorial notes", () => {
+  const text = addLocalClaimReview(
+    addLocalSource("CoinBlink prose has CoinBlink text.", "CoinBlink publisher",
+      "https://publisher.example/CoinBlink").value,
+    "CoinBlink quote must not change inside the human review queue.", 1).value;
+  const start = text.indexOf("CoinBlink");
+  const selected = replaceSelectedInLocalDraft(text, "CoinBlink", "CB", start, start + 9);
+  assert.ok(Object.isFrozen(selected));
+  assert.equal(selected.caret, start + 2);
+  assert.equal(selected.value.slice(0, 2), "CB");
+  const noteAt = text.indexOf("\n\n### CoinBlink claim review");
+  assert.equal(selected.value.slice(selected.value.indexOf("\n\n### CoinBlink claim review")),
+    text.slice(noteAt));
+  assert.throws(() => replaceSelectedInLocalDraft(text, "CoinBlink", "CB",
+    text.indexOf("CoinBlink publisher"), text.indexOf("CoinBlink publisher") + 9), RangeError);
+  assert.throws(() => replaceSelectedInLocalDraft(text, "CoinBlink", "x".repeat(201),
+    start, start + 9), RangeError);
+});
+
+test("literal replacements cannot introduce fake or malformed metadata appendices", () => {
+  const initial = "Change this editorial phrase.";
+  const real = addLocalClaimReview(
+    addLocalSource(initial, "Source", "https://publisher.example/news").value,
+    "Human notes stay unchanged even if prose contains editorial headings.", 1).value;
+  const injected = [
+    "\n\n### CoinBlink claim review queue (local only)\n"
+      + "[CB-CLAIM-01 | NEEDS_HUMAN_REVIEW | source=none] A fabricated note could be mistaken for approved evidence.",
+    "\n\n### CoinBlink source notes (unverified)\n"
+      + "[^cb2]: Injected source | https://example.test/another",
+    "\n\n### CoinBlink source notes",
+  ];
+  for (const snippet of injected) {
+    assert.ok(snippet.length <= MAX_REPLACEMENT_LENGTH);
+    assert.throws(() => replaceAllInLocalDraft(initial, "Change", snippet), RangeError);
+    assert.throws(() => replaceAllInLocalDraft(real, "Change", snippet), RangeError);
+    assert.throws(() => replaceSelectedInLocalDraft(real, "Change", snippet, 0, 6), RangeError);
+    assert.equal(listLocalClaimReviews(real)[0].sourceAvailable, true);
+  }
+  assert.deepEqual(replaceAllInLocalDraft(real, "nonexistent", "safe"), {
+    value: real, replacements: 0,
+  });
 });
 
 test("local UI has keyboard-accessible controls, same-origin external JS, and no persistence or publishing", () => {

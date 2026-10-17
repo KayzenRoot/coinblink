@@ -49,7 +49,16 @@ function checkRun(name) {
   };
 }
 
-function fakeApi({ currentMain = mainSha, prTree = prHeadTreeSha, missingMainCheck, missingPrCheck } = {}) {
+function fakeApi({
+  currentMain = mainSha, prTree = prHeadTreeSha, missingMainCheck, missingPrCheck,
+  changedFiles = [{ filename: "src/pages/index.astro", status: "modified" }],
+  ownerComments = [{
+    user: { login: "KayzenRoot" },
+    author_association: "OWNER",
+    body: `COINBLINK_DEMO_DEPLOY_GO PR=42 HEAD=${prHeadSha}`,
+  }],
+  reportedFileCount,
+} = {}) {
   const apiCalls = [];
   let mainLookups = 0;
   const githubApi = async (path) => {
@@ -80,6 +89,7 @@ function fakeApi({ currentMain = mainSha, prTree = prHeadTreeSha, missingMainChe
     if (path === `/repos/${COINBLINK_REPOSITORY}/pulls/42`) {
       return {
         number: 42,
+        changed_files: reportedFileCount ?? changedFiles.length,
         state: "closed",
         merged_at: "2026-10-17T09:00:00Z",
         merge_commit_sha: mainSha,
@@ -87,6 +97,12 @@ function fakeApi({ currentMain = mainSha, prTree = prHeadTreeSha, missingMainChe
         head: { sha: prHeadSha, repo: { full_name: COINBLINK_REPOSITORY } },
         base: { ref: "main", repo: { full_name: COINBLINK_REPOSITORY } },
       };
+    }
+    if (path === `/repos/${COINBLINK_REPOSITORY}/pulls/42/files?per_page=100`) {
+      return changedFiles;
+    }
+    if (path === `/repos/${COINBLINK_REPOSITORY}/issues/42/comments?per_page=100`) {
+      return ownerComments;
     }
     if (path === `/repos/${COINBLINK_REPOSITORY}/commits/${mainSha}`) {
       return { commit: { tree: { sha: mainTreeSha } } };
@@ -250,4 +266,64 @@ test("preflight stops if main changes while checks are being verified", async ()
     githubApi,
     sleep: async () => {},
   }), /advanced after the GEF run/);
+});
+
+
+test("deployment preflight blocks documentation-only merges, even if the global DEMO flag is enabled", async () => {
+  for (const changedFiles of [
+    [{ filename: "docs/architecture/ADR.md", status: "modified" }],
+    [{ filename: ".engineering/work-orders/CB-M05-P1C-LOCAL-001.md", status: "added" }],
+    [{ filename: "scripts/assert-production-deploy-eligibility.mjs", status: "modified" },
+      { filename: "test/cloudflare-production-eligibility.test.mjs", status: "modified" }],
+    [{ filename: "src/modules/CB-M05/p1c-local/local-cms.mjs", status: "modified" },
+      { filename: "test/modules/CB-M05/p1c-local-cms.test.mjs", status: "modified" }],
+  ]) {
+    const { githubApi } = fakeApi({ changedFiles });
+    await assert.rejects(verifyProductionDeployEligibility({
+      event: event(), repository: COINBLINK_REPOSITORY, githubApi, sleep: async () => {},
+    }), /no deployable application changes/);
+  }
+});
+
+test("deployment needs a literal Owner GO for the source PR and exact immutable head", async () => {
+  const sampleApproval = { user: { login: "KayzenRoot" }, author_association: "OWNER",
+    body: `COINBLINK_DEMO_DEPLOY_GO PR=42 HEAD=${prHeadSha}` };
+  for (const ownerComments of [
+    [], [{ ...sampleApproval, user: { login: "attacker" } }],
+    [{ ...sampleApproval, author_association: "NONE" }],
+    [{ ...sampleApproval, body: "COINBLINK_DEMO_DEPLOY_GO PR=42 HEAD=" + "d".repeat(40) }],
+    [{ ...sampleApproval, body: "COINBLINK_DEMO_DEPLOY_GO PR=99 HEAD=" + prHeadSha }],
+    [{ ...sampleApproval, body: "approved deployment" }],
+  ]) {
+    const { githubApi } = fakeApi({ ownerComments });
+    await assert.rejects(verifyProductionDeployEligibility({
+      event: event(), repository: COINBLINK_REPOSITORY, githubApi, sleep: async () => {},
+    }), /exact-source Owner DEMO deployment approval is missing/);
+  }
+});
+
+test("preflight rejects incomplete or unsafe PR changed-file inventories", async () => {
+  const variants = [
+    { changedFiles: [], reportedFileCount: 1 },
+    { changedFiles: [{ filename: "src/pages/index.astro", status: "modified" }], reportedFileCount: 3 },
+    { changedFiles: [{ filename: "src/pages/index.astro", status: "unknown" }] },
+    { changedFiles: Array.from({ length: 101 }, (_, i) =>
+      ({ filename: `src/pages/${i}.astro`, status: "modified" })) },
+  ];
+  for (const invalid of variants) {
+    const { githubApi } = fakeApi(invalid);
+    await assert.rejects(verifyProductionDeployEligibility({
+      event: event(), repository: COINBLINK_REPOSITORY, githubApi, sleep: async () => {},
+    }), /changed-file inventory is missing or incomplete/);
+  }
+});
+
+test("preflight rejects oversized approval-comment result rather than trusting a partial first page", async () => {
+  const { githubApi } = fakeApi({ ownerComments: Array.from({ length: 100 }, () => ({
+    user: { login: "KayzenRoot" }, author_association: "OWNER",
+    body: `COINBLINK_DEMO_DEPLOY_GO PR=42 HEAD=${prHeadSha}`,
+  })) });
+  await assert.rejects(verifyProductionDeployEligibility({
+    event: event(), repository: COINBLINK_REPOSITORY, githubApi, sleep: async () => {},
+  }), /comments are missing or incomplete/);
 });

@@ -185,3 +185,43 @@ export function validateDemoDeploymentAuthorization({ authorization, commercialP
 export function isFullCommitSha(value) {
   return fullShaPattern.test(value ?? "");
 }
+
+/**
+ * A global DEMO variable is not approval to deploy every merged PR.
+ * Permit only a substantive public-app change AND an exact-head Owner release GO.
+ * All LOCAL P1-C experiments, docs, CI and test-only changes stay offline.
+ */
+export function validateSourceReleaseApproval({ pullRequest, changedFiles, comments } = {}) {
+  const errors = [];
+  if (!Number.isSafeInteger(pullRequest?.number) || pullRequest.number <= 0
+      || !isFullCommitSha(pullRequest?.head?.sha)) {
+    errors.push("source release identity is invalid");
+    return errors;
+  }
+  if (!Number.isSafeInteger(pullRequest.changed_files) || pullRequest.changed_files <= 0
+      || pullRequest.changed_files > 100
+      || !Array.isArray(changedFiles) || changedFiles.length !== pullRequest.changed_files
+      || changedFiles.some((item) => typeof item?.filename !== "string"
+        || !["added", "modified", "removed", "renamed"].includes(item.status))) {
+    errors.push("source PR changed-file inventory is missing or incomplete");
+  } else {
+    const deployable = changedFiles.some(({ filename }) =>
+      (filename.startsWith("src/") && !filename.startsWith("src/modules/CB-M05/p1c-local/")
+        && !/^src\/modules\/CB-M05\/p1[a-e]-(?:local|fixtures)\//u.test(filename))
+      || filename.startsWith("public/")
+      || ["astro.config.mjs", "astro.config.ts", "package.json", "package-lock.json"].includes(filename));
+    if (!deployable) errors.push("source PR has no deployable application changes");
+  }
+  if (!Array.isArray(comments) || comments.length >= 100) {
+    errors.push("Owner release-approval comments are missing or incomplete");
+  } else {
+    const exactApproval = `COINBLINK_DEMO_DEPLOY_GO PR=${pullRequest.number} HEAD=${pullRequest.head.sha}`;
+    if (!comments.some((comment) =>
+      comment?.user?.login === COINBLINK_OWNER_LOGIN
+      && comment?.author_association === "OWNER"
+      && comment?.body?.trim() === exactApproval)) {
+      errors.push("exact-source Owner DEMO deployment approval is missing");
+    }
+  }
+  return errors;
+}

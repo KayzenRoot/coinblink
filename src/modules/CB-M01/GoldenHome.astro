@@ -19,9 +19,12 @@ import "./golden-home.css";
 import { translateHome } from "./home-copy.mjs";
 import { getLearningTopics } from "./learning-topics.mjs";
 import { getOfficialSources } from "./official-sources.mjs";
+import { getHomeProducerBoundary } from "./home-producer-boundary.mjs";
 
-interface Props { locale?: "en" | "pt-br"; }
-const { locale = "en" } = Astro.props;
+interface Props { locale?: "en" | "pt-br"; producerFeeds?: unknown; }
+const { locale = "en", producerFeeds } = Astro.props;
+// Non-privileged producer readiness; LIVE must remain unrenderable without its own admission.
+const homeProducerBoundary = getHomeProducerBoundary(producerFeeds);
 const t = (english: string) => translateHome(english, locale);
 const learningTopics = getLearningTopics(locale);
 const officialSources = getOfficialSources(locale);
@@ -218,7 +221,7 @@ const editorialR26Assets = {
         <p class="hero-tags" aria-hidden="true">{t("MARKET")}<br />{t("ANALYSIS")}<br />{t("DIGITAL ASSETS")}</p>
       </article>
 
-      <aside class="market-panel" id="market-overview" aria-labelledby="market-title">
+      <aside class="market-panel" id="market-overview" aria-labelledby="market-title" data-m01-market-source-state={homeProducerBoundary.markets.status}>
         <div class="panel-title"><div><span class="panel-eyebrow">{t("DEMONSTRATION")}</span><h2 id="market-title">{t("Market overview")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
         <p class="panel-description">{t("Market data feed is not connected.")}</p>
         <ul class="market-list">
@@ -322,7 +325,7 @@ const editorialR26Assets = {
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
-      <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
+      <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title" data-m01-news-source-state={homeProducerBoundary.news.status}>
         <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
         <div class="news-cards">
           {stories.map((story, index) => {
@@ -384,7 +387,7 @@ const editorialR26Assets = {
       <p class="learn-section__footnote">{t("Educational material only. Verify important details with primary sources before acting.")}</p>
     </section>
 
-    <section class="official-sources content-panel" id="official-sources" aria-labelledby="official-sources-title">
+    <section class="official-sources content-panel" id="official-sources" aria-labelledby="official-sources-title" data-m01-source-feed-state={homeProducerBoundary.sources.status}>
       <div class="official-sources__heading">
         <div>
           <small>{t("ORIGINAL PUBLISHERS · EXTERNAL LINKS")}</small>

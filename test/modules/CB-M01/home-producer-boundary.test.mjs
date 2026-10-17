@@ -85,7 +85,7 @@ test("invalid, duplicate and oversized producer envelopes fail closed", () => {
 test("integrated GoldenHome uses the source-boundary statuses without altering DEMO visual copy", () => {
   const home = readFileSync(resolve("src/modules/CB-M01/GoldenHome.astro"), "utf8");
   assert.match(home, /import \{ getHomeProducerBoundary \} from "\.\/home-producer-boundary\.mjs"/u);
-  assert.match(home, /const homeProducerBoundary = getHomeProducerBoundary\(producerFeeds\)/u);
+  assert.match(home, /const homeProducerBoundary = getHomeProducerBoundary\(safeProducerFeeds\)/u);
   assert.match(home, /data-m01-news-source-state=\{homeProducerBoundary\.news\.status\}/u);
   assert.match(home, /data-m01-source-feed-state=\{homeProducerBoundary\.sources\.status\}/u);
   assert.match(home, /data-m01-market-source-state=\{homeProducerBoundary\.markets\.status\}/u);

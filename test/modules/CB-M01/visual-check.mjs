@@ -138,6 +138,11 @@ try {
   await mkdir(evidenceDir, { recursive: true });
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
+  // Reject unexpected remote requests before bytes can leave the isolated fixture.
+  // The request listener below records attempted leaks and fails the test.
+  await context.route("**/*", (route) => isFixtureOriginRequest(route.request().url(), origin)
+    ? route.continue()
+    : route.abort("blockedbyclient"));
   const page = await context.newPage();
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("pageerror", (error) => pageErrors.push(error.message));

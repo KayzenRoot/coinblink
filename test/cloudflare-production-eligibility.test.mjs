@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { verifyProductionDeployEligibility } from "../scripts/assert-production-deploy-eligibility.mjs";
+import { safePreflightLogMessage, verifyProductionDeployEligibility } from "../scripts/assert-production-deploy-eligibility.mjs";
 import { COINBLINK_REPOSITORY, MAIN_COMMIT_CHECKS, REQUIRED_CHECKS } from "../scripts/cloudflare-production-policy.mjs";
 
 const mainSha = "a".repeat(40);
@@ -197,6 +197,13 @@ test("latest rights comment selection blocks if Issue 72 changes during paginati
     }
     throw new Error(`Unexpected rights comment page: ${path}`);
   }), /comments changed during the rights readback/);
+});
+
+test("preflight log messages reject control characters and oversized untrusted errors", () => {
+  assert.equal(safePreflightLogMessage(new Error("main advanced before deployment.")), "main advanced before deployment.");
+  assert.equal(safePreflightLogMessage(new Error("failure\r\n::warning::forged")), "unknown preflight failure");
+  assert.equal(safePreflightLogMessage(new Error("x".repeat(201))), "unknown preflight failure");
+  assert.equal(safePreflightLogMessage("not an Error"), "unknown preflight failure");
 });
 
 test("preflight rejects failed GEF and pull-request or fork-originated workflow runs before API access", async () => {

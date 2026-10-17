@@ -181,6 +181,34 @@ const commercialPublicationMarkers = Object.freeze({
   publicationAllowed: "commercialPublicationAllowed=true",
 });
 
+function validateDecisionMarker(lines, marker) {
+  const keyPrefix = `${marker.slice(0, marker.indexOf("="))}=`;
+  const matching = lines.filter((line) => line.startsWith(keyPrefix));
+  if (matching.length === 1 && matching[0] === marker) return null;
+  return matching.length > 1
+    ? "commercial publication decision is not unambiguous"
+    : "latest rights decision lacks explicit authorization";
+}
+
+function validateRightsEvidence(lines) {
+  const evidenceLines = lines.filter((line) => line.startsWith("rightsEvidence="));
+  if (evidenceLines.length !== 1) return "latest rights decision must contain one HTTPS evidence URL";
+
+  const evidenceValue = evidenceLines[0].slice("rightsEvidence=".length);
+  if (!evidenceValue || evidenceValue.trim() !== evidenceValue || /\s/u.test(evidenceValue)) {
+    return "latest rights decision evidence URL is invalid";
+  }
+  try {
+    const evidenceUrl = new URL(evidenceValue);
+    if (evidenceUrl.protocol !== "https:" || !evidenceUrl.hostname || evidenceUrl.username || evidenceUrl.password) {
+      return "latest rights decision evidence URL must use HTTPS";
+    }
+  } catch {
+    return "latest rights decision evidence URL is invalid";
+  }
+  return null;
+}
+
 export function validateCommercialPublicationDecision(issue, latestComment) {
   const errors = [];
   if (issue?.number !== 72) errors.push("commercial rights gate is not Issue 72");
@@ -191,27 +219,11 @@ export function validateCommercialPublicationDecision(issue, latestComment) {
   const body = typeof latestComment?.body === "string" ? latestComment.body : "";
   const lines = body.split(/\r?\n/);
   for (const marker of Object.values(commercialPublicationMarkers)) {
-    const matching = lines.filter((line) => line.startsWith(`${marker.split("=")[0]}=`));
-    if (matching.length !== 1 || matching[0] !== marker) {
-      errors.push(matching.length > 1
-        ? "commercial publication decision is not unambiguous"
-        : "latest rights decision lacks explicit authorization");
-    }
+    const markerError = validateDecisionMarker(lines, marker);
+    if (markerError) errors.push(markerError);
   }
-
-  const evidenceLines = lines.filter((line) => line.startsWith("rightsEvidence="));
-  if (evidenceLines.length !== 1) {
-    errors.push("latest rights decision must contain one HTTPS evidence URL");
-  } else {
-    try {
-      const evidenceUrl = new URL(evidenceLines[0].slice("rightsEvidence=".length));
-      if (evidenceUrl.protocol !== "https:" || !evidenceUrl.hostname || evidenceUrl.username || evidenceUrl.password) {
-        errors.push("latest rights decision evidence URL must use HTTPS");
-      }
-    } catch {
-      errors.push("latest rights decision evidence URL is invalid");
-    }
-  }
+  const evidenceError = validateRightsEvidence(lines);
+  if (evidenceError) errors.push(evidenceError);
 
   return errors;
 }

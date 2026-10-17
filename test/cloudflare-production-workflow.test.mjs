@@ -16,10 +16,18 @@ test("the workflow uses least privilege and the deployment environment only afte
   assert.match(workflow, /^permissions:\r?\n[ ]{2}contents: read/m);
   assert.match(workflow, /actions: read\r?\n\s+checks: read\r?\n\s+contents: read\r?\n\s+issues: read\r?\n\s+pull-requests: read\r?\n\s+statuses: read/);
   assert.match(workflow, /needs: preflight/);
-  assert.match(workflow, /if: needs\.preflight\.result == 'success'/);
+  assert.match(workflow, /needs\.preflight\.result == 'success'/);
   assert.match(workflow, /name: production\r?\n\s+url: https:\/\/coinblink-production\.kayzendev\.workers\.dev/);
   assert.match(workflow, /deployments: write/);
   assert.match(workflow, /persist-credentials: false/);
+});
+
+test("workflow_run jobs refuse fork, non-push, and non-main source contexts before checkout", () => {
+  const originGuard = /github\.event\.workflow_run\.head_repository\.full_name == github\.repository/g;
+  assert.equal([...workflow.matchAll(originGuard)].length, 2);
+  assert.equal([...workflow.matchAll(/github\.event\.workflow_run\.repository\.full_name == github\.repository/g)].length, 2);
+  assert.equal([...workflow.matchAll(/github\.event\.workflow_run\.head_branch == 'main'/g)].length, 2);
+  assert.equal([...workflow.matchAll(/github\.event\.workflow_run\.event == 'push'/g)].length, 2);
 });
 
 test("only the fixed production name is passed to Wrangler, preserving the local config", () => {

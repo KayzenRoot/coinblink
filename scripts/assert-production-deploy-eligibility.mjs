@@ -23,6 +23,11 @@ function requireApiResponse(response) {
   if (!response.ok) throw new Error(`GitHub API request failed with HTTP ${response.status}.`);
 }
 
+export function safePreflightLogMessage(error) {
+  const message = error instanceof Error ? error.message : "";
+  return /^[A-Za-z0-9 .,:;()/_-]{1,200}$/u.test(message) ? message : "unknown preflight failure";
+}
+
 export function createGitHubApi({ token, fetchImpl = fetch } = {}) {
   if (typeof token !== "string" || token.length < 20) throw new Error("GITHUB_TOKEN is unavailable.");
   return async function githubApi(path) {
@@ -247,7 +252,7 @@ export async function runProductionDeployEligibility({ env = process.env, logger
     logger.log(`Main-only deployment preflight passed for ${result.mainSha}; source PR #${result.pullRequestNumber}; commercial rights decision #${result.rightsIssueCommentId}.`);
     return 0;
   } catch (error) {
-    const safeMessage = error instanceof Error ? error.message : "unknown preflight failure";
+    const safeMessage = safePreflightLogMessage(error);
     logger.error(`Cloudflare production preflight blocked: ${safeMessage}`);
     return 1;
   }

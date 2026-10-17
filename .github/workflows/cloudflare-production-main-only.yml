@@ -16,7 +16,12 @@ concurrency:
 jobs:
   preflight:
     name: Verify trusted main SHA and required checks
-    if: github.repository == 'KayzenRoot/coinblink'
+    if: >-
+      github.repository == 'KayzenRoot/coinblink' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.repository.full_name == github.repository &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -50,7 +55,12 @@ jobs:
   deploy:
     name: Build and deploy the exact eligible main SHA
     needs: preflight
-    if: needs.preflight.result == 'success'
+    if: >-
+      needs.preflight.result == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.repository.full_name == github.repository &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:

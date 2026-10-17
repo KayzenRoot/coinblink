@@ -50,6 +50,7 @@ No other file may change without a renewed scope decision.
 
 - `authorizedToMerge=false`; do not merge, deploy, create a Cloudflare Worker, alter rulesets, checkpoint, Docker, dependencies, modules, existing Preview resources, or any unrelated PR.
 - No GitHub `pull_request`, `pull_request_target`, branch, fork, schedule, manual dispatch, or Pages/Workers Builds trigger for production.
+- Both `workflow_run` jobs now require `event=push`, `head_branch=main`, and matching base/head repository names in job-level conditions before their checkout steps; runtime GEF checks remain an independent second guard.
 - Exact full main SHA must still be the current protected main at preflight and immediately before Wrangler. Any advancement or API ambiguity blocks deployment.
 - The unique associated merged source PR must target this repository's `main`, have a same-repository head, be merged by `KayzenRoot`, and have an exact full tree SHA equal to the deployable main commit.
 - Verify 5/5 checks on exact main plus 7/7 on the unique merged source PR SHA, and require full source tree SHA equality. Do not claim seven check runs exist on the main commit.

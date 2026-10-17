@@ -26,3 +26,18 @@
 
 ## Scope & runtime tripwires
 Only local synthetic WebAuthn + local D1 + negative/provenance tests; no `src/pages/admin/**`, root bindings, live credentials or cloud calls, vault, publication/deploy, paid products, real URL/Owner enrollment or checkpoint edits. No auto-dispatch or implicit merge. STOP: `STAGED_NOT_VALID_FOR_EXECUTOR_UNTIL_PROTECTED_ADR_MERGE_FRESH_LOCK_AND_91_CORRECTIONS`.
+
+## 2026-10-17 source refresh after protected no-deploy gate merge (#120)
+
+**Main rechecked for proposal:** `b4f58f1a62d6fa7c92b94324cf6e359df7c2614e`; Git tree `8fe7c52b136c2e3096ee693cbac4933570d41257`. This is **not** an executable P1-C code lock. The previous `960f9a1` snapshot is immutable historical provenance and is superseded solely for **documentation review** by this addendum.
+
+**New effective main guard fingerprints:**
+- `scripts/cloudflare-production-policy.mjs`: `1a4dc270ac8246743886b0611220d2335e82a934`.
+- `scripts/assert-production-deploy-eligibility.mjs`: `77260e30721f8e245888383b63df1f4d63e25053`.
+- `.engineering/work-orders/CB-CF-RELEASE-GATE-001.md`: `b8d9e816edff41e0fe48b648f0fdad042cdeeca0`.
+- `.engineering/context-locks/CB-CF-RELEASE-GATE-001.md`: `4e4afcaefd308eb4f0040de1f9db7b47a64100c1`.
+- `.engineering/CHECKPOINT.json`: `72618bef100e6f82e4655b2c6ed482794e0c4649` (still M00_COMPLETE / 5%, M01/M05 not DONE).
+
+Protected squash #120 integrated the fail-closed deployment policy requiring **both** deployable public application changes **and** an explicit per-source-PR exact-HEAD Owner DEMO release GO. This P1-C architectural-docs PR modifies only three documents and must not carry such a GO. **After this documentation PR is merged** (which still needs its own Owner exact-HEAD merge approval), a fresh, independent executable lock shall be compiled on then-current main and only after #91 security triage/corrections. No deploy, credentials, remote D1, production vault, published article or checkpoint is authorized by this refresh.
+
+**STOP remains:** `STAGED_NOT_VALID_FOR_EXECUTOR_UNTIL_PROTECTED_ADR_MERGE_FRESH_LOCK_AND_91_CORRECTIONS`.

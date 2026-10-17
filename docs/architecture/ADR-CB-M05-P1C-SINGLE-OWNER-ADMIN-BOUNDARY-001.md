@@ -1,6 +1,8 @@
-# ADR-CB-M05-P1C-001 · Single-Owner Admin Boundary (CANDIDATE)
+# ADR-CB-M05-P1C-001 · Single-Owner Admin Boundary (LOCAL-ONLY ADOPTION PENDING MERGE)
 
-**Decision status:** PROPOSED / NOT ADOPTED. Prepared by Integration Steward on canonical main `6919125c9a6eb593e66b2b909575534937fef76c`. No credential, production binding, migration, real passkey, release, publication, secret, paid service or checkpoint delta is approved by writing this file. Exactly one human Owner: KayzenRoot.
+**Current Owner decision, 2026-10-17:** KayzenRoot explicitly authorizes **technical adoption of this security architecture only for a synthetic, isolated LOCAL implementation and tests**, together with preparing/executing `CB-M05-P1C-LOCAL-001` subject to refreshed Context Lock, HIGH_ASSURANCE tests, security audit, exact-HEAD CI and separate merge approval. The technical adoption becomes a **canonical effective ADR** only after this decision-update PR is independently technically audited, protected-squash-merged and verified on `main`. Until then its status is `OWNER_GO_RECORDED / PENDING_PROTECTED_ADOPTION_MERGE`; it does not retroactively authorize earlier PRs. **No** D1 remote, real identities/credentials, real passkeys, production vault/keys, deployment, commercial publication, branch-rule bypass or checkpoint promotion. The existing 10-point architecture is the chosen technical direction, but **real privileged /admin integration and all production and provider bindings remain separately gated**.
+
+**Historical pre-decision baseline (retained as provenance):** Proposed, not adopted, on original main `6919125c9a6eb593e66b2b909575534937fef76c`. All historical proposal text below describes its status at the time, not an overriding current Owner decision.
 
 ## Context and evidence
 - M05 P0 nonprivileged editorial demo is canonical in main from PR #59.
@@ -38,3 +40,13 @@ Alternative self-hosted Node/Postgres would add operational overhead and costs; 
 ## 2026-10-17 technical source revalidation (proposal only)
 
 Following the M02 offline mock #113 squash, current protected `main` is `5cbb808ebcc052780ba7e4f426080ddb0ef62f64`. The prior `6919125c` entry remains an immutable historical design base, **not** a claim of current Context Lock. All nine critical current-main Git blobs cited in the accompanying proposal lock were independently re-read and are unchanged. The architecture above remains a **candidate**, not a privileged-runtime or provider authorization. PR #91 remains a separate unmerged test-only lab at `8e5c8a067f649d8495c571781174cb5e08c1339c`. Security audit, resource inventory, fresh execution lock, exact-head hosted CI, and specific Owner GO remain required.
+
+## 2026-10-17 adoption boundary and decision ledger entry
+
+- **Decision ID:** `ADR-CB-M05-P1C-001 / OWNER-LOCAL-GO-20261017` (Owner authorization in ChatGPT project conversation, effective as a recorded instruction; canonical document effect only on protected merge).
+- **Approved now, conditional:** architecture choice for future One-Owner CMS; local-only disposable WebAuthn authenticators and D1 emulation for `CB-M05-P1C-LOCAL-001`; comprehensive negative, race, recovery and rollback proofs. Risk HIGH_ASSURANCE.
+- **Not approved:** external Cloudflare/D1 actions, `src/pages/admin/**`, privileged middleware in deployed app, production migrations, actual Owner onboarding/passkeys, real user/brand/data publishing, vault P1-D, editorial publishing P1-E, deploy (including automatic), checkpoint or releases.
+- **Existing branch:** PR #91 is local-only, unmerged, with previously observed Sonar findings. Its existing Correction Delta is still required; the new WO must not overwrite its path ownership or advance while HIGH/CRITICAL findings are open.
+- **Precedence:** the Owner's decision supersedes only the earlier requirement to choose the P1-C technical architecture for LOCAL use. The rest of the global DoD, architecture, source hierarchy, commercial restrictions and dedicated production GO remains in force.
+- **Implementation status:** this ADR PR is documentation only. No P1-C code has been executed by adopting it; requires a newly frozen execution lock and Codex evidence.
+- **STOP:** `P1C_LOCAL_ARCHITECTURE_ADOPTION_PENDING_PROTECTED_MERGE_AND_91_REMEDIATION`.

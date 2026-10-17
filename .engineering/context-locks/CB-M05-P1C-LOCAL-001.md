@@ -18,8 +18,8 @@
 - `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md`: **this PR modifies it**; hash to be captured from protected main only *after* adoption merge.
 
 ## Authoritative execution order
-1. Inspect canonical sources, GEF/ADR and PR #91's Correction Delta + Sonar rule/severity/path evidence. Verify no HIGH/CRITICAL outstanding. If not, `BLOCKED`: correct #91 **in same PR** first.
-2. Obtain scoped exact-head protected merge of THIS documentary ADR/WO/lock candidate after required checks and Owner decision. This creates effective source; documentation cannot silently promote itself.
+1. Obtain scoped exact-head protected merge of THIS **documentation-only** ADR/WO/lock candidate after required checks and the Owner's exact-HEAD decision. This adoption merge is independent of the unfinished code review in #91; it does not accept or merge the laboratory.
+2. Read canonical sources, GEF/ADR and PR #91's Correction Delta plus actual Sonar rule, severity, file and line. Before *any P1-C code execution*, fix actionable HIGH/CRITICAL findings in the **same #91** PR, prove CI and obtain a separate exact-HEAD Owner GO. Unresolved findings => `BLOCKED`, never bypass.
 3. Re-freeze a NEW execution Context Lock against **then-current** main, effective ADR, baseline/code PR head SHA and immutable path fingerprints. If any mismatch, `STALE`.
 4. Codex may implement/test the narrowly scoped **synthetic local-only** P1-C proof in a non-conflicting worktree, respecting existing #91 correction path ownership. No public route, no production Worker/D1 and no REAL identity.
 5. Evidence Bundle -> CI 7/7 exact HEAD -> security audit -> Owner GO for protected squash -> `CHECKPOINT_DELTA={}`.

@@ -5,6 +5,10 @@ import { runProductionWorkerSmoke, verifyWorkerProduction, validateProductionWor
 import { PRODUCTION_WORKER_NAME, PRODUCTION_WORKER_URL } from "../scripts/cloudflare-production-policy.mjs";
 
 const sha = "d".repeat(40);
+const staticAssetHeaders = Object.freeze({
+  "content-type": "text/css; charset=utf-8",
+  "x-robots-tag": "noindex, nofollow, noarchive",
+});
 
 function headers(contentType = "application/json; charset=utf-8") {
   return {
@@ -19,7 +23,7 @@ function headers(contentType = "application/json; charset=utf-8") {
   };
 }
 
-function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 200, redirectPath, homepageHtml, robotsText = "User-agent: *\nAllow: /\n" } = {}) {
+function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 200, assetHeaders = staticAssetHeaders, redirectPath, homepageHtml, robotsText = "User-agent: *\nAllow: /\n" } = {}) {
   const seenPaths = [];
   const fetchImpl = async (input, options) => {
     const url = new URL(input);
@@ -52,7 +56,7 @@ function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 
       });
     }
     if (url.pathname === "/_astro/site.123.css") {
-      return new Response("body{color:#fff}", { status: assetStatus, headers: headers("text/css; charset=utf-8") });
+      return new Response("body{color:#fff}", { status: assetStatus, headers: assetHeaders });
     }
     if (url.pathname === "/robots.txt") {
       return new Response(robotsText, { status: 200, headers: headers("text/plain; charset=utf-8") });
@@ -89,6 +93,27 @@ test("production smoke checks exact SHA, demo-only status, home HTML, same-origi
   assert.ok(seenPaths.includes("/_astro/site.123.css"));
   assert.ok(seenPaths.includes("/robots.txt"));
   assert.ok(seenPaths.includes("/missing-route"));
+});
+
+test("production static assets need no document security headers but still require same-origin noindex non-HTML responses", async () => {
+  const result = await verifyWorkerProduction({
+    workerUrl: PRODUCTION_WORKER_URL,
+    expectedSha: sha,
+    fetchImpl: syntheticFetch().fetchImpl,
+  });
+  assert.equal(result.sha, sha);
+
+  await assert.rejects(verifyWorkerProduction({
+    workerUrl: PRODUCTION_WORKER_URL,
+    expectedSha: sha,
+    fetchImpl: syntheticFetch({ assetHeaders: { "content-type": "text/css; charset=utf-8" } }).fetchImpl,
+  }), /reviewed noindex policy/);
+
+  await assert.rejects(verifyWorkerProduction({
+    workerUrl: PRODUCTION_WORKER_URL,
+    expectedSha: sha,
+    fetchImpl: syntheticFetch({ assetHeaders: { ...staticAssetHeaders, "content-type": "text/html" } }).fetchImpl,
+  }), /non-HTML response/);
 });
 
 test("production smoke parses long robots directives without regex", async () => {

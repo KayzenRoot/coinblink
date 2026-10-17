@@ -1,6 +1,6 @@
 # Context Lock · CB-CF-MAIN-ONLY-001
 
-**Lock state:** Candidate implementation in a dedicated branch/PR. Initial base main was `5cbb808ebcc052780ba7e4f426080ddb0ef62f64`. A later fetch found protected main advanced to `824b3dc46825e3fa053c715b1765b70042c7981b` through merged PR #100, which adds three proposal-only M05 P1-C documents. Delta review found no checkpoint, production, deployment, or Cloudflare scope change. The candidate branch includes ordinary ancestry merge commit `b1630efe919208277d676d3067460fa0c4db3c50` of this current main; no history was rewritten. No checkpoint transition is proposed.
+**Lock state:** The main-only DEMO deployment was integrated by PR #117 and deployed from main SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85`. A follow-up candidate based on that exact main fixes a post-deploy smoke false positive for static CSS assets. Historical snapshots below describe their recorded times; the latest deployment and correction state is in the final dated section. No checkpoint transition is proposed.
 
 ## Authorized work
 
@@ -88,3 +88,12 @@ No other file may change without a renewed scope decision.
 - Authorized operation: publish the existing demo-only site at `https://coinblink-production.kayzendev.workers.dev` from an exact, successful protected-main SHA after the seven required PR contexts, five post-merge main contexts, source-tree identity, and final current-main check pass.
 - The authorization does not alter ruleset `24888106`, any of the required contexts, Issue #72, the commercial flag, image/logo rights status, checkpoint, custom domains, or paid services.
 - No Worker has yet been provisioned and no production deployment has yet been observed. Those are the remaining external outcomes to verify after the updated PR passes and is merged.
+
+## First main deployment and smoke correction · 2026-10-17
+
+- PR #117 was squash-merged through the protected ruleset at `2026-10-17T15:51:33Z`, producing main SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85`. Main GEF run [#39046894518](https://github.com/KayzenRoot/coinblink/actions/runs/39046894518) succeeded for that exact SHA.
+- Production workflow run [#39047194589](https://github.com/KayzenRoot/coinblink/actions/runs/39047194589) passed preflight and deployed Worker `coinblink-production` at `https://coinblink-production.kayzendev.workers.dev` from the exact SHA. Its final smoke failed because it required document security headers on a static CSS asset.
+- Read-only GETs confirmed `/health`, `/preview-status`, `/en`, `/robots.txt`, and `/missing-route` behavior. Health and demo status returned the exact main SHA; pages/APIs and 404 responses had the required document headers. The Astro CSS returned `200 text/css`, same-origin and `noindex`, without document-level CSP/Permissions-Policy/Referrer-Policy headers.
+- The follow-up changes only `scripts/verify-worker-production.mjs`, `test/cloudflare-production-smoke.test.mjs`, and this Work Order/Context Lock/evidence bundle. It skips document-header assertions only for static Astro assets; same-origin, noindex, successful non-HTML response, and no-redirect checks remain. Document/API security-header checks are unchanged.
+- The correction reproduced the failure with a new negative test before the fix, then passed 34/34 focused Cloudflare deployment tests under Node `22.23.3`. Lint, typecheck, audit, build, Wrangler dry-run, and exact-SHA live smoke passed locally. The follow-up exact-head hosted checks, protected merge, and resulting production workflow run remain pending.
+- Owner authorization is for automatic deployment of changes integrated into protected `main` for the public DEMO. Ruleset `24888106`, required contexts, the preview Worker, DNS/custom domains, billing, checkpoint, `commercialPublicationAllowed=false`, Issue #72 `PENDING_OWNER_OR_LEGAL`, and `M01_DONE=false` remain unchanged. No token value was read.

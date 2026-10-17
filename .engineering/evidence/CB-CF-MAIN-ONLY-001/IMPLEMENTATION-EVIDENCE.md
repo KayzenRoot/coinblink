@@ -1,6 +1,6 @@
 # CB-CF-MAIN-ONLY-001 · Implementation Evidence
 
-**Evidence state:** updated Owner-authorized DEMO-only implementation candidate; production deployment has not yet occurred. Append current exact-HEAD evidence before reporting the site as live.
+**Evidence state:** PR #117 was merged through the protected ruleset and main SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85` deployed to the DEMO-only production Worker. The first post-deploy workflow failed its final smoke because it expected document security headers on a static CSS asset; the live Worker itself served the exact SHA and expected routes. A follow-up correction is being validated. The latest dated section below supersedes earlier candidate-state statements.
 
 ## Repository and base
 
@@ -137,3 +137,13 @@ Sanitized evidence hashes for the authorization and Cloudflare readbacks:
 | [`cloudflare-usage-readback.json`](./cloudflare-usage-readback.json) | `88832938d884f36d9f5afc39603e329309ac769523559cdb4c7c5978aa3b1c4a` |
 | [`production-environment-readback.json`](./production-environment-readback.json) | `afb6e28177b6b986078418926b5bd97a60c6c5534194f197b0488914f33cbb5a` |
 | [`production-credential-status.json`](./production-credential-status.json) | `2ec74807010f355cfc152ac805a90940df8d2fbc6ad66fca8cfa66b4d3f3c406` |
+
+## First protected-main deployment and smoke correction · 2026-10-17
+
+- PR [#117](https://github.com/KayzenRoot/coinblink/pull/117) was squash-merged at `2026-10-17T15:51:33Z` as main commit `0e097ffc0aaba308ed32ab8468db8b8963e9fd85`. GEF run [#39046894518](https://github.com/KayzenRoot/coinblink/actions/runs/39046894518) succeeded for the exact main SHA.
+- The main-only production workflow [#39047194589](https://github.com/KayzenRoot/coinblink/actions/runs/39047194589) passed preflight and the Wrangler deployment step; it created `coinblink-production` at `https://coinblink-production.kayzendev.workers.dev` from the same SHA. The overall workflow was **not green** because its final smoke applied document security-header requirements to a static CSS asset.
+- Live read-only GETs confirmed `/health` and `/preview-status` returned exact SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85`; `/en` and `/missing-route` had page security headers; `/robots.txt` returned the expected policy; and the referenced Astro CSS returned `200 text/css`, same-origin and `noindex` without document-level headers. No application/deployment defect was observed.
+- Correction branch `codex/cb-cf-main-only-smoke-fix` is based on exact `origin/main` SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85`. Code changes are limited to the smoke verifier and its synthetic test. The verifier continues checking page/API/404 security headers; static assets must still be same-origin, noindex, non-HTML, successful, and non-redirected. The regression test failed before the code fix and passes after it.
+- Local validation under Node `22.23.3`: focused Cloudflare deployment tests **34/34 PASS**; `npm run lint` **PASS**; `npm run typecheck` **PASS** (141 files); `npm audit --audit-level=high` **PASS** (0 vulnerabilities); `npm run build` **PASS**; Wrangler production-config dry-run **PASS** without deploying or reading a credential; corrected live smoke **PASS** against the existing Worker and exact deployed SHA. The full Node 22 unit/build/Playwright suite had passed for the preceding deployment implementation; the follow-up changes only the smoke verifier/test.
+- Follow-up PR hosted checks and its protected squash merge are pending. After merge, the automatic main workflow must pass end-to-end for the new exact main SHA, and a read-only endpoint smoke must verify that SHA before reporting the deployment pipeline fully healthy.
+- No Cloudflare token value was accessed or logged. No preview resource, DNS/custom domain, paid feature, ruleset, checkpoint, or commercial-rights state changed. `commercialPublicationAllowed=false`, Issue #72 `PENDING_OWNER_OR_LEGAL`, and `M01_DONE=false` remain in force.

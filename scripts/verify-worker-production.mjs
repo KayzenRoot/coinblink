@@ -61,11 +61,11 @@ async function fetchWithBoundedRetry(url, fetchImpl) {
   throw new Error(`Production endpoint did not become available after bounded retries (${lastFailure ?? "unknown failure"}).`);
 }
 
-async function requestPath(baseUrl, path, fetchImpl) {
+async function requestPath(baseUrl, path, fetchImpl, { requireSecurityHeaders = true } = {}) {
   const response = await fetchWithBoundedRetry(new URL(path, baseUrl), fetchImpl);
   if (response.status >= 300 && response.status < 400) throw new Error(`${path} unexpectedly redirected.`);
   assertNoindex(response, path);
-  if (path !== "/robots.txt") assertSecurityHeaders(response, path);
+  if (path !== "/robots.txt" && requireSecurityHeaders) assertSecurityHeaders(response, path);
   return response;
 }
 
@@ -123,7 +123,12 @@ async function verifyHomepageAndAsset(baseUrl, fetchImpl) {
     })
     .find((url) => url?.origin === baseUrl && url.pathname.startsWith("/_astro/"));
   if (!assetPath) throw new Error("Production /en does not reference a same-origin Astro asset.");
-  const assetResponse = await requestPath(baseUrl, `${assetPath.pathname}${assetPath.search}`, fetchImpl);
+  const assetResponse = await requestPath(
+    baseUrl,
+    `${assetPath.pathname}${assetPath.search}`,
+    fetchImpl,
+    { requireSecurityHeaders: false },
+  );
   const assetContentType = assetResponse.headers.get("content-type") ?? "";
   if (assetResponse.status !== 200 || !assetContentType || assetContentType.includes("text/html")) {
     throw new Error("The production static Astro asset must return a successful non-HTML response.");

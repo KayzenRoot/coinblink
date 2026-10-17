@@ -1,6 +1,6 @@
 # ADR-CB-M05-P1C-001 · Single-Owner Admin Boundary (CANDIDATE)
 
-**Decision status:** PROPOSED / NOT ADOPTED. Prepared by Integration Steward on canonical main `21d9e0fca64bf30e945e6044f37fec1f92dfc8f5`. No credential, production binding, migration, real passkey, release, publication, secret, paid service or checkpoint delta is approved by writing this file. Exactly one human Owner: KayzenRoot.
+**Decision status:** PROPOSED / NOT ADOPTED. Prepared by Integration Steward on canonical main `6919125c9a6eb593e66b2b909575534937fef76c`. No credential, production binding, migration, real passkey, release, publication, secret, paid service or checkpoint delta is approved by writing this file. Exactly one human Owner: KayzenRoot.
 
 ## Context and evidence
 - M05 P0 nonprivileged editorial demo is canonical in main from PR #59.

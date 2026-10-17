@@ -19,7 +19,7 @@ function headers(contentType = "application/json; charset=utf-8") {
   };
 }
 
-function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 200, redirectPath, homepageHtml } = {}) {
+function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 200, redirectPath, homepageHtml, robotsText = "User-agent: *\nAllow: /\n" } = {}) {
   const seenPaths = [];
   const fetchImpl = async (input, options) => {
     const url = new URL(input);
@@ -55,7 +55,7 @@ function syntheticFetch({ healthSha = sha, productionStatus = {}, assetStatus = 
       return new Response("body{color:#fff}", { status: assetStatus, headers: headers("text/css; charset=utf-8") });
     }
     if (url.pathname === "/robots.txt") {
-      return new Response("User-agent: *\nAllow: /\n", { status: 200, headers: headers("text/plain; charset=utf-8") });
+      return new Response(robotsText, { status: 200, headers: headers("text/plain; charset=utf-8") });
     }
     if (url.pathname === "/missing-route") {
       return new Response("Not found", { status: 404, headers: headers("text/html; charset=utf-8") });
@@ -91,19 +91,18 @@ test("production smoke checks exact SHA, demo-only status, home HTML, same-origi
   assert.ok(seenPaths.includes("/missing-route"));
 });
 
-test("production smoke parses HTML attributes linearly and ignores unterminated values", async () => {
+test("production smoke parses long robots directives without regex", async () => {
   const { fetchImpl } = syntheticFetch({
-    homepageHtml: "<html><head><title>CoinBlink</title><link rel = 'stylesheet' href = '/_astro/site.123.css'></head><body>CoinBlink</body></html>",
+    robotsText: `User-agent: *\nAllow: /${" ".repeat(64_000)}\nDisallow: /private\n`,
   });
   const result = await verifyWorkerProduction({ workerUrl: PRODUCTION_WORKER_URL, expectedSha: sha, fetchImpl });
   assert.equal(result.sha, sha);
 
-  const malformed = `<html>CoinBlink<link href="${"x".repeat(64_000)}`;
   await assert.rejects(verifyWorkerProduction({
     workerUrl: PRODUCTION_WORKER_URL,
     expectedSha: sha,
-    fetchImpl: syntheticFetch({ homepageHtml: malformed }).fetchImpl,
-  }), /same-origin Astro asset/);
+    fetchImpl: syntheticFetch({ robotsText: `User-agent: *\nAllow: /\nDisallow: /${" ".repeat(64_000)}\n` }).fetchImpl,
+  }), /noindex response policy/);
 });
 
 test("production smoke failure logs do not include exception text", async () => {

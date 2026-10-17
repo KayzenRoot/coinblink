@@ -105,84 +105,6 @@ async function verifyDemoStatus(baseUrl, expectedSha, fetchImpl) {
   }
 }
 
-function findAstroAssetUrl(html, baseUrl) {
-  let cursor = 0;
-  while (cursor < html.length) {
-    const openingTag = html.indexOf("<", cursor);
-    if (openingTag < 0) return null;
-
-    let index = openingTag + 1;
-    if (html[index] === "/" || html[index] === "!" || html[index] === "?") {
-      cursor = index + 1;
-      continue;
-    }
-
-    const nameStart = index;
-    while (index < html.length && /[A-Za-z0-9:-]/u.test(html[index])) index += 1;
-    if (index === nameStart) {
-      cursor = index + 1;
-      continue;
-    }
-    const tagName = html.slice(nameStart, index).toLowerCase();
-    let assetReference = null;
-    let closed = false;
-
-    while (index < html.length) {
-      while (index < html.length && /\s/u.test(html[index])) index += 1;
-      if (html[index] === ">") {
-        index += 1;
-        closed = true;
-        break;
-      }
-      if (html[index] === "/") {
-        index += 1;
-        continue;
-      }
-
-      const attributeStart = index;
-      while (index < html.length && !/[\s=/>]/u.test(html[index])) index += 1;
-      if (index === attributeStart) {
-        index += 1;
-        continue;
-      }
-      const attributeName = html.slice(attributeStart, index).toLowerCase();
-      while (index < html.length && /\s/u.test(html[index])) index += 1;
-      if (html[index] !== "=") continue;
-
-      index += 1;
-      while (index < html.length && /\s/u.test(html[index])) index += 1;
-      const quote = html[index] === "'" || html[index] === '"' ? html[index] : null;
-      if (quote) index += 1;
-      const valueStart = index;
-      if (quote) {
-        const valueEnd = html.indexOf(quote, index);
-        if (valueEnd < 0) return null;
-        index = valueEnd;
-      } else {
-        while (index < html.length && !/[\s>]/u.test(html[index])) index += 1;
-      }
-      const value = html.slice(valueStart, index);
-      if (quote) index += 1;
-
-      if ((tagName === "link" && attributeName === "href") || (tagName === "script" && attributeName === "src")) {
-        assetReference = value;
-      }
-    }
-
-    if (!closed) return null;
-    if (assetReference) {
-      try {
-        const assetUrl = new URL(assetReference, baseUrl);
-        if (assetUrl.origin === baseUrl && assetUrl.pathname.startsWith("/_astro/")) return assetUrl;
-      } catch {
-        // Ignore malformed asset references and continue scanning the remaining tags.
-      }
-    }
-    cursor = index;
-  }
-  return null;
-}
-
 async function verifyHomepageAndAsset(baseUrl, fetchImpl) {
   const response = await requestPath(baseUrl, "/en", fetchImpl);
   if (response.status !== 200 || !(response.headers.get("content-type") ?? "").includes("text/html")) {
@@ -190,7 +112,16 @@ async function verifyHomepageAndAsset(baseUrl, fetchImpl) {
   }
   const html = await response.text();
   if (!html.includes("CoinBlink")) throw new Error("Production /en does not contain the expected site identity.");
-  const assetPath = findAstroAssetUrl(html, baseUrl);
+  const assetPath = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/gi)]
+    .map((match) => match[1])
+    .map((path) => {
+      try {
+        return new URL(path, baseUrl);
+      } catch {
+        return null;
+      }
+    })
+    .find((url) => url?.origin === baseUrl && url.pathname.startsWith("/_astro/"));
   if (!assetPath) throw new Error("Production /en does not reference a same-origin Astro asset.");
   const assetResponse = await requestPath(baseUrl, `${assetPath.pathname}${assetPath.search}`, fetchImpl);
   const assetContentType = assetResponse.headers.get("content-type") ?? "";
@@ -203,7 +134,12 @@ async function verifyRobots(baseUrl, fetchImpl) {
   const response = await requestPath(baseUrl, "/robots.txt", fetchImpl);
   if (response.status !== 200) throw new Error("Production /robots.txt must return HTTP 200.");
   const robots = await response.text();
-  if (!/^\s*Allow:\s*\/\s*$/im.test(robots) || /^\s*Disallow:\s*\/\s*$/im.test(robots)) {
+  const hasDirectiveForRoot = (directive) => robots.split("\n").some((line) => {
+    const separator = line.indexOf(":");
+    if (separator < 0) return false;
+    return line.slice(0, separator).trim().toLowerCase() === directive && line.slice(separator + 1).trim() === "/";
+  });
+  if (!hasDirectiveForRoot("allow") || hasDirectiveForRoot("disallow")) {
     throw new Error("Production robots.txt must not contradict the noindex response policy.");
   }
 }

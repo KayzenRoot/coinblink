@@ -244,7 +244,7 @@ export async function runProductionDeployEligibility({ env = process.env, logger
         "utf8",
       );
     }
-    logger.log(`Main-only deployment preflight passed for ${result.mainSha}; source PR #${result.pullRequestNumber}; commercial rights decision #${result.rightsIssueCommentId}.`);
+    logger.log("Main-only production preflight passed.");
     return 0;
   } catch {
     logger.error("Cloudflare production preflight blocked; details withheld.");

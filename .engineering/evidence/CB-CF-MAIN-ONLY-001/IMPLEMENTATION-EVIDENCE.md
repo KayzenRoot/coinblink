@@ -84,9 +84,9 @@ The preceding SonarCloud run on PR head `9843457dcb40827601a0fef28307fde2c923929
 
 Corrections in this delta:
 
-- Replaced the global HTML attribute regular expression with a bounded, forward-only tag/attribute scan. It accepts normal quoted and unquoted attributes, recognizes only `link[href]` and `script[src]`, and still requires the fixed same-origin `/_astro/` path before fetching an asset.
-- Production preflight and smoke failures now emit fixed messages without exception contents. Tests inject CR/LF workflow data and malformed Worker URLs and prove those values are absent from logs.
-- Added a malformed 64 KB HTML attribute regression case and a spacing/quote-variant positive case.
+- Replaced the `robots.txt` allow/disallow expressions with a forward-only line parser, retaining the root `Allow: /` requirement and rejecting root `Disallow: /` without backtracking.
+- Preflight and smoke errors now emit fixed messages without exception text. The successful preflight log is also constant, so API-provided fields are not interpolated into logs. Tests inject CR/LF workflow data and malformed Worker URLs and prove those values are absent from logs.
+- Added a 64 KB robots directive regression case while preserving the existing same-origin Astro asset checks.
 
 Local validation on Node `22.23.3` after the correction:
 

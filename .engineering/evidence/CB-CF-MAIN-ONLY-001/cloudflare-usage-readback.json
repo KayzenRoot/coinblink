@@ -1,0 +1,24 @@
+{
+  "capturedOnUtc": "2026-10-17",
+  "source": "Authenticated Cloudflare dashboard Workers & Pages usage panel",
+  "accountId": "91aeaffe2456eff6bb9ce76ce177bb3f",
+  "workerInventory": [
+    {
+      "name": "coinblink-m00-preview",
+      "url": "https://coinblink-m00-preview.kayzendev.workers.dev"
+    }
+  ],
+  "usagePanel": {
+    "requestsToday": 50,
+    "displayedDailyRequestQuota": 100000,
+    "workersBuildMinutes": 0,
+    "currentPeriod": "2026-10-14 through 2026-11-14",
+    "billableUsageUsd": 0,
+    "billableUsageMessage": "No billable usage incurred yet"
+  },
+  "planNameConfirmed": false,
+  "planChanged": false,
+  "paidFeaturesEnabled": false,
+  "productionWorkerPresentAtReadback": false,
+  "limitations": "This is a point-in-time dashboard observation. The plan name was not confirmed because the Workers plans page remained in a loading state. No plan change or paid feature was activated. Future costs are not guaranteed if plan, resources, or usage change."
+}

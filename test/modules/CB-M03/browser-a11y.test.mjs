@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFile, mkdtemp, rm } from "node:fs/promises";
 import { createServer } from "node:http";
-import { tmpdir } from "node:os";
 import { extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
@@ -15,7 +14,7 @@ const types = { ".html": "text/html; charset=utf-8", ".js": "application/javascr
   ".woff2": "font/woff2", ".webp": "image/webp" };
 
 test("M03 isolated built Astro / Chromium accessible offline workbench", { timeout: 150_000 }, async () => {
-  const temp = await mkdtemp(join(tmpdir(), "coinblink-m03-static-a11y-"));
+  const temp = await mkdtemp(join(repo, "node_modules", "coinblink-m03-static-a11y-"));
   const root = join(temp, "dist");
   const deniedRequests = [];
   const browserErrors = [];

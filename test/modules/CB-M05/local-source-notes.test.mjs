@@ -9,6 +9,8 @@ import {
 import {
   prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown,
 } from "../../../public/m05-draft-preview.js";
+import { addLocalClaimReview, listLocalClaimReviews } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
+import { analyzeLocalCitationHygiene } from "../../../src/modules/CB-M05/local-citation-audit.mjs";
 
 const prose = "CoinBlink reports original editorial context requiring independent checks.";
 const urlOne = "https://publisher.example/article?x=1&y=2";
@@ -77,6 +79,45 @@ test("capacity and draft limit are strict and may not truncate text silently", (
   assert.throws(() => addLocalSource("x".repeat(MAX_LOCAL_ARTICLE_LENGTH), "One", urlOne), RangeError);
   const orphaned = prose + " [^cb1]";
   assert.equal(addLocalSource(orphaned, "Two", urlOne).reference.id, 2);
+});
+
+test("citation actions stay in article prose and leave structured review notes unchanged", () => {
+  const added = addLocalSource(prose, "Original", "https://publisher.example/original");
+  const quote = "The local review notes mention [^cb1] but that is not an article citation.";
+  const queued = addLocalClaimReview(added.value, quote, 1).value;
+  assert.equal(listLocalSources(queued)[0].cited, 0, "claim metadata must not count as prose citations");
+
+  // The textarea selection can be inside either editable appendix.
+  const caretInsideClaim = queued.indexOf("CB-CLAIM") + 15;
+  const inserted = insertLocalCitation(queued, 1, caretInsideClaim);
+  assert.equal(listLocalSources(inserted.value)[0].cited, 1);
+  assert.equal(listLocalClaimReviews(inserted.value)[0].claim, quote);
+  assert.equal(listLocalClaimReviews(inserted.value)[0].sourceAvailable, true);
+  assert.ok(inserted.value.indexOf("[^cb1]") < inserted.value.indexOf("### CoinBlink claim review"));
+  assert.deepEqual(analyzeLocalCitationHygiene(inserted.value).missingDefinitionIds, []);
+
+  const removed = removeLocalSource(inserted.value, 1);
+  assert.equal(listLocalSources(removed).length, 0);
+  assert.ok(!removed.slice(0, removed.indexOf("### CoinBlink claim review")).includes("[^cb1]"));
+  assert.deepEqual(listLocalClaimReviews(removed).map((item) => ({
+    claim: item.claim, sourceId: item.sourceId, sourceAvailable: item.sourceAvailable,
+  })), [{ claim: quote, sourceId: 1, sourceAvailable: false }]);
+
+  // A replacement publisher must not silently inherit the orphaned claim's ID.
+  const next = addLocalSource(removed, "Replacement", "https://another.example/other");
+  assert.equal(next.reference.id, 2);
+  assert.equal(listLocalClaimReviews(next.value)[0].sourceAvailable, false);
+  assert.equal(listLocalSources(next.value)[0].cited, 0);
+});
+
+test("malformed review queues block citation mutation without truncating draft text", () => {
+  const added = addLocalSource(prose, "Publisher", urlOne).value;
+  const queued = addLocalClaimReview(added, "A statement awaiting independent review.", 1).value;
+  const damaged = queued.replace("NEEDS_HUMAN_REVIEW", "PUBLISHED");
+  assert.throws(() => listLocalSources(damaged), RangeError);
+  assert.throws(() => addLocalSource(damaged, "Another publisher", "https://other.example/report"), RangeError);
+  assert.throws(() => insertLocalCitation(damaged, 1, 0), RangeError);
+  assert.throws(() => removeLocalSource(damaged, 1), RangeError);
 });
 
 test("v2 Markdown local export/import round-trips source notes and citations unchanged", () => {

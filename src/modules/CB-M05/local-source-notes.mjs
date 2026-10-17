@@ -8,6 +8,37 @@ export const MAX_LOCAL_SOURCE_URL = 500;
 export const MAX_LOCAL_ARTICLE_LENGTH = 12000;
 export const LOCAL_SOURCE_HEADING = "### CoinBlink source notes (unverified)";
 const APPENDIX_MARKER = "\n\n" + LOCAL_SOURCE_HEADING + "\n";
+// A claim-review queue is local editorial metadata, not article prose.
+// Keep its linked source IDs reserved even if a source is later removed.
+// This asset is served as an independent module under strict CSP, so no imports.
+const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
+const CLAIM_MARKER = "\n\n" + CLAIM_HEADING + "\n";
+const CLAIM_LINE = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
+
+function splitLocalClaimSection(text) {
+  const offset = text.lastIndexOf(CLAIM_MARKER);
+  if (offset < 0) {
+    if (text.includes(CLAIM_HEADING)) throw new RangeError("Malformed claim-review queue");
+    return { prose: text, notes: "", linkedIds: new Set() };
+  }
+  const prose = text.slice(0, offset);
+  const notes = text.slice(offset);
+  if (prose.includes(CLAIM_HEADING)) throw new RangeError("Duplicate claim-review queue");
+  const lines = notes.slice(CLAIM_MARKER.length).split("\n");
+  if (!lines.length || lines.length > 12) throw new RangeError("Invalid claim-review queue");
+  const ids = new Set();
+  const linkedIds = new Set();
+  for (const line of lines) {
+    const match = CLAIM_LINE.exec(line);
+    if (!match || ids.has(match[1]) || /[|<>\r\n]/u.test(match[4])) {
+      throw new RangeError("Malformed or duplicate claim-review item");
+    }
+    ids.add(match[1]);
+    if (match[3] !== "none") linkedIds.add(Number(match[3].slice(2)));
+  }
+  return { prose, notes, linkedIds };
+}
+
 
 function normalizedTitle(title) {
   if (typeof title !== "string" || title !== title.trim() || title.length < 1
@@ -92,9 +123,10 @@ function assembleSources(text, entries) {
  */
 export function listLocalSources(body) {
   const { text, entries } = scanSources(body);
+  const { prose } = splitLocalClaimSection(text);
   return Object.freeze(entries.map((ref) => Object.freeze({
     ...ref,
-    cited: text.split("[^cb" + ref.id + "]").length - 1,
+    cited: prose.split("[^cb" + ref.id + "]").length - 1,
   })));
 }
 
@@ -109,10 +141,13 @@ export function addLocalSource(body, title, rawUrl) {
   const cleanTitle = normalizedTitle(title.trim());
   const url = normalizedSourceUrl(rawUrl);
   if (entries.some((ref) => ref.url === url)) throw new RangeError("Source URL is already listed");
+  const { prose, linkedIds } = splitLocalClaimSection(text);
   const reserved = new Set(entries.map((ref) => ref.id));
-  // Don't reuse a footnote ID still present in the author's text as an orphan marker.
+  // An orphaned prose citation or claim association must never be silently
+  // reattached to a different source after the original is removed.
   const id = Array.from({ length: MAX_LOCAL_SOURCES }, (_, i) => i + 1)
-    .find((candidate) => !reserved.has(candidate) && !text.includes("[^cb" + candidate + "]"));
+    .find((candidate) => !reserved.has(candidate) && !linkedIds.has(candidate)
+      && !prose.includes("[^cb" + candidate + "]"));
   if (!id) throw new RangeError("No unused local source IDs are available");
   const reference = Object.freeze({ id, title: cleanTitle, url });
   const value = assembleSources(text, [...entries, reference]);
@@ -127,10 +162,13 @@ export function addLocalSource(body, title, rawUrl) {
 export function insertLocalCitation(body, id, caret) {
   const { text, entries } = scanSources(body);
   if (!entries.some((ref) => ref.id === id)) throw new RangeError("Source ID does not exist");
-  const offset = Number.isInteger(caret) && caret >= 0 && caret <= text.length ? caret : text.length;
+  const { prose, notes } = splitLocalClaimSection(text);
+  // Caret in either notes appendix is clamped to the article, never inserted
+  // into a structured claim record where it would corrupt the review queue.
+  const offset = Number.isInteger(caret) && caret >= 0 && caret <= prose.length ? caret : prose.length;
   const marker = "[^cb" + id + "]";
-  const prose = text.slice(0, offset) + marker + text.slice(offset);
-  return Object.freeze({ value: assembleSources(prose, entries), caret: offset + marker.length });
+  const article = prose.slice(0, offset) + marker + prose.slice(offset);
+  return Object.freeze({ value: assembleSources(article + notes, entries), caret: offset + marker.length });
 }
 
 /** Removing a source also removes its matching inline footnote markers.
@@ -140,8 +178,11 @@ export function insertLocalCitation(body, id, caret) {
 export function removeLocalSource(body, id) {
   const { text, entries } = scanSources(body);
   if (!entries.some((ref) => ref.id === id)) throw new RangeError("Source ID does not exist");
+  const { prose, notes } = splitLocalClaimSection(text);
   const marker = "[^cb" + id + "]";
-  return assembleSources(text.split(marker).join(""), entries.filter((ref) => ref.id !== id));
+  // Remove citations from article prose only. A claim's verbatim quote and its
+  // now-missing source association remain visible for human repair.
+  return assembleSources(prose.split(marker).join("") + notes, entries.filter((ref) => ref.id !== id));
 }
 
 // Separate from the original editor inputs so its tested input contract remains stable.

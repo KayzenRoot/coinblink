@@ -82,6 +82,49 @@ test("invalid, duplicate and oversized producer envelopes fail closed", () => {
   assert.equal(getHomeProducerBoundary([]).news.status, "NOT_CONNECTED");
 });
 
+test("throwing getters fail closed per producer instead of crashing the Home", () => {
+  const badNews = {};
+  Object.defineProperty(badNews, "mode", { get() { throw new Error("provider getter crashed"); } });
+  const badItem = { id: "sample" };
+  Object.defineProperty(badItem, "demo", { get() { throw new Error("item getter crashed"); } });
+  const inputs = {
+    news: badNews,
+    sources: { contractVersion: "0.1-draft", mode: "MOCK", items: [badItem] },
+    markets: { contractVersion: "0.1-draft", mode: "MOCK",
+      items: [{ id: "known-demo", demo: true }] },
+  };
+  let result;
+  assert.doesNotThrow(() => { result = getHomeProducerBoundary(inputs); });
+  assert.equal(result.news.status, "REJECTED_INVALID_INPUT");
+  assert.equal(result.sources.status, "REJECTED_INVALID_INPUT");
+  assert.equal(result.markets.status, "SYNTHETIC_FIXTURE_ONLY");
+  assert.equal(result.news.fixtureCount, 0);
+  assert.equal(result.sources.liveEligible, false);
+});
+
+test("revoked proxies, getters and prototype traps cannot turn a bad feed into LIVE or crash", () => {
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  const badRoot = new Proxy({}, { getPrototypeOf() { throw new Error("bad prototype"); } });
+  for (const candidate of [
+    { news: revoked.proxy },
+    { news: new Proxy({}, { getPrototypeOf() { throw new Error("bad item"); } }) },
+    badRoot,
+  ]) {
+    let result;
+    assert.doesNotThrow(() => { result = getHomeProducerBoundary(candidate); });
+    assert.equal(result.news.status, "REJECTED_INVALID_INPUT");
+    assert.equal(result.news.fixtureCount, 0);
+    assert.equal(result.news.liveEligible, false);
+    assert.equal(result.publicationEnabled, false);
+    assert.equal(result.advertisingEnabled, false);
+  }
+  const root = {};
+  Object.defineProperty(root, "news", { get() { throw new Error("load failure"); } });
+  assert.equal(getHomeProducerBoundary(root).news.status, "REJECTED_INVALID_INPUT");
+  assert.equal(getHomeProducerBoundary(root).markets.status, "NOT_CONNECTED");
+});
+
 test("integrated GoldenHome uses the source-boundary statuses without altering DEMO visual copy", () => {
   const home = readFileSync(resolve("src/modules/CB-M01/GoldenHome.astro"), "utf8");
   assert.match(home, /import \{ getHomeProducerBoundary \} from "\.\/home-producer-boundary\.mjs"/u);

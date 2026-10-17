@@ -41,6 +41,20 @@ function classify(candidate) {
 }
 
 /**
+ * Defensive boundary against malformed provider objects, revoked proxies and
+ * throwing getters. These inputs must never crash the integrated Golden Home.
+ * @param {unknown} feeds
+ * @param {"news" | "sources" | "markets"} key
+ */
+function safelyClassify(feeds, key) {
+  try {
+    return classify(isRecord(feeds) ? feeds[key] : undefined);
+  } catch {
+    return { status: "REJECTED_INVALID_INPUT", fixtureCount: 0 };
+  }
+}
+
+/**
  * Fail-closed metadata projection for authorized MOCK producer fixtures.
  * @param {unknown} feeds
  * @returns {Readonly<{
@@ -51,12 +65,11 @@ function classify(candidate) {
  */
 /** @typedef {{ producer: string, section: string, mode: "MOCK", status: string, fixtureCount: number, liveEligible: false }} HomeFeedState */
 export function getHomeProducerBoundary(feeds = {}) {
-  const input = isRecord(feeds) ? feeds : {};
   /** @param {"news" | "sources" | "markets"} key */
   const project = (key) => {
     const producer = FEEDS.find((entry) => entry.key === key);
     if (!producer) throw new RangeError("Unknown producer seam");
-    const classified = classify(input[key]);
+    const classified = safelyClassify(feeds, key);
     return Object.freeze(/** @type {HomeFeedState} */ ({
       producer: producer.producer, section: producer.section,
       mode: "MOCK", status: classified.status,

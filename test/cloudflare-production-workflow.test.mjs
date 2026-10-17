@@ -14,7 +14,7 @@ test("production workflow listens only for a completed GEF push to main", () => 
 
 test("the workflow uses least privilege and the deployment environment only after preflight", () => {
   assert.match(workflow, /^permissions:\r?\n[ ]{2}contents: read/m);
-  assert.match(workflow, /actions: read\r?\n\s+checks: read\r?\n\s+contents: read\r?\n\s+pull-requests: read\r?\n\s+statuses: read/);
+  assert.match(workflow, /actions: read\r?\n\s+checks: read\r?\n\s+contents: read\r?\n\s+issues: read\r?\n\s+pull-requests: read\r?\n\s+statuses: read/);
   assert.match(workflow, /needs: preflight/);
   assert.match(workflow, /if: needs\.preflight\.result == 'success'/);
   assert.match(workflow, /name: production\r?\n\s+url: https:\/\/coinblink-production\.kayzendev\.workers\.dev/);
@@ -38,9 +38,19 @@ test("the exact main SHA is built, guarded immediately before deployment, and sm
   assert.match(workflow, /PUBLIC_BUILD_SHA: \$\{\{ needs\.preflight\.outputs\.main_sha \}\}/);
   assert.match(workflow, /PUBLIC_BUILD_ENV: production/);
   assert.match(workflow, /node scripts\/assert-production-main-current\.mjs/);
+  assert.match(workflow, /issues: read/);
+  assert.match(workflow, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
   assert.match(workflow, /node scripts\/assert-production-deployment-config\.mjs/);
   assert.match(workflow, /node scripts\/verify-worker-production\.mjs/);
   assert.match(workflow, /node scripts\/assert-no-session-binding\.mjs/);
+});
+
+test("commercial rights are checked at eligibility and immediately before the deploy command", () => {
+  const eligibilityCheck = workflow.indexOf("node scripts/assert-production-deploy-eligibility.mjs");
+  const finalGuard = workflow.indexOf("node scripts/assert-production-main-current.mjs");
+  const deployCommand = workflow.indexOf("wrangler deploy --config ./dist/server/wrangler.json --name \"$COINBLINK_CF_WORKER_NAME\"");
+  assert.ok(eligibilityCheck >= 0 && finalGuard > eligibilityCheck && deployCommand > finalGuard);
+  assert.match(workflow, /github\.token/);
 });
 
 test("no deploy workflow writes production secrets or downloads PR artifacts", () => {

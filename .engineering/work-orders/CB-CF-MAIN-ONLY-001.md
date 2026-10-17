@@ -4,13 +4,13 @@
 
 ## Objective
 
-Prepare one automatic Cloudflare Workers production deployment path for `KayzenRoot/coinblink`. A deploy may proceed only after the trusted `GEF validation` workflow succeeds for a push to the current protected `main`, the source PR is merged, the strict required contexts are verified, the checked-out commit is still the current main SHA, and a separate GitHub `production` environment provides the fixed Cloudflare account and least-privilege token.
+Prepare one automatic Cloudflare Workers production deployment path for `KayzenRoot/coinblink`. A deploy may proceed only after the trusted `GEF validation` workflow succeeds for a push to the current protected `main`, the source PR is merged, the strict required contexts are verified, the checked-out commit is still the current main SHA, the commercial-rights gate in Issue #72 has an explicit Owner authorization with an HTTPS evidence link, and a separate GitHub `production` environment provides the fixed Cloudflare account and least-privilege token.
 
 The selected target is the new Worker `coinblink-production` at `https://coinblink-production.kayzendev.workers.dev` in Cloudflare account `91aeaffe2456eff6bb9ce76ce177bb3f`. The existing `coinblink-m00-preview` remains separate. No custom domain, routes, DNS, paid products, live data, or Worker bindings are added.
 
 ## Explicit owner authority and limits
 
-The Owner explicitly requested this dedicated pipeline PR and delegated the choice of the Worker name and `workers.dev` hostname. This authorizes implementation and non-secret GitHub environment scoping for this pipeline. It does not authorize publishing a deployment or merging this PR. The first production deployment can occur only after a reviewed squash merge to protected `main` and after the Owner separately configures `CLOUDFLARE_API_TOKEN` in the `production` environment.
+The Owner explicitly requested this dedicated pipeline PR and delegated the choice of the Worker name and `workers.dev` hostname. This authorizes implementation and non-secret GitHub environment scoping for this pipeline. It does not authorize publishing a deployment, merging this PR, or commercial use of assets. The first production deployment can occur only after a reviewed squash merge to protected `main`, an explicit Owner-authored rights clearance in Issue #72 linking to evidence, and after the Owner separately configures `CLOUDFLARE_API_TOKEN` in the `production` environment. A closed Issue #72 alone does not satisfy rights clearance.
 
 ## Scope
 
@@ -38,6 +38,7 @@ The CI may build the existing application as a consequence of running its existi
 - GitHub currently publishes five required contexts on the post-merge main commit. The two PR-only contexts (`Socket Security: Pull Request Alerts` and `CodeRabbit`) are verified on the unique merged source PR head. Eligibility requires that the exact merged PR head's full Git tree SHA equal the exact deployable main commit's tree SHA, and requires all five main contexts on the main commit plus all seven contexts on the source PR head. This proves source-tree identity but does not represent seven check-run records on one commit SHA. The final report must keep this limitation explicit.
 - `CodeRabbit` is verified only as a required status context; it is not claimed to be substantive human or security review.
 - Production job uses the GitHub `production` environment restricted to protected branches. Cloudflare credentials are injected only in the single deploy step. The fixed Worker name and URL are checked against the verified account ID before Wrangler runs.
+- Eligibility requires Issue #72 to be closed and its newest comment, selected across all REST comment pages by `updated_at`, to be authored by `KayzenRoot` and contain exactly one each of `COINBLINK_COMMERCIAL_PUBLICATION_GATE=AUTHORIZED`, `rightsReview=CLEARED`, `commercialPublicationAllowed=true`, and one valid HTTPS `rightsEvidence=` URL. The complete comment list is read twice and must remain byte-stable; the workflow re-reads that gate immediately before Wrangler. Missing, ambiguous, changing, non-Owner, or pending rights state blocks publication. This process gate does not independently determine legal rights.
 - Pinned Node `22.19.0`, npm lockfile, `npm ci --ignore-scripts`, audit, lint, typecheck, full unit/build/browser/accessibility/GEF tests, and a local Wrangler dry-run all precede the production command. The existing no-session-binding guard is reasserted.
 - Wrangler deploy is explicit: `wrangler deploy --config ./dist/server/wrangler.json --name coinblink-production`. The root `wrangler.jsonc` and its `coinblink-m00-local` identity remain unchanged.
 - Post-deploy smoke verifies the exact build SHA at `/health`, demo-only status, `/en`, one same-origin Astro asset, noindex/security headers, robots behavior, and a real 404. No live data or secrets are accepted.
@@ -49,10 +50,11 @@ GitHub documents the built-in `GITHUB_TOKEN` as limited to the permissions grant
 
 - [x] Dedicated production-only workflow and synthetic negative tests exist in the PR candidate.
 - [x] Live ruleset, main CI, Cloudflare dashboard, selected Worker name/hostname, and no-existing-production-pipeline state are documented from readbacks.
-- [x] Local validation executed under Node `22.19.0` and npm `10.9.3`; all results and one existing local parallel-test timeout are recorded in the Evidence Bundle.
+- [x] Final correction validation executed under local Node `22.23.3` (workflow remains pinned to `22.19.0`); the full-suite M01 readiness timeout and all separate passing commands are recorded in the Evidence Bundle.
 - [ ] Draft PR published on an exact current main base with hosted required checks on its exact head.
 - [x] Production GitHub environment exists with a main-only deployment branch policy, administrator bypass disabled, and verified account ID variable.
+- [x] Preflight and the final deployment guard fail closed unless the latest Owner-authored Issue #72 comment explicitly records commercial rights clearance and links to HTTPS evidence. Current readback remains pending, so production is not eligible.
 - [ ] Owner adds the least-privilege `CLOUDFLARE_API_TOKEN` as a GitHub `production` environment secret. No token is requested or stored in this PR.
 - [ ] After protected merge and Owner-authorized first main deployment, Cloudflare Worker and exact-SHA endpoint smoke are verified.
 
-**Candidate stop state:** `DRAFT_PR_AWAITING_EXACT_HEAD_CI_AND_OWNER_REVIEW`. The local full-suite attempt has one recorded failure in an existing M01 visual fixture under parallel load; its isolated rerun passed. Hosted exact-head CI is the next validation gate. Until protected merge and Owner token provisioning, this pipeline is not active and no production deployment is claimed.
+**Candidate stop state:** `DRAFT_PR_AWAITING_EXACT_HEAD_CI_AND_OWNER_REVIEW`; production eligibility is blocked by Issue #72 `PENDING_OWNER_OR_LEGAL` / `commercialPublicationAllowed=false`. The local full-suite attempt has one recorded failure in an existing M01 visual fixture under parallel load; its isolated rerun passed. Hosted exact-head CI is the next validation gate. Until protected merge, explicit rights clearance, and Owner token provisioning, this pipeline is not active and no production deployment is claimed.

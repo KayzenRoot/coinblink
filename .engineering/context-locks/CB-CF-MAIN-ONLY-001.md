@@ -54,6 +54,7 @@ No other file may change without a renewed scope decision.
 - The unique associated merged source PR must target this repository's `main`, have a same-repository head, be merged by `KayzenRoot`, and have an exact full tree SHA equal to the deployable main commit.
 - Verify 5/5 checks on exact main plus 7/7 on the unique merged source PR SHA, and require full source tree SHA equality. Do not claim seven check runs exist on the main commit.
 - Do not reuse Preview environment variables/secrets or log, request, or commit any Cloudflare token.
+- Issue #72 is an independent commercial-rights gate. Closure alone does not clear rights: require its newest REST comment across all pages, ordered locally by `updated_at`, to be authored by `KayzenRoot` and contain one explicit authorization marker, `rightsReview=CLEARED`, `commercialPublicationAllowed=true`, and an HTTPS evidence URL. Read and fingerprint the full comment list twice; if it changes, fail closed. Recheck immediately before deployment. Current readback is pending, so automatic production deployment must remain blocked.
 - The environment API token for deployment must be scoped to the verified account and Workers edit capability only, provisioned later by the Owner in GitHub environment `production`.
 - Worker target fixed as `coinblink-production` / `https://coinblink-production.kayzendev.workers.dev`; no custom domain, routes or paid resource.
 - Existing demo remains noindex and exposes only mock/unconnected data. The checkpoint stays `M00_COMPLETE`, `IMPLEMENTATION_IN_PROGRESS`, 5%.
@@ -71,3 +72,10 @@ No other file may change without a renewed scope decision.
 - Live readback of ruleset `24888106` still shows active `refs/heads/main`, PR/squash-only, strict seven contexts, resolved review threads, deletion/non-fast-forward protection, and no bypass actors. Sanitized exact readback is stored alongside this lock.
 - Live GitHub `production` environment readback still shows protected-branch deployments, no administrator bypass, and the verified account ID variable. No Cloudflare token is configured or read, no Worker has been created, and no deployment has occurred.
 - The only main delta since initial branch creation was the three additive M05 P1-C proposal documents; this deployment candidate does not change or implement those proposals.
+
+## Commercial rights gate readback · 2026-10-17
+
+- Issue #72 is `closed`, last updated `2026-10-16T22:20:11Z`. Its newest comment is ID `6225569671`, authored by `KayzenRoot` at `2026-10-16T22:03:52Z`.
+- That comment records `COINBLINK_NAME_COMMERCIAL_CLEARANCE=PENDING_OWNER_OR_LEGAL`, `commercialPublicationAllowed=false`, and `M01_DONE=false`. Closing the tracking issue did not clear the rights obligation.
+- Sanitized readback is stored in `.engineering/evidence/CB-CF-MAIN-ONLY-001/rights-gate-readback.json`. The workflow fails closed until the latest Owner decision explicitly clears rights and links to HTTPS evidence. This implementation does not change legal status.
+- Rights-gate code and negative tests remain within this Work Order's path allowlist. `authorizedToMerge=false` remains unchanged.

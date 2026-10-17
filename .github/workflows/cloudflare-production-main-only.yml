@@ -23,6 +23,7 @@ jobs:
       actions: read
       checks: read
       contents: read
+      issues: read
       pull-requests: read
       statuses: read
     outputs:
@@ -56,6 +57,7 @@ jobs:
       actions: read
       contents: read
       deployments: write
+      issues: read
     environment:
       name: production
       url: https://coinblink-production.kayzendev.workers.dev

@@ -175,6 +175,47 @@ export function validateProductionTarget({ repository, workerName, workerUrl, ac
   return errors;
 }
 
+const commercialPublicationMarkers = Object.freeze({
+  authorization: "COINBLINK_COMMERCIAL_PUBLICATION_GATE=AUTHORIZED",
+  rightsReview: "rightsReview=CLEARED",
+  publicationAllowed: "commercialPublicationAllowed=true",
+});
+
+export function validateCommercialPublicationDecision(issue, latestComment) {
+  const errors = [];
+  if (issue?.number !== 72) errors.push("commercial rights gate is not Issue 72");
+  if (issue?.state !== "closed") errors.push("commercial rights issue is not closed");
+  if (!Number.isSafeInteger(latestComment?.id) || latestComment.id <= 0) errors.push("latest rights comment identity is invalid");
+  if (latestComment?.user?.login !== COINBLINK_OWNER_LOGIN) errors.push("latest rights decision is not by the authorized Owner");
+
+  const body = typeof latestComment?.body === "string" ? latestComment.body : "";
+  const lines = body.split(/\r?\n/);
+  for (const marker of Object.values(commercialPublicationMarkers)) {
+    const matching = lines.filter((line) => line.startsWith(`${marker.split("=")[0]}=`));
+    if (matching.length !== 1 || matching[0] !== marker) {
+      errors.push(matching.length > 1
+        ? "commercial publication decision is not unambiguous"
+        : "latest rights decision lacks explicit authorization");
+    }
+  }
+
+  const evidenceLines = lines.filter((line) => line.startsWith("rightsEvidence="));
+  if (evidenceLines.length !== 1) {
+    errors.push("latest rights decision must contain one HTTPS evidence URL");
+  } else {
+    try {
+      const evidenceUrl = new URL(evidenceLines[0].slice("rightsEvidence=".length));
+      if (evidenceUrl.protocol !== "https:" || !evidenceUrl.hostname || evidenceUrl.username || evidenceUrl.password) {
+        errors.push("latest rights decision evidence URL must use HTTPS");
+      }
+    } catch {
+      errors.push("latest rights decision evidence URL is invalid");
+    }
+  }
+
+  return errors;
+}
+
 export function isFullCommitSha(value) {
   return fullShaPattern.test(value ?? "");
 }

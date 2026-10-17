@@ -1,0 +1,457 @@
+---
+import approvedLogo from "../../../assets/reference/coinblink-logo-approved-original-1179x1040.jpg";
+import heroCinematicOriginalPng from "./hero-cinematic-original.png";
+import heroCinematicOriginalWebp from "./hero-cinematic-original.webp";
+import heroCinematicMotionWebp from "./hero-cinematic-motion.webp";
+import r26MediaSelectionUrl from "./r26-media-selection.js?url&no-inline";
+import promoR26Png from "./assets/r26/promo.png";
+import promoR26Webp from "./assets/r26/promo.webp";
+import bitcoinEditorialR26Png from "./assets/r26/bitcoin.png";
+import bitcoinEditorialR26Webp from "./assets/r26/bitcoin.webp";
+import ethereumEditorialR26Png from "./assets/r26/ethereum.png";
+import ethereumEditorialR26Webp from "./assets/r26/ethereum.webp";
+import policyEditorialR26Png from "./assets/r26/policy.png";
+import policyEditorialR26Webp from "./assets/r26/policy.webp";
+import ecosystemEditorialR26Png from "./assets/r26/ecosystem.png";
+import ecosystemEditorialR26Webp from "./assets/r26/ecosystem.webp";
+import EditorialArtwork from "./EditorialArtwork.astro";
+import "./golden-home.css";
+import { translateHome } from "./home-copy.mjs";
+import { getLearningTopics } from "./learning-topics.mjs";
+import { getOfficialSources } from "./official-sources.mjs";
+
+interface Props { locale?: "en" | "pt-br"; }
+const { locale = "en" } = Astro.props;
+const t = (english: string) => translateHome(english, locale);
+const learningTopics = getLearningTopics(locale);
+const officialSources = getOfficialSources(locale);
+
+const markets = [
+  { symbol: "BTC", name: "Bitcoin", tone: "bitcoin" },
+  { symbol: "ETH", name: "Ethereum", tone: "ethereum" },
+  { symbol: "SOL", name: "Solana", tone: "solana" },
+  { symbol: "BNB", name: "BNB", tone: "bnb" },
+  { symbol: "XRP", name: "XRP", tone: "xrp" },
+];
+const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
+const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
+const stories = [
+  { category: "Bitcoin", tag: "MARKET", artwork: "bitcoin" },
+  { category: "Ethereum", tag: "DEVELOPMENT", artwork: "ethereum" },
+  { category: "Regulation", tag: "POLICY", artwork: "policy" },
+  { category: "Altcoins", tag: "ECOSYSTEM", artwork: "ecosystem" },
+] as const;
+const editorialR26Assets = {
+  bitcoin: { png: bitcoinEditorialR26Png, webp: bitcoinEditorialR26Webp },
+  ethereum: { png: ethereumEditorialR26Png, webp: ethereumEditorialR26Webp },
+  policy: { png: policyEditorialR26Png, webp: policyEditorialR26Webp },
+  ecosystem: { png: ecosystemEditorialR26Png, webp: ecosystemEditorialR26Webp },
+};
+---
+
+<div class="cb-home" id="top" data-locale={locale}>
+  <aside class="demo-banner" aria-label={t("Demonstration data notice")}>
+    <strong>DEMO</strong>
+    <span>{t("Illustrative only — no live prices, headlines, or external feeds are connected.")}</span>
+  </aside>
+
+  <header class="cb-header">
+    <a class="brand" href="#top" aria-label={t("CoinBlink home")}>
+      <img src={approvedLogo.src} width="40" height="36" alt="" />
+      <span class="brand-name"><span>Coin</span><span>Blink</span><small>{t("Crypto news in a blink.")}</small></span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span aria-hidden="true">☰</span><span class="sr-only">{t("Toggle navigation")}</span>
+    </button>
+    <nav class="primary-nav" id="primary-nav" aria-label={t("Primary navigation")} data-primary-nav>
+      <a class="is-current" href="#top" aria-current="page">{t("Home")}</a><a href="#latest-news">{t("News")}</a>
+      <a href="#market-overview">{t("Markets")}</a><a href="#radar-24h">{t("Analysis")}</a><a href="#learn">{t("Learn")}</a>
+      <a href="#chain-lookup">{t("Tools")}</a><a href="#demo-data">{t("Videos")}</a><a href="#footer">{t("About")}</a>
+    </nav>
+    <div class="header-tools">
+      <label class="search-box"><span class="sr-only">{t("Search demo stories")}</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+        <input type="search" placeholder={t("Search stories")} autocomplete="off" maxlength="80" data-news-search />
+      </label>
+      <a class="language-chip" href={locale === "en" ? "/pt-br" : "/en"} data-language-switch aria-label={locale === "en" ? "Mudar para português" : "Switch to English"}>◎ {locale === "en" ? "PT" : "EN"}</a><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
+    </div>
+  </header>
+
+  <main id="main" class="home-main" aria-label={t("CoinBlink demonstration homepage")}>
+    <section class="lead-grid" aria-label={t("Featured demonstration and market status")}>
+      <article class="hero-panel" aria-labelledby="hero-title">
+        <div class="hero-scene" aria-hidden="true">
+          <picture class="hero-cinematic-preview" data-preview-region="hero">
+            <source media="(prefers-reduced-motion: no-preference)" type="image/webp" data-motion-srcset={heroCinematicMotionWebp.src} />
+            <source type="image/webp" data-static-srcset={heroCinematicOriginalWebp.src} />
+            <script is:inline src={r26MediaSelectionUrl}></script>
+            <img src={heroCinematicOriginalPng.src} width="1774" height="887" alt="" loading="eager" decoding="async" fetchpriority="high" />
+          </picture>
+          <div class="scene-aura"></div><div class="scene-grid"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div>
+          <!-- Independent layered illustration; Golden JPEG remains an immutable reference, not a UI background. -->
+          <svg class="hero-rockscape" viewBox="0 0 760 320" preserveAspectRatio="xMidYMax slice" focusable="false" aria-hidden="true">
+            <defs>
+              <linearGradient id="hero-rock-back" x1="0" y1="0" x2=".5" y2="1">
+                <stop offset="0%" stop-color="#3b6244"></stop><stop offset="52%" stop-color="#172c24"></stop><stop offset="100%" stop-color="#071510"></stop>
+              </linearGradient>
+              <linearGradient id="hero-rock-front" x1="0" y1="0" x2=".9" y2="1">
+                <stop offset="0%" stop-color="#355038"></stop><stop offset="35%" stop-color="#152b23"></stop><stop offset="100%" stop-color="#030b09"></stop>
+              </linearGradient>
+              <linearGradient id="hero-rock-rim" x1="0" y1="0" x2="1" y2=".5">
+                <stop offset="0%" stop-color="#9cfd55" stop-opacity=".03"></stop><stop offset="56%" stop-color="#bafa68" stop-opacity=".6"></stop><stop offset="100%" stop-color="#e7ffab" stop-opacity=".05"></stop>
+              </linearGradient>
+              <radialGradient id="hero-rock-haze">
+                <stop offset="0%" stop-color="#a1ff53" stop-opacity=".2"></stop><stop offset="100%" stop-color="#a1ff53" stop-opacity="0"></stop>
+              </radialGradient>
+              <linearGradient id="hero-facet-lit" x1="0%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stop-color="#9eaf7d"></stop>
+                <stop offset="39%" stop-color="#334d39"></stop>
+                <stop offset="100%" stop-color="#071b14"></stop>
+              </linearGradient>
+              <linearGradient id="hero-facet-shadow" x1="0%" y1="5%" x2="95%" y2="100%">
+                <stop offset="0%" stop-color="#0d211b"></stop>
+                <stop offset="100%" stop-color="#020b09"></stop>
+              </linearGradient>
+              <radialGradient id="hero-ground-mist">
+                <stop offset="0%" stop-color="#a8eb74" stop-opacity=".32"></stop>
+                <stop offset="100%" stop-color="#6bb157" stop-opacity="0"></stop>
+              </radialGradient>
+            </defs>
+            <ellipse cx="505" cy="213" rx="277" ry="129" fill="url(#hero-rock-haze)"></ellipse>
+            <path d="M0 265 83 232 153 255 258 131 302 182 394 95 456 168 546 72 610 140 668 116 760 190V320H0Z" fill="url(#hero-rock-back)" opacity=".88"></path>
+            <!-- Original faceted slopes introduce material depth without external textures. -->
+            <g class="hero-rock-facets-back" opacity=".77">
+              <path d="M258 131 302 182 279 224 250 199 221 230Z" fill="url(#hero-facet-lit)" opacity=".35"></path>
+              <path d="M394 95 456 168 445 215 393 148 365 184Z" fill="url(#hero-facet-shadow)" opacity=".75"></path>
+              <path d="M546 72 610 140 588 175 548 116 518 151Z" fill="url(#hero-facet-lit)" opacity=".38"></path>
+              <path d="M546 72 569 114 546 151 523 173 501 188Z" fill="url(#hero-facet-shadow)" opacity=".44"></path>
+            </g>
+            <path d="m258 131-23 53 24-24 24 16 19 6m92-87-25 56 22-23 21 8 44 32m90-96-29 68 23-25 24 12 46 13" fill="#70846c" opacity=".32"></path>
+            <path d="m153 255 105-124 44 51 92-87 62 73 90-96 64 68 58-24 92 74" fill="none" stroke="url(#hero-rock-rim)" stroke-width="2.1" stroke-linejoin="round"></path>
+            <path d="m0 302 115-48 54 19 93-84 81 75 75-110 85 90 70-61 91 70 56-38 40 27V320H0Z" fill="url(#hero-rock-front)"></path>
+            <g class="hero-rock-facets-front" opacity=".82">
+              <path d="M262 189 343 264 308 302 264 236 226 271Z" fill="url(#hero-facet-lit)" opacity=".39"></path>
+              <path d="M418 154 503 244 477 293 419 208 380 246Z" fill="url(#hero-facet-shadow)" opacity=".77"></path>
+              <path d="M573 183 664 253 630 292 574 232 546 264Z" fill="url(#hero-facet-lit)" opacity=".29"></path>
+              <path d="M115 254 169 273 141 290 116 278 95 297Z" fill="url(#hero-facet-shadow)" opacity=".62"></path>
+              <path d="m240 243 25-17 15 29m119-38 23-18 15 20m134 15 20-16 18 19" stroke="#c4d8a9" stroke-opacity=".24" stroke-width="1.4" fill="none"></path>
+            </g>
+            <ellipse class="hero-ridge-mist" cx="518" cy="286" rx="232" ry="30" fill="url(#hero-ground-mist)" opacity=".52"></ellipse>
+            <path d="m262 189-22 55 24-24 38 44m116-110-38 70 39-30 33 41m121-52-24 42 28-10 31 32" fill="#a2bb91" opacity=".22"></path>
+            <path d="m115 254 54 19 93-84 81 75 75-110 85 90 70-61 91 70" fill="none" stroke="url(#hero-rock-rim)" stroke-width="2.5" stroke-linejoin="round"></path>
+            <path d="M0 319 86 298 162 312 254 268 309 294 378 261 470 301 546 253 628 290 690 265 760 286V320H0Z" fill="#050b09" opacity=".95"></path>
+            <path d="m88 304 38-12 18 9m127-26 34 15 30-22m144 30 35-35 28 10m86 18 37-18 20 5" fill="none" stroke="#9fed57" stroke-width="1.4" stroke-opacity=".27"></path>
+          </svg>
+          <svg class="scene-energy" viewBox="0 0 600 300" focusable="false">
+            <defs><linearGradient id="energy-line" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#75b83a" stop-opacity=".05"></stop><stop offset="54%" stop-color="#b8f34b" stop-opacity=".82"></stop><stop offset="100%" stop-color="#efffa2"></stop></linearGradient></defs>
+            <path class="energy-trail" d="M24 274 C103 268 109 231 176 218 S258 170 302 166 S380 111 431 101 S493 54 553 29"></path>
+            <path class="energy-arrow" d="M516 31 555 27 548 66"></path>
+          </svg>
+          <svg class="coin-art" viewBox="0 0 300 300" focusable="false" aria-hidden="true">
+            <defs>
+              <radialGradient id="coin-aura" cx="50%" cy="52%" r="50%">
+                <stop offset="0%" stop-color="#c8ff75" stop-opacity=".36"></stop>
+                <stop offset="67%" stop-color="#85e845" stop-opacity=".13"></stop>
+                <stop offset="100%" stop-color="#70c743" stop-opacity="0"></stop>
+              </radialGradient>
+              <linearGradient id="coin-rim" x1="5%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stop-color="#fff4bc"></stop><stop offset="18%" stop-color="#d6a72b"></stop>
+                <stop offset="45%" stop-color="#7d4a08"></stop><stop offset="70%" stop-color="#ffdf70"></stop>
+                <stop offset="100%" stop-color="#5e3304"></stop>
+              </linearGradient>
+              <radialGradient id="coin-face" cx="31%" cy="24%" r="75%">
+                <stop offset="0%" stop-color="#fff2b5"></stop><stop offset="31%" stop-color="#e5b739"></stop>
+                <stop offset="62%" stop-color="#a96b0d"></stop><stop offset="87%" stop-color="#6b400a"></stop>
+                <stop offset="100%" stop-color="#281d0d"></stop>
+              </radialGradient>
+              <linearGradient id="coin-glyph" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fff8d6"></stop><stop offset="38%" stop-color="#f9d568"></stop>
+                <stop offset="75%" stop-color="#ca8617"></stop><stop offset="100%" stop-color="#f7cb4f"></stop>
+              </linearGradient>
+              <linearGradient id="coin-side-metal" x1="0%" y1="95%" x2="100%" y2="7%">
+                <stop offset="0%" stop-color="#1b1309"></stop>
+                <stop offset="20%" stop-color="#65420f"></stop>
+                <stop offset="38%" stop-color="#e2a93b"></stop>
+                <stop offset="61%" stop-color="#8e5710"></stop>
+                <stop offset="83%" stop-color="#f7ce62"></stop>
+                <stop offset="100%" stop-color="#3c240a"></stop>
+              </linearGradient>
+              <linearGradient id="coin-reflection" x1="12%" y1="4%" x2="77%" y2="95%">
+                <stop offset="0%" stop-color="#fffce6" stop-opacity=".78"></stop>
+                <stop offset="38%" stop-color="#ffed9b" stop-opacity=".24"></stop>
+                <stop offset="100%" stop-color="#ffcc44" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <circle cx="150" cy="150" r="144" fill="url(#coin-aura)"></circle>
+            <!-- Original offset mint-edge layers give the Golden DEMO coin local depth. -->
+            <g class="coin-relief" aria-hidden="true">
+              <circle cx="138" cy="161" r="111" fill="#1b180d" stroke="#37501d" stroke-width="3"></circle>
+              <circle cx="139" cy="161" r="108" fill="url(#coin-side-metal)" stroke="#30200a" stroke-width="4"></circle>
+              <path d="M39 195A112 112 0 0 0 198 255" fill="none" stroke="#ffce67" stroke-opacity=".67" stroke-width="7" stroke-linecap="round"></path>
+              <path d="M51 214A105 105 0 0 0 174 263" fill="none" stroke="#3d2408" stroke-opacity=".84" stroke-width="4" stroke-linecap="round"></path>
+            </g>
+            <circle cx="150" cy="150" r="112" fill="#101b0d" stroke="#a2ee43" stroke-opacity=".55" stroke-width="3"></circle>
+            <circle cx="150" cy="150" r="107" fill="url(#coin-rim)" stroke="#fff2b3" stroke-opacity=".72" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="101" fill="none" stroke="#4b2b07" stroke-width="9"></circle>
+            <circle cx="150" cy="150" r="101" fill="none" stroke="#ffdc74" stroke-width="5" stroke-dasharray="1.8 3.7" stroke-opacity=".83"></circle>
+            <circle cx="150" cy="150" r="94" fill="#302208" stroke="#f8d76a" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="89" fill="url(#coin-face)" stroke="#ffdf80" stroke-width="2.2"></circle>
+            <circle cx="150" cy="150" r="80" fill="none" stroke="#ffe9a8" stroke-opacity=".53" stroke-width="2"></circle>
+            <circle cx="150" cy="150" r="75" fill="none" stroke="#5b3d09" stroke-width="2.5"></circle>
+            <circle cx="150" cy="150" r="68" fill="none" stroke="#ffe4a0" stroke-opacity=".39" stroke-width="1" stroke-dasharray="1.4 5.1"></circle>
+            <path class="coin-specular" d="M86 81C116 53 168 47 209 76C177 66 141 74 116 94C98 110 91 127 86 150C76 127 78 101 86 81Z" fill="url(#coin-reflection)" opacity=".64"></path>
+            <path d="M61 115A94 94 0 0 1 188 64 M233 178A95 95 0 0 1 124 242" fill="none" stroke="#fff7c7" stroke-opacity=".76" stroke-width="3" stroke-linecap="round"></path>
+            <path d="M72 191A89 89 0 0 0 130 232 M208 86A88 88 0 0 1 231 120" fill="none" stroke="#402304" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"></path>
+            <text x="154" y="205" fill="#452804" stroke="#4f2904" stroke-width="3" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="152" font-weight="800" text-anchor="middle">₿</text>
+            <text x="150" y="201" fill="url(#coin-glyph)" stroke="#fff1b1" stroke-opacity=".64" stroke-width=".8" font-family="Arial, 'Segoe UI Symbol', sans-serif" font-size="152" font-weight="800" text-anchor="middle">₿</text>
+            <path d="M85 104Q142 51 204 82" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="8" stroke-linecap="round"></path>
+          </svg>
+          <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
+        </div>
+        <div class="hero-copy">
+          <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>
+          <h1 id="hero-title">{t("Bitcoin market,")}<br />{t("in")} <em>{t("focus.")}</em></h1>
+          <p>{t("This visual demo has no live market data or news connected.")}</p>
+          <div class="hero-actions"><a class="primary-action" href="#latest-news">{t("Explore demo stories")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">{t("View market panel")}</a></div>
+        </div>
+        <div class="hero-stat"><span>{t("DEMO · NOT LIVE")}</span><strong>—</strong><small>{t("Market data not connected")}</small></div>
+        <p class="hero-tags" aria-hidden="true">{t("MARKET")}<br />{t("ANALYSIS")}<br />{t("DIGITAL ASSETS")}</p>
+      </article>
+
+      <aside class="market-panel" id="market-overview" aria-labelledby="market-title">
+        <div class="panel-title"><div><span class="panel-eyebrow">{t("DEMONSTRATION")}</span><h2 id="market-title">{t("Market overview")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
+        <p class="panel-description">{t("Market data feed is not connected.")}</p>
+        <ul class="market-list">
+          {markets.map((market) => (
+            <li class="market-row">
+              <span class={"coin-mark coin-" + market.tone} aria-hidden="true">
+                {market.symbol === "BTC" && <span class="market-asset-icon market-asset-btc">₿</span>}
+                {market.symbol === "ETH" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="M12 1 4.5 12l7.5 4.4 7.5-4.4L12 1Z" fill="#eef1ff" />
+                    <path d="m4.5 13.7 7.5 9.3 7.5-9.3-7.5 4.7-7.5-4.7Z" fill="#cbd2ff" />
+                    <path d="M12 1v15.4l7.5-4.4L12 1Z" fill="#9ba9e4" />
+                  </svg>
+                )}
+                {market.symbol === "SOL" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="M5 3.5h16l-3.8 4H1.2L5 3.5Z" fill="#9b78ff" />
+                    <path d="M5.1 10h16l-3.8 4H1.3l3.8-4Z" fill="#62edc6" />
+                    <path d="M5 16.5h16l-3.8 4H1.2l3.8-4Z" fill="#9b78ff" />
+                  </svg>
+                )}
+                {market.symbol === "BNB" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="m12 2.5 4.5 4.5-4.5 4.5L7.5 7 12 2.5Zm0 9.5 3.3 3.3-3.3 3.3-3.3-3.3L12 12Zm-7-2 3 3-3 3-3-3 3-3Zm14 0 3 3-3 3-3-3 3-3ZM12 19l2.5 2.5L12 24l-2.5-2.5L12 19Z" fill="#342702" />
+                  </svg>
+                )}
+                {market.symbol === "XRP" && (
+                  <svg class="market-asset-icon" viewBox="0 0 24 24" focusable="false">
+                    <path d="M3.2 5.5h3.1c2 0 3.1 1.5 5.7 4.3 2.6-2.8 3.7-4.3 5.7-4.3h3.1M3.2 18.5h3.1c2 0 3.1-1.5 5.7-4.3 2.6 2.8 3.7 4.3 5.7 4.3h3.1" fill="none" stroke="#f6f8f6" stroke-width="2.1" stroke-linecap="round" />
+                  </svg>
+                )}
+              </span>
+              <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
+              <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
+              <span class="market-value" aria-label={t("Unavailable")}>—</span>
+            </li>
+          ))}
+        </ul>
+        <a class="panel-link" href="#demo-data">{t("Data status")} <span aria-hidden="true">→</span></a>
+      </aside>
+    </section>
+
+    <section class="ticker-strip" aria-label={t("Market ticker demonstration")}><strong>◉ {t("Market ticker")}</strong><div class="ticker-items" tabindex="0" role="region" aria-label={t("Scrollable market ticker demonstration")}>{tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
+
+    <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {t("Trending demo")}</h2>
+      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item", "Verified topic feed not connected"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
+    </section>
+
+    <nav class="category-rail" id="categories" aria-label={t("Demonstration story categories")}>
+      {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category} data-category-label={t(category)}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "▣", "⌘", "◎", "✦", "◌", "⌖"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
+    </nav>
+
+    <section class="content-grid" aria-label={t("Demonstration signals")}>
+      <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
+        <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{t("Unavailable")}</span></div>
+        <p>{t("Key events appear when a verified source is connected.")}</p><div class="empty-state radar-empty">
+          <svg class="radar-tracks" viewBox="0 0 390 108" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="radar-trail-light" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#9fe75a" stop-opacity=".75"></stop><stop offset="100%" stop-color="#9fe75a" stop-opacity=".06"></stop></linearGradient></defs>
+            <path class="radar-spine" d="M35 6V103"></path>
+            {[18, 38, 58, 78, 98].map((y) => (
+              <g><circle cx="35" cy={y} r="4" class="radar-node"></circle><path d={`M45 ${y}H376`} class="radar-track"></path></g>
+            ))}
+          </svg>
+          <b aria-hidden="true">⌁</b><span>{t("No verified updates are available in this demonstration.")}</span>
+        </div>
+      </article>
+      <article class="content-panel sentiment-panel" aria-labelledby="sentiment-title">
+        <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="sentiment-title">◉ {t("Market sentiment")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
+        <p>{t("Sentiment is unavailable until an approved source is connected.")}</p>
+        <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label={t("Market sentiment unavailable")}>
+            <svg class="sentiment-arc" viewBox="0 0 130 96" aria-hidden="true" focusable="false">
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#26362c" stroke-width="13" stroke-linecap="round"></path>
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#d56451" stroke-opacity=".4" stroke-width="12" stroke-dasharray="22 142"></path>
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#ebbb58" stroke-opacity=".43" stroke-width="12" stroke-dasharray="27 137" stroke-dashoffset="-30"></path>
+              <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#a1ef58" stroke-opacity=".48" stroke-width="12" stroke-dasharray="66 98" stroke-dashoffset="-89"></path>
+            </svg>
+            <b>—</b><small>{t("Unavailable")}</small>
+          </div>
+          <ul><li>{t("Extreme greed")} <b>—</b></li><li>{t("Greed")} <b>—</b></li><li>{t("Neutral")} <b>—</b></li><li>{t("Fear")} <b>—</b></li><li>{t("Extreme fear")} <b>—</b></li></ul>
+        </div>
+      </article>
+      <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><svg class="promo-scene" viewBox="0 0 360 180" focusable="false" aria-hidden="true">
+        <defs>
+          <radialGradient id="promo-sky-light" cx="73%" cy="42%" r="51%"><stop offset="0%" stop-color="#b6ff67" stop-opacity=".44"></stop><stop offset="38%" stop-color="#559a36" stop-opacity=".13"></stop><stop offset="100%" stop-color="#07130c" stop-opacity="0"></stop></radialGradient>
+          <linearGradient id="promo-ridge" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b8f34b" stop-opacity=".57"></stop><stop offset="100%" stop-color="#101b14" stop-opacity=".05"></stop></linearGradient>
+          <linearGradient id="promo-horizon" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#9fe364"></stop><stop offset="100%" stop-color="#142b1b"></stop></linearGradient>
+        </defs>
+        <rect x="0" y="0" width="360" height="180" fill="url(#promo-sky-light)"></rect>
+        <circle cx="262" cy="70" r="57" fill="none" stroke="#a3f75a" stroke-opacity=".24" stroke-width="2"></circle>
+        <circle cx="262" cy="70" r="45" fill="none" stroke="#c1ff8c" stroke-opacity=".52" stroke-width="1.7"></circle>
+        <circle cx="262" cy="70" r="32" fill="none" stroke="#d9ff96" stroke-opacity=".36" stroke-width="1"></circle>
+        <path d="M0 171 66 107 102 140 172 62 207 114 254 79 296 112 360 49V180H0Z" fill="#0e1d13" stroke="url(#promo-ridge)" stroke-width="2"></path>
+        <path d="m0 177 70-43 42 27 53-56 49 44 54-38 48 29 44-25v65H0Z" fill="#1c301e" stroke="#a2d97d" stroke-opacity=".32" stroke-width="1"></path>
+        <path d="m49 170 51-21 30 20 52-32 39 23 47-28 54 37 38-16v27H0Z" fill="#08140d"></path>
+        <path d="m174 63-19 49 17-12 9 16 7-30m67-6-13 23 10-8 14 15" fill="none" stroke="#b8f34b" stroke-opacity=".46" stroke-width="1.3"></path>
+        <path d="M193 173Q257 124 335 156" fill="none" stroke="#a6f564" stroke-opacity=".62" stroke-width="1.8"></path>
+        <path d="M257 145l-2-17 4-6 3 6-2 17 6 18-6-2-3-11-4 11-6 2Z" fill="#d5ffac" fill-opacity=".72"></path>
+        <circle cx="258" cy="116" r="5" fill="#d5ffac" fill-opacity=".75"></circle>
+        <path d="M0 178H360" stroke="url(#promo-horizon)" stroke-opacity=".55" stroke-width="1.5"></path>
+      </svg><picture class="promo-image" data-preview-region="promo"><source type="image/webp" srcset={promoR26Webp.src} /><img src={promoR26Png.src} width="1200" height="600" alt="" loading="lazy" decoding="async" /></picture><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
+    </section>
+
+    <section class="lower-grid" aria-label={t("Latest demonstration content")}>
+      <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title">
+        <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
+        <div class="news-cards">
+          {stories.map((story, index) => {
+            const artwork = editorialR26Assets[story.artwork];
+            return <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true"><picture class="editorial-image" data-preview-region="editorial"><source type="image/webp" srcset={artwork.webp.src} /><img src={artwork.png.src} width="768" height="512" alt="" loading="lazy" decoding="async" /></picture><EditorialArtwork variant={story.artwork} /></div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>;
+          })}
+        </div>
+        <div class="news-no-results" data-news-empty role="status" hidden>
+          <strong>{t("No demo placeholders match.")}</strong>
+          <p>{t("Try another category or search term. No live news is connected.")}</p>
+          <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
+        </div>
+        <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
+        <div class="news-controls">
+          <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
+          <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">{t("Showing all demo placeholders.")}</p>
+          <div class="news-control-actions">
+            <button class="news-share-link" type="button" data-copy-filter-link>{t("Copy view link")}</button>
+            <button class="news-clear-filters" type="button" data-clear-filters hidden>{t("Clear filters")}</button>
+          </div>
+        </div>
+        <p class="news-share-status" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
+        <div class="news-share-manual" data-share-manual hidden>
+          <label for="news-share-url">{t("Copy this link manually")}</label>
+          <input type="url" id="news-share-url" data-share-url readonly autocomplete="off" />
+        </div>
+      </section>
+      <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">
+        <span class="newsletter-icon" aria-hidden="true">✉</span><small>{t("DEMO · DISABLED DELIVERY")}</small><h2 id="newsletter-title">{t("Join the CoinBlink newsletter")}</h2>
+        <p>{t("This preview will not send or store your email.")}</p><div class="newsletter-form" role="group" aria-label={t("Newsletter demo controls")}><label class="sr-only" for="demo-email">{t("Email address")}</label><input id="demo-email" name="email" type="email" placeholder={t("Email address")} autocomplete="off" /><button type="button" data-demo-preview>{t("Preview only")} →</button></div>
+        <p class="form-status" aria-live="polite" data-form-status>{t("No message will be sent.")}</p><ul class="newsletter-promises"><li>{t("No storage")}</li><li>{t("No delivery")}</li><li>{t("Demo only")}</li></ul>
+      </section>
+    </section>
+
+    <section class="learn-section content-panel" id="learn" aria-labelledby="learn-title">
+      <div class="learn-section__heading">
+        <div>
+          <small>{t("EVERGREEN EDUCATION · NOT MARKET SIGNALS")}</small>
+          <h2 id="learn-title">{t("Crypto 101: safer first steps")}</h2>
+          <p>{t("Learn the basics without live prices, investment recommendations or account sign-up.")}</p>
+        </div>
+        <span class="learn-section__count">{learningTopics.length} {t("short guides")}</span>
+      </div>
+      <div class="learn-grid">
+        {learningTopics.map((topic, index) => (
+          <details class="learn-card" id={`learn-${topic.id}`}>
+            <summary>
+              <span class="learn-card__icon" aria-hidden="true">{topic.icon}</span>
+              <span class="learn-card__header"><small>{t("GUIDE")} {String(index + 1).padStart(2, "0")}</small><strong>{topic.title}</strong></span>
+              <span class="learn-card__arrow" aria-hidden="true">+</span>
+            </summary>
+            <div class="learn-card__content">
+              <p>{topic.summary}</p>
+              <p><strong>{t("Safety check:")}</strong> {topic.checklist}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+      <p class="learn-section__footnote">{t("Educational material only. Verify important details with primary sources before acting.")}</p>
+    </section>
+
+    <section class="official-sources content-panel" id="official-sources" aria-labelledby="official-sources-title">
+      <div class="official-sources__heading">
+        <div>
+          <small>{t("ORIGINAL PUBLISHERS · EXTERNAL LINKS")}</small>
+          <h2 id="official-sources-title">{t("Official source desk")}</h2>
+          <p>{t("Visit original publishing pages directly. No headlines, dates or third-party articles are imported into CoinBlink.")}</p>
+        </div>
+        <span class="official-sources__count">{officialSources.length} {t("sources")}</span>
+      </div>
+      <div class="official-sources__grid">
+        {officialSources.map((source) => (
+          <article class="official-source" data-official-source={source.id}>
+            <small class="official-source__type">{source.type === "regulation" ? t("REGULATORY NEWSROOM") : source.type === "ecosystem" ? t("PROJECT ANNOUNCEMENTS") : t("PROTOCOL UPDATES")}</small>
+            <h3>{source.name}</h3>
+            <p>{source.description}</p>
+            <div class="official-source__foot">
+              <span>{source.host}</span>
+              <a href={source.url} target="_blank" rel="noopener noreferrer external" referrerpolicy="no-referrer" aria-label={`${t("Open official site:")} ${source.name}`}>{t("Visit publisher")} <span aria-hidden="true">↗</span></a>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="official-sources__disclaimer">{t("Source links are not an endorsement, a live feed or a license to republish. Check the date, context and original claims on each site.")}</p>
+    </section>
+
+    <section class="chain-lookup content-panel" id="chain-lookup" aria-labelledby="chain-lookup-title">
+      <div class="chain-lookup__heading">
+        <div>
+          <small>{t("REAL UTILITY · NO API OR TRACKING")}</small>
+          <h2 id="chain-lookup-title">{t("Blockchain explorer lookup")}</h2>
+          <p>{t("Build a safe outbound link to inspect a public address or transaction in an independent explorer.")}</p>
+        </div>
+        <span class="chain-lookup__pill">{t("Read-only")}</span>
+      </div>
+      <form class="chain-lookup__form" data-explorer-form data-locale={locale} autocomplete="off" novalidate>
+        <label>
+          <span>{t("Blockchain network")}</span>
+          <select data-explorer-network>
+            <option value="bitcoin">Bitcoin</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="solana">Solana</option>
+          </select>
+        </label>
+        <label>
+          <span>{t("Look up")}</span>
+          <select data-explorer-kind>
+            <option value="address">{t("Public address")}</option>
+            <option value="transaction">{t("Transaction ID")}</option>
+          </select>
+        </label>
+        <label class="chain-lookup__value">
+          <span>{t("Paste public address or transaction ID")}</span>
+          <input data-explorer-value type="text" maxlength="110" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder={t("Public identifier only")} aria-describedby="chain-lookup-warning" />
+        </label>
+        <button type="submit">{t("Prepare explorer link")} <span aria-hidden="true">→</span></button>
+        <p class="chain-lookup__status" data-explorer-status role="status" aria-live="polite" aria-atomic="true"></p>
+        <div class="chain-lookup__result" data-explorer-result hidden>
+          <span>{t("Destination:")} <strong data-explorer-provider></strong></span>
+          <a data-explorer-link target="_blank" rel="noopener noreferrer external" referrerpolicy="no-referrer">{t("Open external explorer")} <span aria-hidden="true">↗</span></a>
+        </div>
+      </form>
+      <p class="chain-lookup__warning" id="chain-lookup-warning">{t("Public identifiers only. Never paste private keys or recovery phrases. The input stays in this page until you choose to open an external explorer. Format checking is not blockchain verification.")}</p>
+    </section>
+
+    <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Video publishing and live feeds are unavailable. The blockchain lookup only prepares external links; CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>
+  </main>
+  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
+</div>
+
+<script is:inline src="/home-demo.js"></script>
+<script is:inline type="module" src="/explorer-lookup.js"></script>

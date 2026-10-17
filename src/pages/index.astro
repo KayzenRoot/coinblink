@@ -1,0 +1,7 @@
+---
+export const prerender = false;
+
+// Root visitors should always reach the real English homepage.
+// Redirect only within this application, without introducing external origins.
+return Astro.redirect("/en", 302);
+---

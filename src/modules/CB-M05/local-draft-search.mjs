@@ -70,6 +70,20 @@ function editableProse(body) {
   return Object.freeze({ prose, notes: body.slice(prose.length) });
 }
 
+function checkedProseEdit(prose, notes) {
+  const value = prose + notes;
+  if (value.length > MAX_DRAFT_LENGTH) {
+    throw new RangeError("Result would exceed the 12,000-character draft limit");
+  }
+  // Reject an edit that transforms article prose into a well-formed editorial
+  // appendix (or creates malformed notes). Notes must be byte-for-byte intact.
+  const verified = editableProse(value);
+  if (verified.prose !== prose || verified.notes !== notes) {
+    throw new RangeError("Replacement cannot create or alter editorial notes");
+  }
+  return value;
+}
+
 function matchPattern(query, caseSensitive) {
   if (typeof query !== "string" || query.length < 1 || query.length > MAX_SEARCH_LENGTH) return null;
   return new RegExp(query.replace(ESCAPABLE, "\\$&"), caseSensitive ? "gu" : "giu");
@@ -110,14 +124,37 @@ export function replaceAllInLocalDraft(body, query, replacement, options = {}) {
   if (!pattern) throw new RangeError("Search must contain 1 to 100 characters");
   const { prose, notes } = editableProse(body);
   let replacements = 0;
-  const value = prose.replace(pattern, () => {
+  const revisedProse = prose.replace(pattern, () => {
     replacements += 1;
     return replacement;
-  }) + notes;
-  if (value.length > MAX_DRAFT_LENGTH) {
-    throw new RangeError("Result would exceed the 12,000-character draft limit");
-  }
+  });
+  const value = checkedProseEdit(revisedProse, notes);
   return Object.freeze({ value, replacements });
+}
+
+/**
+ * Replace only a currently selected exact prose match, never a metadata span.
+ * @param {string} body
+ * @param {string} query
+ * @param {string} replacement
+ * @param {number} start
+ * @param {number} end
+ * @param {{caseSensitive?: boolean}} [options]
+ */
+export function replaceSelectedInLocalDraft(body, query, replacement, start, end, options = {}) {
+  if (typeof body !== "string" || typeof replacement !== "string"
+      || replacement.length > MAX_REPLACEMENT_LENGTH
+      || !Number.isInteger(start) || !Number.isInteger(end)
+      || !findInLocalDraft(body, query, options).spans.some((span) =>
+        span.start === start && span.end === end)) {
+    throw new RangeError("Selection or replacement is not a valid prose match");
+  }
+  const { prose, notes } = editableProse(body);
+  const revisedProse = prose.slice(0, start) + replacement + prose.slice(end);
+  return Object.freeze({
+    value: checkedProseEdit(revisedProse, notes),
+    caret: start + replacement.length,
+  });
 }
 
 if (typeof document !== "undefined") {
@@ -170,19 +207,16 @@ if (typeof document !== "undefined") {
         report("Find and select an exact match before replacing it.");
         return;
       }
-      if (replaceInput.value.length > MAX_REPLACEMENT_LENGTH) {
-        report("Replacement must contain at most 200 characters.");
-        return;
+      try {
+        const result = replaceSelectedInLocalDraft(
+          body.value, findInput.value, replaceInput.value, start, end, options());
+        applyBody(result.value);
+        body.focus();
+        body.setSelectionRange(start, result.caret);
+        report("One occurrence replaced locally. Re-export Markdown to keep the change.");
+      } catch {
+        report("Replacement rejected: check length, selection and editorial note integrity.");
       }
-      const updated = body.value.slice(0, start) + replaceInput.value + body.value.slice(end);
-      if (updated.length > MAX_DRAFT_LENGTH) {
-        report("Replacement would exceed the 12,000-character draft limit.");
-        return;
-      }
-      applyBody(updated);
-      body.focus();
-      body.setSelectionRange(start, start + replaceInput.value.length);
-      report("One occurrence replaced locally. Re-export Markdown to keep the change.");
     });
 
     replaceAllButton.addEventListener("click", () => {

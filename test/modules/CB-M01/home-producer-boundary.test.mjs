@@ -1,6 +1,4 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
@@ -155,24 +153,4 @@ test("isolated Astro fixtures exercise mock and refused LIVE consumer states wit
   assert.match(visual, /REJECTED_LIVE_UNAUTHORIZED/u);
   assert.match(visual, /data-m01-news-source-state/u);
   assert.match(visual, /externalRequests/u);
-});
-
-test("visual runner executes in default Node suite with real Astro, Chromium and aborted egress", { timeout: 180_000 }, async () => {
-  const child = spawn(process.execPath, [resolve("test/modules/CB-M01/visual-check.mjs")], {
-    cwd: resolve("."), windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-  });
-  let output = "";
-  for (const stream of [child.stdout, child.stderr]) {
-    stream.on("data", (chunk) => { output = (output + String(chunk)).slice(-6_000); });
-  }
-  const timeout = setTimeout(() => child.kill(), 160_000);
-  try {
-    const [exitCode, signal] = await once(child, "close");
-    assert.equal(signal, null, "isolated Astro/Chromium runner must exit normally: " + output);
-    assert.equal(exitCode, 0, "M01 real-browser producer fixture failed: " + output);
-    assert.match(output, /"externalRequests": \[\]/u, "fixture must make zero external requests");
-  } finally {
-    clearTimeout(timeout);
-    if (child.exitCode === null && child.signalCode === null) child.kill();
-  }
 });

@@ -28,3 +28,15 @@
 - No changes to Home M01, CMS local PR #91, public routes, M02-M04, R78, Docker, global checkpoint, CI, paid services, deployment or release. No Owner identity or confidential values in source.
 
 **STOP CONDITION:** `P1C_PROPOSAL_ONLY_AWAITING_EXACT_HEAD_CI_OWNER_REVIEW_AND_SEPARATE_SCOPE_GO`.
+
+## Post-main proposal revalidation · 2026-10-17 · NOT AN EXECUTION CONTEXT LOCK
+
+**Current reviewed protected main**: `5cbb808ebcc052780ba7e4f426080ddb0ef62f64` (tree `37ce406dfcdc0ad8a37a3e7d1c14e79811a166a6`), after #113 offline M02 workbench. The original `6919125c9a6eb593e66b2b909575534937fef76c` above is retained as historical admission/design provenance, not a live branch head. Nine of nine listed canonical main Git blob fingerprints were read from **current main** and match exactly, including the machine checkpoint SHA `72618bef100e6f82e4655b2c6ed482794e0c4649` (**M00 complete / 5%, M05 P0 MOCK admitted only**).
+
+**Updated same-branch proposal blobs** (the previous two listed hashes are historical):
+- `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md` → `c13eca844108a3cfe301b128284527e6c460886c`
+- `.engineering/work-orders/CB-M05-P1C-OWNER-ADMIN-001.md` → `01e875439bbaea266281aab75556c2d13aaccef9`
+
+**Independent unmerged security-lab dependency**: #91 reviewed test-only head `8e5c8a067f649d8495c571781174cb5e08c1339c`; 19 new Sonar findings await classification. No optimistic merge, deployment, privileged enrollment, remote D1, vault, provider resource, public routes, or real publication. This is a **proposal-document refresh** only. An effective ADR and explicit Owner security design GO must precede a **new** runnable P1-C Work Order and execution Context Lock (fresh base, file fingerprints, actual providers and concrete security test evidence). Subsequent main/PR drift invalidates this review baseline, not the historical records.
+
+**STOP unchanged:** `P1C_PROPOSAL_ONLY_AWAITING_EXACT_HEAD_CI_OWNER_REVIEW_AND_SEPARATE_SCOPE_GO`.

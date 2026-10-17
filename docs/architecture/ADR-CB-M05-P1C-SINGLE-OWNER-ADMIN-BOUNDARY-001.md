@@ -34,3 +34,7 @@
 Alternative self-hosted Node/Postgres would add operational overhead and costs; no provider choice becomes binding until Owner approves the exact risk/resource boundaries. While this ADR is a candidate, **execution ceiling stays unchanged:** #91 test-only synthetic local auth, no publicly exposed CMS, no remote/cloud D1 writes or passkey enrollment, no provider vault and no publishing. The global checkpoint stays M00_COMPLETE / 5%.
 
 **STOP CONDITION:** `P1C_ADR_CANDIDATE_AWAITING_OWNER_SECURITY_ARCHITECTURE_DECISION`.
+
+## 2026-10-17 technical source revalidation (proposal only)
+
+Following the M02 offline mock #113 squash, current protected `main` is `5cbb808ebcc052780ba7e4f426080ddb0ef62f64`. The prior `6919125c` entry remains an immutable historical design base, **not** a claim of current Context Lock. All nine critical current-main Git blobs cited in the accompanying proposal lock were independently re-read and are unchanged. The architecture above remains a **candidate**, not a privileged-runtime or provider authorization. PR #91 remains a separate unmerged test-only lab at `8e5c8a067f649d8495c571781174cb5e08c1339c`. Security audit, resource inventory, fresh execution lock, exact-head hosted CI, and specific Owner GO remain required.

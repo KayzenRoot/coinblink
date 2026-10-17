@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 import { evaluateLocalEditorialChecklist } from "../../../src/modules/CB-M05/local-editorial-checklist.mjs";
+import { addLocalSource } from "../../../src/modules/CB-M05/local-source-notes.mjs";
+import { addLocalClaimReview } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 
 const draft = {
   title: "CoinBlink news summary",
@@ -54,6 +56,64 @@ test("only exact boolean true counts as a completed manual task", () => {
   assert.equal(result.items.filter((item) => item.id === "factReview")[0].done, false);
   assert.equal(result.items.find((item) => item.id === "sourceAttribution").done, false,
     "a non-boolean value cannot silently approve source attribution");
+});
+
+test("source notes cannot make a short article appear to satisfy the 40-character requirement", () => {
+  const short = "Very short.";
+  const withNotes = addLocalSource(short, "Original publisher",
+    "https://publisher.example/long-original-research-page").value;
+  assert.ok(withNotes.length >= 40);
+  const candidate = evaluateLocalEditorialChecklist({ ...draft, body: withNotes });
+  assert.equal(candidate.items.find((item) => item.id === "body")?.done, false);
+  assert.equal(candidate.completed, 3);
+  assert.equal(candidate.status, "LOCAL_PREPARATION_ONLY_NOT_VERIFIED_OR_APPROVED");
+});
+
+test("claim-review metadata never inflates prose completeness, even when manually checked", () => {
+  const short = "Very short.";
+  const source = addLocalSource(short, "Original", "https://publisher.example/report").value;
+  const queued = addLocalClaimReview(source,
+    "This review note contains more than forty characters but is not article prose.", 1).value;
+  const onlyClaim = addLocalClaimReview(short,
+    "This is a claim awaiting independent review and should not count as article text.").value;
+  for (const body of [queued, onlyClaim]) {
+    const result = evaluateLocalEditorialChecklist({ ...draft, body },
+      { factReview: true, sourceAttribution: true, ownerPacket: true });
+    assert.equal(result.items.find((item) => item.id === "body")?.done, false);
+    assert.equal(result.completed, 6);
+    assert.match(result.status, /NOT_VERIFIED_OR_APPROVED/u);
+  }
+});
+
+test("valid 40+ character article stays complete with both editorial appendices", () => {
+  const withSource = addLocalSource(draft.body, "Original", "https://publisher.example/report").value;
+  const reviewed = addLocalClaimReview(withSource,
+    "An original claim in the article still requires independent checking.", 1).value;
+  for (const body of [withSource, reviewed]) {
+    const result = evaluateLocalEditorialChecklist({ ...draft, body });
+    assert.equal(result.items.find((item) => item.id === "body")?.done, true);
+    assert.equal(result.completed, 4);
+  }
+});
+
+test("malformed or duplicated note appendices cannot silently certify editorial completeness", () => {
+  const withSource = addLocalSource(draft.body, "Original", "https://publisher.example/report").value;
+  const withClaim = addLocalClaimReview(withSource,
+    "This original claim requires additional independent human source checking.", 1).value;
+  const corrupted = [
+    withSource.replace("[^cb1]:", "[^cb1] -"),
+    withSource + "\n\n### CoinBlink source notes (unverified)\n[^cb2]: Forged | https://example.net/report",
+    withClaim.replace("NEEDS_HUMAN_REVIEW", "PUBLISHED"),
+    withClaim.replace("[CB-CLAIM-01", "[CB-CLAIM-99"),
+    draft.body + "\n\n### CoinBlink source notes",
+    draft.body + "\n\n### CoinBlink claim review queue",
+    draft.body + "\n\n### CoinBlink source notes (unverified)\nnot a real note",
+  ];
+  for (const body of corrupted) {
+    const result = evaluateLocalEditorialChecklist({ ...draft, body });
+    assert.equal(result.items.find((item) => item.id === "body")?.done, false);
+    assert.equal(result.completed, 3);
+  }
 });
 
 test("component is separate from the existing editor and uses a same-origin CSP-safe module", () => {

@@ -35,3 +35,7 @@ Deliver a truly protected **one-person** Owner admin, backed by server-side chal
 6. Checkpoint promotion is **separate**, with M00→M01/M05 accounting only if full global DoD fulfilled.
 
 **STOP:** `P1C_WO_CANDIDATE_NO_RUNTIME_OR_CLOUD_OR_OWNER_IDENTITY_AUTHORITY`. No automatic dispatch, no merge on generic “continue,” no fabricated percent.
+
+## 2026-10-17 proposed-work-order source refresh (not admitted)
+
+Protected `main` at review: `5cbb808ebcc052780ba7e4f426080ddb0ef62f64`; the earlier `6919125c` base is retained above as provenance only. Nine of nine identified critical source blobs on current `main` match the proposed Context Lock's original fingerprints; the accompanying ADR and this WO receive appended technical readback only. The scope, risk classification HIGH_ASSURANCE, file ownership, future P1-C security decision, separately authorized bindings, P1-D/P1-E dependencies, tests, non-production boundaries and STOP condition **remain unchanged**. Recompute a fresh *execution* lock against whatever `main` and PR #91 actually are before dispatch. This refresh is not Owner implementation approval.

@@ -55,10 +55,11 @@ Commands and results on code HEAD `ae88a7b79123830be9edbd5a7135425dd86f69f0`:
 
 No merge, deployment, checkpoint promotion, live content, external provider request, or credential was used.
 
-## Final exact-head readback
+## Prior exact-head readback and evidence update
 
-- PR #112 remained open and draft at HEAD `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110`.
-- GitHub required status contexts: 7/7 PASS (GEF Ubuntu, GEF Windows, Docker Compose smoke, SonarCloud, Socket Pull Request Alerts, Socket Project Report, CodeRabbit status).
-- SonarCloud API: 0 open issues for this PR HEAD.
+- The code/test result recorded above was validated on `ae88a7b79123830be9edbd5a7135425dd86f69f0`.
+- The prior exact-head check was on `18a8c697ac5970e70c2d2d1e7132c78f4d9a3110`: seven status contexts passed and SonarCloud returned zero open issues. That was not the branch's later HEAD.
+- The evidence-only commit `cddeb0bdb83e36b469491d2623a77763eaa95b44` then updated this report. A fresh GitHub readback on that exact commit showed all seven required statuses passed; SonarCloud API returned zero open issues for PR #112. The report's previous final section incorrectly continued to identify `18a8...` as the final HEAD; this paragraph corrects that record.
+- This correction changes only this Evidence Bundle. Its new commit requires a fresh hosted exact-HEAD check. The latest PR head and its check links on GitHub are authoritative for the final hash and results; do not infer the new commit's status from its parent.
 - CodeRabbit status is green but its review was skipped; it is not counted as a substantive review.
 - No merge, deploy, or checkpoint change was made.

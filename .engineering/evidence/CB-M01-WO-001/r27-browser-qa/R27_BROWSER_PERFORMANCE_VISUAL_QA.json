@@ -1,0 +1,3051 @@
+{
+  "status": "R27_DEMO_QA_PASS",
+  "generatedAt": "2026-10-14T18:44:19.093Z",
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "testedHeadSha": "3da9f857c0566c499175427919873dbc7d52f145",
+  "preview": {
+    "origin": "http://127.0.0.1:3001",
+    "route": "/en",
+    "runtime": "existing local Docker Compose preview; read-only test traffic"
+  },
+  "runtime": {
+    "node": "v22.23.3",
+    "platform": "win32",
+    "arch": "x64",
+    "logicalCpus": 8
+  },
+  "browsers": [
+    {
+      "name": "firefox",
+      "available": false,
+      "note": "browser binary not installed; no download attempted"
+    },
+    {
+      "name": "webkit",
+      "available": false,
+      "note": "browser binary not installed; no download attempted"
+    },
+    {
+      "name": "chromium",
+      "version": "156.0.8078.4",
+      "viewports": [
+        {
+          "name": "desktop",
+          "width": 1536,
+          "height": 864,
+          "documentWidth": 1536,
+          "documentHeight": 2363,
+          "demoCtaCount": 3,
+          "hero": {
+            "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "complete": true,
+            "naturalWidth": 640,
+            "naturalHeight": 320,
+            "decodePromiseMs": 1.3,
+            "previewActive": true,
+            "previewOpacity": "1",
+            "vectorFallbackVisible": false,
+            "prefersReducedMotion": false,
+            "connection": {
+              "saveData": false,
+              "effectiveType": "4g"
+            }
+          },
+          "staticImages": [
+            {
+              "region": "promo",
+              "path": "/_astro/promo.Bd7PPvDX.webp",
+              "width": 1200,
+              "height": 600,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/bitcoin.BftpAFVR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ethereum.Zt9psYtD.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/policy.CH0ehN0X.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ecosystem.CZuYuxBR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            }
+          ],
+          "heroResponse": {
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "transferSize": 1395024,
+            "encodedBodySize": 1394724,
+            "durationMs": 760.5
+          },
+          "axeViolationCount": 0,
+          "axeViolations": [],
+          "consoleErrors": [],
+          "pageErrors": [],
+          "externalRequests": [],
+          "geometry": {
+            ".demo-banner": {
+              "x": 0,
+              "y": 0,
+              "width": 1536,
+              "height": 22,
+              "bottom": 22
+            },
+            ".cb-header": {
+              "x": 43.765625,
+              "y": 22,
+              "width": 1448.46875,
+              "height": 49,
+              "bottom": 71
+            },
+            ".hero-panel": {
+              "x": 43.765625,
+              "y": 73,
+              "width": 1089.734375,
+              "height": 282,
+              "bottom": 355
+            },
+            ".market-panel": {
+              "x": 1143.5,
+              "y": 73,
+              "width": 348.71875,
+              "height": 282,
+              "bottom": 355
+            },
+            ".ticker-strip": {
+              "x": 43.765625,
+              "y": 361,
+              "width": 1448.46875,
+              "height": 30,
+              "bottom": 391
+            },
+            ".trending-strip": {
+              "x": 43.765625,
+              "y": 397,
+              "width": 1448.46875,
+              "height": 45,
+              "bottom": 442
+            },
+            ".category-rail": {
+              "x": 43.765625,
+              "y": 457,
+              "width": 1448.46875,
+              "height": 50,
+              "bottom": 507
+            },
+            ".content-grid": {
+              "x": 43.765625,
+              "y": 518,
+              "width": 1448.46875,
+              "height": 190,
+              "bottom": 708
+            },
+            "#latest-news": {
+              "x": 43.765625,
+              "y": 715,
+              "width": 983.625,
+              "height": 228,
+              "bottom": 943
+            },
+            ".news-cards": {
+              "x": 55.765625,
+              "y": 747.5,
+              "width": 959.625,
+              "height": 106,
+              "bottom": 853.5
+            },
+            "#newsletter": {
+              "x": 1036.390625,
+              "y": 715,
+              "width": 455.828125,
+              "height": 228,
+              "bottom": 943
+            }
+          },
+          "screenshot": {
+            "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-desktop-1536x864.png",
+            "bytes": 1275671,
+            "sha256": "ba368a74fcaea71f5bfd5fe44149631f4e35bb5b65d32c64bd4d1b82a0b6d192"
+          }
+        },
+        {
+          "name": "tablet",
+          "width": 768,
+          "height": 1024,
+          "documentWidth": 768,
+          "documentHeight": 2976,
+          "demoCtaCount": 3,
+          "hero": {
+            "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "complete": true,
+            "naturalWidth": 640,
+            "naturalHeight": 320,
+            "decodePromiseMs": 3.3,
+            "previewActive": true,
+            "previewOpacity": "1",
+            "vectorFallbackVisible": false,
+            "prefersReducedMotion": false,
+            "connection": {
+              "saveData": false,
+              "effectiveType": "4g"
+            }
+          },
+          "staticImages": [
+            {
+              "region": "promo",
+              "path": "/_astro/promo.Bd7PPvDX.webp",
+              "width": 1200,
+              "height": 600,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/bitcoin.BftpAFVR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ethereum.Zt9psYtD.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/policy.CH0ehN0X.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ecosystem.CZuYuxBR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            }
+          ],
+          "heroResponse": {
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "transferSize": 1395024,
+            "encodedBodySize": 1394724,
+            "durationMs": 507.4
+          },
+          "axeViolationCount": 0,
+          "axeViolations": [],
+          "consoleErrors": [],
+          "pageErrors": [],
+          "externalRequests": [],
+          "geometry": {
+            ".demo-banner": {
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 31,
+              "bottom": 31
+            },
+            ".cb-header": {
+              "x": 21.875,
+              "y": 31,
+              "width": 724.25,
+              "height": 54,
+              "bottom": 85
+            },
+            ".hero-panel": {
+              "x": 21.875,
+              "y": 93,
+              "width": 461.640625,
+              "height": 322,
+              "bottom": 415
+            },
+            ".market-panel": {
+              "x": 495.515625,
+              "y": 93,
+              "width": 250.609375,
+              "height": 322,
+              "bottom": 415
+            },
+            ".ticker-strip": {
+              "x": 21.875,
+              "y": 423,
+              "width": 724.25,
+              "height": 35,
+              "bottom": 458
+            },
+            ".trending-strip": {
+              "x": 21.875,
+              "y": 466,
+              "width": 724.25,
+              "height": 51,
+              "bottom": 517
+            },
+            ".category-rail": {
+              "x": 21.875,
+              "y": 525,
+              "width": 724.25,
+              "height": 47,
+              "bottom": 572
+            },
+            ".content-grid": {
+              "x": 21.875,
+              "y": 581,
+              "width": 724.25,
+              "height": 354.046875,
+              "bottom": 935.046875
+            },
+            "#latest-news": {
+              "x": 21.875,
+              "y": 944.046875,
+              "width": 425.25,
+              "height": 320.1875,
+              "bottom": 1264.234375
+            },
+            ".news-cards": {
+              "x": 36.875,
+              "y": 1012.046875,
+              "width": 395.25,
+              "height": 160.6875,
+              "bottom": 1172.734375
+            },
+            "#newsletter": {
+              "x": 456.125,
+              "y": 944.046875,
+              "width": 290,
+              "height": 320.1875,
+              "bottom": 1264.234375
+            }
+          },
+          "screenshot": {
+            "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-tablet-768x1024.png",
+            "bytes": 917986,
+            "sha256": "1fbcb803de84adeefea424ad4a3db90ddc88563887ccd958e92c247256420a72"
+          }
+        },
+        {
+          "name": "mobile",
+          "width": 390,
+          "height": 844,
+          "documentWidth": 390,
+          "documentHeight": 5442,
+          "demoCtaCount": 3,
+          "hero": {
+            "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "complete": true,
+            "naturalWidth": 640,
+            "naturalHeight": 320,
+            "decodePromiseMs": 1.4,
+            "previewActive": true,
+            "previewOpacity": "1",
+            "vectorFallbackVisible": false,
+            "prefersReducedMotion": false,
+            "connection": {
+              "saveData": false,
+              "effectiveType": "4g"
+            }
+          },
+          "staticImages": [
+            {
+              "region": "promo",
+              "path": "/_astro/promo.Bd7PPvDX.webp",
+              "width": 1200,
+              "height": 600,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/bitcoin.BftpAFVR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ethereum.Zt9psYtD.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/policy.CH0ehN0X.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ecosystem.CZuYuxBR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            }
+          ],
+          "heroResponse": {
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "transferSize": 1395024,
+            "encodedBodySize": 1394724,
+            "durationMs": 308
+          },
+          "axeViolationCount": 0,
+          "axeViolations": [],
+          "consoleErrors": [],
+          "pageErrors": [],
+          "externalRequests": [],
+          "geometry": {
+            ".demo-banner": {
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 38,
+              "bottom": 38
+            },
+            ".cb-header": {
+              "x": 16,
+              "y": 38,
+              "width": 358,
+              "height": 58,
+              "bottom": 96
+            },
+            ".hero-panel": {
+              "x": 16,
+              "y": 105,
+              "width": 358,
+              "height": 460,
+              "bottom": 565
+            },
+            ".market-panel": {
+              "x": 16,
+              "y": 577,
+              "width": 358,
+              "height": 342,
+              "bottom": 919
+            },
+            ".ticker-strip": {
+              "x": 16,
+              "y": 927,
+              "width": 358,
+              "height": 73,
+              "bottom": 1000
+            },
+            ".trending-strip": {
+              "x": 16,
+              "y": 1008,
+              "width": 358,
+              "height": 52,
+              "bottom": 1060
+            },
+            ".category-rail": {
+              "x": 16,
+              "y": 1068,
+              "width": 374,
+              "height": 50,
+              "bottom": 1118
+            },
+            ".content-grid": {
+              "x": 16,
+              "y": 1127,
+              "width": 358,
+              "height": 632.09375,
+              "bottom": 1759.09375
+            },
+            "#latest-news": {
+              "x": 16,
+              "y": 1768.09375,
+              "width": 358,
+              "height": 576.5625,
+              "bottom": 2344.65625
+            },
+            ".news-cards": {
+              "x": 32,
+              "y": 1838.09375,
+              "width": 326,
+              "height": 325.5625,
+              "bottom": 2163.65625
+            },
+            "#newsletter": {
+              "x": 16,
+              "y": 2353.65625,
+              "width": 358,
+              "height": 220,
+              "bottom": 2573.65625
+            }
+          },
+          "screenshot": {
+            "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-mobile-390x844.png",
+            "bytes": 914297,
+            "sha256": "ae5f16958a55664955505c6b00454af51389d17a271bd805deed46f8c6b08d13"
+          }
+        }
+      ],
+      "keyboardFocus": {
+        "tagName": "A",
+        "label": "Skip to content",
+        "focusVisible": true,
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "zoomEquivalent": {
+        "viewportWidth": 768,
+        "documentWidth": 768,
+        "bodyWidth": 768,
+        "method": "768x432 CSS viewport equivalent to 1536x864 at 200 percent; not browser chrome zoom"
+      }
+    },
+    {
+      "name": "msedge",
+      "version": "155.0.4283.45",
+      "viewports": [
+        {
+          "name": "desktop",
+          "width": 1536,
+          "height": 864,
+          "documentWidth": 1536,
+          "documentHeight": 2363,
+          "demoCtaCount": 3,
+          "hero": {
+            "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "complete": true,
+            "naturalWidth": 640,
+            "naturalHeight": 320,
+            "decodePromiseMs": 5.5,
+            "previewActive": true,
+            "previewOpacity": "1",
+            "vectorFallbackVisible": false,
+            "prefersReducedMotion": false,
+            "connection": {
+              "saveData": false,
+              "effectiveType": "4g"
+            }
+          },
+          "staticImages": [
+            {
+              "region": "promo",
+              "path": "/_astro/promo.Bd7PPvDX.webp",
+              "width": 1200,
+              "height": 600,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/bitcoin.BftpAFVR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ethereum.Zt9psYtD.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/policy.CH0ehN0X.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ecosystem.CZuYuxBR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            }
+          ],
+          "heroResponse": {
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "transferSize": 1395024,
+            "encodedBodySize": 1394724,
+            "durationMs": 1030.8
+          },
+          "axeViolationCount": 0,
+          "axeViolations": [],
+          "consoleErrors": [],
+          "pageErrors": [],
+          "externalRequests": [],
+          "geometry": {
+            ".demo-banner": {
+              "x": 0,
+              "y": 0,
+              "width": 1536,
+              "height": 22,
+              "bottom": 22
+            },
+            ".cb-header": {
+              "x": 43.765625,
+              "y": 22,
+              "width": 1448.46875,
+              "height": 49,
+              "bottom": 71
+            },
+            ".hero-panel": {
+              "x": 43.765625,
+              "y": 73,
+              "width": 1089.734375,
+              "height": 282,
+              "bottom": 355
+            },
+            ".market-panel": {
+              "x": 1143.5,
+              "y": 73,
+              "width": 348.71875,
+              "height": 282,
+              "bottom": 355
+            },
+            ".ticker-strip": {
+              "x": 43.765625,
+              "y": 361,
+              "width": 1448.46875,
+              "height": 30,
+              "bottom": 391
+            },
+            ".trending-strip": {
+              "x": 43.765625,
+              "y": 397,
+              "width": 1448.46875,
+              "height": 45,
+              "bottom": 442
+            },
+            ".category-rail": {
+              "x": 43.765625,
+              "y": 457,
+              "width": 1448.46875,
+              "height": 50,
+              "bottom": 507
+            },
+            ".content-grid": {
+              "x": 43.765625,
+              "y": 518,
+              "width": 1448.46875,
+              "height": 190,
+              "bottom": 708
+            },
+            "#latest-news": {
+              "x": 43.765625,
+              "y": 715,
+              "width": 983.625,
+              "height": 228,
+              "bottom": 943
+            },
+            ".news-cards": {
+              "x": 55.765625,
+              "y": 747.5,
+              "width": 959.625,
+              "height": 106,
+              "bottom": 853.5
+            },
+            "#newsletter": {
+              "x": 1036.390625,
+              "y": 715,
+              "width": 455.828125,
+              "height": 228,
+              "bottom": 943
+            }
+          },
+          "screenshot": {
+            "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-desktop-1536x864.png",
+            "bytes": 1204608,
+            "sha256": "87675c38be13818e71687989282a39c5a988e53253ac216ab4eee38cc9ec76ec"
+          }
+        },
+        {
+          "name": "tablet",
+          "width": 768,
+          "height": 1024,
+          "documentWidth": 768,
+          "documentHeight": 2976,
+          "demoCtaCount": 3,
+          "hero": {
+            "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "complete": true,
+            "naturalWidth": 640,
+            "naturalHeight": 320,
+            "decodePromiseMs": 2,
+            "previewActive": true,
+            "previewOpacity": "1",
+            "vectorFallbackVisible": false,
+            "prefersReducedMotion": false,
+            "connection": {
+              "saveData": false,
+              "effectiveType": "4g"
+            }
+          },
+          "staticImages": [
+            {
+              "region": "promo",
+              "path": "/_astro/promo.Bd7PPvDX.webp",
+              "width": 1200,
+              "height": 600,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/bitcoin.BftpAFVR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ethereum.Zt9psYtD.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/policy.CH0ehN0X.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ecosystem.CZuYuxBR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            }
+          ],
+          "heroResponse": {
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "transferSize": 1395024,
+            "encodedBodySize": 1394724,
+            "durationMs": 2826.7
+          },
+          "axeViolationCount": 0,
+          "axeViolations": [],
+          "consoleErrors": [],
+          "pageErrors": [],
+          "externalRequests": [],
+          "geometry": {
+            ".demo-banner": {
+              "x": 0,
+              "y": 0,
+              "width": 768,
+              "height": 31,
+              "bottom": 31
+            },
+            ".cb-header": {
+              "x": 21.875,
+              "y": 31,
+              "width": 724.25,
+              "height": 54,
+              "bottom": 85
+            },
+            ".hero-panel": {
+              "x": 21.875,
+              "y": 93,
+              "width": 461.640625,
+              "height": 322,
+              "bottom": 415
+            },
+            ".market-panel": {
+              "x": 495.515625,
+              "y": 93,
+              "width": 250.609375,
+              "height": 322,
+              "bottom": 415
+            },
+            ".ticker-strip": {
+              "x": 21.875,
+              "y": 423,
+              "width": 724.25,
+              "height": 35,
+              "bottom": 458
+            },
+            ".trending-strip": {
+              "x": 21.875,
+              "y": 466,
+              "width": 724.25,
+              "height": 51,
+              "bottom": 517
+            },
+            ".category-rail": {
+              "x": 21.875,
+              "y": 525,
+              "width": 724.25,
+              "height": 47,
+              "bottom": 572
+            },
+            ".content-grid": {
+              "x": 21.875,
+              "y": 581,
+              "width": 724.25,
+              "height": 354.046875,
+              "bottom": 935.046875
+            },
+            "#latest-news": {
+              "x": 21.875,
+              "y": 944.046875,
+              "width": 425.25,
+              "height": 320.1875,
+              "bottom": 1264.234375
+            },
+            ".news-cards": {
+              "x": 36.875,
+              "y": 1012.046875,
+              "width": 395.25,
+              "height": 160.6875,
+              "bottom": 1172.734375
+            },
+            "#newsletter": {
+              "x": 456.125,
+              "y": 944.046875,
+              "width": 290,
+              "height": 320.1875,
+              "bottom": 1264.234375
+            }
+          },
+          "screenshot": {
+            "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-tablet-768x1024.png",
+            "bytes": 863876,
+            "sha256": "7af0c9ecb8159ab3fa7f8c6c45ed7261de6e942be4d6425229f1bed65ec0bfe7"
+          }
+        },
+        {
+          "name": "mobile",
+          "width": 390,
+          "height": 844,
+          "documentWidth": 390,
+          "documentHeight": 5442,
+          "demoCtaCount": 3,
+          "hero": {
+            "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "complete": true,
+            "naturalWidth": 640,
+            "naturalHeight": 320,
+            "decodePromiseMs": 14.6,
+            "previewActive": true,
+            "previewOpacity": "1",
+            "vectorFallbackVisible": false,
+            "prefersReducedMotion": false,
+            "connection": {
+              "saveData": false,
+              "effectiveType": "4g"
+            }
+          },
+          "staticImages": [
+            {
+              "region": "promo",
+              "path": "/_astro/promo.Bd7PPvDX.webp",
+              "width": 1200,
+              "height": 600,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/bitcoin.BftpAFVR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ethereum.Zt9psYtD.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/policy.CH0ehN0X.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            },
+            {
+              "region": "editorial",
+              "path": "/_astro/ecosystem.CZuYuxBR.webp",
+              "width": 768,
+              "height": 512,
+              "complete": true
+            }
+          ],
+          "heroResponse": {
+            "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+            "transferSize": 1395024,
+            "encodedBodySize": 1394724,
+            "durationMs": 414.3
+          },
+          "axeViolationCount": 0,
+          "axeViolations": [],
+          "consoleErrors": [],
+          "pageErrors": [],
+          "externalRequests": [],
+          "geometry": {
+            ".demo-banner": {
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 38,
+              "bottom": 38
+            },
+            ".cb-header": {
+              "x": 16,
+              "y": 38,
+              "width": 358,
+              "height": 58,
+              "bottom": 96
+            },
+            ".hero-panel": {
+              "x": 16,
+              "y": 105,
+              "width": 358,
+              "height": 460,
+              "bottom": 565
+            },
+            ".market-panel": {
+              "x": 16,
+              "y": 577,
+              "width": 358,
+              "height": 342,
+              "bottom": 919
+            },
+            ".ticker-strip": {
+              "x": 16,
+              "y": 927,
+              "width": 358,
+              "height": 73,
+              "bottom": 1000
+            },
+            ".trending-strip": {
+              "x": 16,
+              "y": 1008,
+              "width": 358,
+              "height": 52,
+              "bottom": 1060
+            },
+            ".category-rail": {
+              "x": 16,
+              "y": 1068,
+              "width": 374,
+              "height": 50,
+              "bottom": 1118
+            },
+            ".content-grid": {
+              "x": 16,
+              "y": 1127,
+              "width": 358,
+              "height": 632.09375,
+              "bottom": 1759.09375
+            },
+            "#latest-news": {
+              "x": 16,
+              "y": 1768.09375,
+              "width": 358,
+              "height": 576.5625,
+              "bottom": 2344.65625
+            },
+            ".news-cards": {
+              "x": 32,
+              "y": 1838.09375,
+              "width": 326,
+              "height": 325.5625,
+              "bottom": 2163.65625
+            },
+            "#newsletter": {
+              "x": 16,
+              "y": 2353.65625,
+              "width": 358,
+              "height": 220,
+              "bottom": 2573.65625
+            }
+          },
+          "screenshot": {
+            "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-mobile-390x844.png",
+            "bytes": 878571,
+            "sha256": "04e4a7856e1201e514e0b4fb3c123332558b4e8ec2bcd99841b4cd13585871fc"
+          }
+        }
+      ],
+      "keyboardFocus": {
+        "tagName": "A",
+        "label": "Skip to content",
+        "focusVisible": true,
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "zoomEquivalent": {
+        "viewportWidth": 768,
+        "documentWidth": 768,
+        "bodyWidth": 768,
+        "method": "768x432 CSS viewport equivalent to 1536x864 at 200 percent; not browser chrome zoom"
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "browser": "chromium",
+      "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-desktop-1536x864.png",
+      "bytes": 1275671,
+      "sha256": "ba368a74fcaea71f5bfd5fe44149631f4e35bb5b65d32c64bd4d1b82a0b6d192",
+      "width": 1536,
+      "height": 864
+    },
+    {
+      "browser": "chromium",
+      "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-tablet-768x1024.png",
+      "bytes": 917986,
+      "sha256": "1fbcb803de84adeefea424ad4a3db90ddc88563887ccd958e92c247256420a72",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "browser": "chromium",
+      "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-mobile-390x844.png",
+      "bytes": 914297,
+      "sha256": "ae5f16958a55664955505c6b00454af51389d17a271bd805deed46f8c6b08d13",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "browser": "msedge",
+      "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-desktop-1536x864.png",
+      "bytes": 1204608,
+      "sha256": "87675c38be13818e71687989282a39c5a988e53253ac216ab4eee38cc9ec76ec",
+      "width": 1536,
+      "height": 864
+    },
+    {
+      "browser": "msedge",
+      "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-tablet-768x1024.png",
+      "bytes": 863876,
+      "sha256": "7af0c9ecb8159ab3fa7f8c6c45ed7261de6e942be4d6425229f1bed65ec0bfe7",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "browser": "msedge",
+      "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-mobile-390x844.png",
+      "bytes": 878571,
+      "sha256": "04e4a7856e1201e514e0b4fb3c123332558b4e8ec2bcd99841b4cd13585871fc",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "visualChecks": [
+    {
+      "browser": "chromium",
+      "name": "desktop",
+      "width": 1536,
+      "height": 864,
+      "documentWidth": 1536,
+      "documentHeight": 2363,
+      "demoCtaCount": 3,
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "complete": true,
+        "naturalWidth": 640,
+        "naturalHeight": 320,
+        "decodePromiseMs": 1.3,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "staticImages": [
+        {
+          "region": "promo",
+          "path": "/_astro/promo.Bd7PPvDX.webp",
+          "width": 1200,
+          "height": 600,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/bitcoin.BftpAFVR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ethereum.Zt9psYtD.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/policy.CH0ehN0X.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ecosystem.CZuYuxBR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        }
+      ],
+      "heroResponse": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferSize": 1395024,
+        "encodedBodySize": 1394724,
+        "durationMs": 760.5
+      },
+      "axeViolationCount": 0,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "geometry": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 1536,
+          "height": 22,
+          "bottom": 22
+        },
+        ".cb-header": {
+          "x": 43.765625,
+          "y": 22,
+          "width": 1448.46875,
+          "height": 49,
+          "bottom": 71
+        },
+        ".hero-panel": {
+          "x": 43.765625,
+          "y": 73,
+          "width": 1089.734375,
+          "height": 282,
+          "bottom": 355
+        },
+        ".market-panel": {
+          "x": 1143.5,
+          "y": 73,
+          "width": 348.71875,
+          "height": 282,
+          "bottom": 355
+        },
+        ".ticker-strip": {
+          "x": 43.765625,
+          "y": 361,
+          "width": 1448.46875,
+          "height": 30,
+          "bottom": 391
+        },
+        ".trending-strip": {
+          "x": 43.765625,
+          "y": 397,
+          "width": 1448.46875,
+          "height": 45,
+          "bottom": 442
+        },
+        ".category-rail": {
+          "x": 43.765625,
+          "y": 457,
+          "width": 1448.46875,
+          "height": 50,
+          "bottom": 507
+        },
+        ".content-grid": {
+          "x": 43.765625,
+          "y": 518,
+          "width": 1448.46875,
+          "height": 190,
+          "bottom": 708
+        },
+        "#latest-news": {
+          "x": 43.765625,
+          "y": 715,
+          "width": 983.625,
+          "height": 228,
+          "bottom": 943
+        },
+        ".news-cards": {
+          "x": 55.765625,
+          "y": 747.5,
+          "width": 959.625,
+          "height": 106,
+          "bottom": 853.5
+        },
+        "#newsletter": {
+          "x": 1036.390625,
+          "y": 715,
+          "width": 455.828125,
+          "height": 228,
+          "bottom": 943
+        }
+      },
+      "screenshot": {
+        "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-desktop-1536x864.png",
+        "bytes": 1275671,
+        "sha256": "ba368a74fcaea71f5bfd5fe44149631f4e35bb5b65d32c64bd4d1b82a0b6d192"
+      }
+    },
+    {
+      "browser": "chromium",
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "documentWidth": 768,
+      "documentHeight": 2976,
+      "demoCtaCount": 3,
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "complete": true,
+        "naturalWidth": 640,
+        "naturalHeight": 320,
+        "decodePromiseMs": 3.3,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "staticImages": [
+        {
+          "region": "promo",
+          "path": "/_astro/promo.Bd7PPvDX.webp",
+          "width": 1200,
+          "height": 600,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/bitcoin.BftpAFVR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ethereum.Zt9psYtD.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/policy.CH0ehN0X.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ecosystem.CZuYuxBR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        }
+      ],
+      "heroResponse": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferSize": 1395024,
+        "encodedBodySize": 1394724,
+        "durationMs": 507.4
+      },
+      "axeViolationCount": 0,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "geometry": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 768,
+          "height": 31,
+          "bottom": 31
+        },
+        ".cb-header": {
+          "x": 21.875,
+          "y": 31,
+          "width": 724.25,
+          "height": 54,
+          "bottom": 85
+        },
+        ".hero-panel": {
+          "x": 21.875,
+          "y": 93,
+          "width": 461.640625,
+          "height": 322,
+          "bottom": 415
+        },
+        ".market-panel": {
+          "x": 495.515625,
+          "y": 93,
+          "width": 250.609375,
+          "height": 322,
+          "bottom": 415
+        },
+        ".ticker-strip": {
+          "x": 21.875,
+          "y": 423,
+          "width": 724.25,
+          "height": 35,
+          "bottom": 458
+        },
+        ".trending-strip": {
+          "x": 21.875,
+          "y": 466,
+          "width": 724.25,
+          "height": 51,
+          "bottom": 517
+        },
+        ".category-rail": {
+          "x": 21.875,
+          "y": 525,
+          "width": 724.25,
+          "height": 47,
+          "bottom": 572
+        },
+        ".content-grid": {
+          "x": 21.875,
+          "y": 581,
+          "width": 724.25,
+          "height": 354.046875,
+          "bottom": 935.046875
+        },
+        "#latest-news": {
+          "x": 21.875,
+          "y": 944.046875,
+          "width": 425.25,
+          "height": 320.1875,
+          "bottom": 1264.234375
+        },
+        ".news-cards": {
+          "x": 36.875,
+          "y": 1012.046875,
+          "width": 395.25,
+          "height": 160.6875,
+          "bottom": 1172.734375
+        },
+        "#newsletter": {
+          "x": 456.125,
+          "y": 944.046875,
+          "width": 290,
+          "height": 320.1875,
+          "bottom": 1264.234375
+        }
+      },
+      "screenshot": {
+        "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-tablet-768x1024.png",
+        "bytes": 917986,
+        "sha256": "1fbcb803de84adeefea424ad4a3db90ddc88563887ccd958e92c247256420a72"
+      }
+    },
+    {
+      "browser": "chromium",
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "documentWidth": 390,
+      "documentHeight": 5442,
+      "demoCtaCount": 3,
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "complete": true,
+        "naturalWidth": 640,
+        "naturalHeight": 320,
+        "decodePromiseMs": 1.4,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "staticImages": [
+        {
+          "region": "promo",
+          "path": "/_astro/promo.Bd7PPvDX.webp",
+          "width": 1200,
+          "height": 600,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/bitcoin.BftpAFVR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ethereum.Zt9psYtD.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/policy.CH0ehN0X.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ecosystem.CZuYuxBR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        }
+      ],
+      "heroResponse": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferSize": 1395024,
+        "encodedBodySize": 1394724,
+        "durationMs": 308
+      },
+      "axeViolationCount": 0,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "geometry": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 38,
+          "bottom": 38
+        },
+        ".cb-header": {
+          "x": 16,
+          "y": 38,
+          "width": 358,
+          "height": 58,
+          "bottom": 96
+        },
+        ".hero-panel": {
+          "x": 16,
+          "y": 105,
+          "width": 358,
+          "height": 460,
+          "bottom": 565
+        },
+        ".market-panel": {
+          "x": 16,
+          "y": 577,
+          "width": 358,
+          "height": 342,
+          "bottom": 919
+        },
+        ".ticker-strip": {
+          "x": 16,
+          "y": 927,
+          "width": 358,
+          "height": 73,
+          "bottom": 1000
+        },
+        ".trending-strip": {
+          "x": 16,
+          "y": 1008,
+          "width": 358,
+          "height": 52,
+          "bottom": 1060
+        },
+        ".category-rail": {
+          "x": 16,
+          "y": 1068,
+          "width": 374,
+          "height": 50,
+          "bottom": 1118
+        },
+        ".content-grid": {
+          "x": 16,
+          "y": 1127,
+          "width": 358,
+          "height": 632.09375,
+          "bottom": 1759.09375
+        },
+        "#latest-news": {
+          "x": 16,
+          "y": 1768.09375,
+          "width": 358,
+          "height": 576.5625,
+          "bottom": 2344.65625
+        },
+        ".news-cards": {
+          "x": 32,
+          "y": 1838.09375,
+          "width": 326,
+          "height": 325.5625,
+          "bottom": 2163.65625
+        },
+        "#newsletter": {
+          "x": 16,
+          "y": 2353.65625,
+          "width": 358,
+          "height": 220,
+          "bottom": 2573.65625
+        }
+      },
+      "screenshot": {
+        "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/chromium-mobile-390x844.png",
+        "bytes": 914297,
+        "sha256": "ae5f16958a55664955505c6b00454af51389d17a271bd805deed46f8c6b08d13"
+      }
+    },
+    {
+      "browser": "msedge",
+      "name": "desktop",
+      "width": 1536,
+      "height": 864,
+      "documentWidth": 1536,
+      "documentHeight": 2363,
+      "demoCtaCount": 3,
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "complete": true,
+        "naturalWidth": 640,
+        "naturalHeight": 320,
+        "decodePromiseMs": 5.5,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "staticImages": [
+        {
+          "region": "promo",
+          "path": "/_astro/promo.Bd7PPvDX.webp",
+          "width": 1200,
+          "height": 600,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/bitcoin.BftpAFVR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ethereum.Zt9psYtD.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/policy.CH0ehN0X.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ecosystem.CZuYuxBR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        }
+      ],
+      "heroResponse": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferSize": 1395024,
+        "encodedBodySize": 1394724,
+        "durationMs": 1030.8
+      },
+      "axeViolationCount": 0,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "geometry": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 1536,
+          "height": 22,
+          "bottom": 22
+        },
+        ".cb-header": {
+          "x": 43.765625,
+          "y": 22,
+          "width": 1448.46875,
+          "height": 49,
+          "bottom": 71
+        },
+        ".hero-panel": {
+          "x": 43.765625,
+          "y": 73,
+          "width": 1089.734375,
+          "height": 282,
+          "bottom": 355
+        },
+        ".market-panel": {
+          "x": 1143.5,
+          "y": 73,
+          "width": 348.71875,
+          "height": 282,
+          "bottom": 355
+        },
+        ".ticker-strip": {
+          "x": 43.765625,
+          "y": 361,
+          "width": 1448.46875,
+          "height": 30,
+          "bottom": 391
+        },
+        ".trending-strip": {
+          "x": 43.765625,
+          "y": 397,
+          "width": 1448.46875,
+          "height": 45,
+          "bottom": 442
+        },
+        ".category-rail": {
+          "x": 43.765625,
+          "y": 457,
+          "width": 1448.46875,
+          "height": 50,
+          "bottom": 507
+        },
+        ".content-grid": {
+          "x": 43.765625,
+          "y": 518,
+          "width": 1448.46875,
+          "height": 190,
+          "bottom": 708
+        },
+        "#latest-news": {
+          "x": 43.765625,
+          "y": 715,
+          "width": 983.625,
+          "height": 228,
+          "bottom": 943
+        },
+        ".news-cards": {
+          "x": 55.765625,
+          "y": 747.5,
+          "width": 959.625,
+          "height": 106,
+          "bottom": 853.5
+        },
+        "#newsletter": {
+          "x": 1036.390625,
+          "y": 715,
+          "width": 455.828125,
+          "height": 228,
+          "bottom": 943
+        }
+      },
+      "screenshot": {
+        "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-desktop-1536x864.png",
+        "bytes": 1204608,
+        "sha256": "87675c38be13818e71687989282a39c5a988e53253ac216ab4eee38cc9ec76ec"
+      }
+    },
+    {
+      "browser": "msedge",
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "documentWidth": 768,
+      "documentHeight": 2976,
+      "demoCtaCount": 3,
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "complete": true,
+        "naturalWidth": 640,
+        "naturalHeight": 320,
+        "decodePromiseMs": 2,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "staticImages": [
+        {
+          "region": "promo",
+          "path": "/_astro/promo.Bd7PPvDX.webp",
+          "width": 1200,
+          "height": 600,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/bitcoin.BftpAFVR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ethereum.Zt9psYtD.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/policy.CH0ehN0X.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ecosystem.CZuYuxBR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        }
+      ],
+      "heroResponse": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferSize": 1395024,
+        "encodedBodySize": 1394724,
+        "durationMs": 2826.7
+      },
+      "axeViolationCount": 0,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "geometry": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 768,
+          "height": 31,
+          "bottom": 31
+        },
+        ".cb-header": {
+          "x": 21.875,
+          "y": 31,
+          "width": 724.25,
+          "height": 54,
+          "bottom": 85
+        },
+        ".hero-panel": {
+          "x": 21.875,
+          "y": 93,
+          "width": 461.640625,
+          "height": 322,
+          "bottom": 415
+        },
+        ".market-panel": {
+          "x": 495.515625,
+          "y": 93,
+          "width": 250.609375,
+          "height": 322,
+          "bottom": 415
+        },
+        ".ticker-strip": {
+          "x": 21.875,
+          "y": 423,
+          "width": 724.25,
+          "height": 35,
+          "bottom": 458
+        },
+        ".trending-strip": {
+          "x": 21.875,
+          "y": 466,
+          "width": 724.25,
+          "height": 51,
+          "bottom": 517
+        },
+        ".category-rail": {
+          "x": 21.875,
+          "y": 525,
+          "width": 724.25,
+          "height": 47,
+          "bottom": 572
+        },
+        ".content-grid": {
+          "x": 21.875,
+          "y": 581,
+          "width": 724.25,
+          "height": 354.046875,
+          "bottom": 935.046875
+        },
+        "#latest-news": {
+          "x": 21.875,
+          "y": 944.046875,
+          "width": 425.25,
+          "height": 320.1875,
+          "bottom": 1264.234375
+        },
+        ".news-cards": {
+          "x": 36.875,
+          "y": 1012.046875,
+          "width": 395.25,
+          "height": 160.6875,
+          "bottom": 1172.734375
+        },
+        "#newsletter": {
+          "x": 456.125,
+          "y": 944.046875,
+          "width": 290,
+          "height": 320.1875,
+          "bottom": 1264.234375
+        }
+      },
+      "screenshot": {
+        "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-tablet-768x1024.png",
+        "bytes": 863876,
+        "sha256": "7af0c9ecb8159ab3fa7f8c6c45ed7261de6e942be4d6425229f1bed65ec0bfe7"
+      }
+    },
+    {
+      "browser": "msedge",
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "documentWidth": 390,
+      "documentHeight": 5442,
+      "demoCtaCount": 3,
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "complete": true,
+        "naturalWidth": 640,
+        "naturalHeight": 320,
+        "decodePromiseMs": 14.6,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "staticImages": [
+        {
+          "region": "promo",
+          "path": "/_astro/promo.Bd7PPvDX.webp",
+          "width": 1200,
+          "height": 600,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/bitcoin.BftpAFVR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ethereum.Zt9psYtD.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/policy.CH0ehN0X.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        },
+        {
+          "region": "editorial",
+          "path": "/_astro/ecosystem.CZuYuxBR.webp",
+          "width": 768,
+          "height": 512,
+          "complete": true
+        }
+      ],
+      "heroResponse": {
+        "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "transferSize": 1395024,
+        "encodedBodySize": 1394724,
+        "durationMs": 414.3
+      },
+      "axeViolationCount": 0,
+      "axeViolations": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "externalRequests": [],
+      "geometry": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 38,
+          "bottom": 38
+        },
+        ".cb-header": {
+          "x": 16,
+          "y": 38,
+          "width": 358,
+          "height": 58,
+          "bottom": 96
+        },
+        ".hero-panel": {
+          "x": 16,
+          "y": 105,
+          "width": 358,
+          "height": 460,
+          "bottom": 565
+        },
+        ".market-panel": {
+          "x": 16,
+          "y": 577,
+          "width": 358,
+          "height": 342,
+          "bottom": 919
+        },
+        ".ticker-strip": {
+          "x": 16,
+          "y": 927,
+          "width": 358,
+          "height": 73,
+          "bottom": 1000
+        },
+        ".trending-strip": {
+          "x": 16,
+          "y": 1008,
+          "width": 358,
+          "height": 52,
+          "bottom": 1060
+        },
+        ".category-rail": {
+          "x": 16,
+          "y": 1068,
+          "width": 374,
+          "height": 50,
+          "bottom": 1118
+        },
+        ".content-grid": {
+          "x": 16,
+          "y": 1127,
+          "width": 358,
+          "height": 632.09375,
+          "bottom": 1759.09375
+        },
+        "#latest-news": {
+          "x": 16,
+          "y": 1768.09375,
+          "width": 358,
+          "height": 576.5625,
+          "bottom": 2344.65625
+        },
+        ".news-cards": {
+          "x": 32,
+          "y": 1838.09375,
+          "width": 326,
+          "height": 325.5625,
+          "bottom": 2163.65625
+        },
+        "#newsletter": {
+          "x": 16,
+          "y": 2353.65625,
+          "width": 358,
+          "height": 220,
+          "bottom": 2573.65625
+        }
+      },
+      "screenshot": {
+        "path": ".engineering/evidence/CB-M01-WO-001/r27-browser-qa/screenshots/msedge-mobile-390x844.png",
+        "bytes": 878571,
+        "sha256": "04e4a7856e1201e514e0b4fb3c123332558b4e8ec2bcd99841b4cd13585871fc"
+      }
+    }
+  ],
+  "r26GeometryComparison": {
+    "baselineHeadSha": "552faf6a214312fb7cb01ec0a1ba311352bc2db0",
+    "comparedWith": "R26 integrated desktopGeometry in the frozen tested HEAD",
+    "differencesPxByBrowser": {
+      "chromium": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".cb-header": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".hero-panel": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".market-panel": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".ticker-strip": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".trending-strip": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".category-rail": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".content-grid": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        "#latest-news": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".news-cards": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        "#newsletter": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        }
+      },
+      "msedge": {
+        ".demo-banner": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".cb-header": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".hero-panel": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".market-panel": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".ticker-strip": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".trending-strip": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".category-rail": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".content-grid": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        "#latest-news": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        ".news-cards": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        },
+        "#newsletter": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "bottom": 0
+        }
+      }
+    },
+    "rule": "Captured geometry differences are reported as measured; no aesthetic edit is made by this QA run."
+  },
+  "selectionMatrix": [
+    {
+      "name": "desktop-no-preference-4g",
+      "expected": "motion",
+      "selected": "motion",
+      "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+      "saveData": false,
+      "effectiveType": "4g",
+      "reducedMotion": "no-preference"
+    },
+    {
+      "name": "reduced-motion",
+      "expected": "static",
+      "selected": "static",
+      "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+      "saveData": false,
+      "effectiveType": "4g",
+      "reducedMotion": "reduce"
+    },
+    {
+      "name": "save-data-4g",
+      "expected": "static",
+      "selected": "static",
+      "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+      "saveData": true,
+      "effectiveType": "4g",
+      "reducedMotion": "no-preference"
+    },
+    {
+      "name": "slow-2g",
+      "expected": "static",
+      "selected": "static",
+      "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+      "saveData": false,
+      "effectiveType": "slow-2g",
+      "reducedMotion": "no-preference"
+    },
+    {
+      "name": "2g",
+      "expected": "static",
+      "selected": "static",
+      "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+      "saveData": false,
+      "effectiveType": "2g",
+      "reducedMotion": "no-preference"
+    },
+    {
+      "name": "3g",
+      "expected": "static",
+      "selected": "static",
+      "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+      "saveData": false,
+      "effectiveType": "3g",
+      "reducedMotion": "no-preference"
+    },
+    {
+      "name": "4g",
+      "expected": "motion",
+      "selected": "motion",
+      "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+      "saveData": false,
+      "effectiveType": "4g",
+      "reducedMotion": "no-preference"
+    }
+  ],
+  "connectionChange": {
+    "initialEffectiveType": "4g",
+    "changedTo": "3g",
+    "selectedBeforeReload": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+    "remainedBeforeReload": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+    "selectedAfterReload": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+    "reloadRequired": true
+  },
+  "failureMatrix": [
+    {
+      "name": "motion-failure-uses-static-webp",
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-original.CNjbQMfC.webp",
+        "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+        "complete": true,
+        "naturalWidth": 1774,
+        "naturalHeight": 887,
+        "decodePromiseMs": 3.1,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "brokenVisibleImages": [],
+      "failedPaths": {
+        "/_astro/hero-cinematic-motion.uo0wYDIG.webp": 1
+      },
+      "externalRequests": []
+    },
+    {
+      "name": "static-webp-failure-uses-png",
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "path": "/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "complete": true,
+        "naturalWidth": 1774,
+        "naturalHeight": 887,
+        "decodePromiseMs": 163.6,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": true,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "brokenVisibleImages": [],
+      "failedPaths": {
+        "/_astro/hero-cinematic-original.CNjbQMfC.webp": 1
+      },
+      "externalRequests": []
+    },
+    {
+      "name": "png-failure-keeps-vector-fallback",
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "path": "/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "complete": true,
+        "naturalWidth": 0,
+        "naturalHeight": 0,
+        "decodePromiseMs": null,
+        "previewActive": false,
+        "previewOpacity": "0",
+        "vectorFallbackVisible": true,
+        "prefersReducedMotion": true,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "brokenVisibleImages": [],
+      "failedPaths": {
+        "/_astro/hero-cinematic-original.C6ltI_1c.png": 1
+      },
+      "externalRequests": []
+    },
+    {
+      "name": "promo-editorial-failure-keeps-original-illustrations",
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-original.CNjbQMfC.webp",
+        "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+        "complete": true,
+        "naturalWidth": 1774,
+        "naturalHeight": 887,
+        "decodePromiseMs": 1.1,
+        "previewActive": true,
+        "previewOpacity": "1",
+        "vectorFallbackVisible": false,
+        "prefersReducedMotion": true,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "fallbacks": {
+        "promoVectorVisible": true,
+        "editorialsVisible": true,
+        "editorialCount": 4
+      },
+      "brokenVisibleImages": [],
+      "failedPaths": {
+        "/_astro/promo.Bd7PPvDX.webp": 1,
+        "/_astro/bitcoin.BftpAFVR.webp": 1,
+        "/_astro/ethereum.Zt9psYtD.webp": 1,
+        "/_astro/policy.CH0ehN0X.webp": 1,
+        "/_astro/ecosystem.CZuYuxBR.webp": 1,
+        "/_astro/promo.BqaTkquE.png": 1,
+        "/_astro/bitcoin.DWI9SvB-.png": 1,
+        "/_astro/ethereum.B8Bkuqbh.png": 1,
+        "/_astro/policy.DcYsy4zW.png": 1,
+        "/_astro/ecosystem.DQwmWMfh.png": 1
+      },
+      "externalRequests": []
+    },
+    {
+      "name": "full-hero-failure-keeps-vector-fallback",
+      "hero": {
+        "currentSrc": "http://127.0.0.1:3001/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "path": "/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "complete": true,
+        "naturalWidth": 0,
+        "naturalHeight": 0,
+        "decodePromiseMs": null,
+        "previewActive": false,
+        "previewOpacity": "0",
+        "vectorFallbackVisible": true,
+        "prefersReducedMotion": false,
+        "connection": {
+          "saveData": false,
+          "effectiveType": "4g"
+        }
+      },
+      "brokenVisibleImages": [],
+      "failedPaths": {
+        "/_astro/hero-cinematic-original.C6ltI_1c.png": 1,
+        "/_astro/hero-cinematic-motion.uo0wYDIG.webp": 1,
+        "/_astro/hero-cinematic-original.CNjbQMfC.webp": 1
+      },
+      "externalRequests": []
+    }
+  ],
+  "performance": [
+    {
+      "name": "desktop-motion",
+      "viewport": {
+        "width": 1536,
+        "height": 864
+      },
+      "cache": "disabled; new browser context for each repeat",
+      "connection": {
+        "effectiveType": "4g"
+      },
+      "network": "unthrottled local network",
+      "repeats": [
+        {
+          "repeat": 1,
+          "heroPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "heroWidth": 640,
+          "heroHeight": 320,
+          "decodePromiseMs": 4.6,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1436,
+            "cls": 0,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              244.79999995231628,
+              669.8000000119209,
+              1449.3999999761581,
+              102.40000003576279,
+              33,
+              11.799999952316284,
+              3.399999976158142,
+              78.19999998807907
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+              "transferSize": 1395024,
+              "encodedBodySize": 1394724,
+              "durationMs": 505.8
+            },
+            "sameOriginTransferBytes": 4307760
+          }
+        },
+        {
+          "repeat": 2,
+          "heroPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "heroWidth": 640,
+          "heroHeight": 320,
+          "decodePromiseMs": 5.3,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1552,
+            "cls": 0.000032,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              1225.8999999761581,
+              371.89999997615814,
+              1335.699999988079,
+              868.3000000119209,
+              220.30000001192093,
+              49.89999997615814,
+              168.10000002384186,
+              165.10000002384186
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+              "transferSize": 1395024,
+              "encodedBodySize": 1394724,
+              "durationMs": 667.3
+            },
+            "sameOriginTransferBytes": 4307760
+          }
+        },
+        {
+          "repeat": 3,
+          "heroPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "heroWidth": 640,
+          "heroHeight": 320,
+          "decodePromiseMs": 6.6,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1688,
+            "cls": 0.000055,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              16.099999964237213,
+              1914.699999988079,
+              151.29999995231628,
+              239.4000000357628,
+              88.89999997615814,
+              8.199999988079071,
+              109.09999996423721,
+              107.5
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+              "transferSize": 1395024,
+              "encodedBodySize": 1394724,
+              "durationMs": 1000.8
+            },
+            "sameOriginTransferBytes": 4307760
+          }
+        }
+      ]
+    },
+    {
+      "name": "mobile-static-3g-save-data",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cache": "disabled; new browser context for each repeat",
+      "connection": {
+        "saveData": true,
+        "effectiveType": "3g"
+      },
+      "network": {
+        "latencyMs": 150,
+        "downloadBytesPerSecond": 204800,
+        "uploadBytesPerSecond": 65536,
+        "connectionType": "cellular3g"
+      },
+      "repeats": [
+        {
+          "repeat": 1,
+          "heroPath": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+          "heroWidth": 1774,
+          "heroHeight": 887,
+          "decodePromiseMs": 4.1,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 2128,
+            "cls": 0,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              31.5,
+              1212.300000011921,
+              26,
+              124.09999996423721,
+              11.699999988079071,
+              11.300000011920929,
+              2.400000035762787,
+              9.399999976158142
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+              "transferSize": 310354,
+              "encodedBodySize": 310054,
+              "durationMs": 3475.3
+            },
+            "sameOriginTransferBytes": 873466
+          }
+        },
+        {
+          "repeat": 2,
+          "heroPath": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+          "heroWidth": 1774,
+          "heroHeight": 887,
+          "decodePromiseMs": 3.4,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1292,
+            "cls": 0,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              488.19999998807907,
+              490.69999998807907,
+              36.19999998807907,
+              13.699999988079071,
+              13.199999988079071,
+              8.299999952316284,
+              8.5,
+              17.19999998807907
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+              "transferSize": 310354,
+              "encodedBodySize": 310054,
+              "durationMs": 4326.8
+            },
+            "sameOriginTransferBytes": 873466
+          }
+        },
+        {
+          "repeat": 3,
+          "heroPath": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+          "heroWidth": 1774,
+          "heroHeight": 887,
+          "decodePromiseMs": 5.2,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1128,
+            "cls": 0,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              115.19999998807907,
+              115.5,
+              12.099999964237213,
+              2.800000011920929,
+              12.299999952316284,
+              11.199999988079071,
+              5.099999964237213,
+              2.899999976158142
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+              "transferSize": 310354,
+              "encodedBodySize": 310054,
+              "durationMs": 2763.9
+            },
+            "sameOriginTransferBytes": 873466
+          }
+        }
+      ]
+    },
+    {
+      "name": "mobile-motion-4g",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cache": "disabled; new browser context for each repeat",
+      "connection": {
+        "effectiveType": "4g"
+      },
+      "network": {
+        "latencyMs": 40,
+        "downloadBytesPerSecond": 1152000,
+        "uploadBytesPerSecond": 384000,
+        "connectionType": "cellular4g"
+      },
+      "repeats": [
+        {
+          "repeat": 1,
+          "heroPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "heroWidth": 640,
+          "heroHeight": 320,
+          "decodePromiseMs": 11.7,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1496,
+            "cls": 0,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              44.200000047683716,
+              1414.1000000238419,
+              321,
+              91.19999998807907,
+              55.90000003576279,
+              43.5,
+              178.4000000357628,
+              120.5
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+              "transferSize": 1395024,
+              "encodedBodySize": 1394724,
+              "durationMs": 2248.6
+            },
+            "sameOriginTransferBytes": 1958136
+          }
+        },
+        {
+          "repeat": 2,
+          "heroPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "heroWidth": 640,
+          "heroHeight": 320,
+          "decodePromiseMs": 7.5,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 1204,
+            "cls": 0,
+            "longTaskCount": 1,
+            "longTaskDurationMs": 54,
+            "imageLoadToDecodeMs": [
+              237.0999999642372,
+              1385,
+              247,
+              78.59999996423721,
+              241.30000001192093,
+              222.19999998807907,
+              216.89999997615814,
+              52
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+              "transferSize": 1395024,
+              "encodedBodySize": 1394724,
+              "durationMs": 2183.4
+            },
+            "sameOriginTransferBytes": 1958136
+          }
+        },
+        {
+          "repeat": 3,
+          "heroPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+          "heroWidth": 640,
+          "heroHeight": 320,
+          "decodePromiseMs": 6.4,
+          "requestCount": 15,
+          "metrics": {
+            "lcpMs": 968,
+            "cls": 0,
+            "longTaskCount": 0,
+            "longTaskDurationMs": 0,
+            "imageLoadToDecodeMs": [
+              924.3999999761581,
+              1358.199999988079,
+              218.19999998807907,
+              64.80000001192093,
+              8.899999976158142,
+              8.700000047683716,
+              10.199999988079071,
+              5.100000023841858
+            ],
+            "heroResource": {
+              "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+              "transferSize": 1395024,
+              "encodedBodySize": 1394724,
+              "durationMs": 1839.7
+            },
+            "sameOriginTransferBytes": 1958136
+          }
+        }
+      ]
+    }
+  ],
+  "assetHashes": [
+    {
+      "path": "src/modules/CB-M01/assets/r26/bitcoin.png",
+      "bytes": 616903,
+      "sha256": "a257765c960720852330daed15425c2469588a9ef44299bfa20ff698372739a7"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/bitcoin.webp",
+      "bytes": 85612,
+      "sha256": "60dc4f2cd316ff65c53d50891ba03968fbc45167bf79736a7c5c7e203292484b"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/ecosystem.png",
+      "bytes": 583390,
+      "sha256": "d85a2451b1e3581f3a41bc9fbcbbbed6432e60d3cef0abee8a3f722d6e30bb7a"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/ecosystem.webp",
+      "bytes": 74722,
+      "sha256": "ad01f2a2478796c0db115d9c40065c51a10cd1bd61f21f053338ea95abeefc08"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/ethereum.png",
+      "bytes": 690180,
+      "sha256": "67546e502dc2c415fdfe7dbed632f50ffd6279e59e56b939b8c9d55d224349fd"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/ethereum.webp",
+      "bytes": 98994,
+      "sha256": "eec4fedcb3b6efa626cf9e9debda4262260dda6ac615e3e8f6d594c3b4362ef2"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/masters/bitcoin.png",
+      "bytes": 2399367,
+      "sha256": "3225f1208ac65aa2f7a7fc6d1c0dac95724ff7464bd4405a49ddbd7a2ddbd18d"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/masters/ecosystem.png",
+      "bytes": 2234115,
+      "sha256": "1b987f917afcba2bb6ef2ea22cc34ac137e1af236e24c281cbdd31f272a74f0d"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/masters/ethereum.png",
+      "bytes": 2695778,
+      "sha256": "6f3c2345f1ab98c48f25d8ba1c4c86587f6f1d3a109445bb39914f42fa700a36"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/masters/policy.png",
+      "bytes": 2488133,
+      "sha256": "466cd6754613ea3ec7f8ab27cf84241af72921f5f5065c5a48fda77106188331"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/masters/promo.png",
+      "bytes": 1888339,
+      "sha256": "ed4de820d063df68f1787de9ee8b0cab2bbdec0300ab9766715fe4996761e699"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/policy.png",
+      "bytes": 618543,
+      "sha256": "993e95ca5a87720aa14cd17544663ec85e5f60fe19bec556f03db84e5e7e657c"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/policy.webp",
+      "bytes": 85846,
+      "sha256": "22b0772d75110c8c4a2865d497a994b01881c3e1ec362ddcc37f4746c6813ffa"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/promo.png",
+      "bytes": 846828,
+      "sha256": "a04f89bb2684e0af2fb3f0baf16f3d907e077a8faa8e1c2763ae4d91fc69415f"
+    },
+    {
+      "path": "src/modules/CB-M01/assets/r26/promo.webp",
+      "bytes": 73490,
+      "sha256": "fbb6788b43c4dfd4112bd8929135adeaeb1f3f136a183de19ae945ccc3d02e54"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.png",
+      "bytes": 774726,
+      "sha256": "bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
+      "bytes": 269828,
+      "sha256": "5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+      "bytes": 1394724,
+      "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-original.png",
+      "bytes": 2349624,
+      "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c"
+    },
+    {
+      "path": "src/modules/CB-M01/hero-cinematic-original.webp",
+      "bytes": 310054,
+      "sha256": "56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-01-charge.png",
+      "bytes": 164751,
+      "sha256": "817ee5a850ccd7e84f7be7bb1138781f31bbae64c5564b5f5f98efddc7980fa1"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-02-descent.png",
+      "bytes": 288639,
+      "sha256": "3d7449ab6ac5f484cb4e495109babef7e409cd1ba205f926759d05538e684688"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-03-impact.png",
+      "bytes": 502026,
+      "sha256": "33af3ce565eba450fcacb300865a5e69f80b6e997680ce0298aa9e669eb6c426"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-04-afterglow.png",
+      "bytes": 424970,
+      "sha256": "070978154a34c72bfba09d699ff679e218e0c1be4ba6c65bf42ee3122107e6f4"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-05-secondary-right.png",
+      "bytes": 416443,
+      "sha256": "127e010da9945c26ce607caf3ea54d4304a7e25c9ee26f5ace16ac8f23ce930e"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-06-secondary-left.png",
+      "bytes": 258384,
+      "sha256": "aaa75d82ac82160a3ac4d77cbe3f91153d90f81cca3eda0dd9bec38ecff93286"
+    },
+    {
+      "path": "src/modules/CB-M01/lightning-sprites/lightning-07-ground-fade.png",
+      "bytes": 187482,
+      "sha256": "30013de1a21b3446d47f112fb39b01893e1d11c88329c18f1d8a2fc308ecd2ce"
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Laboratory measurements from one local PC and Docker preview; not field Core Web Vitals.",
+    "200 percent zoom is represented by a 768x432 CSS viewport equivalent; Playwright did not control browser chrome zoom.",
+    "Image decode measurement is the browser HTMLImageElement.decode() completion probe after load; it does not claim animation frame decode cost."
+  ],
+  "r26AssetProvenance": {
+    "manifestPath": ".engineering/evidence/CB-M01-WO-001/r26-static-asset-provenance.json",
+    "verifiedAssets": [
+      {
+        "assetId": "CB-M01-R26-PROMO-MASTER",
+        "region": "promo",
+        "sourceMaster": {
+          "path": "src/modules/CB-M01/assets/r26/masters/promo.png",
+          "width": 1774,
+          "height": 887,
+          "sha256": "ed4de820d063df68f1787de9ee8b0cab2bbdec0300ab9766715fe4996761e699"
+        },
+        "derivatives": {
+          "png": {
+            "path": "src/modules/CB-M01/assets/r26/promo.png",
+            "width": 1200,
+            "height": 600,
+            "sha256": "a04f89bb2684e0af2fb3f0baf16f3d907e077a8faa8e1c2763ae4d91fc69415f"
+          },
+          "webp": {
+            "path": "src/modules/CB-M01/assets/r26/promo.webp",
+            "width": 1200,
+            "height": 600,
+            "sha256": "fbb6788b43c4dfd4112bd8929135adeaeb1f3f136a183de19ae945ccc3d02e54"
+          }
+        }
+      },
+      {
+        "assetId": "CB-M01-R26-EDITORIAL-BITCOIN",
+        "region": "editorial-bitcoin",
+        "sourceMaster": {
+          "path": "src/modules/CB-M01/assets/r26/masters/bitcoin.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "3225f1208ac65aa2f7a7fc6d1c0dac95724ff7464bd4405a49ddbd7a2ddbd18d"
+        },
+        "derivatives": {
+          "png": {
+            "path": "src/modules/CB-M01/assets/r26/bitcoin.png",
+            "width": 768,
+            "height": 512,
+            "sha256": "a257765c960720852330daed15425c2469588a9ef44299bfa20ff698372739a7"
+          },
+          "webp": {
+            "path": "src/modules/CB-M01/assets/r26/bitcoin.webp",
+            "width": 768,
+            "height": 512,
+            "sha256": "60dc4f2cd316ff65c53d50891ba03968fbc45167bf79736a7c5c7e203292484b"
+          }
+        }
+      },
+      {
+        "assetId": "CB-M01-R26-EDITORIAL-ETHEREUM",
+        "region": "editorial-ethereum",
+        "sourceMaster": {
+          "path": "src/modules/CB-M01/assets/r26/masters/ethereum.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "6f3c2345f1ab98c48f25d8ba1c4c86587f6f1d3a109445bb39914f42fa700a36"
+        },
+        "derivatives": {
+          "png": {
+            "path": "src/modules/CB-M01/assets/r26/ethereum.png",
+            "width": 768,
+            "height": 512,
+            "sha256": "67546e502dc2c415fdfe7dbed632f50ffd6279e59e56b939b8c9d55d224349fd"
+          },
+          "webp": {
+            "path": "src/modules/CB-M01/assets/r26/ethereum.webp",
+            "width": 768,
+            "height": 512,
+            "sha256": "eec4fedcb3b6efa626cf9e9debda4262260dda6ac615e3e8f6d594c3b4362ef2"
+          }
+        }
+      },
+      {
+        "assetId": "CB-M01-R26-EDITORIAL-POLICY",
+        "region": "editorial-policy",
+        "sourceMaster": {
+          "path": "src/modules/CB-M01/assets/r26/masters/policy.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "466cd6754613ea3ec7f8ab27cf84241af72921f5f5065c5a48fda77106188331"
+        },
+        "derivatives": {
+          "png": {
+            "path": "src/modules/CB-M01/assets/r26/policy.png",
+            "width": 768,
+            "height": 512,
+            "sha256": "993e95ca5a87720aa14cd17544663ec85e5f60fe19bec556f03db84e5e7e657c"
+          },
+          "webp": {
+            "path": "src/modules/CB-M01/assets/r26/policy.webp",
+            "width": 768,
+            "height": 512,
+            "sha256": "22b0772d75110c8c4a2865d497a994b01881c3e1ec362ddcc37f4746c6813ffa"
+          }
+        }
+      },
+      {
+        "assetId": "CB-M01-R26-EDITORIAL-ECOSYSTEM",
+        "region": "editorial-ecosystem",
+        "sourceMaster": {
+          "path": "src/modules/CB-M01/assets/r26/masters/ecosystem.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "1b987f917afcba2bb6ef2ea22cc34ac137e1af236e24c281cbdd31f272a74f0d"
+        },
+        "derivatives": {
+          "png": {
+            "path": "src/modules/CB-M01/assets/r26/ecosystem.png",
+            "width": 768,
+            "height": 512,
+            "sha256": "d85a2451b1e3581f3a41bc9fbcbbbed6432e60d3cef0abee8a3f722d6e30bb7a"
+          },
+          "webp": {
+            "path": "src/modules/CB-M01/assets/r26/ecosystem.webp",
+            "width": 768,
+            "height": 512,
+            "sha256": "ad01f2a2478796c0db115d9c40065c51a10cd1bd61f21f053338ea95abeefc08"
+          }
+        }
+      }
+    ]
+  },
+  "completedAt": "2026-10-14T18:51:00.312Z",
+  "servedAssetHashes": {
+    "status": "VERIFIED",
+    "previewOrigin": "http://127.0.0.1:3001",
+    "checkedAt": "2026-10-14T18:53:09.918Z",
+    "method": "Node 22 fetched each distinct image path from the local Docker preview; response SHA-256 and byte length were compared with the checkout inventory.",
+    "assetCount": 8,
+    "assets": [
+      {
+        "urlPath": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "sourcePath": "src/modules/CB-M01/hero-cinematic-motion.webp",
+        "bytes": 1394724,
+        "servedSha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+        "sourceSha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/promo.Bd7PPvDX.webp",
+        "sourcePath": "src/modules/CB-M01/assets/r26/promo.webp",
+        "bytes": 73490,
+        "servedSha256": "fbb6788b43c4dfd4112bd8929135adeaeb1f3f136a183de19ae945ccc3d02e54",
+        "sourceSha256": "fbb6788b43c4dfd4112bd8929135adeaeb1f3f136a183de19ae945ccc3d02e54",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/bitcoin.BftpAFVR.webp",
+        "sourcePath": "src/modules/CB-M01/assets/r26/bitcoin.webp",
+        "bytes": 85612,
+        "servedSha256": "60dc4f2cd316ff65c53d50891ba03968fbc45167bf79736a7c5c7e203292484b",
+        "sourceSha256": "60dc4f2cd316ff65c53d50891ba03968fbc45167bf79736a7c5c7e203292484b",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/ethereum.Zt9psYtD.webp",
+        "sourcePath": "src/modules/CB-M01/assets/r26/ethereum.webp",
+        "bytes": 98994,
+        "servedSha256": "eec4fedcb3b6efa626cf9e9debda4262260dda6ac615e3e8f6d594c3b4362ef2",
+        "sourceSha256": "eec4fedcb3b6efa626cf9e9debda4262260dda6ac615e3e8f6d594c3b4362ef2",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/policy.CH0ehN0X.webp",
+        "sourcePath": "src/modules/CB-M01/assets/r26/policy.webp",
+        "bytes": 85846,
+        "servedSha256": "22b0772d75110c8c4a2865d497a994b01881c3e1ec362ddcc37f4746c6813ffa",
+        "sourceSha256": "22b0772d75110c8c4a2865d497a994b01881c3e1ec362ddcc37f4746c6813ffa",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/ecosystem.CZuYuxBR.webp",
+        "sourcePath": "src/modules/CB-M01/assets/r26/ecosystem.webp",
+        "bytes": 74722,
+        "servedSha256": "ad01f2a2478796c0db115d9c40065c51a10cd1bd61f21f053338ea95abeefc08",
+        "sourceSha256": "ad01f2a2478796c0db115d9c40065c51a10cd1bd61f21f053338ea95abeefc08",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/hero-cinematic-original.CNjbQMfC.webp",
+        "sourcePath": "src/modules/CB-M01/hero-cinematic-original.webp",
+        "bytes": 310054,
+        "servedSha256": "56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b",
+        "sourceSha256": "56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b",
+        "matchesSource": true
+      },
+      {
+        "urlPath": "/_astro/hero-cinematic-original.C6ltI_1c.png",
+        "sourcePath": "src/modules/CB-M01/hero-cinematic-original.png",
+        "bytes": 2349624,
+        "servedSha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+        "sourceSha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+        "matchesSource": true
+      }
+    ]
+  }
+}

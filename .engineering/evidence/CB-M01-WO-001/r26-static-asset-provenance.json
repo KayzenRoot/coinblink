@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M01-WO-001",
+  "recordType": "R26_STATIC_IMAGEGEN_MASTER_PROVENANCE",
+  "recordedDate": "2026-10-14",
+  "productState": "DRAFT_DEMO_ONLY_NOT_PUBLISHED",
+  "goldenReference": {
+    "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+    "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8",
+    "use": "VISUAL_GUIDANCE_ONLY_NOT_USED_AS_IMAGE_SOURCE"
+  },
+  "releaseGate": {
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false,
+    "productState": "DEMO"
+  },
+  "assets": [
+    {
+      "assetId": "CB-M01-R26-PROMO-MASTER",
+      "region": "promo",
+      "generatedOutputName": "exec-1a8d510e-ea15-4936-a5c7-34000075ca5b.png",
+      "prompt": "Create one original, static widescreen promotional banner illustration for a dark premium crypto research demo website. Aspect ratio 2:1. Cinematic near-black basalt mountains at dusk, subtle atmospheric haze, luminous acid-lime aurora and a large abstract eclipse/planet concentrated on the RIGHT half, with restrained golden reflections and a tiny anonymous human silhouette standing on a ridge near the right third for scale. Keep the LEFT 45 percent very dark, low-detail, clean negative space so live HTML headline text can sit over it. Rich detailed painterly realism, restrained premium editorial art direction, realistic light and layered depth, composition readable when cropped to 360x180. No lettering, no numerals, no typography, no logos, no coins, no watermarks, no charts, no market data, no recognizable person, no use of or crop from any existing CoinBlink or Golden reference image. This is a decorative DEMO art master only; generate the image itself, not a mockup or webpage.",
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "provider": "OpenAI Codex ImageGen",
+      "providerVersion": "NOT_EXPOSED",
+      "sourceMaster": {
+        "path": "src/modules/CB-M01/assets/r26/masters/promo.png",
+        "width": 1774,
+        "height": 887,
+        "bytes": 1888339,
+        "sha256": "ed4de820d063df68f1787de9ee8b0cab2bbdec0300ab9766715fe4996761e699",
+        "format": "PNG",
+        "generatedOutputName": "exec-1a8d510e-ea15-4936-a5c7-34000075ca5b.png"
+      },
+      "derivatives": {
+        "png": {
+          "path": "src/modules/CB-M01/assets/r26/promo.png",
+          "width": 1200,
+          "height": 600,
+          "bytes": 846828,
+          "sha256": "a04f89bb2684e0af2fb3f0baf16f3d907e077a8faa8e1c2763ae4d91fc69415f",
+          "format": "PNG",
+          "derivedFromMasterSha256": "ed4de820d063df68f1787de9ee8b0cab2bbdec0300ab9766715fe4996761e699"
+        },
+        "webp": {
+          "path": "src/modules/CB-M01/assets/r26/promo.webp",
+          "width": 1200,
+          "height": 600,
+          "bytes": 73490,
+          "sha256": "fbb6788b43c4dfd4112bd8929135adeaeb1f3f136a183de19ae945ccc3d02e54",
+          "format": "WEBP",
+          "derivedFromMasterSha256": "ed4de820d063df68f1787de9ee8b0cab2bbdec0300ab9766715fe4996761e699"
+        }
+      },
+      "goldenReferenceRelation": "VISUAL_GUIDANCE_ONLY_NO_RASTER_EXTRACTION_OR_CROP",
+      "derivativeOfGoldenReference": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "demoOnly": true,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "motionDerivative": "NONE_CREATED"
+    },
+    {
+      "assetId": "CB-M01-R26-EDITORIAL-BITCOIN",
+      "region": "editorial-bitcoin",
+      "generatedOutputName": "exec-91ee0057-a372-437e-afbd-468548f0d3b3.png",
+      "prompt": "Create one original static editorial thumbnail illustration for a premium dark crypto research DEMO site, landscape 3:2 composition, crop-safe at both 1.5:1 and square. A single substantial sculptural gold/brushed-brass coin standing at a slight angle on fractured charcoal basalt, illuminated by a restrained warm amber key light with subtle lime-green rim light, shallow atmospheric depth and elegant metallic detail. The coin face is completely blank with only abstract concentric engraved rings, no emblem, no letter, no currency mark, no recognizable Bitcoin symbol. Dark near-black forest-green background, crisp subject silhouette, premium photorealistic editorial art direction, high contrast and readable at 80x54 pixels. No text, no numbers, no charts, no logos, no watermark, no people, no third-party source, no crop from existing CoinBlink or Golden images. Decorative fictional DEMO art, not a factual news photograph; generate only the image.",
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "provider": "OpenAI Codex ImageGen",
+      "providerVersion": "NOT_EXPOSED",
+      "sourceMaster": {
+        "path": "src/modules/CB-M01/assets/r26/masters/bitcoin.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2399367,
+        "sha256": "3225f1208ac65aa2f7a7fc6d1c0dac95724ff7464bd4405a49ddbd7a2ddbd18d",
+        "format": "PNG",
+        "generatedOutputName": "exec-91ee0057-a372-437e-afbd-468548f0d3b3.png"
+      },
+      "derivatives": {
+        "png": {
+          "path": "src/modules/CB-M01/assets/r26/bitcoin.png",
+          "width": 768,
+          "height": 512,
+          "bytes": 616903,
+          "sha256": "a257765c960720852330daed15425c2469588a9ef44299bfa20ff698372739a7",
+          "format": "PNG",
+          "derivedFromMasterSha256": "3225f1208ac65aa2f7a7fc6d1c0dac95724ff7464bd4405a49ddbd7a2ddbd18d"
+        },
+        "webp": {
+          "path": "src/modules/CB-M01/assets/r26/bitcoin.webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 85612,
+          "sha256": "60dc4f2cd316ff65c53d50891ba03968fbc45167bf79736a7c5c7e203292484b",
+          "format": "WEBP",
+          "derivedFromMasterSha256": "3225f1208ac65aa2f7a7fc6d1c0dac95724ff7464bd4405a49ddbd7a2ddbd18d"
+        }
+      },
+      "goldenReferenceRelation": "VISUAL_GUIDANCE_ONLY_NO_RASTER_EXTRACTION_OR_CROP",
+      "derivativeOfGoldenReference": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "demoOnly": true,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "motionDerivative": "NONE_CREATED"
+    },
+    {
+      "assetId": "CB-M01-R26-EDITORIAL-ETHEREUM",
+      "region": "editorial-ethereum",
+      "generatedOutputName": "exec-5b83bae2-e2f7-4ba6-8793-ff89b01e6626.png",
+      "prompt": "Create an original static editorial thumbnail for a premium dark crypto research DEMO site, landscape 3:2, crop-safe at 1.5:1 and square. A sculptural interwoven bridge of thin silver-blue glass and brushed titanium arcs crossing a deep alpine gorge at twilight, tiny cyan and violet light glints traveling along the structure, cold slate mountains and low mist behind it. The structure is asymmetrical curved engineering with open negative spaces, clearly a bridge/technical network, NOT a crystal, gem, rhombus, diamond, pointed lozenge, Ethereum logo, or other brand mark. Dark midnight blue-green background, crisp high-contrast silhouette, restrained lime rim light, premium realistic editorial art direction, readable at 80x54 pixels. No text, letters, numbers, symbols, charts, logos, watermarks, people, flags, third-party source, or crop from existing CoinBlink or Golden images. Fictional decorative DEMO art, not a factual news photograph; generate only the image.",
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "provider": "OpenAI Codex ImageGen",
+      "providerVersion": "NOT_EXPOSED",
+      "sourceMaster": {
+        "path": "src/modules/CB-M01/assets/r26/masters/ethereum.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2695778,
+        "sha256": "6f3c2345f1ab98c48f25d8ba1c4c86587f6f1d3a109445bb39914f42fa700a36",
+        "format": "PNG",
+        "generatedOutputName": "exec-5b83bae2-e2f7-4ba6-8793-ff89b01e6626.png"
+      },
+      "derivatives": {
+        "png": {
+          "path": "src/modules/CB-M01/assets/r26/ethereum.png",
+          "width": 768,
+          "height": 512,
+          "bytes": 690180,
+          "sha256": "67546e502dc2c415fdfe7dbed632f50ffd6279e59e56b939b8c9d55d224349fd",
+          "format": "PNG",
+          "derivedFromMasterSha256": "6f3c2345f1ab98c48f25d8ba1c4c86587f6f1d3a109445bb39914f42fa700a36"
+        },
+        "webp": {
+          "path": "src/modules/CB-M01/assets/r26/ethereum.webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 98994,
+          "sha256": "eec4fedcb3b6efa626cf9e9debda4262260dda6ac615e3e8f6d594c3b4362ef2",
+          "format": "WEBP",
+          "derivedFromMasterSha256": "6f3c2345f1ab98c48f25d8ba1c4c86587f6f1d3a109445bb39914f42fa700a36"
+        }
+      },
+      "goldenReferenceRelation": "VISUAL_GUIDANCE_ONLY_NO_RASTER_EXTRACTION_OR_CROP",
+      "derivativeOfGoldenReference": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "demoOnly": true,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "motionDerivative": "NONE_CREATED"
+    },
+    {
+      "assetId": "CB-M01-R26-EDITORIAL-POLICY",
+      "region": "editorial-policy",
+      "generatedOutputName": "exec-c06f85cf-1fc9-40ef-a747-6e8be6c1db1f.png",
+      "prompt": "Create one original static editorial thumbnail illustration for a premium dark crypto research DEMO site, landscape 3:2, crop-safe at 1.5:1 and square. A generic contemporary civic forum building with restrained monumental columns and broad public steps, shown as an atmospheric architectural illustration at blue hour, no recognizable real-world government building, no Capitol silhouette, no flags, no seal, no signage, no national symbols, no people. Charcoal stone, deep forest-green shadows, subtle warm gold interior lights and a very restrained lime edge light; premium realistic editorial rendering, clear architectural silhouette, readable at 80x54 pixels. The image is fictional scene-setting, not documentary news photography or a claim about any real institution. No text, letters, numbers, logos, watermarks, emblems, charts, third-party source, or crop from any existing CoinBlink or Golden image. Decorative DEMO art; generate only the image.",
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "provider": "OpenAI Codex ImageGen",
+      "providerVersion": "NOT_EXPOSED",
+      "sourceMaster": {
+        "path": "src/modules/CB-M01/assets/r26/masters/policy.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2488133,
+        "sha256": "466cd6754613ea3ec7f8ab27cf84241af72921f5f5065c5a48fda77106188331",
+        "format": "PNG",
+        "generatedOutputName": "exec-c06f85cf-1fc9-40ef-a747-6e8be6c1db1f.png"
+      },
+      "derivatives": {
+        "png": {
+          "path": "src/modules/CB-M01/assets/r26/policy.png",
+          "width": 768,
+          "height": 512,
+          "bytes": 618543,
+          "sha256": "993e95ca5a87720aa14cd17544663ec85e5f60fe19bec556f03db84e5e7e657c",
+          "format": "PNG",
+          "derivedFromMasterSha256": "466cd6754613ea3ec7f8ab27cf84241af72921f5f5065c5a48fda77106188331"
+        },
+        "webp": {
+          "path": "src/modules/CB-M01/assets/r26/policy.webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 85846,
+          "sha256": "22b0772d75110c8c4a2865d497a994b01881c3e1ec362ddcc37f4746c6813ffa",
+          "format": "WEBP",
+          "derivedFromMasterSha256": "466cd6754613ea3ec7f8ab27cf84241af72921f5f5065c5a48fda77106188331"
+        }
+      },
+      "goldenReferenceRelation": "VISUAL_GUIDANCE_ONLY_NO_RASTER_EXTRACTION_OR_CROP",
+      "derivativeOfGoldenReference": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "demoOnly": true,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "motionDerivative": "NONE_CREATED"
+    },
+    {
+      "assetId": "CB-M01-R26-EDITORIAL-ECOSYSTEM",
+      "region": "editorial-ecosystem",
+      "generatedOutputName": "exec-da3826ae-0607-44f5-bca5-400a191341f4.png",
+      "prompt": "Create one original static editorial thumbnail illustration for a premium dark crypto research DEMO site, landscape 3:2 composition, crop-safe at 1.5:1 and square. An abstract flourishing digital ecosystem depicted as several small luminous teal, mint, and violet glass nodes connected by delicate curved light paths above a dark rocky island/garden at night, subtle mist, layered depth, a small dawn-like lime glow near the horizon. Use an organic irregular constellation, not a recognizable Solana or other token logo, no repeated slanted stripes, no circles forming a brand mark, no UI/dashboard. Deep blue-green near-black background; premium realistic editorial art direction with a crisp, high-contrast center composition, readable at 80x54 pixels. No text, letters, numbers, charts, currency symbols, logos, watermarks, people, factual data, third-party source, or crop from any existing CoinBlink or Golden image. Fictional decorative DEMO art, not a factual news photograph; generate only the image.",
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "provider": "OpenAI Codex ImageGen",
+      "providerVersion": "NOT_EXPOSED",
+      "sourceMaster": {
+        "path": "src/modules/CB-M01/assets/r26/masters/ecosystem.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2234115,
+        "sha256": "1b987f917afcba2bb6ef2ea22cc34ac137e1af236e24c281cbdd31f272a74f0d",
+        "format": "PNG",
+        "generatedOutputName": "exec-da3826ae-0607-44f5-bca5-400a191341f4.png"
+      },
+      "derivatives": {
+        "png": {
+          "path": "src/modules/CB-M01/assets/r26/ecosystem.png",
+          "width": 768,
+          "height": 512,
+          "bytes": 583390,
+          "sha256": "d85a2451b1e3581f3a41bc9fbcbbbed6432e60d3cef0abee8a3f722d6e30bb7a",
+          "format": "PNG",
+          "derivedFromMasterSha256": "1b987f917afcba2bb6ef2ea22cc34ac137e1af236e24c281cbdd31f272a74f0d"
+        },
+        "webp": {
+          "path": "src/modules/CB-M01/assets/r26/ecosystem.webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 74722,
+          "sha256": "ad01f2a2478796c0db115d9c40065c51a10cd1bd61f21f053338ea95abeefc08",
+          "format": "WEBP",
+          "derivedFromMasterSha256": "1b987f917afcba2bb6ef2ea22cc34ac137e1af236e24c281cbdd31f272a74f0d"
+        }
+      },
+      "goldenReferenceRelation": "VISUAL_GUIDANCE_ONLY_NO_RASTER_EXTRACTION_OR_CROP",
+      "derivativeOfGoldenReference": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "demoOnly": true,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "motionDerivative": "NONE_CREATED"
+    }
+  ],
+  "limitations": [
+    "The word APPROVED in assetClass identifies the named generation pipeline only; it is not Owner visual approval or legal clearance.",
+    "Generated output filenames identify Codex-managed image generation artifacts; provider model version is NOT_EXPOSED.",
+    "All generated masters are original inputs, not crops or raster derivatives of the Golden reference.",
+    "PNG and WebP previews are resized or re-encoded from the exact ImageGen master; no Blender still was substituted.",
+    "Rights, trademark review, Owner visual approval, and commercial publication remain blocked."
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "workOrder": "CB-M01-WO-001",
+  "blenderVersion": "5.2.2 LTS",
+  "projectPath": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-production.blend",
+  "scene": {
+    "engine": "CYCLES",
+    "device": "CPU",
+    "resolution": [
+      2560,
+      1280
+    ],
+    "samples": 32,
+    "denoising": true,
+    "portableRenderPath": "//hero-cinematic-renders\\hero-cinematic-blender-master-2560x1280.png",
+    "objectCount": 216,
+    "meshCount": 102,
+    "areaLightCount": 5,
+    "camera": {
+      "type": "PERSP",
+      "lensMm": 48.0
+    }
+  },
+  "coin": {
+    "objectName": "Thick beveled gold Bitcoin coin",
+    "geometry": "144+ vertex beveled mesh cylinder with physical thickness",
+    "dimensions": [
+      3.76,
+      3.76,
+      0.2
+    ],
+    "materials": [
+      {
+        "name": "Warm minted gold",
+        "metallic": 0.9399999976158142
+      },
+      {
+        "name": "Engraved antique gold face",
+        "metallic": 0.9599999785423279
+      }
+    ],
+    "extrudedBitcoinGlyph": {
+      "objectName": "Raised Bitcoin B symbol",
+      "extrusion": 0.02500000037252903
+    }
+  },
+  "environment": {
+    "ridgeMeshFaces": 960,
+    "groundPresent": true,
+    "rockObjectCount": 11,
+    "facetedRockMeshes": true
+  },
+  "rights": {
+    "previewOnly": true,
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false
+  }
+}

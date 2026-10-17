@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "derivation": {
+    "script": ".engineering/evidence/CB-M01-WO-001/prepare-r26-static-assets.py",
+    "pythonVersion": "3.12.10",
+    "pillowVersion": "12.3.0",
+    "resampler": "LANCZOS",
+    "png": "RGB PNG optimize=True compress_level=9",
+    "webp": "RGB WebP quality=88 method=6",
+    "promoBounds": [
+      1200,
+      1200
+    ],
+    "editorialBounds": [
+      768,
+      512
+    ],
+    "resizeMode": "CONTAIN_WITHOUT_CROP"
+  },
+  "assets": {
+    "promo": {
+      "master": {
+        "path": "src/modules/CB-M01/assets/r26/masters/promo.png",
+        "width": 1774,
+        "height": 887,
+        "bytes": 1888339,
+        "sha256": "ed4de820d063df68f1787de9ee8b0cab2bbdec0300ab9766715fe4996761e699",
+        "format": "PNG"
+      },
+      "png": {
+        "path": "src/modules/CB-M01/assets/r26/promo.png",
+        "width": 1200,
+        "height": 600,
+        "bytes": 846828,
+        "sha256": "a04f89bb2684e0af2fb3f0baf16f3d907e077a8faa8e1c2763ae4d91fc69415f",
+        "format": "PNG"
+      },
+      "webp": {
+        "path": "src/modules/CB-M01/assets/r26/promo.webp",
+        "width": 1200,
+        "height": 600,
+        "bytes": 73490,
+        "sha256": "fbb6788b43c4dfd4112bd8929135adeaeb1f3f136a183de19ae945ccc3d02e54",
+        "format": "WEBP"
+      },
+      "derivativeRelation": "RESIZED_OR_REENCODED_FROM_EXACT_IMAGEGEN_MASTER"
+    },
+    "bitcoin": {
+      "master": {
+        "path": "src/modules/CB-M01/assets/r26/masters/bitcoin.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2399367,
+        "sha256": "3225f1208ac65aa2f7a7fc6d1c0dac95724ff7464bd4405a49ddbd7a2ddbd18d",
+        "format": "PNG"
+      },
+      "png": {
+        "path": "src/modules/CB-M01/assets/r26/bitcoin.png",
+        "width": 768,
+        "height": 512,
+        "bytes": 616903,
+        "sha256": "a257765c960720852330daed15425c2469588a9ef44299bfa20ff698372739a7",
+        "format": "PNG"
+      },
+      "webp": {
+        "path": "src/modules/CB-M01/assets/r26/bitcoin.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 85612,
+        "sha256": "60dc4f2cd316ff65c53d50891ba03968fbc45167bf79736a7c5c7e203292484b",
+        "format": "WEBP"
+      },
+      "derivativeRelation": "RESIZED_OR_REENCODED_FROM_EXACT_IMAGEGEN_MASTER"
+    },
+    "ethereum": {
+      "master": {
+        "path": "src/modules/CB-M01/assets/r26/masters/ethereum.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2695778,
+        "sha256": "6f3c2345f1ab98c48f25d8ba1c4c86587f6f1d3a109445bb39914f42fa700a36",
+        "format": "PNG"
+      },
+      "png": {
+        "path": "src/modules/CB-M01/assets/r26/ethereum.png",
+        "width": 768,
+        "height": 512,
+        "bytes": 690180,
+        "sha256": "67546e502dc2c415fdfe7dbed632f50ffd6279e59e56b939b8c9d55d224349fd",
+        "format": "PNG"
+      },
+      "webp": {
+        "path": "src/modules/CB-M01/assets/r26/ethereum.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 98994,
+        "sha256": "eec4fedcb3b6efa626cf9e9debda4262260dda6ac615e3e8f6d594c3b4362ef2",
+        "format": "WEBP"
+      },
+      "derivativeRelation": "RESIZED_OR_REENCODED_FROM_EXACT_IMAGEGEN_MASTER"
+    },
+    "policy": {
+      "master": {
+        "path": "src/modules/CB-M01/assets/r26/masters/policy.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2488133,
+        "sha256": "466cd6754613ea3ec7f8ab27cf84241af72921f5f5065c5a48fda77106188331",
+        "format": "PNG"
+      },
+      "png": {
+        "path": "src/modules/CB-M01/assets/r26/policy.png",
+        "width": 768,
+        "height": 512,
+        "bytes": 618543,
+        "sha256": "993e95ca5a87720aa14cd17544663ec85e5f60fe19bec556f03db84e5e7e657c",
+        "format": "PNG"
+      },
+      "webp": {
+        "path": "src/modules/CB-M01/assets/r26/policy.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 85846,
+        "sha256": "22b0772d75110c8c4a2865d497a994b01881c3e1ec362ddcc37f4746c6813ffa",
+        "format": "WEBP"
+      },
+      "derivativeRelation": "RESIZED_OR_REENCODED_FROM_EXACT_IMAGEGEN_MASTER"
+    },
+    "ecosystem": {
+      "master": {
+        "path": "src/modules/CB-M01/assets/r26/masters/ecosystem.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2234115,
+        "sha256": "1b987f917afcba2bb6ef2ea22cc34ac137e1af236e24c281cbdd31f272a74f0d",
+        "format": "PNG"
+      },
+      "png": {
+        "path": "src/modules/CB-M01/assets/r26/ecosystem.png",
+        "width": 768,
+        "height": 512,
+        "bytes": 583390,
+        "sha256": "d85a2451b1e3581f3a41bc9fbcbbbed6432e60d3cef0abee8a3f722d6e30bb7a",
+        "format": "PNG"
+      },
+      "webp": {
+        "path": "src/modules/CB-M01/assets/r26/ecosystem.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 74722,
+        "sha256": "ad01f2a2478796c0db115d9c40065c51a10cd1bd61f21f053338ea95abeefc08",
+        "format": "WEBP"
+      },
+      "derivativeRelation": "RESIZED_OR_REENCODED_FROM_EXACT_IMAGEGEN_MASTER"
+    }
+  }
+}

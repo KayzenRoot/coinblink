@@ -83,7 +83,9 @@ test("replacing a phrase in prose preserves Markdown metadata bytes and file rou
   const start = body.indexOf("\n\n### CoinBlink claim review");
   const changed = replaceAllInLocalDraft(body, "Notes", "test("local UI has keyboard-accessible controls, same-origin external JS, and no persistence or publishing", () => {-review");
   assert.equal(changed.replacements, 2);
-  assert.equal(changed.value.slice(start + (changed.value.indexOf("\n\n### CoinBlink claim review") - start)),
+  const changedNotesAt = changed.value.indexOf("\n\n### CoinBlink claim review");
+  assert.ok(changedNotesAt > 0);
+  assert.equal(changed.value.slice(changedNotesAt),
     body.slice(start), "both metadata sections stay byte identical");
   assert.deepEqual(listLocalClaimReviews(changed.value).map(x => x.state), ["NEEDS_HUMAN_REVIEW"]);
   assert.equal(listLocalSources(changed.value).length, 1);

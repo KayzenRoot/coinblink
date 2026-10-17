@@ -1,8 +1,8 @@
 # CB-M05-P1C-OWNER-ADMIN-001 · Proposal-only Context Lock
 
 **Status:** DRAFT_PROPOSAL / NO CODE OR REAL OWNER CREDENTIAL AUTHORIZATION.
-**Frozen canonical main:** `21d9e0fca64bf30e945e6044f37fec1f92dfc8f5`.  **Canonical checkpoint blob:** `72618bef100e6f82e4655b2c6ed482794e0c4649`, `M00_COMPLETE / 5%`; M05 `ADMITTED` **only P0 MOCK**. No new runtime mode or privilege is admitted by this proposed lock.
-**Existing M05 local test-only PR #91:** HEAD `5b0104f5b63def0f2f19628cf79d0b84d23c3e83`, draft=true, NOT MERGED; changes to that HEAD invalidate any assumed code implementation baseline. Its LOCAL API is not a future privileged endpoint. All production Work Orders remain separate.
+**Frozen canonical main:** `6919125c9a6eb593e66b2b909575534937fef76c`.  **Canonical checkpoint blob:** `72618bef100e6f82e4655b2c6ed482794e0c4649`, `M00_COMPLETE / 5%`; M05 `ADMITTED` **only P0 MOCK**. No new runtime mode or privilege is admitted by this proposed lock.
+**Existing M05 local test-only PR #91:** HEAD `ad7ccc107d2e6c829f67fdce987ac734444cf8d8`, draft=true, NOT MERGED; changes to that HEAD invalidate any assumed code implementation baseline. Its LOCAL API is not a future privileged endpoint. All production Work Orders remain separate.
 
 ## Canonical main exact Git blob fingerprints
 - `AGENTS.md` → `4e8a6ebeb4aa18ac58171fcddf3bde762d725ca7`
@@ -16,10 +16,10 @@
 - `.engineering/work-orders/CB-M05-WO-001.md` → `4f1f472f1abb2fb2dbdfbe3fc2d64d1126bba660`
 
 ## Same-branch P1-C proposal fingerprints
-- `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md` → `8944d1224fb1f06fba637ba7c869558d1038f541`
-- `.engineering/work-orders/CB-M05-P1C-OWNER-ADMIN-001.md` → `e02a4cff4ce33d60eb45ed08cf1e219f64d05bfa`
+- `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md` → `45b1236f784bb1acfdd996c0e8e23eaf09a69220`
+- `.engineering/work-orders/CB-M05-P1C-OWNER-ADMIN-001.md` → `c8b4a6b8ce7915644c4008ccb5c9e268366043cc`
 
-**Refresh evidence 2026-10-16:** this candidate proposal was explicitly rebased after governance merge #101; 9 canonical main fingerprints and 2 proposal fingerprints were regenerated. No new execution authority was granted.
+**Refresh evidence after M01 #58 and M05 #102 protected integration:** this candidate proposal was explicitly rebased after governance merge #101; 9 canonical main fingerprints and 2 proposal fingerprints were regenerated. No new execution authority was granted.
 
 ## Authority and tests
 - Only the Integration Steward can prepare this Source Pack. Not approved merely by creating this PR. On code dispatch, re-read then-current protected main, technical security and provider-access status, repo file owners and exact updated Git blobs, and issue a NEW execution Context Lock. Do not patch this proposal snapshot silently after main changes.

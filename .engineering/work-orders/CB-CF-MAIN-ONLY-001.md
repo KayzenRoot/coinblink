@@ -1,6 +1,6 @@
 # CB-CF-MAIN-ONLY-001 · Production deployment from protected main
 
-**Status:** Owner-authorized main-only DEMO deployment candidate in PR #117. On 2026-10-17, the Owner explicitly authorized automatic Cloudflare production deployment for every change integrated into GitHub `main`. The Work Order becomes canonical only through the protected merge and exact-HEAD checks. Commercial publication and checkpoint promotion remain unauthorized.
+**Status:** PR #117 was protected-squash-merged on 2026-10-17 and automatically deployed main SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85` to the production Worker. The first post-deploy smoke found an over-strict assertion on a static CSS asset; a follow-up correction is being prepared under this same Work Order. The Owner's authorization remains DEMO-only. Commercial publication and checkpoint promotion remain unauthorized.
 
 ## Objective
 
@@ -51,11 +51,13 @@ GitHub documents the built-in `GITHUB_TOKEN` as limited to the permissions grant
 - [x] Dedicated production-only workflow and synthetic negative tests exist in the PR candidate.
 - [x] Live ruleset, main CI, Cloudflare dashboard, selected Worker name/hostname, and no-existing-production-pipeline state are documented from readbacks.
 - [x] Final local validation executed under Node `22.23.3` (workflow remains pinned to `22.19.0`): the complete unit/build/Playwright suite, lint, typecheck, audit, and Wrangler dry-run passed; results are recorded in the Evidence Bundle.
-- [ ] Draft PR published on an exact current main base with hosted required checks on its exact head.
+- [x] Initial PR #117 was published on an exact current main base; all seven required hosted contexts passed on its exact head `6dfaa4f072be3dc32c5a10774981d974e613453d`.
 - [x] Production GitHub environment exists with an exact `main` deployment branch policy, administrator bypass disabled, and verified account ID variable.
 - [x] Owner demo authorization variable is set to `AUTHORIZED_DEMO_ONLY`; commercial publication stays hard-coded false.
 - [x] The Cloudflare API token secret is present by name in the `production` environment; its value was not read. The account-wide scope risk is recorded.
-- [ ] Draft PR is updated, ready for review, and has every required hosted check successful on the final exact head.
-- [ ] After the protected merge, automatic main-only deployment creates `coinblink-production` and exact-SHA endpoint smoke passes.
+- [x] PR #117 was marked ready after all seven required exact-head contexts passed and was squash-merged under the protected ruleset.
+- [x] The automatic main-only workflow deployed Worker `coinblink-production` from main SHA `0e097ffc0aaba308ed32ab8468db8b8963e9fd85`.
+- [ ] Follow-up smoke correction has all required hosted checks on its exact PR head and is protected-squash-merged.
+- [ ] The correction's automatic main-only deployment completes the exact-SHA health, demo-only routes, asset, security-header, robots/noindex, and 404 smoke successfully.
 
-**Current stop state:** `OWNER_AUTHORIZED_DEMO_ONLY_DEPLOYMENT_AWAITING_EXACT_HEAD_HOSTED_CHECKS`. Issue #72 remains `PENDING_OWNER_OR_LEGAL`; this is not treated as commercial clearance. The workflow remains inactive until protected merge. Local full-suite, lint, typecheck, audit, build, and Wrangler dry-run validations passed. Exact-head hosted checks and post-merge Worker health verification remain required before reporting a functioning deployment.
+**Current stop state:** `PRODUCTION_WORKER_DEPLOYED_AT_0E097FFC_SMOKE_CORRECTION_AWAITING_EXACT_HEAD_HOSTED_CHECKS`. The first post-deploy smoke failed only because document security headers were required on the CSS asset; read-only GETs confirmed the Worker health and demo-only contract at the exact deployed SHA. Issue #72 remains `PENDING_OWNER_OR_LEGAL` and is not commercial clearance. Local focused tests, lint, typecheck, audit, build, and Wrangler dry-run for the correction passed. The follow-up PR's exact-head checks and subsequent automatic deployment smoke remain required before reporting the workflow as fully green.

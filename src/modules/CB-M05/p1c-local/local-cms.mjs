@@ -54,8 +54,29 @@ function isJson(request) { return /^application\/json(?:\s*;|$)/i.test(request.h
 async function payload(request, max = 65_536) {
   const length = Number(request.headers.get('content-length') || 0);
   if (!isJson(request) || !Number.isFinite(length) || length < 0 || length > max) throw new InvalidPayloadError('Invalid JSON content');
-  const raw = await request.text();
-  if (utf8.encode(raw).byteLength > max) throw new InvalidPayloadError('Oversized request');
+  // A forged or omitted Content-Length must never cause an unbounded body read.
+  // Read/validate bytes incrementally before decoding a bounded JSON payload.
+  const reader = request.body?.getReader();
+  if (!reader) throw new InvalidPayloadError('Malformed JSON content');
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let raw = '', received = 0;
+  try {
+    while (true) {
+      const { done, value: chunk } = await reader.read();
+      if (done) break;
+      if (!(chunk instanceof Uint8Array)) throw new InvalidPayloadError('Invalid JSON body stream');
+      received += chunk.byteLength;
+      if (received > max) throw new InvalidPayloadError('Oversized request');
+      raw += decoder.decode(chunk, { stream: true });
+    }
+    raw += decoder.decode();
+  } catch (error) {
+    await reader.cancel().catch(() => {});
+    if (error instanceof InvalidPayloadError) throw error;
+    throw new InvalidPayloadError('Malformed JSON content');
+  } finally {
+    reader.releaseLock();
+  }
   let value;
   try { value = JSON.parse(raw); } catch { throw new InvalidPayloadError('Malformed JSON content'); }
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new InvalidPayloadError('Object required');

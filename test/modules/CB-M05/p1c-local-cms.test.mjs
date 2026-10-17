@@ -658,3 +658,26 @@ test('M05 LOCAL CMS 11: opted-in local D1 keeps drafts across restarts, rotates 
     rmSync(persistenceRoot, { recursive: true, force: true });
   }
 });
+
+test('M05 LOCAL CMS 12: bound streamed JSON when Content-Length is forged or omitted', async () => {
+  const ctx = await setup();
+  try {
+    const handler = createLocalCmsHandler();
+    const oversized = JSON.stringify({ credentialId: ctx.primary.id, padding: 'x'.repeat(8192) });
+    for (const declaredLength of ['2', null]) {
+      const headers = {
+        origin: CMS_TEST_ORIGIN,
+        'sec-fetch-site': 'same-origin',
+        'content-type': 'application/json',
+      };
+      if (declaredLength !== null) headers['content-length'] = declaredLength;
+      const response = await handler(new Request(CMS_TEST_ORIGIN + '/local/challenge', {
+        method: 'POST', headers, body: oversized,
+      }), ctx.env);
+      assert.equal(response.status, 400, 'oversize must fail closed even with missing/false length');
+    }
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_challenges').first()).n, 0);
+    const valid = await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id });
+    assert.equal(valid.status, 200, 'bounded small JSON must still authenticate a local challenge');
+  } finally { await ctx.mf.dispose(); }
+});

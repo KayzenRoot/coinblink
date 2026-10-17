@@ -39,7 +39,7 @@ function stripValidNotes(text, heading, pattern, isSource) {
     if (isSource) {
       const name = match[2];
       const url = match[3];
-      if (name !== name.trim() || /[|<>\[\]\\\r\t]/u.test(name)
+      if (name !== name.trim() || /[|<>\r\t\\]/u.test(name) || name.includes("[") || name.includes("]")
           || !validHttpsSource(url) || new URL(url).href !== url) return null;
     } else if (/[|<>\r]/u.test(match[4])) return null;
   }

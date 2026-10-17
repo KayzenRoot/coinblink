@@ -16,7 +16,7 @@ function validHttpsSource(candidate) {
 
 /**
  * @param {{ title?: unknown, summary?: unknown, body?: unknown, source?: unknown }} draft
- * @param {{ factReview?: boolean, rightsReview?: boolean, ownerPacket?: boolean }} [manual]
+ * @param {{ factReview?: boolean, sourceAttribution?: boolean, ownerPacket?: boolean }} [manual]
  */
 export function evaluateLocalEditorialChecklist(draft, manual = {}) {
   const value = (key) => typeof draft?.[key] === "string" ? draft[key].trim() : "";
@@ -26,7 +26,7 @@ export function evaluateLocalEditorialChecklist(draft, manual = {}) {
     { id: "body", label: "Article body drafted (40+ characters)", done: value("body").length >= LIMITS.body },
     { id: "source", label: "Original source URL format is HTTPS (not independently verified)", done: validHttpsSource(value("source")) },
     { id: "factReview", label: "I noted claims that require independent fact checking", done: manual.factReview === true },
-    { id: "rightsReview", label: "I noted content reuse and attribution questions for review", done: manual.rightsReview === true },
+    { id: "sourceAttribution", label: "I noted the original source and attribution in the draft", done: manual.sourceAttribution === true },
     { id: "ownerPacket", label: "I prepared this working draft for a future owner review", done: manual.ownerPacket === true },
   ];
   const completed = items.filter((item) => item.done).length;
@@ -49,7 +49,7 @@ if (typeof document !== "undefined") {
   };
   const manual = {
     factReview: panel?.querySelector("[data-m05-editorial-fact-review]"),
-    rightsReview: panel?.querySelector("[data-m05-editorial-rights-review]"),
+    sourceAttribution: panel?.querySelector("[data-m05-editorial-source-attribution]"),
     ownerPacket: panel?.querySelector("[data-m05-editorial-owner-packet]"),
   };
   const score = panel?.querySelector("[data-m05-editorial-score]");
@@ -69,7 +69,7 @@ if (typeof document !== "undefined") {
         findings.append(line);
       }
       note.textContent = result.completed === result.total
-        ? "Checklist filled locally. Accuracy, licenses, owner approval and publication still NOT verified."
+        ? "Checklist filled locally. Accuracy, source attribution, owner approval and publication are NOT independently verified."
         : "This is a local drafting checklist. Incomplete items require editorial attention.";
     };
     const clearManual = () => {

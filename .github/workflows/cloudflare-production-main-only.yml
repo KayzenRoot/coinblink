@@ -28,7 +28,6 @@ jobs:
       actions: read
       checks: read
       contents: read
-      issues: read
       pull-requests: read
       statuses: read
     outputs:
@@ -50,6 +49,8 @@ jobs:
         id: eligibility
         run: node scripts/assert-production-deploy-eligibility.mjs
         env:
+          COINBLINK_PUBLIC_DEMO_DEPLOYMENT: ${{ vars.COINBLINK_PUBLIC_DEMO_DEPLOYMENT }}
+          COINBLINK_COMMERCIAL_PUBLICATION_ALLOWED: "false"
           GITHUB_TOKEN: ${{ github.token }}
 
   deploy:
@@ -67,7 +68,6 @@ jobs:
       actions: read
       contents: read
       deployments: write
-      issues: read
     environment:
       name: production
       url: https://coinblink-production.kayzendev.workers.dev
@@ -78,6 +78,8 @@ jobs:
       COINBLINK_CF_WORKER_NAME: coinblink-production
       COINBLINK_CF_WORKER_URL: https://coinblink-production.kayzendev.workers.dev
       GITHUB_ENVIRONMENT: production
+      COINBLINK_PUBLIC_DEMO_DEPLOYMENT: ${{ vars.COINBLINK_PUBLIC_DEMO_DEPLOYMENT }}
+      COINBLINK_COMMERCIAL_PUBLICATION_ALLOWED: "false"
       PUBLIC_BUILD_SHA: ${{ needs.preflight.outputs.main_sha }}
       PUBLIC_BUILD_ENV: production
     steps:
@@ -144,5 +146,5 @@ jobs:
       - name: Record verified deployment evidence
         if: success()
         run: |
-          printf '\n### Cloudflare production deployment\n\n- Worker: `%s`\n- URL: %s\n- Main SHA: `%s`\n- Source PR: #%s\n- Checks: main exact-SHA 5/5 plus merged source PR 7/7 on an identical tree\n- Result: exact-SHA health, demo-only state, security headers, robots/noindex, and 404 verified\n' "$COINBLINK_CF_WORKER_NAME" "$COINBLINK_CF_WORKER_URL" "$EXPECTED_MAIN_SHA" "$SOURCE_PULL_REQUEST" >> "$GITHUB_STEP_SUMMARY"
+          printf '\n### Cloudflare production deployment\n\n- Worker: `%s`\n- URL: %s\n- Main SHA: `%s`\n- Source PR: #%s\n- Checks: main exact-SHA 5/5 plus merged source PR 7/7 on an identical tree\n- Scope: Owner-authorized DEMO_ONLY\n- Commercial publication: remains disabled; no rights clearance is inferred\n- Result: exact-SHA health, demo-only state, security headers, robots/noindex, and 404 verified\n' "$COINBLINK_CF_WORKER_NAME" "$COINBLINK_CF_WORKER_URL" "$EXPECTED_MAIN_SHA" "$SOURCE_PULL_REQUEST" >> "$GITHUB_STEP_SUMMARY"
         shell: bash

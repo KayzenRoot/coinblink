@@ -8,9 +8,9 @@ import {
   PRODUCTION_WORKER_NAME,
   PRODUCTION_WORKER_URL,
   REQUIRED_CHECKS,
+  validateDemoDeploymentAuthorization,
   validateMainSha,
   validateMergedPullRequest,
-  validateCommercialPublicationDecision,
   validateProductionTarget,
   validateRuleset,
   validateWorkflowRun,
@@ -170,26 +170,21 @@ test("pins the target to the selected workers.dev Worker and authenticated accou
   }).some((error) => error.includes("fixed workers.dev")));
 });
 
-test("commercial publication requires the latest explicit Owner clearance on closed Issue 72", () => {
-  const issue = { number: 72, state: "closed" };
-  const comment = {
-    id: 7201,
-    user: { login: "KayzenRoot" },
-    body: [
-      "COINBLINK_COMMERCIAL_PUBLICATION_GATE=AUTHORIZED",
-      "rightsReview=CLEARED",
-      "commercialPublicationAllowed=true",
-      "rightsEvidence=https://github.com/KayzenRoot/coinblink/issues/72#issuecomment-7201",
-    ].join("\n"),
-  };
-  assert.deepEqual(validateCommercialPublicationDecision(issue, comment), []);
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, user: { login: "other" } }).some((error) => error.includes("authorized Owner")));
-  assert.ok(validateCommercialPublicationDecision({ ...issue, state: "open" }, comment).some((error) => error.includes("not closed")));
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, body: comment.body.replace("commercialPublicationAllowed=true", "commercialPublicationAllowed=false") }).some((error) => error.includes("explicit authorization")));
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, body: `${comment.body}\ncommercialPublicationAllowed=true` }).some((error) => error.includes("unambiguous")));
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, body: comment.body.replace("https://github.com", "http://github.com") }).some((error) => error.includes("evidence URL")));
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, body: `${comment.body}\nrightsEvidence=https://evidence.example/second` }).some((error) => error.includes("one HTTPS evidence URL")));
-  assert.ok(validateCommercialPublicationDecision({ ...issue, number: 73 }, comment).some((error) => error.includes("not Issue 72")));
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, body: comment.body.replace("https://github.com", "https://user:pass@github.com") }).some((error) => error.includes("evidence URL")));
-  assert.ok(validateCommercialPublicationDecision(issue, { ...comment, body: comment.body.replace("rightsReview=CLEARED", "rightsReview=PENDING_OWNER_OR_LEGAL") }).some((error) => error.includes("explicit authorization")));
+test("public demo deployment requires explicit authorization and keeps commercial publication disabled", () => {
+  assert.deepEqual(validateDemoDeploymentAuthorization({
+    authorization: "AUTHORIZED_DEMO_ONLY",
+    commercialPublicationAllowed: "false",
+  }), []);
+  assert.ok(validateDemoDeploymentAuthorization({
+    authorization: "",
+    commercialPublicationAllowed: "false",
+  }).some((error) => error.includes("not explicitly Owner-authorized")));
+  assert.ok(validateDemoDeploymentAuthorization({
+    authorization: "AUTHORIZED_DEMO_ONLY",
+    commercialPublicationAllowed: "true",
+  }).some((error) => error.includes("must remain disabled")));
+  assert.ok(validateDemoDeploymentAuthorization({
+    authorization: "AUTHORIZED_COMMERCIAL",
+    commercialPublicationAllowed: "false",
+  }).some((error) => error.includes("not explicitly Owner-authorized")));
 });

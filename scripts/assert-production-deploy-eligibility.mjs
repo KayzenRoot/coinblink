@@ -6,7 +6,7 @@ import {
   MAIN_COMMIT_CHECKS,
   REQUIRED_CHECKS,
   isFullCommitSha,
-  validateCommercialPublicationDecision,
+  validateDemoDeploymentAuthorization,
   validateMainSha,
   validateMergedPullRequest,
   validateWorkflowRun,
@@ -16,8 +16,6 @@ import {
 const apiRoot = "https://api.github.com";
 const checkAttempts = 4;
 const retryDelayMs = 5_000;
-const rightsCommentsPerPage = 100;
-const rightsCommentsMaxPages = 100;
 
 function requireApiResponse(response) {
   if (!response.ok) throw new Error(`GitHub API request failed with HTTP ${response.status}.`);
@@ -119,76 +117,24 @@ async function verifyGefeRun(githubApi, workflowRun) {
   }
 }
 
-export async function verifyCommercialPublicationGate(githubApi) {
-  const [issue, latestComment] = await Promise.all([
-    githubApi(`/repos/${COINBLINK_REPOSITORY}/issues/72`),
-    readLatestIssueComment(githubApi),
-  ]);
-  if (!latestComment) {
-    throw new Error("Commercial publication gate blocked: Issue 72 has no unambiguous latest Owner decision.");
-  }
-  const errors = validateCommercialPublicationDecision(issue, latestComment);
-  if (errors.length > 0) throw new Error(`Commercial publication gate blocked: ${errors.join("; ")}`);
-  return { commentId: latestComment.id };
-}
-
-export async function readLatestIssueComment(githubApi) {
-  const firstRead = await listIssueComments(githubApi);
-  const confirmationRead = await listIssueComments(githubApi);
-  const fingerprint = (comments) => JSON.stringify(comments
-    .map((comment) => ({
-      id: comment.id,
-      created_at: comment.created_at,
-      updated_at: comment.updated_at,
-      author: comment.user?.login,
-      body: comment.body,
-    }))
-    .sort((left, right) => left.id - right.id));
-  if (fingerprint(firstRead) !== fingerprint(confirmationRead)) {
-    throw new Error("Commercial publication gate blocked: Issue 72 comments changed during the rights readback.");
-  }
-
-  const comments = confirmationRead;
-  if (comments.length === 0) return null;
-  const ids = new Set();
-  const datedComments = comments.map((comment) => {
-    if (!Number.isSafeInteger(comment?.id) || comment.id <= 0 || ids.has(comment.id)) {
-      throw new Error("Commercial publication gate blocked: Issue 72 comment identities are incomplete or duplicated.");
-    }
-    ids.add(comment.id);
-    const createdAt = Date.parse(comment.created_at ?? "");
-    const updatedAt = Date.parse(comment.updated_at ?? "");
-    if (!Number.isFinite(createdAt) || !Number.isFinite(updatedAt) || updatedAt < createdAt) {
-      throw new Error("Commercial publication gate blocked: Issue 72 comment timestamps are invalid.");
-    }
-    return { comment, updatedAt };
-  });
-  datedComments.sort((left, right) => right.updatedAt - left.updatedAt || right.comment.id - left.comment.id);
-  return datedComments[0].comment;
-}
-
-async function listIssueComments(githubApi) {
-  const comments = [];
-  for (let page = 1; page <= rightsCommentsMaxPages; page += 1) {
-    const pageComments = await githubApi(`/repos/${COINBLINK_REPOSITORY}/issues/72/comments?per_page=${rightsCommentsPerPage}&page=${page}`);
-    if (!Array.isArray(pageComments) || pageComments.length > rightsCommentsPerPage) {
-      throw new Error("Commercial publication gate blocked: Issue 72 comment pagination is incomplete.");
-    }
-    comments.push(...pageComments);
-    if (pageComments.length < rightsCommentsPerPage) return comments;
-  }
-  throw new Error("Commercial publication gate blocked: Issue 72 comment pagination exceeded the safety limit.");
-}
-
 export async function verifyProductionDeployEligibility({
   event,
   repository,
+  publicDemoDeploymentAuthorization,
+  commercialPublicationAllowed,
   token,
   fetchImpl = fetch,
   githubApi: injectedApi,
   sleep = (milliseconds) => new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds)),
 } = {}) {
   if (repository !== COINBLINK_REPOSITORY) throw new Error("Workflow repository is not authorized.");
+  const authorizationErrors = validateDemoDeploymentAuthorization({
+    authorization: publicDemoDeploymentAuthorization,
+    commercialPublicationAllowed,
+  });
+  if (authorizationErrors.length > 0) {
+    throw new Error(`Demo deployment authorization blocked: ${authorizationErrors.join("; ")}`);
+  }
   const workflowRun = event?.workflow_run;
   const eventErrors = validateWorkflowRun(workflowRun);
   if (eventErrors.length > 0) throw new Error(`Workflow run rejected: ${eventErrors.join("; ")}`);
@@ -207,8 +153,6 @@ export async function verifyProductionDeployEligibility({
     verifyCheckContexts(githubApi, pullRequest.head.sha, REQUIRED_CHECKS, "merged PR head", sleep),
   ]);
 
-  const rightsDecision = await verifyCommercialPublicationGate(githubApi);
-
   const mainCommit = await githubApi(`/repos/${COINBLINK_REPOSITORY}/commits/${expectedSha}`);
   const finalMainSha = await currentMainSha(githubApi);
   const finalShaErrors = validateMainSha(expectedSha, finalMainSha);
@@ -219,7 +163,8 @@ export async function verifyProductionDeployEligibility({
     mainTreeSha: mainCommit?.commit?.tree?.sha,
     pullRequestNumber: pullRequest.number,
     pullRequestHeadSha: pullRequest.head.sha,
-    rightsIssueCommentId: rightsDecision.commentId,
+    deploymentScope: "DEMO_ONLY",
+    commercialPublicationAllowed: false,
   };
 }
 
@@ -231,6 +176,8 @@ export async function runProductionDeployEligibility({ env = process.env, logger
     const result = await verifyProductionDeployEligibility({
       event,
       repository: env.GITHUB_REPOSITORY,
+      publicDemoDeploymentAuthorization: env.COINBLINK_PUBLIC_DEMO_DEPLOYMENT,
+      commercialPublicationAllowed: env.COINBLINK_COMMERCIAL_PUBLICATION_ALLOWED,
       token: env.GITHUB_TOKEN,
     });
     if (typeof env.GITHUB_OUTPUT !== "string" || env.GITHUB_OUTPUT.length === 0) {
@@ -240,7 +187,7 @@ export async function runProductionDeployEligibility({ env = process.env, logger
     if (typeof env.GITHUB_STEP_SUMMARY === "string" && env.GITHUB_STEP_SUMMARY.length > 0) {
       appendFileSync(
         env.GITHUB_STEP_SUMMARY,
-        `\n### Cloudflare main-only preflight\n\n- Main SHA: \`${result.mainSha}\`\n- Main tree: \`${result.mainTreeSha}\`\n- Merged source PR: #${result.pullRequestNumber} at \`${result.pullRequestHeadSha}\`\n- Main commit contexts: 5/5 successful\n- Merged PR contexts: 7/7 successful; its source tree must equal main\n- Commercial rights decision: latest Owner authorization recorded in Issue #72 comment ${result.rightsIssueCommentId}\n- Result: eligible for the protected production job only.\n`,
+        `\n### Cloudflare main-only preflight\n\n- Main SHA: \`${result.mainSha}\`\n- Main tree: \`${result.mainTreeSha}\`\n- Merged source PR: #${result.pullRequestNumber} at \`${result.pullRequestHeadSha}\`\n- Main commit contexts: 5/5 successful\n- Merged PR contexts: 7/7 successful; its source tree must equal main\n- Owner deployment scope: DEMO_ONLY\n- Commercial publication: disabled; this workflow does not grant or infer rights clearance\n- Result: eligible for the protected production job only.\n`,
         "utf8",
       );
     }

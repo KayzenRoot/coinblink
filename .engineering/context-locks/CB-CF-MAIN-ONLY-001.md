@@ -48,15 +48,16 @@ No other file may change without a renewed scope decision.
 
 ## Critical invariants
 
-- `authorizedToMerge=false`; do not merge, deploy, create a Cloudflare Worker, alter rulesets, checkpoint, Docker, dependencies, modules, existing Preview resources, or any unrelated PR.
+- The Owner's direct instruction on 2026-10-17 authorizes automatic Cloudflare production deployment for every change integrated into GitHub `main`. For this Work Order, the deployment remains public **DEMO_ONLY** and must pass every exact-SHA check before the protected merge and automatic main-only deployment. This does not clear rights or authorize commercial use. Do not alter rulesets, checkpoint, Docker, dependencies, modules, existing Preview resources, or any unrelated PR.
 - No GitHub `pull_request`, `pull_request_target`, branch, fork, schedule, manual dispatch, or Pages/Workers Builds trigger for production.
 - Both `workflow_run` jobs now require `event=push`, `head_branch=main`, and matching base/head repository names in job-level conditions before their checkout steps; runtime GEF checks remain an independent second guard.
 - Exact full main SHA must still be the current protected main at preflight and immediately before Wrangler. Any advancement or API ambiguity blocks deployment.
 - The unique associated merged source PR must target this repository's `main`, have a same-repository head, be merged by `KayzenRoot`, and have an exact full tree SHA equal to the deployable main commit.
 - Verify 5/5 checks on exact main plus 7/7 on the unique merged source PR SHA, and require full source tree SHA equality. Do not claim seven check runs exist on the main commit.
 - Do not reuse Preview environment variables/secrets or log, request, or commit any Cloudflare token.
-- Issue #72 is an independent commercial-rights gate. Closure alone does not clear rights: require its newest REST comment across all pages, ordered locally by `updated_at`, to be authored by `KayzenRoot` and contain one explicit authorization marker, `rightsReview=CLEARED`, `commercialPublicationAllowed=true`, and an HTTPS evidence URL. Read and fingerprint the full comment list twice; if it changes, fail closed. Recheck immediately before deployment. Current readback is pending, so automatic production deployment must remain blocked.
-- The environment API token for deployment must be scoped to the verified account and Workers edit capability only, provisioned later by the Owner in GitHub environment `production`.
+- GitHub repository variable `COINBLINK_PUBLIC_DEMO_DEPLOYMENT=AUTHORIZED_DEMO_ONLY` records the Owner's operational demo authorization. The policy requires this exact value at preflight and immediately before deployment and hard-codes `COINBLINK_COMMERCIAL_PUBLICATION_ALLOWED=false`. It does not read, edit, or represent Issue #72 as cleared.
+- Issue #72 remains `COINBLINK_NAME_COMMERCIAL_CLEARANCE=PENDING_OWNER_OR_LEGAL`, `commercialPublicationAllowed=false`, and `M01_DONE=false`. A public demo deployment is authorized by the Owner's new direct instruction, not by a legal/rights determination.
+- Live GitHub environment `production` readback: `can_admins_bypass=false`, `protected_branches=false`, and one custom deployment branch policy exactly `main`. Secret name `CLOUDFLARE_API_TOKEN` is present; its value is not read. The existing token is account-wide Workers Scripts Write, and compromise could modify scripts on any Worker in the account.
 - Worker target fixed as `coinblink-production` / `https://coinblink-production.kayzendev.workers.dev`; no custom domain, routes or paid resource.
 - Existing demo remains noindex and exposes only mock/unconnected data. The checkpoint stays `M00_COMPLETE`, `IMPLEMENTATION_IN_PROGRESS`, 5%.
 
@@ -71,12 +72,19 @@ No other file may change without a renewed scope decision.
 - Current protected main: `824b3dc46825e3fa053c715b1765b70042c7981b`, tree `9a75e41f00410772f2d345ad4eb7e9eacda178b2`.
 - Its unique merged source PR is #100, head `366bcee4627ae73c7134833d68200ea51e834eb3`, merged by `KayzenRoot` into `main`; source and main trees match exactly. PR #100 head had all seven configured contexts successful. Exact main has the five contexts GitHub records on the post-merge SHA successful: Ubuntu GEF, Windows GEF, Docker Compose smoke, SonarCloud, and Socket Security: Project Report. Socket Pull Request Alerts and CodeRabbit are verified on PR #100's exact source head, not claimed as statuses on the main SHA.
 - Live readback of ruleset `24888106` still shows active `refs/heads/main`, PR/squash-only, strict seven contexts, resolved review threads, deletion/non-fast-forward protection, and no bypass actors. Sanitized exact readback is stored alongside this lock.
-- Live GitHub `production` environment readback still shows protected-branch deployments, no administrator bypass, and the verified account ID variable. No Cloudflare token is configured or read, no Worker has been created, and no deployment has occurred.
+- The live GitHub `production` environment has administrator bypass disabled and a custom deployment branch policy that allows exactly `main`; its account ID variable and Cloudflare token secret are present by name/value metadata only. No token value has been read.
 - The only main delta since initial branch creation was the three additive M05 P1-C proposal documents; this deployment candidate does not change or implement those proposals.
 
 ## Commercial rights gate readback · 2026-10-17
 
 - Issue #72 is `closed`, last updated `2026-10-16T22:20:11Z`. Its newest comment is ID `6225569671`, authored by `KayzenRoot` at `2026-10-16T22:03:52Z`.
 - That comment records `COINBLINK_NAME_COMMERCIAL_CLEARANCE=PENDING_OWNER_OR_LEGAL`, `commercialPublicationAllowed=false`, and `M01_DONE=false`. Closing the tracking issue did not clear the rights obligation.
-- Sanitized readback is stored in `.engineering/evidence/CB-CF-MAIN-ONLY-001/rights-gate-readback.json`. The workflow fails closed until the latest Owner decision explicitly clears rights and links to HTTPS evidence. This implementation does not change legal status.
-- Rights-gate code and negative tests remain within this Work Order's path allowlist. `authorizedToMerge=false` remains unchanged.
+- Sanitized readback is stored in `.engineering/evidence/CB-CF-MAIN-ONLY-001/rights-gate-readback.json`. The workflow no longer uses this rights readback as a deployment gate; legal status remains unchanged.
+- The Issue #72 evidence remains unchanged and is not used to authorize a demo deployment. Commercial publication remains disabled.
+
+## Owner instruction delta · 2026-10-17
+
+- After seeing the existing rights block, the Owner directly ordered Codex to change the gate and make the deployment work, then explicitly authorized every change integrated into GitHub `main` to deploy automatically to Cloudflare production. This supersedes the earlier no-deploy instruction for this Work Order only.
+- Authorized operation: publish the existing demo-only site at `https://coinblink-production.kayzendev.workers.dev` from an exact, successful protected-main SHA after the seven required PR contexts, five post-merge main contexts, source-tree identity, and final current-main check pass.
+- The authorization does not alter ruleset `24888106`, any of the required contexts, Issue #72, the commercial flag, image/logo rights status, checkpoint, custom domains, or paid services.
+- No Worker has yet been provisioned and no production deployment has yet been observed. Those are the remaining external outcomes to verify after the updated PR passes and is merged.

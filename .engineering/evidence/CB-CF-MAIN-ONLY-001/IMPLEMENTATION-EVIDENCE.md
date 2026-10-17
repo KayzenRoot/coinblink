@@ -1,6 +1,6 @@
 # CB-CF-MAIN-ONLY-001 · Implementation Evidence
 
-**Evidence state:** local implementation candidate; no production deployment. Update this file only with evidence for the exact PR HEAD before requesting Owner review.
+**Evidence state:** updated Owner-authorized DEMO-only implementation candidate; production deployment has not yet occurred. Append current exact-HEAD evidence before reporting the site as live.
 
 ## Repository and base
 
@@ -34,15 +34,15 @@
 - Authenticated dashboard account: `91aeaffe2456eff6bb9ce76ce177bb3f`, account subdomain `kayzendev.workers.dev`.
 - Read-only Workers inventory showed the existing `coinblink-m00-preview` Worker and no production Worker or Git-connected Workers Builds pipeline. The preview lane and its GitHub environment were left unchanged.
 - Selected future production target: Worker `coinblink-production`; URL `https://coinblink-production.kayzendev.workers.dev`; no custom domain or route.
-- GitHub `production` environment created on 2026-10-17 with `can_admins_bypass=false`, `protected_branches=true`, `custom_branch_policies=false`, and no wait timer. Its [`environment settings/API record`](https://api.github.com/repos/KayzenRoot/coinblink/environments/production) verifies this policy.
+- GitHub `production` environment created on 2026-10-17. Latest readback at 2026-10-17T15:09Z shows `can_admins_bypass=false`, `protected_branches=false`, `custom_branch_policies=true`, with the sole custom deployment branch policy `main`. Its [`environment settings/API record`](https://api.github.com/repos/KayzenRoot/coinblink/environments/production) verifies this policy.
 - `CLOUDFLARE_ACCOUNT_ID` is configured as a production environment variable and read back as `91aeaffe2456eff6bb9ce76ce177bb3f`. It is an account identifier, not a Cloudflare credential.
-- Sanitized production environment API readback: [`production-environment-readback.json`](./production-environment-readback.json), SHA-256 `8bfdf34d9ff4736e3d0be413442427439be63f2405dd3b4467b6d59118f0c2cb`.
+- Sanitized production environment API readback: [`production-environment-readback.json`](./production-environment-readback.json), SHA-256 `afb6e28177b6b986078418926b5bd97a60c6c5534194f197b0488914f33cbb5a`.
 - GitHub main/source PR status, merge identity and tree readback: [`main-readback.json`](./main-readback.json), SHA-256 `19844ba3f7d056d68f6e16d7151ccdff15c92ed53a26fe8932e25c56ca895d9b`.
-- [`production-credential-status.json`](./production-credential-status.json), SHA-256 `f479579d4af9eb05d6ec6c898bbc0205c56f2e4dd9f1d164c81c59ec5292adae`, records the environment account variable and confirms by secret-name metadata only that `CLOUDFLARE_API_TOKEN` is not configured. No secret value was requested, read, or added. The workflow cannot publish until the Owner later adds a least-privilege token as a secret in the `production` environment.
+- [`production-credential-status.json`](./production-credential-status.json), SHA-256 `2ec74807010f355cfc152ac805a90940df8d2fbc6ad66fca8cfa66b4d3f3c406`, records by metadata only that `CLOUDFLARE_API_TOKEN` is present in the `production` environment. Its value was not read or written to evidence. Its confirmed scope is account-wide Workers Scripts Write; compromise could alter scripts across Workers in that Cloudflare account.
 - Issue #72 is closed but its newest Owner comment (`6225569671`, `2026-10-16T22:03:52Z`) says `COINBLINK_NAME_COMMERCIAL_CLEARANCE=PENDING_OWNER_OR_LEGAL`, `commercialPublicationAllowed=false`, and `M01_DONE=false`. Sanitized readback: [`rights-gate-readback.json`](./rights-gate-readback.json), SHA-256 `b93734167aca2bf9969f745d2887e332c433315ea2d0d403335e378462b1133b`. Issue closure is not rights clearance.
-- Both preflight and the final main guard now paginate Issue #72 comments twice, compare full comment fingerprints to reject a changing read, choose the newest by `updated_at` (ID breaks equal-time ties), and require the latest comment to be authored by `KayzenRoot` with exactly one explicit authorization marker, `rightsReview=CLEARED`, `commercialPublicationAllowed=true`, and one HTTPS `rightsEvidence=` URL. Missing/malformed pages, changing comments, pending rights, duplicate markers, another author, or API errors fail closed. This process check does not determine legal rights.
+- Historical candidate code required an Owner-authored commercial-rights clearance in Issue #72. The Owner directly changed that operating instruction on 2026-10-17: the protected-main deployment is authorized for DEMO_ONLY, while `commercialPublicationAllowed=false`, rights pending, and `M01_DONE=false` remain untouched. The current workflow uses the exact repository variable `COINBLINK_PUBLIC_DEMO_DEPLOYMENT=AUTHORIZED_DEMO_ONLY` at preflight and immediately before deployment; it hard-codes the commercial flag to false and no longer reads Issue #72 as a deployment prerequisite.
 - The first hosted SonarCloud analysis on interim HEAD `67ebb1577b884e801bed57f1069ab1fd90e1c118` failed the new-code C Security Rating. Its annotations identified the two `workflow_run` checkout jobs as not guarded against fork-originated source contexts, plus cognitive complexity and log-injection warnings in the new rights gate. The follow-up delta adds job-level push/main/same-repository guards before either checkout, splits the decision validator into small helpers, and bounds/sanitizes logged error text. The new SonarCloud analysis on the updated HEAD is required before this mitigation can be called verified. A pagination `await` warning remains intentional because page `n+1` depends on the previous page count.
-- No Cloudflare Worker was created or deployed. No DNS, domains, routes, billing, Worker Builds, existing Preview, or GitHub ruleset settings were changed.
+- As of the latest read-only Cloudflare inventory before the updated PR is merged, no production Worker had been created or deployed. No DNS, custom domains/routes, billing, Worker Builds, existing Preview, or GitHub ruleset settings were changed.
 
 ## Local validation at the implementation candidate
 
@@ -70,13 +70,13 @@ The full-suite run on Node 22.23.3, before the final stable-comment-read hardeni
 
 ## Remaining exact-HEAD and activation gates
 
-- [ ] Commit, push and create the dedicated draft PR; record exact branch HEAD and hosted seven required checks.
-- [ ] Run hosted checks on the exact PR HEAD and reconcile any new review findings. In particular, verify the existing M01 visual fixture on hosted runners before calling validation complete.
-- [ ] Owner reviews and explicitly authorizes squash merge of the exact PR HEAD.
-- [ ] Owner adds the least-privilege Cloudflare API token to GitHub environment `production`.
-- [ ] After protected merge, first automatic main run creates/deploys `coinblink-production`; verify exact SHA, `/health`, `/preview-status`, `/en`, same-origin asset, robots/noindex, security headers, and 404.
+- [x] Owner demo authorization variable is read back as `AUTHORIZED_DEMO_ONLY`; `commercialPublicationAllowed=false` remains hard-coded.
+- [x] Cloudflare token secret is present by name in the production environment; its secret value was not read. Its account-wide Workers Scripts Write scope remains a recorded risk.
+- [ ] Publish the validated correction to the existing PR #117 branch and record its final exact HEAD.
+- [ ] Verify all seven required hosted PR contexts on that exact HEAD; do not merge while any required context is pending or failed.
+- [ ] Complete the protected squash merge after the exact-head checks pass, then verify the automatic main-only deployment and endpoint smoke for that exact main SHA.
 
-Candidate state: `DRAFT_PR_AWAITING_EXACT_HEAD_CI_AND_OWNER_REVIEW`; `authorizedToMerge=false`; not deployed. The current rights readback is pending and blocks production eligibility until an Owner/legal clearance is recorded in Issue #72.
+Candidate state: `LOCAL_CORRECTION_VALIDATED_AWAITING_PR_PUBLICATION`; no production deployment has occurred. The Owner authorized the main-only DEMO deployment path, but the PR remains subject to the existing strict checks and protected squash-only ruleset. Issue #72 remains pending for commercial rights and does not grant commercial clearance.
 
 ## SonarCloud correction delta · 2026-10-17
 
@@ -98,4 +98,42 @@ Local validation on Node `22.23.3` after the correction:
 | `npm run build` | PASS; Astro Worker build completed and no SESSION, data, service, or production bindings were present |
 | `git diff --check` | PASS |
 
-The exact-head hosted checks for this correction are pending until the updated draft PR head is published. The existing full-suite limitation and prior 48/48 Playwright result above are historical evidence; the required hosted workflow must validate its full suite on the final exact HEAD. Issue #72 still blocks production eligibility; no Worker or deployment was created.
+The exact-head hosted checks for this correction are pending until the updated PR head is published. The existing full-suite limitation above is historical and is superseded by the successful full-suite result in the current validation delta below. Issue #72 remains pending for commercial rights but does not block the Owner-authorized DEMO deployment path. No Worker or deployment had been created at the time of this readback.
+
+## Owner main-deploy authorization and current validation · 2026-10-17
+
+The Owner explicitly authorized automatic Cloudflare production deployment for every change integrated into GitHub `main`. The exact Portuguese authorization is preserved in [`owner-demo-deployment-authorization.json`](./owner-demo-deployment-authorization.json). This authorizes the bounded public demo deploy path after its checks and protected merge; it does not change the commercial-rights decision.
+
+Current authorization boundary:
+
+- Deployment scope is `DEMO_ONLY`, from a successful GEF `push` run on same-repository protected `main` only.
+- The latest final guard checks the exact current main SHA immediately before Wrangler. PR, fork, non-main, stale, failed, and ambiguous source events are rejected.
+- `commercialPublicationAllowed=false`, Issue #72 `PENDING_OWNER_OR_LEGAL`, and `M01_DONE=false` are unchanged. No rights clearance is inferred.
+- No paid plan or feature was activated. The sanitized authenticated dashboard readback is [`cloudflare-usage-readback.json`](./cloudflare-usage-readback.json); the displayed Workers plan name could not be confirmed because its details page remained loading.
+
+Latest local validation:
+
+| Command / check | Result |
+|---|---|
+| Negative regression tests against the former commercial-rights-only gate | Expected RED: 5 failures, demonstrating that the old implementation blocked the Owner-authorized demo flow |
+| Focused Cloudflare deployment tests on Node `22.23.3` | PASS; 33/33 |
+| Full `npm test` on Node `22.23.3` | PASS; 401 unit tests, build, and 48/48 Playwright tests; process exited 0 |
+| `npm run lint` on Node `22.23.3` | PASS; zero warnings |
+| `npm run typecheck` on Node `22.23.3` | PASS; 141 files, zero errors/warnings/hints |
+| `npm audit --audit-level=high` | PASS; 0 vulnerabilities |
+| `npm run build` on Node `22.23.3` | PASS; Astro Cloudflare Worker built and the no-session-binding guard passed |
+| `wrangler deploy --dry-run --config ./dist/server/wrangler.json --name coinblink-production` | PASS; Wrangler `4.149.0`, 30 modules, 32 static assets, only `env.ASSETS`; dry-run exited without publishing and used no token |
+| Current-tree focused tests, lint, typecheck, audit, build and Wrangler dry-run | PASS; focused 33/33, lint clean, typecheck 141 files clean, audit 0 vulnerabilities, build and dry-run successful |
+
+The dashboard showed 50 requests of the displayed 100,000 daily quota, 0 Workers build minutes, `$0.00` billable usage, and no billable usage yet in the current period. This is a point-in-time observation, not a cost guarantee if plan, resources, or usage change. No production Worker existed at that readback. The existing Preview Worker was left untouched.
+
+The correction started from PR #117 HEAD `2f5917e0e6fc444fe76d12af58dd97a109575a74`, based on current main `824b3dc46825e3fa053c715b1765b70042c7981b`. The final correction HEAD and its hosted check links are recorded in the same PR after publication.
+
+Sanitized evidence hashes for the authorization and Cloudflare readbacks:
+
+| Evidence file | SHA-256 |
+|---|---|
+| [`owner-demo-deployment-authorization.json`](./owner-demo-deployment-authorization.json) | `09f9de6bdbed31bc213734aaefb15551eaf156e0632e9855056ffa333013d723` |
+| [`cloudflare-usage-readback.json`](./cloudflare-usage-readback.json) | `88832938d884f36d9f5afc39603e329309ac769523559cdb4c7c5978aa3b1c4a` |
+| [`production-environment-readback.json`](./production-environment-readback.json) | `afb6e28177b6b986078418926b5bd97a60c6c5534194f197b0488914f33cbb5a` |
+| [`production-credential-status.json`](./production-credential-status.json) | `2ec74807010f355cfc152ac805a90940df8d2fbc6ad66fca8cfa66b4d3f3c406` |

@@ -3,33 +3,23 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { runProductionDeployEligibility, verifyProductionDeployEligibility } from "../scripts/assert-production-deploy-eligibility.mjs";
+import {
+  runProductionDeployEligibility,
+  verifyProductionDeployEligibility as verifyProductionDeployEligibilityRaw,
+} from "../scripts/assert-production-deploy-eligibility.mjs";
 import { COINBLINK_REPOSITORY, MAIN_COMMIT_CHECKS, REQUIRED_CHECKS } from "../scripts/cloudflare-production-policy.mjs";
 
 const mainSha = "a".repeat(40);
 const mainTreeSha = "b".repeat(40);
 const prHeadSha = "c".repeat(40);
 const prHeadTreeSha = mainTreeSha;
-const latestRightsCommentPath = `/repos/${COINBLINK_REPOSITORY}/issues/72/comments?per_page=100&page=1`;
+const demoAuthorization = {
+  publicDemoDeploymentAuthorization: "AUTHORIZED_DEMO_ONLY",
+  commercialPublicationAllowed: "false",
+};
 
-function authorizedRightsIssue() {
-  return { number: 72, state: "closed", title: "CoinBlink commercial rights gate" };
-}
-
-function authorizedRightsComment(overrides = {}) {
-  return {
-    id: 7201,
-    user: { login: "KayzenRoot" },
-    created_at: "2026-10-17T10:00:00Z",
-    updated_at: "2026-10-17T10:00:00Z",
-    body: [
-      "COINBLINK_COMMERCIAL_PUBLICATION_GATE=AUTHORIZED",
-      "rightsReview=CLEARED",
-      "commercialPublicationAllowed=true",
-      "rightsEvidence=https://github.com/KayzenRoot/coinblink/issues/72#issuecomment-7201",
-    ].join("\n"),
-    ...overrides,
-  };
+function verifyProductionDeployEligibility(options = {}) {
+  return verifyProductionDeployEligibilityRaw({ ...demoAuthorization, ...options });
 }
 
 function event(workflowOverrides = {}) {
@@ -59,7 +49,7 @@ function checkRun(name) {
   };
 }
 
-function fakeApi({ currentMain = mainSha, prTree = prHeadTreeSha, missingMainCheck, missingPrCheck, rightsIssue = authorizedRightsIssue(), latestRightsComment = authorizedRightsComment() } = {}) {
+function fakeApi({ currentMain = mainSha, prTree = prHeadTreeSha, missingMainCheck, missingPrCheck } = {}) {
   const apiCalls = [];
   let mainLookups = 0;
   const githubApi = async (path) => {
@@ -120,8 +110,6 @@ function fakeApi({ currentMain = mainSha, prTree = prHeadTreeSha, missingMainChe
         .filter((name) => name !== missingPrCheck);
       return { statuses: contexts.map((context) => ({ context, state: "success", created_at: "2026-10-17T10:00:02Z" })) };
     }
-    if (path === `/repos/${COINBLINK_REPOSITORY}/issues/72`) return rightsIssue;
-    if (path === latestRightsCommentPath) return latestRightsComment ? [latestRightsComment] : [];
     throw new Error(`Unexpected fake API path ${path}`);
   };
   return { githubApi, apiCalls };
@@ -140,66 +128,51 @@ test("preflight proves successful GEF, exact current main, source-tree equality,
     mainTreeSha,
     pullRequestNumber: 42,
     pullRequestHeadSha: prHeadSha,
-    rightsIssueCommentId: 7201,
+    deploymentScope: "DEMO_ONLY",
+    commercialPublicationAllowed: false,
   });
   assert.equal(apiCalls.filter((path) => path.endsWith("/commits/main")).length, 2);
   assert.ok(apiCalls.includes(`/repos/${COINBLINK_REPOSITORY}/commits/${mainSha}/check-runs?per_page=100`));
   assert.ok(apiCalls.includes(`/repos/${COINBLINK_REPOSITORY}/commits/${prHeadSha}/check-runs?per_page=100`));
-  assert.ok(apiCalls.includes(`/repos/${COINBLINK_REPOSITORY}/issues/72`));
-  assert.ok(apiCalls.includes(latestRightsCommentPath));
+  assert.equal(apiCalls.some((path) => path.includes("/issues/72")), false);
 });
 
-test("preflight blocks publication while Issue 72 is pending, missing, or not Owner-cleared", async () => {
-  for (const invalidRights of [
-    fakeApi({ latestRightsComment: authorizedRightsComment({ body: "commercialPublicationAllowed=false" }) }),
-    fakeApi({ rightsIssue: { ...authorizedRightsIssue(), state: "open" } }),
-    fakeApi({ latestRightsComment: authorizedRightsComment({ user: { login: "other" } }) }),
-    fakeApi({ latestRightsComment: null }),
+test("demo preflight requires Owner authorization and never treats it as commercial rights clearance", async () => {
+  const { githubApi, apiCalls } = fakeApi();
+  await assert.rejects(verifyProductionDeployEligibilityRaw({
+    event: event(),
+    repository: COINBLINK_REPOSITORY,
+    githubApi,
+    sleep: async () => {},
+  }), /Demo deployment authorization blocked/);
+
+  const result = await verifyProductionDeployEligibility({
+    event: event(),
+    repository: COINBLINK_REPOSITORY,
+    publicDemoDeploymentAuthorization: "AUTHORIZED_DEMO_ONLY",
+    commercialPublicationAllowed: "false",
+    githubApi,
+    sleep: async () => {},
+  });
+  assert.equal(result.deploymentScope, "DEMO_ONLY");
+  assert.equal(result.commercialPublicationAllowed, false);
+  assert.equal(apiCalls.some((path) => path.includes("/issues/72")), false);
+});
+
+test("demo preflight blocks commercial mode and any enabled commercial publication flag", async () => {
+  for (const settings of [
+    { publicDemoDeploymentAuthorization: "AUTHORIZED_COMMERCIAL", commercialPublicationAllowed: "false" },
+    { publicDemoDeploymentAuthorization: "AUTHORIZED_DEMO_ONLY", commercialPublicationAllowed: "true" },
   ]) {
+    const { githubApi } = fakeApi();
     await assert.rejects(verifyProductionDeployEligibility({
       event: event(),
       repository: COINBLINK_REPOSITORY,
-      githubApi: invalidRights.githubApi,
+      ...settings,
+      githubApi,
       sleep: async () => {},
-    }), /Commercial publication gate blocked/);
+    }), /Demo deployment authorization blocked/);
   }
-});
-
-test("latest rights comment selection paginates and orders by update time, not API list order", async () => {
-  const { readLatestIssueComment } = await import("../scripts/assert-production-deploy-eligibility.mjs");
-  const older = authorizedRightsComment({ id: 1, created_at: "2026-10-01T00:00:00Z", updated_at: "2026-10-01T00:00:00Z" });
-  const latest = authorizedRightsComment({ id: 201, created_at: "2026-10-17T00:00:00Z", updated_at: "2026-10-17T01:00:00Z" });
-  const firstPage = Array.from({ length: 100 }, (_, index) => ({
-    ...older,
-    id: index + 1,
-    created_at: new Date(Date.UTC(2026, 8, 1, 0, index)).toISOString(),
-    updated_at: new Date(Date.UTC(2026, 8, 1, 0, index)).toISOString(),
-  }));
-  const requestedPages = [];
-  const selected = await readLatestIssueComment(async (path) => {
-    requestedPages.push(path);
-    if (path.endsWith("page=1")) return firstPage;
-    if (path.endsWith("page=2")) return [latest];
-    throw new Error(`Unexpected rights comment page: ${path}`);
-  });
-  assert.equal(selected.id, latest.id);
-  assert.equal(requestedPages.length, 4);
-});
-
-test("latest rights comment selection blocks if Issue 72 changes during pagination", async () => {
-  const { readLatestIssueComment } = await import("../scripts/assert-production-deploy-eligibility.mjs");
-  let pageOneReads = 0;
-  await assert.rejects(readLatestIssueComment(async (path) => {
-    if (path.endsWith("page=1")) {
-      pageOneReads += 1;
-      return [authorizedRightsComment({
-        id: pageOneReads,
-        created_at: `2026-10-17T10:0${pageOneReads}:00Z`,
-        updated_at: `2026-10-17T10:0${pageOneReads}:00Z`,
-      })];
-    }
-    throw new Error(`Unexpected rights comment page: ${path}`);
-  }), /comments changed during the rights readback/);
 });
 
 test("preflight failure logs withhold untrusted event details", async () => {

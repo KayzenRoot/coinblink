@@ -175,56 +175,10 @@ export function validateProductionTarget({ repository, workerName, workerUrl, ac
   return errors;
 }
 
-const commercialPublicationMarkers = Object.freeze({
-  authorization: "COINBLINK_COMMERCIAL_PUBLICATION_GATE=AUTHORIZED",
-  rightsReview: "rightsReview=CLEARED",
-  publicationAllowed: "commercialPublicationAllowed=true",
-});
-
-function validateDecisionMarker(lines, marker) {
-  const keyPrefix = `${marker.slice(0, marker.indexOf("="))}=`;
-  const matching = lines.filter((line) => line.startsWith(keyPrefix));
-  if (matching.length === 1 && matching[0] === marker) return null;
-  return matching.length > 1
-    ? "commercial publication decision is not unambiguous"
-    : "latest rights decision lacks explicit authorization";
-}
-
-function validateRightsEvidence(lines) {
-  const evidenceLines = lines.filter((line) => line.startsWith("rightsEvidence="));
-  if (evidenceLines.length !== 1) return "latest rights decision must contain one HTTPS evidence URL";
-
-  const evidenceValue = evidenceLines[0].slice("rightsEvidence=".length);
-  if (!evidenceValue || evidenceValue.trim() !== evidenceValue || /\s/u.test(evidenceValue)) {
-    return "latest rights decision evidence URL is invalid";
-  }
-  try {
-    const evidenceUrl = new URL(evidenceValue);
-    if (evidenceUrl.protocol !== "https:" || !evidenceUrl.hostname || evidenceUrl.username || evidenceUrl.password) {
-      return "latest rights decision evidence URL must use HTTPS";
-    }
-  } catch {
-    return "latest rights decision evidence URL is invalid";
-  }
-  return null;
-}
-
-export function validateCommercialPublicationDecision(issue, latestComment) {
+export function validateDemoDeploymentAuthorization({ authorization, commercialPublicationAllowed } = {}) {
   const errors = [];
-  if (issue?.number !== 72) errors.push("commercial rights gate is not Issue 72");
-  if (issue?.state !== "closed") errors.push("commercial rights issue is not closed");
-  if (!Number.isSafeInteger(latestComment?.id) || latestComment.id <= 0) errors.push("latest rights comment identity is invalid");
-  if (latestComment?.user?.login !== COINBLINK_OWNER_LOGIN) errors.push("latest rights decision is not by the authorized Owner");
-
-  const body = typeof latestComment?.body === "string" ? latestComment.body : "";
-  const lines = body.split(/\r?\n/);
-  for (const marker of Object.values(commercialPublicationMarkers)) {
-    const markerError = validateDecisionMarker(lines, marker);
-    if (markerError) errors.push(markerError);
-  }
-  const evidenceError = validateRightsEvidence(lines);
-  if (evidenceError) errors.push(evidenceError);
-
+  if (authorization !== "AUTHORIZED_DEMO_ONLY") errors.push("public demo deployment is not explicitly Owner-authorized");
+  if (commercialPublicationAllowed !== "false") errors.push("commercial publication must remain disabled for this workflow");
   return errors;
 }
 

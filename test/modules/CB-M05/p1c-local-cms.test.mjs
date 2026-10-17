@@ -9,7 +9,7 @@ import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
-import { startLocalCmsPreview } from './p1c-local-preview.mjs';
+import { splitLocalSchemaStatements, startLocalCmsPreview } from './p1c-local-preview.mjs';
 import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 
@@ -22,6 +22,44 @@ const sampleDraft = Object.freeze({
   body: 'Synthetic editorial content never published by CoinBlink.',
   sourceUrl: 'https://example.test/evidence',
   authorLabel: 'Synthetic byline',
+});
+
+test('M05 LOCAL CMS schema splitter preserves trigger bodies under adversarial whitespace', () => {
+  const statements = splitLocalSchemaStatements(schema);
+  assert.ok(statements.length >= 8, 'all local schema statements must be applied');
+  const triggers = statements.filter(statement => /^CREATE TRIGGER\b/iu.test(statement));
+  assert.equal(triggers.length, 2);
+  assert.ok(triggers.every(statement => statement.includes('BEGIN') && statement.includes('END')));
+
+  const adversarialSchema = [
+    'CREATE TABLE first_table(id INTEGER PRIMARY KEY);',
+    ' '.repeat(256_000) + 'CREATE TRIGGER synthetic_guard BEFORE UPDATE ON first_table BEGIN SELECT RAISE(ABORT, \'immutable\'); SELECT 1; END;',
+    'CREATE TABLE last_table(id INTEGER PRIMARY KEY);',
+  ].join('\n');
+  const adversarialStatements = splitLocalSchemaStatements(adversarialSchema);
+  assert.equal(adversarialStatements.length, 3);
+  assert.match(adversarialStatements[1], /BEGIN[\s\S]*SELECT 1; END$/u);
+});
+
+test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupported replace syntax', async () => {
+  const ctx = await setup();
+  try {
+    const before = await ctx.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
+    ).all();
+    assert.deepEqual(before.results.map(row => row.name), ['cms_revision_no_delete', 'cms_revision_no_update']);
+    await assert.rejects(
+      ctx.db.prepare(`CREATE OR REPLACE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
+        BEGIN SELECT RAISE(ABORT, 'local CMS revisions are immutable'); END`).run(),
+      /syntax error|near "OR"/iu,
+    );
+    const after = await ctx.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
+    ).all();
+    assert.deepEqual(after.results.map(row => row.name), ['cms_revision_no_delete', 'cms_revision_no_update']);
+  } finally {
+    await ctx.mf.dispose();
+  }
 });
 function key() { return randomBytes(32).toString('hex'); }
 function seedIdempotency() { return randomBytes(24).toString('base64url'); }
@@ -53,8 +91,7 @@ async function setup() {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
     // D1Database.exec() interprets comment-only and multiline SQL as separate lines.
     // Prepare each complete allowlisted migration statement instead of using exec().
-    const statements = schema.replace(/\r/g, '').replace(/^\s*--.*$/gm, '')
-      .split(/;\s*(?=(?:CREATE|PRAGMA)\b|$)/iu).map(s => s.trim()).filter(Boolean);
+    const statements = splitLocalSchemaStatements(schema);
     assert.ok(statements.length >= 8, 'all local schema statements must be applied');
     for (const statement of statements) await db.prepare(statement).run();
     const primary = makeSyntheticAuthenticator('primary');

@@ -26,7 +26,7 @@ const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
 // The checked-in SQLite fixture has two BEGIN/END triggers. Split only
 // at statement boundaries, not at the semicolons inside trigger bodies.
 // A deterministic pass avoids a backtracking-prone lookahead over whitespace.
-function splitLocalSchemaStatements(schema) {
+export function splitLocalSchemaStatements(schema) {
   const withoutComments = schema.replaceAll('\r', '').split('\n')
     .filter(line => !line.trimStart().startsWith('--')).join('\n');
   const chunks = withoutComments.split(';');
@@ -52,17 +52,21 @@ async function applySchema(db, persistent) {
     // owned only by this preview harness to version its persistent schema.
     const version = await db.prepare('SELECT schema_version FROM cms_local_preview_metadata WHERE id=1').first();
     assert.equal(version?.schema_version, 1, 'existing persistent local schema is unsupported; refusing to modify it');
-    for (const table of ['cms_owner','cms_credentials','cms_challenges','cms_sessions','cms_drafts','cms_draft_revisions']) {
-      const present = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").bind(table).first();
-      assert.equal(present?.name, table, 'local database has missing table ' + table);
-    }
+    const requiredTables = ['cms_owner','cms_credentials','cms_challenges','cms_sessions','cms_drafts','cms_draft_revisions'];
+    const presentTables = await Promise.all(requiredTables.map(table =>
+      db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").bind(table).first()
+    ));
+    presentTables.forEach((present, index) => {
+      assert.equal(present?.name, requiredTables[index], 'local database has missing table ' + requiredTables[index]);
+    });
     return false;
   }
   assert.equal(existing, null, 'database must start empty unless explicit persistent preview');
   const schema = readFileSync(SCHEMA_URL, 'utf8');
   const statements = splitLocalSchemaStatements(schema);
   assert.ok(statements.length >= 8);
-  for (const statement of statements) await db.prepare(statement).run();
+  // D1 batch retains SQL statement order and applies this dependent DDL as one unit.
+  await db.batch(statements.map(statement => db.prepare(statement)));
   if (persistent) {
     await db.prepare(`CREATE TABLE cms_local_preview_metadata (
       id INTEGER PRIMARY KEY CHECK(id=1),
@@ -89,7 +93,7 @@ async function registerDisposableCredentials(db, persistent) {
   } else {
     await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,?)').bind(seconds).run();
   }
-  for (const [credential, kind] of [[primary, 'primary'], [recovery, 'recovery']]) {
+  const registrations = await Promise.all([[primary, 'primary'], [recovery, 'recovery']].map(async ([credential, kind]) => {
     const challenge = 'LOCAL-PREVIEW-REG-' + randomUUID();
     const result = await verifyRegistrationResponse({
       response: makeRegistrationResponse(credential, { challenge }),
@@ -100,10 +104,11 @@ async function registerDisposableCredentials(db, persistent) {
       requireUserVerification: true,
     });
     assert.equal(result.verified, true);
-    await db.prepare(
+    return { credentialId: credential.id, publicKey: result.registrationInfo.credential.publicKey, kind };
+  }));
+  await db.batch(registrations.map(({ credentialId, publicKey, kind }) => db.prepare(
       'INSERT INTO cms_credentials (credential_id,owner_id,public_key,sign_count,device_kind) VALUES (?,1,?,0,?)'
-    ).bind(credential.id, result.registrationInfo.credential.publicKey, kind).run();
-  }
+    ).bind(credentialId, publicKey, kind)));
   return { primary, recovery };
 }
 
@@ -248,8 +253,10 @@ async function main() {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) &&
     (process.argv.includes('--preview') || process.argv.includes('--smoke'))) {
-  main().catch(error => {
+  try {
+    await main();
+  } catch (error) {
     process.stderr.write('LOCAL CMS preview rejected: ' + (error?.message || 'unknown error') + '\n');
     process.exitCode = 1;
-  });
+  }
 }

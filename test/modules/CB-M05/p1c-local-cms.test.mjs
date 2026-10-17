@@ -413,6 +413,16 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     for (const [field, value] of Object.entries(sampleDraft)) formFields[field].value = value;
     await element('draft').handlers.submit({ preventDefault() {} });
     assert.equal(element('items').children.length, 1);
+    assert.equal(element('draft-search').hidden, false, 'search is available after local login');
+    element('draft-search').value = 'NOT IN ANY TITLE';
+    element('draft-search').handlers.input();
+    assert.equal(element('items').children.length, 0, 'no matching draft remains visible');
+    element('draft-search').value = 'LOCAL cms';
+    element('draft-search').handlers.input();
+    assert.equal(element('items').children.length, 1, 'search is case-insensitive');
+    element('draft-search').value = '';
+    element('draft-search').handlers.input();
+    assert.equal(element('items').children.length, 1, 'clearing filter restores original list');
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     const button = element('items').children[0].children[0];
     await button.handlers.click();
@@ -434,6 +444,8 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     await element('logout').handlers.click();
     assert.equal(element('draft').hidden, true);
     assert.equal(element('items').children.length, 0);
+    assert.equal(element('draft-search').hidden, true, 'draft title filter not available after logout');
+    assert.equal(element('draft-search').value, '', 'search term cleared after logout');
     assert.equal(element('session-status').textContent, 'Not authenticated');
     assert.deepEqual(Object.values(formFields).map(field => field.value), ['', '', '', '', ''],
       'successful logout purges local draft text from hidden DOM, not only hides the form');

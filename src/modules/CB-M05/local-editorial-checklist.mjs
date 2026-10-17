@@ -48,6 +48,10 @@ function stripValidNotes(text, heading, pattern, isSource) {
 
 function editorialProse(body) {
   if (typeof body !== "string" || body.length > 12000) return "";
+  // Partial or forged editorial headings must not count toward article length.
+  const withoutValidHeadings = body.replaceAll(SOURCE_HEADING, "").replaceAll(CLAIM_HEADING, "");
+  if (withoutValidHeadings.includes("### CoinBlink source notes")
+      || withoutValidHeadings.includes("### CoinBlink claim review queue")) return "";
   const beforeSources = stripValidNotes(body, SOURCE_HEADING, SOURCE_ROW, true);
   if (beforeSources === null) return "";
   const article = stripValidNotes(beforeSources, CLAIM_HEADING, CLAIM_ROW, false);

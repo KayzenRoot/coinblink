@@ -1,0 +1,122 @@
+{
+  "collectedAtUtc": "2026-10-17T12:06:05.9972568Z",
+  "repository": "KayzenRoot/coinblink",
+  "main": {
+    "sha": "824b3dc46825e3fa053c715b1765b70042c7981b",
+    "treeSha": "9a75e41f00410772f2d345ad4eb7e9eacda178b2",
+    "checks": [
+      {
+        "name": "SonarCloud Code Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:28:32Z",
+        "completedAt": "2026-10-17T11:29:22Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/runs/117385200934"
+      },
+      {
+        "name": "Socket Security: Project Report",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:28:23Z",
+        "completedAt": "2026-10-17T11:28:25Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/runs/117385023786"
+      },
+      {
+        "name": "M00 and GEF (windows-2022)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:28:26Z",
+        "completedAt": "2026-10-17T11:32:23Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/39028821243/job/117385021857"
+      },
+      {
+        "name": "M00 and GEF (ubuntu-24.04)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:28:25Z",
+        "completedAt": "2026-10-17T11:31:16Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/39028821243/job/117385021777"
+      },
+      {
+        "name": "Docker Compose smoke (Ubuntu)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:28:25Z",
+        "completedAt": "2026-10-17T11:29:17Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/39028821243/job/117385021768"
+      }
+    ],
+    "statuses": []
+  },
+  "mergedSourcePr": {
+    "number": 100,
+    "state": "closed",
+    "mergedAt": "2026-10-17T11:28:19Z",
+    "mergedBy": "KayzenRoot",
+    "baseRef": "main",
+    "baseRepository": "KayzenRoot/coinblink",
+    "headSha": "366bcee4627ae73c7134833d68200ea51e834eb3",
+    "headRepository": "KayzenRoot/coinblink",
+    "mergeCommitSha": "824b3dc46825e3fa053c715b1765b70042c7981b",
+    "headTreeSha": "9a75e41f00410772f2d345ad4eb7e9eacda178b2",
+    "checkRuns": [
+      {
+        "name": "SonarCloud Code Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:20:38Z",
+        "completedAt": "2026-10-17T11:20:59Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/runs/117383706541"
+      },
+      {
+        "name": "Socket Security: Pull Request Alerts",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:20:37Z",
+        "completedAt": "2026-10-17T11:20:39Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/runs/117383643739"
+      },
+      {
+        "name": "Socket Security: Project Report",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:20:35Z",
+        "completedAt": "2026-10-17T11:20:37Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/runs/117383635112"
+      },
+      {
+        "name": "M00 and GEF (windows-2022)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:20:35Z",
+        "completedAt": "2026-10-17T11:24:19Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/39028326580/job/117383623973"
+      },
+      {
+        "name": "M00 and GEF (ubuntu-24.04)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:20:34Z",
+        "completedAt": "2026-10-17T11:23:17Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/39028326580/job/117383623918"
+      },
+      {
+        "name": "Docker Compose smoke (Ubuntu)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-17T11:20:35Z",
+        "completedAt": "2026-10-17T11:21:30Z",
+        "htmlUrl": "https://github.com/KayzenRoot/coinblink/actions/runs/39028326580/job/117383623869"
+      }
+    ],
+    "statuses": [
+      {
+        "context": "CodeRabbit",
+        "state": "success",
+        "createdAt": "2026-10-17T11:28:10Z",
+        "updatedAt": "2026-10-17T11:28:10Z",
+        "targetUrl": null
+      }
+    ]
+  }
+}

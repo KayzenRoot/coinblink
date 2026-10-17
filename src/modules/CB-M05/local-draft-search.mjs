@@ -4,6 +4,69 @@ export const MAX_SEARCH_LENGTH = 100;
 export const MAX_REPLACEMENT_LENGTH = 200;
 export const MAX_DRAFT_LENGTH = 12000;
 const ESCAPABLE = /[.*+?^$(){}|[\]\\]/gu;
+
+// Protect author-controlled source footnotes and claim-review queue from
+// ordinary prose find/replace. Standalone browser asset: no relative imports.
+const SOURCE_HEADING = "### CoinBlink source notes (unverified)";
+const CLAIM_HEADING = "### CoinBlink claim review queue (local only)";
+const SOURCE_MARKER = "\n\n" + SOURCE_HEADING + "\n";
+const CLAIM_MARKER = "\n\n" + CLAIM_HEADING + "\n";
+const SOURCE_LINE = /^\[\^cb([1-9]|1[0-2])\]: (.+) \| (https:\/\/\S+)$/u;
+const CLAIM_LINE = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
+
+function readLines(section, marker, limit) {
+  const tail = section.slice(marker.length);
+  const lines = tail.endsWith("\n") ? tail.slice(0, -1).split("\n") : tail.split("\n");
+  if (!tail || lines.length < 1 || lines.length > limit) {
+    throw new RangeError("Malformed local editorial notes");
+  }
+  return lines;
+}
+
+function editableProse(body) {
+  const sourceAt = body.lastIndexOf(SOURCE_MARKER);
+  const withClaims = sourceAt < 0 ? body : body.slice(0, sourceAt);
+  if ((sourceAt < 0 && body.includes(SOURCE_HEADING))
+      || (sourceAt >= 0 && withClaims.includes(SOURCE_HEADING))) {
+    throw new RangeError("Malformed or duplicate source notes");
+  }
+  if (sourceAt >= 0) {
+    const sourceIds = new Set();
+    for (const line of readLines(body.slice(sourceAt), SOURCE_MARKER, 12)) {
+      const matched = SOURCE_LINE.exec(line);
+      if (!matched || sourceIds.has(matched[1]) || matched[2].length > 90
+          || /[\[\]\\|<>\r\t]/u.test(matched[2])) {
+        throw new RangeError("Invalid source-note line");
+      }
+      const rawUrl = matched[3];
+      let url;
+      try { url = new URL(rawUrl); } catch { throw new RangeError("Invalid source-note URL"); }
+      if (url.protocol !== "https:" || !url.hostname.includes(".") || url.username || url.password
+          || url.href !== rawUrl || rawUrl.length > 500) {
+        throw new RangeError("Noncanonical source-note URL");
+      }
+      sourceIds.add(matched[1]);
+    }
+  }
+  const claimAt = withClaims.lastIndexOf(CLAIM_MARKER);
+  const prose = claimAt < 0 ? withClaims : withClaims.slice(0, claimAt);
+  if ((claimAt < 0 && withClaims.includes(CLAIM_HEADING))
+      || (claimAt >= 0 && prose.includes(CLAIM_HEADING))) {
+    throw new RangeError("Malformed or duplicate claim-review queue");
+  }
+  if (claimAt >= 0) {
+    const claimIds = new Set();
+    for (const line of readLines(withClaims.slice(claimAt), CLAIM_MARKER, 12)) {
+      const matched = CLAIM_LINE.exec(line);
+      if (!matched || claimIds.has(matched[1]) || /[|<>\r\n]/u.test(matched[4])) {
+        throw new RangeError("Invalid or duplicate claim-review item");
+      }
+      claimIds.add(matched[1]);
+    }
+  }
+  return Object.freeze({ prose, notes: body.slice(prose.length) });
+}
+
 function matchPattern(query, caseSensitive) {
   if (typeof query !== "string" || query.length < 1 || query.length > MAX_SEARCH_LENGTH) return null;
   return new RegExp(query.replace(ESCAPABLE, "\\$&"), caseSensitive ? "gu" : "giu");
@@ -20,7 +83,10 @@ export function findInLocalDraft(body, query, options = {}) {
   if (typeof body !== "string" || body.length > MAX_DRAFT_LENGTH || !pattern) {
     return Object.freeze({ count: 0, spans: Object.freeze(spans) });
   }
-  for (const match of body.matchAll(pattern)) {
+  let prose;
+  try { prose = editableProse(body).prose; }
+  catch { return Object.freeze({ count: 0, spans: Object.freeze(spans) }); }
+  for (const match of prose.matchAll(pattern)) {
     spans.push(Object.freeze({ start: match.index, end: match.index + match[0].length }));
   }
   return Object.freeze({ count: spans.length, spans: Object.freeze(spans) });
@@ -39,11 +105,12 @@ export function replaceAllInLocalDraft(body, query, replacement, options = {}) {
   }
   const pattern = matchPattern(query, options.caseSensitive);
   if (!pattern) throw new RangeError("Search must contain 1 to 100 characters");
+  const { prose, notes } = editableProse(body);
   let replacements = 0;
-  const value = body.replace(pattern, () => {
+  const value = prose.replace(pattern, () => {
     replacements += 1;
     return replacement;
-  });
+  }) + notes;
   if (value.length > MAX_DRAFT_LENGTH) {
     throw new RangeError("Result would exceed the 12,000-character draft limit");
   }
@@ -98,6 +165,10 @@ if (typeof document !== "undefined") {
       const match = scan().spans.find((span) => span.start === start && span.end === end);
       if (!match) {
         report("Find and select an exact match before replacing it.");
+        return;
+      }
+      if (replaceInput.value.length > MAX_REPLACEMENT_LENGTH) {
+        report("Replacement must contain at most 200 characters.");
         return;
       }
       const updated = body.value.slice(0, start) + replaceInput.value + body.value.slice(end);

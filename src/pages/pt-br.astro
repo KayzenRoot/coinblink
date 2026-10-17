@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import GoldenHome from "../modules/CB-M01/GoldenHome.astro";
+export const prerender = false;
+---
+<BaseLayout
+  lang="pt-BR"
+  title="CoinBlink | Notícias de criptomoedas em um instante"
+  description="Demonstração do CoinBlink em português brasileiro. Sem notícias ou preços financeiros ao vivo."
+>
+  <GoldenHome locale="pt-br" />
+</BaseLayout>

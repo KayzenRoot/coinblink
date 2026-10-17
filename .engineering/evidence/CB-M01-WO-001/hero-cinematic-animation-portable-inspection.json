@@ -1,0 +1,105 @@
+{
+  "status": "passed",
+  "workOrder": "CB-M01-WO-001",
+  "projectFileName": "hero-cinematic-animation-portable.blend",
+  "frameRange": [
+    1,
+    96
+  ],
+  "fps": 24,
+  "resolution": [
+    1600,
+    800
+  ],
+  "relativeOutputPath": "//hero-cinematic-animation-portable-",
+  "imageCount": 10,
+  "externalImageCount": 8,
+  "allExternalImagesPacked": true,
+  "allExternalReferencesRelative": true,
+  "linkedLibraries": 0,
+  "images": [
+    {
+      "name": "hero-cinematic-original.png",
+      "source": "FILE",
+      "relativePath": "//..\\..\\..\\src\\modules\\CB-M01\\hero-cinematic-original.png",
+      "packed": true,
+      "packedBytes": 2349624
+    },
+    {
+      "name": "lightning-01-charge.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-01-charge.png",
+      "packed": true,
+      "packedBytes": 164751
+    },
+    {
+      "name": "lightning-02-descent.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-02-descent.png",
+      "packed": true,
+      "packedBytes": 288639
+    },
+    {
+      "name": "lightning-03-impact.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-03-impact.png",
+      "packed": true,
+      "packedBytes": 502026
+    },
+    {
+      "name": "lightning-04-afterglow.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-04-afterglow.png",
+      "packed": true,
+      "packedBytes": 424970
+    },
+    {
+      "name": "lightning-05-secondary-right.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-05-secondary-right.png",
+      "packed": true,
+      "packedBytes": 416443
+    },
+    {
+      "name": "lightning-06-secondary-left.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-06-secondary-left.png",
+      "packed": true,
+      "packedBytes": 258384
+    },
+    {
+      "name": "lightning-07-ground-fade.png",
+      "source": "FILE",
+      "relativePath": "//lightning-sprites-v2\\lightning-07-ground-fade.png",
+      "packed": true,
+      "packedBytes": 187482
+    },
+    {
+      "name": "Render Result",
+      "source": "VIEWER",
+      "relativePath": "",
+      "packed": false,
+      "packedBytes": 0
+    },
+    {
+      "name": "Viewer Node",
+      "source": "VIEWER",
+      "relativePath": "",
+      "packed": false,
+      "packedBytes": 0
+    }
+  ],
+  "rights": {
+    "previewOnly": true,
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false
+  },
+  "absoluteReferences": false,
+  "pathAudit": {
+    "method": "Inspect every FILE image relativePath in this report for drive-letter, UNC and non-Blender absolute paths",
+    "absoluteReferences": false,
+    "checkedFileReferences": 8,
+    "blenderExecutableReopenedInThisRun": false,
+    "limitation": "The installed Blender executable is unavailable in this environment; the committed portable inspection report was checked and the .blend binary SHA-256 was verified."
+  }
+}

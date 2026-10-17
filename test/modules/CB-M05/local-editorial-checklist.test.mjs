@@ -31,7 +31,7 @@ test("draft completeness checks are distinct from human review assertions", () =
   ]);
   assert.equal(result.status, "LOCAL_PREPARATION_ONLY_NOT_VERIFIED_OR_APPROVED");
   const full = evaluateLocalEditorialChecklist(draft, {
-    factReview: true, rightsReview: true, ownerPacket: true,
+    factReview: true, sourceAttribution: true, ownerPacket: true,
   });
   assert.equal(full.completed, 7);
   assert.match(full.status, /NOT_VERIFIED_OR_APPROVED/u);
@@ -48,10 +48,12 @@ test("HTTPS syntax is necessary but never proof of source truth or existence", (
 
 test("only exact boolean true counts as a completed manual task", () => {
   const result = evaluateLocalEditorialChecklist(draft, {
-    factReview: "true", rightsReview: 1, ownerPacket: true,
+    factReview: "true", sourceAttribution: 1, ownerPacket: true,
   });
   assert.equal(result.completed, 5);
   assert.equal(result.items.filter((item) => item.id === "factReview")[0].done, false);
+  assert.equal(result.items.find((item) => item.id === "sourceAttribution").done, false,
+    "a non-boolean value cannot silently approve source attribution");
 });
 
 test("component is separate from the existing editor and uses a same-origin CSP-safe module", () => {
@@ -61,7 +63,7 @@ test("component is separate from the existing editor and uses a same-origin CSP-
   const panelStart = component.indexOf('data-m05-editorial-checklist');
   const editorEnd = component.indexOf('</section>', component.indexOf('m05-draft-notice'));
   assert.ok(formStart > -1 && editorEnd > formStart && panelStart > editorEnd);
-  for (const item of ["fact-review", "rights-review", "owner-packet", "score", "findings", "note"]) {
+  for (const item of ["fact-review", "source-attribution", "owner-packet", "score", "findings", "note"]) {
     assert.match(component, new RegExp("data-m05-editorial-" + item, "u"));
   }
   assert.match(component, /src=\{editorialScriptUrl\}/u);

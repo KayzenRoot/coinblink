@@ -1,0 +1,1215 @@
+
+> coinblink@0.1.0 test
+> npm run test:unit && npm run build && npm run test:e2e
+
+
+> coinblink@0.1.0 test:unit
+> node --test
+
+TAP version 13
+# Subtest: rejects missing Owner authorization, Workers Free plan, IAM, isolation, and credentials
+ok 1 - rejects missing Owner authorization, Workers Free plan, IAM, isolation, and credentials
+  ---
+  duration_ms: 12.3217
+  type: 'test'
+  ...
+# Subtest: accepts exact Owner-attested Workers Free plan and protected authorization
+ok 2 - accepts exact Owner-attested Workers Free plan and protected authorization
+  ---
+  duration_ms: 15.9109
+  type: 'test'
+  ...
+# Subtest: accepts Free-only Owner approval without account-wide zero-cap attestations
+ok 3 - accepts Free-only Owner approval without account-wide zero-cap attestations
+  ---
+  duration_ms: 1.0943
+  type: 'test'
+  ...
+# Subtest: fails closed if any one external authorization fact changes
+ok 4 - fails closed if any one external authorization fact changes
+  ---
+  duration_ms: 2.1319
+  type: 'test'
+  ...
+# Subtest: delete requires a managed Preview name, never an arbitrary Worker name
+ok 5 - delete requires a managed Preview name, never an arbitrary Worker name
+  ---
+  duration_ms: 3.6604
+  type: 'test'
+  ...
+# Subtest: Preview names are run-derived and reject malformed or zero run identifiers
+ok 6 - Preview names are run-derived and reject malformed or zero run identifiers
+  ---
+  duration_ms: 4.2042
+  type: 'test'
+  ...
+# Subtest: canonical-main identity requires the exact current repository SHA
+ok 7 - canonical-main identity requires the exact current repository SHA
+  ---
+  duration_ms: 1.2435
+  type: 'test'
+  ...
+# Subtest: preview main guard logs a fixed message for malformed multiline identity input
+ok 8 - preview main guard logs a fixed message for malformed multiline identity input
+  ---
+  duration_ms: 1362.5322
+  type: 'test'
+  ...
+# Subtest: preview main guard uses a read-only GitHub token without logging credentials or API response data
+ok 9 - preview main guard uses a read-only GitHub token without logging credentials or API response data
+  ---
+  duration_ms: 529.0428
+  type: 'test'
+  ...
+# Subtest: current-main guard checks GitHub's branch tip and fails closed on unavailable or invalid data
+ok 10 - current-main guard checks GitHub's branch tip and fails closed on unavailable or invalid data
+  ---
+  duration_ms: 10.8868
+  type: 'test'
+  ...
+# Subtest: preview main guard reports only a safe HTTP status when GitHub lookup fails
+ok 11 - preview main guard reports only a safe HTTP status when GitHub lookup fails
+  ---
+  duration_ms: 5.0747
+  type: 'test'
+  ...
+# Subtest: source Wrangler config declares isolated empty Previews and only static assets
+ok 12 - source Wrangler config declares isolated empty Previews and only static assets
+  ---
+  duration_ms: 22.346
+  type: 'test'
+  ...
+# Subtest: rejects any top-level production data/resource binding
+ok 13 - rejects any top-level production data/resource binding
+  ---
+  duration_ms: 23.2623
+  type: 'test'
+  ...
+# Subtest: rejects preview bindings, vars, and any non-empty dashboard-derived preview configuration
+ok 14 - rejects preview bindings, vars, and any non-empty dashboard-derived preview configuration
+  ---
+  duration_ms: 12.7506
+  type: 'test'
+  ...
+# Subtest: static and Worker responses carry noindex controls without treating them as access control
+ok 15 - static and Worker responses carry noindex controls without treating them as access control
+  ---
+  duration_ms: 4.2465
+  type: 'test'
+  ...
+# Subtest: accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resources
+ok 16 - accepts Wrangler 4.149.0 CLI JSON with nested Preview and deployment resources
+  ---
+  duration_ms: 16.8251
+  type: 'test'
+  ...
+# Subtest: accepts Wrangler 4.149.0 structured output-file events and exact dedicated Worker identity
+ok 17 - accepts Wrangler 4.149.0 structured output-file events and exact dedicated Worker identity
+  ---
+  duration_ms: 3.53
+  type: 'test'
+  ...
+# Subtest: accepts the immutable Preview URL's eight-character prefix for a UUID deployment ID
+ok 18 - accepts the immutable Preview URL's eight-character prefix for a UUID deployment ID
+  ---
+  duration_ms: 2.8817
+  type: 'test'
+  ...
+# Subtest: rejects an immutable Preview URL whose short deployment prefix differs from its UUID
+ok 19 - rejects an immutable Preview URL whose short deployment prefix differs from its UUID
+  ---
+  duration_ms: 3.2151
+  type: 'test'
+  ...
+# Subtest: structured output events reject wrong Worker, Preview name, and URL identities
+ok 20 - structured output events reject wrong Worker, Preview name, and URL identities
+  ---
+  duration_ms: 4.4161
+  type: 'test'
+  ...
+# Subtest: structured output event stream rejects missing, duplicate, malformed, and unrelated records
+ok 21 - structured output event stream rejects missing, duplicate, malformed, and unrelated records
+  ---
+  duration_ms: 4.2158
+  type: 'test'
+  ...
+# Subtest: rejects output targeting a different Worker or Preview name
+ok 22 - rejects output targeting a different Worker or Preview name
+  ---
+  duration_ms: 2.7888
+  type: 'test'
+  ...
+# Subtest: rejects duplicate, unsafe, or identity-mismatched Preview URLs
+ok 23 - rejects duplicate, unsafe, or identity-mismatched Preview URLs
+  ---
+  duration_ms: 3.4178
+  type: 'test'
+  ...
+# Subtest: rejects the unrelated flattened output-file event format
+ok 24 - rejects the unrelated flattened output-file event format
+  ---
+  duration_ms: 2.6126
+  type: 'test'
+  ...
+# Subtest: accepts the Wrangler CLI progress line with exact Preview and Worker identities
+ok 25 - accepts the Wrangler CLI progress line with exact Preview and Worker identities
+  ---
+  duration_ms: 25.9601
+  type: 'test'
+  ...
+# Subtest: accepts quoted Wrangler progress identifiers and terminal color codes
+ok 26 - accepts quoted Wrangler progress identifiers and terminal color codes
+  ---
+  duration_ms: 1.805
+  type: 'test'
+  ...
+# Subtest: rejects unrecognized text around Wrangler Preview JSON
+ok 27 - rejects unrecognized text around Wrangler Preview JSON
+  ---
+  duration_ms: 8.5639
+  type: 'test'
+  ...
+# Subtest: redacts token-like values from rejected Wrangler progress diagnostics
+ok 28 - redacts token-like values from rejected Wrangler progress diagnostics
+  ---
+  duration_ms: 4.2287
+  type: 'test'
+  ...
+# Subtest: redacts an unterminated quoted tail in rejected Wrangler output
+ok 29 - redacts an unterminated quoted tail in rejected Wrangler output
+  ---
+  duration_ms: 1.5887
+  type: 'test'
+  ...
+# Subtest: rejects unrelated Wrangler progress lines before valid Preview JSON
+ok 30 - rejects unrelated Wrangler progress lines before valid Preview JSON
+  ---
+  duration_ms: 2.1079
+  type: 'test'
+  ...
+# Subtest: accepts only HTTPS workers.dev origins for smoke targets
+ok 31 - accepts only HTTPS workers.dev origins for smoke targets
+  ---
+  duration_ms: 6.0539
+  type: 'test'
+  ...
+# Subtest: checks exact SHA, preview environment, noindex, robots, and 404 on both real URL slots
+ok 32 - checks exact SHA, preview environment, noindex, robots, and 404 on both real URL slots
+  ---
+  duration_ms: 348.7351
+  type: 'test'
+  ...
+# Subtest: rejects robots directives that block crawlers from reading noindex signals
+ok 33 - rejects robots directives that block crawlers from reading noindex signals
+  ---
+  duration_ms: 137.7916
+  type: 'test'
+  ...
+# Subtest: rejects a stale health SHA and non-404 unknown routes
+ok 34 - rejects a stale health SHA and non-404 unknown routes
+  ---
+  duration_ms: 34.6646
+  type: 'test'
+  ...
+# Subtest: workflow step parser stops at unnamed YAML steps
+ok 35 - workflow step parser stops at unnamed YAML steps
+  ---
+  duration_ms: 28.5012
+  type: 'test'
+  ...
+# Subtest: deployment workflow is manual-only and defaults to a closed action
+ok 36 - deployment workflow is manual-only and defaults to a closed action
+  ---
+  duration_ms: 2.3053
+  type: 'test'
+  ...
+# Subtest: preflight has read-only repository access and receives no Cloudflare credentials
+ok 37 - preflight has read-only repository access and receives no Cloudflare credentials
+  ---
+  duration_ms: 4.2678
+  type: 'test'
+  ...
+# Subtest: Cloudflare commands sit behind Owner/environment gates and use separate command option sets
+ok 38 - Cloudflare commands sit behind Owner/environment gates and use separate command option sets
+  ---
+  duration_ms: 15.6358
+  type: 'test'
+  ...
+# Subtest: pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete flags without provider calls
+not ok 39 - pinned Wrangler 4.149.0 help confirms isolated Preview and safe delete flags without provider calls
+  ---
+  duration_ms: 15904.2897
+  type: 'test'
+  location: 'C:\\Users\\csn19\\.codex\\worktrees\\coinblink-m01-hero-58-local\\test\\cloudflare-preview-workflow.test.mjs:91:1'
+  failureType: 'testCodeFailure'
+  error: 'spawnSync C:\\Users\\csn19\\AppData\\Local\\Temp\\coinblink-r26-node22\\node-v22.23.3-win-x64\\node.exe ETIMEDOUT'
+  code: 'ETIMEDOUT'
+  stack: |-
+    Object.spawnSync (node:internal/child_process:1120:20)
+    spawnSync (node:child_process:902:24)
+    execFileSync (node:child_process:945:15)
+    wranglerHelp (file:///<WORKTREE>/test/cloudflare-preview-workflow.test.mjs:54:10)
+    TestContext.<anonymous> (file:///<WORKTREE>/test/cloudflare-preview-workflow.test.mjs:96:23)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: rollback documentation uses only supported Wrangler Preview delete options
+ok 40 - rollback documentation uses only supported Wrangler Preview delete options
+  ---
+  duration_ms: 16.175
+  type: 'test'
+  ...
+# Subtest: exact-main rechecks run immediately before provider steps without Cloudflare credentials
+ok 41 - exact-main rechecks run immediately before provider steps without Cloudflare credentials
+  ---
+  duration_ms: 13.375
+  type: 'test'
+  ...
+# Subtest: workflow compiles the exact SHA and verifies both actual URL slots after deployment
+ok 42 - workflow compiles the exact SHA and verifies both actual URL slots after deployment
+  ---
+  duration_ms: 27.3783
+  type: 'test'
+  ...
+# Subtest: CI checks out the event's exact commit and verifies HEAD
+ok 43 - CI checks out the event's exact commit and verifies HEAD
+  ---
+  duration_ms: 8.0227
+  type: 'test'
+  ...
+# Subtest: CI checkout does not persist credentials while pull request code runs
+ok 44 - CI checkout does not persist credentials while pull request code runs
+  ---
+  duration_ms: 70.6925
+  type: 'test'
+  ...
+# Subtest: the workflow contract test locates steps in a CRLF checkout
+ok 45 - the workflow contract test locates steps in a CRLF checkout
+  ---
+  duration_ms: 2.5964
+  type: 'test'
+  ...
+# Subtest: the exact-head verifier accepts matching HEAD and rejects a mismatch
+ok 46 - the exact-head verifier accepts matching HEAD and rejects a mismatch
+  ---
+  duration_ms: 4784.8703
+  type: 'test'
+  ...
+# Subtest: evergreen governance tests pass after unrelated work and a later checkpoint delta
+ok 47 - evergreen governance tests pass after unrelated work and a later checkpoint delta
+  ---
+  duration_ms: 138337.1079
+  type: 'test'
+  ...
+# Subtest: the pinned GEF CLI exposes its verified version and command surface
+ok 48 - the pinned GEF CLI exposes its verified version and command surface
+  ---
+  duration_ms: 4021.2209
+  type: 'test'
+  ...
+# Subtest: preflight validates the post-merge M00 checkpoint and preserves admission provenance and scope
+ok 49 - preflight validates the post-merge M00 checkpoint and preserves admission provenance and scope
+  ---
+  duration_ms: 12320.6551
+  type: 'test'
+  ...
+# Subtest: governed init apply succeeds in a disposable target and refuses clobber
+ok 50 - governed init apply succeeds in a disposable target and refuses clobber
+  ---
+  duration_ms: 18070.3079
+  type: 'test'
+  ...
+# Subtest: the official GEF tarball and npm SLSA provenance match the pinned source
+ok 51 - the official GEF tarball and npm SLSA provenance match the pinned source
+  ---
+  duration_ms: 29590.2718
+  type: 'test'
+  ...
+# Subtest: global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission
+ok 52 - global staged baseline preserves canonical CB-M01 admission and proposes only scoped CB-M05 admission
+  ---
+  duration_ms: 45.0206
+  type: 'test'
+  ...
+# Subtest: Golden bytes, single Owner and source-backed article still have hard module gates
+ok 53 - Golden bytes, single Owner and source-backed article still have hard module gates
+  ---
+  duration_ms: 4.0252
+  type: 'test'
+  ...
+# Subtest: Golden reference manifest and original JPEG bytes match the approved masters
+ok 54 - Golden reference manifest and original JPEG bytes match the approved masters
+  ---
+  duration_ms: 19.422
+  type: 'test'
+  ...
+# Subtest: frozen PR \#42 verifier ignores inherited Git repository-location overrides
+ok 55 - frozen PR \#42 verifier ignores inherited Git repository-location overrides
+  ---
+  duration_ms: 23073.5436
+  type: 'test'
+  ...
+# Subtest: parallel governance matrix preserves exactly the existing 19 module and issue identities
+ok 56 - parallel governance matrix preserves exactly the existing 19 module and issue identities
+  ---
+  duration_ms: 162.1602
+  type: 'test'
+  ...
+# Subtest: canonical checkpoint can advance while the archived parallel proposal stays non-authoritative
+ok 57 - canonical checkpoint can advance while the archived parallel proposal stays non-authoritative
+  ---
+  duration_ms: 17.7551
+  type: 'test'
+  ...
+# Subtest: module and integration dependency graphs are complete, acyclic, and wave-consistent
+ok 58 - module and integration dependency graphs are complete, acyclic, and wave-consistent
+  ---
+  duration_ms: 47.5568
+  type: 'test'
+  ...
+# Subtest: module-exclusive ownership roots are pairwise disjoint across Windows and Linux path rules
+ok 59 - module-exclusive ownership roots are pairwise disjoint across Windows and Linux path rules
+  ---
+  duration_ms: 1055.657
+  type: 'test'
+  ...
+# Subtest: future Work Order branch and worktree names are unique and refuse pre-existing allocations
+ok 60 - future Work Order branch and worktree names are unique and refuse pre-existing allocations
+  ---
+  duration_ms: 185.4313
+  type: 'test'
+  ...
+# Subtest: WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively
+ok 61 - WO-002 allocation patterns are sequence-based and remote refs collide case-insensitively
+  ---
+  duration_ms: 2.8198
+  type: 'test'
+  ...
+# Subtest: branch collision inspection reads local and all remote refs from the supplied Git worktree
+ok 62 - branch collision inspection reads local and all remote refs from the supplied Git worktree
+  ---
+  duration_ms: 18078.8796
+  type: 'test'
+  ...
+# Subtest: deterministic fakes remain local and test jobs have no provider credentials
+ok 63 - deterministic fakes remain local and test jobs have no provider credentials
+  ---
+  duration_ms: 17.7224
+  type: 'test'
+  ...
+# Subtest: contract register records proposal-only producer seams for all 19 modules without inventing approved schemas
+ok 64 - contract register records proposal-only producer seams for all 19 modules without inventing approved schemas
+  ---
+  duration_ms: 9.0112
+  type: 'test'
+  ...
+# Subtest: Context Lock source fingerprints and external Issue snapshots are complete and traceable
+ok 65 - Context Lock source fingerprints and external Issue snapshots are complete and traceable
+  ---
+  duration_ms: 79114.5992
+  type: 'test'
+  ...
+# Subtest: correction evidence keeps the worktree identity logical and identifies PR \#42
+ok 66 - correction evidence keeps the worktree identity logical and identifies PR \#42
+  ---
+  duration_ms: 3.316
+  type: 'test'
+  ...
+# Subtest: active Work Order ownership accepts only its supplied module paths and approved deletions
+ok 67 - active Work Order ownership accepts only its supplied module paths and approved deletions
+  ---
+  duration_ms: 1.7035
+  type: 'test'
+  ...
+# Subtest: active Work Order ownership rejects outside paths and unexplained deletions
+ok 68 - active Work Order ownership rejects outside paths and unexplained deletions
+  ---
+  duration_ms: 3.3995
+  type: 'test'
+  ...
+# Subtest: exact path-set validator rejects omitted, extra, duplicate, and untracked deletion paths
+ok 69 - exact path-set validator rejects omitted, extra, duplicate, and untracked deletion paths
+  ---
+  duration_ms: 6.7877
+  type: 'test'
+  ...
+# Subtest: NUL-delimited name-status parser models deletions and renames as delete-plus-add
+ok 70 - NUL-delimited name-status parser models deletions and renames as delete-plus-add
+  ---
+  duration_ms: 3.3304
+  type: 'test'
+  ...
+# Subtest: fingerprint consistency rejects staged-index and unstaged working-tree mutations
+ok 71 - fingerprint consistency rejects staged-index and unstaged working-tree mutations
+  ---
+  duration_ms: 1.888
+  type: 'test'
+  ...
+# Subtest: the execution Context Lock binds canonical source bytes at the admitted main SHA
+ok 72 - the execution Context Lock binds canonical source bytes at the admitted main SHA
+  ---
+  duration_ms: 62395.7439
+  type: 'test'
+  ...
+# Subtest: the selected Matt Pocock skills are pinned and discoverable as Codex project skills
+ok 73 - the selected Matt Pocock skills are pinned and discoverable as Codex project skills
+  ---
+  duration_ms: 244.201
+  type: 'test'
+  ...
+# Subtest: pre-admission contract draft never grants application-code authorization
+ok 74 - pre-admission contract draft never grants application-code authorization
+  ---
+  duration_ms: 12.3871
+  type: 'test'
+  ...
+# Subtest: Golden contract references agree with the actual imported original JPEG bytes
+ok 75 - Golden contract references agree with the actual imported original JPEG bytes
+  ---
+  duration_ms: 8.4431
+  type: 'test'
+  ...
+# Subtest: M05 retains sole-Owner security and nonfunctional P0 boundaries
+ok 76 - M05 retains sole-Owner security and nonfunctional P0 boundaries
+  ---
+  duration_ms: 5.8989
+  type: 'test'
+  ...
+# Subtest: historical proposal remains safe after future module admissions
+ok 77 - historical proposal remains safe after future module admissions
+  ---
+  duration_ms: 1.6673
+  type: 'test'
+  ...
+# Subtest: GoldenHome exposes the approved semantic page seam
+ok 78 - GoldenHome exposes the approved semantic page seam
+  ---
+  duration_ms: 27.928
+  type: 'test'
+  ...
+# Subtest: all market and editorial samples remain visibly demonstration-only
+ok 79 - all market and editorial samples remain visibly demonstration-only
+  ---
+  duration_ms: 2.079
+  type: 'test'
+  ...
+# Subtest: the newsletter demo cannot submit an email address
+ok 80 - the newsletter demo cannot submit an email address
+  ---
+  duration_ms: 3.8001
+  type: 'test'
+  ...
+# Subtest: visual request monitoring compares parsed origins rather than URL prefixes
+ok 81 - visual request monitoring compares parsed origins rather than URL prefixes
+  ---
+  duration_ms: 1.5706
+  type: 'test'
+  ...
+# Subtest: the component uses the immutable approved logo and does not flatten the Golden Home
+ok 82 - the component uses the immutable approved logo and does not flatten the Golden Home
+  ---
+  duration_ms: 1.1052
+  type: 'test'
+  ...
+# Subtest: five market badges use local vector identity rather than first letters
+ok 83 - five market badges use local vector identity rather than first letters
+  ---
+  duration_ms: 1.4775
+  type: 'test'
+  ...
+# Subtest: four editorial thumbnails are original, local and clearly DEMO-only
+ok 84 - four editorial thumbnails are original, local and clearly DEMO-only
+  ---
+  duration_ms: 149.3364
+  type: 'test'
+  ...
+# Subtest: R26 selects motion before image discovery only when motion and data settings allow it
+ok 85 - R26 selects motion before image discovery only when motion and data settings allow it
+  ---
+  duration_ms: 19.6853
+  type: 'test'
+  ...
+# Subtest: R15 decorative editorial assets have fail-closed provenance and exact-source SHA-256
+ok 86 - R15 decorative editorial assets have fail-closed provenance and exact-source SHA-256
+  ---
+  duration_ms: 61.9813
+  type: 'test'
+  ...
+# Subtest: hero and promo scene metadata pin exact source fragments and deny commercial publishing
+ok 87 - hero and promo scene metadata pin exact source fragments and deny commercial publishing
+  ---
+  duration_ms: 19.885
+  type: 'test'
+  ...
+# Subtest: R18 promo atmosphere stays decorative, local and subordinate to DEMO copy
+ok 88 - R18 promo atmosphere stays decorative, local and subordinate to DEMO copy
+  ---
+  duration_ms: 5.7819
+  type: 'test'
+  ...
+# Subtest: R19 adds a noninteractive three-quarter perspective without changing the source art
+ok 89 - R19 adds a noninteractive three-quarter perspective without changing the source art
+  ---
+  duration_ms: 3.5335
+  type: 'test'
+  ...
+# Subtest: R20 Bitcoin relief is original inline SVG with bounded local metallic depth
+ok 90 - R20 Bitcoin relief is original inline SVG with bounded local metallic depth
+  ---
+  duration_ms: 1.7459
+  type: 'test'
+  ...
+# Subtest: R21 rockscape has layered source-owned facets and no external texture dependencies
+ok 91 - R21 rockscape has layered source-owned facets and no external texture dependencies
+  ---
+  duration_ms: 1.5649
+  type: 'test'
+  ...
+# Subtest: R22 independently versioned mineral asset is locally hashed and fail-closed
+ok 92 - R22 independently versioned mineral asset is locally hashed and fail-closed
+  ---
+  duration_ms: 67.9703
+  type: 'test'
+  ...
+# Subtest: the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark
+ok 93 - the hero uses a readable Bitcoin symbol rather than a generic T-shaped mark
+  ---
+  duration_ms: 0.9437
+  type: 'test'
+  ...
+# Subtest: original layered rockscape stays decorative, noninteractive and independent of Golden raster
+ok 94 - original layered rockscape stays decorative, noninteractive and independent of Golden raster
+  ---
+  duration_ms: 5.6335
+  type: 'test'
+  ...
+# Subtest: Tools opens the working read-only lookup while Videos remains disconnected
+ok 95 - Tools opens the working read-only lookup while Videos remains disconnected
+  ---
+  duration_ms: 1.002
+  type: 'test'
+  ...
+# Subtest: mobile navigation closes after selecting a link
+ok 96 - mobile navigation closes after selecting a link
+  ---
+  duration_ms: 0.5893
+  type: 'test'
+  ...
+# Subtest: visual evidence records the frozen base separately from the captured HEAD
+ok 97 - visual evidence records the frozen base separately from the captured HEAD
+  ---
+  duration_ms: 1.6337
+  type: 'test'
+  ...
+# Subtest: trending cards keep one tablet row and a horizontally scrollable mobile row
+ok 98 - trending cards keep one tablet row and a horizontally scrollable mobile row
+  ---
+  duration_ms: 1.6253
+  type: 'test'
+  ...
+# Subtest: the visual fixture uses and cleans only a per-run isolated temp directory
+ok 99 - the visual fixture uses and cleans only a per-run isolated temp directory
+  ---
+  duration_ms: 2.3269
+  type: 'test'
+  ...
+# Subtest: real /en route mounts GoldenHome without bypassing the common secure layout
+ok 100 - real /en route mounts GoldenHome without bypassing the common secure layout
+  ---
+  duration_ms: 1.1226
+  type: 'test'
+  ...
+# Subtest: Brazilian Portuguese uses one shared Golden Home and correct document language
+ok 101 - Brazilian Portuguese uses one shared Golden Home and correct document language
+  ---
+  duration_ms: 1.2068
+  type: 'test'
+  ...
+# Subtest: R25 static-master preflight accepts valid PNG and WebP headers from the approved pipeline
+ok 102 - R25 static-master preflight accepts valid PNG and WebP headers from the approved pipeline
+  ---
+  duration_ms: 19.3443
+  type: 'test'
+  ...
+# Subtest: R25 validates the actual ImageGen master and WebP derivative against source bytes
+ok 103 - R25 validates the actual ImageGen master and WebP derivative against source bytes
+  ---
+  duration_ms: 302.5836
+  type: 'test'
+  ...
+# Subtest: R25 static-master validation fails closed on bad origin, source, rights, path, hash, bytes, or dimensions
+ok 104 - R25 static-master validation fails closed on bad origin, source, rights, path, hash, bytes, or dimensions
+  ---
+  duration_ms: 334.711
+  type: 'test'
+  ...
+# Subtest: R25 accepts only the portable Blender motion derivative linked to the valid static master
+ok 105 - R25 accepts only the portable Blender motion derivative linked to the valid static master
+  ---
+  duration_ms: 903.4673
+  type: 'test'
+  ...
+# Subtest: R25 motion validation rejects absolute paths, missing provenance, unlisted outputs, tampering, and approval escalation
+ok 106 - R25 motion validation rejects absolute paths, missing provenance, unlisted outputs, tampering, and approval escalation
+  ---
+  duration_ms: 2835.5535
+  type: 'test'
+  ...
+# Subtest: legacy Blender still exports are never used as the new static master
+ok 107 - legacy Blender still exports are never used as the new static master
+  ---
+  duration_ms: 2.1903
+  type: 'test'
+  ...
+# Subtest: seven generated lightning stills remain inventoried as Blender motion inputs, not browser animation frames
+ok 108 - seven generated lightning stills remain inventoried as Blender motion inputs, not browser animation frames
+  ---
+  duration_ms: 316.2869
+  type: 'test'
+  ...
+# Subtest: normal motion uses the local Blender derivative and reduced motion selects the static master
+ok 109 - normal motion uses the local Blender derivative and reduced motion selects the static master
+  ---
+  duration_ms: 48.3639
+  type: 'test'
+  ...
+# Subtest: Blender provenance derives the motion from the static image pipeline without granting release
+ok 110 - Blender provenance derives the motion from the static image pipeline without granting release
+  ---
+  duration_ms: 36.2264
+  type: 'test'
+  ...
+# Subtest: R26 pins five exact ImageGen masters and optimized static derivatives
+ok 111 - R26 pins five exact ImageGen masters and optimized static derivatives
+  ---
+  duration_ms: 122.7787
+  type: 'test'
+  ...
+# Subtest: R26 preflight rejects approval or publication escalation
+ok 112 - R26 preflight rejects approval or publication escalation
+  ---
+  duration_ms: 106.5059
+  type: 'test'
+  ...
+# Subtest: R26 preflight rejects rights, prompt, or Golden lineage divergence
+ok 113 - R26 preflight rejects rights, prompt, or Golden lineage divergence
+  ---
+  duration_ms: 63.1837
+  type: 'test'
+  ...
+# Subtest: R26 preflight fails closed on unsafe paths and source hash changes
+ok 114 - R26 preflight fails closed on unsafe paths and source hash changes
+  ---
+  duration_ms: 120.9613
+  type: 'test'
+  ...
+# Subtest: R26 preflight rejects derivatives detached from the exact static master
+ok 115 - R26 preflight rejects derivatives detached from the exact static master
+  ---
+  duration_ms: 120.3618
+  type: 'test'
+  ...
+# Subtest: R26 media selection and failure recovery use a local external script under strict CSP
+ok 116 - R26 media selection and failure recovery use a local external script under strict CSP
+  ---
+  duration_ms: 43.5929
+  type: 'test'
+  ...
+# Subtest: test\\modules\\CB-M01\\astro-integration.config.mjs
+ok 20 - test\\modules\\CB-M01\\astro-integration.config.mjs
+  ---
+  duration_ms: 34016.4024
+  type: 'test'
+  ...
+# (node:22836) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///<WORKTREE>/public/explorer-links.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\csn19\\.codex\\worktrees\\coinblink-m01-hero-58-local\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: network-specific explorer links use only three preapproved HTTPS origins
+ok 118 - network-specific explorer links use only three preapproved HTTPS origins
+  ---
+  duration_ms: 17.1736
+  type: 'test'
+  ...
+# Subtest: malformed, injected, unrecognized and oversized inputs generate no URLs
+ok 119 - malformed, injected, unrecognized and oversized inputs generate no URLs
+  ---
+  duration_ms: 8.1068
+  type: 'test'
+  ...
+# Subtest: syntactic lookup never pretends an identifier exists or is confirmed
+ok 120 - syntactic lookup never pretends an identifier exists or is confirmed
+  ---
+  duration_ms: 15.1837
+  type: 'test'
+  ...
+# Subtest: test\\modules\\CB-M01\\git-head.mjs
+ok 22 - test\\modules\\CB-M01\\git-head.mjs
+  ---
+  duration_ms: 917.0261
+  type: 'test'
+  ...
+# Subtest: reads a detached commit directly from a regular clone HEAD
+ok 122 - reads a detached commit directly from a regular clone HEAD
+  ---
+  duration_ms: 372.9303
+  type: 'test'
+  ...
+# Subtest: reads a loose branch ref through a linked-worktree gitdir and commondir
+ok 123 - reads a loose branch ref through a linked-worktree gitdir and commondir
+  ---
+  duration_ms: 859.3139
+  type: 'test'
+  ...
+# Subtest: accepts a case-insensitive gitdir marker with whitespace before its path
+ok 124 - accepts a case-insensitive gitdir marker with whitespace before its path
+  ---
+  duration_ms: 43.1367
+  type: 'test'
+  ...
+# Subtest: rejects a gitdir marker with an extra non-whitespace line
+ok 125 - rejects a gitdir marker with an extra non-whitespace line
+  ---
+  duration_ms: 108.6839
+  type: 'test'
+  ...
+# Subtest: resolves packed refs when no loose branch ref exists
+ok 126 - resolves packed refs when no loose branch ref exists
+  ---
+  duration_ms: 411.1007
+  type: 'test'
+  ...
+# Subtest: rejects malformed or missing Git refs rather than guessing a commit
+ok 127 - rejects malformed or missing Git refs rather than guessing a commit
+  ---
+  duration_ms: 487.5347
+  type: 'test'
+  ...
+# {"reportPath":"C:\\\\Users\\\\csn19\\\\.codex\\\\worktrees\\\\coinblink-m01-hero-58-local\\\\.engineering\\\\evidence\\\\CB-M01-WO-001\\\\r26-integrated-visual-check.json","headSha":"0235517ed43e0794d7e0d9e3fd4bc88ea054cd48","screenshots":[{"file":".engineering/evidence/CB-M01-WO-001/screenshots/r26-home-integrated-desktop-1536x864.png","sha256":"09e1b9dbf582d9ad106ef3828b573109e136785b48b9ae233001395fdbb33dea","bytes":870202},{"file":".engineering/evidence/CB-M01-WO-001/screenshots/r26-home-integrated-tablet-768x1024.png","sha256":"6f5466981aeacc502f1f50b59c215d425bdaa5b079f52e75cc982857d3d4f82f","bytes":535257},{"file":".engineering/evidence/CB-M01-WO-001/screenshots/r26-home-integrated-mobile-390x844.png","sha256":"79c26060e67fbbdd2c6fc3c70603fd9a0641929ab95489d02102cfcefd9b4ddb","bytes":243508}],"viewports":[{"name":"desktop","width":1536,"height":864,"httpStatus":200,"documentWidth":1536,"moduleAxe":0,"fullPageAxe":0},{"name":"tablet","width":768,"height":1024,"httpStatus":200,"documentWidth":768,"moduleAxe":0,"fullPageAxe":0},{"name":"mobile","width":390,"height":844,"httpStatus":200,"documentWidth":390,"moduleAxe":0,"fullPageAxe":0}],"desktopGeometry":{".demo-banner":{"x":0,"y":0,"width":1536,"height":22,"bottom":22},".cb-header":{"x":43.765625,"y":22,"width":1448.46875,"height":49,"bottom":71},".brand":{"x":43.765625,"y":22,"width":295,"height":48,"bottom":70},".hero-panel":{"x":43.765625,"y":73,"width":1089.734375,"height":282,"bottom":355},".market-panel":{"x":1143.5,"y":73,"width":348.71875,"height":282,"bottom":355},".ticker-strip":{"x":43.765625,"y":361,"width":1448.46875,"height":30,"bottom":391},".trending-strip":{"x":43.765625,"y":397,"width":1448.46875,"height":45,"bottom":442},".category-rail":{"x":43.765625,"y":457,"width":1448.46875,"height":50,"bottom":507},".content-grid":{"x":43.765625,"y":518,"width":1448.46875,"height":190,"bottom":708},"\#latest-news":{"x":43.765625,"y":715,"width":983.625,"height":228,"bottom":943},".news-cards":{"x":55.765625,"y":747.5,"width":959.625,"height":106,"bottom":853.5},"\#newsletter":{"x":1036.390625,"y":715,"width":455.828125,"height":228,"bottom":943}},"securityHeaders":{"content-security-policy":"default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'","x-content-type-options":"nosniff","x-frame-options":"DENY","referrer-policy":"strict-origin-when-cross-origin","x-robots-tag":"noindex, nofollow, noarchive"},"renderPerformance":[{"viewport":"desktop","largestContentfulPaintMs":888,"cumulativeLayoutShift":0,"longTaskSupported":true,"longTaskCount":2,"longTaskDurationMs":1394,"previewImage":{"path":"/_astro/hero-cinematic-motion.uo0wYDIG.webp","transferredBytes":1395024,"encodedBodyBytes":1394724,"durationMs":76.9},"sameOriginTransferredBytes":4307760,"measurement":"single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"},{"viewport":"tablet","largestContentfulPaintMs":412,"cumulativeLayoutShift":0,"longTaskSupported":true,"longTaskCount":2,"longTaskDurationMs":1064,"previewImage":{"path":"/_astro/hero-cinematic-motion.uo0wYDIG.webp","transferredBytes":0,"encodedBodyBytes":1394724,"durationMs":0},"sameOriginTransferredBytes":900,"measurement":"single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"},{"viewport":"mobile","largestContentfulPaintMs":260,"cumulativeLayoutShift":0,"longTaskSupported":true,"longTaskCount":2,"longTaskDurationMs":734,"previewImage":{"path":"/_astro/hero-cinematic-motion.uo0wYDIG.webp","transferredBytes":0,"encodedBodyBytes":1394724,"durationMs":0},"sameOriginTransferredBytes":900,"measurement":"single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"}]}
+# Subtest: test\\modules\\CB-M01\\integrated-visual-check.mjs
+ok 24 - test\\modules\\CB-M01\\integrated-visual-check.mjs
+  ---
+  duration_ms: 172151.2239
+  type: 'test'
+  ...
+# Subtest: Crypto 101 ships six bounded evergreen guides in both languages
+ok 129 - Crypto 101 ships six bounded evergreen guides in both languages
+  ---
+  duration_ms: 11.6942
+  type: 'test'
+  ...
+# Subtest: learning topics remain educational and without manufactured market figures
+ok 130 - learning topics remain educational and without manufactured market figures
+  ---
+  duration_ms: 2.3572
+  type: 'test'
+  ...
+# Subtest: official source directory is finite, immutable and contains only approved HTTPS publisher endpoints
+ok 131 - official source directory is finite, immutable and contains only approved HTTPS publisher endpoints
+  ---
+  duration_ms: 8.0529
+  type: 'test'
+  ...
+# Subtest: locale-specific Ethereum original archive is partial and other publishers remain external English sources
+ok 132 - locale-specific Ethereum original archive is partial and other publishers remain external English sources
+  ---
+  duration_ms: 7.2058
+  type: 'test'
+  ...
+# file:///<WORKTREE>/test/modules/CB-M01/visual-check.mjs:107
+#     throw new Error(error.message + ". Output: " + serverOutput, { cause: error });
+#           ^
+# Error: Astro fixture did not become ready: readiness request exceeded the remaining deadline. Output: {"message":"connected.","label":"vite","level":"info"}
+# {"message":"Generated 55ms","label":"types","level":"info"}
+# {"message":"connected.","label":"vite","level":"info"}
+# {"message":" astro  v7.3.8 ready in 16445 ms\\n┃ Local    http://127.0.0.1:51648/","label":"SKIP_FORMAT","level":"info"}
+# {"message":"watching for file changes...","label":null,"level":"info"}
+#     at waitUntilReady (file:///<WORKTREE>/test/modules/CB-M01/visual-check.mjs:107:11)
+#     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+#     at async file:///<WORKTREE>/test/modules/CB-M01/visual-check.mjs:137:3 {
+#   [cause]: Error: Astro fixture did not become ready: readiness request exceeded the remaining deadline
+#       at waitForFixtureReady (file:///<WORKTREE>/test/modules/CB-M01/visual-server.mjs:70:9)
+#       at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+#       at async waitUntilReady (file:///<WORKTREE>/test/modules/CB-M01/visual-check.mjs:105:5)
+#       at async file:///<WORKTREE>/test/modules/CB-M01/visual-check.mjs:137:3
+# }
+# Node.js v22.23.3
+# Subtest: test\\modules\\CB-M01\\visual-check.mjs
+not ok 27 - test\\modules\\CB-M01\\visual-check.mjs
+  ---
+  duration_ms: 58329.942
+  type: 'test'
+  location: 'C:\\Users\\csn19\\.codex\\worktrees\\coinblink-m01-hero-58-local\\test\\modules\\CB-M01\\visual-check.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: test\\modules\\CB-M01\\visual-input-state.mjs
+ok 28 - test\\modules\\CB-M01\\visual-input-state.mjs
+  ---
+  duration_ms: 1392.1715
+  type: 'test'
+  ...
+# Subtest: visual source inputs are clean relative to the commit before claiming exact-HEAD evidence
+ok 135 - visual source inputs are clean relative to the commit before claiming exact-HEAD evidence
+  ---
+  duration_ms: 18772.4997
+  type: 'test'
+  ...
+# Subtest: visual provenance covers every rendered source and fixture configuration input
+ok 136 - visual provenance covers every rendered source and fixture configuration input
+  ---
+  duration_ms: 2.2564
+  type: 'test'
+  ...
+# Subtest: staged and unstaged Golden Home changes invalidate exact-HEAD visual evidence
+ok 137 - staged and unstaged Golden Home changes invalidate exact-HEAD visual evidence
+  ---
+  duration_ms: 14823.0361
+  type: 'test'
+  ...
+# Subtest: untracked Golden Home sources also invalidate exact-HEAD visual evidence
+ok 138 - untracked Golden Home sources also invalidate exact-HEAD visual evidence
+  ---
+  duration_ms: 15136.1777
+  type: 'test'
+  ...
+# Subtest: assume-unchanged visual inputs cannot hide worktree edits from exact-HEAD evidence
+ok 139 - assume-unchanged visual inputs cannot hide worktree edits from exact-HEAD evidence
+  ---
+  duration_ms: 11859.2739
+  type: 'test'
+  ...
+# Subtest: skip-worktree visual inputs cannot hide worktree edits from exact-HEAD evidence
+ok 140 - skip-worktree visual inputs cannot hide worktree edits from exact-HEAD evidence
+  ---
+  duration_ms: 8222.9136
+  type: 'test'
+  ...
+# Subtest: Git executable resolution uses only fixed system locations and never PATH lookup
+ok 141 - Git executable resolution uses only fixed system locations and never PATH lookup
+  ---
+  duration_ms: 12.6481
+  type: 'test'
+  ...
+# Subtest: test\\modules\\CB-M01\\visual-request-origin.mjs
+ok 30 - test\\modules\\CB-M01\\visual-request-origin.mjs
+  ---
+  duration_ms: 1317.3135
+  type: 'test'
+  ...
+# Subtest: accepts only the exact fixture origin
+ok 143 - accepts only the exact fixture origin
+  ---
+  duration_ms: 4.523
+  type: 'test'
+  ...
+# Subtest: test\\modules\\CB-M01\\visual-server.mjs
+ok 32 - test\\modules\\CB-M01\\visual-server.mjs
+  ---
+  duration_ms: 2415.8858
+  type: 'test'
+  ...
+# Subtest: a TCP listener that accepts without sending response headers cannot hang readiness beyond its deadline
+ok 145 - a TCP listener that accepts without sending response headers cannot hang readiness beyond its deadline
+  ---
+  duration_ms: 340.0434
+  type: 'test'
+  ...
+# Subtest: a child exit while the probe is pending cannot be masked by a later HTTP 200
+    # Subtest: {"exitCode":0}
+    ok 1 - {"exitCode":0}
+      ---
+      duration_ms: 3.0502
+      type: 'test'
+      ...
+    # Subtest: {"signalCode":"SIGTERM"}
+    ok 2 - {"signalCode":"SIGTERM"}
+      ---
+      duration_ms: 5.5693
+      type: 'test'
+      ...
+    1..2
+ok 146 - a child exit while the probe is pending cannot be masked by a later HTTP 200
+  ---
+  duration_ms: 11.8622
+  type: 'test'
+  ...
+# Subtest: the generated fixture directory is removed only after child exit is confirmed
+ok 147 - the generated fixture directory is removed only after child exit is confirmed
+  ---
+  duration_ms: 6.4304
+  type: 'test'
+  ...
+# Subtest: a fresh visual run clears the prior report instead of leaving stale passing evidence
+ok 148 - a fresh visual run clears the prior report instead of leaving stale passing evidence
+  ---
+  duration_ms: 176.766
+  type: 'test'
+  ...
+# Subtest: failed visual runs retain the current diagnostic error and exact candidate identity
+ok 149 - failed visual runs retain the current diagnostic error and exact candidate identity
+  ---
+  duration_ms: 149.5896
+  type: 'test'
+  ...
+# Subtest: P1 preparation Context Lock binds its frozen table to the exact merged main SHA
+ok 150 - P1 preparation Context Lock binds its frozen table to the exact merged main SHA
+  ---
+  duration_ms: 43911.9593
+  type: 'test'
+  ...
+# Subtest: P1 Evidence Bundle exactly covers its frozen source snapshot and candidate blob fingerprints
+ok 151 - P1 Evidence Bundle exactly covers its frozen source snapshot and candidate blob fingerprints
+  ---
+  duration_ms: 36266.8665
+  type: 'test'
+  ...
+# Subtest: fingerprint path coverage rejects omissions, extras, duplicates, and unlisted deletions
+ok 152 - fingerprint path coverage rejects omissions, extras, duplicates, and unlisted deletions
+  ---
+  duration_ms: 10.8787
+  type: 'test'
+  ...
+# Subtest: fingerprint path coverage detects tracked deletions against a frozen Git base
+ok 153 - fingerprint path coverage detects tracked deletions against a frozen Git base
+  ---
+  duration_ms: 5213.1042
+  type: 'test'
+  ...
+# Subtest: working-tree consistency rejects unstaged edits and honors Git line-ending normalization
+ok 154 - working-tree consistency rejects unstaged edits and honors Git line-ending normalization
+  ---
+  duration_ms: 1430.0398
+  type: 'test'
+  ...
+# Subtest: P1 preparation leaves checkpoint, historical lock, and Work Order authority frozen
+ok 155 - P1 preparation leaves checkpoint, historical lock, and Work Order authority frozen
+  ---
+  duration_ms: 1.0579
+  type: 'test'
+  ...
+# Subtest: P1 Evidence Bundle states the Cloudflare credential boundary accurately
+ok 156 - P1 Evidence Bundle states the Cloudflare credential boundary accurately
+  ---
+  duration_ms: 1.917
+  type: 'test'
+  ...
+# Subtest: M00 completion is read from canonical checkpoint, not historical proposal snapshot
+ok 157 - M00 completion is read from canonical checkpoint, not historical proposal snapshot
+  ---
+  duration_ms: 24.5499
+  type: 'test'
+  ...
+# Subtest: canonical M00 completion remains true after progress advances through M01
+ok 158 - canonical M00 completion remains true after progress advances through M01
+  ---
+  duration_ms: 9.2613
+  type: 'test'
+  ...
+# Subtest: planner rejects canonical completed-through progress that contradicts the checkpoint percentage
+ok 159 - planner rejects canonical completed-through progress that contradicts the checkpoint percentage
+  ---
+  duration_ms: 4.3494
+  type: 'test'
+  ...
+# Subtest: stale proposal cannot authorize app code after M00 is complete
+ok 160 - stale proposal cannot authorize app code after M00 is complete
+  ---
+  duration_ms: 2.256
+  type: 'test'
+  ...
+# Subtest: valid admitted independent modules schedule concurrently without exceeding host slots
+ok 161 - valid admitted independent modules schedule concurrently without exceeding host slots
+  ---
+  duration_ms: 11.831
+  type: 'test'
+  ...
+# Subtest: candidate admission is not planner-eligible before canonical main readback
+ok 162 - candidate admission is not planner-eligible before canonical main readback
+  ---
+  duration_ms: 2.8175
+  type: 'test'
+  ...
+# Subtest: canonical main admission readback allows the same candidate after merge
+ok 163 - canonical main admission readback allows the same candidate after merge
+  ---
+  duration_ms: 4.6636
+  type: 'test'
+  ...
+# Subtest: canonical main checkpoint lookup is fixed, read-only, unauthenticated, and fails closed
+ok 164 - canonical main checkpoint lookup is fixed, read-only, unauthenticated, and fails closed
+  ---
+  duration_ms: 356.7713
+  type: 'test'
+  ...
+# Subtest: canonical main checkpoint read rejects unsupported schema and foreign project identity
+ok 165 - canonical main checkpoint read rejects unsupported schema and foreign project identity
+  ---
+  duration_ms: 50.4666
+  type: 'test'
+  ...
+# Subtest: never treat active module admission alone as dependency completion
+ok 166 - never treat active module admission alone as dependency completion
+  ---
+  duration_ms: 20.7589
+  type: 'test'
+  ...
+# Subtest: invalid module count, M18 admission and unsafe limits fail closed
+ok 167 - invalid module count, M18 admission and unsafe limits fail closed
+  ---
+  duration_ms: 5.6076
+  type: 'test'
+  ...
+# Subtest: planner rejects a candidate or canonical checkpoint with the wrong project schema
+ok 168 - planner rejects a candidate or canonical checkpoint with the wrong project schema
+  ---
+  duration_ms: 1.8586
+  type: 'test'
+  ...
+# Subtest: checkpoint admission registry matches the exact canonical module ID set
+ok 169 - checkpoint admission registry matches the exact canonical module ID set
+  ---
+  duration_ms: 27.227
+  type: 'test'
+  ...
+# Subtest: resource-aware authoring is not hard-capped to two agents
+ok 170 - resource-aware authoring is not hard-capped to two agents
+  ---
+  duration_ms: 4.3271
+  type: 'test'
+  ...
+# Subtest: M00 completion requires all canonical completion facts to agree
+ok 171 - M00 completion requires all canonical completion facts to agree
+  ---
+  duration_ms: 10.364
+  type: 'test'
+  ...
+# Subtest: every global source and adoption gate is independently required
+ok 172 - every global source and adoption gate is independently required
+  ---
+  duration_ms: 9.7928
+  type: 'test'
+  ...
+# Subtest: resource floor can yield zero active agents without claiming a slot
+ok 173 - resource floor can yield zero active agents without claiming a slot
+  ---
+  duration_ms: 13.6277
+  type: 'test'
+  ...
+# Subtest: integration contracts are reported separately from authoring blockers
+ok 174 - integration contracts are reported separately from authoring blockers
+  ---
+  duration_ms: 1.6371
+  type: 'test'
+  ...
+# Subtest: CLI gate evidence parser accepts explicit module gates and rejects malformed input
+ok 175 - CLI gate evidence parser accepts explicit module gates and rejects malformed input
+  ---
+  duration_ms: 13.7209
+  type: 'test'
+  ...
+# Subtest: malformed gate evidence errors do not expose input or parser details
+ok 176 - malformed gate evidence errors do not expose input or parser details
+  ---
+  duration_ms: 2.0537
+  type: 'test'
+  ...
+# Subtest: global source gate recognizes only explicit global approval and freeze status
+ok 177 - global source gate recognizes only explicit global approval and freeze status
+  ---
+  duration_ms: 5.1731
+  type: 'test'
+  ...
+# Subtest: parallel ADR gate accepts only the exact Owner-approved adoption status
+ok 178 - parallel ADR gate accepts only the exact Owner-approved adoption status
+  ---
+  duration_ms: 0.8565
+  type: 'test'
+  ...
+# Subtest: Issue \#6 lookup uses a fixed unauthenticated read and fails closed
+ok 179 - Issue \#6 lookup uses a fixed unauthenticated read and fails closed
+  ---
+  duration_ms: 29.7561
+  type: 'test'
+  ...
+# Subtest: blocks a cross-origin redirect from a document subresource before fetching its destination
+ok 180 - blocks a cross-origin redirect from a document subresource before fetching its destination
+  ---
+  duration_ms: 6725.6707
+  type: 'test'
+  ...
+# Subtest: registers the Service Worker fixture when a regular context explicitly allows it
+ok 181 - registers the Service Worker fixture when a regular context explicitly allows it
+  ---
+  duration_ms: 1586.1717
+  type: 'test'
+  ...
+# Subtest: blocks Service Worker registration in an evidence browser context
+ok 182 - blocks Service Worker registration in an evidence browser context
+  ---
+  duration_ms: 1769.3016
+  type: 'test'
+  ...
+# Subtest: blocks a cross-origin navigation redirect before fetching its destination
+ok 183 - blocks a cross-origin navigation redirect before fetching its destination
+  ---
+  duration_ms: 1325.8841
+  type: 'test'
+  ...
+# Subtest: clears only stale success/failure artifacts before a fresh evidence capture
+ok 184 - clears only stale success/failure artifacts before a fresh evidence capture
+  ---
+  duration_ms: 535.3948
+  type: 'test'
+  ...
+# Subtest: checks stable and immutable build identity before clearing prior evidence
+ok 185 - checks stable and immutable build identity before clearing prior evidence
+  ---
+  duration_ms: 19.6336
+  type: 'test'
+  ...
+# Subtest: accepts the approved static asset binding
+ok 186 - accepts the approved static asset binding
+  ---
+  duration_ms: 1354.279
+  type: 'test'
+  ...
+# Subtest: accepts only loopback spellings normalized by Windows and Linux builds
+ok 187 - accepts only loopback spellings normalized by Windows and Linux builds
+  ---
+  duration_ms: 1783.5437
+  type: 'test'
+  ...
+# Subtest: rejects a SESSION binding nested in a namespace list
+ok 188 - rejects a SESSION binding nested in a namespace list
+  ---
+  duration_ms: 825.0048
+  type: 'test'
+  ...
+# Subtest: rejects a data binding added to the Preview block
+ok 189 - rejects a data binding added to the Preview block
+  ---
+  duration_ms: 1128.1626
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed top-level variables
+ok 190 - rejects unreviewed top-level variables
+  ---
+  duration_ms: 1202.662
+  type: 'test'
+  ...
+1..190
+# tests 192
+# suites 0
+# pass 190
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 199819.451

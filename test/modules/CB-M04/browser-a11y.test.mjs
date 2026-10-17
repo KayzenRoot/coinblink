@@ -54,7 +54,8 @@ test("M04 isolated built Astro / Chromium accessible offline workbench", { timeo
     assert.ok(address && typeof address !== "string");
     const origin = "http://127.0.0.1:" + address.port;
     browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
+    const context = await browser.newContext();
+    const page = await context.newPage();
     page.on("request", request => {
       if (new URL(request.url()).origin !== origin) deniedRequests.push(request.url());
     });

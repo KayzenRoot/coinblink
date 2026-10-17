@@ -81,7 +81,7 @@ test("replacing a phrase in prose preserves Markdown metadata bytes and file rou
   const body = addLocalClaimReview(source.value,
     "Notes remain in the editorial claim queue without fact-checking.", 1).value;
   const start = body.indexOf("\n\n### CoinBlink claim review");
-  const changed = replaceAllInLocalDraft(body, "Notes", "test("local UI has keyboard-accessible controls, same-origin external JS, and no persistence or publishing", () => {-review");
+  const changed = replaceAllInLocalDraft(body, "Notes", "$&-review");
   assert.equal(changed.replacements, 2);
   const changedNotesAt = changed.value.indexOf("\n\n### CoinBlink claim review");
   assert.ok(changedNotesAt > 0);

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-16T15:54:36.994Z",
+  "generatedAt": "2026-10-17T21:13:04.558Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "59762037b26e8f93be1bf164f4fc2aa706b179f8",
+  "headSha": "ae88a7b79123830be9edbd5a7135425dd86f69f0",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -39,7 +39,7 @@
     ]
   },
   "fixture": "isolated Astro fixture; no shared /en route integration",
-  "origin": "http://127.0.0.1:55367",
+  "origin": "http://127.0.0.1:62130",
   "viewports": [
     {
       "name": "desktop",
@@ -192,7 +192,7 @@
           "height": 228
         }
       },
-      "screenshotSha256": "ad93d38a5d853df79cd66859b01048b314ecf03625fe39f70c2475e1812133b9"
+      "screenshotSha256": "1cd0ef96d23b8d1febaf90b1493184808cb0bf923c2b58d976defaed195c849d"
     },
     {
       "name": "tablet",
@@ -201,7 +201,7 @@
       "documentWidth": 768,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "6b4e870396d663ced2f5ec2f97e9ba6b558282578a4a63ecf9b7b87cfa38086c"
+      "screenshotSha256": "76326af7e95ab16b2ec30552bcc2babf2ae6cce068699fce41cd51423e2c8045"
     },
     {
       "name": "mobile",
@@ -210,7 +210,7 @@
       "documentWidth": 390,
       "axeViolations": [],
       "fullPageAxeViolations": [],
-      "screenshotSha256": "a3c2775e161d93cf43eecb2c81fabd9970b0960a3a61ee4c00a34ea54194d2d1"
+      "screenshotSha256": "add56458c9446a9b1e273d509651da5ef9541ae335c56bdf6b9dc159bb4a5529"
     }
   ],
   "interactionChecks": {
@@ -420,6 +420,26 @@
         "height": 228
       }
     },
+    "syntheticProducerSmoke": {
+      "/mock-producers": {
+        "statuses": {
+          "news": "SYNTHETIC_FIXTURE_ONLY",
+          "sources": "SYNTHETIC_FIXTURE_ONLY",
+          "markets": "SYNTHETIC_FIXTURE_ONLY"
+        },
+        "payloadNotRendered": true,
+        "externalRequests": []
+      },
+      "/denied-producers": {
+        "statuses": {
+          "news": "REJECTED_LIVE_UNAUTHORIZED",
+          "sources": "REJECTED_INVALID_INPUT",
+          "markets": "EMPTY_SYNTHETIC_FIXTURE"
+        },
+        "payloadNotRendered": true,
+        "externalRequests": []
+      }
+    },
     "mobileHeroGeometry": [
       {
         "width": 390,
@@ -608,18 +628,18 @@
   "pageErrors": [],
   "externalRequests": [],
   "serverOutput": [
-    "{\"message\":\"[200] / 10ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] /denied-producers 55ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 7ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 14ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 11ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 15ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 21ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 11ms\",\"label\":null,\"level\":\"info\"}",
     "{\"message\":\"[200] / 13ms\",\"label\":null,\"level\":\"info\"}",
-    "{\"message\":\"[200] / 12ms\",\"label\":null,\"level\":\"info\"}"
+    "{\"message\":\"[200] / 11ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 8ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 9ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 11ms\",\"label\":null,\"level\":\"info\"}",
+    "{\"message\":\"[200] / 10ms\",\"label\":null,\"level\":\"info\"}"
   ],
   "status": "passed"
 }

@@ -17,7 +17,7 @@ for (const admin of [false, true]) {
       // deterministically without opening/flaking a navigation confirmation.
       const guardTriggered = () => page.evaluate(() => {
         const event = new Event('beforeunload', { cancelable: true });
-        window.dispatchEvent(event);
+        globalThis.dispatchEvent(event);
         return event.defaultPrevented;
       });
       assert.equal(await guardTriggered(), false, 'clean new draft should allow reload');

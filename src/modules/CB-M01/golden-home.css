@@ -989,3 +989,13 @@
 .cb-home .promo-panel.has-promo-master .promo-scene,
 .cb-home .news-art.has-editorial-master .editorial-artwork { opacity: 0; }
 .cb-home .editorial-image img { object-position: center; }
+
+
+/* M01 P2: offline, keyboard-accessible filtering of already-rendered official links. */
+.cb-home .official-sources__filter { display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:16px 0 18px; }
+.cb-home .official-sources__filter label { display:flex;flex-direction:column;gap:6px;flex:1 1 230px;max-width:380px;font-weight:600; }
+.cb-home .official-sources__filter input { width:100%;min-height:44px;border:1px solid #61786b;border-radius:7px;background:#101c18;color:#f2f6ee;padding:9px 12px;font:inherit; }
+.cb-home .official-sources__filter button { min-height:44px;border-radius:7px;border:1px solid #8da58e;background:#1c3327;color:#f2f6ee;padding:9px 12px;cursor:pointer;font:inherit; }
+.cb-home .official-sources__filter :is(input,button):focus-visible {outline:3px solid #d6f3a2;outline-offset:2px;}
+.cb-home .official-sources__filter [hidden], .cb-home .official-source[hidden] {display:none;}
+.cb-home .official-sources__filter-status {margin:0;flex:1 1 100%;font-size:13px;}

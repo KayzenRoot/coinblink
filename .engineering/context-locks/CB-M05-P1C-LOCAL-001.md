@@ -122,3 +122,49 @@ Canonical main observed `4300642e8bdd00ae029ccbb30ed8facd70089df3`, Git tree `6d
 **Independent preflight gate before code:** check exact-main GEF + Cloudflare job-level no-deploy for PR #123, clean Node22 checkout, local D1/virtual-authenticator baseline, no-egress checks, security threat model/test matrix, path ownership, effective ADR, reproducible test commands and fixed environment; freeze fresh executable Context Lock **after** these proofs and only with applicable Owner code-admission instruction. No security claim from unexecuted checks.
 
 **STOP CONDITION:** `P1C_LOCAL_HIGH_ASSURANCE_PREFLIGHT_NOT_YET_PASSED`; remain blocked from privileged runtime and from claiming M05 P1/P2 complete.
+
+## R84 · post-#124 exact-main LOCAL P1-C HIGH_ASSURANCE dispatch preflight · 2026-10-18
+
+**State: FROZEN_PREPARATION_CANDIDATE / NOT_EXECUTABLE / NOT_DISPATCHABLE.** Work Order `CB-M05-P1C-LOCAL-001`, one human Owner, test-only synthetic identity and D1, risk HIGH_ASSURANCE. Protected source `main=7733fc4b9a17333db8381d94c94f33b9e24eb877`, full tree `0ceab470c30a8eb0257007fe78f685555dc68f6d` (693 entries, untruncated). Current checkpoint `M00_COMPLETE/5%`, M05 `ADMITTED`, not DONE. This appendix changes its own Context Lock blob on PR HEAD; no executor may rely on these **pre-adoption** fingerprints without the source authority's protected adoption and a fresh effective lock readback.
+
+### Canonical source snapshot (exact Git tree blob IDs)
+
+| Path | Git blob SHA-1 |
+| --- | --- |
+`AGENTS.md` | `4e8a6ebeb4aa18ac58171fcddf3bde762d725ca7` |
+`.engineering/SOURCE-HIERARCHY.md` | `3ba4fb9bb89d8aaf17b87ca0adba2d72081a20f2` |
+`.engineering/CHECKPOINT.json` | `72618bef100e6f82e4655b2c6ed482794e0c4649` |
+`.engineering/SCOPE.md` | `dfa1ce336ee8d05d0a93a37215e34a760708ea51` |
+`.engineering/REQUIREMENTS.md` | `588c221e3ba88be3fb957ee27719671a731d8595` |
+`.engineering/ARCHITECTURE.md` | `dc6797e169f24b5ed6056ed3740b77741249c7c0` |
+`.engineering/SECURITY.md` | `7f8a39a1a9296dad04ada71b0750eb05e9d8cf45` |
+`.engineering/DEFINITION-OF-DONE.md` | `00702a0dfe54fcc22ad9e146255be1665fa4624c` |
+`.engineering/work-orders/CB-M05-P1C-LOCAL-001.md` | `8a00346e0e84265bf4c3a7de1b81f196b473942b` |
+`docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md` | `6a590ef487556ed62296f558296b6ad5a334d3dc` |
+`docs/architecture/contracts/CB-M05.md` | `2b35f56903bb00f9c4025eafb6b40d7265c26405` |
+`.engineering/context-locks/CB-M05-P1C-LOCAL-001.md` (pre-append) | `6cc27f8538897928f019d99c7898d96028dea841` |
+`src/modules/CB-M05/p1c-local/local-cms.mjs` | `d6b7080f0a2ec11bd3b7ed3da46c6b457fe558e7` |
+`src/modules/CB-M05/p1c-local/local-cms-ui.mjs` | `677f5c0116fcf9dd98bd88aa3a2eb768d7e2cc0c` |
+`test/modules/CB-M05/p1c-local-cms.test.mjs` | `28c0a306085eaa116b50c3b18d4a1c1a50650de8` |
+`test/modules/CB-M05/p1c-local-preview.mjs` | `424a7a2566e7251bafad146c7ed97295829a3a3d` |
+`test/modules/CB-M05/p1c-fixtures/schema.sql` | `cd3f73326acbc66a55014c67163e644e41b410da` |
+`package-lock.json` | `5572b6948c0f71f8a3ba9747490bc4d5723cf0a2` |
+`scripts/cloudflare-production-policy.mjs` | `1a4dc270ac8246743886b0611220d2335e82a934` |
+
+### Verified baseline, explicit noncoverage
+
+- Exact source `main` GEF [#39113571532](https://github.com/KayzenRoot/coinblink/actions/runs/39113571532) `SUCCESS`: Ubuntu & Windows each Node22, 431/431 Node, 48/48 Playwright E2E, Docker smoke. LOCAL-only M05 CMS suite tests #359–372 on Ubuntu passed, including virtual WebAuthn, D1 seeded fixtures, counters, challenge quota/replay, audit revisions and restart. This proves a clean CI-host checkout/test baseline, **not** a successful fresh executor worktree/test run on a separate machine or the missing 0→1 claim.
+- `test/modules/CB-M05/p1c-local-cms.test.mjs` setup unconditionally seeds `cms_owner(owner_id=1)`; `test/modules/CB-M05/p1c-local-preview.mjs` seeds it too. DB single-row check prevents a duplicate `owner_id=1`, but **does not prove out-of-band first claim under 2/10/100 challengers**. The concurrent login challenge test is **not** a bootstrap race test. These remain P1-C HIGH_ASSURANCE missing proof.
+- Postmerge Cloudflare main-only run [#39113794093](https://github.com/KayzenRoot/coinblink/actions/runs/39113794093) failed preflight closed and deploy job SKIPPED. No real provider action, credential, D1 remote, vault or Worker binding is authorized by this source freeze.
+
+### Smallest LOCAL-only executable increment after this lock is effective
+
+1. Run exact-current-main clean isolated checkout (Node >=22.19 <23 pinned, `npm ci`, all Git blobs, no active conflicting M05 worktree); verify Miniflare/D1 + Chromium virtual-authenticator baseline before code. Confirm ownership of only `src/modules/CB-M05/p1c-local/**`, `test/modules/CB-M05/p1c-*`/owned test files, and M05 evidence; no shared layout/routes/packages/workflows.
+2. Implement synthetic one-use operator-ticket enrollment challenge and atomic D1 `cms_owner` 0→1 with no preseed, out-of-band proof, expiry, origin binding, deterministic successful-single-winner under 2/10/100 contenders; forced failure in multi-row claim must leave zero partial principals/sessions. NO public signup or real Owner registration.
+3. Separate independent primary/recovery virtual authenticators, recovery expiry/replay/second-factor/lost-both denial, challenge RPID/origin/UV/counter and session digest/CSRF/revocation/restart; server-side negative **privileged** HTML GET & all mutable API methods, including fake principal/cross-site/oversized bodies. Public test login UI must remain explicitly fixture-only.
+4. Miniflare local D1 deterministic migration/apply/backup/restore/transaction abort/rollback/audit CAS; no egress/real secrets in browser, logs or artifacts. Preserve existing #91 regressions. Evidence Bundle must record actual commands, screenshots/a11y, negative counts, SQL invariants, test IDs, failure injection, SHA and any remaining risks.
+5. Final candidate needs Sonar actionable HIGH/CRITICAL=0, exact-HEAD Ubuntu+Windows GEF, Docker, Playwright, Socket, CodeRabbit status plus substantive solo-Owner security review, zero unresolved threads and **Owner protected exact-HEAD squash GO**. Treat skipped CodeRabbit as status only.
+
+**Hard boundaries:** no `src/pages/admin/**`, shared middleware, real Owner credential, hosted/remote D1, secret vault/KEK, Cloudflare deploy/Preview, publication, paid service or checkpoint. Existing module P1-D vault/P1-E source publishing require separate admission/resources. Do not mark whole M05 DONE by delivering LOCAL proof.
+
+**Dispatch gate:** previous OWNER_LOCAL_GO policy allows preparing this LOCAL-only lab, but this candidate is NOT its effective execution lock. Requires protected merge of this scoped documentation PR with audit and explicit exact-HEAD Owner GO; afterward re-fingerprint adopted lock and **record separate Owner scoped code GO** as required by Source Hierarchy. If source/main moves, mark STALE and refresh. `CHECKPOINT_DELTA={}`. `STOP=M05_P1C_LOCAL_FRESH_LOCK_AND_OWNER_CODE_GO_PENDING`.

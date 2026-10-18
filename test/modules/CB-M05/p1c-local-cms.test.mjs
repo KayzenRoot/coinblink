@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { Script, runInNewContext } from 'node:vm';
 import { LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -727,7 +727,7 @@ test('M05 LOCAL CMS 12: bound streamed JSON when Content-Length is forged or omi
 });
 
 // First-Owner bootstrap: a fresh schema-only D1 with no cms_owner seed.
-async function openEmptySyntheticD1() {
+async function openEmptySyntheticD1(options = {}) {
   mkdirSync(stateRoot, { recursive: true });
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'coinblink-m05-p1c-bootstrap-' + randomUUID(),
@@ -740,9 +740,11 @@ async function openEmptySyntheticD1() {
   }));
   try {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
-    for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
-    const secret = key();
-    const clock = { ms: Date.now() };
+    if (options.applySchema !== false) {
+      for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    }
+    const secret = options.secret ?? key();
+    const clock = { ms: options.nowMs ?? Date.now() };
     const env = { CB_M05_LOCAL_TEST_ONLY: 'true', CMS_D1_LOCAL: db, CMS_TEST_HMAC_KEY: secret };
     const run = (route, method = 'GET', body = undefined, options = {}) =>
       createLocalCmsHandler({ now: () => clock.ms })(makeRequest(route, method, body, options), env);
@@ -819,9 +821,11 @@ async function openWorkerHostedBootstrapD1(options = {}) {
     if (options.applySchema !== false) {
       for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
     }
-    const dispatch = (route, method = 'GET', body = undefined) => mf.dispatchFetch(CMS_TEST_ORIGIN + route, {
+    const dispatch = (route, method = 'GET', body = undefined, extraHeaders = {}) => mf.dispatchFetch(CMS_TEST_ORIGIN + route, {
       method,
-      headers: { origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
+      headers: {
+        origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json', ...extraHeaders,
+      },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
     const race = async claims => {
@@ -843,6 +847,23 @@ async function openWorkerHostedBootstrapD1(options = {}) {
 async function raceWorkerClaims(ctx, contenderSet) {
   return Promise.all(contenderSet.map(c =>
     ctx.dispatch('/local/bootstrap/claim', 'POST', bootstrapClaimBody(c.ticket, c.challenge, c.authenticator))));
+}
+// Authenticates inside the Worker runtime and returns the cookie and CSRF token to replay.
+async function workerLogin(ctx, authenticator) {
+  const challengeResponse = await ctx.dispatch('/local/challenge', 'POST', { credentialId: authenticator.id });
+  assert.equal(challengeResponse.status, 200);
+  const { challenge } = await challengeResponse.json();
+  const response = makeAuthenticationResponse(authenticator, { challenge: webauthnChallengeFromHex(challenge) });
+  const logged = await ctx.dispatch('/local/login', 'POST',
+    { challenge, credentialId: authenticator.id, response });
+  assert.equal(logged.status, 200, 'worker-hosted login must succeed');
+  return {
+    cookie: logged.headers.get('set-cookie').split(';')[0],
+    csrf: (await logged.json()).csrf,
+  };
+}
+function authHeaders(session) {
+  return { cookie: session.cookie, 'x-cb-csrf': session.csrf };
 }
 function summarizeDiagnostics(entries) {
   return entries.reduce((summary, entry) => {
@@ -1599,4 +1620,224 @@ test('M05 LOCAL CMS B3: offline emergency authorization is single-use, expiring 
     const session = await login(ctx, replacement);
     assert.equal((await ctx.run('/local/articles', 'GET', undefined, session)).status, 200);
   } finally { await ctx.mf.dispose(); }
+});
+
+// --- Part D · D1 LOCAL schema, CAS, failure injection and restore ---
+
+const DUMP_TABLES = ['cms_owner', 'cms_credentials', 'cms_drafts', 'cms_draft_revisions',
+  'cms_challenges', 'cms_sessions', 'cms_bootstrap_tickets', 'cms_bootstrap_challenges',
+  'cms_enroll_challenges', 'cms_recovery_authorizations', 'cms_emergency_authorizations', 'cms_audit_events'];
+
+function normalizeBlob(value) {
+  if (value instanceof ArrayBuffer) return new Uint8Array(value);
+  if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  return value;
+}
+function tableDigest(rows) {
+  const canonical = rows
+    .map(row => JSON.stringify(Object.fromEntries(Object.entries(row).sort())))
+    .sort()
+    .join('\n');
+  return createHash('sha256').update(canonical).digest('hex');
+}
+async function dumpLocalDatabase(db) {
+  const dump = {};
+  for (const table of DUMP_TABLES) {
+    const { results } = await db.prepare(`SELECT * FROM ${table}`).all();
+    dump[table] = results;
+  }
+  return dump;
+}
+async function dumpTable(db, table) {
+  return (await db.prepare(`SELECT * FROM ${table}`).all()).results;
+}
+async function restoreLocalDatabase(db, dump) {
+  for (const table of DUMP_TABLES) {
+    for (const row of dump[table]) {
+      const columns = Object.keys(row);
+      await db.prepare(
+        `INSERT INTO ${table} (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')})`
+      ).bind(...columns.map(column => normalizeBlob(row[column]))).run();
+    }
+  }
+}
+
+test('M05 LOCAL CMS D1: schema replay is explicit and referential integrity is enforced by local D1', async () => {
+  const ctx = await setup();
+  try {
+    const before = await tableCounts(ctx.db);
+    await assert.rejects(
+      (async () => {
+        for (const statement of splitLocalSchemaStatements(schema)) await ctx.db.prepare(statement).run();
+      })(),
+      /already exists/i,
+      'replaying the schema on an existing database fails explicitly instead of silently diverging',
+    );
+    assert.deepEqual(await tableCounts(ctx.db), before, 'a refused replay leaves the database intact');
+    const fkEnforced = await ctx.db.prepare("SELECT COUNT(*) AS n FROM pragma_foreign_key_list('cms_sessions')").first();
+    assert.ok(fkEnforced.n >= 3, 'sessions reference owner, credential and challenge');
+    await assert.rejects(
+      ctx.db.prepare(`INSERT INTO cms_sessions(session_digest,csrf_digest,owner_id,issued_at,expires_at,challenge_digest,credential_id)
+        VALUES (?,?,1,1,2,?,?)`).bind('a'.repeat(64), 'b'.repeat(64), 'c'.repeat(64), 'unknown-credential').run(),
+      /FOREIGN KEY|constraint/i,
+    );
+    await assert.rejects(
+      ctx.db.prepare(`INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind)
+        VALUES ('x',1,?,0,'tertiary')`).bind(new Uint8Array(65)).run(),
+      /CHECK constraint/i,
+    );
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS D2: concurrent revisions resolve to exactly one winning writer inside the Worker', { timeout: 240_000 }, async () => {
+  const ctx = await openWorkerHostedBootstrapD1();
+  try {
+    const ticket = await ctx.ticket();
+    const ownerDevice = makeSyntheticAuthenticator('cas-owner');
+    const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+    assert.equal(challengeResponse.status, 200,
+      'bootstrap challenge must be issued: ' + await challengeResponse.clone().text());
+    const { challenge } = await challengeResponse.json();
+    const claimResponse = await ctx.dispatch('/local/bootstrap/claim', 'POST', bootstrapClaimBody(ticket, challenge, ownerDevice));
+    assert.equal(claimResponse.status, 201, 'bootstrap claim must succeed: ' + await claimResponse.clone().text());
+    const session = await workerLogin(ctx, ownerDevice);
+    const created = await ctx.dispatch('/local/articles', 'POST',
+      { ...sampleDraft, idempotencyKey: seedIdempotency() }, authHeaders(session));
+    assert.equal(created.status, 201);
+    const draftId = (await created.json()).id;
+    const contenders = await Promise.all(Array.from({ length: 10 }, (_, index) =>
+      ctx.dispatch(`/local/articles/${draftId}`, 'PATCH', {
+        ...sampleDraft, title: 'Concurrent CAS contender number ' + index,
+        expectedRevision: 1, idempotencyKey: seedIdempotency(),
+      }, authHeaders(session))));
+    const statuses = contenders.map(response => response.status);
+    console.log(`CAS-10 histogram ${JSON.stringify(statusHistogram(statuses))}`);
+    assert.equal(statuses.filter(status => status === 200).length, 1, 'exactly one writer may win the revision race');
+    assert.equal(statuses.filter(status => status === 409).length, 9, 'every other writer gets a revision conflict');
+    assert.equal(statuses.filter(status => status === 500).length, 0, 'no server fault under revision contention');
+    const draft = await ctx.db.prepare('SELECT revision,title FROM cms_drafts WHERE id=?').bind(draftId).first();
+    assert.equal(draft.revision, 2, 'the winning revision is exactly one step ahead');
+    assert.match(draft.title, /^Concurrent CAS contender number \d+$/);
+    assert.equal(await countRows(ctx.db, 'cms_draft_revisions', `draft_id='${draftId}'`), 2,
+      'no orphan or duplicated revision rows');
+    assert.equal((await ctx.db.prepare(
+      'SELECT COUNT(*) AS n FROM cms_draft_revisions WHERE draft_id=? AND revision=2'
+    ).bind(draftId).first()).n, 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS D3: injected mid-transaction failures roll back completely and the retry is safe', async () => {
+  const ctx = await setup();
+  try {
+    const session = await login(ctx);
+    const created = await ctx.run('/local/articles', 'POST', { ...sampleDraft, idempotencyKey: seedIdempotency() }, session);
+    const draftId = (await created.json()).id;
+    const revisionInput = (key) => ({
+      ...sampleDraft, title: 'Retried revision after injected failure',
+      expectedRevision: 1, idempotencyKey: key,
+    });
+    const revisionKey = seedIdempotency();
+    await ctx.db.prepare(`CREATE TRIGGER cms_probe_fail_revision BEFORE INSERT ON cms_draft_revisions
+      BEGIN SELECT RAISE(ABORT, 'injected revision failure'); END`).run();
+    const failed = await ctx.run(`/local/articles/${draftId}`, 'PATCH', revisionInput(revisionKey), session);
+    assert.equal(failed.status, 500);
+    const draftAfterFailure = await ctx.db.prepare('SELECT revision,title FROM cms_drafts WHERE id=?').bind(draftId).first();
+    assert.equal(draftAfterFailure.revision, 1, 'the draft update rolled back with the failed revision insert');
+    assert.equal(await countRows(ctx.db, 'cms_draft_revisions'), 1, 'no partial revision was written');
+    await ctx.db.prepare('DROP TRIGGER cms_probe_fail_revision').run();
+    const retried = await ctx.run(`/local/articles/${draftId}`, 'PATCH', revisionInput(revisionKey), session);
+    assert.equal(retried.status, 200, 'the same idempotency key succeeds once the fault is gone');
+    assert.equal((await retried.json()).revision, 2);
+
+    // Device enrollment: a failing credential insert must not consume the challenge.
+    await ctx.db.prepare(`CREATE TRIGGER cms_probe_fail_credential BEFORE INSERT ON cms_credentials
+      BEGIN SELECT RAISE(ABORT, 'injected credential failure'); END`).run();
+    const pendingChallenge = await ctx.run('/local/enroll/challenge', 'POST', { kind: 'recovery' }, session);
+    const pending = await pendingChallenge.json();
+    const candidate = makeSyntheticAuthenticator('rollback-device');
+    const registration = makeRegistrationResponse(candidate, { challenge: webauthnChallengeFromHex(pending.challenge) });
+    const beforeEnroll = await tableCounts(ctx.db);
+    const enrollFailed = await ctx.run('/local/enroll/claim', 'POST',
+      { challenge: pending.challenge, response: registration }, session);
+    assert.equal(enrollFailed.status, 500);
+    assert.deepEqual(await tableCounts(ctx.db), beforeEnroll,
+      'a failed enrollment rolls back the challenge consumption, the credential and the audit');
+    await ctx.db.prepare('DROP TRIGGER cms_probe_fail_credential').run();
+    const enrollRetried = await ctx.run('/local/enroll/claim', 'POST',
+      { challenge: pending.challenge, response: registration }, session);
+    assert.equal(enrollRetried.status, 201, 'the same challenge succeeds after the fault is removed');
+
+    // Emergency: a failing credential insert must not burn the one-use authorization.
+    const emergencyCredential = makeSyntheticAuthenticator('rollback-emergency');
+    const token = await issueEmergencyAuthorization(ctx.db, ctx.env.CMS_TEST_HMAC_KEY, Math.floor(Date.now() / 1000));
+    await ctx.db.prepare(`CREATE TRIGGER cms_probe_fail_emergency BEFORE INSERT ON cms_credentials
+      BEGIN SELECT RAISE(ABORT, 'injected emergency failure'); END`).run();
+    const beforeEmergency = await tableCounts(ctx.db);
+    const emergencyRegistration = makeRegistrationResponse(emergencyCredential, {
+      challenge: webauthnChallengeFromHex(token),
+    });
+    const emergencyFailed = await ctx.run('/local/emergency/claim', 'POST',
+      { token, response: emergencyRegistration });
+    assert.equal(emergencyFailed.status, 500);
+    assert.deepEqual(await tableCounts(ctx.db), beforeEmergency,
+      'a failed emergency claim revokes nothing and keeps the token unconsumed');
+    assert.equal(await countRows(ctx.db, 'cms_emergency_authorizations', 'used_at IS NULL'), 1,
+      'the one-use authorization is still unused after the rolled-back attempt');
+    await ctx.db.prepare('DROP TRIGGER cms_probe_fail_emergency').run();
+    const emergencyRetried = await ctx.run('/local/emergency/claim', 'POST',
+      { token, response: emergencyRegistration });
+    assert.equal(emergencyRetried.status, 201, 'the same token succeeds after the fault is removed');
+    // State survives a fresh handler instance over the same LOCAL D1.
+    const restarted = createLocalCmsHandler();
+    const afterRestart = await restarted(makeRequest('/local/emergency/claim', 'POST',
+      { token, response: emergencyRegistration }), ctx.env);
+    assert.equal(afterRestart.status, 403, 'the consumed token stays consumed after a handler restart');
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS D4: LOCAL backup restores into an isolated D1 with identical invariants and dead sessions stay dead', async () => {
+  const source = await setup();
+  let target;
+  try {
+    const liveSession = await login(source);
+    const created = await source.run('/local/articles', 'POST', { ...sampleDraft, idempotencyKey: seedIdempotency() }, liveSession);
+    const draftId = (await created.json()).id;
+    await source.run(`/local/articles/${draftId}`, 'PATCH', {
+      ...sampleDraft, title: 'Second revision for the restore comparison',
+      expectedRevision: 1, idempotencyKey: seedIdempotency(),
+    }, liveSession);
+    const revokedSession = await login(source, source.recovery);
+    assert.equal((await source.run('/local/logout', 'POST', {}, revokedSession)).status, 200);
+    await source.run('/local/challenge', 'POST', { credentialId: source.primary.id });
+
+    const dump = await dumpLocalDatabase(source.db);
+    const sourceCounts = Object.fromEntries(DUMP_TABLES.map(table => [table, dump[table].length]));
+    const sourceDigests = Object.fromEntries(DUMP_TABLES.map(table => [table, tableDigest(dump[table])]));
+
+    target = await openEmptySyntheticD1({ secret: source.env.CMS_TEST_HMAC_KEY, nowMs: Date.now() });
+    await restoreLocalDatabase(target.db, dump);
+    const targetCounts = {};
+    for (const table of DUMP_TABLES) {
+      targetCounts[table] = (await target.db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).first()).n;
+    }
+    assert.deepEqual(targetCounts, sourceCounts, 'every table restores with identical row counts');
+    const targetDigests = {};
+    for (const table of DUMP_TABLES) targetDigests[table] = tableDigest(await dumpTable(target.db, table));
+    assert.deepEqual(targetDigests, sourceDigests, 'restored content matches the backup byte for byte');
+
+    assert.equal((await target.run('/local/articles', 'GET', undefined, liveSession)).status, 200,
+      'a live session restored from the backup still authorizes its own Owner');
+    assert.equal((await target.run('/local/articles', 'GET', undefined, revokedSession)).status, 401,
+      'a session revoked before the backup stays dead after the restore');
+    assert.equal((await target.run('/local/challenge', 'POST',
+      { credentialId: 'unknown-credential' })).status, 403);
+    target.clock.ms += 1_201_000;
+    assert.equal((await target.run('/local/articles', 'GET', undefined, liveSession)).status, 401,
+      'session TTL is preserved by the restore');
+    assert.equal(await countRows(target.db, 'cms_owner'), 1);
+  } finally {
+    if (target) await target.mf.dispose();
+    await source.mf.dispose();
+  }
 });

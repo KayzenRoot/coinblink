@@ -1,0 +1,67 @@
+// THROWAWAY CP1 diagnostic (R94). Node-hosted Miniflare D1 proxy: does an acknowledged
+// write correspond to a persisted row under concurrency? Redacted: only ids/counts/error classes.
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
+import { randomUUID } from 'node:crypto';
+
+const N = Number(process.argv[2] ?? 100);
+const ROUNDS = Number(process.argv[3] ?? 5);
+const MODE = process.argv[4] ?? 'insert';
+
+async function round(db, r) {
+  const tag = r + '-' + randomUUID().slice(0, 8);
+  const outcomes = await Promise.all(Array.from({ length: N }, async (_, i) => {
+    const id = tag + '-' + i;
+    try {
+      if (MODE === 'insert') {
+        const res = await db.prepare('INSERT INTO probe_identity(id,n) VALUES (?,?)').bind(id, i).run();
+        return { ok: true, ack: res?.meta?.changes === 1, id };
+      }
+      const res = await db.prepare('INSERT INTO probe_identity(id,n) VALUES (?,?) RETURNING id').bind(id, i).first();
+      return { ok: true, ack: res?.id === id, id, got: res?.id };
+    } catch (error) {
+      return { ok: false, id, err: error?.cause?.code ?? error?.name ?? 'err', msg: String(error?.message ?? '').slice(0, 60) };
+    }
+  }));
+  const errors = {};
+  let acks = 0, mismatch = 0;
+  const returned = [];
+  for (const o of outcomes) {
+    if (!o.ok) { errors[o.err + '|' + o.msg] = (errors[o.err + '|' + o.msg] ?? 0) + 1; continue; }
+    returned.push(o.got ?? o.id);
+    if (o.ack) acks++;
+    if (MODE === 'returning' && o.got !== o.id) mismatch++;
+  }
+  const rows = (await db.prepare('SELECT COUNT(*) AS n FROM probe_identity WHERE id LIKE ?').bind(tag + '%').first()).n;
+  const uniqueReturned = new Set(returned).size;
+  const duplicates = returned.length - uniqueReturned;
+  const verdict = acks === rows ? 'MATCH' : 'MISMATCH';
+  console.log(`round ${r}: N=${N} mode=${MODE} acks=${acks} rows=${rows} ${verdict} ` +
+    `wrongValue=${mismatch} duplicateResults=${duplicates} missingResults=${N - returned.length} errors=${JSON.stringify(errors)}`);
+  return { acks, rows, verdict, mismatch, duplicates };
+}
+
+const dir = mkdtempSync(path.join(tmpdir(), 'r94-identity-'));
+const mf = new Miniflare(convertV4MiniflareOptions({
+  name: 'r94-identity-' + randomUUID(),
+  script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
+  modules: true, compatibilityDate: '2026-10-13',
+  d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+  resourcePersistencePath: dir, log: new NoOpLog(),
+}));
+try {
+  const db = await mf.getD1Database('CMS_D1_LOCAL');
+  await db.prepare('CREATE TABLE probe_identity(id TEXT PRIMARY KEY, n INTEGER NOT NULL)').run();
+  const summary = { match: 0, mismatch: 0, ackShortfall: 0, errors: 0 };
+  for (let r = 1; r <= ROUNDS; r++) {
+    const res = await round(db, r);
+    if (res.verdict === 'MATCH') summary.match++; else summary.mismatch++;
+    if (res.acks > res.rows) summary.ackShortfall++;
+  }
+  console.log('SUMMARY ' + JSON.stringify(summary));
+} finally {
+  await mf.dispose();
+  rmSync(dir, { recursive: true, force: true });
+}

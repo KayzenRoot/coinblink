@@ -17,6 +17,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     save: document.getElementById('save'),
     history: document.getElementById('history'),
     historyList: document.getElementById('history-list'),
+    bootstrap: document.getElementById('bootstrap'),
+    ticket: document.getElementById('ticket'),
+    devices: document.getElementById('devices'),
+    enrollRecovery: document.getElementById('enroll-recovery'),
+    enrollPrimary: document.getElementById('enroll-primary'),
+    authorizeRecovery: document.getElementById('authorize-recovery'),
+    deviceId: document.getElementById('device-id'),
+    revokeDevice: document.getElementById('revoke-device'),
+    deviceList: document.getElementById('device-list'),
+    emergency: document.getElementById('emergency'),
+    emergencyToken: document.getElementById('emergency-token'),
   };
   let csrf = null;
   let lastDrafts = [];
@@ -46,6 +57,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     lastDrafts = [];
     ui.search.value = '';
     ui.search.hidden = true;
+    ui.devices.hidden = true;
+    ui.deviceList.replaceChildren();
+    ui.deviceId.value = '';
+    ui.emergencyToken.value = '';
     ui.status.textContent = 'Not authenticated';
   }
   async function api(url, method = 'GET', body) {
@@ -65,9 +80,65 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       if (response.status === 401 && url.startsWith('/local/articles')) {
         clearLocalSession();
       }
-      throw new Error('Local request rejected (' + response.status + ')');
+      const error = new Error('Local request rejected (' + response.status + ')');
+      error.status = response.status;
+      throw error;
     }
     return data;
+  }
+  function registrationJson(credential) {
+    return {
+      id: credential.id,
+      rawId: encode(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: encode(credential.response.clientDataJSON),
+        attestationObject: encode(credential.response.attestationObject),
+        transports: credential.response.getTransports ? credential.response.getTransports() : [],
+      },
+      clientExtensionResults: credential.getClientExtensionResults(),
+      authenticatorAttachment: credential.authenticatorAttachment,
+    };
+  }
+  function assertionJson(assertion) {
+    return {
+      id: assertion.id,
+      rawId: encode(assertion.rawId),
+      type: assertion.type,
+      response: {
+        clientDataJSON: encode(assertion.response.clientDataJSON),
+        authenticatorData: encode(assertion.response.authenticatorData),
+        signature: encode(assertion.response.signature),
+        userHandle: assertion.response.userHandle ? encode(assertion.response.userHandle) : null,
+      },
+      clientExtensionResults: assertion.getClientExtensionResults(),
+    };
+  }
+  async function createPasskey(challengeHex, rpId) {
+    if (!window.PublicKeyCredential || !navigator.credentials?.create) {
+      throw new Error('Browser passkey creation is unavailable in this secure test origin');
+    }
+    const credential = await navigator.credentials.create({ publicKey: {
+      challenge: Uint8Array.from(challengeHex.match(/.{2}/g), x => parseInt(x, 16)),
+      rp: { id: rpId, name: 'CoinBlink local test' },
+      user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'local-owner', displayName: 'Local Owner' },
+      pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+      authenticatorSelection: { userVerification: 'required', residentKey: 'required' },
+      attestation: 'none', timeout: 60000,
+    } });
+    if (!credential) throw new Error('Passkey was not created');
+    return registrationJson(credential);
+  }
+  async function refreshDevices() {
+    const { credentials } = await api('/local/credentials');
+    ui.deviceList.replaceChildren();
+    for (const device of credentials) {
+      const item = document.createElement('li');
+      item.textContent = device.device_kind + ' · ' + device.credential_id.slice(0, 10) + '…' +
+        (device.credential_id === ui.id.value.trim() ? ' (this sign-in)' : '') +
+        (device.revoked_at ? ' (revoked)' : ' (active)');
+      ui.deviceList.append(item);
+    }
   }
   function editDraft(draft) {
     ui.form.elements.namedItem('title').value = draft.title;
@@ -126,26 +197,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         },
       });
       if (!assertion) throw new Error('Passkey was not selected');
-      const response = {
-        id: assertion.id,
-        rawId: encode(assertion.rawId),
-        type: assertion.type,
-        response: {
-          clientDataJSON: encode(assertion.response.clientDataJSON),
-          authenticatorData: encode(assertion.response.authenticatorData),
-          signature: encode(assertion.response.signature),
-          userHandle: assertion.response.userHandle ? encode(assertion.response.userHandle) : null,
-        },
-        clientExtensionResults: assertion.getClientExtensionResults(),
-      };
+      const response = assertionJson(assertion);
       const logged = await api('/local/login', 'POST', { credentialId, challenge, response });
       csrf = logged.csrf;
       ui.form.hidden = false;
       ui.logout.hidden = false;
       ui.refresh.hidden = false;
       ui.search.hidden = false;
+      ui.devices.hidden = false;
       await refresh();
-      message('Authenticated with a pre-enrolled LOCAL test credential');
+      await refreshDevices();
+      message('Authenticated with a LOCAL test passkey');
     } catch (error) {
       message(error instanceof Error ? error.message : 'Local test login failed');
     } finally { ui.login.disabled = false; }
@@ -190,6 +252,95 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.historyList.replaceChildren();
     ui.save.textContent = 'Create draft'; message('New unsaved local draft');
   });
+  ui.bootstrap.addEventListener('click', async () => {
+    ui.bootstrap.disabled = true;
+    try {
+      const ticket = ui.ticket.value.trim();
+      if (!ticket) throw new Error('An operator ticket is required');
+      const { challenge, rpId } = await api('/local/bootstrap/challenge', 'POST', { ticket });
+      const response = await createPasskey(challenge, rpId);
+      const claimed = await api('/local/bootstrap/claim', 'POST', { ticket, challenge, response });
+      if (claimed.claimed) {
+        ui.id.value = response.id;
+        message('First passkey registered locally. Sign in to continue.');
+      }
+    } catch (error) { message(error instanceof Error ? error.message : 'Local bootstrap failed'); }
+    finally { ui.bootstrap.disabled = false; }
+  });
+  async function enrollDevice(kind, label) {
+    const { challenge, rpId } = await api('/local/enroll/challenge', 'POST', { kind });
+    const response = await createPasskey(challenge, rpId);
+    const result = await api('/local/enroll/claim', 'POST', { challenge, response });
+    ui.deviceId.value = result.credentialId;
+    message(label + ' registered locally (' + result.deviceKind + ').');
+    try {
+      await refreshDevices();
+    } catch (error) {
+      if (error && error.status === 401) {
+        clearLocalSession();
+        message(label + ' registered. The rotation ended this session; sign in again.');
+        return;
+      }
+      throw error;
+    }
+  }
+  ui.enrollRecovery.addEventListener('click', async () => {
+    ui.enrollRecovery.disabled = true;
+    try { await enrollDevice('recovery', 'Recovery passkey'); }
+    catch (error) { message(error instanceof Error ? error.message : 'Recovery enrollment failed'); }
+    finally { ui.enrollRecovery.disabled = false; }
+  });
+  ui.enrollPrimary.addEventListener('click', async () => {
+    ui.enrollPrimary.disabled = true;
+    try { await enrollDevice('primary', 'Primary passkey'); }
+    catch (error) {
+      message(error && error.status === 403
+        ? 'Recovery authorization required before replacing a lost primary'
+        : error instanceof Error ? error.message : 'Primary enrollment failed');
+    } finally { ui.enrollPrimary.disabled = false; }
+  });
+  ui.authorizeRecovery.addEventListener('click', async () => {
+    ui.authorizeRecovery.disabled = true;
+    try {
+      const credentialId = ui.id.value.trim();
+      const { challenge, rpId } = await api('/local/recovery/challenge', 'POST', {});
+      const assertion = await navigator.credentials.get({ publicKey: {
+        challenge: Uint8Array.from(challenge.match(/.{2}/g), x => parseInt(x, 16)),
+        rpId, allowCredentials: [{ type: 'public-key', id: decode(credentialId) }],
+        userVerification: 'required', timeout: 60000,
+      } });
+      if (!assertion) throw new Error('Passkey was not selected');
+      await api('/local/recovery/complete', 'POST',
+        { challenge, credentialId, response: assertionJson(assertion) });
+      message('Recovery authorized for one primary replacement');
+    } catch (error) {
+      message(error && error.status === 403
+        ? 'Recovery authorization requires signing in with the recovery passkey'
+        : error instanceof Error ? error.message : 'Recovery authorization failed');
+    } finally { ui.authorizeRecovery.disabled = false; }
+  });
+  ui.revokeDevice.addEventListener('click', async () => {
+    ui.revokeDevice.disabled = true;
+    try {
+      const credentialId = ui.deviceId.value.trim();
+      await api('/local/credentials/revoke', 'POST', { credentialId });
+      message('Device revoked locally');
+      await refreshDevices();
+    } catch (error) { message(error instanceof Error ? error.message : 'Device revocation failed'); }
+    finally { ui.revokeDevice.disabled = false; }
+  });
+  ui.emergency.addEventListener('click', async () => {
+    ui.emergency.disabled = true;
+    try {
+      const token = ui.emergencyToken.value.trim();
+      const response = await createPasskey(token, location.hostname);
+      await api('/local/emergency/claim', 'POST', { token, response });
+      clearLocalSession();
+      ui.id.value = response.id;
+      message('Emergency recovery complete. Sign in with the new primary passkey.');
+    } catch (error) { message(error instanceof Error ? error.message : 'Emergency recovery failed'); }
+    finally { ui.emergency.disabled = false; }
+  });
   ui.logout.addEventListener('click', async () => {
     ui.logout.disabled = true;
     try {
@@ -233,13 +384,33 @@ footer{padding:24px 0;color:#b9c8bd}
 </head><body>
 <main>
 <h1>CoinBlink · Local CMS Test Workspace</h1>
-<p class="banner" role="note">LOCAL TEST ONLY. Uses an already enrolled disposable test passkey. No real Owner setup, publishing, cloud save, or production credentials.</p>
+<p class="banner" role="note">LOCAL TEST ONLY. Bootstrap, devices, recovery and drafts are synthetic and stored only in a disposable LOCAL D1. No real Owner setup, publishing, cloud save, or production credentials.</p>
+<fieldset id="bootstrap-panel"><legend>First Owner bootstrap (local test)</legend>
+<label for="ticket">Offline operator ticket (one use)</label>
+<input id="ticket" autocomplete="off" spellcheck="false" maxlength="64">
+<button id="bootstrap" type="button">Create first passkey</button>
+</fieldset>
 <fieldset><legend>Test passkey sign-in</legend>
-<label for="credential">Pre-enrolled local test credential ID (base64url)</label>
+<label for="credential">Local test credential ID (base64url)</label>
 <input id="credential" autocomplete="off" spellcheck="false" maxlength="256" required>
 <button id="login" type="button">Sign in with test passkey</button>
 <button id="logout" type="button" hidden>Sign out</button>
 <p id="session-status">Not authenticated</p>
+</fieldset>
+<fieldset id="devices" hidden><legend>Test devices and recovery</legend>
+<button id="enroll-recovery" type="button">Add recovery passkey</button>
+<button id="enroll-primary" type="button">Add replacement primary passkey</button>
+<button id="authorize-recovery" type="button">Authorize recovery with this passkey</button>
+<label for="device-id">Device credential ID</label>
+<input id="device-id" autocomplete="off" spellcheck="false" maxlength="256">
+<button id="revoke-device" type="button">Revoke device</button>
+<ul id="device-list" aria-label="Owner devices"></ul>
+<p><a id="workspace-link" href="/local/workspace">Open the protected local workspace page</a></p>
+</fieldset>
+<fieldset id="emergency-panel"><legend>Emergency recovery (both devices lost)</legend>
+<label for="emergency-token">Offline operator authorization token</label>
+<input id="emergency-token" autocomplete="off" spellcheck="false" maxlength="64">
+<button id="emergency" type="button">Recover with emergency authorization</button>
 </fieldset>
 <p id="message" role="status" aria-live="polite">Only disposable local data is permitted.</p>
 <section aria-label="Draft editor">

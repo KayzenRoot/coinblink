@@ -1,0 +1,16 @@
+FIRST-BATCH-ERROR {"name":"TypeError","msg":"fetch failed","cause":{"code":"ECONNRESET","errno":-4077,"syscall":"read","message":"read ECONNRESET"}}
+trial 1: N=100 wall=12788ms hist={"201":1,"409":56,"500":43} owners=1 creds=1 consumedTickets=1
+   x43 ["BATCH","batch","TypeError","fetch failed","ECONNRESET"]
+   per-request max=12769ms
+FIRST-BATCH-ERROR {"name":"TypeError","msg":"fetch failed","cause":{"code":"ECONNRESET","errno":-4077,"syscall":"read","message":"read ECONNRESET"}}
+trial 2: N=100 wall=7647ms hist={"201":1,"500":99} owners=1 creds=1 consumedTickets=1
+   x99 ["BATCH","batch","TypeError","fetch failed","ECONNRESET"]
+   per-request max=7646ms
+FIRST-BATCH-ERROR {"name":"TypeError","msg":"fetch failed","cause":{"code":"ECONNRESET","errno":-4077,"syscall":"read","message":"read ECONNRESET"}}
+trial 3: N=100 wall=9822ms hist={"201":1,"409":22,"500":77} owners=1 creds=1 consumedTickets=1
+   x77 ["BATCH","batch","TypeError","fetch failed","ECONNRESET"]
+   per-request max=9802ms
+FIRST-BATCH-ERROR {"name":"TypeError","msg":"fetch failed","cause":{"code":"ECONNRESET","errno":-4077,"syscall":"read","message":"read ECONNRESET"}}
+trial 4: N=100 wall=12136ms hist={"201":1,"409":9,"500":90} owners=1 creds=1 consumedTickets=1
+   x90 ["BATCH","batch","TypeError","fetch failed","ECONNRESET"]
+   per-request max=12128ms

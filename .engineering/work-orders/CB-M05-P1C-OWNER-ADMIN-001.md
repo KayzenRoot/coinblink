@@ -39,3 +39,11 @@ Deliver a truly protected **one-person** Owner admin, backed by server-side chal
 ## 2026-10-17 proposed-work-order source refresh (not admitted)
 
 Protected `main` at review: `5cbb808ebcc052780ba7e4f426080ddb0ef62f64`; the earlier `6919125c` base is retained above as provenance only. Nine of nine identified critical source blobs on current `main` match the proposed Context Lock's original fingerprints; the accompanying ADR and this WO receive appended technical readback only. The scope, risk classification HIGH_ASSURANCE, file ownership, future P1-C security decision, separately authorized bindings, P1-D/P1-E dependencies, tests, non-production boundaries and STOP condition **remain unchanged**. Recompute a fresh *execution* lock against whatever `main` and PR #91 actually are before dispatch. This refresh is not Owner implementation approval.
+
+## 2026-10-18 · Post-PR #128 integrated baseline and candidate C0 handoff (DOCUMENT ONLY)
+
+**New protected main:** `247315405408efcbda7d0ac49be833711fa8170a` after exact-HEAD protected squash of PR #128, with synthetic LOCAL proof A–E integrated but no public `/admin` routes, no D1 remote, no real passkeys or secrets. R106 CI 7/7, R107 sole-Owner LOCAL proof acceptance, no checkpoint change. Historical baseline and draft references above are provenance only.
+
+**This staged Work Order remains `PROPOSED / NOT EXECUTABLE`.** Proposed near-term C0 integration/trust-boundary plan is [`../proposals/CB-M05-P1C-RUNTIME-BOUNDARY-PLAN-20261018.md`](../proposals/CB-M05-P1C-RUNTIME-BOUNDARY-PLAN-20261018.md). The C0 document defines route-by-route server authorization matrix, M05-vs-Steward path ownership, HIGH_ASSURANCE tests and C1/C2/C3 admission gates. No new privileged/runtime code authority, D1 remote, provider keys, publications, deploy or checkpoint is granted. **Before C1/C2, require a fresh exact-main Context Lock, Owner scoped code approval and complete security review.**
+
+`STATUS=C0_DOCUMENT_CANDIDATE`; `P1C_RUNTIME_CODE_GO=NO`; `M05_DONE=false`; `CHECKPOINT_DELTA={}`.

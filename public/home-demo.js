@@ -306,18 +306,28 @@ if (sourceHeading && sourceCards.length) {
   status.setAttribute("aria-live", "polite");
   status.setAttribute("data-official-source-status", "");
 
+  const localeForFilter = isPortuguese ? "pt-BR" : "en";
+  function describeCount(visibleCount) {
+    if (visibleCount === 0) {
+      return isPortuguese
+        ? "Nenhuma fonte oficial corresponde à busca."
+        : "No official publishers match this search.";
+    }
+    if (isPortuguese) {
+      return visibleCount + " de " + sourceCards.length + " fontes oficiais exibidas.";
+    }
+    return visibleCount + " of " + sourceCards.length + " official publishers shown.";
+  }
   const refresh = () => {
-    const query = search.value.trim().toLocaleLowerCase(isPortuguese ? "pt-BR" : "en");
-    let count = 0;
+    const query = search.value.trim().toLocaleLowerCase(localeForFilter);
+    let visibleCount = 0;
     for (const card of sourceCards) {
-      const hit = !query || (card.textContent || "").toLocaleLowerCase(isPortuguese ? "pt-BR" : "en").includes(query);
-      card.hidden = !hit;
-      if (hit) count++;
+      const match = !query || (card.textContent || "").toLocaleLowerCase(localeForFilter).includes(query);
+      card.hidden = !match;
+      if (match) visibleCount++;
     }
     clear.hidden = !query;
-    status.textContent = isPortuguese
-      ? (count === 0 ? "Nenhuma fonte oficial corresponde à busca." : count + " de " + sourceCards.length + " fontes oficiais exibidas.")
-      : (count === 0 ? "No official publishers match this search." : count + " of " + sourceCards.length + " official publishers shown.");
+    status.textContent = describeCount(visibleCount);
   };
   clear.addEventListener("click", () => {
     search.value = "";

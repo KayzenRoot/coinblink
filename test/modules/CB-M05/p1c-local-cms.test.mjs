@@ -10,7 +10,7 @@ import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
 import { splitLocalSchemaStatements, startLocalCmsPreview } from './p1c-local-preview.mjs';
-import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
+import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 
 const schema = readFileSync('test/modules/CB-M05/p1c-fixtures/schema.sql', 'utf8');
@@ -716,5 +716,249 @@ test('M05 LOCAL CMS 12: bound streamed JSON when Content-Length is forged or omi
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_challenges').first()).n, 0);
     const valid = await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id });
     assert.equal(valid.status, 200, 'bounded small JSON must still authenticate a local challenge');
+  } finally { await ctx.mf.dispose(); }
+});
+
+// First-Owner bootstrap: a fresh schema-only D1 with no cms_owner seed.
+async function openEmptySyntheticD1() {
+  mkdirSync(stateRoot, { recursive: true });
+  const mf = new Miniflare(convertV4MiniflareOptions({
+    name: 'coinblink-m05-p1c-bootstrap-' + randomUUID(),
+    script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
+    modules: true,
+    compatibilityDate: '2026-10-13',
+    d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+    resourcePersistencePath: path.join(stateRoot, randomUUID()),
+    log: new NoOpLog(),
+  }));
+  try {
+    const db = await mf.getD1Database('CMS_D1_LOCAL');
+    for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    const secret = key();
+    const clock = { ms: Date.now() };
+    const env = { CB_M05_LOCAL_TEST_ONLY: 'true', CMS_D1_LOCAL: db, CMS_TEST_HMAC_KEY: secret };
+    const run = (route, method = 'GET', body = undefined, options = {}) =>
+      createLocalCmsHandler({ now: () => clock.ms })(makeRequest(route, method, body, options), env);
+    const ticket = () => issueBootstrapTicket(db, secret, Math.floor(clock.ms / 1000));
+    return { mf, db, env, secret, clock, run, ticket };
+  } catch (error) {
+    await mf.dispose();
+    throw error;
+  }
+}
+async function countRows(db, table, where = '1=1') {
+  return (await db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${where}`).first()).n;
+}
+async function bootstrapChallenge(ctx, ticket) {
+  const response = await ctx.run('/local/bootstrap/challenge', 'POST', { ticket });
+  assert.equal(response.status, 200);
+  return (await response.json()).challenge;
+}
+function bootstrapClaimBody(ticket, challenge, authenticator, options = {}) {
+  return {
+    ticket,
+    challenge,
+    response: makeRegistrationResponse(authenticator, { challenge: webauthnChallengeFromHex(challenge), ...options }),
+  };
+}
+function statusHistogram(statuses) {
+  return statuses.reduce((counts, status) => ({ ...counts, [status]: (counts[status] ?? 0) + 1 }), {});
+}
+
+// Miniflare's loopback D1 transport resets ~70% of a single 100-way burst of
+// WebAuthn-verifying claims (ECONNRESET, logged); plain and batch bursts do not reset.
+// Waves of 10 keep every claim in flight concurrently while avoiding that harness fault.
+const BOOTSTRAP_WAVE = 10;
+async function raceClaims(ctx, contenderSet, wave) {
+  const outcomes = [];
+  for (let start = 0; start < contenderSet.length; start += wave) {
+    outcomes.push(...await Promise.all(contenderSet.slice(start, start + wave).map(c =>
+      ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(c.ticket, c.challenge, c.authenticator)))));
+  }
+  return outcomes;
+}
+
+for (const contenders of [2, 10, 100]) {
+  test(`M05 LOCAL CMS BOOT-${contenders}: fresh D1, ${contenders} independent tickets race, exactly one Owner`, { timeout: 240_000 }, async () => {
+    const ctx = await openEmptySyntheticD1();
+    try {
+      const contenderSet = [];
+      for (let i = 0; i < contenders; i++) {
+        const ticket = await ctx.ticket();
+        const authenticator = makeSyntheticAuthenticator('boot-' + i);
+        contenderSet.push({ ticket, authenticator, challenge: await bootstrapChallenge(ctx, ticket) });
+      }
+      const outcomes = await raceClaims(ctx, contenderSet, Math.min(BOOTSTRAP_WAVE, contenders));
+      const statuses = outcomes.map(response => response.status);
+      console.log(`BOOT-${contenders} histogram ${JSON.stringify(statusHistogram(statuses))}`);
+      assert.equal(statuses.filter(status => status === 201).length, 1, 'exactly one contender may claim the Owner');
+      assert.ok(statuses.every(status => status === 201 || status === 403 || status === 409),
+        'every loser must be denied without a server fault: ' + statuses.join(','));
+      assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+      const credentials = (await ctx.db.prepare('SELECT credential_id,device_kind FROM cms_credentials').all()).results;
+      assert.equal(credentials.length, 1, 'losers must leave no credential rows');
+      assert.equal(credentials[0].credential_id, contenderSet[statuses.indexOf(201)].authenticator.id);
+      assert.equal(credentials[0].device_kind, 'primary');
+      assert.equal(await countRows(ctx.db, 'cms_sessions'), 0, 'bootstrap issues no session');
+      assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), 1);
+      assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NULL'), contenders - 1);
+      assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), 1);
+    } finally { await ctx.mf.dispose(); }
+  });
+}
+
+test('M05 LOCAL CMS BOOT-BURST-100: all 100 claims in one burst admit at most one Owner with no partial rows', { timeout: 240_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const contenderSet = [];
+    for (let i = 0; i < 100; i++) {
+      const ticket = await ctx.ticket();
+      const authenticator = makeSyntheticAuthenticator('burst-' + i);
+      contenderSet.push({ ticket, authenticator, challenge: await bootstrapChallenge(ctx, ticket) });
+    }
+    const outcomes = await raceClaims(ctx, contenderSet, 100);
+    const statuses = outcomes.map(response => response.status);
+    console.log(`BOOT-BURST-100 histogram ${JSON.stringify(statusHistogram(statuses))}`);
+    assert.ok(statuses.filter(status => status === 201).length <= 1, 'never more than one successful claim');
+    assert.equal(await countRows(ctx.db, 'cms_owner'), statuses.includes(201) ? 1 : 0);
+    assert.equal(await countRows(ctx.db, 'cms_credentials'), statuses.includes(201) ? 1 : 0, 'no partial credential rows');
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), statuses.includes(201) ? 1 : 0);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), statuses.includes(201) ? 1 : 0);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS BOOT-SAME: one shared ticket raced by 10 authenticators admits one Owner', { timeout: 240_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const ticket = await ctx.ticket();
+    const contenderSet = [];
+    for (let i = 0; i < 10; i++) {
+      contenderSet.push({ authenticator: makeSyntheticAuthenticator('shared-' + i), challenge: await bootstrapChallenge(ctx, ticket) });
+    }
+    const outcomes = await Promise.all(contenderSet.map(c =>
+      ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(ticket, c.challenge, c.authenticator))));
+    const statuses = outcomes.map(response => response.status);
+    console.log(`BOOT-SAME histogram ${JSON.stringify(statusHistogram(statuses))}`);
+    assert.equal(statuses.filter(status => status === 201).length, 1);
+    assert.ok(statuses.every(status => status === 201 || status === 403 || status === 409), statuses.join(','));
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_credentials'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS BOOT-FAIL: failure after owner insert rolls back owner, credential and ticket', { timeout: 120_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const ticket = await ctx.ticket();
+    const authenticator = makeSyntheticAuthenticator('boot-fail');
+    const challenge = await bootstrapChallenge(ctx, ticket);
+    const body = bootstrapClaimBody(ticket, challenge, authenticator);
+    await ctx.db.prepare(`CREATE TRIGGER cms_test_fail_credential BEFORE INSERT ON cms_credentials
+      BEGIN SELECT RAISE(ABORT, 'injected write failure'); END`).run();
+    const failed = await ctx.run('/local/bootstrap/claim', 'POST', body);
+    assert.equal(failed.status, 500);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 0, 'owner insert must roll back');
+    assert.equal(await countRows(ctx.db, 'cms_credentials'), 0);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), 0, 'ticket must stay unconsumed');
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), 0);
+    assert.equal(await countRows(ctx.db, 'cms_sessions'), 0);
+    const failureText = await failed.text();
+    assert.doesNotMatch(failureText, /injected|SQLITE|cms_/i, 'internal failure must not leak SQL details');
+    await ctx.db.prepare('DROP TRIGGER cms_test_fail_credential').run();
+    const retried = await ctx.run('/local/bootstrap/claim', 'POST', body);
+    assert.equal(retried.status, 201, 'the same ticket and challenge succeed once the fault is gone');
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_credentials'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS BOOT-NEG: wrong origin, RP ID, missing UV, challenge, and cross-origin write nothing', { timeout: 120_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const ticket = await ctx.ticket();
+    const challenge = await bootstrapChallenge(ctx, ticket);
+    const authenticator = makeSyntheticAuthenticator('boot-neg');
+    for (const options of [
+      { origin: 'https://evil.example.test' },
+      { rpId: 'evil.example.test' },
+      { flags: 0x41 },
+    ]) {
+      const denied = await ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(ticket, challenge, authenticator, options));
+      assert.equal(denied.status, 403, 'rejected registration: ' + JSON.stringify(Object.keys(options)));
+    }
+    const unknown = await ctx.run('/local/bootstrap/claim', 'POST',
+      bootstrapClaimBody(ticket, 'ab'.repeat(32), authenticator));
+    assert.equal(unknown.status, 403, 'an unissued challenge must be denied');
+    const crossOrigin = await ctx.run('/local/bootstrap/claim', 'POST',
+      bootstrapClaimBody(ticket, challenge, authenticator), { origin: 'https://evil.example.test' });
+    assert.equal(crossOrigin.status, 403);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 0);
+    assert.equal(await countRows(ctx.db, 'cms_credentials'), 0);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), 0, 'failed attempts must not burn the ticket');
+    const valid = await ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(ticket, challenge, authenticator));
+    assert.equal(valid.status, 201);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS BOOT-EXPIRY: challenges expire in 90 seconds and tickets in 900 seconds', { timeout: 120_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const ticket = await ctx.ticket();
+    const authenticator = makeSyntheticAuthenticator('boot-expiry');
+    const stale = await bootstrapChallenge(ctx, ticket);
+    ctx.clock.ms += 91_000;
+    const expired = await ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(ticket, stale, authenticator));
+    assert.equal(expired.status, 403, 'expired challenge must be denied');
+    const fresh = await bootstrapChallenge(ctx, ticket);
+    const claimed = await ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(ticket, fresh, authenticator));
+    assert.equal(claimed.status, 201, 'a fresh challenge on the still-valid ticket succeeds');
+  } finally { await ctx.mf.dispose(); }
+  const late = await openEmptySyntheticD1();
+  try {
+    const ticket = await late.ticket();
+    late.clock.ms += 901_000;
+    const denied = await late.run('/local/bootstrap/challenge', 'POST', { ticket });
+    assert.equal(denied.status, 403, 'expired ticket must not issue a challenge');
+    assert.equal(await countRows(late.db, 'cms_bootstrap_challenges'), 0);
+  } finally { await late.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS BOOT-QUOTA: active challenges per ticket are bounded', { timeout: 120_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const ticket = await ctx.ticket();
+    for (let i = 0; i < 128; i++) await bootstrapChallenge(ctx, ticket);
+    const over = await ctx.run('/local/bootstrap/challenge', 'POST', { ticket });
+    assert.equal(over.status, 403, 'the 129th active challenge must be refused');
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges'), 128);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS BOOT-RESTART: after a claim, replayed, new, and stale tickets cannot create a second Owner', { timeout: 120_000 }, async () => {
+  const ctx = await openEmptySyntheticD1();
+  try {
+    const firstTicket = await ctx.ticket();
+    const winner = makeSyntheticAuthenticator('boot-winner');
+    const challenge = await bootstrapChallenge(ctx, firstTicket);
+    const body = bootstrapClaimBody(firstTicket, challenge, winner);
+    assert.equal((await ctx.run('/local/bootstrap/claim', 'POST', body)).status, 201);
+    // The module keeps no process-local state; a restart is a fresh handler over the same D1.
+    const restarted = {
+      run: (route, method = 'GET', payloadBody = undefined, options = {}) =>
+        createLocalCmsHandler({ now: () => ctx.clock.ms })(makeRequest(route, method, payloadBody, options), ctx.env),
+    };
+    assert.equal((await restarted.run('/local/bootstrap/challenge', 'POST', { ticket: firstTicket })).status, 403, 'replayed ticket');
+    const secondTicket = await ctx.ticket();
+    assert.equal((await restarted.run('/local/bootstrap/challenge', 'POST', { ticket: secondTicket })).status, 403, 'second owner ticket');
+    const rogue = makeSyntheticAuthenticator('boot-rogue');
+    const rogueAttempt = await restarted.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(secondTicket, 'cd'.repeat(32), rogue));
+    assert.equal(rogueAttempt.status, 403);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1, 'exactly one Owner after restart');
+    assert.equal(await countRows(ctx.db, 'cms_credentials'), 1);
+    const logged = await login(restarted, winner);
+    assert.match(logged.cookie, /^__Host-cb_m05_local=[0-9a-f]{64}$/);
   } finally { await ctx.mf.dispose(); }
 });

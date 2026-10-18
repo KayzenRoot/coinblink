@@ -77,6 +77,23 @@ CREATE TABLE cms_draft_revisions (
   FOREIGN KEY (actor_owner_id) REFERENCES cms_owner(owner_id)
 );
 
+CREATE TABLE cms_bootstrap_tickets (
+  ticket_digest TEXT PRIMARY KEY CHECK (length(ticket_digest) = 64),
+  expires_at INTEGER NOT NULL,
+  consumed_at INTEGER,
+  consume_marker TEXT UNIQUE
+);
+
+CREATE TABLE cms_bootstrap_challenges (
+  challenge_digest TEXT PRIMARY KEY CHECK (length(challenge_digest) = 64),
+  ticket_digest TEXT NOT NULL,
+  origin TEXT NOT NULL,
+  rp_id TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  consumed_at INTEGER,
+  FOREIGN KEY (ticket_digest) REFERENCES cms_bootstrap_tickets(ticket_digest)
+);
+
 -- Revision snapshots are append-only, including against accidental direct SQL mutation.
 CREATE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
 BEGIN

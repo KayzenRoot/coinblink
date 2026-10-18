@@ -1,11 +1,14 @@
 // Local-only test CMS vertical slice. NOT imported by Astro, Workers or public routes.
 // No cloud account, deployment binding, real Owner credentials or publishing.
-import { verifyAuthenticationResponse } from '@simplewebauthn/server';
+import { verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 import { renderLocalCmsUi } from './local-cms-ui.mjs';
 
 export const CMS_TEST_ORIGIN = 'https://owner.example.test';
 export const CMS_TEST_RP_ID = 'owner.example.test';
 const COOKIE_NAME = '__Host-cb_m05_local';
+const BOOTSTRAP_TICKET_TTL_SECONDS = 900;
+const BOOTSTRAP_CHALLENGE_TTL_SECONDS = 90;
+const BOOTSTRAP_MAX_ACTIVE_CHALLENGES = 128;
 const utf8 = new TextEncoder();
 const DEFAULT_HEADERS = Object.freeze({
   'Cache-Control': 'no-store',
@@ -349,8 +352,104 @@ async function updateDraft(request, db, secret, currentTime, id) {
   return json({ id, revision: input.expectedRevision + 1, status: 'draft' });
 }
 
+// The first Owner exists only after an out-of-band, one-use ticket is consumed in the
+// same atomic batch that inserts cms_owner=1 and the primary credential.
+const validHex64 = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
+
+export async function issueBootstrapTicket(db, secret, currentTime) {
+  const ticket = randomToken();
+  await db.prepare('INSERT INTO cms_bootstrap_tickets(ticket_digest,expires_at) VALUES (?,?)')
+    .bind(await keyedDigest(secret, ticket), currentTime + BOOTSTRAP_TICKET_TTL_SECONDS).run();
+  return ticket;
+}
+
+async function bootstrapChallenge(request, db, secret, currentTime) {
+  if (!ownerOrigin(request)) return denied();
+  const input = await payload(request, 4_096);
+  if (!validHex64(input.ticket)) return denied();
+  const ticketDigest = await keyedDigest(secret, input.ticket);
+  await db.prepare('DELETE FROM cms_bootstrap_challenges WHERE consumed_at IS NULL AND expires_at<=?')
+    .bind(currentTime).run();
+  const challenge = randomToken();
+  const inserted = await db.prepare(
+    `INSERT INTO cms_bootstrap_challenges (challenge_digest,ticket_digest,origin,rp_id,expires_at)
+     SELECT ?,t.ticket_digest,?,?,? FROM cms_bootstrap_tickets t
+     WHERE t.ticket_digest=? AND t.consumed_at IS NULL AND t.expires_at>?
+       AND NOT EXISTS (SELECT 1 FROM cms_owner)
+       AND (SELECT COUNT(*) FROM cms_bootstrap_challenges b
+             WHERE b.ticket_digest=t.ticket_digest AND b.consumed_at IS NULL AND b.expires_at>?) < ?`
+  ).bind(await digest(challenge), CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
+    currentTime + BOOTSTRAP_CHALLENGE_TTL_SECONDS, ticketDigest, currentTime, currentTime,
+    BOOTSTRAP_MAX_ACTIVE_CHALLENGES).run();
+  if (inserted.meta?.changes !== 1) return denied();
+  return json({ challenge, rpId: CMS_TEST_RP_ID, userVerification: 'required' });
+}
+
+async function verifyBootstrapRegistration(response, challenge) {
+  try {
+    const outcome = await verifyRegistrationResponse({
+      response,
+      expectedChallenge: webauthnChallengeFromHex(challenge),
+      expectedOrigin: CMS_TEST_ORIGIN,
+      expectedRPID: CMS_TEST_RP_ID,
+      requireUserPresence: true,
+      requireUserVerification: true,
+    });
+    const credential = outcome.registrationInfo?.credential;
+    if (!outcome.verified || !credential || credential.id !== response.id || response.rawId !== response.id) return null;
+    return { credentialId: credential.id, publicKey: credential.publicKey, counter: credential.counter };
+  } catch { return null; }
+}
+
+async function bootstrapClaim(request, db, secret, currentTime) {
+  if (!ownerOrigin(request)) return denied();
+  const input = await payload(request);
+  if (!validHex64(input.ticket) || !validHex64(input.challenge) ||
+      !input.response || typeof input.response !== 'object') return denied();
+  const ticketDigest = await keyedDigest(secret, input.ticket);
+  const challengeDigest = await digest(input.challenge);
+  const pending = await db.prepare(
+    `SELECT b.challenge_digest FROM cms_bootstrap_challenges b
+       JOIN cms_bootstrap_tickets t ON t.ticket_digest=b.ticket_digest
+       WHERE b.challenge_digest=? AND t.ticket_digest=? AND b.origin=? AND b.rp_id=?
+         AND b.consumed_at IS NULL AND b.expires_at>? AND t.consumed_at IS NULL AND t.expires_at>?
+         AND NOT EXISTS (SELECT 1 FROM cms_owner)`
+  ).bind(challengeDigest, ticketDigest, CMS_TEST_ORIGIN, CMS_TEST_RP_ID, currentTime, currentTime).first();
+  if (!pending) return denied();
+  const registration = await verifyBootstrapRegistration(input.response, input.challenge);
+  if (!registration) return denied();
+  const marker = crypto.randomUUID();
+  // A losing contender changes no rows: every write is conditioned on the marker
+  // that only the single ticket consumer holds. A distinct-ticket race is stopped
+  // by the cms_owner primary key, which rolls back the whole batch.
+  const results = await db.batch([
+    db.prepare(
+      `UPDATE cms_bootstrap_tickets SET consumed_at=?,consume_marker=?
+         WHERE ticket_digest=? AND consumed_at IS NULL AND expires_at>? AND NOT EXISTS (SELECT 1 FROM cms_owner)`
+    ).bind(currentTime, marker, ticketDigest, currentTime),
+    db.prepare(
+      `UPDATE cms_bootstrap_challenges SET consumed_at=?
+         WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND EXISTS (
+           SELECT 1 FROM cms_bootstrap_tickets t
+            WHERE t.ticket_digest=cms_bootstrap_challenges.ticket_digest AND t.consume_marker=?)`
+    ).bind(currentTime, challengeDigest, currentTime, marker),
+    db.prepare(
+      `INSERT INTO cms_owner(owner_id,created_at)
+         SELECT 1,? WHERE EXISTS (SELECT 1 FROM cms_bootstrap_tickets WHERE consume_marker=?)`
+    ).bind(currentTime, marker),
+    db.prepare(
+      `INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind)
+         SELECT ?,1,?,?,'primary' WHERE EXISTS (SELECT 1 FROM cms_bootstrap_tickets WHERE consume_marker=?)`
+    ).bind(registration.credentialId, registration.publicKey, registration.counter, marker),
+  ]);
+  if (results.some(result => result?.meta?.changes !== 1)) return denied(409);
+  return json({ owner: 1, deviceKind: 'primary', claimed: true }, 201);
+}
+
 const LOCAL_FIXED_ROUTES = new Map([
   ['GET /local/ui', () => localUiResponse()],
+  ['POST /local/bootstrap/challenge', ({ request, db, secret, currentTime }) => bootstrapChallenge(request, db, secret, currentTime)],
+  ['POST /local/bootstrap/claim', ({ request, db, secret, currentTime }) => bootstrapClaim(request, db, secret, currentTime)],
   ['POST /local/challenge', ({ request, db, currentTime }) => issueChallenge(request, db, currentTime)],
   ['POST /local/login', ({ request, db, secret, currentTime }) => login(request, db, secret, currentTime)],
   ['POST /local/logout', ({ request, db, secret, currentTime }) => logout(request, db, secret, currentTime)],

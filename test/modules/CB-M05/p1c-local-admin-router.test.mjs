@@ -65,7 +65,7 @@ test('M05 C1 privileged /admin HTML + draft API are session-bound and keep synth
   const denied = await handler(request('/admin/workspace'), env);
   assert.equal(denied.status, 401);
   assert.doesNotMatch(await denied.text(), /Authenticated synthetic Owner session/);
-  const cookie = 'cb_cms_session=' + token;
+  const cookie = '__Host-cb_m05_local=' + token;
   const headers = { cookie };
   const ok = await handler(request('/admin/workspace', { headers }), env);
   assert.equal(ok.status, 200);

@@ -55,6 +55,40 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
   }
 });
 
+for (const admin of [false, true]) {
+  test('M05 revoked synthetic Owner session scrubs private draft on 401 ' + (admin ? '/admin' : '/local'), { timeout: 120_000 }, async () => {
+    const preview = await startLocalCmsPreview({ headless: true, admin });
+    try {
+      const page = preview.page;
+      await page.locator('#login').click();
+      await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+      await page.locator('[name="title"]').fill('Sensitive never-published local draft');
+      await page.locator('[name="summary"]').fill('Draft content should vanish after a revoked session');
+      await page.locator('[name="body"]').fill('PRIVATE_SYNTHETIC_DRAFT_BODY_DO_NOT_EXPOSE');
+      assert.equal(await page.locator('#draft-preview').isVisible(), true);
+      assert.match(await page.locator('#draft-preview-body').innerText(), /PRIVATE_SYNTHETIC_DRAFT_BODY/);
+
+      const revoked = await preview.db.prepare(
+        'UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL'
+      ).bind(Math.floor(Date.now() / 1000)).run();
+      assert.equal(revoked.meta?.changes, 1, 'exactly one synthetic Owner session is revoked');
+      await page.locator('#refresh').click();
+      await page.getByText('Not authenticated', { exact: true }).waitFor({ timeout: 20_000 });
+      assert.equal(await page.locator('#draft-preview').isVisible(), false,
+        'private preview must be hidden after a server-side 401');
+      assert.equal(await page.locator('#draft-preview-body').textContent(), '',
+        'private draft body must be scrubbed after a server-side 401');
+      assert.equal(await page.locator('[name="body"]').inputValue(), '',
+        'stale editable private draft must not remain in the form');
+      assert.equal(await page.locator('#refresh').isVisible(), false,
+        'privileged control is unavailable after revocation');
+      assert.equal(preview.networkAttempts.filter(x => !x.allowed).length, 0);
+    } finally {
+      await preview.close();
+    }
+  });
+}
+
 test('M05 /admin persistent LOCAL D1 retains draft but expires synthetic Owner session across restart', { timeout: 150_000 }, async () => {
   const persistenceRoot = mkdtempSync(path.join(tmpdir(), 'coinblink-m05-admin-persist-'));
   let first, second;

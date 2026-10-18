@@ -125,7 +125,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url)) {
+      if (response.status === 401 && csrf) {
+        // Any 401 after authentication means the local session is no longer usable,
+        // including protected device reads, not only article endpoints.
         clearLocalSession();
       }
       const error = new Error('Local request rejected (' + response.status + ')');
@@ -407,8 +409,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       clearLocalSession();
       message('Local test session ended');
     } catch {
-      // HttpOnly cookies cannot be cleared by JS: never falsely claim server revocation.
-      message('Logout not confirmed. Session may remain active; retry sign out or close this disposable browser.');
+      // Always remove private DOM/unsaved state even if the server refuses logout.
+      // HttpOnly cookies cannot be cleared by JS; do not claim server revocation.
+      clearLocalSession();
+      message('Logout not confirmed. Browser editor cleared; server session may remain active. Close this disposable browser or sign in again.');
     } finally { ui.logout.disabled = false; }
   });
 `;

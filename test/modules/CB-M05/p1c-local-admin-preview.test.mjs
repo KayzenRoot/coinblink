@@ -1,0 +1,86 @@
+// Browser integration: REAL local D1 + REAL WebAuthn virtual authenticator,
+// mapped only through the isolated synthetic HTTPS Origin. No public admin deploy.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { startLocalCmsPreview } from './p1c-local-preview.mjs';
+
+test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and revoke session', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = preview.page;
+    assert.equal(new URL(page.url()).pathname, '/admin/login');
+    assert.match(await page.title(), /Local CMS Test Workspace/);
+    assert.equal(await page.locator('#credential').inputValue(), preview.primaryId);
+    const before = await page.evaluate(() => fetch('/admin/articles').then(response => response.status));
+    assert.equal(before, 401, 'private draft listing must be denied without an Owner session');
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('LOCAL admin test draft');
+    await page.locator('[name="summary"]').fill('Synthetic test draft never published');
+    await page.locator('[name="body"]').fill('Private test body stored in local D1');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/source');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 1);
+    const response = await page.evaluate(async () => {
+      const r = await fetch('/admin/articles', { credentials: 'same-origin' });
+      return { status: r.status, body: await r.json() };
+    });
+    assert.equal(response.status, 200);
+    assert.equal(response.body.drafts.length, 1);
+    assert.equal(response.body.drafts[0].title, 'LOCAL admin test draft');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated').waitFor({ timeout: 20_000 });
+    assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
+    assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0,
+      'the synthetic admin workflow never attempts off-origin network egress');
+  } finally {
+    await preview.close();
+  }
+});
+
+test('M05 /admin persistent LOCAL D1 retains draft but expires synthetic Owner session across restart', { timeout: 150_000 }, async () => {
+  const persistenceRoot = mkdtempSync(path.join(tmpdir(), 'coinblink-m05-admin-persist-'));
+  let first, second;
+  try {
+    first = await startLocalCmsPreview({ headless: true, persistLocal: true, persistenceRoot, admin: true });
+    await first.page.locator('#login').click();
+    await first.page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    const submitted = await first.page.evaluate(async () => {
+      const response = await fetch('/admin/articles', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Should be denied', body: 'Unsafe CSRF write' }),
+      });
+      return response.status;
+    });
+    assert.equal(submitted, 403, 'no authenticated write without CSRF');
+    await first.page.locator('[name="title"]').fill('Restart-safe synthetic draft');
+    await first.page.locator('[name="summary"]').fill('Local only, never published');
+    await first.page.locator('[name="body"]').fill('Persistent test body');
+    await first.page.locator('[name="sourceUrl"]').fill('https://example.org/research');
+    await first.page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await first.page.locator('#save').click();
+    await first.page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    const firstCredential = first.primaryId;
+    await first.close(); first = null;
+
+    second = await startLocalCmsPreview({ headless: true, persistLocal: true, persistenceRoot, admin: true });
+    assert.notEqual(second.primaryId, firstCredential);
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NULL').first()).n, 0);
+    assert.equal(await second.page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
+    await second.page.locator('#login').click();
+    await second.page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    assert.match(await second.page.locator('#items').innerText(), /Restart-safe synthetic draft/);
+  } finally {
+    if (second) await second.close();
+    if (first) await first.close();
+    rmSync(persistenceRoot, { recursive: true, force: true });
+  }
+});

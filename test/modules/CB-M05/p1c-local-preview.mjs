@@ -16,6 +16,7 @@ import {
 import {
   CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization,
 } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
+import { createLocalAdminRouter } from '../../../src/modules/CB-M05/p1c-local/local-admin-router.mjs';
 
 const SCHEMA_URL = new URL('./p1c-fixtures/schema.sql', import.meta.url);
 const ALLOWED_STATIC = new Set([
@@ -26,6 +27,13 @@ const ALLOWED_STATIC = new Set([
   '/local/credentials', '/local/credentials/revoke', '/local/emergency/claim',
 ]);
 const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
+// The alternate /admin interface is an explicit opt-in LOCAL-only test adapter.
+// It remains restricted to the synthetic HTTPS origin and disposable authenticators.
+const ADMIN_ALLOWED_STATIC = new Set([
+  '/admin', '/admin/',
+  ...[...ALLOWED_STATIC].map(route => route.replace('/local/', '/admin/')),
+]);
+const ADMIN_ARTICLE_ROUTE = /^\/admin\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
 
 // The checked-in SQLite fixture has two BEGIN/END triggers. Split only
 // at statement boundaries, not at the semicolons inside trigger bodies.
@@ -126,7 +134,7 @@ async function addVirtualAuthenticator(context, authenticator) {
   });
 }
 
-export async function startLocalCmsPreview({ headless = false, persistLocal = false, persistenceRoot, bootstrap = false } = {}) {
+export async function startLocalCmsPreview({ headless = false, persistLocal = false, persistenceRoot, bootstrap = false, admin = false } = {}) {
   if (persistenceRoot && !persistLocal) throw new Error('persistenceRoot requires explicit persistLocal');
   const stateDir = persistLocal
     ? path.resolve(persistenceRoot || '.wrangler/coinblink-m05-drafts-local')
@@ -172,7 +180,7 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
       CMS_D1_LOCAL: db,
       CMS_TEST_HMAC_KEY: secret,
     };
-    const handler = createLocalCmsHandler();
+    const handler = admin ? createLocalAdminRouter() : createLocalCmsHandler();
 
     browser = await chromium.launch({ headless });
     const context = await browser.newContext({ serviceWorkers: 'block' });
@@ -194,8 +202,10 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
     await context.route(CMS_TEST_ORIGIN + '/**', async route => {
       const request = route.request();
       const url = new URL(request.url());
-      if (url.origin !== CMS_TEST_ORIGIN ||
-        (!ALLOWED_STATIC.has(url.pathname) && !ARTICLE_ROUTE.test(url.pathname))) {
+      const allowedPath = admin
+        ? (ADMIN_ALLOWED_STATIC.has(url.pathname) || ADMIN_ARTICLE_ROUTE.test(url.pathname))
+        : (ALLOWED_STATIC.has(url.pathname) || ARTICLE_ROUTE.test(url.pathname));
+      if (url.origin !== CMS_TEST_ORIGIN || !allowedPath) {
         networkAttempts.push({ url: request.url(), allowed: false, reason: 'unlisted-fixture-path' });
         await route.abort('blockedbyclient');
         return;
@@ -225,7 +235,7 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
       });
     });
     const page = await context.newPage();
-    const opened = await page.goto(CMS_TEST_ORIGIN + '/local/ui', { waitUntil: 'domcontentloaded' });
+    const opened = await page.goto(CMS_TEST_ORIGIN + (admin ? '/admin/login' : '/local/ui'), { waitUntil: 'domcontentloaded' });
     assert.equal(opened?.status(), 200);
     if (credentials) await page.locator('#credential').fill(credentials.primary.id);
     return {
@@ -246,8 +256,9 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
 async function main() {
   const smoke = process.argv.includes('--smoke');
   const persistLocal = process.argv.includes('--persist-local');
+  const admin = process.argv.includes('--admin');
   if (smoke && persistLocal) throw new Error('--smoke never persists user drafts');
-  const preview = await startLocalCmsPreview({ headless: smoke, persistLocal });
+  const preview = await startLocalCmsPreview({ headless: smoke, persistLocal, admin });
   try {
     const page = preview.page;
     if (smoke) {
@@ -260,7 +271,7 @@ async function main() {
       return;
     }
     process.stdout.write(
-      'CoinBlink LOCAL CMS preview opened in Chromium.\n' +
+      'CoinBlink LOCAL CMS ' + (admin ? '/admin' : '/local') + ' preview opened in Chromium.\n' +
       'Only disposable virtual test credentials are used.\n' +
       'Click "Sign in with test passkey" in the opened window.\n' +
       (persistLocal ? 'Local D1 drafts will remain in .wrangler/coinblink-m05-drafts-local after browser exit.\n' :

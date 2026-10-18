@@ -23,6 +23,15 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     await page.locator('[name="body"]').fill('Private test body stored in local D1');
     await page.locator('[name="sourceUrl"]').fill('https://example.org/source');
     await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await assert.doesNotReject(async () => {
+      assert.equal(await page.locator('#draft-preview').isVisible(), true);
+      assert.equal(await page.locator('#draft-preview-title').innerText(), 'LOCAL admin test draft');
+      assert.equal(await page.locator('#draft-preview-summary').innerText(), 'Synthetic test draft never published');
+    });
+    await page.locator('[name="body"]').fill('<img src="https://external.example.test/tracker.png" onerror="alert(1)">');
+    assert.equal(await page.locator('#draft-preview-body img').count(), 0, 'preview must not parse draft HTML');
+    assert.match(await page.locator('#draft-preview-body').innerText(), /<img src=/);
+    await page.locator('[name="body"]').fill('Private test body stored in local D1');
     await page.locator('#save').click();
     await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
     assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
@@ -36,6 +45,8 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(response.body.drafts[0].title, 'LOCAL admin test draft');
     await page.locator('#logout').click();
     await page.getByText('Not authenticated').waitFor({ timeout: 20_000 });
+    assert.equal(await page.locator('#draft-preview').isVisible(), false, 'logout must hide private preview');
+    assert.equal(await page.locator('#draft-preview-body').textContent(), '', 'logout must clear draft body');
     assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0,
       'the synthetic admin workflow never attempts off-origin network egress');
@@ -78,6 +89,19 @@ test('M05 /admin persistent LOCAL D1 retains draft but expires synthetic Owner s
     await second.page.locator('#login').click();
     await second.page.getByText('Local test session active').waitFor({ timeout: 20_000 });
     assert.match(await second.page.locator('#items').innerText(), /Restart-safe synthetic draft/);
+    await second.page.getByRole('button', { name: /Restart-safe synthetic draft/ }).click();
+    await second.page.getByText('Loaded draft revision 1').waitFor({ timeout: 20_000 });
+    assert.equal(await second.page.locator('#draft-preview-title').innerText(), 'Restart-safe synthetic draft');
+    assert.equal(await second.page.locator('#save').innerText(), 'Save new revision');
+    await second.page.locator('[name="title"]').fill('Restart-safe edited draft');
+    await second.page.locator('[name="summary"]').fill('Edited safely after local D1 restart');
+    await second.page.locator('#save').click();
+    await second.page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout: 20_000 });
+    assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    await second.page.locator('#history').click();
+    await second.page.getByText('Read-only revision history loaded: 2 versions').waitFor({ timeout: 20_000 });
+    assert.match(await second.page.locator('#history-list').innerText(), /Revision 1/);
+    assert.match(await second.page.locator('#history-list').innerText(), /Revision 2/);
   } finally {
     if (second) await second.close();
     if (first) await first.close();

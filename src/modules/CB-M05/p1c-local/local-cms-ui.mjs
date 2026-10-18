@@ -11,6 +11,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     items: document.getElementById('items'),
     search: document.getElementById('draft-search'),
     message: document.getElementById('message'),
+    preview: document.getElementById('draft-preview'),
+    previewTitle: document.getElementById('draft-preview-title'),
+    previewSummary: document.getElementById('draft-preview-summary'),
+    previewBody: document.getElementById('draft-preview-body'),
+    previewSource: document.getElementById('draft-preview-source'),
     status: document.getElementById('session-status'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
@@ -42,6 +47,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     return btoa(raw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   };
   const message = (value) => { ui.message.textContent = value; };
+  // Preview is a private, client-side text-only DOM projection. No publication,
+  // raw HTML, additional request or external source fetching is permitted.
+  function renderDraftPreview() {
+    const authorized = !!csrf && !ui.form.hidden;
+    const title = authorized ? ui.form.elements.namedItem('title').value.trim() : '';
+    const summary = authorized ? ui.form.elements.namedItem('summary').value.trim() : '';
+    const body = authorized ? ui.form.elements.namedItem('body').value.trim() : '';
+    const source = authorized ? ui.form.elements.namedItem('sourceUrl').value.trim() : '';
+    ui.preview.hidden = !authorized || !(title || summary || body);
+    ui.previewTitle.textContent = title;
+    ui.previewSummary.textContent = summary;
+    ui.previewBody.textContent = body;
+    ui.previewSource.textContent = source;
+  }
   function clearLocalSession() {
     csrf = null;
     ui.form.reset();
@@ -49,6 +68,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.revision.value = '0';
     ui.save.textContent = 'Create draft';
     ui.form.hidden = true;
+    renderDraftPreview();
     ui.logout.hidden = true;
     ui.refresh.hidden = true;
     ui.history.hidden = true;
@@ -151,6 +171,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.save.textContent = 'Save new revision';
     ui.history.hidden = false;
     ui.historyList.replaceChildren();
+    renderDraftPreview();
   }
   function renderDraftList() {
     ui.items.replaceChildren();
@@ -179,6 +200,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.status.textContent = 'Local test session active';
   }
   ui.search.addEventListener('input', renderDraftList);
+  ui.form.addEventListener('input', renderDraftPreview);
   ui.login.addEventListener('click', async () => {
     ui.login.disabled = true;
     try {
@@ -201,6 +223,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const logged = await api('/local/login', 'POST', { credentialId, challenge, response });
       csrf = logged.csrf;
       ui.form.hidden = false;
+      renderDraftPreview();
       ui.logout.hidden = false;
       ui.refresh.hidden = false;
       ui.search.hidden = false;
@@ -250,7 +273,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
     ui.history.hidden = true;
     ui.historyList.replaceChildren();
-    ui.save.textContent = 'Create draft'; message('New unsaved local draft');
+    ui.save.textContent = 'Create draft'; renderDraftPreview(); message('New unsaved local draft');
   });
   ui.bootstrap.addEventListener('click', async () => {
     ui.bootstrap.disabled = true;
@@ -379,6 +402,8 @@ button{background:#bde874;color:#14210d;border:0;border-radius:5px;padding:10px 
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #f7f6a5}
 button:disabled{opacity:.45}
 ul{padding-left:20px}li{margin:6px 0}
+.draft-preview{margin-top:18px;padding:14px;border:1px solid #768977;border-radius:9px;background:#172820}
+.draft-preview p{white-space:pre-wrap;overflow-wrap:anywhere}
 footer{padding:24px 0;color:#b9c8bd}
 </style>
 </head><body>
@@ -430,6 +455,13 @@ footer{padding:24px 0;color:#b9c8bd}
 <button id="new-draft" type="button">New draft</button>
 <button id="history" type="button" hidden>View revision history</button>
 <ul id="history-list" aria-label="Read-only draft revision history"></ul>
+<section id="draft-preview" class="draft-preview" aria-labelledby="draft-preview-label" hidden>
+<h3 id="draft-preview-label">Private draft preview · LOCAL only, not published</h3>
+<h4 id="draft-preview-title"></h4>
+<p id="draft-preview-summary"></p>
+<p id="draft-preview-body"></p>
+<p id="draft-preview-source"></p>
+</section>
 </fieldset></form></section>
 <footer>Test data only · no publication capability · server-side authorization required on every request.</footer>
 </main>

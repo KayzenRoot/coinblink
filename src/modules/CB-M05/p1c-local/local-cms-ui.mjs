@@ -57,7 +57,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   // Native browser navigation/refresh guard. Never persist text in browser storage.
   // Revoked sessions and explicit sign-out still clear data without a prompt.
-  window.addEventListener('beforeunload', (event) => {
+  window.addEventListener?.('beforeunload', (event) => {
     if (!hasUnsavedChanges()) return;
     event.preventDefault();
     event.returnValue = '';

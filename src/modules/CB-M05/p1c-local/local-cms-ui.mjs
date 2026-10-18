@@ -125,9 +125,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && csrf) {
-        // Any 401 after authentication means the local session is no longer usable,
-        // including protected device reads, not only article endpoints.
+      if (response.status === 401 && (csrf ||
+          /^\\/(?:local|admin)\\/articles(?:\\/|\\?|$)/.test(url))) {
+        // Denied article reads must erase stale drafts even if the local CSRF state
+        // was already cleared. After sign-in, deny from any protected route
+        // also revokes this browser editor's local authenticated state.
         clearLocalSession();
       }
       const error = new Error('Local request rejected (' + response.status + ')');

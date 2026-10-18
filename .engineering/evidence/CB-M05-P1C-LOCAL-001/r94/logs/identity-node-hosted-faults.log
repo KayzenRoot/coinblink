@@ -1,0 +1,25 @@
+# Node-hosted D1 proxy, 200 concurrent INSERT..RETURNING per round, two invocations.
+## invocation A
+round 1: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 2: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 3: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 4: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 5: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 6: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 7: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 8: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 9: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 10: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+SUMMARY {"match":6,"mismatch":4,"ackShortfall":0,"errors":0}
+## invocation B
+round 1: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 2: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 3: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 4: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 5: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 6: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 7: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 8: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+round 9: N=200 mode=returning acks=199 rows=200 MISMATCH wrongValue=0 duplicateResults=0 missingResults=1 errors={"ECONNRESET|fetch failed":1}
+round 10: N=200 mode=returning acks=200 rows=200 MATCH wrongValue=0 duplicateResults=0 missingResults=0 errors={}
+SUMMARY {"match":6,"mismatch":4,"ackShortfall":0,"errors":0}

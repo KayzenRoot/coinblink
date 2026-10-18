@@ -9,11 +9,15 @@ const diagnostics = [];
 
 // Redacted: records only the statement verb/table labels, method, error name and transport code.
 // Bound parameters, messages, cookies, tickets and key material are never recorded.
+function classifyFailure(error, message) {
+  if (/UNIQUE constraint failed|CHECK constraint failed|FOREIGN KEY constraint failed/i.test(message)) return 'constraint';
+  if (error?.cause || /ECONNRESET|fetch failed/i.test(message)) return 'transport';
+  return 'other';
+}
+
 function recordFailure(stage, method, error) {
   const message = String(error?.message ?? '');
-  const kind = /UNIQUE constraint failed|CHECK constraint failed|FOREIGN KEY constraint failed/i.test(message)
-    ? 'constraint'
-    : (error?.cause || /ECONNRESET|fetch failed/i.test(message) ? 'transport' : 'other');
+  const kind = classifyFailure(error, message);
   diagnostics.push({ stage, method, kind, name: String(error?.name ?? 'Error'), causeCode: String(error?.cause?.code ?? '') });
 }
 

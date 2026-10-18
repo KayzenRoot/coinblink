@@ -1,0 +1,140 @@
+// THROWAWAY CP5 feasibility probe (R94): real Chromium virtual authenticator, bootstrap
+// registration ceremony + immediate login assertion, against the LOCAL handler.
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { chromium } from '@playwright/test';
+import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
+import { randomUUID, randomBytes } from 'node:crypto';
+import { splitLocalSchemaStatements } from './test/modules/CB-M05/p1c-local-preview.mjs';
+import { createLocalCmsHandler, issueBootstrapTicket, CMS_TEST_ORIGIN, CMS_TEST_RP_ID } from './src/modules/CB-M05/p1c-local/local-cms.mjs';
+
+const schema = readFileSync('test/modules/CB-M05/p1c-fixtures/schema.sql', 'utf8');
+const stateRoot = path.resolve('.wrangler/r94-probe-state');
+mkdirSync(stateRoot, { recursive: true });
+const mf = new Miniflare(convertV4MiniflareOptions({
+  name: 'r94-browser-' + randomUUID(),
+  script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
+  modules: true, compatibilityDate: '2026-10-13',
+  d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+  resourcePersistencePath: path.join(stateRoot, randomUUID()), log: new NoOpLog(),
+}));
+const browser = await chromium.launch({ headless: true });
+try {
+  const db = await mf.getD1Database('CMS_D1_LOCAL');
+  for (const s of splitLocalSchemaStatements(schema)) await db.prepare(s).run();
+  const secret = randomBytes(32).toString('hex');
+  const env = { CB_M05_LOCAL_TEST_ONLY: 'true', CMS_D1_LOCAL: db, CMS_TEST_HMAC_KEY: secret };
+  const handler = createLocalCmsHandler();
+  const ticket = await issueBootstrapTicket(db, secret, Math.floor(Date.now() / 1000));
+
+  const context = await browser.newContext({ serviceWorkers: 'block' });
+  await context.credentials.install();
+  const page = await context.newPage();
+  const consoleErrors = [];
+  page.on('console', entry => { if (entry.type() === 'error') consoleErrors.push(entry.text().slice(0, 200)); });
+  page.on('pageerror', error => consoleErrors.push('pageerror: ' + error.message.slice(0, 200)));
+  await context.route('https://owner.example.test/**', async route => {
+    const request = route.request();
+    const url = new URL(request.url());
+    if (url.origin !== CMS_TEST_ORIGIN) { await route.abort('blockedbyclient'); return; }
+    const headers = await request.allHeaders();
+    if (!headers['sec-fetch-site'] && !request.isNavigationRequest()) {
+      if (new URL(request.frame().url()).origin !== CMS_TEST_ORIGIN) { await route.abort('blockedbyclient'); return; }
+      headers['sec-fetch-site'] = 'same-origin';
+    }
+    const postData = request.postDataBuffer();
+    const response = await handler(new Request(request.url(), {
+      method: request.method(), headers, ...(postData ? { body: postData } : {}),
+    }), env);
+    await route.fulfill({
+      status: response.status, headers: Object.fromEntries(response.headers.entries()),
+      body: Buffer.from(await response.arrayBuffer()),
+    });
+  });
+  await page.goto(CMS_TEST_ORIGIN + '/local/ui', { waitUntil: 'domcontentloaded' });
+
+  const result = await page.evaluate(async (bootstrapTicket) => {
+    const b64url = (buffer) => {
+      let raw = '';
+      for (const b of new Uint8Array(buffer)) raw += String.fromCharCode(b);
+      return btoa(raw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+    };
+    const hexToBytes = (hex) => Uint8Array.from(hex.match(/.{2}/g), x => parseInt(x, 16));
+    const decode = (s) => {
+      const t = s.replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(t + '='.repeat((4 - t.length % 4) % 4));
+      return Uint8Array.from(raw, x => x.charCodeAt(0));
+    };
+    const post = (url, body) => fetch(url, {
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const challengeResponse = await post('/local/bootstrap/challenge', { ticket: bootstrapTicket });
+    if (challengeResponse.status !== 200) return { stage: 'challenge', status: challengeResponse.status };
+    const { challenge, rpId } = await challengeResponse.json();
+    let credential;
+    try {
+      credential = await navigator.credentials.create({ publicKey: {
+        challenge: hexToBytes(challenge), rp: { id: rpId, name: 'CoinBlink local test' },
+        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'local-owner', displayName: 'Local Owner' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+        authenticatorSelection: { userVerification: 'required', residentKey: 'required' },
+        attestation: 'none', timeout: 60000,
+      } });
+    } catch (error) {
+      return { stage: 'create', error: String(error?.message ?? error).slice(0, 200) };
+    }
+    if (!credential) return { stage: 'create', error: 'no credential returned' };
+    const registration = {
+      id: credential.id, rawId: b64url(credential.rawId), type: credential.type,
+      response: {
+        clientDataJSON: b64url(credential.response.clientDataJSON),
+        attestationObject: b64url(credential.response.attestationObject),
+        transports: credential.response.getTransports ? credential.response.getTransports() : [],
+      },
+      clientExtensionResults: credential.getClientExtensionResults(),
+      authenticatorAttachment: credential.authenticatorAttachment,
+    };
+    const claimResponse = await post('/local/bootstrap/claim', { ticket: bootstrapTicket, challenge, response: registration });
+    const claimBody = await claimResponse.json();
+    if (claimResponse.status !== 201) return { stage: 'claim', status: claimResponse.status, body: claimBody, credentialId: credential.id };
+
+    const loginChallengeResponse = await post('/local/challenge', { credentialId: credential.id });
+    if (loginChallengeResponse.status !== 200) return { stage: 'login-challenge', status: loginChallengeResponse.status, credentialId: credential.id };
+    const loginChallenge = await loginChallengeResponse.json();
+    let assertion;
+    try {
+      assertion = await navigator.credentials.get({ publicKey: {
+        challenge: hexToBytes(loginChallenge.challenge), rpId,
+        allowCredentials: [{ type: 'public-key', id: decode(credential.id) }],
+        userVerification: 'required', timeout: 60000,
+      } });
+    } catch (error) {
+      return { stage: 'get', error: String(error?.message ?? error).slice(0, 200), credentialId: credential.id };
+    }
+    if (!assertion) return { stage: 'get', error: 'no assertion returned', credentialId: credential.id };
+    const loginResponse = await post('/local/login', {
+      credentialId: credential.id, challenge: loginChallenge.challenge,
+      response: {
+        id: assertion.id, rawId: b64url(assertion.rawId), type: assertion.type,
+        response: {
+          clientDataJSON: b64url(assertion.response.clientDataJSON),
+          authenticatorData: b64url(assertion.response.authenticatorData),
+          signature: b64url(assertion.response.signature),
+          userHandle: assertion.response.userHandle ? b64url(assertion.response.userHandle) : null,
+        },
+        clientExtensionResults: assertion.getClientExtensionResults(),
+      },
+    });
+    return { stage: 'login', status: loginResponse.status, credentialId: credential.id };
+  }, ticket);
+
+  const owners = (await db.prepare('SELECT COUNT(*) AS n FROM cms_owner').first()).n;
+  const credentials = (await db.prepare('SELECT COUNT(*) AS n FROM cms_credentials').first()).n;
+  const sessions = (await db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first()).n;
+  console.log('BROWSER-BOOTSTRAP ' + JSON.stringify({ ...result, owners, credentials, sessions, consoleErrors }));
+  await context.close();
+} finally {
+  await browser.close();
+  await mf.dispose();
+}

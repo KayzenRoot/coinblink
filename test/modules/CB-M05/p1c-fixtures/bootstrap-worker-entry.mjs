@@ -57,15 +57,40 @@ function instrument(db) {
   });
 }
 
-const handler = createLocalCmsHandler();
+// Test-only race route: starts every claim in ONE tick inside the runtime, so all contenders
+// interleave from the same starting point and the batch-level conflict path is exercised.
+const RACE_PATH = '/__test/claim-race';
+
+function localEnv(env) {
+  return { ...env, CMS_D1_LOCAL: env?.CMS_D1_LOCAL ? instrument(env.CMS_D1_LOCAL) : undefined };
+}
+
+function localHandler(env) {
+  const fixedNow = Number(env?.CB_M05_LOCAL_TEST_NOW);
+  return createLocalCmsHandler(Number.isFinite(fixedNow) && fixedNow > 0 ? { now: () => fixedNow } : {});
+}
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (env?.CB_M05_LOCAL_TEST_ONLY === 'true' && request.method === 'GET' &&
-        url.origin === CMS_TEST_ORIGIN && url.pathname === DIAGNOSTIC_PATH) {
-      return Response.json({ entries: diagnostics.splice(0) }, { headers: { 'Cache-Control': 'no-store' } });
+    if (env?.CB_M05_LOCAL_TEST_ONLY === 'true') {
+      if (request.method === 'GET' && url.origin === CMS_TEST_ORIGIN && url.pathname === DIAGNOSTIC_PATH) {
+        return Response.json({ entries: diagnostics.splice(0) }, { headers: { 'Cache-Control': 'no-store' } });
+      }
+      if (request.method === 'POST' && url.origin === CMS_TEST_ORIGIN && url.pathname === RACE_PATH) {
+        const body = await request.json();
+        const handler = localHandler(env);
+        const sharedEnv = localEnv(env);
+        const claims = Array.isArray(body?.claims) ? body.claims : [];
+        const outcomes = await Promise.all(claims.map(claim => handler(new Request(CMS_TEST_ORIGIN + '/local/bootstrap/claim', {
+          method: 'POST',
+          headers: { origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
+          body: JSON.stringify(claim),
+        }), sharedEnv)));
+        return Response.json({ statuses: outcomes.map(response => response.status) },
+          { headers: { 'Cache-Control': 'no-store' } });
+      }
     }
-    return handler(request, { ...env, CMS_D1_LOCAL: env?.CMS_D1_LOCAL ? instrument(env.CMS_D1_LOCAL) : undefined });
+    return localHandler(env)(request, localEnv(env));
   },
 };

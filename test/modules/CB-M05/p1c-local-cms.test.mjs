@@ -777,6 +777,7 @@ async function raceClaims(ctx, contenderSet) {
 // "AssertionError: false == true" while hydrating a D1 batch): 43-99 of 100 claims in 8 trials. 10-way
 // bursts stayed clean. The 100-way proof therefore hosts the unchanged handler inside workerd (fixture entry).
 const WORKER_DIAGNOSTIC_PATH = '/__test/diagnostics';
+const WORKER_RACE_PATH = '/__test/claim-race';
 let bootstrapWorkerScript;
 async function bootstrapWorkerBundle() {
   bootstrapWorkerScript ??= (await build({
@@ -786,9 +787,13 @@ async function bootstrapWorkerBundle() {
   })).outputFiles[0].text;
   return bootstrapWorkerScript;
 }
-async function openWorkerHostedBootstrapD1() {
+// The handler runs inside workerd, so the Node-to-Worker D1 proxy is not in the measured path.
+// persistencePath lets a caller reopen the same LOCAL D1 after a restart; nowMs installs the
+// fixture-only test clock used to prove TTL and cleanup without waiting for wall time.
+async function openWorkerHostedBootstrapD1(options = {}) {
   mkdirSync(stateRoot, { recursive: true });
-  const secret = key();
+  const secret = options.secret ?? key();
+  const persistencePath = options.persistencePath ?? path.join(stateRoot, randomUUID());
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'coinblink-m05-p1c-worker-bootstrap-' + randomUUID(),
     script: await bootstrapWorkerBundle(),
@@ -796,20 +801,35 @@ async function openWorkerHostedBootstrapD1() {
     compatibilityDate: '2026-10-13',
     compatibilityFlags: ['nodejs_compat'],
     d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
-    bindings: { CB_M05_LOCAL_TEST_ONLY: 'true', CMS_TEST_HMAC_KEY: secret },
-    resourcePersistencePath: path.join(stateRoot, randomUUID()),
+    bindings: {
+      CB_M05_LOCAL_TEST_ONLY: 'true',
+      CMS_TEST_HMAC_KEY: secret,
+      ...(Number.isFinite(options.nowMs) && options.nowMs > 0 ? { CB_M05_LOCAL_TEST_NOW: String(options.nowMs) } : {}),
+    },
+    resourcePersistencePath: persistencePath,
     log: new NoOpLog(),
   }));
   try {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
-    for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    if (options.applySchema !== false) {
+      for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    }
     const dispatch = (route, method = 'GET', body = undefined) => mf.dispatchFetch(CMS_TEST_ORIGIN + route, {
       method,
       headers: { origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-    const ticket = () => issueBootstrapTicket(db, secret, Math.floor(Date.now() / 1000));
-    return { mf, db, dispatch, ticket };
+    const race = async claims => {
+      const response = await mf.dispatchFetch(CMS_TEST_ORIGIN + WORKER_RACE_PATH, {
+        method: 'POST',
+        headers: { origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
+        body: JSON.stringify({ claims }),
+      });
+      assert.equal(response.status, 200, 'race route must answer');
+      return (await response.json()).statuses;
+    };
+    const ticket = () => issueBootstrapTicket(db, secret, Math.floor(options.nowMs / 1000 || Date.now() / 1000));
+    return { mf, db, dispatch, ticket, race, secret, persistencePath };
   } catch (error) {
     await mf.dispose();
     throw error;
@@ -862,6 +882,126 @@ async function runWorkerBootstrapRace(contenders, trial) {
     await ctx.mf.dispose();
   }
 }
+
+async function seedOwnerWithCredentials(db, { nowSeconds = Math.floor(Date.now() / 1000), kinds = ['primary', 'recovery'] } = {}) {
+  await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,?)').bind(nowSeconds).run();
+  const credentials = [];
+  for (const kind of kinds) {
+    const credentialId = randomBytes(32).toString('base64url');
+    await db.prepare(
+      'INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind) VALUES (?,1,?,0,?)'
+    ).bind(credentialId, new Uint8Array(65).fill(9), kind).run();
+    credentials.push({ credentialId, kind });
+  }
+  return credentials;
+}
+
+// Starts every claim in ONE tick inside the runtime, so contenders interleave from a shared
+// starting point and the batch-level conflict path (409) is exercised, not only the pre-check (403).
+async function runWorkerInTickRace(contenders, trial) {
+  const ctx = await openWorkerHostedBootstrapD1();
+  try {
+    const contenderSet = [];
+    const claims = [];
+    for (let i = 0; i < contenders; i++) {
+      const ticket = await ctx.ticket();
+      const authenticator = makeSyntheticAuthenticator('tick-' + trial + '-' + i);
+      const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+      assert.equal(challengeResponse.status, 200);
+      const { challenge } = await challengeResponse.json();
+      contenderSet.push({ authenticator, challenge });
+      claims.push(bootstrapClaimBody(ticket, challenge, authenticator));
+    }
+    const statuses = await ctx.race(claims);
+    const { entries } = await (await ctx.dispatch(WORKER_DIAGNOSTIC_PATH)).json();
+    console.log(`BOOT-RACE-BATCH trial ${trial} histogram ${JSON.stringify(statusHistogram(statuses))} ` +
+      `d1Failures ${JSON.stringify(summarizeDiagnostics(entries))}`);
+    assert.equal(statuses.filter(status => status === 201).length, 1, 'exclusivity: exactly one HTTP 201');
+    assert.ok(statuses.filter(status => status === 409).length >= 1,
+      'the single-winner batch itself denied at least one contender (409): ' + statuses.join(','));
+    assert.equal(statuses.filter(status => status !== 201 && status !== 403 && status !== 409).length, 0,
+      'only 201, 403 or 409 may be returned: ' + statuses.join(','));
+    assert.equal(statuses.filter(status => status === 500).length, 0, 'availability: zero HTTP 500');
+    assert.equal(entries.filter(entry => entry.kind === 'transport' || entry.kind === 'other').length, 0,
+      'zero unclassified or transport D1 failures inside the Worker');
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    const credentials = (await ctx.db.prepare('SELECT credential_id,device_kind FROM cms_credentials').all()).results;
+    assert.equal(credentials.length, 1, 'losers leave no credential rows');
+    assert.equal(credentials[0].credential_id, contenderSet[statuses.indexOf(201)].authenticator.id);
+    assert.equal(credentials[0].device_kind, 'primary');
+    assert.equal(await countRows(ctx.db, 'cms_sessions'), 0, 'bootstrap issues no session');
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NULL'), contenders - 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), 1);
+  } finally {
+    await ctx.mf.dispose();
+  }
+}
+
+test('M05 LOCAL CMS BOOT-RACE-BATCH: 100 claims start in one tick inside the Worker; one Owner and the batch guard denies the rest', { timeout: 300_000 }, async () => {
+  for (let trial = 1; trial <= 3; trial++) await runWorkerInTickRace(100, trial);
+});
+
+// Worker-hosted quota proofs: the handler and D1 live in the same runtime, so the answer to
+// "did the acknowledged challenge persist?" cannot be distorted by a Node-to-Worker proxy hop.
+test('M05 LOCAL CMS QUOTA-WORKER: 100 concurrent challenges, exactly 3 acknowledged and 3 persisted; consumed rows free quota', { timeout: 240_000 }, async () => {
+  const ctx = await openWorkerHostedBootstrapD1();
+  try {
+    const [primary] = await seedOwnerWithCredentials(ctx.db);
+    const ask = () => ctx.dispatch('/local/challenge', 'POST', { credentialId: primary.credentialId });
+    const outcomes = await Promise.all(Array.from({ length: 100 }, ask));
+    const statuses = outcomes.map(response => response.status);
+    console.log(`QUOTA-WORKER-100 histogram ${JSON.stringify(statusHistogram(statuses))}`);
+    const acknowledged = statuses.filter(status => status === 200).length;
+    const refused = statuses.filter(status => status === 429).length;
+    assert.equal(acknowledged, 3, 'the per-credential cap admits exactly three active challenges');
+    assert.equal(refused, 97, 'every other concurrent request is refused with 429');
+    assert.equal(await countRows(ctx.db, 'cms_challenges'), acknowledged,
+      'acknowledged challenges must exist as rows: no acknowledged-but-missing and no unacknowledged-but-present rows');
+    const refusal = outcomes.find(response => response.status === 429);
+    assert.match((await refusal.json()).error, /Too many active challenges/);
+    await ctx.db.prepare(
+      'UPDATE cms_challenges SET consumed_at=? WHERE challenge_digest=(SELECT challenge_digest FROM cms_challenges LIMIT 1)'
+    ).bind(Math.floor(Date.now() / 1000)).run();
+    assert.equal((await ask()).status, 200, 'consumed challenges no longer count against the cap');
+    assert.equal(await countRows(ctx.db, 'cms_challenges', 'consumed_at IS NULL'), 3);
+    assert.equal(await countRows(ctx.db, 'cms_challenges', 'consumed_at IS NOT NULL'), 1);
+  } finally {
+    await ctx.mf.dispose();
+  }
+});
+
+test('M05 LOCAL CMS QUOTA-WORKER-RESTART: challenges survive a restart, then expire and are cleaned up under the fixture clock', { timeout: 240_000 }, async () => {
+  const T0 = Date.now();
+  const persistencePath = path.join(stateRoot, 'quota-restart-' + randomUUID());
+  const first = await openWorkerHostedBootstrapD1({ nowMs: T0, persistencePath });
+  const secret = first.secret;
+  let primary;
+  try {
+    [primary] = await seedOwnerWithCredentials(first.db, { nowSeconds: Math.floor(T0 / 1000) });
+    const issued = await first.dispatch('/local/challenge', 'POST', { credentialId: primary.credentialId });
+    assert.equal(issued.status, 200);
+    assert.equal(await countRows(first.db, 'cms_challenges', 'consumed_at IS NULL'), 1);
+  } finally {
+    await first.mf.dispose();
+  }
+  const second = await openWorkerHostedBootstrapD1({
+    nowMs: T0 + 91_000, persistencePath, secret, applySchema: false,
+  });
+  try {
+    assert.equal(await countRows(second.db, 'cms_challenges'), 1, 'the challenge row survives a restart');
+    const fresh = await second.dispatch('/local/challenge', 'POST', { credentialId: primary.credentialId });
+    assert.equal(fresh.status, 200, 'a new challenge is permitted after the TTL passed');
+    assert.equal(await countRows(second.db, 'cms_challenges'), 1,
+      'the expired unconsumed challenge was cleaned up instead of accumulating');
+    const active = (await second.db.prepare(
+      'SELECT COUNT(*) AS n FROM cms_challenges WHERE consumed_at IS NULL AND expires_at>?'
+    ).bind(Math.floor((T0 + 91_000) / 1000)).first()).n;
+    assert.equal(active, 1, 'only the fresh challenge is active');
+  } finally {
+    await second.mf.dispose();
+  }
+});
 
 for (const contenders of [2, 10]) {
   test(`M05 LOCAL CMS BOOT-${contenders}: fresh D1, ${contenders} independent tickets race, exactly one Owner`, { timeout: 240_000 }, async () => {

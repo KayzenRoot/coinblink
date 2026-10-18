@@ -603,8 +603,22 @@ async function enrollClaim(request, db, secret, currentTime) {
   const results = await db.batch([
     db.prepare(
       `UPDATE cms_enroll_challenges SET consumed_at=?,consume_marker=?
-        WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=? AND credential_kind=?`
-    ).bind(currentTime, marker, challengeDigest, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID, kind),
+        WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=?
+          AND credential_kind=? AND session_digest=? AND issuer_credential_id=?
+          AND (
+            credential_kind='recovery'
+            OR (credential_kind='primary' AND requires_recovery=0
+              AND EXISTS (SELECT 1 FROM cms_credentials c
+                WHERE c.owner_id=1 AND c.device_kind='primary' AND c.revoked_at IS NULL))
+            OR (credential_kind='primary' AND requires_recovery=1
+              AND NOT EXISTS (SELECT 1 FROM cms_credentials c
+                WHERE c.owner_id=1 AND c.device_kind='primary' AND c.revoked_at IS NULL)
+              AND EXISTS (SELECT 1 FROM cms_recovery_authorizations a
+                WHERE a.kind='rotate-primary' AND a.credential_id=? AND a.session_digest=?
+                  AND a.used_at IS NULL AND a.expires_at>?))
+          )`
+    ).bind(currentTime, marker, challengeDigest, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
+      kind, authorized.digest, authorized.credential_id, authorized.credential_id, authorized.digest, currentTime),
     db.prepare(
       `UPDATE cms_recovery_authorizations SET used_at=?,use_marker=?
         WHERE auth_id=(
@@ -645,12 +659,16 @@ async function enrollClaim(request, db, secret, currentTime) {
       kind, marker, marker, marker, marker),
     db.prepare(
       `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
-        SELECT ?, 'device_enrolled', 'owner', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)`
-    ).bind(crypto.randomUUID(), registration.credentialId, kind, currentTime, marker),
+        SELECT ?, 'device_enrolled', 'owner', ?, ?, ?
+        WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)
+          AND EXISTS (SELECT 1 FROM cms_credentials c WHERE c.credential_id=? AND c.revoked_at IS NULL)`
+    ).bind(crypto.randomUUID(), registration.credentialId, kind, currentTime, marker, registration.credentialId),
     db.prepare(
       `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
-        SELECT ?, 'recovery_used', 'owner', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_recovery_authorizations a WHERE a.use_marker=?)`
-    ).bind(crypto.randomUUID(), registration.credentialId, kind, currentTime, marker),
+        SELECT ?, 'recovery_used', 'owner', ?, ?, ?
+        WHERE EXISTS (SELECT 1 FROM cms_recovery_authorizations a WHERE a.use_marker=?)
+          AND EXISTS (SELECT 1 FROM cms_credentials c WHERE c.credential_id=? AND c.revoked_at IS NULL)`
+    ).bind(crypto.randomUUID(), registration.credentialId, kind, currentTime, marker, registration.credentialId),
   ]);
   if (results[0]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1) return denied(409);
   return json({

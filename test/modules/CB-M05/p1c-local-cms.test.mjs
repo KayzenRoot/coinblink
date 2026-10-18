@@ -1776,6 +1776,10 @@ test('M05 LOCAL CMS B4: concurrent recovery and emergency claims admit exactly o
         'the audit trail records exactly one recovery use');
       assert.equal(await countRows(fresh.db, 'cms_audit_events', "event='device_enrolled'"), 1,
         'a lost-primary recovery may enroll only one new primary');
+      assert.equal(await countRows(fresh.db, 'cms_enroll_challenges', 'consumed_at IS NOT NULL'), 1,
+        'the denied recovery contender must not consume its enrollment challenge');
+      assert.equal(await countRows(fresh.db, 'cms_enroll_challenges', 'consumed_at IS NULL'), 1,
+        'the losing recovery challenge remains unconsumed and writes no audit entry');
       assert.equal(await countRows(fresh.db, 'cms_owner'), 1);
     } finally { await fresh.mf.dispose(); }
   } finally { await ctx.mf.dispose(); }

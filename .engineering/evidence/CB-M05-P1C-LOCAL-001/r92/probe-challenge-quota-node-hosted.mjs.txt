@@ -1,0 +1,49 @@
+// THROWAWAY differential probe (R92): challenge quota under 10 concurrent requests, Node-hosted Miniflare D1.
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
+import { randomUUID, randomBytes } from 'node:crypto';
+import { splitLocalSchemaStatements } from './test/modules/CB-M05/p1c-local-preview.mjs';
+import { createLocalCmsHandler, CMS_TEST_ORIGIN, CMS_TEST_RP_ID } from './src/modules/CB-M05/p1c-local/local-cms.mjs';
+
+const TRIALS = Number(process.argv[2] ?? 10);
+const CONCURRENCY = Number(process.argv[3] ?? 10);
+const schema = readFileSync('test/modules/CB-M05/p1c-fixtures/schema.sql', 'utf8');
+
+async function trial(t) {
+  const dir = mkdtempSync(path.join(tmpdir(), 'r92-probe4-'));
+  const mf = new Miniflare(convertV4MiniflareOptions({
+    name: 'r92-probe4-' + randomUUID(),
+    script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
+    modules: true, compatibilityDate: '2026-10-13',
+    d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+    resourcePersistencePath: dir, log: new NoOpLog(),
+  }));
+  try {
+    const db = await mf.getD1Database('CMS_D1_LOCAL');
+    for (const s of splitLocalSchemaStatements(schema)) await db.prepare(s).run();
+    const now = Math.floor(Date.now() / 1000);
+    await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,?)').bind(now).run();
+    const credentialId = randomBytes(32).toString('base64url');
+    await db.prepare('INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind) VALUES (?,1,?,0,?)')
+      .bind(credentialId, Buffer.alloc(65, 4), 'primary').run();
+    const env = { CB_M05_LOCAL_TEST_ONLY: 'true', CMS_D1_LOCAL: db, CMS_TEST_HMAC_KEY: randomBytes(32).toString('hex') };
+    const handle = createLocalCmsHandler({ now: () => Date.now() });
+    const ask = () => handle(new Request(CMS_TEST_ORIGIN + '/local/challenge', {
+      method: 'POST', headers: { origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
+      body: JSON.stringify({ credentialId }),
+    }), env);
+    const results = await Promise.all(Array.from({ length: CONCURRENCY }, ask));
+    const hist = {};
+    for (const r of results) hist[r.status] = (hist[r.status] ?? 0) + 1;
+    const rows = (await db.prepare('SELECT COUNT(*) AS n FROM cms_challenges WHERE credential_id=?').bind(credentialId).first()).n;
+    const bodies = await Promise.all(results.map(r => r.clone().text().catch(() => '')));
+    const sample500 = bodies.find((_, i) => results[i].status === 500) ?? '';
+    console.log(`trial ${t}: N=${CONCURRENCY} hist=${JSON.stringify(hist)} rowsPersisted=${rows} ${hist[200] === rows ? 'MATCH' : 'MISMATCH'}${sample500 ? ' 500-body=' + sample500.slice(0, 80) : ''}`);
+  } finally {
+    await mf.dispose();
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+for (let t = 1; t <= TRIALS; t++) await trial(t);

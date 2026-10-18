@@ -53,3 +53,30 @@ Under a single 100-way concurrent burst of WebAuthn-verifying claims, about 6 re
 ## Secrets
 
 No secret values, credentials, or real Owner data were introduced. All fixtures are synthetic and local (Miniflare). No `--remote`, no deploy, no publication, no merge.
+
+---
+
+## R92 addendum (append-only; earlier sections above are historical and unchanged)
+
+Full detail: `r92/R92-P0-CONCURRENCY-EVIDENCE.md`. Code commit `127ca67` on PR #128 branch. Status remains **CORRECTION_REQUIRED**; Parts B-E are still not implemented; `CHECKPOINT_DELTA={}`.
+
+### Histogram reconciliation
+
+Each histogram is tied to its source. Nothing above was deleted.
+
+| Histogram (as written above) | Source and status |
+| --- | --- |
+| `BOOT-100 {201:1,403:90,409:9}` (wave of 10, old test) | Committed log `p1c-local-cms.node-test.log`. Historical: the wave-based test was replaced in `127ca67`. |
+| `BOOT-BURST-100 {201:1,409:31,500:68}` | Committed log `p1c-local-cms.node-test.log` (historical; the burst test was replaced). |
+| `BOOT-BURST-100 {201:1,409:93,500:6}` | Quoted in the README text above, **no raw log in this bundle**. Not reproduced. Historical only. |
+| Hosted Ubuntu and Windows GEF `BOOT-BURST-100 {201:1,409:99}` | Reported on PR #128 at HEAD `399670d` (GEF run `39127704931`). Not reproduced in the Node-hosted harness (see below). |
+| R92 Node-hosted 100-way probe, `N=100`, 4 trials | `r92/node-hosted-100way-probe.log`: 500 counts 43, 99, 77, 90 per 100; all `BATCH` `read ECONNRESET`; owners=1 and creds=1 in every trial. |
+| R92 Worker-hosted 100-way (test `BOOT-100`, 3 fresh D1 per run) | `p1c-local-cms.node-test.127ca67.log` and `unit-node-test.127ca67*.log`: every trial `{201:1,403:99}`, `d1Failures {}`. |
+
+### Anomaly carried forward
+
+`M05 LOCAL CMS 06` failed once in three full unit runs on `127ca67` (persisted rows 1, expected 3). Not reproduced in 25 isolated probes or three parallel P1-C runs. Still open; see the R92 evidence file.
+
+### Golden side effect
+
+`npm run test:unit` rewrote 8 tracked `CB-M01-WO-001` evidence files via the M01 visual harness. They were restored with `git checkout`; this needs a separate M01/CI ticket.

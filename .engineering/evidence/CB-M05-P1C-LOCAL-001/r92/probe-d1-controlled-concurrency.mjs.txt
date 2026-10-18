@@ -1,0 +1,53 @@
+// THROWAWAY differential probe (R92). Not part of the PR; deleted before commit.
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
+import { randomUUID } from 'node:crypto';
+
+const N = Number(process.argv[2] ?? 100);
+const TRIALS = Number(process.argv[3] ?? 2);
+const MODE = process.argv[4] ?? 'select';
+
+async function trial(t) {
+  const dir = mkdtempSync(path.join(tmpdir(), 'r92-probe2-'));
+  const mf = new Miniflare(convertV4MiniflareOptions({
+    name: 'r92-probe2-' + randomUUID(),
+    script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
+    modules: true, compatibilityDate: '2026-10-13',
+    d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+    resourcePersistencePath: dir, log: new NoOpLog(),
+  }));
+  try {
+    const db = await mf.getD1Database('CMS_D1_LOCAL');
+    await db.prepare('CREATE TABLE probe_t (id TEXT PRIMARY KEY, v TEXT NOT NULL)').run();
+    const t0 = performance.now();
+    const outcomes = await Promise.all(Array.from({ length: N }, async (_, i) => {
+      const s = performance.now();
+      try {
+        if (MODE === 'select') await db.prepare('SELECT 1 AS x').first();
+        else if (MODE === 'batch4') await db.batch(Array.from({ length: 4 }, (__, k) =>
+          db.prepare('INSERT INTO probe_t (id,v) VALUES (?,?)').bind(`${t}-${i}-${k}`, 'x')));
+        else if (MODE === 'join') await db.prepare(`SELECT b.id FROM probe_t b JOIN probe_t t ON t.id=b.id WHERE b.id=? AND t.v=? LIMIT 1`).bind('none', 'x').first();
+        return { ok: true, ms: Math.round(performance.now() - s) };
+      } catch (error) {
+        if ((globalThis.__shown ?? 0) < 2) {
+          globalThis.__shown = (globalThis.__shown ?? 0) + 1;
+          console.log('ERR-SAMPLE', i, String(error?.stack).split('\n').slice(0, 6).join(' | ').slice(0, 900));
+        }
+        return { ok: false, ms: Math.round(performance.now() - s), cause: error?.cause?.code ?? String(error?.message).slice(0, 60) };
+      }
+    }));
+    const wall = Math.round(performance.now() - t0);
+    const ok = outcomes.filter(o => o.ok);
+    const bad = outcomes.filter(o => !o.ok);
+    const causes = {};
+    for (const b of bad) causes[b.cause] = (causes[b.cause] ?? 0) + 1;
+    const okMs = ok.map(o => o.ms).sort((a, b) => a - b);
+    console.log(`mode=${MODE} trial ${t}: N=${N} wall=${wall}ms ok=${ok.length} fail=${bad.length} causes=${JSON.stringify(causes)} okMs p50=${okMs[Math.floor(okMs.length / 2)] ?? '-'} max=${okMs.at(-1) ?? '-'} failMs=${bad.map(b => b.ms).sort((a, b) => a - b).join(',')}`);
+  } finally {
+    await mf.dispose();
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+for (let t = 1; t <= TRIALS; t++) await trial(t);

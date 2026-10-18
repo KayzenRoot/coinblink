@@ -1,0 +1,5 @@
+workerd trial 1: N=100 wall=922ms hist={"201":1,"403":99} owners=1 creds=1
+workerd trial 2: N=100 wall=649ms hist={"201":1,"403":99} owners=1 creds=1
+workerd trial 3: N=100 wall=1015ms hist={"201":1,"403":99} owners=1 creds=1
+workerd trial 4: N=100 wall=1633ms hist={"201":1,"403":99} owners=1 creds=1
+workerd trial 5: N=100 wall=1070ms hist={"201":1,"403":99} owners=1 creds=1

@@ -50,3 +50,28 @@ Canonical main observed `4300642e8bdd00ae029ccbb30ed8facd70089df3`, Git tree `6d
 **Verification dependencies:** main [GEF #39087548845](https://github.com/KayzenRoot/coinblink/actions/runs/39087548845) and its exact-main Cloudflare workflow pending at authored snapshot. Require GEF main SUCCESS and provider workflow deploy job SKIPPED before calling #91 post-merge no-deploy verified. No real Cloudflare action, remote D1, credentials or vault is needed for this source refresh. Original #91 merged after 7/7 exact-head tests, but those are historical evidence, not approval to start follow-on code.
 
 **STALENESS TRIGGER:** any change to `main`, Security, Scope, DoD, ADR, module contract, original test harness, owner authorization or file ownership requires a new lock before execution. No `src/**`, `test/**`, workflow or package mutations in this candidate. STOP: `LOCAL_P1C_EXECUTION_LOCK_NOT_FROZEN`.
+
+
+## M05 P1-C LOCAL HIGH_ASSURANCE execution-lock candidate · source freeze after #121 · 2026-10-17
+
+**STATUS: HIGH_ASSURANCE_EXECUTION_CONTEXT_CANDIDATE / NOT_DISPATCHABLE.** This is a refingerprinted preparation for the already-adopted P1-C **entirely synthetic LOCAL** proof within existing Work Order \`CB-M05-P1C-LOCAL-001\`, not an authorization for privileged application routes or a replacement of earlier historical records. Canonical source main \`b144d8ae68ac5fa8ef2388c304dae3c80252b5cb\`, tree \`816c470286eceeab907f87c065451e65161b81bb\`; checkpoint \`M00_COMPLETE/5%\` remains unchanged. This annex itself will change the lock blob; after reviewed protected adoption of its candidate, freeze the *effective* lock, and mark STALE if main or critical source changes.
+
+**Git-frozen authoritative sources (current main):**
+- \`AGENTS.md\` \`4e8a6ebeb4aa18ac58171fcddf3bde762d725ca7\`
+- \`.engineering/SOURCE-HIERARCHY.md\` \`3ba4fb9bb89d8aaf17b87ca0adba2d72081a20f2\`
+- \`.engineering/CHECKPOINT.json\` \`72618bef100e6f82e4655b2c6ed482794e0c4649\`
+- \`.engineering/SCOPE.md\` \`dfa1ce336ee8d05d0a93a37215e34a760708ea51\`
+- \`.engineering/DEFINITION-OF-DONE.md\` \`00702a0dfe54fcc22ad9e146255be1665fa4624c\`
+- \`.engineering/ARCHITECTURE.md\` \`dc6797e169f24b5ed6056ed3740b77741249c7c0\`
+- \`.engineering/REQUIREMENTS.md\` \`588c221e3ba88be3fb957ee27719671a731d8595\`
+- \`.engineering/SECURITY.md\` \`7f8a39a1a9296dad04ada71b0750eb05e9d8cf45\`
+- \`docs/architecture/contracts/CB-M05.md\` \`2b35f56903bb00f9c4025eafb6b40d7265c26405\`
+- \`docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md\` \`6a590ef487556ed62296f558296b6ad5a334d3dc\`
+- \`.engineering/work-orders/CB-M05-P1C-LOCAL-001.md\` \`8a00346e0e84265bf4c3a7de1b81f196b473942b\`
+- \`src/modules/CB-M05/p1c-local/local-cms.mjs\` \`d6b7080f0a2ec11bd3b7ed3da46c6b457fe558e7\`
+- \`test/modules/CB-M05/p1c-local-cms.test.mjs\` \`28c0a306085eaa116b50c3b18d4a1c1a50650de8\`
+- \`test/modules/CB-M05/p1c-fixtures/schema.sql\` \`cd3f73326acbc66a55014c67163e644e41b410da\`
+
+**Proof obligations (NECESSARY, no widened scope):** Server-side synthetic one-human-Owner atomic claim 0→1, deterministic 2/10/100 contenders and **never 2 Owners**, expiring single-use enrollment/recovery and second synthetic authenticator; denial of unauthenticated **admin-like HTML GET** and every synthetic API/mutation, CSRF/origin/fetch-metadata/RPID/UV/counter/replay; digest-only sessions, rotation/expiry/revocation across handler restart; local D1 schema/transaction failure injection/backup/restore/rollback and audit/revision CAS with deterministic concurrency tests; no egress, real identity/passkey, stored secrets, provider binding or deployed route. Preserve existing #91 lab baseline and prior false-positive disposition supported by SQLite evidence.
+
+**Mandatory preflight before any code:** verify #121 GEF & no-deploy jobs; verify all fingerprints, Node22, deps, local Miniflare/D1 and Chromium virtual authenticator baseline, Security/DoD/ADR, path ownership, threat model and proof/test matrix; acquire the Owner's additional code-admission instruction where required. DO NOT activate the older historical \`STAGED\` lock by implication. No writes outside \`src/modules/CB-M05/p1c-local/**\` and owned \`test/modules/CB-M05/p1c-*\` without explicit steward approval. No \`src/pages/admin/**\`, shared middleware, root wrangler/cloud workflows, actual credential/enrollment, remote D1 or vault. Security-negative tests, rollback and error-path proofs are HIGH_ASSURANCE release gates. After source/testing, Evidence Bundle + exact-head 7/7 CI + sole-Owner security review and separate exact-head squash GO. \`CHECKPOINT_DELTA={}\`. STOP: \`P1C_LOCAL_HIGH_ASSURANCE_PREFLIGHT_NOT_YET_PASSED\`.

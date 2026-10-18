@@ -55,6 +55,13 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   function confirmDraftDiscard() {
     return !hasUnsavedChanges() || window.confirm('Discard unsaved changes in this LOCAL draft?');
   }
+  // Native browser navigation/refresh guard. Never persist text in browser storage.
+  // Revoked sessions and explicit sign-out still clear data without a prompt.
+  window.addEventListener('beforeunload', (event) => {
+    if (!hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
   const decode = (s) => {
     const t = s.replace(/-/g, '+').replace(/_/g, '/');
     const raw = atob(t + '='.repeat((4 - t.length % 4) % 4));

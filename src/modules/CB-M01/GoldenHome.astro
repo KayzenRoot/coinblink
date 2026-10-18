@@ -341,6 +341,11 @@ const editorialR26Assets = {
           <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
+        <p class="news-official-discovery" data-editorial-workspace-handoff>
+          <span>{t("Want to try the article editor?")}</span>
+          <a href="/demo/editorial/articles" data-editorial-workspace-link>{t("Open editorial demo")} <span aria-hidden="true">→</span></a>
+          <small>{t("MOCK only. No account, storage or publication.")}</small>
+        </p>
         <div class="news-controls">
           <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
           <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">{t("Showing all demo placeholders.")}</p>

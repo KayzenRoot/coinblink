@@ -6,14 +6,14 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "8caa9e9322a6ee2333b81e1fd3b0a1736420d5f9",
-    "sha256": "3874def9b55a69aabca667e9c34f58f26c471aab981d4b728bc977060c8273a9",
+    "gitBlobSha": "620b92a3a663c1bd9be2d05b8776b50f94587ef7",
+    "sha256": "502ad06419b5e73d4a53e47367fe970a63b31951a40adccafb132afbed21467a",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
     "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
     "rasterDerivativeOfGoldenReference": false,
-    "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked. R26 adds original Codex ImageGen promo and editorial masters with optimized local derivatives and retained SVG failure fallbacks; all remain local DEMO only. CB-M01-WO-001 producer-readiness seam refresh (2026-10-16): GoldenHome Astro frontmatter and nonvisual data-source status attributes changed. Hero/promo HTML source fragments and original image assets were not edited; the full parent source SHA-256 and Git blob are refreshed only. This does not grant live data admission, rights, visual release approval or publication."
+    "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked. R26 adds original Codex ImageGen promo and editorial masters with optimized local derivatives and retained SVG failure fallbacks; all remain local DEMO only. CB-M01-WO-001 producer-readiness seam refresh (2026-10-16): GoldenHome Astro frontmatter and nonvisual data-source status attributes changed. Hero/promo HTML source fragments and original image assets were not edited; the full parent source SHA-256 and Git blob are refreshed only. This does not grant live data admission, rights, visual release approval or publication. 2026-10-18 M01-to-M05 DEMO homepage link (English/Portuguese) adds an explicitly MOCK, first-party navigation without editing either original hero/promo scene fragment; source parent hash and Git blob re-pinned to the exact new GoldenHome.astro bytes; no production rights, credential or publication grant."
   },
   "goldenReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -152,7 +152,7 @@
       "visualComparison": "R25 integrated local responsive screenshots; not Owner Golden visual acceptance.",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "8caa9e9322a6ee2333b81e1fd3b0a1736420d5f9",
+      "sourceGitBlobSha": "620b92a3a663c1bd9be2d05b8776b50f94587ef7",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -198,7 +198,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "8caa9e9322a6ee2333b81e1fd3b0a1736420d5f9",
+      "sourceGitBlobSha": "620b92a3a663c1bd9be2d05b8776b50f94587ef7",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",

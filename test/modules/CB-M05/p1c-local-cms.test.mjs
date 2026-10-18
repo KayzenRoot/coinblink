@@ -12,6 +12,8 @@ import { chromium } from '@playwright/test';
 import { splitLocalSchemaStatements, startLocalCmsPreview } from './p1c-local-preview.mjs';
 import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
+import { build } from 'esbuild';
+import { fileURLToPath } from 'node:url';
 
 const schema = readFileSync('test/modules/CB-M05/p1c-fixtures/schema.sql', 'utf8');
 const stateRoot = path.resolve('.wrangler/p1c-local-state');
@@ -765,20 +767,103 @@ function statusHistogram(statuses) {
   return statuses.reduce((counts, status) => ({ ...counts, [status]: (counts[status] ?? 0) + 1 }), {});
 }
 
-// Miniflare's loopback D1 transport resets ~70% of a single 100-way burst of
-// WebAuthn-verifying claims (ECONNRESET, logged); plain and batch bursts do not reset.
-// Waves of 10 keep every claim in flight concurrently while avoiding that harness fault.
-const BOOTSTRAP_WAVE = 10;
-async function raceClaims(ctx, contenderSet, wave) {
-  const outcomes = [];
-  for (let start = 0; start < contenderSet.length; start += wave) {
-    outcomes.push(...await Promise.all(contenderSet.slice(start, start + wave).map(c =>
-      ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(c.ticket, c.challenge, c.authenticator)))));
-  }
-  return outcomes;
+// Every claim of a race is launched in the same tick: no waves, queues or semaphores.
+async function raceClaims(ctx, contenderSet) {
+  return Promise.all(contenderSet.map(c =>
+    ctx.run('/local/bootstrap/claim', 'POST', bootstrapClaimBody(c.ticket, c.challenge, c.authenticator))));
 }
 
-for (const contenders of [2, 10, 100]) {
+// Node-hosted 100-way claim bursts hit Miniflare D1-proxy faults (HTTP 500 from read ECONNRESET, or
+// "AssertionError: false == true" while hydrating a D1 batch): 43-99 of 100 claims in 8 trials. 10-way
+// bursts stayed clean. The 100-way proof therefore hosts the unchanged handler inside workerd (fixture entry).
+const WORKER_DIAGNOSTIC_PATH = '/__test/diagnostics';
+let bootstrapWorkerScript;
+async function bootstrapWorkerBundle() {
+  bootstrapWorkerScript ??= (await build({
+    entryPoints: [fileURLToPath(new URL('./p1c-fixtures/bootstrap-worker-entry.mjs', import.meta.url))],
+    bundle: true, format: 'esm', platform: 'neutral', target: 'es2022', write: false, logLevel: 'silent',
+    conditions: ['workerd', 'worker', 'browser'], mainFields: ['module', 'main'],
+  })).outputFiles[0].text;
+  return bootstrapWorkerScript;
+}
+async function openWorkerHostedBootstrapD1() {
+  mkdirSync(stateRoot, { recursive: true });
+  const secret = key();
+  const mf = new Miniflare(convertV4MiniflareOptions({
+    name: 'coinblink-m05-p1c-worker-bootstrap-' + randomUUID(),
+    script: await bootstrapWorkerBundle(),
+    modules: true,
+    compatibilityDate: '2026-10-13',
+    compatibilityFlags: ['nodejs_compat'],
+    d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+    bindings: { CB_M05_LOCAL_TEST_ONLY: 'true', CMS_TEST_HMAC_KEY: secret },
+    resourcePersistencePath: path.join(stateRoot, randomUUID()),
+    log: new NoOpLog(),
+  }));
+  try {
+    const db = await mf.getD1Database('CMS_D1_LOCAL');
+    for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    const dispatch = (route, method = 'GET', body = undefined) => mf.dispatchFetch(CMS_TEST_ORIGIN + route, {
+      method,
+      headers: { origin: CMS_TEST_ORIGIN, 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    const ticket = () => issueBootstrapTicket(db, secret, Math.floor(Date.now() / 1000));
+    return { mf, db, dispatch, ticket };
+  } catch (error) {
+    await mf.dispose();
+    throw error;
+  }
+}
+async function raceWorkerClaims(ctx, contenderSet) {
+  return Promise.all(contenderSet.map(c =>
+    ctx.dispatch('/local/bootstrap/claim', 'POST', bootstrapClaimBody(c.ticket, c.challenge, c.authenticator))));
+}
+function summarizeDiagnostics(entries) {
+  return entries.reduce((summary, entry) => {
+    const label = entry.kind + ':' + entry.stage + ':' + entry.name + (entry.causeCode ? ':' + entry.causeCode : '');
+    return { ...summary, [label]: (summary[label] ?? 0) + 1 };
+  }, {});
+}
+async function runWorkerBootstrapRace(contenders, trial) {
+  const ctx = await openWorkerHostedBootstrapD1();
+  try {
+    const contenderSet = [];
+    for (let i = 0; i < contenders; i++) {
+      const ticket = await ctx.ticket();
+      const authenticator = makeSyntheticAuthenticator('worker-' + trial + '-' + i);
+      const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+      assert.equal(challengeResponse.status, 200);
+      contenderSet.push({ ticket, authenticator, challenge: (await challengeResponse.json()).challenge });
+    }
+    const outcomes = await raceWorkerClaims(ctx, contenderSet);
+    const statuses = outcomes.map(response => response.status);
+    const { entries } = await (await ctx.dispatch(WORKER_DIAGNOSTIC_PATH)).json();
+    console.log(`BOOT-${contenders}-WORKER trial ${trial} histogram ${JSON.stringify(statusHistogram(statuses))} ` +
+      `d1Failures ${JSON.stringify(summarizeDiagnostics(entries))}`);
+    // Exclusivity and availability are asserted separately: a fault must never be counted as a denial.
+    assert.equal(statuses.filter(status => status === 201).length, 1, 'exclusivity: exactly one HTTP 201');
+    assert.equal(statuses.filter(status => status === 403 || status === 409).length, contenders - 1,
+      'exclusivity: every loser denied with 403 or 409');
+    assert.equal(statuses.filter(status => status === 500).length, 0, 'availability: zero HTTP 500');
+    assert.equal(entries.filter(entry => entry.kind === 'transport' || entry.kind === 'other').length, 0,
+      'availability: zero unclassified or transport D1 failures inside the Worker');
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    const credentials = (await ctx.db.prepare('SELECT credential_id,device_kind FROM cms_credentials').all()).results;
+    assert.equal(credentials.length, 1, 'losers leave no credential rows');
+    assert.equal(credentials[0].credential_id, contenderSet[statuses.indexOf(201)].authenticator.id);
+    assert.equal(credentials[0].device_kind, 'primary');
+    assert.equal(await countRows(ctx.db, 'cms_sessions'), 0, 'bootstrap issues no session');
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NULL'), contenders - 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NULL'), contenders - 1);
+  } finally {
+    await ctx.mf.dispose();
+  }
+}
+
+for (const contenders of [2, 10]) {
   test(`M05 LOCAL CMS BOOT-${contenders}: fresh D1, ${contenders} independent tickets race, exactly one Owner`, { timeout: 240_000 }, async () => {
     const ctx = await openEmptySyntheticD1();
     try {
@@ -788,7 +873,7 @@ for (const contenders of [2, 10, 100]) {
         const authenticator = makeSyntheticAuthenticator('boot-' + i);
         contenderSet.push({ ticket, authenticator, challenge: await bootstrapChallenge(ctx, ticket) });
       }
-      const outcomes = await raceClaims(ctx, contenderSet, Math.min(BOOTSTRAP_WAVE, contenders));
+      const outcomes = await raceClaims(ctx, contenderSet);
       const statuses = outcomes.map(response => response.status);
       console.log(`BOOT-${contenders} histogram ${JSON.stringify(statusHistogram(statuses))}`);
       assert.equal(statuses.filter(status => status === 201).length, 1, 'exactly one contender may claim the Owner');
@@ -807,24 +892,8 @@ for (const contenders of [2, 10, 100]) {
   });
 }
 
-test('M05 LOCAL CMS BOOT-BURST-100: all 100 claims in one burst admit at most one Owner with no partial rows', { timeout: 240_000 }, async () => {
-  const ctx = await openEmptySyntheticD1();
-  try {
-    const contenderSet = [];
-    for (let i = 0; i < 100; i++) {
-      const ticket = await ctx.ticket();
-      const authenticator = makeSyntheticAuthenticator('burst-' + i);
-      contenderSet.push({ ticket, authenticator, challenge: await bootstrapChallenge(ctx, ticket) });
-    }
-    const outcomes = await raceClaims(ctx, contenderSet, 100);
-    const statuses = outcomes.map(response => response.status);
-    console.log(`BOOT-BURST-100 histogram ${JSON.stringify(statusHistogram(statuses))}`);
-    assert.ok(statuses.filter(status => status === 201).length <= 1, 'never more than one successful claim');
-    assert.equal(await countRows(ctx.db, 'cms_owner'), statuses.includes(201) ? 1 : 0);
-    assert.equal(await countRows(ctx.db, 'cms_credentials'), statuses.includes(201) ? 1 : 0, 'no partial credential rows');
-    assert.equal(await countRows(ctx.db, 'cms_bootstrap_tickets', 'consumed_at IS NOT NULL'), statuses.includes(201) ? 1 : 0);
-    assert.equal(await countRows(ctx.db, 'cms_bootstrap_challenges', 'consumed_at IS NOT NULL'), statuses.includes(201) ? 1 : 0);
-  } finally { await ctx.mf.dispose(); }
+test('M05 LOCAL CMS BOOT-100: 100 simultaneous claims in the Worker runtime admit exactly one Owner with zero HTTP 500, on three fresh D1 databases', { timeout: 300_000 }, async () => {
+  for (let trial = 1; trial <= 3; trial++) await runWorkerBootstrapRace(100, trial);
 });
 
 test('M05 LOCAL CMS BOOT-SAME: one shared ticket raced by 10 authenticators admits one Owner', { timeout: 240_000 }, async () => {

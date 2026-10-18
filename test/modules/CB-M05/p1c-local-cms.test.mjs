@@ -1785,6 +1785,77 @@ test('M05 LOCAL CMS B4: concurrent recovery and emergency claims admit exactly o
   } finally { await ctx.mf.dispose(); }
 });
 
+test('M05 LOCAL CMS B5: lost-primary recovery binds claim and authorization to one authenticated session', async () => {
+  const ctx = await setup();
+  try {
+    const authorizedSession = await login(ctx, ctx.recovery);
+    const secondSession = await login(ctx, ctx.recovery);
+    assert.notEqual(authorizedSession.cookie, secondSession.cookie, 'both sessions are independent');
+
+    // A normal-rotation challenge issued before the primary is lost cannot be
+    // converted into a recovery bypass after that primary is revoked.
+    const oldChallengeResponse = await ctx.run('/local/enroll/challenge', 'POST',
+      { kind: 'primary' }, authorizedSession);
+    assert.equal(oldChallengeResponse.status, 200);
+    const { challenge: oldChallenge } = await oldChallengeResponse.json();
+    assert.equal((await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: ctx.primary.id }, authorizedSession)).status, 200);
+    const oldAttemptAuthenticator = makeSyntheticAuthenticator('b5-stale-normal-rotation');
+    const beforeOld = await tableCounts(ctx.db);
+    const deniedOld = await ctx.run('/local/enroll/claim', 'POST', {
+      challenge: oldChallenge,
+      response: makeRegistrationResponse(oldAttemptAuthenticator,
+        { challenge: webauthnChallengeFromHex(oldChallenge) }),
+    }, authorizedSession);
+    assert.equal(deniedOld.status, 409, 'a pre-loss normal-rotation challenge must fail closed');
+    assert.deepEqual(await tableCounts(ctx.db), beforeOld, 'the stale challenge denial writes nothing');
+
+    const { challenge, response } = await authorizeRecovery(ctx, authorizedSession, ctx.recovery);
+    assert.equal((await ctx.run('/local/recovery/complete', 'POST',
+      { challenge, credentialId: ctx.recovery.id, response }, authorizedSession)).status, 200);
+
+    const ownIssued = await ctx.run('/local/enroll/challenge', 'POST',
+      { kind: 'primary' }, authorizedSession);
+    assert.equal(ownIssued.status, 200);
+    const { challenge: ownChallenge } = await ownIssued.json();
+    const replacement = makeSyntheticAuthenticator('b5-approved-primary');
+    const ownClaim = {
+      challenge: ownChallenge,
+      response: makeRegistrationResponse(replacement,
+        { challenge: webauthnChallengeFromHex(ownChallenge) }),
+    };
+    const beforeBorrowed = await tableCounts(ctx.db);
+    assert.equal((await ctx.run('/local/enroll/claim', 'POST', ownClaim, secondSession)).status, 403,
+      'a different session cannot claim a challenge bound to the authorized session');
+    assert.deepEqual(await tableCounts(ctx.db), beforeBorrowed,
+      'cross-session challenge replay writes nothing');
+
+    const otherIssued = await ctx.run('/local/enroll/challenge', 'POST',
+      { kind: 'primary' }, secondSession);
+    assert.equal(otherIssued.status, 200);
+    const { challenge: otherChallenge } = await otherIssued.json();
+    const otherAuthenticator = makeSyntheticAuthenticator('b5-unauthorized-primary');
+    const beforeOther = await tableCounts(ctx.db);
+    assert.equal((await ctx.run('/local/enroll/claim', 'POST', {
+      challenge: otherChallenge,
+      response: makeRegistrationResponse(otherAuthenticator,
+        { challenge: webauthnChallengeFromHex(otherChallenge) }),
+    }, secondSession)).status, 403, 'another session cannot borrow the one-use recovery authorization');
+    assert.deepEqual(await tableCounts(ctx.db), beforeOther,
+      'an unauthorized session consumes no challenge, recovery authorization or audit event');
+
+    const accepted = await ctx.run('/local/enroll/claim', 'POST', ownClaim, authorizedSession);
+    assert.equal(accepted.status, 201, 'the issuing recovery session may claim its own challenge');
+    const active = (await ctx.db.prepare(
+      "SELECT credential_id FROM cms_credentials WHERE device_kind='primary' AND revoked_at IS NULL"
+    ).first()).credential_id;
+    assert.equal(active, replacement.id);
+    assert.equal(await countRows(ctx.db, 'cms_recovery_authorizations', 'used_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_enroll_challenges', 'consumed_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_audit_events', "event='device_enrolled'"), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
 test('M05 LOCAL CMS D1: schema replay is explicit and referential integrity is enforced by local D1', async () => {
   const ctx = await setup();
   try {

@@ -1,5 +1,10 @@
 # CoinBlink · GEF Source Hierarchy and Decision Authority
 
+## Global quality review / low-risk fast-path candidate · 2026-10-18
+
+**Candidate only, effective after protected integration of CB-GOV-QUALITY-001.** The [Global Quality and Review Policy](.engineering/GLOBAL-QUALITY-REVIEW-POLICY.md) defines risk-proportionate evidence, eliminates duplicate human review requirements and allows exact-path Sonar analyzer mismatch handling for synthetic LOCAL fixtures without disabling the quality gate, CI, privilege checks or security rules. The only proposed scanner exclusion is `test/modules/CB-M05/p1c-fixtures/schema.sql` in `.sonarcloud.properties`. A new exact-HEAD merge GO is still required; M05 and canonical checkpoint remain unchanged. The later, more specific effective security controls of this hierarchy take precedence over permissive interpretations.
+
+
 ## Owner directive · Single-administrator security and review model · 2026-10-15
 
 **CURRENT OWNER DECISION:** `KayzenRoot` is the **sole human administrator, product/security decision-maker and reviewer** for CoinBlink. A second GitHub account, an outside human reviewer, a commercial review bot or an independent-party approval is **not required** for documentation, governance, mock work or future security-sensitive work. The Owner may voluntarily request external assessment, but it is optional and must not become an implicit release/admission blocker. This replaces earlier **prescriptive** references to mandatory "independent review", "independent assurance" or separate reviewer approvals across M05 and the project's general workflow. Earlier references retained in historical evidence are provenance, not current review obligations.

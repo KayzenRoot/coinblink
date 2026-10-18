@@ -48,7 +48,11 @@ The four PL/SQL findings are analyzer misclassification of a SQLite test fixture
 
 ## CI
 
-`ea44f42` → GitHub Actions run [39148735180](https://github.com/KayzenRoot/coinblink/actions/runs/39148735180): GEF Ubuntu PASS, GEF Windows PASS, Docker PASS, Socket PR PASS, Socket Project PASS, CodeRabbit PASS (auto-review skipped, not a technical review), **SonarCloud FAIL** (the gate above). The S2871 fix and this append are evaluated on the next head; the current check suite on the exact head is visible in PR #128's checks tab.
+`ea44f42` → GitHub Actions run [39148735180](https://github.com/KayzenRoot/coinblink/actions/runs/39148735180): GEF Ubuntu PASS, GEF Windows PASS, Docker PASS, Socket PR PASS, Socket Project PASS, CodeRabbit PASS (auto-review skipped, not a technical review), **SonarCloud FAIL** (the gate above).
+
+`93a9036` (S2871 fix + this append) → GitHub Actions run [39149279068](https://github.com/KayzenRoot/coinblink/actions/runs/39149279068): **7/7 PASS** — GEF Ubuntu PASS (3m35s), GEF Windows PASS (4m56s), Docker Compose smoke PASS, Socket PR PASS, Socket Project PASS, CodeRabbit PASS (auto-review skipped) and **SonarCloud PASS**. The gate is now `OK`; the only remaining findings are the four documented PL/SQL misclassifications, which are maintainability smells and do not drive the gate.
+
+The final-head check suite is attached to the exact commit on PR #128.
 
 ## Risks and limitations
 

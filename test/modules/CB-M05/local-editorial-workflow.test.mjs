@@ -89,7 +89,7 @@ test("P0 workflow: editing the prose keeps source IDs, references and pending cl
 });
 
 test("P0 workflow: removing a source preserves a human review item but clearly invalidates its linkage", () => {
-  const seeded = addLocalSource("Report to review before publication.", "Sample publisher", primary).value;
+  const seeded = addLocalSource("Report to review before publication by the assigned editor.", "Sample publisher", primary).value;
   const withClaim = addLocalClaimReview(seeded, statement, 1).value;
   const removed = removeLocalSource(withClaim, 1);
   assert.equal(listLocalSources(removed).length, 0);

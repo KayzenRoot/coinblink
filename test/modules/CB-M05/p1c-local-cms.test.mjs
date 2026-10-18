@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { randomBytes, randomUUID, createHash } from 'node:crypto';
+import { randomBytes, randomUUID, createHash, createHmac } from 'node:crypto';
 import { Script, runInNewContext } from 'node:vm';
 import { LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -1853,6 +1853,63 @@ test('M05 LOCAL CMS B5: lost-primary recovery binds claim and authorization to o
     assert.equal(await countRows(ctx.db, 'cms_recovery_authorizations', 'used_at IS NOT NULL'), 1);
     assert.equal(await countRows(ctx.db, 'cms_enroll_challenges', 'consumed_at IS NOT NULL'), 1);
     assert.equal(await countRows(ctx.db, 'cms_audit_events', "event='device_enrolled'"), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+
+test('M05 LOCAL CMS B6 / R102: recovery challenge is bound to the issuing session, not just the passkey', async () => {
+  const ctx = await setup();
+  try {
+    const sessionA = await login(ctx, ctx.recovery);
+    const sessionB = await login(ctx, ctx.recovery);
+    assert.notEqual(sessionA.cookie, sessionB.cookie, 'the recovery passkey may back distinct sessions');
+
+    const { challenge, response } = await authorizeRecovery(ctx, sessionA, ctx.recovery);
+    const challengeDigest = createHash('sha256').update(challenge).digest('hex');
+    const digestSession = current => createHmac('sha256', Buffer.from(ctx.env.CMS_TEST_HMAC_KEY, 'hex'))
+      .update(current.cookie.split('=')[1]).digest('hex');
+    const persisted = await ctx.db.prepare(
+      'SELECT purpose,session_digest,consumed_at FROM cms_challenges WHERE challenge_digest=?'
+    ).bind(challengeDigest).first();
+    assert.equal(persisted.purpose, 'recovery');
+    assert.equal(persisted.session_digest, digestSession(sessionA),
+      'the challenge carries the digest of the exact session that requested it');
+    assert.notEqual(persisted.session_digest, digestSession(sessionB));
+
+    const claim = current => ctx.run('/local/recovery/complete', 'POST',
+      { challenge, credentialId: ctx.recovery.id, response }, current);
+    const beforeCounts = await tableCounts(ctx.db);
+    const beforeCounter = (await ctx.db.prepare(
+      'SELECT sign_count FROM cms_credentials WHERE credential_id=?'
+    ).bind(ctx.recovery.id).first()).sign_count;
+
+    assert.equal((await claim(sessionB)).status, 403,
+      'another authenticated session cannot consume an assertion signed for session A');
+    assert.deepEqual(await tableCounts(ctx.db), beforeCounts,
+      'cross-session denial must not consume the challenge or write an authorization/audit');
+    assert.equal((await ctx.db.prepare(
+      'SELECT sign_count FROM cms_credentials WHERE credential_id=?'
+    ).bind(ctx.recovery.id).first()).sign_count, beforeCounter,
+    'denial does not advance the authenticator sign counter');
+    assert.equal((await ctx.db.prepare(
+      'SELECT consumed_at FROM cms_challenges WHERE challenge_digest=?'
+    ).bind(challengeDigest).first()).consumed_at, null, 'denied challenge stays unconsumed');
+
+    assert.equal((await claim(sessionA)).status, 200,
+      'the actual challenge-issuing session can complete recovery once');
+    assert.equal(await countRows(ctx.db, 'cms_recovery_authorizations'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_audit_events', "event='recovery_authorized'"), 1);
+    const issued = await ctx.db.prepare(
+      "SELECT credential_id,session_digest FROM cms_recovery_authorizations WHERE kind='rotate-primary'"
+    ).first();
+    assert.equal(issued.credential_id, ctx.recovery.id);
+    assert.equal(issued.session_digest, digestSession(sessionA),
+      'one-use recovery authorization remains bound to the issuing session');
+
+    const afterSuccess = await tableCounts(ctx.db);
+    assert.equal((await claim(sessionA)).status, 403, 'replay by the original session is denied');
+    assert.equal((await claim(sessionB)).status, 403, 'replay by the other session is denied');
+    assert.deepEqual(await tableCounts(ctx.db), afterSuccess, 'replays do not mutate any table');
   } finally { await ctx.mf.dispose(); }
 });
 

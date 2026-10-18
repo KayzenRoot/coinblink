@@ -691,14 +691,14 @@ async function recoveryChallenge(request, db, secret, currentTime) {
     .bind(currentTime).run();
   const challenge = randomToken();
   const inserted = await db.prepare(
-    `INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,purpose,expires_at)
-     SELECT ?,?,?,?,'recovery',? WHERE
+    `INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,purpose,expires_at,session_digest)
+     SELECT ?,?,?,?,'recovery',?,? WHERE
        EXISTS (SELECT 1 FROM cms_credentials c WHERE c.credential_id=? AND c.owner_id=1
                  AND c.device_kind='recovery' AND c.revoked_at IS NULL)
        AND (SELECT COUNT(*) FROM cms_challenges
               WHERE credential_id=? AND purpose='recovery' AND consumed_at IS NULL AND expires_at>?) < 3`
   ).bind(await digest(challenge), authorized.credential_id, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
-    currentTime + 90, authorized.credential_id, authorized.credential_id, currentTime).run();
+    currentTime + 90, authorized.digest, authorized.credential_id, authorized.credential_id, currentTime).run();
   if (inserted.meta?.changes !== 1) return json({ error: 'Too many active recovery challenges' }, 429);
   return json({ challenge, credentialId: authorized.credential_id, rpId: CMS_TEST_RP_ID, userVerification: 'required' });
 }
@@ -716,8 +716,10 @@ async function recoveryComplete(request, db, secret, currentTime) {
     `SELECT c.credential_id,c.public_key,c.sign_count FROM cms_credentials c
        JOIN cms_challenges h ON h.credential_id=c.credential_id
        WHERE h.challenge_digest=? AND c.credential_id=? AND c.owner_id=1 AND c.revoked_at IS NULL
-         AND h.consumed_at IS NULL AND h.expires_at>? AND h.origin=? AND h.rp_id=? AND h.purpose='recovery'`
-  ).bind(challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID).first();
+         AND h.consumed_at IS NULL AND h.expires_at>? AND h.origin=? AND h.rp_id=?
+          AND h.purpose='recovery' AND h.session_digest=?`
+  ).bind(challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
+    authorized.digest).first();
   if (!record) return denied();
   const verified = await verifyLoginAssertion(input, record);
   if (!verified?.verified) return denied();
@@ -728,8 +730,9 @@ async function recoveryComplete(request, db, secret, currentTime) {
   const results = await db.batch([
     db.prepare(
       `UPDATE cms_challenges SET consumed_at=?,consume_marker=?
-        WHERE challenge_digest=? AND credential_id=? AND purpose='recovery' AND consumed_at IS NULL AND expires_at>?`
-    ).bind(currentTime, marker, challengeDigest, record.credential_id, currentTime),
+        WHERE challenge_digest=? AND credential_id=? AND purpose='recovery' AND consumed_at IS NULL
+          AND expires_at>? AND session_digest=?`
+    ).bind(currentTime, marker, challengeDigest, record.credential_id, currentTime, authorized.digest),
     db.prepare(
       `UPDATE cms_credentials SET sign_count=?,last_auth_marker=?
         WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL AND sign_count=?

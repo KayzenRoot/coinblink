@@ -25,6 +25,10 @@ CREATE TABLE cms_challenges (
   origin TEXT NOT NULL,
   rp_id TEXT NOT NULL,
   purpose TEXT NOT NULL DEFAULT 'login' CHECK (purpose IN ('login','recovery')),
+  -- Recovery WebAuthn challenges belong to the exact authenticated issuing session;
+  -- ordinary login challenges are unauthenticated and retain NULL here.
+  session_digest TEXT CHECK (session_digest IS NULL OR length(session_digest) = 64),
+  CHECK (purpose != 'recovery' OR session_digest IS NOT NULL),
   expires_at INTEGER NOT NULL,
   consumed_at INTEGER,
   consume_marker TEXT UNIQUE,

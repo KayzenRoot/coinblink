@@ -1,0 +1,21 @@
+
+> coinblink@0.1.0 build
+> astro build && node scripts/assert-no-session-binding.mjs
+
+[2m13:58:17[22m [34m[types][39m Generated [2m321ms[22m
+[2m13:58:17[22m [34m[build][39m output: [34m"server"[39m
+[2m13:58:17[22m [34m[build][39m mode: [34m"server"[39m
+[2m13:58:17[22m [34m[build][39m directory: [34mC:\Users\csn19\AppData\Local\Temp\opencode\coinblink-r92\dist\[39m
+[2m13:58:17[22m [34m[build][39m adapter: [32m@astrojs/cloudflare[39m
+[2m13:58:17[22m [34m[build][39m Collecting build info...
+[2m13:58:17[22m [34m[build][39m [32m✓ Completed in 665ms.[39m
+[2m13:58:18[22m [34m[build][39m Building server entrypoints...
+[2m13:58:19[22m [34m[vite][39m [32m✓ built in 907ms[39m
+[2m13:58:20[22m [34m[vite][39m [32m✓ built in 1.26s[39m
+[2m13:58:20[22m [34m[vite][39m [32m✓ built in 79ms[39m
+[2m13:58:20[22m [34m[build][39m Rearranging server assets...
+[2m13:58:20[22m [34m[build][39m [32m✓ Completed in 2.64s.[39m
+[2m13:58:20[22m [34m[@astrojs/cloudflare][39m Injected immutable Cache-Control for /_astro/* into _headers.
+[2m13:58:20[22m [34m[build][39m Server built in [1m3.37s[22m
+[2m13:58:20[22m [34m[build][39m [1mComplete![22m
+No SESSION, data, service, or production bindings in C:\Users\csn19\AppData\Local\Temp\opencode\coinblink-r92\dist\server\wrangler.json

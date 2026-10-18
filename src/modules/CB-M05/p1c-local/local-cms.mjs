@@ -9,6 +9,10 @@ const COOKIE_NAME = '__Host-cb_m05_local';
 const BOOTSTRAP_TICKET_TTL_SECONDS = 900;
 const BOOTSTRAP_CHALLENGE_TTL_SECONDS = 90;
 const BOOTSTRAP_MAX_ACTIVE_CHALLENGES = 128;
+const ENROLL_CHALLENGE_TTL_SECONDS = 90;
+const ENROLL_MAX_ACTIVE_CHALLENGES = 3;
+const RECOVERY_AUTH_TTL_SECONDS = 300;
+const EMERGENCY_AUTH_TTL_SECONDS = 900;
 const utf8 = new TextEncoder();
 const DEFAULT_HEADERS = Object.freeze({
   'Cache-Control': 'no-store',
@@ -109,7 +113,7 @@ async function session(request, db, secret, now) {
   if (!/^[0-9a-f]{64}$/.test(raw)) return null;
   const sessionDigest = await keyedDigest(secret, raw);
   const record = await db.prepare(
-    'SELECT s.session_digest,s.csrf_digest FROM cms_sessions s JOIN cms_credentials c ON s.credential_id=c.credential_id WHERE s.session_digest=? AND s.owner_id=1 AND s.revoked_at IS NULL AND s.expires_at>? AND c.revoked_at IS NULL'
+    'SELECT s.session_digest,s.csrf_digest,s.credential_id,c.device_kind FROM cms_sessions s JOIN cms_credentials c ON s.credential_id=c.credential_id WHERE s.session_digest=? AND s.owner_id=1 AND s.revoked_at IS NULL AND s.expires_at>? AND c.revoked_at IS NULL'
   ).bind(sessionDigest, now).first();
   if (!record) return null;
   return { ...record, digest: sessionDigest };
@@ -161,10 +165,10 @@ async function issueChallenge(request, db, currentTime) {
     .bind(currentTime).run();
   const challenge = randomToken();
   const inserted = await db.prepare(
-    `INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,expires_at)
-     SELECT ?,?,?,?,? WHERE
+    `INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,purpose,expires_at)
+     SELECT ?,?,?,?,'login',? WHERE
      (SELECT COUNT(*) FROM cms_challenges
-       WHERE credential_id=? AND consumed_at IS NULL AND expires_at>?) < 3`
+       WHERE credential_id=? AND purpose='login' AND consumed_at IS NULL AND expires_at>?) < 3`
   ).bind(await digest(challenge), credential.credential_id, CMS_TEST_ORIGIN,
     CMS_TEST_RP_ID, currentTime + 90, credential.credential_id, currentTime).run();
   if (inserted.meta?.changes !== 1) return json({ error: 'Too many active challenges' }, 429);
@@ -183,7 +187,7 @@ async function findLoginCredential(db, input, currentTime) {
     `SELECT c.credential_id,c.public_key,c.sign_count FROM cms_credentials c
        JOIN cms_challenges h ON h.credential_id=c.credential_id
        WHERE h.challenge_digest=? AND c.credential_id=? AND c.owner_id=1 AND c.revoked_at IS NULL
-         AND h.consumed_at IS NULL AND h.expires_at>? AND h.origin=? AND h.rp_id=?`
+         AND h.consumed_at IS NULL AND h.expires_at>? AND h.origin=? AND h.rp_id=? AND h.purpose='login'`
   ).bind(challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID).first();
   return { challengeDigest, record };
 }
@@ -219,7 +223,7 @@ async function commitLogin(db, { challengeDigest, credentialId, oldCount, nextCo
     db.prepare(
       `UPDATE cms_challenges SET consumed_at=?,consume_marker=?
          WHERE challenge_digest=? AND credential_id=? AND consumed_at IS NULL
-           AND expires_at>? AND origin=? AND rp_id=?
+           AND expires_at>? AND origin=? AND rp_id=? AND purpose='login'
            AND EXISTS (
              SELECT 1 FROM cms_credentials c WHERE c.credential_id=?
                AND c.owner_id=1 AND c.revoked_at IS NULL AND c.sign_count=?
@@ -441,13 +445,295 @@ async function bootstrapClaim(request, db, secret, currentTime) {
       `INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind)
          SELECT ?,1,?,?,'primary' WHERE EXISTS (SELECT 1 FROM cms_bootstrap_tickets WHERE consume_marker=?)`
     ).bind(registration.credentialId, registration.publicKey, registration.counter, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+         SELECT ?, 'owner_claimed', 'operator-ticket', ?, 'primary', ? WHERE EXISTS (SELECT 1 FROM cms_bootstrap_tickets WHERE consume_marker=?)`
+    ).bind(crypto.randomUUID(), registration.credentialId, currentTime, marker),
   ]);
   if (results.some(result => result?.meta?.changes !== 1)) return denied(409);
   return json({ owner: 1, deviceKind: 'primary', claimed: true }, 201);
 }
 
+// --- Part B · post-bootstrap devices: enrollment, recovery authorization, revocation, emergency ---
+
+async function enrollChallenge(request, db, secret, currentTime) {
+  const authorized = await authorizeMutation(request, db, secret, currentTime);
+  if (!authorized) return denied();
+  const input = await payload(request, 4_096);
+  if (input.kind !== 'primary' && input.kind !== 'recovery') return denied(400);
+  await db.prepare('DELETE FROM cms_enroll_challenges WHERE consumed_at IS NULL AND expires_at<=?')
+    .bind(currentTime).run();
+  const challenge = randomToken();
+  const inserted = await db.prepare(
+    `INSERT INTO cms_enroll_challenges (challenge_digest,credential_kind,origin,rp_id,expires_at)
+     SELECT ?,?,?,?,? WHERE
+     (SELECT COUNT(*) FROM cms_enroll_challenges
+       WHERE credential_kind=? AND consumed_at IS NULL AND expires_at>?) < ?`
+  ).bind(await digest(challenge), input.kind, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
+    currentTime + ENROLL_CHALLENGE_TTL_SECONDS, input.kind, currentTime, ENROLL_MAX_ACTIVE_CHALLENGES).run();
+  if (inserted.meta?.changes !== 1) return json({ error: 'Too many active enrollment challenges' }, 429);
+  return json({ challenge, kind: input.kind, rpId: CMS_TEST_RP_ID, userVerification: 'required' });
+}
+
+// One atomic batch decides enrollment. A primary credential is only replaced without an
+// additional recovery authorization when another active primary already exists; otherwise a
+// one-use rotate-primary authorization must be consumed in the same transaction.
+async function enrollClaim(request, db, secret, currentTime) {
+  const authorized = await authorizeMutation(request, db, secret, currentTime);
+  if (!authorized) return denied();
+  const input = await payload(request);
+  if (!validHex64(input.challenge) || !input.response || typeof input.response !== 'object') return denied();
+  const challengeDigest = await digest(input.challenge);
+  const pending = await db.prepare(
+    `SELECT credential_kind FROM cms_enroll_challenges
+      WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=?`
+  ).bind(challengeDigest, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID).first();
+  if (!pending) return denied();
+  const registration = await verifyBootstrapRegistration(input.response, input.challenge);
+  if (!registration) return denied();
+  const kind = pending.credential_kind;
+  // Deny before any write when a primary must be replaced without an active primary and no
+  // recovery authorization exists. Races are still resolved by the conditional batch below.
+  if (kind === 'primary') {
+    const activePrimary = await db.prepare(
+      `SELECT credential_id FROM cms_credentials WHERE owner_id=1 AND device_kind='primary' AND revoked_at IS NULL`
+    ).first();
+    if (!activePrimary) {
+      const authorization = await db.prepare(
+        `SELECT auth_id FROM cms_recovery_authorizations
+          WHERE kind='rotate-primary' AND used_at IS NULL AND expires_at>? LIMIT 1`
+      ).bind(currentTime).first();
+      if (!authorization) return denied();
+    }
+  }
+  const marker = crypto.randomUUID();
+  const results = await db.batch([
+    db.prepare(
+      `UPDATE cms_enroll_challenges SET consumed_at=?,consume_marker=?
+        WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=? AND credential_kind=?`
+    ).bind(currentTime, marker, challengeDigest, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID, kind),
+    db.prepare(
+      `UPDATE cms_recovery_authorizations SET used_at=?,use_marker=?
+        WHERE auth_id=(
+          SELECT auth_id FROM cms_recovery_authorizations
+           WHERE used_at IS NULL AND expires_at>? AND kind='rotate-primary' ORDER BY issued_at LIMIT 1)
+          AND EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=? AND e.credential_kind='primary')
+          AND NOT EXISTS (SELECT 1 FROM cms_credentials c
+                WHERE c.owner_id=1 AND c.device_kind='primary' AND c.revoked_at IS NULL)`
+    ).bind(currentTime, marker, currentTime, marker),
+    db.prepare(
+      `UPDATE cms_credentials SET revoked_at=?,last_auth_marker=?
+        WHERE owner_id=1 AND device_kind=? AND revoked_at IS NULL
+          AND EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)`
+    ).bind(currentTime, marker, kind, marker),
+    db.prepare(
+      `UPDATE cms_sessions SET revoked_at=?
+        WHERE revoked_at IS NULL
+          AND credential_id IN (SELECT credential_id FROM cms_credentials WHERE last_auth_marker=?)`
+    ).bind(currentTime, marker),
+    db.prepare(
+      `INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind)
+        SELECT ?,1,?,?,? WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)
+          AND (?='recovery'
+            OR EXISTS (SELECT 1 FROM cms_credentials c WHERE c.last_auth_marker=?)
+            OR EXISTS (SELECT 1 FROM cms_recovery_authorizations a WHERE a.use_marker=?))`
+    ).bind(registration.credentialId, registration.publicKey, registration.counter, kind, marker,
+      kind, marker, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+        SELECT ?, 'device_enrolled', 'owner', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)`
+    ).bind(crypto.randomUUID(), registration.credentialId, kind, currentTime, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+        SELECT ?, 'recovery_used', 'owner', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_recovery_authorizations a WHERE a.use_marker=?)`
+    ).bind(crypto.randomUUID(), registration.credentialId, kind, currentTime, marker),
+  ]);
+  if (results[0]?.meta?.changes !== 1 || results[4]?.meta?.changes !== 1) return denied(409);
+  return json({
+    credentialId: registration.credentialId,
+    deviceKind: kind,
+    replaced: results[2]?.meta?.changes === 1,
+    usedRecoveryAuthorization: results[1]?.meta?.changes === 1,
+  }, 201);
+}
+
+// A fresh user-verified assertion from the recovery credential in the current session is the
+// additional proof required to replace a lost primary device.
+async function recoveryChallenge(request, db, secret, currentTime) {
+  const authorized = await authorizeMutation(request, db, secret, currentTime);
+  if (!authorized) return denied();
+  if (authorized.device_kind !== 'recovery') {
+    return json({ error: 'Recovery authorization requires the recovery device' }, 403);
+  }
+  await db.prepare('DELETE FROM cms_challenges WHERE consumed_at IS NULL AND expires_at<=?')
+    .bind(currentTime).run();
+  const challenge = randomToken();
+  const inserted = await db.prepare(
+    `INSERT INTO cms_challenges (challenge_digest,credential_id,origin,rp_id,purpose,expires_at)
+     SELECT ?,?,?,?,'recovery',? WHERE
+       EXISTS (SELECT 1 FROM cms_credentials c WHERE c.credential_id=? AND c.owner_id=1
+                 AND c.device_kind='recovery' AND c.revoked_at IS NULL)
+       AND (SELECT COUNT(*) FROM cms_challenges
+              WHERE credential_id=? AND purpose='recovery' AND consumed_at IS NULL AND expires_at>?) < 3`
+  ).bind(await digest(challenge), authorized.credential_id, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
+    currentTime + 90, authorized.credential_id, authorized.credential_id, currentTime).run();
+  if (inserted.meta?.changes !== 1) return json({ error: 'Too many active recovery challenges' }, 429);
+  return json({ challenge, credentialId: authorized.credential_id, rpId: CMS_TEST_RP_ID, userVerification: 'required' });
+}
+
+async function recoveryComplete(request, db, secret, currentTime) {
+  const authorized = await authorizeMutation(request, db, secret, currentTime);
+  if (!authorized) return denied();
+  if (authorized.device_kind !== 'recovery') {
+    return json({ error: 'Recovery authorization requires the recovery device' }, 403);
+  }
+  const input = await payload(request);
+  if (!validLoginInput(input) || input.credentialId !== authorized.credential_id) return denied();
+  const challengeDigest = await digest(input.challenge);
+  const record = await db.prepare(
+    `SELECT c.credential_id,c.public_key,c.sign_count FROM cms_credentials c
+       JOIN cms_challenges h ON h.credential_id=c.credential_id
+       WHERE h.challenge_digest=? AND c.credential_id=? AND c.owner_id=1 AND c.revoked_at IS NULL
+         AND h.consumed_at IS NULL AND h.expires_at>? AND h.origin=? AND h.rp_id=? AND h.purpose='recovery'`
+  ).bind(challengeDigest, input.credentialId, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID).first();
+  if (!record) return denied();
+  const verified = await verifyLoginAssertion(input, record);
+  if (!verified?.verified) return denied();
+  const oldCount = Number(record.sign_count);
+  const nextCount = verified.authenticationInfo?.newCounter;
+  if (!validCounterAdvance(oldCount, nextCount)) return denied();
+  const marker = crypto.randomUUID();
+  const results = await db.batch([
+    db.prepare(
+      `UPDATE cms_challenges SET consumed_at=?,consume_marker=?
+        WHERE challenge_digest=? AND credential_id=? AND purpose='recovery' AND consumed_at IS NULL AND expires_at>?`
+    ).bind(currentTime, marker, challengeDigest, record.credential_id, currentTime),
+    db.prepare(
+      `UPDATE cms_credentials SET sign_count=?,last_auth_marker=?
+        WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL AND sign_count=?
+          AND EXISTS (SELECT 1 FROM cms_challenges h WHERE h.challenge_digest=? AND h.consume_marker=?)`
+    ).bind(nextCount, marker, record.credential_id, oldCount, challengeDigest, marker),
+    db.prepare(
+      `INSERT INTO cms_recovery_authorizations(auth_id,kind,credential_id,issued_at,expires_at)
+        SELECT ?, 'rotate-primary', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_challenges h WHERE h.consume_marker=?)`
+    ).bind(randomToken().slice(0, 32), record.credential_id, currentTime,
+      currentTime + RECOVERY_AUTH_TTL_SECONDS, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+        SELECT ?, 'recovery_authorized', 'owner', ?, 'recovery', ? WHERE EXISTS (SELECT 1 FROM cms_challenges h WHERE h.consume_marker=?)`
+    ).bind(crypto.randomUUID(), record.credential_id, currentTime, marker),
+  ]);
+  if (results.some(result => result?.meta?.changes !== 1)) return denied(409);
+  return json({ authorized: true, kind: 'rotate-primary', expiresInSeconds: RECOVERY_AUTH_TTL_SECONDS });
+}
+
+async function listCredentials(request, db, secret, currentTime) {
+  const who = await session(request, db, secret, currentTime);
+  if (!who) return denied(401);
+  if (!ownerOrigin(request)) return denied();
+  const rows = await db.prepare(
+    'SELECT credential_id,device_kind,sign_count,revoked_at FROM cms_credentials WHERE owner_id=1 ORDER BY device_kind,credential_id'
+  ).all();
+  return json({ credentials: rows.results });
+}
+
+async function revokeCredential(request, db, secret, currentTime) {
+  const authorized = await authorizeMutation(request, db, secret, currentTime);
+  if (!authorized) return denied();
+  const input = await payload(request, 4_096);
+  if (typeof input.credentialId !== 'string' || input.credentialId.length > 256) return denied(400);
+  if (input.credentialId === authorized.credential_id) {
+    return json({ error: 'The credential that authorizes this request cannot revoke itself' }, 403);
+  }
+  const marker = crypto.randomUUID();
+  const results = await db.batch([
+    db.prepare(
+      `UPDATE cms_credentials SET revoked_at=?,last_auth_marker=?
+        WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL`
+    ).bind(currentTime, marker, input.credentialId),
+    db.prepare(
+      `UPDATE cms_sessions SET revoked_at=?
+        WHERE revoked_at IS NULL AND credential_id=?
+          AND EXISTS (SELECT 1 FROM cms_credentials c WHERE c.last_auth_marker=?)`
+    ).bind(currentTime, input.credentialId, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+        SELECT ?, 'device_revoked', 'owner', ?, (SELECT device_kind FROM cms_credentials WHERE credential_id=?), ?
+          WHERE EXISTS (SELECT 1 FROM cms_credentials c WHERE c.last_auth_marker=?)`
+    ).bind(crypto.randomUUID(), input.credentialId, input.credentialId, currentTime, marker),
+  ]);
+  if (results[0]?.meta?.changes !== 1) return denied(409);
+  return json({ credentialId: input.credentialId, revoked: true });
+}
+
+// Offline operator flow for the total-loss case: one-use, expiring, digest-at-rest token that
+// also serves as the WebAuthn challenge. A fresh user-verified registration is still required.
+export async function issueEmergencyAuthorization(db, secret, currentTime) {
+  const token = randomToken();
+  await db.prepare('INSERT INTO cms_emergency_authorizations(token_digest,expires_at) VALUES (?,?)')
+    .bind(await keyedDigest(secret, token), currentTime + EMERGENCY_AUTH_TTL_SECONDS).run();
+  return token;
+}
+
+async function emergencyClaim(request, db, secret, currentTime) {
+  if (!ownerOrigin(request)) return denied();
+  const input = await payload(request);
+  if (!validHex64(input.token) || !input.response || typeof input.response !== 'object') return denied();
+  const tokenDigest = await keyedDigest(secret, input.token);
+  // Deny invalid, spent and expired tokens before any write; races stay guarded by the batch.
+  const usableAuthorization = await db.prepare(
+    `SELECT token_digest FROM cms_emergency_authorizations
+      WHERE token_digest=? AND used_at IS NULL AND expires_at>?
+        AND EXISTS (SELECT 1 FROM cms_owner)`
+  ).bind(tokenDigest, currentTime).first();
+  if (!usableAuthorization) return denied();
+  const registration = await verifyBootstrapRegistration(input.response, input.token);
+  if (!registration) return denied();
+  const marker = crypto.randomUUID();
+  const results = await db.batch([
+    db.prepare(
+      `UPDATE cms_emergency_authorizations SET used_at=?,use_marker=?
+        WHERE token_digest=? AND used_at IS NULL AND expires_at>?
+          AND EXISTS (SELECT 1 FROM cms_owner)`
+    ).bind(currentTime, marker, tokenDigest, currentTime),
+    db.prepare(
+      `UPDATE cms_credentials SET revoked_at=?
+        WHERE revoked_at IS NULL AND EXISTS (SELECT 1 FROM cms_emergency_authorizations a WHERE a.use_marker=?)`
+    ).bind(currentTime, marker),
+    db.prepare(
+      `UPDATE cms_sessions SET revoked_at=?
+        WHERE revoked_at IS NULL AND EXISTS (SELECT 1 FROM cms_emergency_authorizations a WHERE a.use_marker=?)`
+    ).bind(currentTime, marker),
+    db.prepare(
+      `INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind)
+        SELECT ?,1,?,?,'primary' WHERE EXISTS (SELECT 1 FROM cms_emergency_authorizations a WHERE a.use_marker=?)`
+    ).bind(registration.credentialId, registration.publicKey, registration.counter, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+        SELECT ?, 'emergency_used', 'operator-emergency-token', ?, 'primary', ?
+          WHERE EXISTS (SELECT 1 FROM cms_emergency_authorizations a WHERE a.use_marker=?)`
+    ).bind(crypto.randomUUID(), registration.credentialId, currentTime, marker),
+    db.prepare(
+      `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
+        SELECT ?, 'device_enrolled', 'owner-emergency', ?, 'primary', ?
+          WHERE EXISTS (SELECT 1 FROM cms_emergency_authorizations a WHERE a.use_marker=?)`
+    ).bind(crypto.randomUUID(), registration.credentialId, currentTime, marker),
+  ]);
+  if (results[0]?.meta?.changes !== 1 || results[3]?.meta?.changes !== 1) return denied(409);
+  return json({ owner: 1, deviceKind: 'primary', emergency: true }, 201);
+}
+
 const LOCAL_FIXED_ROUTES = new Map([
   ['GET /local/ui', () => localUiResponse()],
+  ['POST /local/bootstrap/challenge', ({ request, db, secret, currentTime }) => bootstrapChallenge(request, db, secret, currentTime)],
+  ['POST /local/bootstrap/claim', ({ request, db, secret, currentTime }) => bootstrapClaim(request, db, secret, currentTime)],
+  ['POST /local/enroll/challenge', ({ request, db, secret, currentTime }) => enrollChallenge(request, db, secret, currentTime)],
+  ['POST /local/enroll/claim', ({ request, db, secret, currentTime }) => enrollClaim(request, db, secret, currentTime)],
+  ['POST /local/recovery/challenge', ({ request, db, secret, currentTime }) => recoveryChallenge(request, db, secret, currentTime)],
+  ['POST /local/recovery/complete', ({ request, db, secret, currentTime }) => recoveryComplete(request, db, secret, currentTime)],
+  ['GET /local/credentials', ({ request, db, secret, currentTime }) => listCredentials(request, db, secret, currentTime)],
+  ['POST /local/credentials/revoke', ({ request, db, secret, currentTime }) => revokeCredential(request, db, secret, currentTime)],
+  ['POST /local/emergency/claim', ({ request, db, secret, currentTime }) => emergencyClaim(request, db, secret, currentTime)],
   ['POST /local/bootstrap/challenge', ({ request, db, secret, currentTime }) => bootstrapChallenge(request, db, secret, currentTime)],
   ['POST /local/bootstrap/claim', ({ request, db, secret, currentTime }) => bootstrapClaim(request, db, secret, currentTime)],
   ['POST /local/challenge', ({ request, db, currentTime }) => issueChallenge(request, db, currentTime)],

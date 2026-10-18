@@ -24,6 +24,7 @@ CREATE TABLE cms_challenges (
   credential_id TEXT NOT NULL,
   origin TEXT NOT NULL,
   rp_id TEXT NOT NULL,
+  purpose TEXT NOT NULL DEFAULT 'login' CHECK (purpose IN ('login','recovery')),
   expires_at INTEGER NOT NULL,
   consumed_at INTEGER,
   consume_marker TEXT UNIQUE,
@@ -94,6 +95,48 @@ CREATE TABLE cms_bootstrap_challenges (
   FOREIGN KEY (ticket_digest) REFERENCES cms_bootstrap_tickets(ticket_digest)
 );
 
+-- Post-bootstrap device enrollment (only reachable with an authorized session and CSRF).
+CREATE TABLE cms_enroll_challenges (
+  challenge_digest TEXT PRIMARY KEY CHECK (length(challenge_digest) = 64),
+  credential_kind TEXT NOT NULL CHECK (credential_kind IN ('primary','recovery')),
+  origin TEXT NOT NULL,
+  rp_id TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  consumed_at INTEGER,
+  consume_marker TEXT UNIQUE
+);
+
+-- Additional proof required to replace a primary credential that is lost or revoked.
+-- Issued only by a fresh user-verified assertion from the recovery credential.
+CREATE TABLE cms_recovery_authorizations (
+  auth_id TEXT PRIMARY KEY CHECK (length(auth_id) >= 16),
+  kind TEXT NOT NULL CHECK (kind = 'rotate-primary'),
+  credential_id TEXT NOT NULL,
+  issued_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  used_at INTEGER,
+  use_marker TEXT UNIQUE,
+  FOREIGN KEY (credential_id) REFERENCES cms_credentials(credential_id)
+);
+
+-- Offline, one-use, operator-issued authorization for the total-loss case. Only a keyed
+-- digest is stored; the token itself is never persisted and doubles as the WebAuthn challenge.
+CREATE TABLE cms_emergency_authorizations (
+  token_digest TEXT PRIMARY KEY CHECK (length(token_digest) = 64),
+  expires_at INTEGER NOT NULL,
+  used_at INTEGER,
+  use_marker TEXT UNIQUE
+);
+
+CREATE TABLE cms_audit_events (
+  event_id TEXT PRIMARY KEY,
+  event TEXT NOT NULL CHECK (event IN ('owner_claimed','device_enrolled','device_revoked','recovery_authorized','recovery_used','emergency_used')),
+  actor TEXT NOT NULL,
+  subject TEXT,
+  device_kind TEXT CHECK (device_kind IN ('primary','recovery')),
+  created_at INTEGER NOT NULL
+);
+
 -- Revision snapshots are append-only, including against accidental direct SQL mutation.
 CREATE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
 BEGIN
@@ -102,4 +145,13 @@ END;
 CREATE TRIGGER cms_revision_no_delete BEFORE DELETE ON cms_draft_revisions
 BEGIN
   SELECT RAISE(ABORT, 'local CMS revisions are immutable');
+END;
+-- The audit trail is append-only as well.
+CREATE TRIGGER cms_audit_no_update BEFORE UPDATE ON cms_audit_events
+BEGIN
+  SELECT RAISE(ABORT, 'local CMS audit is append-only');
+END;
+CREATE TRIGGER cms_audit_no_delete BEFORE DELETE ON cms_audit_events
+BEGIN
+  SELECT RAISE(ABORT, 'local CMS audit is append-only');
 END;

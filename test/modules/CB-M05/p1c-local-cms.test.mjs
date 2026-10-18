@@ -10,7 +10,7 @@ import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
 import { splitLocalSchemaStatements, startLocalCmsPreview } from './p1c-local-preview.mjs';
-import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
+import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +30,7 @@ test('M05 LOCAL CMS schema splitter preserves trigger bodies under adversarial w
   const statements = splitLocalSchemaStatements(schema);
   assert.ok(statements.length >= 8, 'all local schema statements must be applied');
   const triggers = statements.filter(statement => /^CREATE TRIGGER\b/iu.test(statement));
-  assert.equal(triggers.length, 2);
+  assert.equal(triggers.length, 4, 'revision and audit immutability triggers must all be applied');
   assert.ok(triggers.every(statement => statement.includes('BEGIN') && statement.includes('END')));
 
   const adversarialSchema = [
@@ -49,7 +49,8 @@ test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupp
     const before = await ctx.db.prepare(
       "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
     ).all();
-    assert.deepEqual(before.results.map(row => row.name), ['cms_revision_no_delete', 'cms_revision_no_update']);
+    assert.deepEqual(before.results.map(row => row.name),
+      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
     await assert.rejects(
       ctx.db.prepare(`CREATE OR REPLACE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
         BEGIN SELECT RAISE(ABORT, 'local CMS revisions are immutable'); END`).run(),
@@ -58,7 +59,8 @@ test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupp
     const after = await ctx.db.prepare(
       "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
     ).all();
-    assert.deepEqual(after.results.map(row => row.name), ['cms_revision_no_delete', 'cms_revision_no_update']);
+    assert.deepEqual(after.results.map(row => row.name),
+      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
   } finally {
     await ctx.mf.dispose();
   }
@@ -1169,5 +1171,263 @@ test('M05 LOCAL CMS BOOT-RESTART: after a claim, replayed, new, and stale ticket
     assert.equal(await countRows(ctx.db, 'cms_credentials'), 1);
     const logged = await login(restarted, winner);
     assert.match(logged.cookie, /^__Host-cb_m05_local=[0-9a-f]{64}$/);
+  } finally { await ctx.mf.dispose(); }
+});
+
+// --- Part B · devices, recovery authorization, revocation and emergency ---
+
+const COUNTED_TABLES = ['cms_owner', 'cms_credentials', 'cms_challenges', 'cms_sessions',
+  'cms_enroll_challenges', 'cms_recovery_authorizations', 'cms_emergency_authorizations',
+  'cms_audit_events', 'cms_drafts', 'cms_draft_revisions', 'cms_bootstrap_tickets', 'cms_bootstrap_challenges'];
+async function tableCounts(db) {
+  const entries = await Promise.all(COUNTED_TABLES.map(async table => [
+    table, (await db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).first()).n,
+  ]));
+  return Object.fromEntries(entries);
+}
+async function enrollDevice(ctx, sessionInfo, kind, authenticator, options = {}) {
+  const challengeResponse = await ctx.run('/local/enroll/challenge', 'POST', { kind }, { ...sessionInfo, ...options });
+  if (challengeResponse.status !== 200) return challengeResponse;
+  const { challenge } = await challengeResponse.json();
+  const registration = makeRegistrationResponse(authenticator, {
+    challenge: webauthnChallengeFromHex(challenge), ...(options.registration ?? {}),
+  });
+  return ctx.run('/local/enroll/claim', 'POST', { challenge, response: registration },
+    { ...sessionInfo, ...options });
+}
+async function signedAssertion(ctx, authenticator, challengeHex) {
+  const row = await ctx.db.prepare('SELECT sign_count FROM cms_credentials WHERE credential_id=?')
+    .bind(authenticator.id).first();
+  const counter = Number(row?.sign_count ?? 0) + 1;
+  return makeAuthenticationResponse(authenticator, {
+    challenge: webauthnChallengeFromHex(challengeHex), counter,
+  });
+}
+async function authorizeRecovery(ctx, sessionInfo, authenticator) {
+  const challengeResponse = await ctx.run('/local/recovery/challenge', 'POST', {}, sessionInfo);
+  assert.equal(challengeResponse.status, 200, 'a recovery session may request a recovery challenge');
+  const { challenge } = await challengeResponse.json();
+  const response = await signedAssertion(ctx, authenticator, challenge);
+  return { challenge, response };
+}
+
+test('M05 LOCAL CMS B1: recovery enrollment rotates the recovery device, voids its sessions and leaves an audit trail', async () => {
+  const ctx = await setup();
+  try {
+    const oldRecoverySession = await login(ctx, ctx.recovery);
+    const primarySession = await login(ctx);
+    const nextRecovery = makeSyntheticAuthenticator('recovery-next');
+    const enrolled = await enrollDevice(ctx, primarySession, 'recovery', nextRecovery);
+    assert.equal(enrolled.status, 201);
+    const body = await enrolled.json();
+    assert.equal(body.deviceKind, 'recovery');
+    assert.equal(body.replaced, true, 'the previously active recovery device was replaced');
+    assert.equal(body.usedRecoveryAuthorization, false, 'routine enrollment needs no recovery authorization');
+    const active = (await ctx.db.prepare(
+      "SELECT credential_id,device_kind FROM cms_credentials WHERE revoked_at IS NULL ORDER BY device_kind"
+    ).all()).results;
+    assert.deepEqual(active.map(row => [row.device_kind, row.credential_id]),
+      [['primary', ctx.primary.id], ['recovery', nextRecovery.id]]);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1, 'enrollment never creates a second Owner');
+    assert.equal((await ctx.run('/local/challenge', 'POST', { credentialId: ctx.recovery.id })).status, 403,
+      'the replaced recovery device can no longer obtain a challenge');
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, oldRecoverySession)).status, 401,
+      'sessions bound to the replaced device are revoked');
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, primarySession)).status, 200,
+      'the primary session is untouched by a recovery rotation');
+    const nextRecoverySession = await login(ctx, nextRecovery);
+    assert.equal((await ctx.run('/local/credentials', 'GET', undefined, nextRecoverySession)).status, 200);
+    const audit = (await ctx.db.prepare('SELECT event,actor,device_kind FROM cms_audit_events').all()).results;
+    assert.deepEqual(audit, [{ event: 'device_enrolled', actor: 'owner', device_kind: 'recovery' }]);
+    const devices = (await (await ctx.run('/local/credentials', 'GET', undefined, nextRecoverySession)).json()).credentials;
+    assert.equal(devices.length, 3, 'revoked devices remain visible for audit');
+    const negatives = [
+      { csrf: '' },
+      { origin: 'https://evil.example.test' },
+      { fetchSite: 'cross-site' },
+    ];
+    for (const options of negatives) {
+      const before = await tableCounts(ctx.db);
+      const deniedEnroll = await enrollDevice(ctx, { ...primarySession, ...options }, 'recovery',
+        makeSyntheticAuthenticator('never'));
+      assert.notEqual(deniedEnroll.status, 201);
+      assert.deepEqual(await tableCounts(ctx.db), before, 'denied enrollment writes nothing');
+    }
+    const replayChallenge = await ctx.run('/local/enroll/challenge', 'POST', { kind: 'primary' }, primarySession);
+    const replay = await replayChallenge.json();
+    const replayedResponse = makeRegistrationResponse(makeSyntheticAuthenticator('replay'), {
+      challenge: webauthnChallengeFromHex(replay.challenge),
+    });
+    assert.equal((await ctx.run('/local/enroll/claim', 'POST',
+      { challenge: replay.challenge, response: replayedResponse }, primarySession)).status, 201);
+    const afterFirst = await tableCounts(ctx.db);
+    assert.equal((await ctx.run('/local/enroll/claim', 'POST',
+      { challenge: replay.challenge, response: replayedResponse }, primarySession)).status, 403,
+    'a consumed enrollment challenge cannot be replayed');
+    assert.deepEqual(await tableCounts(ctx.db), afterFirst, 'a replayed challenge writes nothing');
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS B2: a lost primary is replaced only with a single-use recovery authorization', async () => {
+  const ctx = await setup();
+  try {
+    const recoverySession = await login(ctx, ctx.recovery);
+    assert.equal((await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: ctx.primary.id }, recoverySession)).status, 200);
+    assert.equal((await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id })).status, 403,
+      'the revoked primary cannot obtain a challenge');
+    assert.equal(await countRows(ctx.db, 'cms_credentials', 'revoked_at IS NULL'), 1);
+
+    const nextPrimary = makeSyntheticAuthenticator('primary-next');
+    const pendingChallenge = await ctx.run('/local/enroll/challenge', 'POST', { kind: 'primary' }, recoverySession);
+    assert.equal(pendingChallenge.status, 200, 'a session may request an enrollment challenge');
+    const pending = await pendingChallenge.json();
+    const beforeDenied = await tableCounts(ctx.db);
+    const deniedEnroll = await ctx.run('/local/enroll/claim', 'POST', {
+      challenge: pending.challenge,
+      response: makeRegistrationResponse(nextPrimary, { challenge: webauthnChallengeFromHex(pending.challenge) }),
+    }, recoverySession);
+    assert.equal(deniedEnroll.status, 403, 'replacing a lost primary without additional proof is denied');
+    assert.deepEqual(await tableCounts(ctx.db), beforeDenied,
+      'the denial writes nothing: no credential, no audit entry, no consumed authorization');
+
+    const { challenge, response } = await authorizeRecovery(ctx, recoverySession, ctx.recovery);
+    const authorization = await ctx.run('/local/recovery/complete', 'POST',
+      { challenge, credentialId: ctx.recovery.id, response }, recoverySession);
+    assert.equal(authorization.status, 200);
+    assert.equal((await authorization.json()).kind, 'rotate-primary');
+    assert.equal(await countRows(ctx.db, 'cms_recovery_authorizations', 'used_at IS NULL'), 1);
+
+    const enrolled = await enrollDevice(ctx, recoverySession, 'primary', nextPrimary);
+    assert.equal(enrolled.status, 201);
+    const body = await enrolled.json();
+    assert.equal(body.deviceKind, 'primary');
+    assert.equal(body.replaced, false, 'no active primary existed to replace');
+    assert.equal(body.usedRecoveryAuthorization, true);
+    assert.equal(await countRows(ctx.db, 'cms_recovery_authorizations', 'used_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    const activePrimary = (await ctx.db.prepare(
+      "SELECT credential_id FROM cms_credentials WHERE device_kind='primary' AND revoked_at IS NULL"
+    ).first()).credential_id;
+    assert.equal(activePrimary, nextPrimary.id);
+    const events = (await ctx.db.prepare('SELECT event FROM cms_audit_events ORDER BY created_at').all()).results
+      .map(row => row.event);
+    assert.deepEqual(events, ['device_revoked', 'recovery_authorized', 'device_enrolled', 'recovery_used']);
+
+    // Single use: lose the new primary again; the spent authorization cannot replace it.
+    assert.equal((await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: nextPrimary.id }, recoverySession)).status, 200);
+    const reuseChallenge = await ctx.run('/local/enroll/challenge', 'POST', { kind: 'primary' }, recoverySession);
+    assert.equal(reuseChallenge.status, 200);
+    const reusePending = await reuseChallenge.json();
+    const beforeReuse = await tableCounts(ctx.db);
+    const reuse = await ctx.run('/local/enroll/claim', 'POST', {
+      challenge: reusePending.challenge,
+      response: makeRegistrationResponse(makeSyntheticAuthenticator('primary-third'),
+        { challenge: webauthnChallengeFromHex(reusePending.challenge) }),
+    }, recoverySession);
+    assert.equal(reuse.status, 403, 'a consumed recovery authorization cannot be reused');
+    assert.deepEqual(await tableCounts(ctx.db), beforeReuse);
+
+    // A second authorization is required and must come from a fresh recovery assertion.
+    const second = await authorizeRecovery(ctx, recoverySession, ctx.recovery);
+    assert.equal((await ctx.run('/local/recovery/complete', 'POST',
+      { challenge: second.challenge, credentialId: ctx.recovery.id, response: second.response },
+      recoverySession)).status, 200);
+    const third = makeSyntheticAuthenticator('primary-third');
+    assert.equal((await enrollDevice(ctx, recoverySession, 'primary', third)).status, 201);
+
+    // Replay of a recovery completion challenge is denied without writing.
+    const stale = await authorizeRecovery(ctx, recoverySession, ctx.recovery);
+    assert.equal((await ctx.run('/local/recovery/complete', 'POST',
+      { challenge: stale.challenge, credentialId: ctx.recovery.id, response: stale.response },
+      recoverySession)).status, 200);
+    const beforeReplay = await tableCounts(ctx.db);
+    assert.notEqual((await ctx.run('/local/recovery/complete', 'POST',
+      { challenge: stale.challenge, credentialId: ctx.recovery.id, response: stale.response },
+      recoverySession)).status, 200);
+    assert.deepEqual(await tableCounts(ctx.db), beforeReplay);
+
+    // Device administration guards.
+    assert.equal((await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: third.id }, { ...recoverySession, csrf: '' })).status, 403);
+    const selfRevoke = await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: ctx.recovery.id }, recoverySession);
+    assert.equal(selfRevoke.status, 403, 'a session cannot revoke its own authorizing credential');
+    assert.equal((await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: 'does-not-exist' }, recoverySession)).status, 409);
+    assert.equal((await ctx.run('/local/credentials', 'GET', undefined,
+      { cookie: 'not-a-session', csrf: '' })).status, 401);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS B3: offline emergency authorization is single-use, expiring and total', async () => {
+  const ctx = await setup();
+  try {
+    const activeSession = await login(ctx);
+    let clockMs = Date.now();
+    const issue = () => issueEmergencyAuthorization(ctx.db, ctx.env.CMS_TEST_HMAC_KEY, Math.floor(clockMs / 1000));
+    const claimEmergency = (token, authenticator, options = {}) => {
+      const registration = makeRegistrationResponse(authenticator, {
+        challenge: webauthnChallengeFromHex(token), ...(options.registration ?? {}),
+      });
+      return ctx.run('/local/emergency/claim', 'POST', { token, response: registration }, options);
+    };
+    // Wrong proof: a fabricated token or a mismatched challenge writes nothing.
+    const realToken = await issue();
+    const before = await tableCounts(ctx.db);
+    const fabricated = await claimEmergency('ab'.repeat(32), makeSyntheticAuthenticator('fake'));
+    assert.equal(fabricated.status, 403);
+    const mismatched = await claimEmergency(realToken, makeSyntheticAuthenticator('mismatch'), {
+      registration: { challenge: 'cd'.repeat(32) },
+    });
+    assert.equal(mismatched.status, 403, 'the registration must sign the token challenge itself');
+    const wrongOrigin = await claimEmergency(realToken, makeSyntheticAuthenticator('origin'), {
+      origin: 'https://evil.example.test',
+    });
+    assert.equal(wrongOrigin.status, 403);
+    assert.deepEqual(await tableCounts(ctx.db), before, 'every denied emergency attempt writes nothing');
+
+    const emergencyCredential = makeSyntheticAuthenticator('emergency-primary');
+    const claimed = await claimEmergency(realToken, emergencyCredential);
+    assert.equal(claimed.status, 201);
+    assert.deepEqual(await claimed.json(), { owner: 1, deviceKind: 'primary', emergency: true });
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1, 'emergency recovery never creates a second Owner');
+    assert.equal(await countRows(ctx.db, 'cms_credentials', 'revoked_at IS NULL'), 1);
+    assert.equal((await ctx.db.prepare(
+      "SELECT credential_id FROM cms_credentials WHERE revoked_at IS NULL"
+    ).first()).credential_id, emergencyCredential.id);
+    assert.equal(await countRows(ctx.db, 'cms_credentials', 'revoked_at IS NOT NULL'), 2,
+      'both existing devices are revoked by the emergency claim');
+    assert.equal(await countRows(ctx.db, 'cms_sessions', 'revoked_at IS NULL'), 0,
+      'every session is revoked by the emergency claim');
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, activeSession)).status, 401);
+    const events = (await ctx.db.prepare('SELECT event,actor FROM cms_audit_events ORDER BY created_at').all()).results;
+    assert.deepEqual(events, [
+      { event: 'emergency_used', actor: 'operator-emergency-token' },
+      { event: 'device_enrolled', actor: 'owner-emergency' },
+    ]);
+
+    const afterClaim = await tableCounts(ctx.db);
+    const replay = await claimEmergency(realToken, makeSyntheticAuthenticator('replay'));
+    assert.equal(replay.status, 403, 'the emergency token is single-use');
+    assert.deepEqual(await tableCounts(ctx.db), afterClaim, 'a replayed token writes nothing');
+
+    const expiringToken = await issue();
+    clockMs += 901_000;
+    ctx.time(clockMs);
+    assert.equal((await claimEmergency(expiringToken, makeSyntheticAuthenticator('expired'))).status, 403,
+      'an expired emergency token is refused');
+    assert.equal((await claimEmergency(realToken, makeSyntheticAuthenticator('old'))).status, 403);
+
+    const fresh = await issue();
+    const replacement = makeSyntheticAuthenticator('emergency-second');
+    assert.equal((await claimEmergency(fresh, replacement)).status, 201,
+      'a fresh authorization still works after recovery');
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_credentials', 'revoked_at IS NULL'), 1);
+    const session = await login(ctx, replacement);
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, session)).status, 200);
   } finally { await ctx.mf.dispose(); }
 });

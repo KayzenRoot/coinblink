@@ -197,3 +197,60 @@ Canonical main observed `4300642e8bdd00ae029ccbb30ed8facd70089df3`, Git tree `6d
 **Required next step (separate authorization):** Only after reviewed protected squash adoption with specific Owner GO on immutable PR #126 HEAD, refingerprint the new adopted lock on main and obtain specific LOCAL P1-C code GO under admitted `CB-M05-P1C-LOCAL-001`; then independently prove atomic first Owner 0→1 race 2/10/100, genuine local-only WebAuthn+backup/recovery/rollback, deny-by-default privileged HTML/API sessions and CSRF, local D1 apply/revert/restore with immutable audit and zero egress. M05 P1-D vault, P1-E editorial publication, hosted D1, actual admin routes, real passkeys and provider deployments remain prohibited absent other explicit gates.
 
 `CHECKPOINT_DELTA={}`; `STOP=M05_P1C_LOCAL_R85_NONEXECUTABLE_PENDING_PROTECTED_ADOPTION_AND_OWNER_CODE_GO`.
+
+## R87 · executable LOCAL-only Context Lock ADOPTION CANDIDATE · 2026-10-18
+
+**Single existing Work Order:** `CB-M05-P1C-LOCAL-001`. **HIGH_ASSURANCE.** **Stage: `EXECUTION_LOCK_CANDIDATE / REVIEWABLE_NOT_YET_EFFECTIVE`.** This is the final ready-to-adopt LOCAL-only *execution specification*; it becomes an **effective execution lock** only if this one-file PR is reviewed, exact-head CI passes and Owner authorizes its protected squash into unchanged trusted `main`, and the separate Owner scoped **LOCAL CODE GO** is recorded. The PR itself is NOT a code dispatch and cannot backdate permission. No additional planning round is required if all the following checks pass on the adopted source. If the source, lock or resource boundary moves, STOP as `STALE` and refingerprint.
+
+### Locked source identity / guard manifest
+
+- **Trusted protected base:** `main=9612adc772051750809b205f3e82f8ade7d0c2ae`; **full 693-entry Git tree:** `fa6c5d8e89c5d0d3e54f24a2c9bda6403d7f98a7`, untruncated. Earlier R84/R85 main SHAs are **historical, never execution baselines**.
+- **Current lock blob before R87 appendix:** `c619af780d90af35e57f51adaedcc76ece1bb6b1`. On adoption the effective *new* lock blob is the one read back from protected `main` and matched to this candidate's final file content. Self-referencing future blob IDs must not be invented in this text.
+
+| Exact read-only dependency | Immutable Git blob SHA-1 |
+| --- | --- |
+| `AGENTS.md` | `4e8a6ebeb4aa18ac58171fcddf3bde762d725ca7` |
+| `.engineering/SOURCE-HIERARCHY.md` | `3ba4fb9bb89d8aaf17b87ca0adba2d72081a20f2` |
+| `.engineering/CHECKPOINT.json` | `72618bef100e6f82e4655b2c6ed482794e0c4649` |
+| `.engineering/SCOPE.md` | `dfa1ce336ee8d05d0a93a37215e34a760708ea51` |
+| `.engineering/REQUIREMENTS.md` | `588c221e3ba88be3fb957ee27719671a731d8595` |
+| `.engineering/ARCHITECTURE.md` | `dc6797e169f24b5ed6056ed3740b77741249c7c0` |
+| `.engineering/SECURITY.md` | `7f8a39a1a9296dad04ada71b0750eb05e9d8cf45` |
+| `.engineering/DEFINITION-OF-DONE.md` | `00702a0dfe54fcc22ad9e146255be1665fa4624c` |
+| `.engineering/work-orders/CB-M05-P1C-LOCAL-001.md` | `8a00346e0e84265bf4c3a7de1b81f196b473942b` |
+| `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md` | `6a590ef487556ed62296f558296b6ad5a334d3dc` |
+| `docs/architecture/contracts/CB-M05.md` | `2b35f56903bb00f9c4025eafb6b40d7265c26405` |
+| `src/modules/CB-M05/p1c-local/local-cms.mjs` | `d6b7080f0a2ec11bd3b7ed3da46c6b457fe558e7` |
+| `src/modules/CB-M05/p1c-local/local-cms-ui.mjs` | `677f5c0116fcf9dd98bd88aa3a2eb768d7e2cc0c` |
+| `test/modules/CB-M05/p1c-local-cms.test.mjs` | `28c0a306085eaa116b50c3b18d4a1c1a50650de8` |
+| `test/modules/CB-M05/p1c-local-preview.mjs` | `424a7a2566e7251bafad146c7ed97295829a3a3d` |
+| `test/modules/CB-M05/p1c-fixtures/schema.sql` | `cd3f73326acbc66a55014c67163e644e41b410da` |
+| `.engineering/evidence/CB-M05-P1C-LOCAL-001/SONARCLOUD-CORRECTION-DELTA.md` | `b56a113d51f7a02ab84d3ef36099d00ad9f27721` |
+| `package.json` | `786a23f1d9dcb406f868785497a9b7d0dad63e46` |
+| `package-lock.json` | `5572b6948c0f71f8a3ba9747490bc4d5723cf0a2` |
+| `wrangler.jsonc` | `980a4af6a5c3cd40a37797ad53d27530a54bbbe2` |
+| `scripts/cloudflare-production-policy.mjs` | `1a4dc270ac8246743886b0611220d2335e82a934` |
+
+**Baseline trust anchors:** existing M05 fixture code and correction evidence from approved PR #91 are already on `main`; exact-main [GEF #39117420965](https://github.com/KayzenRoot/coinblink/actions/runs/39117420965) SUCCESS on Ubuntu/Windows/Docker (previously 431 Node and 48 Playwright per OS). Subsequent [Cloudflare #39117686170](https://github.com/KayzenRoot/coinblink/actions/runs/39117686170) was fail-closed at preflight with deploy job SKIPPED. They prove historical regression/boundary only, **not** future LOCAL P1-C code or first-Owner claim.
+
+### Allowed execution surface after adoption + separate Owner LOCAL CODE GO
+
+- **Executor:** Codex in one isolated LOCAL worktree/PR, Node `>=22.19.0 <23`, npm `10.9.3`, locked `npm ci`, Playwright Chromium virtual authenticators and **Miniflare D1 local only**. Never request Cloudflare account or secrets. Use separate temporary state directories; default deny any remote/egress/production fallback. Check installed tools, worktree cleanliness, protected SHA, source blob hashes, WORK ORDER and this final adopted lock before writing.
+- **Only module-owned implementation/tests:** `src/modules/CB-M05/p1c-local/**`, `test/modules/CB-M05/p1c-local-cms.test.mjs`, `test/modules/CB-M05/p1c-local-preview.mjs`, `test/modules/CB-M05/p1c-fixtures/**`, and `.engineering/evidence/CB-M05-P1C-LOCAL-001/**` (when module-evidence ownership is verified). No shared paths or additional source modules without separately approved Steward scope. No side task or additional WO.
+- **Prohibited:** `src/pages/**`, shared middleware, `astro.config.*`, `package.json`/lockfile, `.github/workflows/**`, root Wrangler, CI configuration, real `/admin`, live Worker, remote D1, real Owner/passkey/secret, external KEK/vault, provider calls, public publication, paid account services, production/preview deploy, checkpoint, branch protection or Golden assets. Never rewrite existing #91 evidence; append only.
+
+### Executable LOCAL proof contract / negative gates (all mandatory)
+
+1. **BOOTSTRAP-0→1:** do not seed `cms_owner` in bootstrap test setup; enforce atomic one-use out-of-band operator ticket, challenge expiry, correct origin/RPID/UV and a single `cms_owner=1` claim in one bounded D1 transaction. Run independent 2, 10 and 100 competitor attempts per fresh database; assert **exactly one successful principal**, remaining contenders denied, no partial credential/session on failed claim, no second human Owner after restart. Existing `cms_owner` row CHECK alone and same-challenge *login* race are not substitutes. Keep legacy preseeded regression fixtures separate.
+2. **AUTH/RECOVERY:** two independently enrolled disposable virtual passkeys, replay/sign-counter and wrong origin/RPID/UV denial, session rotation/expiry/revocation/restart, emergency recovery only via stronger one-use synthetic offline authorization, expired/replayed ticket denial and loss-of-both credentials fail-closed. Password/email-only reset prohibited.
+3. **ACCESS MATRIX:** deny anonymous/fake/revoked/cross-origin HTML GET for each privileged fixture route and every mutating API verb; verify `Secure/HttpOnly/SameSite` cookie semantics, hashed session/CSRF values and Origin/Fetch-Metadata/CSRF on mutations, oversized/malformed JSON and quota abuse. Public `/local/ui` login shell may remain unauthenticated only when it leaks no privileged data and creates no privileged mutation path.
+4. **D1/AUDIT:** local schema migration/replay, foreign keys, immutable revision triggers, optimistic CAS, forced mid-transaction abort, interrupted restart, backup/restore consistency and no unredacted secrets/tokens/keys in DB dumps, responses or logs. Compare before/after SQL invariants. No `--remote` flags.
+5. **BROWSER/REGRESSION:** virtual WebAuthn Chromium real-browser flow with a11y, visual/console/egress observability, zero unauthorized side effects, and all legacy M05 + M00/M01 Node/E2E suites preserved. Keep application prod bundle free of auth/session/provider bindings.
+
+**Acceptance artifacts:** module evidence with recorded CLI commands and exit codes, actual SQL row counts, 2/10/100 race trials, negative/positive tests, injected failures, true screenshots/a11y results, zero-egress/network checks, SHA-256 captures, changed-file list, exact branch SHA, source/contract fingerprint comparison, Sonar rule-level triage (no actionable HIGH/CRITICAL), 7/7 final-HEAD mandatory GitHub checks, zero unresolved review threads and documented single-Owner technical/security review. A skipped CodeRabbit status is NOT a human review.
+
+### Activation and STOP
+
+**Gate 1 (this PR):** fresh-base exact-HEAD checks + technical audit + explicit Owner protected-squash GO for this ONE documentary lock. No merge under prior #126 permission. **Gate 2 (after merge):** re-read new protected `main`, exact adopted lock blob, source/work-order hashes and all owned paths; verify no stale fingerprints. **Gate 3:** record separate Owner `LOCAL_P1C_CODE_GO` on exact effective lock plus confined paths and explicit synthetic-only work. Only after all three may Codex write LOCAL P1-C code. Any mismatch or safety gate failure => `BLOCKED`, no dispatch. Future code PR must separately pass HIGH_ASSURANCE and get Owner exact-head merge approval. After LOCAL completion, full M05 production CMS remains **NOT DONE**.
+
+`CHECKPOINT_DELTA={}`; `DEPLOY_AUTHORIZATION=NONE`; `D1_REMOTE=FORBIDDEN`; `REAL_CREDENTIALS=FORBIDDEN`; `PR_STATE=EXECUTION_LOCK_CANDIDATE`; `STOP=WAIT_OWNER_EXACT_HEAD_LOCK_MERGE_AND_SEPARATE_LOCAL_CODE_GO`.

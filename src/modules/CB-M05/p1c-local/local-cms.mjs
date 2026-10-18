@@ -57,6 +57,14 @@ function ownerOrigin(request) {
     request.headers.get('origin') === CMS_TEST_ORIGIN &&
     request.headers.get('sec-fetch-site') === 'same-origin';
 }
+// Reads require same-site fetch metadata; the Origin header is validated only when the browser
+// sends one, because same-origin GET fetches do not carry it.
+function ownerReadOrigin(request) {
+  if (new URL(request.url).origin !== CMS_TEST_ORIGIN) return false;
+  if (request.headers.get('sec-fetch-site') !== 'same-origin') return false;
+  const origin = request.headers.get('origin');
+  return origin === null || origin === CMS_TEST_ORIGIN;
+}
 function isJson(request) { return /^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') || ''); }
 async function payload(request, max = 65_536) {
   const length = Number(request.headers.get('content-length') || 0);
@@ -286,6 +294,7 @@ async function logout(request, db, secret, currentTime) {
 }
 
 async function listDrafts(request, db, secret, currentTime) {
+  if (!ownerReadOrigin(request)) return denied();
   const who = await session(request, db, secret, currentTime);
   if (!who) return denied(401);
   const rows = await db.prepare(
@@ -318,6 +327,7 @@ async function createDraft(request, db, secret, currentTime) {
 }
 
 async function readDraft(request, db, secret, currentTime, id, revisionsOnly) {
+  if (!ownerReadOrigin(request)) return denied();
   const who = await session(request, db, secret, currentTime);
   if (!who) return denied(401);
   if (revisionsOnly) {
@@ -755,6 +765,30 @@ async function dispatchArticleRequest(request, db, secret, currentTime, route, m
   return null;
 }
 
+// Every known fixture path advertises its allowed methods; unexpected verbs are refused with 405
+// (never 404 for an existing protected path, and never a write).
+const LOCAL_ALLOWED_METHODS = (() => {
+  const allowed = new Map();
+  for (const key of LOCAL_FIXED_ROUTES.keys()) {
+    const separator = key.indexOf(' ');
+    const method = key.slice(0, separator), route = key.slice(separator + 1);
+    if (!allowed.has(route)) allowed.set(route, new Set());
+    allowed.get(route).add(method);
+  }
+  return allowed;
+})();
+const ARTICLE_ROUTE_PATTERN = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
+
+function methodNotAllowed(request) {
+  const route = new URL(request.url).pathname;
+  const allowed = LOCAL_ALLOWED_METHODS.get(route);
+  if (allowed) return json({ error: 'Method not allowed' }, 405, { Allow: [...allowed].sort().join(', ') });
+  if (ARTICLE_ROUTE_PATTERN.test(route)) {
+    return json({ error: 'Method not allowed' }, 405, { Allow: route.endsWith('/revisions') ? 'GET' : 'GET, PATCH' });
+  }
+  return null;
+}
+
 async function dispatchLocalRequest(request, db, secret, currentTime) {
   const route = new URL(request.url).pathname;
   const method = request.method;
@@ -762,7 +796,8 @@ async function dispatchLocalRequest(request, db, secret, currentTime) {
   const fixedHandler = LOCAL_FIXED_ROUTES.get(method + ' ' + route);
   if (fixedHandler) return fixedHandler(context);
   const articleResponse = await dispatchArticleRequest(request, db, secret, currentTime, route, method);
-  return articleResponse ?? denied(404);
+  if (articleResponse) return articleResponse;
+  return methodNotAllowed(request) ?? denied(404);
 }
 
 function handleLocalError(error) {

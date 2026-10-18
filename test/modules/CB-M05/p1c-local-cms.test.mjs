@@ -69,8 +69,11 @@ function key() { return randomBytes(32).toString('hex'); }
 function seedIdempotency() { return randomBytes(24).toString('base64url'); }
 function makeRequest(route, method = 'GET', body = undefined, {
   cookie = '', csrf = '', origin = fakeOrigin, fetchSite = 'same-origin',
+  contentType = 'application/json', referer = '',
 } = {}) {
-  const headers = { origin, 'sec-fetch-site': fetchSite, 'content-type': 'application/json' };
+  const headers = { origin, 'content-type': contentType };
+  if (fetchSite) headers['sec-fetch-site'] = fetchSite;
+  if (referer) headers.referer = referer;
   if (cookie) headers.cookie = cookie;
   if (csrf) headers['x-cb-csrf'] = csrf;
   return new Request(fakeOrigin + route, {
@@ -1359,6 +1362,172 @@ test('M05 LOCAL CMS B2: a lost primary is replaced only with a single-use recove
     assert.equal((await ctx.run('/local/credentials', 'GET', undefined,
       { cookie: 'not-a-session', csrf: '' })).status, 401);
     assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+// --- Part C · authorization, session, cookie and CSRF matrix ---
+
+async function expectDenied(ctx, label, { route, method = 'GET', body, options = {}, status }) {
+  const before = await tableCounts(ctx.db);
+  const response = await ctx.run(route, method, body, options);
+  assert.deepEqual(await tableCounts(ctx.db), before, `${label}: ${method} ${route} must write nothing`);
+  assert.equal(response.status, status, `${label}: ${method} ${route} expected ${status}, got ${response.status}`);
+  assert.equal(response.headers.get('set-cookie'), null, `${label}: denied responses set no cookie`);
+  const text = await response.text();
+  assert.doesNotMatch(text, /"drafts"|"credentials"|"revision"|"csrf"|"challenge"/,
+    `${label}: denied responses leak no privileged fields`);
+  return response;
+}
+
+test('M05 LOCAL CMS C1: deny-by-default matrix over privileged routes, identities, origin and CSRF', async () => {
+  const ctx = await setup();
+  try {
+    const session = await login(ctx);
+    const created = await ctx.run('/local/articles', 'POST', { ...sampleDraft, idempotencyKey: seedIdempotency() }, session);
+    assert.equal(created.status, 201);
+    const draftId = (await created.json()).id;
+    const draftBody = { ...sampleDraft, idempotencyKey: seedIdempotency() };
+    const patchBody = { ...sampleDraft, expectedRevision: 1, idempotencyKey: seedIdempotency() };
+    const routes = [
+      ['GET', '/local/articles', undefined],
+      ['GET', `/local/articles/${draftId}`, undefined],
+      ['GET', `/local/articles/${draftId}/revisions`, undefined],
+      ['POST', '/local/articles', draftBody],
+      ['PATCH', `/local/articles/${draftId}`, patchBody],
+      ['GET', '/local/credentials', undefined],
+      ['POST', '/local/credentials/revoke', { credentialId: 'unknown-credential' }],
+      ['POST', '/local/enroll/challenge', { kind: 'recovery' }],
+      ['POST', '/local/enroll/claim', { challenge: 'aa'.repeat(32), response: {} }],
+      ['POST', '/local/recovery/challenge', {}],
+      ['POST', '/local/recovery/complete', { challenge: 'aa'.repeat(32), credentialId: ctx.recovery.id, response: {} }],
+    ];
+    for (const [method, route, body] of routes) {
+      const isRead = method === 'GET';
+      const unauthorized = isRead ? 401 : 403;
+      const rejected = isRead ? 403 : 403;
+      const cases = [
+        { label: 'anonymous', status: unauthorized, options: {} },
+        { label: 'tampered cookie', status: unauthorized,
+          options: { cookie: '__Host-cb_m05_local=' + 'ab'.repeat(32) } },
+        { label: 'duplicate cookie', status: unauthorized,
+          options: { cookie: session.cookie + '; ' + session.cookie } },
+        { label: 'wrong origin', status: rejected,
+          options: { cookie: session.cookie, csrf: session.csrf, origin: 'https://evil.example.test' } },
+        { label: 'cross-site fetch metadata', status: rejected,
+          options: { cookie: session.cookie, csrf: session.csrf, fetchSite: 'cross-site' } },
+        { label: 'missing fetch metadata', status: rejected,
+          options: { cookie: session.cookie, csrf: session.csrf, fetchSite: '' } },
+        { label: 'invented bearer', status: isRead ? 401 : 403,
+          options: { csrf: session.csrf } },
+      ];
+      if (!isRead) {
+        cases.push(
+          { label: 'missing CSRF', status: 403, options: { cookie: session.cookie } },
+          { label: 'wrong CSRF', status: 403, options: { cookie: session.cookie, csrf: 'ff'.repeat(32) } },
+          { label: 'malformed CSRF', status: 403, options: { cookie: session.cookie, csrf: 'not-hex' } },
+        );
+      }
+      for (const testCase of cases) await expectDenied(ctx, testCase.label,
+        { route, method, body, options: testCase.options, status: testCase.status });
+    }
+    // The matrix must not have consumed the live session or mutated stored data.
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, session)).status, 200);
+    assert.equal(await countRows(ctx.db, 'cms_drafts'), 1);
+    assert.equal((await ctx.db.prepare('SELECT revision FROM cms_drafts WHERE id=?').bind(draftId).first()).revision, 1);
+    assert.equal(await countRows(ctx.db, 'cms_sessions', 'revoked_at IS NULL'), 1);
+    // A hostile Referer is not an authorization input: the request still succeeds on its own merits.
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined,
+      { ...session, referer: 'https://evil.example.test/' })).status, 200);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS C2: unexpected methods, URL shapes and payload forms are refused without writes', async () => {
+  const ctx = await setup();
+  try {
+    const session = await login(ctx);
+    const created = await ctx.run('/local/articles', 'POST', { ...sampleDraft, idempotencyKey: seedIdempotency() }, session);
+    const draftId = (await created.json()).id;
+    const before = await tableCounts(ctx.db);
+    const knownPaths = ['/local/articles', `/local/articles/${draftId}`, `/local/articles/${draftId}/revisions`,
+      '/local/credentials', '/local/enroll/challenge', '/local/recovery/challenge', '/local/emergency/claim'];
+    for (const path of knownPaths) {
+      for (const method of ['PUT', 'DELETE', 'OPTIONS', 'HEAD']) {
+        const response = await ctx.run(path, method, undefined, session);
+        assert.equal(response.status, 405, `${method} ${path} must answer 405`);
+        assert.ok(response.headers.get('allow'), `${method} ${path} must advertise allowed methods`);
+      }
+    }
+    const unknown = await ctx.run('/local/unknown-route', 'GET');
+    assert.equal(unknown.status, 404);
+    const unknowns = ['/local/articles/', '//local/articles',
+      '/local/articles/not-a-uuid', '/LOCAL/ARTICLES'];
+    for (const path of unknowns) {
+      assert.equal((await ctx.run(path, 'GET', undefined, session)).status, 404, `${path} must not resolve`);
+    }
+    // Encoded traversal is normalized by the URL parser onto a protected route, so
+    // authorization is what protects it: anonymous is refused and an owner is served.
+    assert.equal((await ctx.run('/local/articles/%2e%2e/articles', 'GET')).status, 401);
+    assert.equal((await ctx.run('/local/articles/%2e%2e/articles', 'GET', undefined, session)).status, 200);
+    // Normalized traversal still lands on the protected route: authorization is what protects it.
+    assert.equal((await ctx.run('/local/../local/articles', 'GET', undefined, session)).status, 200);
+    assert.equal((await ctx.run('/local/articles?filter=all', 'GET', undefined, session)).status, 200);
+    // Wrong content type and oversized bodies are refused before parsing.
+    const wrongType = await ctx.run('/local/articles', 'POST', { ...sampleDraft, idempotencyKey: seedIdempotency() },
+      { ...session, contentType: 'text/plain' });
+    assert.equal(wrongType.status, 403);
+    const oversized = await ctx.run('/local/articles', 'POST',
+      { ...sampleDraft, body: 'x'.repeat(70_000), idempotencyKey: seedIdempotency() }, session);
+    assert.equal(oversized.status, 400);
+    assert.deepEqual(await tableCounts(ctx.db), before, 'no refused request may write');
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS C3: cookie attributes, digest-only storage, expiry, rotation and revocation', async () => {
+  const ctx = await setup();
+  try {
+    const challenge = (await (await ctx.run('/local/challenge', 'POST', { credentialId: ctx.primary.id })).json()).challenge;
+    const response = makeAuthenticationResponse(ctx.primary, { challenge: webauthnChallengeFromHex(challenge) });
+    const logged = await ctx.run('/local/login', 'POST', { challenge, credentialId: ctx.primary.id, response });
+    assert.equal(logged.status, 200);
+    const setCookie = logged.headers.get('set-cookie');
+    assert.match(setCookie, /^__Host-cb_m05_local=[0-9a-f]{64}; Path=\/; Secure; HttpOnly; SameSite=Strict/);
+    assert.doesNotMatch(setCookie, /Domain=/i);
+    const cookie = setCookie.split(';')[0];
+    const csrf = (await logged.clone().json()).csrf;
+    assert.match(csrf, /^[0-9a-f]{64}$/);
+    const stored = await ctx.db.prepare('SELECT * FROM cms_sessions').first();
+    assert.match(stored.session_digest, /^[0-9a-f]{64}$/);
+    assert.match(stored.csrf_digest, /^[0-9a-f]{64}$/);
+    assert.notEqual(stored.session_digest, cookie.slice('__Host-cb_m05_local='.length));
+    assert.notEqual(stored.csrf_digest, csrf);
+    for (const [column, value] of Object.entries(stored)) {
+      if (typeof value === 'string') {
+        assert.ok(!value.includes(cookie.slice('__Host-cb_m05_local='.length)),
+          `raw session token must not be stored (${column})`);
+        assert.ok(!value.includes(csrf), `raw CSRF token must not be stored (${column})`);
+      }
+    }
+    const live = { cookie, csrf };
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, live)).status, 200);
+    ctx.time(Date.now() + 1_201_000);
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, live)).status, 401,
+      'a session past its TTL is refused');
+    ctx.time(Date.now());
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, live)).status, 200,
+      'expiry is absolute-time based: the harness clock moving back is not a security decision');
+
+    const fresh = await login(ctx);
+    assert.equal((await ctx.run('/local/logout', 'POST', {}, fresh)).status, 200);
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, fresh)).status, 401,
+      'a revoked session cannot be reused');
+    const other = await login(ctx, ctx.recovery);
+    const secondLogin = await login(ctx);
+    assert.equal((await ctx.run('/local/credentials/revoke', 'POST',
+      { credentialId: ctx.recovery.id }, secondLogin)).status, 200);
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, other)).status, 401,
+      'revoking a device kills the sessions bound to it');
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined, secondLogin)).status, 200);
   } finally { await ctx.mf.dispose(); }
 });
 

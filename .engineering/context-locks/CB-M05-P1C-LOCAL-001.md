@@ -75,3 +75,29 @@ Canonical main observed `4300642e8bdd00ae029ccbb30ed8facd70089df3`, Git tree `6d
 **Proof obligations (NECESSARY, no widened scope):** Server-side synthetic one-human-Owner atomic claim 0→1, deterministic 2/10/100 contenders and **never 2 Owners**, expiring single-use enrollment/recovery and second synthetic authenticator; denial of unauthenticated **admin-like HTML GET** and every synthetic API/mutation, CSRF/origin/fetch-metadata/RPID/UV/counter/replay; digest-only sessions, rotation/expiry/revocation across handler restart; local D1 schema/transaction failure injection/backup/restore/rollback and audit/revision CAS with deterministic concurrency tests; no egress, real identity/passkey, stored secrets, provider binding or deployed route. Preserve existing #91 lab baseline and prior false-positive disposition supported by SQLite evidence.
 
 **Mandatory preflight before any code:** verify #121 GEF & no-deploy jobs; verify all fingerprints, Node22, deps, local Miniflare/D1 and Chromium virtual authenticator baseline, Security/DoD/ADR, path ownership, threat model and proof/test matrix; acquire the Owner's additional code-admission instruction where required. DO NOT activate the older historical \`STAGED\` lock by implication. No writes outside \`src/modules/CB-M05/p1c-local/**\` and owned \`test/modules/CB-M05/p1c-*\` without explicit steward approval. No \`src/pages/admin/**\`, shared middleware, root wrangler/cloud workflows, actual credential/enrollment, remote D1 or vault. Security-negative tests, rollback and error-path proofs are HIGH_ASSURANCE release gates. After source/testing, Evidence Bundle + exact-head 7/7 CI + sole-Owner security review and separate exact-head squash GO. \`CHECKPOINT_DELTA={}\`. STOP: \`P1C_LOCAL_HIGH_ASSURANCE_PREFLIGHT_NOT_YET_PASSED\`.
+
+## M05 P1-C LOCAL preflight refresh after #122 protected merge · 2026-10-17
+
+**STATUS: PREPARATION_ONLY / NOT_DISPATCHABLE.** Exact protected main: `9509a06d7e72d64b5672ffe28a8207c4cfd54780`, Git tree `0dfdaa0f9a41c340c93918d0e1bb6b8f0194bf51`. The sole change since the prior `b144d8ae68ac5fa8ef2388c304dae3c80252b5cb` baseline is protected M01 Context Lock PR #122; this appendix refreshes source identity, **not** privileged execution admission. The Owner authorized **only** that #122 merge and preparation of this #123 candidate. #123 requires a **separate** exact-head protected-squash GO after final CI/review. No deploy approval.
+
+**Verified source Git blob fingerprints at the new protected main:**
+
+- `.engineering/CHECKPOINT.json`: `72618bef100e6f82e4655b2c6ed482794e0c4649` (M00_COMPLETE/5%; M01/M05 not DONE).
+- `.engineering/SOURCE-HIERARCHY.md`: `3ba4fb9bb89d8aaf17b87ca0adba2d72081a20f2`.
+- `.engineering/SCOPE.md`: `dfa1ce336ee8d05d0a93a37215e34a760708ea51`.
+- `.engineering/DEFINITION-OF-DONE.md`: `00702a0dfe54fcc22ad9e146255be1665fa4624c`.
+- `.engineering/ARCHITECTURE.md`: `dc6797e169f24b5ed6056ed3740b77741249c7c0`.
+- `.engineering/REQUIREMENTS.md`: `588c221e3ba88be3fb957ee27719671a731d8595`.
+- `.engineering/SECURITY.md`: `7f8a39a1a9296dad04ada71b0750eb05e9d8cf45`.
+- `.engineering/work-orders/CB-M05-P1C-LOCAL-001.md`: `8a00346e0e84265bf4c3a7de1b81f196b473942b`.
+- `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md`: `6a590ef487556ed62296f558296b6ad5a334d3dc`.
+- `src/modules/CB-M05/p1c-local/local-cms.mjs`: `d6b7080f0a2ec11bd3b7ed3da46c6b457fe558e7`.
+- `test/modules/CB-M05/p1c-local-cms.test.mjs`: `28c0a306085eaa116b50c3b18d4a1c1a50650de8`.
+- `test/modules/CB-M05/p1c-fixtures/schema.sql`: `cd3f73326acbc66a55014c67163e644e41b410da`.
+- `.engineering/context-locks/CB-M01-WO-001.md`: `acc048645f7a45242922726b39a3aecc61c76110` (new effective #122 document).
+
+**Required post-merge evidence for #122:** At creation of this annex, [main GEF run #39091828599](https://github.com/KayzenRoot/coinblink/actions/runs/39091828599) had not yet been observed completed. Require exact-main GEF success and Cloudflare workflow **deploy job SKIPPED** evidence before claiming #122 no-deploy proof. The separate main-only deployment policy must remain fail-closed for docs-only changes; never produce a DEMO release GO.
+
+**HIGH_ASSURANCE local-only execution preflight:** After #123's own protected merge and an additional **fresh executable** lock, independent executor must confirm Node 22, working clean clone, virtual-WebAuthn/Chromium, local D1/Miniflare and no egress; prove single synthetic Owner 0→1 claim under 2/10/100 contenders, one-use enrollment/recovery, RP ID/origin/UV/replay, admin-like HTML/API fail-closed, CSRF, session revocation/restart, D1 rollback/restore/failure injection, CAS and audit integrity. Scope is only synthetic LOCAL M05 module paths/tests, with **no** public `/admin`, provider binding, actual secret, production credential or deployed route. No privilege escalation, vault, D1 remote, Cloudflare deploy, commercial publishing or checkpoint promotion.
+
+**Decision and STOP:** `CHECKPOINT_DELTA={}`. `P1C_LOCAL_EXECUTION_PENDING_FRESH_LOCK_AND_HIGH_ASSURANCE_PREFLIGHT`. Any change to main, source fingerprint, Owner permission, #91 local test baseline or security contract invalidates an earlier executable lock: `STALE` and recompile. This is a **review candidate**, not permission to run privileged P1-C code.

@@ -640,7 +640,7 @@ async function recoveryComplete(request, db, secret, currentTime) {
 async function listCredentials(request, db, secret, currentTime) {
   const who = await session(request, db, secret, currentTime);
   if (!who) return denied(401);
-  if (!ownerOrigin(request)) return denied();
+  if (!ownerReadOrigin(request)) return denied();
   const rows = await db.prepare(
     'SELECT credential_id,device_kind,sign_count,revoked_at FROM cms_credentials WHERE owner_id=1 ORDER BY device_kind,credential_id'
   ).all();

@@ -9,6 +9,7 @@ import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
+import { AxeBuilder } from '@axe-core/playwright';
 import { splitLocalSchemaStatements, startLocalCmsPreview } from './p1c-local-preview.mjs';
 import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
@@ -346,7 +347,9 @@ test('M05 LOCAL CMS 07: isolated test UI serves nonce CSP, no production import 
     assert.ok(markup.includes('<script nonce="' + scriptNonce + '" type="module">'));
     assert.ok(markup.includes('<style nonce="' + scriptNonce + '">'));
     assert.match(markup, /Local CMS Test Workspace/);
-    assert.match(markup, /Already enrolled disposable test passkey|already enrolled disposable test passkey/i);
+    assert.match(markup, /LOCAL TEST ONLY[\s\S]*synthetic/i,
+      'the shell must declare that every identity and record is synthetic');
+    assert.match(markup, /First Owner bootstrap/);
     assert.doesNotMatch(markup, /CLOUDFLARE_API_TOKEN|PRIVATE KEY-----|CMS_TEST_HMAC_KEY/);
     assert.doesNotMatch(markup, /<script(?! nonce=)/);
     const second = await ctx.run('/local/ui');
@@ -1839,5 +1842,277 @@ test('M05 LOCAL CMS D4: LOCAL backup restores into an isolated D1 with identical
   } finally {
     if (target) await target.mf.dispose();
     await source.mf.dispose();
+  }
+});
+
+// --- Part E · real Chromium, virtual authenticators, accessibility and zero egress ---
+
+test('M05 LOCAL CMS E1: first-Owner bootstrap, recovery device and lost-primary recovery in real Chromium', { timeout: 240_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, bootstrap: true });
+  const page = preview.page;
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message.slice(0, 240)));
+  page.on('console', entry => { if (entry.type() === 'error') consoleErrors.push(entry.text().slice(0, 240)); });
+  const waitForMessage = text => page.getByText(text).waitFor({ timeout: 20_000 });
+  try {
+    assert.match(await page.title(), /CoinBlink.*Local CMS Test Workspace/);
+    assert.equal(await page.locator('#devices').isVisible(), false, 'devices stay hidden before sign-in');
+
+    // 1. First-Owner bootstrap: ticket -> registration ceremony -> atomic claim.
+    await page.locator('#ticket').fill(await preview.issueTicket());
+    await page.locator('#bootstrap').click();
+    await waitForMessage('First passkey registered locally. Sign in to continue.');
+    assert.equal(await countRows(preview.db, 'cms_owner'), 1);
+    assert.equal(await countRows(preview.db, 'cms_credentials', 'revoked_at IS NULL'), 1);
+    assert.deepEqual((await preview.db.prepare('SELECT event FROM cms_audit_events').all()).results,
+      [{ event: 'owner_claimed' }]);
+    const primaryId = (await preview.db.prepare(
+      "SELECT credential_id FROM cms_credentials WHERE device_kind='primary' AND revoked_at IS NULL"
+    ).first()).credential_id;
+    assert.equal(await page.locator('#credential').inputValue(), primaryId,
+      'the freshly registered credential is offered for sign-in');
+
+    // 2. Sign in with the new primary passkey and enroll an independent recovery passkey.
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    assert.equal(await page.locator('#devices').isVisible(), true);
+    await page.waitForFunction(() => globalThis.document.querySelectorAll('#device-list li').length === 1);
+    assert.equal(await page.locator('#device-list li').count(), 1, 'the primary device is listed');
+    await page.locator('#enroll-recovery').click();
+    await waitForMessage('Recovery passkey registered locally (recovery).');
+    const activeAfterRecovery = (await preview.db.prepare(
+      'SELECT credential_id,device_kind FROM cms_credentials WHERE revoked_at IS NULL ORDER BY device_kind'
+    ).all()).results;
+    assert.deepEqual(activeAfterRecovery.map(row => row.device_kind), ['primary', 'recovery']);
+    assert.equal(activeAfterRecovery[0].credential_id, primaryId);
+    const recoveryId = activeAfterRecovery[1].credential_id;
+    assert.notEqual(recoveryId, primaryId, 'the recovery device is cryptographically independent');
+    await page.waitForFunction(() => globalThis.document.querySelectorAll('#device-list li').length === 2);
+    assert.equal(await page.locator('#device-list li').count(), 2);
+    // The accepted bootstrap, sign-in and enrollment journey must be free of console and page errors.
+    assert.deepEqual(consoleErrors, [], 'no console errors during the accepted bootstrap and enrollment journey');
+    assert.deepEqual(pageErrors, [], 'no page errors during the accepted journey');
+
+    // 3. Sign out: anonymous API access and the public shell leak nothing privileged.
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated').waitFor({ timeout: 20_000 });
+    assert.equal(await page.locator('#devices').isVisible(), false);
+    assert.equal(await page.evaluate(async () => (await fetch('/local/articles')).status), 401);
+    assert.equal(await page.evaluate(async () => (await fetch('/local/credentials')).status), 401);
+    assert.doesNotMatch(await page.locator('body').innerText(), /Local CMS protects this example draft/);
+
+    // 4. Recover the lost primary using the recovery passkey plus a fresh assertion.
+    await page.locator('#credential').fill(recoveryId);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('#device-id').fill(primaryId);
+    await page.locator('#revoke-device').click();
+    await waitForMessage('Device revoked locally');
+    assert.notEqual((await preview.db.prepare(
+      "SELECT revoked_at FROM cms_credentials WHERE credential_id=?"
+    ).bind(primaryId).first()).revoked_at, null, 'the lost primary is revoked');
+    await page.locator('#enroll-primary').click();
+    await waitForMessage('Recovery authorization required before replacing a lost primary');
+    assert.equal(await countRows(preview.db, 'cms_credentials', "device_kind='primary' AND revoked_at IS NULL"), 0,
+      'no replacement primary exists without additional proof');
+    await page.locator('#authorize-recovery').click();
+    await waitForMessage('Recovery authorized for one primary replacement');
+    assert.equal(await countRows(preview.db, 'cms_recovery_authorizations', 'used_at IS NULL'), 1);
+    await page.locator('#enroll-primary').click();
+    await waitForMessage('Primary passkey registered locally (primary).');
+    const newPrimary = (await preview.db.prepare(
+      "SELECT credential_id FROM cms_credentials WHERE device_kind='primary' AND revoked_at IS NULL"
+    ).first()).credential_id;
+    assert.notEqual(newPrimary, primaryId);
+    assert.equal(await countRows(preview.db, 'cms_recovery_authorizations', 'used_at IS NOT NULL'), 1,
+      'the single-use recovery authorization was consumed');
+    assert.equal(await countRows(preview.db, 'cms_owner'), 1, 'no second Owner was ever created');
+
+    // 5. Sign out and back in with the replacement primary.
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated').waitFor({ timeout: 20_000 });
+    await page.locator('#credential').fill(newPrimary);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.waitForFunction(() => globalThis.document.querySelectorAll('#device-list li').length >= 3);
+    assert.equal(await page.locator('#device-list li', { hasText: 'primary' }).filter({ hasText: 'active' }).count(), 1);
+
+    // 6. Browser-level negatives: second Owner, wrong CSRF and cross-origin egress.
+    const secondTicket = await preview.issueTicket();
+    assert.equal(await page.evaluate(async ticket => (await fetch('/local/bootstrap/challenge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticket }),
+    })).status, secondTicket), 403, 'a second Owner cannot be advertised once one exists');
+    assert.equal(await page.evaluate(async () => (await fetch('/local/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CB-CSRF': '00'.repeat(32) },
+      body: JSON.stringify({
+        title: 'Tampered CSRF must never write', summary: 'Synthetic summary that is long enough to pass.',
+        body: 'Synthetic body', sourceUrl: 'https://example.test/evidence', authorLabel: 'Probe',
+        idempotencyKey: 'tampered-csrf-probe-0001',
+      }),
+    })).status), 403, 'a tampered CSRF token is refused');
+    const blocked = await page.evaluate(async () => {
+      try {
+        await fetch('https://evil.example.test/steal');
+        return 'reached';
+      } catch { return 'blocked'; }
+    });
+    assert.equal(blocked, 'blocked', 'cross-origin requests are blocked by the fixture network policy');
+
+    // 7. Accessibility: axe and keyboard focus order on the signed-in workspace.
+    const axe = await new AxeBuilder({ page }).analyze();
+    const serious = axe.violations.filter(violation => ['critical', 'serious'].includes(violation.impact));
+    console.log('AXE violations ' + JSON.stringify(serious.map(violation => violation.id + ':' + violation.impact)));
+    assert.deepEqual(serious, [], 'no critical or serious accessibility violations');
+    const focusTrail = [];
+    for (let index = 0; index < 14; index++) {
+      await page.keyboard.press('Tab');
+      focusTrail.push(await page.evaluate(() => {
+        const element = globalThis.document.activeElement;
+        if (!element || element === globalThis.document.body) return null;
+        const style = globalThis.getComputedStyle(element);
+        return {
+          id: element.id || element.tagName.toLowerCase(),
+          indicator: style.outlineStyle !== 'none' && style.outlineWidth !== '0px',
+          hidden: element.closest('[hidden]') !== null,
+        };
+      }));
+    }
+    const visibleFocus = focusTrail.filter(entry => entry && !entry.hidden);
+    assert.ok(visibleFocus.length >= 6, 'keyboard traversal reaches the interactive controls');
+    assert.ok(visibleFocus.every(entry => entry.indicator), 'every focused control shows a visible focus indicator');
+
+    // 8. Zero unauthorized egress, in two layers: CSP blocks external fetches before the
+    //    network, and the fixture route blocks a top-level navigation at the network layer.
+    const cspBlocked = await page.evaluate(async () => {
+      try {
+        await fetch('https://evil.example.test/steal');
+        return 'reached';
+      } catch { return 'blocked'; }
+    });
+    assert.equal(cspBlocked, 'blocked', 'CSP connect-src blocks cross-origin fetches');
+    const unexpectedConsole = consoleErrors.filter(entry =>
+      !/Failed to load resource/.test(entry) && !/Content Security Policy/.test(entry));
+    assert.deepEqual(unexpectedConsole, [], 'only the deliberate negative probes logged console errors');
+    const navigation = await page.goto('https://evil.example.test/steal')
+      .then(() => 'reached', () => 'blocked');
+    assert.equal(navigation, 'blocked', 'the fixture network policy blocks external navigation');
+    const external = preview.networkAttempts.filter(attempt => !attempt.allowed);
+    assert.equal(external.length, 1, 'exactly one deliberate external attempt reached the network layer');
+    assert.equal(new URL(external[0].url).hostname, 'evil.example.test');
+    const fixtureAttempts = preview.networkAttempts.filter(attempt => attempt.allowed);
+    assert.ok(fixtureAttempts.length >= 12, 'the journey exercised the fixture endpoints');
+    assert.ok(fixtureAttempts.every(attempt => new URL(attempt.url).origin === CMS_TEST_ORIGIN),
+      'every allowed attempt stayed on the synthetic fixture origin');
+    const events = (await preview.db.prepare('SELECT event FROM cms_audit_events ORDER BY created_at, rowid').all())
+      .results.map(row => row.event);
+    assert.deepEqual(events, ['owner_claimed', 'device_enrolled', 'device_revoked',
+      'recovery_authorized', 'device_enrolled', 'recovery_used']);
+  } finally {
+    await preview.close();
+  }
+});
+
+test('M05 LOCAL CMS E2: total-loss emergency recovery in Chromium, with browser-level RP ID and replay denials', { timeout: 240_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, bootstrap: true });
+  const page = preview.page;
+  const waitForMessage = text => page.getByText(text).waitFor({ timeout: 20_000 });
+  try {
+    await page.locator('#ticket').fill(await preview.issueTicket());
+    await page.locator('#bootstrap').click();
+    await waitForMessage('First passkey registered locally. Sign in to continue.');
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('#enroll-recovery').click();
+    await waitForMessage('Recovery passkey registered locally (recovery).');
+    const credentialsBefore = (await preview.db.prepare(
+      'SELECT credential_id FROM cms_credentials WHERE revoked_at IS NULL'
+    ).all()).results.map(row => row.credential_id);
+    assert.equal(credentialsBefore.length, 2);
+
+    // The virtual authenticator does not enforce RP ID vs origin, so the server must. A
+    // registration for a foreign RP ID is rejected before any write and the token stays unused.
+    const foreignRpToken = await preview.issueEmergencyToken();
+    const foreignRp = await page.evaluate(async token => {
+      const encode = buffer => {
+        let raw = '';
+        for (const byte of new Uint8Array(buffer)) raw += String.fromCharCode(byte);
+        return btoa(raw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      };
+      const credential = await navigator.credentials.create({ publicKey: {
+        challenge: Uint8Array.from(token.match(/.{2}/g), x => parseInt(x, 16)),
+        rp: { id: 'evil.example.test', name: 'Not this origin' },
+        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'x', displayName: 'x' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+        authenticatorSelection: { userVerification: 'required', residentKey: 'required' },
+        attestation: 'none', timeout: 20000,
+      } });
+      const response = {
+        id: credential.id, rawId: encode(credential.rawId), type: credential.type,
+        response: {
+          clientDataJSON: encode(credential.response.clientDataJSON),
+          attestationObject: encode(credential.response.attestationObject),
+          transports: [],
+        },
+        clientExtensionResults: {}, authenticatorAttachment: credential.authenticatorAttachment,
+      };
+      return (await fetch('/local/emergency/claim', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, response }),
+      })).status;
+    }, foreignRpToken);
+    assert.equal(foreignRp, 403, 'the server rejects a registration whose RP ID does not match');
+    assert.equal(await countRows(preview.db, 'cms_credentials', 'revoked_at IS NULL'), 2,
+      'the rejected registration wrote nothing');
+    assert.equal(await countRows(preview.db, 'cms_emergency_authorizations', 'used_at IS NULL'), 1,
+      'the rejected registration did not consume its authorization');
+
+    // A consumed bootstrap ticket cannot be replayed.
+    const replayTicket = await preview.issueTicket();
+    await page.evaluate(async ticket => fetch('/local/bootstrap/challenge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticket }),
+    }), replayTicket);
+    const claimReplay = await page.evaluate(async ({ ticket }) => (await fetch('/local/bootstrap/claim', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket, challenge: 'aa'.repeat(32), response: {} }),
+    })).status, { ticket: replayTicket });
+    assert.equal(claimReplay, 403, 'a bootstrap replay is denied once an Owner exists');
+
+    // Emergency recovery with an offline operator token and a fresh UV registration.
+    const token = await preview.issueEmergencyToken();
+    await page.locator('#emergency-token').fill(token);
+    await page.locator('#emergency').click();
+    await waitForMessage('Emergency recovery complete. Sign in with the new primary passkey.');
+    assert.equal(await countRows(preview.db, 'cms_credentials', 'revoked_at IS NULL'), 1);
+    assert.equal(await countRows(preview.db, 'cms_credentials', 'revoked_at IS NOT NULL'), 2,
+      'both previous devices are revoked');
+    assert.equal(await countRows(preview.db, 'cms_sessions', 'revoked_at IS NULL'), 0,
+      'every session is revoked by the emergency claim');
+    assert.equal(await page.locator('#session-status').textContent(), 'Not authenticated');
+    assert.equal(await page.locator('#devices').isVisible(), false);
+    const emergencyCredential = (await preview.db.prepare(
+      'SELECT credential_id FROM cms_credentials WHERE revoked_at IS NULL'
+    ).first()).credential_id;
+    assert.equal(await page.locator('#credential').inputValue(), emergencyCredential);
+
+    // Replaying the same emergency token is denied and writes nothing.
+    const beforeReplay = (await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_audit_events').first()).n;
+    await page.locator('#emergency-token').fill(token);
+    await page.locator('#emergency').click();
+    await waitForMessage('Local request rejected (403)');
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_audit_events').first()).n, beforeReplay);
+
+    // The replacement primary signs in and the audit trail records the emergency.
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    const events = (await preview.db.prepare('SELECT event FROM cms_audit_events ORDER BY created_at, rowid').all())
+      .results.map(row => row.event);
+    assert.deepEqual(events, ['owner_claimed', 'device_enrolled', 'emergency_used', 'device_enrolled']);
+    assert.equal(await countRows(preview.db, 'cms_owner'), 1);
+    const axe = await new AxeBuilder({ page }).analyze();
+    assert.deepEqual(axe.violations.filter(violation => ['critical', 'serious'].includes(violation.impact)), []);
+  } finally {
+    await preview.close();
   }
 });

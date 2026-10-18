@@ -14,12 +14,16 @@ import {
   makeSyntheticAuthenticator, makeRegistrationResponse,
 } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 import {
-  CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler,
+  CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization,
 } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 
 const SCHEMA_URL = new URL('./p1c-fixtures/schema.sql', import.meta.url);
 const ALLOWED_STATIC = new Set([
   '/local/ui', '/local/challenge', '/local/login', '/local/logout', '/local/articles',
+  '/local/bootstrap/challenge', '/local/bootstrap/claim',
+  '/local/enroll/challenge', '/local/enroll/claim',
+  '/local/recovery/challenge', '/local/recovery/complete',
+  '/local/credentials', '/local/credentials/revoke', '/local/emergency/claim',
 ]);
 const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
 
@@ -122,7 +126,7 @@ async function addVirtualAuthenticator(context, authenticator) {
   });
 }
 
-export async function startLocalCmsPreview({ headless = false, persistLocal = false, persistenceRoot } = {}) {
+export async function startLocalCmsPreview({ headless = false, persistLocal = false, persistenceRoot, bootstrap = false } = {}) {
   if (persistenceRoot && !persistLocal) throw new Error('persistenceRoot requires explicit persistLocal');
   const stateDir = persistLocal
     ? path.resolve(persistenceRoot || '.wrangler/coinblink-m05-drafts-local')
@@ -161,11 +165,12 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
     }));
     const db = await mf.getD1Database('CMS_D1_LOCAL');
     await applySchema(db, persistLocal);
-    const credentials = await registerDisposableCredentials(db, persistLocal);
+    const credentials = bootstrap ? null : await registerDisposableCredentials(db, persistLocal);
+    const secret = randomBytes(32).toString('hex');
     const env = {
       CB_M05_LOCAL_TEST_ONLY: 'true',
       CMS_D1_LOCAL: db,
-      CMS_TEST_HMAC_KEY: randomBytes(32).toString('hex'),
+      CMS_TEST_HMAC_KEY: secret,
     };
     const handler = createLocalCmsHandler();
 
@@ -173,20 +178,29 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
     const context = await browser.newContext({ serviceWorkers: 'block' });
     // The Playwright virtual authenticators are disposable; no biometric or personal key.
     // This order is intentional because both calls mutate the same browser context.
-    await addVirtualAuthenticator(context, credentials.primary);
-    await addVirtualAuthenticator(context, credentials.recovery);
+    if (credentials) {
+      await addVirtualAuthenticator(context, credentials.primary);
+      await addVirtualAuthenticator(context, credentials.recovery);
+    }
     await context.credentials.install();
 
+    // Every network attempt is counted. Only the synthetic fixture origin may ever be reached.
+    const networkAttempts = [];
     // The browser is network-isolated: ONLY the fixed test origin is intercepted.
-    await context.route('**/*', route => route.abort('blockedbyclient'));
+    await context.route('**/*', route => {
+      networkAttempts.push({ url: route.request().url(), allowed: false, reason: 'external' });
+      return route.abort('blockedbyclient');
+    });
     await context.route(CMS_TEST_ORIGIN + '/**', async route => {
       const request = route.request();
       const url = new URL(request.url());
       if (url.origin !== CMS_TEST_ORIGIN ||
         (!ALLOWED_STATIC.has(url.pathname) && !ARTICLE_ROUTE.test(url.pathname))) {
+        networkAttempts.push({ url: request.url(), allowed: false, reason: 'unlisted-fixture-path' });
         await route.abort('blockedbyclient');
         return;
       }
+      networkAttempts.push({ url: request.url(), allowed: true, reason: 'fixture' });
       const headers = await request.allHeaders();
       // Intercepted Playwright requests omit this Fetch Metadata transport field.
       // Reconstruct ONLY after validating the original initiating HTTPS frame.
@@ -211,13 +225,15 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
     const page = await context.newPage();
     const opened = await page.goto(CMS_TEST_ORIGIN + '/local/ui', { waitUntil: 'domcontentloaded' });
     assert.equal(opened?.status(), 200);
-    await page.locator('#credential').fill(credentials.primary.id);
+    if (credentials) await page.locator('#credential').fill(credentials.primary.id);
     return {
-      browser, context, page, db, close,
+      browser, context, page, db, close, networkAttempts,
       // Test-only reference; never disclose the private key to UI or logs.
-      primaryId: credentials.primary.id,
+      primaryId: credentials?.primary.id ?? null,
       origin: CMS_TEST_ORIGIN,
       persistent: persistLocal,
+      issueTicket: () => issueBootstrapTicket(db, secret, Math.floor(Date.now() / 1000)),
+      issueEmergencyToken: () => issueEmergencyAuthorization(db, secret, Math.floor(Date.now() / 1000)),
     };
   } catch (error) {
     await close();

@@ -851,7 +851,7 @@ const ARTICLE_ROUTE_PATTERN = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?
 function methodNotAllowed(request) {
   const route = new URL(request.url).pathname;
   const allowed = LOCAL_ALLOWED_METHODS.get(route);
-  if (allowed) return json({ error: 'Method not allowed' }, 405, { Allow: [...allowed].sort().join(', ') });
+  if (allowed) return json({ error: 'Method not allowed' }, 405, { Allow: [...allowed].sort((left, right) => left.localeCompare(right)).join(', ') });
   if (ARTICLE_ROUTE_PATTERN.test(route)) {
     return json({ error: 'Method not allowed' }, 405, { Allow: route.endsWith('/revisions') ? 'GET' : 'GET, PATCH' });
   }

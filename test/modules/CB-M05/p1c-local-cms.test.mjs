@@ -2059,7 +2059,7 @@ test('M05 LOCAL CMS E1: first-Owner bootstrap, recovery device and lost-primary 
       assert.equal(workspaceResponse.status(), 200, 'the privileged HTML page serves the authenticated Owner');
       assert.match(await workspaceTab.locator('#workspace-devices').innerText(), /primary .* active/);
       assert.match(await workspaceTab.title(), /Local Owner Workspace/);
-      assert.equal(await workspaceTab.evaluate(() => getComputedStyle(document.body).backgroundColor),
+      assert.equal(await workspaceTab.evaluate(() => globalThis.getComputedStyle(globalThis.document.body).backgroundColor),
         'rgb(13, 24, 21)', 'the privileged workspace stylesheet is applied under CSP');
     } finally { await workspaceTab.close(); }
     await page.locator('#enroll-recovery').click();

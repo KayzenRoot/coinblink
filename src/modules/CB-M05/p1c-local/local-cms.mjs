@@ -136,6 +136,74 @@ async function authorizeMutation(request, db, secret, now) {
   return current;
 }
 
+function escapeHtml(value) {
+  return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+}
+const WORKSPACE_HEADERS = {
+  'Cache-Control': 'no-store',
+  'Content-Type': 'text/html; charset=utf-8',
+  'Content-Security-Policy': "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-Robots-Tag': 'noindex, nofollow, noarchive',
+  'Referrer-Policy': 'no-referrer',
+};
+function workspaceShell(title, body) {
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    "<meta name=\"robots\" content=\"noindex,nofollow,noarchive\"><title>" + escapeHtml(title) + '</title>' +
+    '<style>body{margin:0;background:#0d1815;color:#eaf3e8;font-family:system-ui,sans-serif;line-height:1.5}' +
+    'main{max-width:980px;margin:auto;padding:24px 18px}h1{font-size:1.6rem}h2{font-size:1.15rem}' +
+    'p,li{color:#cfe0d0}ul{padding-left:20px}footer{padding:20px 0;color:#9fb3a3}</style></head><body><main>' +
+    body + '<footer>LOCAL TEST ONLY · synthetic Owner data · no publication capability.</footer></main></body></html>';
+}
+// Privileged server-rendered page: it exists to prove that a real HTML GET is denied without an
+// authenticated Owner session and serves only synthetic data with a valid one.
+// HTML pages are reached by navigation: same-origin links and direct navigation are allowed,
+// cross-site is not, and a present Origin must be the synthetic one.
+function ownerNavigation(request) {
+  if (new URL(request.url).origin !== CMS_TEST_ORIGIN) return false;
+  const fetchSite = request.headers.get('sec-fetch-site');
+  if (fetchSite !== 'same-origin' && fetchSite !== 'none') return false;
+  const origin = request.headers.get('origin');
+  return origin === null || origin === CMS_TEST_ORIGIN;
+}
+
+async function workspacePage(request, db, secret, currentTime) {
+  if (!ownerNavigation(request)) {
+    return new Response(workspaceShell('Request rejected',
+      '<h1>Request rejected</h1><p>This page only answers same-site requests on the synthetic origin.</p>'),
+    { status: 403, headers: WORKSPACE_HEADERS });
+  }
+  const who = await session(request, db, secret, currentTime);
+  if (!who) {
+    return new Response(workspaceShell('Sign in required',
+      '<h1>Sign in required</h1><p>This local workspace page requires an authenticated local Owner session.</p>'),
+    { status: 401, headers: WORKSPACE_HEADERS });
+  }
+  const devices = (await db.prepare(
+    'SELECT credential_id,device_kind,revoked_at FROM cms_credentials WHERE owner_id=1 ORDER BY device_kind,credential_id'
+  ).all()).results;
+  const drafts = (await db.prepare(
+    'SELECT title,revision,status FROM cms_drafts WHERE owner_id=1 ORDER BY updated_at DESC LIMIT 20'
+  ).all()).results;
+  const auditCount = (await db.prepare('SELECT COUNT(*) AS n FROM cms_audit_events').first()).n;
+  const deviceItems = devices.map(device =>
+    '<li>' + escapeHtml(device.device_kind) + ' · ' + escapeHtml(device.credential_id.slice(0, 10)) + '… · ' +
+    (device.revoked_at ? 'revoked' : 'active') + '</li>').join('');
+  const draftItems = drafts.map(draft =>
+    '<li>' + escapeHtml(draft.title) + ' · rev ' + escapeHtml(draft.revision) + ' · ' +
+    escapeHtml(draft.status) + '</li>').join('');
+  return new Response(workspaceShell('CoinBlink · Local Owner Workspace',
+    '<h1>CoinBlink · Local Owner Workspace</h1>' +
+    '<p>Authenticated synthetic Owner session. This page is rendered on the server.</p>' +
+    '<h2>Devices</h2><ul id="workspace-devices">' + deviceItems + '</ul>' +
+    '<h2>Drafts</h2><ul id="workspace-drafts">' + draftItems + '</ul>' +
+    '<p>Audit events: ' + escapeHtml(auditCount) + '</p>'),
+  { status: 200, headers: WORKSPACE_HEADERS });
+}
+
 function localUiResponse() {
   const nonce = randomToken();
   const csp = [
@@ -735,6 +803,7 @@ async function emergencyClaim(request, db, secret, currentTime) {
 
 const LOCAL_FIXED_ROUTES = new Map([
   ['GET /local/ui', () => localUiResponse()],
+  ['GET /local/workspace', ({ request, db, secret, currentTime }) => workspacePage(request, db, secret, currentTime)],
   ['POST /local/bootstrap/challenge', ({ request, db, secret, currentTime }) => bootstrapChallenge(request, db, secret, currentTime)],
   ['POST /local/bootstrap/claim', ({ request, db, secret, currentTime }) => bootstrapClaim(request, db, secret, currentTime)],
   ['POST /local/enroll/challenge', ({ request, db, secret, currentTime }) => enrollChallenge(request, db, secret, currentTime)],

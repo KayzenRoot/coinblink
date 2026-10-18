@@ -405,6 +405,7 @@ footer{padding:24px 0;color:#b9c8bd}
 <input id="device-id" autocomplete="off" spellcheck="false" maxlength="256">
 <button id="revoke-device" type="button">Revoke device</button>
 <ul id="device-list" aria-label="Owner devices"></ul>
+<p><a id="workspace-link" href="/local/workspace">Open the protected local workspace page</a></p>
 </fieldset>
 <fieldset id="emergency-panel"><legend>Emergency recovery (both devices lost)</legend>
 <label for="emergency-token">Offline operator authorization token</label>

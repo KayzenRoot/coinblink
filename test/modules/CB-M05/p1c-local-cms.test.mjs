@@ -732,13 +732,14 @@ test('M05 LOCAL CMS 12: bound streamed JSON when Content-Length is forged or omi
 // First-Owner bootstrap: a fresh schema-only D1 with no cms_owner seed.
 async function openEmptySyntheticD1(options = {}) {
   mkdirSync(stateRoot, { recursive: true });
+  const persistencePath = options.persistencePath ?? path.join(stateRoot, randomUUID());
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'coinblink-m05-p1c-bootstrap-' + randomUUID(),
     script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
     modules: true,
     compatibilityDate: '2026-10-13',
     d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
-    resourcePersistencePath: path.join(stateRoot, randomUUID()),
+    resourcePersistencePath: persistencePath,
     log: new NoOpLog(),
   }));
   try {
@@ -752,7 +753,7 @@ async function openEmptySyntheticD1(options = {}) {
     const run = (route, method = 'GET', body = undefined, options = {}) =>
       createLocalCmsHandler({ now: () => clock.ms })(makeRequest(route, method, body, options), env);
     const ticket = () => issueBootstrapTicket(db, secret, Math.floor(clock.ms / 1000));
-    return { mf, db, env, secret, clock, run, ticket };
+    return { mf, db, env, secret, clock, run, ticket, persistencePath };
   } catch (error) {
     await mf.dispose();
     throw error;
@@ -1063,6 +1064,10 @@ for (const contenders of [2, 10]) {
 
 test('M05 LOCAL CMS BOOT-100: 100 simultaneous claims in the Worker runtime admit exactly one Owner with zero HTTP 500, on three fresh D1 databases', { timeout: 300_000 }, async () => {
   for (let trial = 1; trial <= 3; trial++) await runWorkerBootstrapRace(100, trial);
+});
+
+test('M05 LOCAL CMS BOOT-WORKER-2-10: dispatch-level races at 2 and 10 contenders admit exactly one Owner', { timeout: 240_000 }, async () => {
+  for (const contenders of [2, 10]) await runWorkerBootstrapRace(contenders, 1);
 });
 
 test('M05 LOCAL CMS BOOT-SAME: one shared ticket raced by 10 authenticators admits one Owner', { timeout: 240_000 }, async () => {
@@ -1419,6 +1424,7 @@ test('M05 LOCAL CMS C1: deny-by-default matrix over privileged routes, identitie
       ['POST', '/local/articles', draftBody],
       ['PATCH', `/local/articles/${draftId}`, patchBody],
       ['GET', '/local/credentials', undefined],
+      ['GET', '/local/workspace', undefined],
       ['POST', '/local/credentials/revoke', { credentialId: 'unknown-credential' }],
       ['POST', '/local/enroll/challenge', { kind: 'recovery' }],
       ['POST', '/local/enroll/claim', { challenge: 'aa'.repeat(32), response: {} }],
@@ -1655,15 +1661,112 @@ async function dumpTable(db, table) {
   return (await db.prepare(`SELECT * FROM ${table}`).all()).results;
 }
 async function restoreLocalDatabase(db, dump) {
+  // One batch == one transaction: a corrupted or incompatible backup restores nothing at all.
+  const statements = [];
   for (const table of DUMP_TABLES) {
     for (const row of dump[table]) {
       const columns = Object.keys(row);
-      await db.prepare(
+      statements.push(db.prepare(
         `INSERT INTO ${table} (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')})`
-      ).bind(...columns.map(column => normalizeBlob(row[column]))).run();
+      ).bind(...columns.map(column => normalizeBlob(row[column]))));
     }
   }
+  if (statements.length === 0) return;
+  await db.batch(statements);
 }
+
+test('M05 LOCAL CMS C4: the privileged HTML workspace requires a session and escapes owner content', async () => {
+  const ctx = await setup();
+  try {
+    const anonymous = await ctx.run('/local/workspace', 'GET');
+    assert.equal(anonymous.status, 401, 'the privileged HTML page denies anonymous visitors');
+    const anonymousHtml = await anonymous.text();
+    assert.match(anonymousHtml, /Sign in required/);
+    assert.doesNotMatch(anonymousHtml, /primary|recovery|rev \d/i, 'no Owner device or draft data is embedded');
+    const session = await login(ctx);
+    const hostileTitle = 'Escaped <script>alert(1)</script> title';
+    const created = await ctx.run('/local/articles', 'POST', {
+      ...sampleDraft, title: hostileTitle, idempotencyKey: seedIdempotency(),
+    }, session);
+    assert.equal(created.status, 201);
+    const authorized = await ctx.run('/local/workspace', 'GET', undefined, session);
+    assert.equal(authorized.status, 200);
+    const html = await authorized.text();
+    assert.match(html, /Local Owner Workspace/);
+    assert.match(html, /primary · [A-Za-z0-9_-]{10}… · active/);
+    assert.match(html, /recovery · [A-Za-z0-9_-]{10}… · active/);
+    assert.ok(html.includes('Escaped &lt;script&gt;alert(1)&lt;/script&gt; title'), 'owner content is escaped');
+    assert.doesNotMatch(html, /<script>alert\(1\)<\/script>/);
+    assert.doesNotMatch(html, /session_digest|csrf|__Host-cb_m05_local/i, 'no session secret is rendered');
+    const wrongOrigin = await ctx.run('/local/workspace', 'GET', undefined,
+      { ...session, origin: 'https://evil.example.test' });
+    assert.equal(wrongOrigin.status, 403, 'a hostile origin gets a denial page, not owner data');
+    assert.doesNotMatch(await wrongOrigin.text(), /primary · /);
+    await ctx.run('/local/logout', 'POST', {}, session);
+    assert.equal((await ctx.run('/local/workspace', 'GET', undefined, session)).status, 401,
+      'the page is denied again after logout');
+  } finally { await ctx.mf.dispose(); }
+});
+
+test('M05 LOCAL CMS B4: concurrent recovery and emergency claims admit exactly one winner', async () => {
+  const ctx = await setup();
+  try {
+    // One single-use emergency authorization, two simultaneous claims.
+    const token = await issueEmergencyAuthorization(ctx.db, ctx.env.CMS_TEST_HMAC_KEY, Math.floor(Date.now() / 1000));
+    const claim = authenticator => ctx.run('/local/emergency/claim', 'POST', {
+      token,
+      response: makeRegistrationResponse(authenticator, { challenge: webauthnChallengeFromHex(token) }),
+    });
+    const [first, second] = await Promise.all([
+      claim(makeSyntheticAuthenticator('race-emergency-a')),
+      claim(makeSyntheticAuthenticator('race-emergency-b')),
+    ]);
+    const statuses = [first.status, second.status];
+    assert.equal(statuses.filter(status => status === 201).length, 1, 'exactly one emergency claim wins');
+    assert.equal(statuses.filter(status => status === 403 || status === 409).length, 1, 'the loser is denied');
+    assert.equal(await countRows(ctx.db, 'cms_emergency_authorizations', 'used_at IS NOT NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_owner'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_credentials', 'revoked_at IS NULL'), 1);
+    assert.equal(await countRows(ctx.db, 'cms_audit_events', "event='emergency_used'"), 1,
+      'the audit trail records exactly one emergency use');
+
+    // One recovery authorization, two simultaneous primary enrollments.
+    const fresh = await setup();
+    try {
+      const session = await login(fresh, fresh.recovery);
+      assert.equal((await fresh.run('/local/credentials/revoke', 'POST',
+        { credentialId: fresh.primary.id }, session)).status, 200);
+      const { challenge, response } = await authorizeRecovery(fresh, session, fresh.recovery);
+      assert.equal((await fresh.run('/local/recovery/complete', 'POST',
+        { challenge, credentialId: fresh.recovery.id, response }, session)).status, 200);
+      const contenders = [];
+      for (const label of ['race-primary-a', 'race-primary-b']) {
+        const pending = await fresh.run('/local/enroll/challenge', 'POST', { kind: 'primary' }, session);
+        const { challenge: enrollChallenge } = await pending.json();
+        contenders.push({ challenge: enrollChallenge, authenticator: makeSyntheticAuthenticator(label) });
+      }
+      const enroll = contender => fresh.run('/local/enroll/claim', 'POST', {
+        challenge: contender.challenge,
+        response: makeRegistrationResponse(contender.authenticator,
+          { challenge: webauthnChallengeFromHex(contender.challenge) }),
+      }, session);
+      const outcomes = await Promise.all(contenders.map(enroll));
+      const enrollStatuses = outcomes.map(outcome => outcome.status);
+      const enrollBodies = await Promise.all(outcomes.map(outcome =>
+        outcome.clone().json().catch(() => ({}))));
+      assert.ok(enrollStatuses.every(status => [201, 403, 409].includes(status)),
+        'enrollment answers are fail-closed: ' + enrollStatuses.join(','));
+      assert.equal(enrollBodies.filter(body => body.usedRecoveryAuthorization === true).length, 1,
+        'exactly one claim consumes the single-use recovery authorization');
+      assert.equal(await countRows(fresh.db, 'cms_credentials', "device_kind='primary' AND revoked_at IS NULL"), 1,
+        'exactly one primary device remains active');
+      assert.equal(await countRows(fresh.db, 'cms_recovery_authorizations', 'used_at IS NOT NULL'), 1);
+      assert.equal(await countRows(fresh.db, 'cms_audit_events', "event='recovery_used'"), 1,
+        'the audit trail records exactly one recovery use');
+      assert.equal(await countRows(fresh.db, 'cms_owner'), 1);
+    } finally { await fresh.mf.dispose(); }
+  } finally { await ctx.mf.dispose(); }
+});
 
 test('M05 LOCAL CMS D1: schema replay is explicit and referential integrity is enforced by local D1', async () => {
   const ctx = await setup();
@@ -1845,6 +1948,63 @@ test('M05 LOCAL CMS D4: LOCAL backup restores into an isolated D1 with identical
   }
 });
 
+test('M05 LOCAL CMS D5: corrupted or incompatible backups restore nothing, and revocation survives a restart', async () => {
+  const source = await setup();
+  let target;
+  try {
+    const live = await login(source);
+    assert.equal((await source.run('/local/articles', 'POST',
+      { ...sampleDraft, idempotencyKey: seedIdempotency() }, live)).status, 201);
+    const revoked = await login(source, source.recovery);
+    assert.equal((await source.run('/local/logout', 'POST', {}, revoked)).status, 200);
+    const dump = await dumpLocalDatabase(source.db);
+    const emptyCounts = Object.fromEntries(COUNTED_TABLES.map(table => [table, 0]));
+
+    // Corrupted backup: dependent rows without the Owner row must fail and write nothing at all.
+    const corrupted = structuredClone(dump);
+    corrupted.cms_owner = [];
+    target = await openEmptySyntheticD1({ secret: source.env.CMS_TEST_HMAC_KEY });
+    await assert.rejects(restoreLocalDatabase(target.db, corrupted), /FOREIGN KEY|constraint/i,
+      'a backup that violates referential integrity is refused');
+    assert.deepEqual(await tableCounts(target.db), emptyCounts,
+      'the failed restore leaves the target database empty (one transaction)');
+
+    // Incompatible backup: an unknown column must also fail closed.
+    const incompatible = structuredClone(dump);
+    incompatible.cms_owner = incompatible.cms_owner.map(row => ({ ...row, legacy_secret: 'x' }));
+    await assert.rejects(restoreLocalDatabase(target.db, incompatible), /no column|no such|table/i,
+      'a backup from an incompatible schema is refused');
+    assert.deepEqual(await tableCounts(target.db), emptyCounts,
+      'the incompatible restore also leaves the target database empty');
+
+    // A valid restore followed by a restart keeps revocation and session semantics.
+    await restoreLocalDatabase(target.db, dump);
+    const persistencePath = target.persistencePath;
+    const nowMs = Date.now();
+    assert.equal((await target.run('/local/articles', 'GET', undefined, live)).status, 200);
+    assert.equal((await target.run('/local/articles', 'GET', undefined, revoked)).status, 401);
+    await target.mf.dispose();
+    target = null;
+    const reopened = await openEmptySyntheticD1({
+      secret: source.env.CMS_TEST_HMAC_KEY, persistencePath, applySchema: false, nowMs,
+    });
+    try {
+      assert.equal(await countRows(reopened.db, 'cms_owner'), 1);
+      assert.equal(await countRows(reopened.db, 'cms_credentials'), 2);
+      assert.equal(await countRows(reopened.db, 'cms_draft_revisions'), 1);
+      assert.equal(await countRows(reopened.db, 'cms_sessions', 'revoked_at IS NOT NULL'), 1,
+        'the revoked session stays revoked after a restart');
+      assert.equal((await reopened.run('/local/articles', 'GET', undefined, live)).status, 200,
+        'the live session still authorizes after a restart');
+      assert.equal((await reopened.run('/local/articles', 'GET', undefined, revoked)).status, 401,
+        'the revoked session stays dead after a restart');
+    } finally { await reopened.mf.dispose(); }
+  } finally {
+    if (target) await target.mf.dispose();
+    await source.mf.dispose();
+  }
+});
+
 // --- Part E · real Chromium, virtual authenticators, accessibility and zero egress ---
 
 test('M05 LOCAL CMS E1: first-Owner bootstrap, recovery device and lost-primary recovery in real Chromium', { timeout: 240_000 }, async () => {
@@ -1879,6 +2039,14 @@ test('M05 LOCAL CMS E1: first-Owner bootstrap, recovery device and lost-primary 
     assert.equal(await page.locator('#devices').isVisible(), true);
     await page.waitForFunction(() => globalThis.document.querySelectorAll('#device-list li').length === 1);
     assert.equal(await page.locator('#device-list li').count(), 1, 'the primary device is listed');
+    // The privileged server-rendered HTML page answers an authenticated browser session.
+    const workspaceTab = await preview.context.newPage();
+    try {
+      const workspaceResponse = await workspaceTab.goto(preview.origin + '/local/workspace', { waitUntil: 'domcontentloaded' });
+      assert.equal(workspaceResponse.status(), 200, 'the privileged HTML page serves the authenticated Owner');
+      assert.match(await workspaceTab.locator('#workspace-devices').innerText(), /primary .* active/);
+      assert.match(await workspaceTab.title(), /Local Owner Workspace/);
+    } finally { await workspaceTab.close(); }
     await page.locator('#enroll-recovery').click();
     await waitForMessage('Recovery passkey registered locally (recovery).');
     const activeAfterRecovery = (await preview.db.prepare(
@@ -1982,6 +2150,12 @@ test('M05 LOCAL CMS E1: first-Owner bootstrap, recovery device and lost-primary 
     const visibleFocus = focusTrail.filter(entry => entry && !entry.hidden);
     assert.ok(visibleFocus.length >= 6, 'keyboard traversal reaches the interactive controls');
     assert.ok(visibleFocus.every(entry => entry.indicator), 'every focused control shows a visible focus indicator');
+    // Basic responsiveness: the LOCAL workspace fits a narrow viewport without horizontal overflow.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const overflow = await page.evaluate(() =>
+      globalThis.document.documentElement.scrollWidth - globalThis.document.documentElement.clientWidth);
+    assert.ok(overflow <= 1, 'the LOCAL workspace fits a 390px viewport, overflow=' + overflow);
+    await page.setViewportSize({ width: 1280, height: 900 });
 
     // 8. Zero unauthorized egress, in two layers: CSP blocks external fetches before the
     //    network, and the fixture route blocks a top-level navigation at the network layer.

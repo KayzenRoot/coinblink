@@ -19,7 +19,7 @@ import {
 
 const SCHEMA_URL = new URL('./p1c-fixtures/schema.sql', import.meta.url);
 const ALLOWED_STATIC = new Set([
-  '/local/ui', '/local/challenge', '/local/login', '/local/logout', '/local/articles',
+  '/local/ui', '/local/workspace', '/local/challenge', '/local/login', '/local/logout', '/local/articles',
   '/local/bootstrap/challenge', '/local/bootstrap/claim',
   '/local/enroll/challenge', '/local/enroll/claim',
   '/local/recovery/challenge', '/local/recovery/complete',
@@ -204,12 +204,14 @@ export async function startLocalCmsPreview({ headless = false, persistLocal = fa
       const headers = await request.allHeaders();
       // Intercepted Playwright requests omit this Fetch Metadata transport field.
       // Reconstruct ONLY after validating the original initiating HTTPS frame.
-      if (!headers['sec-fetch-site'] && !request.isNavigationRequest()) {
-        if (new URL(request.frame().url()).origin !== CMS_TEST_ORIGIN) {
+      if (!headers['sec-fetch-site']) {
+        const frameUrl = request.frame().url();
+        const frameOrigin = frameUrl === 'about:blank' ? CMS_TEST_ORIGIN : new URL(frameUrl).origin;
+        if (frameOrigin !== CMS_TEST_ORIGIN) {
           await route.abort('blockedbyclient');
           return;
         }
-        headers['sec-fetch-site'] = 'same-origin';
+        headers['sec-fetch-site'] = request.isNavigationRequest() ? 'none' : 'same-origin';
       }
       const body = request.postDataBuffer();
       const response = await handler(new Request(url.href, {

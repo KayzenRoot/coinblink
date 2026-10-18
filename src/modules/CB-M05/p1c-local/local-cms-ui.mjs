@@ -97,7 +97,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && url.startsWith('/local/articles')) {
+      if (response.status === 401 && /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url)) {
         clearLocalSession();
       }
       const error = new Error('Local request rejected (' + response.status + ')');

@@ -168,3 +168,32 @@ Canonical main observed `4300642e8bdd00ae029ccbb30ed8facd70089df3`, Git tree `6d
 **Hard boundaries:** no `src/pages/admin/**`, shared middleware, real Owner credential, hosted/remote D1, secret vault/KEK, Cloudflare deploy/Preview, publication, paid service or checkpoint. Existing module P1-D vault/P1-E source publishing require separate admission/resources. Do not mark whole M05 DONE by delivering LOCAL proof.
 
 **Dispatch gate:** previous OWNER_LOCAL_GO policy allows preparing this LOCAL-only lab, but this candidate is NOT its effective execution lock. Requires protected merge of this scoped documentation PR with audit and explicit exact-HEAD Owner GO; afterward re-fingerprint adopted lock and **record separate Owner scoped code GO** as required by Source Hierarchy. If source/main moves, mark STALE and refresh. `CHECKPOINT_DELTA={}`. `STOP=M05_P1C_LOCAL_FRESH_LOCK_AND_OWNER_CODE_GO_PENDING`.
+
+## R85 · integration source refresh after Owner-authorized M01 evidence merge · 2026-10-18
+
+**Execution state unchanged:** `FROZEN_PREPARATION_CANDIDATE / NOT_EXECUTABLE / NOT_DISPATCHABLE`. The earlier R84 `main=7733fc4b9a...`, tree `0ceab470...` and lock `6cc27f...` fingerprints are historical snapshots, **not** the current valid source base. They remain as immutable audit provenance. This R85 addendum is authored for a NON-force branch merge of protected `main` into existing PR #126; it does not constitute a protected PR merge, new Owner code GO, Cloudflare deployment, D1 migration, secret handling or checkpoint promotion.
+
+### Current protected source and new exact fingerprints
+
+| Input / gate | Current authoritative identity |
+| --- | --- |
+| Protected `main` after accepted M01 documents PR #125 | `cfb5be7178fb83ab25fc82cf7cfda1daeb0e0034` |
+| Main tree, untruncated (693 entries) | `68328af8b589be096efd71fd5f849dad2d0e8f12` |
+| Previous PR #126 HEAD (first parent of planned non-force merge) | `cd111d82e1cc0e6e2b68c42c7bbb2cb2188c5f43` |
+| Previous PR #126 lock blob (pre-R85 append) | `f263fc1a532c76cf2c9d3e773cd2b8e1f3702c91` |
+| Newly adopted M01 evidence closeout matrix | `51998889ff7b960a5b8aef213b6c8d335c72260d` |
+| Newly adopted M01 Owner DEMO visual acceptance | `fea73b92041635cb65e94daade6d5d8a80a38c6b` |
+| Canonical checkpoint (unchanged M00_COMPLETE, 5%) | `72618bef100e6f82e4655b2c6ed482794e0c4649` |
+| M05 source architecture ADR (unchanged) | `6a590ef487556ed62296f558296b6ad5a334d3dc` |
+| M05 source handler (unchanged LOCAL synthetic) | `d6b7080f0a2ec11bd3b7ed3da46c6b457fe558e7` |
+| M05 LOCAL D1 schema (unchanged) | `cd3f73326acbc66a55014c67163e644e41b410da` |
+| M05 work order (unchanged) | `8a00346e0e84265bf4c3a7de1b81f196b473942b` |
+| Cloudflare production policy (unchanged) | `1a4dc270ac8246743886b0611220d2335e82a934` |
+
+**Source-delta assessment:** exact source change from R84 base `7733fc4b9a17333db8381d94c94f33b9e24eb877` to current main `cfb5be7178fb83ab25fc82cf7cfda1daeb0e0034` consists of precisely 2 *M01 evidence-only* Markdown changes (+33/-0) with unchanged module source/test/security/lock and unchanged `.engineering/CHECKPOINT.json`. New branch tree is formed exclusively from current main tree plus the *one* M05 Context Lock change; no code/test/config mutation and no file ownership collision.
+
+**Mandatory revalidation on final pushed branch HEAD:** CI/GitHub Actions exact-HEAD check-runs: Ubuntu GEF, Windows GEF, Docker Compose, SonarCloud, Socket PR/Project, CodeRabbit status (skipped automatic review is NOT technical approval), 0 open inline review threads, substantive Owner security audit on exact final SHA, main protection unchanged. GitHub may create a synthetic merge ref for a PR; do not mistake it for the source HEAD checked here. Check the canonical main and PR diff after branch update. No older 7/7 check rollup may be transferred to a new SHA.
+
+**Required next step (separate authorization):** Only after reviewed protected squash adoption with specific Owner GO on immutable PR #126 HEAD, refingerprint the new adopted lock on main and obtain specific LOCAL P1-C code GO under admitted `CB-M05-P1C-LOCAL-001`; then independently prove atomic first Owner 0→1 race 2/10/100, genuine local-only WebAuthn+backup/recovery/rollback, deny-by-default privileged HTML/API sessions and CSRF, local D1 apply/revert/restore with immutable audit and zero egress. M05 P1-D vault, P1-E editorial publication, hosted D1, actual admin routes, real passkeys and provider deployments remain prohibited absent other explicit gates.
+
+`CHECKPOINT_DELTA={}`; `STOP=M05_P1C_LOCAL_R85_NONEXECUTABLE_PENDING_PROTECTED_ADOPTION_AND_OWNER_CODE_GO`.

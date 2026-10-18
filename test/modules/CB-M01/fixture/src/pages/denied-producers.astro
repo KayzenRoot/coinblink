@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../../../../../../src/layouts/BaseLayout.astro";
+import GoldenHome from "../../../../../../src/modules/CB-M01/GoldenHome.astro";
+// Hostile inputs must fail closed. No LIVE content may be rendered.
+const producerFeeds = {
+  news: { contractVersion: "0.1-draft", mode: "LIVE",
+    items: [{ id: "unlicensed-live-1", demo: false,
+      headline: "PRIVATE_LIVE_NEVER_RENDER_THIS" }] },
+  sources: { contractVersion: "0.1-draft", mode: "MOCK",
+    items: [{ id: "source-malformed", demo: false }] },
+  markets: { contractVersion: "0.1-draft", mode: "MOCK", items: [] },
+};
+---
+
+<BaseLayout title="CoinBlink rejected producer handoff fixture" description="Fail-closed LIVE denial, malformed source and empty synthetic markets.">
+  <GoldenHome producerFeeds={producerFeeds} />
+</BaseLayout>

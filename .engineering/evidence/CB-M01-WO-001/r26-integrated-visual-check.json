@@ -1,12 +1,12 @@
 {
   "status": "passed",
-  "generatedAt": "2026-10-16T15:52:22.804Z",
+  "generatedAt": "2026-10-17T21:13:04.559Z",
   "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
-  "headSha": "59762037b26e8f93be1bf164f4fc2aa706b179f8",
+  "headSha": "ae88a7b79123830be9edbd5a7135425dd86f69f0",
   "route": "/en",
   "fixture": "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
   "runtime": "Wrangler 4.149.0 --local",
-  "origin": "http://127.0.0.1:60909",
+  "origin": "http://127.0.0.1:62131",
   "visualInputState": {
     "status": "clean",
     "paths": [
@@ -56,8 +56,8 @@
         "width": 640,
         "height": 320,
         "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
-        "currentOrigin": "http://127.0.0.1:60909",
-        "allowedOrigin": "http://127.0.0.1:60909",
+        "currentOrigin": "http://127.0.0.1:62131",
+        "allowedOrigin": "http://127.0.0.1:62131",
         "previewActive": true,
         "visible": true,
         "sceneOpacity": "1",
@@ -65,25 +65,25 @@
         "objectPosition": "50% 50%",
         "widthOnScreen": 728.796875,
         "heightOnScreen": 280,
-        "selectedSource": "http://127.0.0.1:60909/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "selectedSource": "http://127.0.0.1:62131/_astro/hero-cinematic-motion.uo0wYDIG.webp",
         "visibleArtworkStart": 826.4053125,
         "copyRight": 567.671875,
         "loading": "eager",
         "fetchPriority": "high"
       },
       "performance": {
-        "largestContentfulPaintMs": 488,
+        "largestContentfulPaintMs": 2068,
         "cumulativeLayoutShift": 0,
         "longTaskSupported": true,
         "longTaskCount": 2,
-        "longTaskDurationMs": 1173,
+        "longTaskDurationMs": 1160,
         "previewImage": {
           "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
           "transferredBytes": 1395024,
           "encodedBodyBytes": 1394724,
-          "durationMs": 63.1
+          "durationMs": 72.5
         },
-        "sameOriginTransferredBytes": 4307760,
+        "sameOriginTransferredBytes": 4307780,
         "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
       },
       "moduleAxeViolations": [],
@@ -109,8 +109,8 @@
         "width": 640,
         "height": 320,
         "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
-        "currentOrigin": "http://127.0.0.1:60909",
-        "allowedOrigin": "http://127.0.0.1:60909",
+        "currentOrigin": "http://127.0.0.1:62131",
+        "allowedOrigin": "http://127.0.0.1:62131",
         "previewActive": true,
         "visible": true,
         "sceneOpacity": "1",
@@ -118,18 +118,18 @@
         "objectPosition": "100% 50%",
         "widthOnScreen": 307.96875,
         "heightOnScreen": 320,
-        "selectedSource": "http://127.0.0.1:60909/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "selectedSource": "http://127.0.0.1:62131/_astro/hero-cinematic-motion.uo0wYDIG.webp",
         "visibleArtworkStart": 353.16875,
         "copyRight": 273.265625,
         "loading": "eager",
         "fetchPriority": "high"
       },
       "performance": {
-        "largestContentfulPaintMs": 504,
+        "largestContentfulPaintMs": 424,
         "cumulativeLayoutShift": 0,
         "longTaskSupported": true,
         "longTaskCount": 2,
-        "longTaskDurationMs": 1326,
+        "longTaskDurationMs": 928,
         "previewImage": {
           "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
           "transferredBytes": 0,
@@ -162,8 +162,8 @@
         "width": 640,
         "height": 320,
         "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
-        "currentOrigin": "http://127.0.0.1:60909",
-        "allowedOrigin": "http://127.0.0.1:60909",
+        "currentOrigin": "http://127.0.0.1:62131",
+        "allowedOrigin": "http://127.0.0.1:62131",
         "previewActive": true,
         "visible": true,
         "sceneOpacity": "1",
@@ -171,18 +171,18 @@
         "objectPosition": "50% 50%",
         "widthOnScreen": 356,
         "heightOnScreen": 183.203125,
-        "selectedSource": "http://127.0.0.1:60909/_astro/hero-cinematic-motion.uo0wYDIG.webp",
+        "selectedSource": "http://127.0.0.1:62131/_astro/hero-cinematic-motion.uo0wYDIG.webp",
         "visibleArtworkStart": 223.48,
         "copyRight": 355,
         "loading": "eager",
         "fetchPriority": "high"
       },
       "performance": {
-        "largestContentfulPaintMs": 364,
+        "largestContentfulPaintMs": 264,
         "cumulativeLayoutShift": 0,
         "longTaskSupported": true,
         "longTaskCount": 2,
-        "longTaskDurationMs": 1249,
+        "longTaskDurationMs": 1027,
         "previewImage": {
           "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
           "transferredBytes": 0,
@@ -207,44 +207,44 @@
   "screenshots": [
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/r26-home-integrated-desktop-1536x864.png",
-      "sha256": "f716b5a0c296df04fa9c020d13c0c03e9e36d1791e199412c49be2f2690114f5",
-      "bytes": 868030
+      "sha256": "6de01bd1ab69f5c034977555a5bc8b286d3ec1ba6257f205e7a10c188ab3cf0d",
+      "bytes": 868482
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/r26-home-integrated-tablet-768x1024.png",
-      "sha256": "d2dfa0af99db4e4afd584f01c6e52aa34806bb1e31d63416e39df1cfb924d44f",
-      "bytes": 534953
+      "sha256": "bcb1dfe5b81df09f6f4cbdcbd6bd4e9ca5d9ef6456f4e12d23a3bb390cb85f0d",
+      "bytes": 534942
     },
     {
       "file": ".engineering/evidence/CB-M01-WO-001/screenshots/r26-home-integrated-mobile-390x844.png",
-      "sha256": "9ae4bc49720f7a3750f896ee73ba537c5768c9525f8b98ee17c28eda3864ae83",
-      "bytes": 242761
+      "sha256": "cb46d1a09422f5071a941855c001d69e2bc87bedd09c261e2f72d36d9ce0f5ba",
+      "bytes": 244434
     }
   ],
   "renderPerformance": [
     {
       "viewport": "desktop",
-      "largestContentfulPaintMs": 488,
+      "largestContentfulPaintMs": 2068,
       "cumulativeLayoutShift": 0,
       "longTaskSupported": true,
       "longTaskCount": 2,
-      "longTaskDurationMs": 1173,
+      "longTaskDurationMs": 1160,
       "previewImage": {
         "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
         "transferredBytes": 1395024,
         "encodedBodyBytes": 1394724,
-        "durationMs": 63.1
+        "durationMs": 72.5
       },
-      "sameOriginTransferredBytes": 4307760,
+      "sameOriginTransferredBytes": 4307780,
       "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
     },
     {
       "viewport": "tablet",
-      "largestContentfulPaintMs": 504,
+      "largestContentfulPaintMs": 424,
       "cumulativeLayoutShift": 0,
       "longTaskSupported": true,
       "longTaskCount": 2,
-      "longTaskDurationMs": 1326,
+      "longTaskDurationMs": 928,
       "previewImage": {
         "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
         "transferredBytes": 0,
@@ -256,11 +256,11 @@
     },
     {
       "viewport": "mobile",
-      "largestContentfulPaintMs": 364,
+      "largestContentfulPaintMs": 264,
       "cumulativeLayoutShift": 0,
       "longTaskSupported": true,
       "longTaskCount": 2,
-      "longTaskDurationMs": 1249,
+      "longTaskDurationMs": 1027,
       "previewImage": {
         "path": "/_astro/hero-cinematic-motion.uo0wYDIG.webp",
         "transferredBytes": 0,
@@ -295,11 +295,11 @@
       ],
       "encodedBodyBytes": 1394724,
       "transferredBytes": 1395024,
-      "resourceDurationMs": 9464.8,
-      "decodePromiseResolutionMs": 14.7,
+      "resourceDurationMs": 9656.6,
+      "decodePromiseResolutionMs": 8.1,
       "motionRequestCount": 1,
       "staticRequestCount": 0,
-      "largestContentfulPaintMs": 2060,
+      "largestContentfulPaintMs": 1396,
       "cumulativeLayoutShift": 0,
       "longTaskSupported": true,
       "longTaskCount": 0,
@@ -328,11 +328,11 @@
       ],
       "encodedBodyBytes": 310054,
       "transferredBytes": 310354,
-      "resourceDurationMs": 2850.3,
-      "decodePromiseResolutionMs": 8,
+      "resourceDurationMs": 4528.3,
+      "decodePromiseResolutionMs": 2.8,
       "motionRequestCount": 0,
       "staticRequestCount": 1,
-      "largestContentfulPaintMs": 1972,
+      "largestContentfulPaintMs": 1376,
       "cumulativeLayoutShift": 0,
       "longTaskSupported": true,
       "longTaskCount": 0,

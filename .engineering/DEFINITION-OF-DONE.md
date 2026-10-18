@@ -4,6 +4,10 @@
 
 This status becomes canonical only after a reviewed merge. The Owner instructed Continue immediately after the specific question to approve the first V1 functional milestone: exact Golden Home, a secure one-human-Owner editorial CMS, and one source-backed article journey, with the other planned modules retained. The approval applies to staged scope and fixed safety invariants, not to paid/live provider access or any unselected security implementation. Main base: 842fc5a0e54bdaed37066abd830fd1b346368b2b. M00 is COMPLETE at 5%; M01-M17 NOT_ADMITTED and M18 FUTURE_NOT_ADMITTED. This source pack does not admit a new module.
 
+## Candidate policy amendment: low-risk efficiency and analyzer precision (2026-10-18)
+
+The dedicated `.engineering/GLOBAL-QUALITY-REVIEW-POLICY.md` is a **proposed** global risk-tier interpretation, effective only upon protected merge. It permits consolidated reviews and reuse of verifiable exact-SHA evidence for low-risk change classes, without a second human approver or duplicate progress rounds; high-assurance auth/data/provider gates and the canonical DoD remain mandatory. `.sonarcloud.properties` proposes excluding only the local-only SQLite fixture from incorrect PL/SQL static lint; the fixture remains fully covered by executable D1 and WebAuthn tests. This candidate alone does not promote a module or permit merge/deploy, and the original technical DoD remains below.
+
 ## Approved global Definition of Done
 
 Every module receives one reviewed, admitted Work Order and fresh Context Lock with exact base SHA, dependencies, external gates, immutable source fingerprints, producer/consumer contracts, path ownership and STOP CONDITION. Separate PR and worktree, reproducible tests, Evidence Bundle and independently described audit. Mocks are never counted as LIVE, partial UI is not P1 authentication, and no unadmitted module is marked complete.

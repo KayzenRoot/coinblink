@@ -2,6 +2,10 @@
 
 GEF Bootstrap v1.1.2 is installed and tested in merged CB-BOOT-001 / PR #2. The local M00 P0 foundation is merged.
 
+## Candidate global review routing (not effective before protected merge)
+
+When the `CB-GOV-QUALITY-001` global policy is integrated into protected main, follow [Global Quality and Review Policy](.engineering/GLOBAL-QUALITY-REVIEW-POLICY.md) for risk-proportionate review. For isolated mocks and docs, avoid redundant review rounds; for privileged auth, data, keys, billing and production preserve exact-HEAD CI, adversarial negative tests, solo Owner decision and STOP. No blanket Sonar/Socket bypass, no auto-merge or deploy, no synthetic-to-live promotion. This paragraph is a candidate on its feature branch.
+
 ## M00 checkpoint promotion · Owner go/no-go 2026-10-10
 
 **Effective only on merge of the reviewed checkpoint-promotion PR:** `.engineering/CHECKPOINT.json` now projects `M00_COMPLETE`, `completedThroughModule=CB-M00`, `previewDeployment=PREVIEW_VERIFIED`, `activeWorkOrder=NONE`, overall **5%** (`floor(1 / 19 × 100)`). The Owner explicitly directed immediate finalization and movement out of the zero checkpoint in this conversation on 2026-10-10; this final M00-only promotion uses the [audited closeout evidence merged in PR #50](https://github.com/KayzenRoot/coinblink/pull/50) at main `9379bc22569d0e1ce391079a56f3147cfaa9f0f6`, [protected Preview run #38049696879](https://github.com/KayzenRoot/coinblink/actions/runs/38049696879) for unchanged app/build SHA `e8886e21c6f152ca374b1e42852c6b6638543f40`, and authenticated read-only provider binding inventory `ASSETS` only. The M00 demo-only screenshots were accepted; **no claim of Golden Home M01 fidelity**. Docker local `coinblink-local` is healthy on 127.0.0.1:3187 per candidate evidence. Final exact-head CI/audit must pass before merge.

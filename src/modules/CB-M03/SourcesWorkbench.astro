@@ -1,0 +1,42 @@
+---
+import { listOfflineSources, SOURCE_POLICY } from "./source-ledger.mjs";
+import sourcesClientUrl from "./source-ledger.client.js?url&no-inline";
+const registry = listOfflineSources();
+---
+<section class="cb-m03" data-m03-root aria-labelledby="m03-title">
+  <header>
+    <small>CB-M03 · MOCK SOURCES · NO INGESTION</small>
+    <h2 id="m03-title">Provenance workbench, offline</h2>
+    <p>All identities and URLs are fictional test samples. Rights are not cleared and capture is disabled.</p>
+    <p>Policy: <code>{SOURCE_POLICY}</code></p>
+  </header>
+  <label>Filter synthetic sources <input type="search" maxlength="80" data-m03-search autocomplete="off" placeholder="Try academic" /></label>
+  <p role="status" aria-live="polite" data-m03-count>{registry.items.length} invented sources, none licensed</p>
+  <ul class="m03-sources">
+    {registry.items.map(source => (
+      <li data-m03-entry data-m03-searchable={source.label.toLowerCase()}>
+        <strong>{source.label}</strong>
+        <span>NOT CLEARED · CAPTURE DISABLED</span>
+        <p>Illustrative URL: <code>{source.origin}</code></p>
+        <p>Publisher verification: NO · Redistribution: BLOCKED</p>
+      </li>
+    ))}
+  </ul>
+  <p data-m03-empty hidden>No synthetic source matched. No ingestion was performed.</p>
+  <aside aria-label="Ingestion simulation outcomes">
+    <h3>Simulated outcomes</h3>
+    <ul><li>Invalid origin: BAD REQUEST</li><li>Repeated synthetic event: DEDUPLICATED</li>
+      <li>Provider unavailable: UNAVAILABLE</li><li>Quota exceeded: RETRY AFTER</li><li>Unknown rights: DENIED</li></ul>
+  </aside>
+</section>
+<script is:inline src={sourcesClientUrl}></script>
+<style>
+  .cb-m03{background:#122019;color:#ecf9ec;border:1px solid #5a8159;border-radius:1rem;padding:1.25rem;max-width:75rem;margin:auto}
+  .cb-m03 small,.cb-m03 h2,.cb-m03 h3{color:#d2ff87}
+  .cb-m03 label{display:grid;gap:.4rem}.cb-m03 input{background:#22332a;color:#fff;padding:.7rem;border:1px solid #8aaf89;border-radius:.5rem;max-width:35rem}
+  .m03-sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1rem;padding:0;list-style:none}
+  .m03-sources li{padding:1rem;border:1px solid #49674d;border-radius:.5rem;overflow-wrap:anywhere}
+  .m03-sources span{display:block;color:#f3c785;margin-top:.5rem}
+  .cb-m03 :focus-visible{outline:3px solid #cafa5e;outline-offset:3px}
+  .m03-sources li[hidden]{display:none}
+</style>

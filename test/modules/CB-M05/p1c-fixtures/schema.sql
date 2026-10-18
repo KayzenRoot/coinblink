@@ -99,6 +99,10 @@ CREATE TABLE cms_bootstrap_challenges (
 CREATE TABLE cms_enroll_challenges (
   challenge_digest TEXT PRIMARY KEY CHECK (length(challenge_digest) = 64),
   credential_kind TEXT NOT NULL CHECK (credential_kind IN ('primary','recovery')),
+  -- Immutable challenge intent: a lost-primary recovery must not turn into a regular rotation.
+  requires_recovery INTEGER NOT NULL DEFAULT 0 CHECK (requires_recovery IN (0,1)),
+  session_digest TEXT NOT NULL CHECK (length(session_digest) = 64),
+  issuer_credential_id TEXT NOT NULL,
   origin TEXT NOT NULL,
   rp_id TEXT NOT NULL,
   expires_at INTEGER NOT NULL,
@@ -112,6 +116,7 @@ CREATE TABLE cms_recovery_authorizations (
   auth_id TEXT PRIMARY KEY CHECK (length(auth_id) >= 16),
   kind TEXT NOT NULL CHECK (kind = 'rotate-primary'),
   credential_id TEXT NOT NULL,
+  session_digest TEXT NOT NULL CHECK (length(session_digest) = 64),
   issued_at INTEGER NOT NULL,
   expires_at INTEGER NOT NULL,
   used_at INTEGER,

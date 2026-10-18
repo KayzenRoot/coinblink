@@ -143,17 +143,16 @@ function escapeHtml(value) {
 const WORKSPACE_HEADERS = {
   'Cache-Control': 'no-store',
   'Content-Type': 'text/html; charset=utf-8',
-  'Content-Security-Policy': "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-Robots-Tag': 'noindex, nofollow, noarchive',
   'Referrer-Policy': 'no-referrer',
 };
-function workspaceShell(title, body) {
+function workspaceShell(title, body, nonce) {
   return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
     "<meta name=\"robots\" content=\"noindex,nofollow,noarchive\"><title>" + escapeHtml(title) + '</title>' +
-    '<style>body{margin:0;background:#0d1815;color:#eaf3e8;font-family:system-ui,sans-serif;line-height:1.5}' +
+    '<style nonce="' + nonce + '">body{margin:0;background:#0d1815;color:#eaf3e8;font-family:system-ui,sans-serif;line-height:1.5}' +
     'main{max-width:980px;margin:auto;padding:24px 18px}h1{font-size:1.6rem}h2{font-size:1.15rem}' +
     'p,li{color:#cfe0d0}ul{padding-left:20px}footer{padding:20px 0;color:#9fb3a3}</style></head><body><main>' +
     body + '<footer>LOCAL TEST ONLY · synthetic Owner data · no publication capability.</footer></main></body></html>';
@@ -171,16 +170,21 @@ function ownerNavigation(request) {
 }
 
 async function workspacePage(request, db, secret, currentTime) {
+  const nonce = randomToken();
+  const headers = {
+    ...WORKSPACE_HEADERS,
+    'Content-Security-Policy': "default-src 'none'; style-src 'nonce-" + nonce + "'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+  };
   if (!ownerNavigation(request)) {
     return new Response(workspaceShell('Request rejected',
-      '<h1>Request rejected</h1><p>This page only answers same-site requests on the synthetic origin.</p>'),
-    { status: 403, headers: WORKSPACE_HEADERS });
+      '<h1>Request rejected</h1><p>This page only answers same-site requests on the synthetic origin.</p>', nonce),
+    { status: 403, headers });
   }
   const who = await session(request, db, secret, currentTime);
   if (!who) {
     return new Response(workspaceShell('Sign in required',
-      '<h1>Sign in required</h1><p>This local workspace page requires an authenticated local Owner session.</p>'),
-    { status: 401, headers: WORKSPACE_HEADERS });
+      '<h1>Sign in required</h1><p>This local workspace page requires an authenticated local Owner session.</p>', nonce),
+    { status: 401, headers });
   }
   const devices = (await db.prepare(
     'SELECT credential_id,device_kind,revoked_at FROM cms_credentials WHERE owner_id=1 ORDER BY device_kind,credential_id'
@@ -200,8 +204,8 @@ async function workspacePage(request, db, secret, currentTime) {
     '<p>Authenticated synthetic Owner session. This page is rendered on the server.</p>' +
     '<h2>Devices</h2><ul id="workspace-devices">' + deviceItems + '</ul>' +
     '<h2>Drafts</h2><ul id="workspace-drafts">' + draftItems + '</ul>' +
-    '<p>Audit events: ' + escapeHtml(auditCount) + '</p>'),
-  { status: 200, headers: WORKSPACE_HEADERS });
+    '<p>Audit events: ' + escapeHtml(auditCount) + '</p>', nonce),
+  { status: 200, headers });
 }
 
 function localUiResponse() {
@@ -543,12 +547,17 @@ async function enrollChallenge(request, db, secret, currentTime) {
     .bind(currentTime).run();
   const challenge = randomToken();
   const inserted = await db.prepare(
-    `INSERT INTO cms_enroll_challenges (challenge_digest,credential_kind,origin,rp_id,expires_at)
-     SELECT ?,?,?,?,? WHERE
-     (SELECT COUNT(*) FROM cms_enroll_challenges
+    `INSERT INTO cms_enroll_challenges
+       (challenge_digest,credential_kind,origin,rp_id,expires_at,requires_recovery,session_digest,issuer_credential_id)
+     SELECT ?,?,?,?, ?,
+       CASE WHEN ?='primary' AND NOT EXISTS (
+         SELECT 1 FROM cms_credentials WHERE owner_id=1 AND device_kind='primary' AND revoked_at IS NULL
+       ) THEN 1 ELSE 0 END, ?, ?
+     WHERE (SELECT COUNT(*) FROM cms_enroll_challenges
        WHERE credential_kind=? AND consumed_at IS NULL AND expires_at>?) < ?`
   ).bind(await digest(challenge), input.kind, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
-    currentTime + ENROLL_CHALLENGE_TTL_SECONDS, input.kind, currentTime, ENROLL_MAX_ACTIVE_CHALLENGES).run();
+    currentTime + ENROLL_CHALLENGE_TTL_SECONDS, input.kind, authorized.digest, authorized.credential_id,
+    input.kind, currentTime, ENROLL_MAX_ACTIVE_CHALLENGES).run();
   if (inserted.meta?.changes !== 1) return json({ error: 'Too many active enrollment challenges' }, 429);
   return json({ challenge, kind: input.kind, rpId: CMS_TEST_RP_ID, userVerification: 'required' });
 }
@@ -563,9 +572,11 @@ async function enrollClaim(request, db, secret, currentTime) {
   if (!validHex64(input.challenge) || !input.response || typeof input.response !== 'object') return denied();
   const challengeDigest = await digest(input.challenge);
   const pending = await db.prepare(
-    `SELECT credential_kind FROM cms_enroll_challenges
-      WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=?`
-  ).bind(challengeDigest, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID).first();
+    `SELECT credential_kind,requires_recovery FROM cms_enroll_challenges
+      WHERE challenge_digest=? AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=?
+        AND session_digest=? AND issuer_credential_id=?`
+  ).bind(challengeDigest, currentTime, CMS_TEST_ORIGIN, CMS_TEST_RP_ID,
+    authorized.digest, authorized.credential_id).first();
   if (!pending) return denied();
   const registration = await verifyBootstrapRegistration(input.response, input.challenge);
   if (!registration) return denied();
@@ -576,12 +587,16 @@ async function enrollClaim(request, db, secret, currentTime) {
     const activePrimary = await db.prepare(
       `SELECT credential_id FROM cms_credentials WHERE owner_id=1 AND device_kind='primary' AND revoked_at IS NULL`
     ).first();
-    if (!activePrimary) {
+    if (pending.requires_recovery && activePrimary) return denied(409);
+    if (pending.requires_recovery) {
       const authorization = await db.prepare(
         `SELECT auth_id FROM cms_recovery_authorizations
-          WHERE kind='rotate-primary' AND used_at IS NULL AND expires_at>? LIMIT 1`
-      ).bind(currentTime).first();
+          WHERE kind='rotate-primary' AND credential_id=? AND session_digest=?
+            AND used_at IS NULL AND expires_at>? LIMIT 1`
+      ).bind(authorized.credential_id, authorized.digest, currentTime).first();
       if (!authorization) return denied();
+    } else if (!activePrimary) {
+      return denied(409);
     }
   }
   const marker = crypto.randomUUID();
@@ -594,15 +609,20 @@ async function enrollClaim(request, db, secret, currentTime) {
       `UPDATE cms_recovery_authorizations SET used_at=?,use_marker=?
         WHERE auth_id=(
           SELECT auth_id FROM cms_recovery_authorizations
-           WHERE used_at IS NULL AND expires_at>? AND kind='rotate-primary' ORDER BY issued_at LIMIT 1)
-          AND EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=? AND e.credential_kind='primary')
+           WHERE used_at IS NULL AND expires_at>? AND kind='rotate-primary'
+             AND credential_id=? AND session_digest=? ORDER BY issued_at LIMIT 1)
+          AND EXISTS (SELECT 1 FROM cms_enroll_challenges e
+            WHERE e.consume_marker=? AND e.credential_kind='primary' AND e.requires_recovery=1
+              AND e.session_digest=? AND e.issuer_credential_id=?)
           AND NOT EXISTS (SELECT 1 FROM cms_credentials c
                 WHERE c.owner_id=1 AND c.device_kind='primary' AND c.revoked_at IS NULL)`
-    ).bind(currentTime, marker, currentTime, marker),
+    ).bind(currentTime, marker, currentTime, authorized.credential_id, authorized.digest,
+      marker, authorized.digest, authorized.credential_id),
     db.prepare(
       `UPDATE cms_credentials SET revoked_at=?,last_auth_marker=?
         WHERE owner_id=1 AND device_kind=? AND revoked_at IS NULL
-          AND EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)`
+          AND EXISTS (SELECT 1 FROM cms_enroll_challenges e
+            WHERE e.consume_marker=? AND e.requires_recovery=0)`
     ).bind(currentTime, marker, kind, marker),
     db.prepare(
       `UPDATE cms_sessions SET revoked_at=?
@@ -613,10 +633,16 @@ async function enrollClaim(request, db, secret, currentTime) {
       `INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind)
         SELECT ?,1,?,?,? WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)
           AND (?='recovery'
-            OR EXISTS (SELECT 1 FROM cms_credentials c WHERE c.last_auth_marker=?)
-            OR EXISTS (SELECT 1 FROM cms_recovery_authorizations a WHERE a.use_marker=?))`
+            OR (EXISTS (SELECT 1 FROM cms_enroll_challenges e
+                  WHERE e.consume_marker=? AND e.requires_recovery=0)
+                AND EXISTS (SELECT 1 FROM cms_credentials c WHERE c.last_auth_marker=?))
+            OR (EXISTS (SELECT 1 FROM cms_enroll_challenges e
+                  WHERE e.consume_marker=? AND e.requires_recovery=1)
+                AND EXISTS (SELECT 1 FROM cms_recovery_authorizations a WHERE a.use_marker=?)
+                AND NOT EXISTS (SELECT 1 FROM cms_credentials c
+                  WHERE c.owner_id=1 AND c.device_kind='primary' AND c.revoked_at IS NULL)))`
     ).bind(registration.credentialId, registration.publicKey, registration.counter, kind, marker,
-      kind, marker, marker),
+      kind, marker, marker, marker, marker),
     db.prepare(
       `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)
         SELECT ?, 'device_enrolled', 'owner', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges e WHERE e.consume_marker=?)`
@@ -692,9 +718,9 @@ async function recoveryComplete(request, db, secret, currentTime) {
           AND EXISTS (SELECT 1 FROM cms_challenges h WHERE h.challenge_digest=? AND h.consume_marker=?)`
     ).bind(nextCount, marker, record.credential_id, oldCount, challengeDigest, marker),
     db.prepare(
-      `INSERT INTO cms_recovery_authorizations(auth_id,kind,credential_id,issued_at,expires_at)
-        SELECT ?, 'rotate-primary', ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_challenges h WHERE h.consume_marker=?)`
-    ).bind(randomToken().slice(0, 32), record.credential_id, currentTime,
+      `INSERT INTO cms_recovery_authorizations(auth_id,kind,credential_id,session_digest,issued_at,expires_at)
+        SELECT ?, 'rotate-primary', ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM cms_challenges h WHERE h.consume_marker=?)`
+    ).bind(randomToken().slice(0, 32), record.credential_id, authorized.digest, currentTime,
       currentTime + RECOVERY_AUTH_TTL_SECONDS, marker),
     db.prepare(
       `INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at)

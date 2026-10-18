@@ -1691,7 +1691,11 @@ test('M05 LOCAL CMS C4: the privileged HTML workspace requires a session and esc
     assert.equal(created.status, 201);
     const authorized = await ctx.run('/local/workspace', 'GET', undefined, session);
     assert.equal(authorized.status, 200);
+    const workspaceCsp = authorized.headers.get('content-security-policy');
+    assert.match(workspaceCsp, /style-src 'nonce-[0-9a-f]{64}'/, 'workspace CSP limits inline styles to its nonce');
     const html = await authorized.text();
+    const styleNonce = /style-src 'nonce-([0-9a-f]{64})'/.exec(workspaceCsp)[1];
+    assert.ok(html.includes('<style nonce="' + styleNonce + '">'), 'CSP and stylesheet nonces match');
     assert.match(html, /Local Owner Workspace/);
     assert.match(html, /primary · [A-Za-z0-9_-]{10}… · active/);
     assert.match(html, /recovery · [A-Za-z0-9_-]{10}… · active/);
@@ -1754,8 +1758,15 @@ test('M05 LOCAL CMS B4: concurrent recovery and emergency claims admit exactly o
       const enrollStatuses = outcomes.map(outcome => outcome.status);
       const enrollBodies = await Promise.all(outcomes.map(outcome =>
         outcome.clone().json().catch(() => ({}))));
-      assert.ok(enrollStatuses.every(status => [201, 403, 409].includes(status)),
-        'enrollment answers are fail-closed: ' + enrollStatuses.join(','));
+      assert.equal(enrollStatuses.filter(status => status === 201).length, 1,
+        'one lost-primary recovery authorization permits exactly one successful enrollment');
+      assert.equal(enrollStatuses.filter(status => status === 403 || status === 409).length, 1,
+        'the second lost-primary contender is denied, not recast as ordinary rotation');
+      const survivingPrimary = (await fresh.db.prepare(
+        "SELECT credential_id FROM cms_credentials WHERE device_kind='primary' AND revoked_at IS NULL"
+      ).first()).credential_id;
+      assert.equal(survivingPrimary, contenders[enrollStatuses.indexOf(201)].authenticator.id,
+        'the first winning primary cannot be displaced by the losing claimant');
       assert.equal(enrollBodies.filter(body => body.usedRecoveryAuthorization === true).length, 1,
         'exactly one claim consumes the single-use recovery authorization');
       assert.equal(await countRows(fresh.db, 'cms_credentials', "device_kind='primary' AND revoked_at IS NULL"), 1,
@@ -1763,6 +1774,8 @@ test('M05 LOCAL CMS B4: concurrent recovery and emergency claims admit exactly o
       assert.equal(await countRows(fresh.db, 'cms_recovery_authorizations', 'used_at IS NOT NULL'), 1);
       assert.equal(await countRows(fresh.db, 'cms_audit_events', "event='recovery_used'"), 1,
         'the audit trail records exactly one recovery use');
+      assert.equal(await countRows(fresh.db, 'cms_audit_events', "event='device_enrolled'"), 1,
+        'a lost-primary recovery may enroll only one new primary');
       assert.equal(await countRows(fresh.db, 'cms_owner'), 1);
     } finally { await fresh.mf.dispose(); }
   } finally { await ctx.mf.dispose(); }
@@ -2046,6 +2059,8 @@ test('M05 LOCAL CMS E1: first-Owner bootstrap, recovery device and lost-primary 
       assert.equal(workspaceResponse.status(), 200, 'the privileged HTML page serves the authenticated Owner');
       assert.match(await workspaceTab.locator('#workspace-devices').innerText(), /primary .* active/);
       assert.match(await workspaceTab.title(), /Local Owner Workspace/);
+      assert.equal(await workspaceTab.evaluate(() => getComputedStyle(document.body).backgroundColor),
+        'rgb(13, 24, 21)', 'the privileged workspace stylesheet is applied under CSP');
     } finally { await workspaceTab.close(); }
     await page.locator('#enroll-recovery').click();
     await waitForMessage('Recovery passkey registered locally (recovery).');

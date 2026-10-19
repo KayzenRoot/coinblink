@@ -49,9 +49,13 @@ function classifyTrigger(name, reasons) {
 }
 function classifyMapping(key, value, reasons) {
   classifyTrigger(key, reasons);
+  // GitHub Actions documented GITHUB_TOKEN permissions, including status writes.
+  // New scopes must be reviewed when GitHub adds them.
   const writeScopes = new Set([
-    'contents', 'actions', 'checks', 'deployments', 'id-token',
-    'issues', 'pull-requests', 'workflows', 'packages', 'security-events',
+    'actions', 'artifact-metadata', 'attestations', 'checks', 'code-quality',
+    'contents', 'copilot-requests', 'deployments', 'id-token', 'issues',
+    'discussions', 'packages', 'pages', 'pull-requests', 'security-events',
+    'statuses', 'workflows',
   ]);
   if ((key === 'permissions' && (value === 'write-all' || value.includes('write'))) ||
       (writeScopes.has(key) && value === 'write')) {

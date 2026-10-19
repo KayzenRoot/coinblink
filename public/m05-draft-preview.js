@@ -216,7 +216,18 @@ if (typeof document !== "undefined") {
     const importInput = root.querySelector("[data-m05-import]");
     const importStatus = root.querySelector("[data-m05-import-status]");
     const exportButton = root.querySelector("[data-m05-export]");
+    const newDraftButton = root.querySelector("[data-m05-new]");
+    const saveState = root.querySelector("[data-m05-save-state]");
     const hint = root.querySelector("[data-m05-draft-hint]");
+    const snapshot = () => JSON.stringify(Object.values(fields).map(field => field.value));
+    let lastExportedOrImported = snapshot();
+    const hasUnexportedEdits = () => snapshot() !== lastExportedOrImported;
+    const replaceFields = draft => {
+      for (const [key, field] of Object.entries(fields)) {
+        field.value = draft[key] ?? "";
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    };
     const read = () => prepareLocalDraft(Object.fromEntries(
       Object.entries(fields).map(([key, field]) => [key, field.value]),
     ));
@@ -232,8 +243,26 @@ if (typeof document !== "undefined") {
         : "Complete title, summary (20+), body (40+) and a valid HTTPS source URL to export.";
       hint.textContent = draft.ready ? "Export creates a local file. No server receives your draft." : "";
       exportButton.disabled = !draft.ready;
+      newDraftButton.disabled = Object.values(fields).every(field => field.value === "");
+      saveState.textContent = hasUnexportedEdits()
+        ? "Unexported changes. Export Markdown before leaving this page."
+        : "No edits since last import or export request.";
     };
     Object.values(fields).forEach((field) => field.addEventListener("input", refresh));
+    window.addEventListener("beforeunload", event => {
+      if (!hasUnexportedEdits()) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+    newDraftButton.addEventListener("click", () => {
+      if (hasUnexportedEdits() && !window.confirm("Discard unexported changes and start a new local draft?")) return;
+      replaceFields({ title: "", author: "", summary: "", body: "", source: "" });
+      lastExportedOrImported = snapshot();
+      importStatus.textContent = "";
+      hint.textContent = "New empty local draft. Nothing was stored or published.";
+      refresh();
+      fields.title.focus();
+    });
     importInput.addEventListener("change", async () => {
       const file = importInput.files?.[0];
       importInput.value = "";
@@ -244,9 +273,12 @@ if (typeof document !== "undefined") {
       }
       try {
         const restored = parseLocalDraftMarkdown(await file.text());
-        for (const [key, field] of Object.entries(fields)) {
-          field.value = restored[key];
+        if (hasUnexportedEdits() && !window.confirm("Replace unexported changes with the imported local draft?")) {
+          importStatus.textContent = "Import canceled. Your current unexported text was kept.";
+          return;
         }
+        replaceFields(restored);
+        lastExportedOrImported = snapshot();
         refresh();
         importStatus.textContent = "Draft restored from this file in your browser only. Nothing was uploaded.";
         fields.title.focus();
@@ -266,6 +298,8 @@ if (typeof document !== "undefined") {
       download.click();
       download.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      lastExportedOrImported = snapshot();
+      refresh();
       hint.textContent = "Local Markdown export requested. Nothing was published or saved online.";
     });
     refresh();

@@ -35,7 +35,9 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
       <textarea id="m05-draft-body" data-m05-draft-body maxlength="12000" rows="8" placeholder="Write your original text and identify which claims still require verification."></textarea>
       <div class="m05-draft-actions">
         <button type="button" data-m05-export disabled>Export Markdown (.md)</button>
+        <button type="button" data-m05-new disabled>Start a new draft</button>
         <span data-m05-draft-hint role="status" aria-live="polite"></span>
+        <span data-m05-save-state role="status" aria-live="polite">No unsaved edits.</span>
       </div>
 
     </div>
@@ -212,6 +214,7 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   .m05-draft-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:10px; }
   .m05-draft-actions button { min-height:44px; border:0; border-radius:6px; padding:10px 16px; color:#10200e; background:#b8f34b; font:inherit; font-size:12px; font-weight:800; cursor:pointer; }
   .m05-draft-actions button:disabled { opacity:.55; cursor:not-allowed; }
+  .m05-draft-actions [data-m05-new] { border:1px solid #668566; background:transparent; color:#d4e9cb; }
   .m05-draft-actions span { color:#a1afa5; font-size:11px; }
   .m05-draft-preview { min-width:0; border:1px solid #304535; border-radius:8px; background:#0c1510; padding:clamp(15px,2vw,21px); overflow-wrap:anywhere; }
   .m05-draft-preview h3 { margin:12px 0 5px; font-size:clamp(19px,2vw,26px); line-height:1.25; }

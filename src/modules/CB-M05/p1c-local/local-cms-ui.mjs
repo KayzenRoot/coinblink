@@ -1,10 +1,11 @@
 // Dedicated LOCAL D1 fixture UI. Never imported by public Astro routes.
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
-import { createLocalOwnerDashboard, createLocalEditorialActivity } from '../../CB-M06/owner-dashboard.mjs';
+import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
+  const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -29,6 +30,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     revisedListed: document.getElementById('m06-revised-listed'),
     lastEdited: document.getElementById('m06-last-edited'),
     recentActivity: document.getElementById('m06-recent-activity'),
+    reviewFilter: document.getElementById('m06-review-filter'),
+    reviewList: document.getElementById('m06-review-list'),
+    reviewCount: document.getElementById('m06-review-count'),
+    reviewScope: document.getElementById('m06-review-scope'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -48,6 +53,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   };
   let csrf = null;
   let sessionEpoch = 0;
+  let readGeneration = 0;
+  let lastReviewQueue = null;
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -108,8 +115,34 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.revisedListed.textContent = 'Unavailable';
     ui.lastEdited.textContent = 'Unavailable';
     ui.recentActivity.replaceChildren();
+    lastReviewQueue = null;
+    ui.reviewList.replaceChildren();
+    ui.reviewCount.textContent = 'UNAVAILABLE';
+    ui.reviewScope.textContent = 'UNAVAILABLE';
   }
-  function showLocalDashboard(snapshot, activity) {
+  function renderLocalReviewQueue() {
+    ui.reviewList.replaceChildren();
+    if (!lastReviewQueue || !csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    const filter = ui.reviewFilter.value;
+    let shown = 0;
+    for (const row of lastReviewQueue.rows) {
+      if (filter === 'missing-credit' && row.creditStatus !== 'CREDIT_MISSING') continue;
+      if (filter === 'revised' && row.revision <= 1) continue;
+      const li = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = row.title + ' · rev ' + row.revision;
+      button.addEventListener('click', () => openLocalDraft(row));
+      const labels = document.createElement('span');
+      labels.textContent = ' · ' + row.creditStatus + ' · ' + row.sourceStatus + ' · ' + row.publishingStatus;
+      li.append(button, labels);
+      ui.reviewList.append(li);
+      shown++;
+    }
+    ui.reviewCount.textContent = String(shown) + ' of ' + lastReviewQueue.totalListed + ' listed LOCAL drafts';
+    ui.reviewScope.textContent = lastReviewQueue.listingScope;
+  }
+  function showLocalDashboard(snapshot, activity, reviewQueue) {
     if (!csrf || ui.form.hidden) return hideLocalDashboard();
     ui.listedDrafts.textContent = String(snapshot.listedDraftsCount);
     ui.measuredAt.textContent = snapshot.asOfUTC;
@@ -127,11 +160,15 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       li.append(button);
       ui.recentActivity.append(li);
     }
+    lastReviewQueue = reviewQueue;
     ui.dashboard.hidden = false;
+    renderLocalReviewQueue();
   }
   function clearLocalSession() {
     sessionEpoch += 1;
+    readGeneration += 1;
     hideLocalDashboard();
+    ui.reviewFilter.value = 'all';
     csrf = null;
     savedSnapshot = null;
     ui.form.reset();
@@ -278,23 +315,28 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   async function refresh() {
     const epoch = sessionEpoch;
+    const generation = ++readGeneration;
     hideLocalDashboard();
     if (csrf && !ui.form.hidden) ui.status.textContent = 'LOADING local editorial activity';
     try {
       const { drafts } = await api('/local/articles');
-      if (epoch !== sessionEpoch || !csrf || ui.form.hidden) return;
+      if (epoch !== sessionEpoch || generation !== readGeneration || !csrf || ui.form.hidden) return;
       const snapshot = createLocalOwnerDashboard(drafts, new Date().toISOString());
       const activity = createLocalEditorialActivity(drafts);
+      const reviewQueue = createLocalReviewQueue(drafts);
+      if (epoch !== sessionEpoch || generation !== readGeneration || !csrf || ui.form.hidden) return;
       lastDrafts = drafts;
       renderDraftList();
-      showLocalDashboard(snapshot, activity);
+      showLocalDashboard(snapshot, activity, reviewQueue);
       ui.status.textContent = 'Local test session active';
     } catch (error) {
-      // A rejected or malformed list must never leave stale metrics visible.
+      // Ignore superseded reads, never revoke a freshly re-authenticated session.
+      if (epoch !== sessionEpoch || generation !== readGeneration) return;
       clearLocalSession();
       throw error;
     }
   }
+  ui.reviewFilter.addEventListener('change', renderLocalReviewQueue);
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
     renderDraftPreview();
@@ -503,7 +545,8 @@ label{display:block;margin:12px 0;font-weight:600}
 input,textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;background:#13211a;border:1px solid #768977;border-radius:5px;padding:10px;color:#fff;font:inherit}
 textarea{min-height:145px}
 button{background:#bde874;color:#14210d;border:0;border-radius:5px;padding:10px 15px;margin:5px 5px 5px 0;cursor:pointer;font:inherit}
-button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #f7f6a5}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #f7f6a5}
+select{display:block;max-width:100%;margin:6px 0 12px;padding:10px;border:1px solid #768977;border-radius:5px;background:#13211a;color:#fff;font:inherit}
 button:disabled{opacity:.45}
 ul{padding-left:20px}li{margin:6px 0}
 .draft-preview{margin-top:18px;padding:14px;border:1px solid #768977;border-radius:9px;background:#172820}
@@ -566,6 +609,18 @@ footer{padding:24px 0;color:#b9c8bd}
 <p>Latest listed edit (UTC): <time id="m06-last-edited">Unavailable</time></p>
 <h4>Five most recently edited LOCAL drafts (at most)</h4>
 <ol id="m06-recent-activity" aria-label="Recent private LOCAL draft activity"></ol>
+</section>
+<section id="m06-review" aria-labelledby="m06-review-title">
+<h3 id="m06-review-title">LOCAL editorial review queue · read-only</h3>
+<p>Only listed test drafts. An HTTPS source URL does not verify the publisher, licence or reuse rights. All sources require independent verification; nothing is approved for publication.</p>
+<label for="m06-review-filter">Filter listed LOCAL drafts</label>
+<select id="m06-review-filter">
+<option value="all">All listed drafts</option>
+<option value="missing-credit">Missing author credit</option>
+<option value="revised">Revised drafts (revision above 1)</option>
+</select>
+<p role="status" aria-live="polite">Visible: <strong id="m06-review-count">UNAVAILABLE</strong> · scope: <strong id="m06-review-scope">UNAVAILABLE</strong></p>
+<ul id="m06-review-list" aria-label="Private LOCAL editorial review queue"></ul>
 </section>
 </section>
 <section aria-label="Draft editor">

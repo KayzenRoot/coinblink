@@ -173,12 +173,12 @@ test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:
     const button = page.locator('#m07-week-board .m07-week-open').first();
     assert.equal(await button.count(), 1);
 
-    await page.route('**/local/articles/*', route =>
+    await page.route('**/admin/articles/*', route =>
       route.fulfill({ status:404, contentType:'application/json', body:'{"error":"missing"}' }));
     await button.click();
     await page.getByText('LOCAL draft unavailable; refresh your list').waitFor({ timeout:10000 });
     assert.equal(await page.locator('[name="body"]').inputValue(), '');
-    await page.unroute('**/local/articles/*');
+    await page.unroute('**/admin/articles/*');
 
     const staleElement = await button.elementHandle();
     await page.locator('#refresh').click();
@@ -188,7 +188,7 @@ test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:
     assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
 
     await addConcept(page, 1);
-    await page.route('**/local/articles/*', route =>
+    await page.route('**/admin/articles/*', route =>
       route.fulfill({ status:401, contentType:'application/json', body:'{"error":"unauthorized"}' }));
     await page.locator('#m07-week-board .m07-week-open').click();
     await page.getByText('Not authenticated', { exact:true }).waitFor({ timeout:20000 });

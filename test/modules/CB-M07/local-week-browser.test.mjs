@@ -138,7 +138,6 @@ test('M07-E: weekly navigation opens only the authorized draft; keyboard and uns
     await page.keyboard.press('Enter');
     await page.waitForFunction(() =>
       document.querySelector('[name="title"]').value === 'First fictional weekly destination');
-    assert.equal(await page.locator('#draft-id').count() >= 0, true);
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('name')), 'title');
 
     await page.locator('[name="title"]').fill('PRIVATE UNSAVED TITLE');

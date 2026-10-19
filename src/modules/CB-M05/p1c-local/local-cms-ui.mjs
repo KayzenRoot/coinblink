@@ -1,7 +1,9 @@
 // Dedicated LOCAL D1 fixture UI. Never imported by public Astro routes.
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
+import { createLocalOwnerDashboard } from '../../CB-M06/owner-dashboard.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
+  const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -18,6 +20,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     previewSource: document.getElementById('draft-preview-source'),
     unsaved: document.getElementById('unsaved-draft-status'),
     status: document.getElementById('session-status'),
+    dashboard: document.getElementById('m06-dashboard'),
+    listedDrafts: document.getElementById('m06-listed-drafts'),
+    measuredAt: document.getElementById('m06-measured-at'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -36,6 +41,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     emergencyToken: document.getElementById('emergency-token'),
   };
   let csrf = null;
+  let sessionEpoch = 0;
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -87,7 +93,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.previewBody.textContent = body;
     ui.previewSource.textContent = source;
   }
+  function hideLocalDashboard() {
+    ui.dashboard.hidden = true;
+    ui.listedDrafts.textContent = 'Unavailable';
+    ui.measuredAt.textContent = 'Unavailable';
+  }
+  function showLocalDashboard(snapshot) {
+    if (!csrf || ui.form.hidden) return hideLocalDashboard();
+    ui.listedDrafts.textContent = String(snapshot.listedDraftsCount);
+    ui.measuredAt.textContent = snapshot.asOfUTC;
+    ui.dashboard.hidden = false;
+  }
   function clearLocalSession() {
+    sessionEpoch += 1;
+    hideLocalDashboard();
     csrf = null;
     savedSnapshot = null;
     ui.form.reset();
@@ -228,10 +247,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   async function refresh() {
-    const { drafts } = await api('/local/articles');
-    lastDrafts = drafts;
-    renderDraftList();
-    ui.status.textContent = 'Local test session active';
+    const epoch = sessionEpoch;
+    try {
+      const { drafts } = await api('/local/articles');
+      if (epoch !== sessionEpoch || !csrf || ui.form.hidden) return;
+      const snapshot = createLocalOwnerDashboard(drafts, new Date().toISOString());
+      lastDrafts = drafts;
+      renderDraftList();
+      showLocalDashboard(snapshot);
+      ui.status.textContent = 'Local test session active';
+    } catch (error) {
+      // A rejected or malformed list must never leave stale metrics visible.
+      clearLocalSession();
+      throw error;
+    }
   }
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
@@ -445,7 +474,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 button:disabled{opacity:.45}
 ul{padding-left:20px}li{margin:6px 0}
 .draft-preview{margin-top:18px;padding:14px;border:1px solid #768977;border-radius:9px;background:#172820}
-.draft-preview p{white-space:pre-wrap;overflow-wrap:anywhere}
+ .draft-preview p{white-space:pre-wrap;overflow-wrap:anywhere}
+.m06-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
+.m06-card{border:1px solid #536b4c;border-radius:8px;padding:12px;background:#172820}
+.m06-card h3{margin:0 0 6px;font-size:1rem}
+.m06-card strong{display:block;color:#c6f29c;overflow-wrap:anywhere}
+.m06-card small{color:#d7c68f}
 footer{padding:24px 0;color:#b9c8bd}
 </style>
 </head><body>
@@ -480,6 +514,18 @@ footer{padding:24px 0;color:#b9c8bd}
 <button id="emergency" type="button">Recover with emergency authorization</button>
 </fieldset>
 <p id="message" role="status" aria-live="polite">Only disposable local data is permitted.</p>
+<section id="m06-dashboard" aria-label="Local Owner dashboard" hidden>
+<h2>M06 · LOCAL Owner command center · read-only</h2>
+<p>Visible only after an authorized test-passkey session and a successful LOCAL D1 draft read. No production analytics, publishing, external services or new API.</p>
+<div class="m06-grid">
+<div class="m06-card"><h3>Listed drafts (up to 100)</h3><strong id="m06-listed-drafts">Unavailable</strong><small>MEASURED_LOCAL · CMS_D1_LOCAL</small></div>
+<div class="m06-card"><h3>Published news</h3><strong>NOT_CONNECTED</strong><small>No verified publication feed</small></div>
+<div class="m06-card"><h3>Source reuse rights</h3><strong>NOT_CLEARED</strong><small>No licensed ingestion</small></div>
+<div class="m06-card"><h3>Market quotes</h3><strong>UNAVAILABLE</strong><small>No live market provider</small></div>
+<div class="m06-card"><h3>Publishing</h3><strong>DISABLED</strong><small>Read-only local test</small></div>
+</div>
+<p>Observed after last authorized read (UTC): <time id="m06-measured-at">Unavailable</time></p>
+</section>
 <section aria-label="Draft editor">
 <h2>Drafts</h2><button id="refresh" type="button" hidden>Refresh drafts</button>
 <label for="draft-search">Filter local drafts by headline

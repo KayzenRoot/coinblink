@@ -16,8 +16,12 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#credential').inputValue(), preview.primaryId);
     const before = await page.evaluate(() => fetch('/admin/articles').then(response => response.status));
     assert.equal(before, 401, 'private draft listing must be denied without an Owner session');
+    assert.equal(await page.locator('#m06-dashboard').isVisible(), false, 'M06 hidden before synthetic Owner login');
     await page.locator('#login').click();
     await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    assert.equal(await page.locator('#m06-dashboard').isVisible(), true);
+    assert.equal(await page.locator('#m06-listed-drafts').innerText(), '0', 'empty local D1 is legitimately measured');
+    assert.match(await page.locator('#m06-measured-at').innerText(), /Z$/);
     await page.locator('[name="title"]').fill('LOCAL admin test draft');
     await page.locator('[name="summary"]').fill('Synthetic test draft never published');
     await page.locator('[name="body"]').fill('Private test body stored in local D1');
@@ -36,6 +40,7 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
     assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 1);
+    assert.equal(await page.locator('#m06-listed-drafts').innerText(), '1', 'M06 count reflects authenticated local list');
     const response = await page.evaluate(async () => {
       const r = await fetch('/admin/articles', { credentials: 'same-origin' });
       return { status: r.status, body: await r.json() };
@@ -46,6 +51,9 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     await page.locator('#logout').click();
     await page.getByText('Not authenticated').waitFor({ timeout: 20_000 });
     assert.equal(await page.locator('#draft-preview').isVisible(), false, 'logout must hide private preview');
+    assert.equal(await page.locator('#m06-dashboard').isVisible(), false, 'dashboard hidden on logout');
+    assert.equal(await page.locator('#m06-listed-drafts').textContent(), 'Unavailable');
+    assert.equal(await page.locator('#m06-measured-at').textContent(), 'Unavailable');
     assert.equal(await page.locator('#draft-preview-body').textContent(), '', 'logout must clear draft body');
     assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0,
@@ -62,6 +70,7 @@ for (const admin of [false, true]) {
       const page = preview.page;
       await page.locator('#login').click();
       await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+      assert.equal(await page.locator('#m06-dashboard').isVisible(), true);
       await page.locator('[name="title"]').fill('Sensitive never-published local draft');
       await page.locator('[name="summary"]').fill('Draft content should vanish after a revoked session');
       await page.locator('[name="body"]').fill('PRIVATE_SYNTHETIC_DRAFT_BODY_DO_NOT_EXPOSE');
@@ -78,6 +87,8 @@ for (const admin of [false, true]) {
         'private preview must be hidden after a server-side 401');
       assert.equal(await page.locator('#draft-preview-body').textContent(), '',
         'private draft body must be scrubbed after a server-side 401');
+      assert.equal(await page.locator('#m06-dashboard').isVisible(), false, 'dashboard must hide after 401 revocation');
+      assert.equal(await page.locator('#m06-listed-drafts').textContent(), 'Unavailable');
       assert.equal(await page.locator('[name="body"]').inputValue(), '',
         'stale editable private draft must not remain in the form');
       assert.equal(await page.locator('#refresh').isVisible(), false,

@@ -11,10 +11,10 @@
  * @throws {TypeError} When an idea or filter violates the LOCAL synthetic contract.
  */
 export function createLocalWeeklyBoard(ideas, channelFilter = 'all', timeZone = 'America/Sao_Paulo') {
-  const channels = ['x', 'instagram', 'tiktok'];
-  const zones = ['UTC', 'America/Sao_Paulo', 'America/New_York'];
+  const channels = new Set(['x', 'instagram', 'tiktok']);
+  const zones = new Set(['UTC', 'America/Sao_Paulo', 'America/New_York']);
   if (!Array.isArray(ideas) || ideas.length > 20 ||
-      !['all', ...channels].includes(channelFilter) || !zones.includes(timeZone)) {
+      !(channelFilter === 'all' || channels.has(channelFilter)) || !zones.has(timeZone)) {
     throw new TypeError('Invalid LOCAL weekly board arguments');
   }
   const format = new Intl.DateTimeFormat('en-US', {
@@ -50,7 +50,7 @@ export function createLocalWeeklyBoard(ideas, channelFilter = 'all', timeZone = 
         idea.status !== 'PLANNED_CONCEPT_ONLY' || idea.publication !== 'DRAFT_ONLY' ||
         idea.sourceStatus !== 'SOURCE_VERIFICATION_PENDING' || idea.rights !== 'NOT_CLEARED' ||
         !['CREDIT_MISSING', 'CREDIT_PRESENT_UNVERIFIED'].includes(idea.creditStatus) ||
-        !channels.includes(idea.channel) || !zones.includes(idea.timeZone) ||
+        !channels.has(idea.channel) || !zones.has(idea.timeZone) ||
         typeof idea.draftId !== 'string' || !/^[a-f0-9-]{36}$/i.test(idea.draftId) ||
         typeof idea.title !== 'string' || idea.title.length < 1 || idea.title.length > 140 ||
         typeof idea.utcISO !== 'string' || !/^20\d{2}-\d\d-\d\dT\d\d:\d\d:00\.000Z$/.test(idea.utcISO) ||

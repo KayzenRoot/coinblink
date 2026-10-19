@@ -291,20 +291,20 @@ if (sourceHeading && sourceCards.length) {
   search.autocomplete = "off";
   search.maxLength = 80;
   search.placeholder = isPortuguese ? "Nome, assunto ou domínio" : "Name, topic or domain";
-  search.setAttribute("data-official-source-query", "");
+  search.dataset.officialSourceQuery = "";
   label.append(search);
 
   const clear = document.createElement("button");
   clear.type = "button";
   clear.textContent = isPortuguese ? "Limpar busca" : "Clear search";
-  clear.setAttribute("data-official-source-reset", "");
+  clear.dataset.officialSourceReset = "";
   clear.hidden = true;
 
   const status = document.createElement("p");
   status.className = "official-sources__filter-status";
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  status.setAttribute("data-official-source-status", "");
+  status.dataset.officialSourceStatus = "";
 
   const localeForFilter = isPortuguese ? "pt-BR" : "en";
   function describeCount(visibleCount) {

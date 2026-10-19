@@ -1,0 +1,48 @@
+name: CoinBlink M01-M05 browser regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m01-m05-browser.yml"
+      - "src/modules/CB-M01/**"
+      - "src/modules/CB-M05/**"
+      - "public/home-demo.js"
+      - "public/m01-local-draft-preview.js"
+      - "public/m05-draft-preview.js"
+      - "e2e/m01-*.spec.mjs"
+      - "e2e/m05-*.spec.mjs"
+      - "playwright.config.mjs"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m01-m05-browser-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    name: M01-M05 Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install
+        run: npm ci --ignore-scripts
+      - name: Chromium and operating system dependencies
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Build
+        run: npm run build
+      - name: M01 source filtering and M01-M05 draft preview
+        run: ./node_modules/.bin/playwright test e2e/m01-official-sources-filter.spec.mjs e2e/m01-m05-local-draft-preview.spec.mjs e2e/m05-editorial-demo.spec.mjs e2e/m05-admin-prod-guard.spec.mjs

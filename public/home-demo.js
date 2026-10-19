@@ -268,3 +268,80 @@ document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
     ? "Apenas prévia. Nenhum e-mail foi enviado ou armazenado."
     : "Preview only. No email was sent or stored.";
 });
+
+
+// M01 P2: progressive-enhancement directory search. It never imports publisher
+// content, makes network requests, stores a query or treats a publisher as a LIVE feed.
+// On no-JS browsers the original allowlisted publisher links remain visible.
+const sourceDesk = document.querySelector(".official-sources");
+const sourceCards = [...(sourceDesk?.querySelectorAll("[data-official-source]") ?? [])];
+const sourceHeading = sourceDesk?.querySelector(".official-sources__heading");
+if (sourceHeading && sourceCards.length) {
+  const controls = document.createElement("div");
+  controls.className = "official-sources__filter";
+  controls.setAttribute("role", "search");
+  controls.setAttribute("aria-label", isPortuguese ? "Filtrar fontes oficiais" : "Filter official publishers");
+
+  const label = document.createElement("label");
+  label.setAttribute("for", "m01-official-source-query");
+  label.textContent = isPortuguese ? "Pesquisar fontes oficiais" : "Search official publishers";
+  const search = document.createElement("input");
+  search.id = "m01-official-source-query";
+  search.type = "search";
+  search.autocomplete = "off";
+  search.maxLength = 80;
+  search.placeholder = isPortuguese ? "Nome, assunto ou domínio" : "Name, topic or domain";
+  search.dataset.officialSourceQuery = "";
+  label.append(search);
+
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.textContent = isPortuguese ? "Limpar busca" : "Clear search";
+  clear.dataset.officialSourceReset = "";
+  clear.hidden = true;
+
+  const status = document.createElement("p");
+  status.className = "official-sources__filter-status";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.dataset.officialSourceStatus = "";
+
+  const localeForFilter = isPortuguese ? "pt-BR" : "en";
+  function describeCount(visibleCount) {
+    if (visibleCount === 0) {
+      return isPortuguese
+        ? "Nenhuma fonte oficial corresponde à busca."
+        : "No official publishers match this search.";
+    }
+    if (isPortuguese) {
+      return visibleCount + " de " + sourceCards.length + " fontes oficiais exibidas.";
+    }
+    return visibleCount + " of " + sourceCards.length + " official publishers shown.";
+  }
+  const refresh = () => {
+    const query = search.value.trim().toLocaleLowerCase(localeForFilter);
+    let visibleCount = 0;
+    for (const card of sourceCards) {
+      const match = !query || (card.textContent || "").toLocaleLowerCase(localeForFilter).includes(query);
+      card.hidden = !match;
+      if (match) visibleCount++;
+    }
+    clear.hidden = !query;
+    status.textContent = describeCount(visibleCount);
+  };
+  clear.addEventListener("click", () => {
+    search.value = "";
+    refresh();
+    search.focus();
+  });
+  search.addEventListener("input", refresh);
+  search.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !search.value) return;
+    event.preventDefault();
+    search.value = "";
+    refresh();
+  });
+  controls.append(label, clear, status);
+  sourceHeading.after(controls);
+  refresh();
+}

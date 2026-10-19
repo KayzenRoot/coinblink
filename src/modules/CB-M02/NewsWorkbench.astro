@@ -25,7 +25,7 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
       <input type="search" maxlength="80" data-m02-search placeholder={copy.searchHint} autocomplete="off" />
     </label>
     <label>{copy.category}
-      <select data-m02-category>
+      <select data-m02-category-select>
         {categories.map(category => <option value={category}>{copy[category]}</option>)}
       </select>
     </label>

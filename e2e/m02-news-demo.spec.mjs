@@ -21,9 +21,9 @@ for (const [locale, title, sample, query] of [
     await page.locator("[data-m02-search]").fill(query);
     await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(1);
     await page.locator("[data-m02-search]").fill("");
-    await page.locator("[data-m02-category]").selectOption("protocol");
+    await page.locator("[data-m02-category-select]").selectOption("protocol");
     await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(1);
-    await page.locator("[data-m02-category]").selectOption("all");
+    await page.locator("[data-m02-category-select]").selectOption("all");
     await page.getByRole("link", { name: /Read fictional example|Ler exemplo fictício/u }).first().click();
     await expect(page).toHaveURL(new RegExp("/" + locale + "/news/demo-wallet-safety$"));
     await expect(page.getByRole("heading", { name: sample })).toBeVisible();

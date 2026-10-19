@@ -3,11 +3,13 @@
 // No real Owner provisioning or production secrets are supported here.
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
+import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
+  const createLocalSocialCard = (${createLocalSocialCard.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -44,6 +46,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     socialPreviewText: document.getElementById('m07-preview-text'),
     socialStatus: document.getElementById('m07-status'),
     socialRights: document.getElementById('m07-rights'),
+    socialViewport: document.getElementById('m07-viewport'),
+    socialCard: document.getElementById('m07-card'),
+    socialCardHeading: document.getElementById('m07-card-heading'),
+    socialCardFormat: document.getElementById('m07-card-format'),
+    socialCardCopy: document.getElementById('m07-card-copy'),
+    socialCardLabels: document.getElementById('m07-card-labels'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -121,11 +129,19 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialPreviewText.textContent = '';
     ui.socialRights.textContent = 'UNAVAILABLE';
     ui.socialStatus.textContent = 'No LOCAL social preview';
+    ui.socialCard.hidden = true;
+    ui.socialCardHeading.textContent = '';
+    ui.socialCardFormat.textContent = '';
+    ui.socialCardCopy.textContent = '';
+    ui.socialCardLabels.textContent = '';
+    ui.socialCard.removeAttribute('data-channel');
+    ui.socialCard.removeAttribute('data-viewport');
   }
   function scrubLocalSocialStudio() {
     clearLocalSocialPreview();
     ui.socialDraft.replaceChildren();
     ui.socialChannel.value = 'x';
+    ui.socialViewport.value = 'mobile';
   }
   function renderLocalSocialChoices() {
     ui.socialDraft.replaceChildren();
@@ -376,6 +392,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.reviewFilter.addEventListener('change', renderLocalReviewQueue);
   ui.socialDraft.addEventListener('change', clearLocalSocialPreview);
   ui.socialChannel.addEventListener('change', clearLocalSocialPreview);
+  ui.socialViewport.addEventListener('change', () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return clearLocalSocialPreview();
+    if (!ui.socialCard.hidden && ['mobile','desktop'].includes(ui.socialViewport.value)) {
+      ui.socialCard.dataset.viewport = ui.socialViewport.value;
+    }
+  });
   ui.socialClear.addEventListener('click', clearLocalSocialPreview);
   ui.socialGenerate.addEventListener('click', () => {
     clearLocalSocialPreview();
@@ -387,7 +409,16 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
     try {
       const concept = createLocalSocialPreview(draft, ui.socialChannel.value);
+      const card = createLocalSocialCard(concept);
       if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      ui.socialCard.dataset.channel = card.channel;
+      ui.socialCard.dataset.viewport = ['mobile','desktop'].includes(ui.socialViewport.value)
+        ? ui.socialViewport.value : 'mobile';
+      ui.socialCardHeading.textContent = card.heading;
+      ui.socialCardFormat.textContent = card.formatLabel;
+      ui.socialCardCopy.textContent = card.text;
+      ui.socialCardLabels.textContent = card.labels;
+      ui.socialCard.hidden = false;
       ui.socialPreviewText.textContent = concept.text;
       ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
         ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
@@ -618,6 +649,23 @@ ul{padding-left:20px}li{margin:6px 0}
 .m06-card strong{display:block;color:#c6f29c;overflow-wrap:anywhere}
 .m06-card small{color:#d7c68f}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
+.m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}
+.m07-card{box-sizing:border-box;min-width:0;width:100%;max-width:600px;border-radius:16px;border:2px solid #81988e;background:#142821;color:#f6f8f5;padding:20px;overflow-wrap:anywhere}
+.m07-card[hidden]{display:none}
+.m07-card[data-viewport="mobile"]{max-width:345px}
+.m07-card[data-viewport="desktop"]{max-width:600px}
+.m07-card p{color:inherit}
+.m07-card[data-channel="x"]{border-radius:14px;background:#101719;border-color:#94a5a4}
+.m07-card[data-channel="instagram"]{border-radius:22px;background:#302132;border-color:#c19ab9}
+.m07-card[data-channel="tiktok"]{border-radius:10px;background:#182633;border-color:#8dc0ce;max-width:425px}
+.m07-card[data-channel="tiktok"][data-viewport="mobile"]{max-width:300px}
+.m07-card-top{font-size:.85rem;letter-spacing:.03em;font-weight:700}
+.m07-card-copy{white-space:pre-wrap;overflow-wrap:anywhere;margin:14px 0;padding:12px;border-left:3px solid #bde874}
+.m07-card[data-channel="instagram"] .m07-card-copy{border-left-color:#e7b9e0}
+.m07-card[data-channel="tiktok"] .m07-card-copy{border-left-color:#92dff0}
+.m07-card-labels{font-size:.79rem;line-height:1.65;border-top:1px solid #b9c8bd;padding-top:12px;overflow-wrap:anywhere}
+.m07-card-note{font-size:.85rem;font-weight:700}
+@media (max-width:430px){.m07-card{padding:14px}.m07-stage{padding:8px 0}}
 footer{padding:24px 0;color:#b9c8bd}
 </style>
 </head><body>
@@ -695,11 +743,27 @@ footer{padding:24px 0;color:#b9c8bd}
 <option value="instagram">Instagram concept</option>
 <option value="tiktok">TikTok storyboard text</option>
 </select>
-<button id="m07-generate" type="button">Generate LOCAL text preview</button>
+<label for="m07-viewport">Illustrative preview size (not a provider specification)</label>
+<select id="m07-viewport">
+<option value="mobile">Mobile concept</option>
+<option value="desktop">Desktop concept</option>
+</select>
+<button id="m07-generate" type="button">Generate LOCAL preview</button>
 <button id="m07-clear" type="button">Clear LOCAL preview</button>
 <p id="m07-status" role="status" aria-live="polite">No LOCAL social preview</p>
 <section id="m07-preview" aria-label="Private LOCAL social preview" hidden>
 <p id="m07-rights">UNAVAILABLE</p>
+<div class="m07-stage">
+<article id="m07-card" class="m07-card" aria-labelledby="m07-card-heading" hidden>
+<p class="m07-card-top">UNOFFICIAL · LOCAL DEMO · NOT A REAL SOCIAL POST</p>
+<h4 id="m07-card-heading"></h4>
+<p id="m07-card-format"></p>
+<p id="m07-card-copy" class="m07-card-copy"></p>
+<p id="m07-card-labels" class="m07-card-labels"></p>
+<p class="m07-card-note">NO POSTING · NO MEDIA UPLOAD · NO PROVIDER AUTH</p>
+</article>
+</div>
+<h4>Text-only accessible version</h4>
 <pre id="m07-preview-text" class="m07-concept"></pre>
 <p>NO POSTING · NO MEDIA UPLOAD · NO PROVIDER AUTH · NO PUBLICATION</p>
 </section>

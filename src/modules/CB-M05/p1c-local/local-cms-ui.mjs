@@ -4,12 +4,15 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
+import { createLocalCalendarIdea, addLocalCalendarIdea } from '../../CB-M07/local-calendar.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
+  const addLocalCalendarIdea = (${addLocalCalendarIdea.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -52,6 +55,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     socialCardFormat: document.getElementById('m07-card-format'),
     socialCardCopy: document.getElementById('m07-card-copy'),
     socialCardLabels: document.getElementById('m07-card-labels'),
+    calendarDate: document.getElementById('m07-calendar-date'),
+    calendarZone: document.getElementById('m07-calendar-zone'),
+    calendarAdd: document.getElementById('m07-calendar-add'),
+    calendarClear: document.getElementById('m07-calendar-clear'),
+    calendarList: document.getElementById('m07-calendar-list'),
+    calendarStatus: document.getElementById('m07-calendar-status'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -73,6 +82,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let sessionEpoch = 0;
   let readGeneration = 0;
   let lastReviewQueue = null;
+  let localCalendarIdeas = [];
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -137,7 +147,44 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialCard.removeAttribute('data-channel');
     ui.socialCard.removeAttribute('data-viewport');
   }
+  function clearLocalCalendar() {
+    localCalendarIdeas = [];
+    ui.calendarList.replaceChildren();
+    ui.calendarStatus.textContent = '0 hypothetical concepts · memory only · NOT SCHEDULED';
+    ui.calendarDate.value = '';
+  }
+  function renderLocalCalendar() {
+    ui.calendarList.replaceChildren();
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    for (const item of localCalendarIdeas) {
+      const li = document.createElement('li');
+      const article = document.createElement('article');
+      article.className = 'm07-calendar-item';
+      const description = document.createElement('p');
+      description.textContent = item.title + ' · ' + item.channel.toUpperCase() + ' · ' +
+        item.hypotheticalLocal + ' ' + item.timeZone + ' · ' + item.utcISO;
+      const labels = document.createElement('small');
+      labels.textContent = item.status + ' · ' + item.publication + ' · ' +
+        item.sourceStatus + ' · ' + item.creditStatus + ' · ' + item.rights;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = 'Remove hypothetical concept';
+      remove.setAttribute('aria-label', 'Remove hypothetical concept for ' + item.title);
+      remove.addEventListener('click', () => {
+        if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+        localCalendarIdeas = localCalendarIdeas.filter(row => row !== item);
+        renderLocalCalendar();
+      });
+      article.append(description, labels, remove);
+      li.append(article);
+      ui.calendarList.append(li);
+    }
+    ui.calendarStatus.textContent = localCalendarIdeas.length +
+      ' hypothetical concepts · memory only · NOT SCHEDULED';
+  }
   function scrubLocalSocialStudio() {
+    clearLocalCalendar();
+    ui.calendarZone.value = 'America/Sao_Paulo';
     clearLocalSocialPreview();
     ui.socialDraft.replaceChildren();
     ui.socialChannel.value = 'x';
@@ -390,6 +437,26 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   ui.reviewFilter.addEventListener('change', renderLocalReviewQueue);
+  ui.calendarAdd.addEventListener('click', () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) {
+      ui.calendarStatus.textContent = 'Select an authorized LOCAL draft first';
+      return;
+    }
+    try {
+      const idea = createLocalCalendarIdea(draft, ui.socialChannel.value,
+        ui.calendarDate.value, ui.calendarZone.value);
+      localCalendarIdeas = addLocalCalendarIdea(localCalendarIdeas, idea);
+      renderLocalCalendar();
+    } catch {
+      ui.calendarStatus.textContent = 'Invalid/duplicate time or limit reached; NOTHING SCHEDULED';
+    }
+  });
+  ui.calendarClear.addEventListener('click', () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    clearLocalCalendar();
+  });
   ui.socialDraft.addEventListener('change', clearLocalSocialPreview);
   ui.socialChannel.addEventListener('change', clearLocalSocialPreview);
   ui.socialViewport.addEventListener('change', () => {
@@ -648,6 +715,12 @@ ul{padding-left:20px}li{margin:6px 0}
 .m06-card h3{margin:0 0 6px;font-size:1rem}
 .m06-card strong{display:block;color:#c6f29c;overflow-wrap:anywhere}
 .m06-card small{color:#d7c68f}
+.m07-calendar-item{max-width:100%;border:1px solid #768977;border-radius:8px;background:#172820;padding:12px;overflow-wrap:anywhere;margin:8px 0}
+.m07-calendar-item p{white-space:pre-wrap;overflow-wrap:anywhere}
+.m07-calendar-item small{display:block;color:#d5e6c6}
+.m07-calendar-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.m07-calendar-controls label{display:block}
+.m07-calendar-controls input,.m07-calendar-controls select{max-width:100%;box-sizing:border-box}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
 .m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}
 .m07-card{box-sizing:border-box;min-width:0;width:100%;max-width:600px;border-radius:16px;border:2px solid #81988e;background:#142821;color:#f6f8f5;padding:20px;overflow-wrap:anywhere}
@@ -766,6 +839,25 @@ footer{padding:24px 0;color:#b9c8bd}
 <h4>Text-only accessible version</h4>
 <pre id="m07-preview-text" class="m07-concept"></pre>
 <p>NO POSTING · NO MEDIA UPLOAD · NO PROVIDER AUTH · NO PUBLICATION</p>
+</section>
+<section id="m07-calendar" aria-labelledby="m07-calendar-title">
+<h3 id="m07-calendar-title">M07 · Hypothetical LOCAL editorial ideas calendar</h3>
+<p>MEMORY ONLY · NOT SCHEDULED · NOT POSTED. All selected times are fictional. No real provider or automated scheduling.</p>
+<p>Use the authenticated LOCAL draft and channel selectors above. All source rights remain unverified.</p>
+<div class="m07-calendar-controls">
+<label for="m07-calendar-date">Hypothetical local date and time
+<input id="m07-calendar-date" type="datetime-local" step="60" autocomplete="off"></label>
+<label for="m07-calendar-zone">Time zone for this fictional concept
+<select id="m07-calendar-zone">
+<option value="America/Sao_Paulo">São Paulo</option>
+<option value="UTC">UTC</option>
+<option value="America/New_York">New York (DST validation demo)</option>
+</select></label>
+</div>
+<button id="m07-calendar-add" type="button">Add hypothetical concept</button>
+<button id="m07-calendar-clear" type="button">Clear all concepts</button>
+<p id="m07-calendar-status" role="status" aria-live="polite">0 hypothetical concepts · memory only · NOT SCHEDULED</p>
+<ol id="m07-calendar-list" aria-label="Private hypothetical editorial calendar"></ol>
 </section>
 </section>
 </section>

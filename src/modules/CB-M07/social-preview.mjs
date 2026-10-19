@@ -3,7 +3,7 @@
 export const SOCIAL_LOCAL_CHANNELS = Object.freeze(['x', 'instagram', 'tiktok']);
 
 export function createLocalSocialPreview(draft, channel) {
-  if (!SOCIAL_LOCAL_CHANNELS.includes(channel) || !draft ||
+  if (!['x','instagram','tiktok'].includes(channel) || !draft ||
       typeof draft !== 'object' || Array.isArray(draft)) {
     throw new TypeError('Valid LOCAL draft and synthetic channel are required');
   }

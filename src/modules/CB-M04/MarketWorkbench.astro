@@ -1,10 +1,12 @@
 ---
 import { listMockMarkets, inspectMockMarket, MARKET_DEMO_POLICY } from "./market-lab.mjs";
 import clientUrl from "./market-lab.client.js?url&no-inline";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 const entries = listMockMarkets().items;
 ---
 <main id="main" class="m04" data-m04-root>
   <nav><a href="/en">← CoinBlink Home</a></nav>
+  <LocalJourneyNav current="markets" />
   <header>
     <small>CB-M04 · MOCK · NO LIVE QUOTES · NO TRADING</small>
     <h1>Market & radar demonstration</h1>

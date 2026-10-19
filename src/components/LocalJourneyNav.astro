@@ -1,0 +1,33 @@
+---
+interface Props {
+  locale?: "en" | "pt-br";
+  current: "home" | "news" | "sources" | "markets" | "editorial";
+}
+const { locale = "en", current } = Astro.props;
+const pt = locale === "pt-br";
+const entries = [
+  { key: "home", href: pt ? "/pt-br" : "/en", label: pt ? "Início" : "Home" },
+  { key: "news", href: pt ? "/pt-br/news" : "/en/news", label: pt ? "Notícias fictícias" : "Fictional news" },
+  { key: "sources", href: "/demo/sources", label: pt ? "Fontes demonstrativas (EN)" : "Source lab" },
+  { key: "markets", href: "/demo/markets", label: pt ? "Mercados demonstrativos (EN)" : "Market lab" },
+  { key: "editorial", href: "/demo/editorial/articles", label: pt ? "Editor demonstrativo (EN)" : "Editorial demo" },
+];
+---
+<nav class="cb-local-journey" aria-label={pt ? "Jornada demonstrativa CoinBlink" : "CoinBlink demo journey"} data-journey-nav data-journey-locale={locale}>
+  <p class="cb-local-journey__disclaimer">{pt ? "SOMENTE DEMO · Notícias inventadas · Fontes sem licença · Preços indisponíveis · Sem publicação" : "DEMO ONLY · Invented stories · Unlicensed sources · No market quotes · No publishing"}</p>
+  <ul>
+    {entries.map(item => (
+      <li><a href={item.href} aria-current={current === item.key ? "page" : undefined}>{item.label}</a></li>
+    ))}
+  </ul>
+</nav>
+<style>
+  .cb-local-journey{margin:1.2rem 0;padding:1rem;border:1px solid #42634c;border-radius:.7rem;background:#101e16;color:#f1f8ef;max-width:100%}
+  .cb-local-journey__disclaimer{margin:0 0 .65rem;color:#f5d18b;font-size:.82rem;font-weight:720;line-height:1.45}
+  .cb-local-journey ul{display:flex;flex-wrap:wrap;gap:.55rem;list-style:none;margin:0;padding:0}
+  .cb-local-journey a{display:inline-block;padding:.48rem .65rem;background:#172c1e;border:1px solid #486d4d;border-radius:.45rem;color:#dbf6b2;text-decoration:none;font-weight:650;line-height:1.4}
+  .cb-local-journey a[aria-current="page"]{background:#26431f;border-color:#b8f34b;color:#e9ffd4}
+  .cb-local-journey a:hover{text-decoration:underline}
+  .cb-local-journey a:focus-visible{outline:3px solid #d5ff90;outline-offset:3px}
+  @media(max-width:420px){.cb-local-journey{padding:.8rem}.cb-local-journey a{font-size:.85rem}}
+</style>

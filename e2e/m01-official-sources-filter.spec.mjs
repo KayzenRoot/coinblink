@@ -36,4 +36,27 @@ for (const [route,expectedLabel,noResults,clearLabel] of [
     expect(external).toEqual([]);
     expect(writes).toEqual([]);
   });
+  test('M01 official publisher links remain readable with JavaScript disabled ' + route, async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    try {
+      const noScriptPage = await context.newPage();
+      const external = [];
+      const writes = [];
+      noScriptPage.on('request', request => {
+        if (new URL(request.url()).origin !== 'http://127.0.0.1:4321') external.push(request.url());
+        if (!['GET', 'HEAD'].includes(request.method())) writes.push(request.url());
+      });
+      const response = await noScriptPage.goto('http://127.0.0.1:4321' + route);
+      expect(response?.status()).toBe(200);
+      await expect(noScriptPage.locator('[data-official-source]')).toHaveCount(6);
+      await expect(noScriptPage.locator('[data-official-source]:visible')).toHaveCount(6);
+      await expect(noScriptPage.locator('[data-official-source] a[href^="https://"]')).toHaveCount(6);
+      await expect(noScriptPage.locator('[data-official-source-query]')).toHaveCount(0);
+      expect(external).toEqual([]);
+      expect(writes).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  });
+
 }

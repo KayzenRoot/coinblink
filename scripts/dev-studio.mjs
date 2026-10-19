@@ -5,7 +5,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const astro = resolve("node_modules/astro/astro.js");
+const astro = resolve("node_modules/astro/bin/astro.mjs");
 const cms = resolve("test/modules/CB-M05/p1c-local-preview.mjs");
 const components = [
   ["Astro CLI", astro],

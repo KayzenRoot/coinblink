@@ -1,45 +1,62 @@
 ---
 import { listMockNews, NEWS_MOCK_POLICY } from "./news-workbench.mjs";
+import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
+interface Props { locale?: "en" | "pt-br"; }
+const { locale = "en" } = Astro.props;
+const copy = newsCopy(locale);
 const news = listMockNews();
-const categories = ["all", "security", "protocol", "education"];
+const categories = ["all", "security", "protocol", "education"] as const;
+const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
 ---
-<section class="cb-m02" data-m02-root aria-labelledby="m02-title">
+<main id="main" class="cb-m02" data-m02-root aria-labelledby="m02-title">
+  <nav aria-label={locale === "pt-br" ? "Navegação" : "Navigation"}>
+    <a href={locale === "pt-br" ? "/pt-br" : "/en"}>{copy.home}</a>
+  </nav>
   <header>
-    <small>CB-M02 · MOCK / FICTIONAL / NOT PUBLISHED</small>
-    <h2 id="m02-title">News discovery, offline demo</h2>
-    <p>Every example on this panel is invented. No current news, feed requests or publication.</p>
-    <p>Policy: <code>{NEWS_MOCK_POLICY}</code></p>
+    <small class="m02-warning">{copy.disclaimer}</small>
+    <h1 id="m02-title">{copy.directoryTitle}</h1>
+    <p>{copy.explanation}</p>
+    <small>CB-M02 · {NEWS_MOCK_POLICY}</small>
+    <span class="sr-only">MOCK / FICTIONAL / NOT PUBLISHED</span>
   </header>
   <div class="m02-controls">
-    <label>Search invented examples <input type="search" maxlength="80" data-m02-search placeholder="Try wallet" autocomplete="off" /></label>
-    <label>Example category
+    <label>{copy.search}
+      <input type="search" maxlength="80" data-m02-search placeholder={copy.searchHint} autocomplete="off" />
+    </label>
+    <label>{copy.category}
       <select data-m02-category>
-        {categories.map(category => <option value={category}>{category === "all" ? "All examples" : category}</option>)}
+        {categories.map(category => <option value={category}>{copy[category]}</option>)}
       </select>
     </label>
   </div>
-  <p role="status" aria-live="polite" data-m02-result-count>{news.items.length} fictional examples</p>
+  <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label={copy.results}>{news.items.length} {copy.results}</p>
   <div class="m02-results">
-    {news.items.map(item => (
-      <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[item.title, item.summary, item.category].join(" ").toLowerCase()}>
-        <small>MOCK · {item.category} · NOT PUBLISHED</small>
-        <h3>{item.title}</h3>
-        <p>{item.summary}</p>
-        <details><summary>Read fictional detail</summary><p>{item.body}</p><p>This is an invented teaching specimen, never licensed live news.</p></details>
-      </article>
-    ))}
+    {news.items.map(item => {
+      const translated = localizeMockNews(item, locale);
+      return <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(locale === "pt-br" ? "pt-BR" : "en")}>
+        <small class="m02-warning">{copy.disclaimer} · {copy[item.category]}</small>
+        <h2>{translated.title}</h2>
+        <p>{translated.summary}</p>
+        <a href={base + "/" + item.slug}>{copy.read} →</a>
+      </article>;
+    })}
   </div>
-  <p data-m02-empty hidden>No fictional samples match. No external search was made.</p>
-</section>
+  <p data-m02-empty role="status" hidden>{copy.empty}</p>
+</main>
 <script is:inline src={newsUiUrl}></script>
 <style>
-  .cb-m02{color:#e9f6eb;background:#111b18;border:1px solid #456e4e;border-radius:1rem;padding:1.25rem;max-width:75rem;margin:auto}
-  .cb-m02 small{color:#b0f66b}.cb-m02 h2,.cb-m02 h3{color:#d7ffa1}
-  .m02-controls{display:flex;flex-wrap:wrap;gap:1rem}.m02-controls label{display:grid;gap:.4rem;flex:1 1 13rem}
-  .m02-controls input,.m02-controls select{background:#192721;color:#fff;border:1px solid #719a79;border-radius:.5rem;padding:.7rem;width:100%}
-  .m02-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
-  .m02-results article{border:1px solid #456e4e;border-radius:.75rem;padding:1rem}
-  .cb-m02 :focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .cb-m02{max-width:74rem;margin:0 auto;padding:clamp(1.25rem,4vw,3.5rem);color:#e9f6eb}
+  .cb-m02 nav a,.cb-m02 article a{color:#b8f34b;text-underline-offset:4px;font-weight:650}
+  .cb-m02 header{padding:1.5rem 0;max-width:64ch}
+  .cb-m02 header h1{font-size:clamp(2rem,4vw,3.75rem);line-height:1.12}
+  .cb-m02 header p,.cb-m02 article p{color:#b9cbbf}
+  .m02-warning{color:#f5c981;font-weight:650;letter-spacing:.025em}
+  .m02-controls{display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0}
+  .m02-controls label{display:grid;gap:.5rem;flex:1 1 15rem}
+  .m02-controls input,.m02-controls select{width:100%;padding:.85rem;color:#fff;background:#18291f;border:1px solid #809c81;border-radius:.5rem}
+  .m02-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}
+  .m02-results article{border:1px solid #456e4e;border-radius:.8rem;padding:1.35rem;background:#111c17}
   .m02-results article[hidden]{display:none}
+  .cb-m02 a:focus-visible,.cb-m02 input:focus-visible,.cb-m02 select:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

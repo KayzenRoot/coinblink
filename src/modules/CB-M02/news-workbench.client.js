@@ -6,7 +6,7 @@ for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
   const empty = root.querySelector("[data-m02-empty]");
   const entries = [...root.querySelectorAll("[data-m02-entry]")];
   const filter = () => {
-    const query = search.value.trim().toLowerCase();
+    const query = search.value.trim().toLocaleLowerCase(root.closest("html")?.lang === "pt-BR" ? "pt-BR" : "en");
     let visible = 0;
     for (const article of entries) {
       const match = (category.value === "all" || article.dataset.m02Category === category.value)
@@ -14,7 +14,7 @@ for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
       article.hidden = !match;
       if (match) visible += 1;
     }
-    count.textContent = visible + " fictional examples";
+    count.textContent = visible + " " + count.dataset.m02CountLabel;
     empty.hidden = visible !== 0;
   };
   search.addEventListener("input", filter);

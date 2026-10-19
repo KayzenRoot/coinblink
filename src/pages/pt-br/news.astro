@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import NewsWorkbench from "../../modules/CB-M02/NewsWorkbench.astro";
+export const prerender = false;
+---
+<BaseLayout
+  lang="pt-BR"
+  title="CoinBlink · Notícias fictícias (DEMO)"
+  description="Busca demonstrativa sem notícias reais ou publicação."
+>
+  <NewsWorkbench locale="pt-br" />
+</BaseLayout>

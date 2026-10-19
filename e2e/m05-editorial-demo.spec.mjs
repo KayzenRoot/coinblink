@@ -222,4 +222,56 @@ test.describe("M05 public static editorial demonstration", () => {
       await expect(page.locator('a[href="/demo/editorial/articles/new"]')).toBeVisible();
     });
   }
+
+  test("protects unexported draft changes and safely creates a new blank draft without storage", async ({ page }) => {
+    const external = [];
+    page.on("request", req => {
+      if (new URL(req.url()).origin !== "http://127.0.0.1:4321" || !["GET", "HEAD"].includes(req.method())) {
+        external.push(req.url());
+      }
+    });
+    await page.goto("/demo/editorial/articles/new");
+    const lab = page.locator("[data-m05-local-editor]");
+    const title = lab.locator("[data-m05-draft-title]");
+    const startNew = lab.getByRole("button", { name: "Start a new draft" });
+    await expect(startNew).toBeDisabled();
+    await title.fill("Unexported editorial notes");
+    await expect(startNew).toBeEnabled();
+    await expect(lab.locator("[data-m05-save-state]")).toContainText("Unexported changes");
+    expect(await page.evaluate(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    })).toBe(true);
+
+    page.once("dialog", dialog => dialog.dismiss());
+    await startNew.click();
+    await expect(title).toHaveValue("Unexported editorial notes");
+
+    page.once("dialog", dialog => dialog.accept());
+    await startNew.click();
+    await expect(title).toHaveValue("");
+    await expect(startNew).toBeDisabled();
+    await expect(lab.locator("[data-m05-save-state]")).toContainText("No edits since last import");
+
+    await title.fill("New offline editorial draft");
+    await lab.locator("[data-m05-draft-summary]").fill("An original summary, with attribution still pending human review.");
+    await lab.locator("[data-m05-draft-body]").fill("An entirely local editorial body that is not verified or published anywhere.");
+    await lab.locator("[data-m05-draft-source]").fill("https://example.org/editorial/original");
+    const exportButton = lab.getByRole("button", { name: "Export Markdown (.md)" });
+    const [download] = await Promise.all([page.waitForEvent("download"), exportButton.click()]);
+    const markdown = await readFile(await download.path(), "utf8");
+    await expect(lab.locator("[data-m05-save-state]")).toContainText("No edits since last import");
+    await lab.locator("[data-m05-draft-body]").fill("This revised local body is not exported, and it must not be replaced without consent.");
+    const current = await lab.locator("[data-m05-draft-body]").inputValue();
+    page.once("dialog", dialog => dialog.dismiss());
+    await lab.locator("[data-m05-import]").setInputFiles({
+      name: "local-backup.md", mimeType: "text/markdown", buffer: Buffer.from(markdown),
+    });
+    await expect(lab.locator("[data-m05-import-status]")).toContainText("Import canceled");
+    await expect(lab.locator("[data-m05-draft-body]")).toHaveValue(current);
+    expect(await page.evaluate(() => [document.cookie, localStorage.length, sessionStorage.length])).toEqual(["", 0, 0]);
+    expect(external).toEqual([]);
+  });
+
 });

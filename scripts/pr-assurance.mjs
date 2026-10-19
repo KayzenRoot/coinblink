@@ -94,7 +94,7 @@ async function paged(path, maxPages = 10) {
 }
 async function run() {
   const lane = process.argv[2];
-  if (!['scope', 'review'].includes(lane)) throw new Error('Use lane scope or review');
+  if (!['scope', 'review', 'quality'].includes(lane)) throw new Error('Use lane scope, review or quality');
   const repository = process.env.GITHUB_REPOSITORY || '';
   const number = Number(process.env.PR_NUMBER);
   const expectedHead = process.env.EXPECTED_HEAD || '';
@@ -130,7 +130,7 @@ async function run() {
     if (violations.length) throw new Error('Workflow elevation blocked: ' + violations.join('; '));
     writeSummary('- Changed workflows: **no prohibited token writes or elevated triggers**.\n' +
       '- This lane NEVER authorizes merging, review approval or deployment.');
-  } else {
+  } else if (lane === 'review') {
     const [reviews, requested, comments] = await Promise.all([
       paged(root + '/pulls/' + number + '/reviews'),
       api(root + '/pulls/' + number + '/requested_reviewers'),
@@ -147,6 +147,33 @@ async function run() {
       '- CodeRabbit: **' + safe(rabbit) + '**; rate-limit never counts as approval.\n' +
       '- No reviewer simulation, automatic approve, status promotion, or merge performed.');
     // Pending reviews are an advisory result; branch protection remains authoritative.
+  } else {
+    // Read Sonar/CI evidence without making parallel check-runs a blocking race.
+    // GitHub's own protected-branch SonarCloud check remains authoritative.
+    let sonar;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const checks = await api(root + '/commits/' + expectedHead + '/check-runs?per_page=100');
+      sonar = checks.check_runs?.find(run => run.name === 'SonarCloud Code Analysis');
+      if (sonar?.status === 'completed') break;
+      if (attempt !== 5) await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+    if (!sonar || sonar.status !== 'completed') {
+      writeSummary('### 🔎 Quality evidence · ' + label +
+        '\n- SonarCloud still pending/not visible; no verdict inferred. Existing protected gate remains mandatory.');
+      return;
+    }
+    const summary = sonar.conclusion === 'success' ? 'PASS' : 'NOT PASSING (' + safe(sonar.conclusion) + ')';
+    const lines = ['### 🔎 Quality evidence · ' + label,
+      '- SonarCloud check: **' + summary + '**. This advisory never overrides the protected check.'];
+    if (sonar.output?.annotations_count > 0) {
+      const notes = await paged(root + '/check-runs/' + sonar.id + '/annotations', 2);
+      lines.push('- GitHub check annotations: **' + notes.length + '** (first 12 below).');
+      for (const issue of notes.slice(0, 12)) {
+        lines.push('  - ' + safe(issue.path) + ':' + safe(issue.start_line) +
+          ' · ' + safe(issue.title || issue.annotation_level) + ' · ' + safe(issue.message));
+      }
+    }
+    writeSummary(lines.join('\n'));
   }
 }
 if (process.argv[1] && import.meta.url === new URL('file://' + process.argv[1]).href) {

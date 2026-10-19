@@ -5,6 +5,7 @@ import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalRev
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
 import { createLocalCalendarIdea, addLocalCalendarIdea } from '../../CB-M07/local-calendar.mjs';
+import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
@@ -13,6 +14,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
   const addLocalCalendarIdea = (${addLocalCalendarIdea.toString()});
+  const createLocalWeeklyBoard = (${createLocalWeeklyBoard.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -61,6 +63,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     calendarClear: document.getElementById('m07-calendar-clear'),
     calendarList: document.getElementById('m07-calendar-list'),
     calendarStatus: document.getElementById('m07-calendar-status'),
+    weekZone: document.getElementById('m07-week-zone'),
+    weekFilter: document.getElementById('m07-week-filter'),
+    weekStatus: document.getElementById('m07-week-status'),
+    weekBoard: document.getElementById('m07-week-board'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -152,6 +158,65 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.calendarList.replaceChildren();
     ui.calendarStatus.textContent = '0 hypothetical concepts · memory only · NOT SCHEDULED';
     ui.calendarDate.value = '';
+    ui.weekBoard.replaceChildren();
+    ui.weekStatus.textContent = '0 shown · 0 conflicts · NOT SCHEDULED';
+    ui.weekZone.value = 'America/Sao_Paulo';
+    ui.weekFilter.value = 'all';
+  }
+  /**
+   * Rebuild the session-gated weekly DOM with textContent and no external I/O.
+   * Invalid projections scrub ephemeral calendar data; filters never persist.
+   * @returns {void}
+   */
+  function renderLocalWeekBoard() {
+    ui.weekBoard.replaceChildren();
+    ui.weekStatus.textContent = '0 shown · 0 conflicts · NOT SCHEDULED';
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    let board;
+    try {
+      board = createLocalWeeklyBoard(localCalendarIdeas, ui.weekFilter.value, ui.weekZone.value);
+    } catch {
+      clearLocalCalendar();
+      ui.weekStatus.textContent = 'LOCAL weekly view cleared due to invalid data · NOT SCHEDULED';
+      return;
+    }
+    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    for (const week of board.weeks) {
+      const section = document.createElement('section');
+      section.className = 'm07-week';
+      const title = document.createElement('h5');
+      title.textContent = 'Hypothetical week ' + week.startDate + ' to ' + week.endDate;
+      section.append(title);
+      const grid = document.createElement('div');
+      grid.className = 'm07-week-grid';
+      for (const [index, day] of week.days.entries()) {
+        const article = document.createElement('article');
+        article.className = 'm07-week-day';
+        const heading = document.createElement('h6');
+        heading.textContent = weekdays[index] + ' · ' + day.date;
+        article.append(heading);
+        if (day.ideas.length === 0) {
+          const empty = document.createElement('p');
+          empty.textContent = 'No hypothetical ideas';
+          article.append(empty);
+        }
+        for (const idea of day.ideas) {
+          const item = document.createElement('p');
+          item.className = idea.collision ? 'm07-week-idea m07-week-conflict' : 'm07-week-idea';
+          item.textContent = idea.localTime + ' · ' + idea.channel.toUpperCase() + ' · ' +
+            idea.title + ' · ' + idea.status + ' · ' + idea.publication + ' · ' +
+            idea.sourceStatus + ' · ' + idea.rights + ' · ' + idea.creditStatus +
+            (idea.collision ? ' · HYPOTHETICAL TIME CONFLICT (NOT BLOCKING)' : '');
+          article.append(item);
+        }
+        grid.append(article);
+      }
+      section.append(grid);
+      ui.weekBoard.append(section);
+    }
+    ui.weekStatus.textContent = board.visibleCount + ' of ' + board.totalCount +
+      ' hypothetical concepts shown · ' + board.collisionSlots +
+      ' conflict slots · ' + board.timeZone + ' · NOT SCHEDULED · NOT POSTED';
   }
   function renderLocalCalendar() {
     ui.calendarList.replaceChildren();
@@ -181,6 +246,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
     ui.calendarStatus.textContent = localCalendarIdeas.length +
       ' hypothetical concepts · memory only · NOT SCHEDULED';
+    renderLocalWeekBoard();
   }
   function scrubLocalSocialStudio() {
     clearLocalCalendar();
@@ -437,6 +503,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   ui.reviewFilter.addEventListener('change', renderLocalReviewQueue);
+  ui.weekFilter.addEventListener('change', renderLocalWeekBoard);
+  ui.weekZone.addEventListener('change', renderLocalWeekBoard);
   ui.calendarAdd.addEventListener('click', () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
@@ -682,6 +750,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
 `;
 
+/**
+ * Render the disposable LOCAL CMS test fixture with a strict per-request CSP nonce.
+ * No private owner UI is imported by public Astro routes.
+ * @param {string} nonce Fresh 256-bit lowercase-hex CSP nonce.
+ * @returns {string} Restricted HTML with ephemeral in-memory editorial controls.
+ */
 export function renderLocalCmsUi(nonce) {
   if (typeof nonce !== 'string' || !/^[0-9a-f]{64}$/.test(nonce)) {
     throw new TypeError('Local UI requires a fresh 256-bit CSP nonce');
@@ -721,6 +795,13 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-calendar-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
 .m07-calendar-controls label{display:block}
 .m07-calendar-controls input,.m07-calendar-controls select{max-width:100%;box-sizing:border-box}
+.m07-week{margin:16px 0;border-top:1px solid #768977;padding-top:10px}
+.m07-week h5{font-size:1rem;margin:8px 0}
+.m07-week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}
+.m07-week-day{box-sizing:border-box;min-width:0;border:1px solid #768977;border-radius:8px;background:#172820;padding:9px;overflow-wrap:anywhere}
+.m07-week-day h6{font-size:.9rem;margin:0 0 8px}
+.m07-week-idea{white-space:pre-wrap;overflow-wrap:anywhere;padding:6px;border-left:3px solid #bde874}
+.m07-week-conflict{border-left-color:#f2bd7d;font-weight:600}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
 .m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}
 .m07-card{box-sizing:border-box;min-width:0;width:100%;max-width:600px;border-radius:16px;border:2px solid #81988e;background:#142821;color:#f6f8f5;padding:20px;overflow-wrap:anywhere}
@@ -858,6 +939,27 @@ footer{padding:24px 0;color:#b9c8bd}
 <button id="m07-calendar-clear" type="button">Clear all concepts</button>
 <p id="m07-calendar-status" role="status" aria-live="polite">0 hypothetical concepts · memory only · NOT SCHEDULED</p>
 <ol id="m07-calendar-list" aria-label="Private hypothetical editorial calendar"></ol>
+<section id="m07-weekly" aria-labelledby="m07-week-title">
+<h4 id="m07-week-title">M07-D · Read-only hypothetical weekly board</h4>
+<p>MEMORY ONLY · NOT SCHEDULED · NOT POSTED. Conflicts are informational and never trigger scheduling.</p>
+<div class="m07-calendar-controls">
+<label for="m07-week-zone">Time zone for the weekly display
+<select id="m07-week-zone">
+<option value="America/Sao_Paulo">São Paulo</option>
+<option value="UTC">UTC</option>
+<option value="America/New_York">New York</option>
+</select></label>
+<label for="m07-week-filter">Filter hypothetical ideas by channel
+<select id="m07-week-filter">
+<option value="all">All channels</option>
+<option value="x">X</option>
+<option value="instagram">Instagram</option>
+<option value="tiktok">TikTok</option>
+</select></label>
+</div>
+<p id="m07-week-status" role="status" aria-live="polite">0 shown · 0 conflicts · NOT SCHEDULED</p>
+<div id="m07-week-board" aria-label="Private weekly hypothetical editorial board"></div>
+</section>
 </section>
 </section>
 </section>

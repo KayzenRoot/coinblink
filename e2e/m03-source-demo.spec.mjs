@@ -1,0 +1,24 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+test("M03 synthetic sources are accessible, filter locally and never ingest", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const network = [];
+  page.on("request", req => {
+    if (!req.url().startsWith("http://127.0.0.1:4321/") && !req.url().startsWith("data:")) network.push(req.url());
+  });
+  const r = await page.goto("/demo/sources");
+  expect(r?.status()).toBe(200);
+  await expect(page.getByRole("heading", { name: "Sources & provenance lab" })).toBeVisible();
+  await expect(page.locator("[data-m03-entry]")).toHaveCount(3);
+  await expect(page.getByText("No capture occurred.", { exact: false }).first()).toBeVisible();
+  await page.locator("[data-m03-query]").fill("unavailable");
+  await expect(page.locator("[data-m03-entry]:visible")).toHaveCount(1);
+  await page.locator("[data-m03-query]").fill("no-match-111");
+  await expect(page.locator("[data-m03-empty]")).toBeVisible();
+  await page.locator("[data-m03-query]").fill("");
+  await expect(page.locator("[data-m03-entry]:visible")).toHaveCount(3);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  expect(network).toEqual([]);
+  const audit = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+  expect(audit.violations).toEqual([]);
+});

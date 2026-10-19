@@ -5,6 +5,7 @@ import { createLocalCalendarIdea } from '../../../src/modules/CB-M07/local-calen
 import { createLocalWeeklyBoard } from '../../../src/modules/CB-M07/local-week-board.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 
+/** Build an immutable fixture that intentionally includes private fields for leak tests. */
 const draft = (number, title = 'Hypothetical private editorial title') => Object.freeze({
   id: '00000000-0000-0000-0000-' + String(number).padStart(12, '0'),
   title, summary: 'Entirely fictional and unlicensed local sample.',
@@ -12,6 +13,7 @@ const draft = (number, title = 'Hypothetical private editorial title') => Object
   status: 'draft', revision: 1, updated_at: 1760870000,
   body: 'SECRET_BODY_MUST_NOT_LEAK', secret: 'SECRET_VALUE_MUST_NOT_LEAK',
 });
+/** Convert a test draft to the exact M07-C synthetic calendar contract. */
 const idea = (number, channel, minute, title) =>
   createLocalCalendarIdea(draft(number, title), channel, minute, 'UTC');
 

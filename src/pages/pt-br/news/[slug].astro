@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import NewsArticle from "../../../modules/CB-M02/NewsArticle.astro";
+import { resolveMockNews } from "../../../modules/CB-M02/news-workbench.mjs";
+export const prerender = false;
+const { slug } = Astro.params;
+const detail = resolveMockNews(slug);
+if (!detail.item) Astro.response.status = 404;
+---
+<BaseLayout
+  lang="pt-BR"
+  title="CoinBlink · Leitura fictícia (DEMO)"
+  description="Exemplo inventado e não publicado."
+>
+  <NewsArticle locale="pt-br" item={detail.item} />
+</BaseLayout>

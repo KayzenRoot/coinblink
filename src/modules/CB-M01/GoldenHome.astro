@@ -419,6 +419,34 @@ const editorialR26Assets = {
       <p class="official-sources__disclaimer">{t("Source links are not an endorsement, a live feed or a license to republish. Check the date, context and original claims on each site.")}</p>
     </section>
 
+
+    <section class="m01-local-draft-preview content-panel" id="local-draft-preview" aria-labelledby="m01-local-draft-title" data-m01-local-draft-preview data-locale={locale}>
+      <div class="m01-local-draft-preview__heading">
+        <div>
+          <small>{locale === "pt-br" ? "FLUXO M01 + M05 · SOMENTE LOCAL" : "M01 + M05 WORKFLOW · LOCAL ONLY"}</small>
+          <h2 id="m01-local-draft-title">{locale === "pt-br" ? "Visualize seu rascunho na Home" : "Preview your draft on the Home"}</h2>
+          <p>{locale === "pt-br" ? "Exporte um Markdown no editor M05 e escolha o arquivo aqui. A prévia permanece neste navegador, sem upload, aprovação nem publicação." : "Export a Markdown file from the M05 editor and choose it here. The preview stays in this browser: no upload, approval or publication."}</p>
+        </div>
+        <span class="m01-local-draft-preview__badge">{locale === "pt-br" ? "NÃO PUBLICADO" : "NOT PUBLISHED"}</span>
+      </div>
+      <div class="m01-local-draft-preview__controls">
+        <label for="m01-local-draft-file">{locale === "pt-br" ? "Selecionar rascunho CoinBlink (.md)" : "Choose CoinBlink draft (.md)"}</label>
+        <input id="m01-local-draft-file" type="file" accept=".md,text/markdown" data-m01-draft-file aria-describedby="m01-draft-import-note" />
+        <button type="button" data-m01-draft-clear hidden>{locale === "pt-br" ? "Limpar prévia" : "Clear preview"}</button>
+      </div>
+      <p id="m01-draft-import-note" class="m01-local-draft-preview__note">{locale === "pt-br" ? "Arquivo de até 64 KB, gerado pelo editor M05. Nunca insira chaves ou segredos. O conteúdo não é enviado." : "Up to 64 KB, exported from the M05 editor. Never include keys or secrets. The file is never uploaded."}</p>
+      <p class="m01-local-draft-preview__status" data-m01-draft-status role="status" aria-live="polite"></p>
+      <article class="m01-local-draft-preview__article" data-m01-draft-result hidden>
+        <small>{locale === "pt-br" ? "PRÉVIA LOCAL · NÃO VERIFICADA · NÃO PUBLICADA" : "LOCAL PREVIEW · UNVERIFIED · NOT PUBLISHED"}</small>
+        <h3 data-m01-draft-title tabindex="-1"></h3>
+        <p class="m01-local-draft-preview__author" data-m01-draft-author></p>
+        <p data-m01-draft-summary></p>
+        <div class="m01-local-draft-preview__body" data-m01-draft-body></div>
+        <p class="m01-local-draft-preview__source">{locale === "pt-br" ? "Fonte informada (não verificada):" : "Provided source (not verified):"} <span data-m01-draft-source></span></p>
+      </article>
+      <a class="m01-local-draft-preview__editor" href="/demo/editorial/articles/new">{locale === "pt-br" ? "Abrir editor de rascunhos M05 →" : "Open M05 draft editor →"}</a>
+    </section>
+
     <section class="chain-lookup content-panel" id="chain-lookup" aria-labelledby="chain-lookup-title">
       <div class="chain-lookup__heading">
         <div>
@@ -464,4 +492,5 @@ const editorialR26Assets = {
 </div>
 
 <script is:inline src="/home-demo.js"></script>
+<script is:inline type="module" src="/m01-local-draft-preview.js"></script>
 <script is:inline type="module" src="/explorer-lookup.js"></script>

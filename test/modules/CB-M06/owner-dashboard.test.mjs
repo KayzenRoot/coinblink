@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createLocalOwnerDashboard, createLocalEditorialActivity, OWNER_DASHBOARD_MODE, OWNER_DASHBOARD_SOURCE,
+import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue, OWNER_DASHBOARD_MODE, OWNER_DASHBOARD_SOURCE,
   OWNER_DASHBOARD_LIST_LIMIT } from '../../../src/modules/CB-M06/owner-dashboard.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 
@@ -120,4 +120,63 @@ test('M06-B UI is non-public, uses textContent, reuses GET & scrubs and guards r
   assert.match(LOCAL_CMS_UI_SCRIPT, /button\.textContent = row\.title/u);
   assert.match(LOCAL_CMS_UI_SCRIPT, /epoch !== sessionEpoch/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT, /\/local\/dashboard|\/admin\/dashboard|localStorage|sessionStorage/u);
+});
+
+test('M06-C review queue is bounded, sorted, labels credits and never verifies source licensing', () => {
+  const rows = [
+    {...editorialRow(1,1,1760870000,'First LOCAL draft'),author_label:'',source_url:'https://example.org/source'},
+    {...editorialRow(2,3,1760870100,'Second LOCAL draft'),author_label:'   ',source_url:'https://example.org/different'},
+    {...editorialRow(3,2,1760870050,'Third LOCAL draft'),author_label:'Named tester',source_url:'https://example.org/source'},
+  ];
+  const q = createLocalReviewQueue(rows);
+  assert.equal(q.mode, 'LOCAL_SYNTHETIC');
+  assert.equal(q.source, 'CMS_D1_LOCAL');
+  assert.equal(q.status, 'MEASURED_LOCAL');
+  assert.equal(q.totalListed, 3);
+  assert.equal(q.missingCreditListed, 2);
+  assert.deepEqual(q.rows.map(r=>r.title),['Second LOCAL draft','Third LOCAL draft','First LOCAL draft']);
+  assert.equal(q.rows[0].creditStatus, 'CREDIT_MISSING');
+  assert.equal(q.rows[2].creditStatus, 'CREDIT_MISSING');
+  assert.equal(q.rows[1].creditStatus, 'CREDIT_PRESENT_UNVERIFIED');
+  for(const row of q.rows) {
+    assert.equal(row.sourceStatus,'SOURCE_VERIFICATION_PENDING');
+    assert.equal(row.publishingStatus,'DRAFT_ONLY');
+  }
+  assert.ok(Object.isFrozen(q) && Object.isFrozen(q.rows) && Object.isFrozen(q.rows[0]));
+  assert.doesNotMatch(JSON.stringify(q), /PRIVATE_SUMMARY|NEVER_INCLUDE_IN_ACTIVITY|example\.org|Named tester/);
+});
+test('M06-C rejects bad review metadata and marks 100-row view partial', () => {
+  const good = {...editorialRow(1,1,1760870000),author_label:'',source_url:'https://example.org/a'};
+  for(const item of [
+    {...good,author_label:null},{...good,author_label:5},
+    {...good,author_label:'X'.repeat(81)},
+    {...good,source_url:null},{...good,source_url:99},
+    {...good,source_url:'https://x.test/'+ 'a'.repeat(500)},
+    {...good,status:'published'}, {...good,revision:0},
+    {...good,updated_at:1760870000000},
+  ]) assert.throws(()=>createLocalReviewQueue([item]),TypeError);
+  assert.throws(()=>createLocalReviewQueue([good,good]),TypeError);
+  assert.throws(()=>createLocalReviewQueue(Array.from({length:101},(_,i)=>({
+    ...good,id:String(i).padStart(36,'0')
+  }))),TypeError);
+  const hundred=Array.from({length:100},(_,i)=>({...good,id:String(i).padStart(36,'0')}));
+  const q=createLocalReviewQueue(hundred);
+  assert.equal(q.listingScope,'UP_TO_100_LISTED');
+  assert.equal(q.rows.length,100);
+  assert.equal(q.totalListed,100);
+  assert.equal(createLocalReviewQueue([]).totalListed,0);
+});
+test('M06-C review queue is protected DOM-only and clears on logout or denied refresh', () => {
+  const html=renderLocalCmsUi('ee'.repeat(32));
+  assert.match(html,/id="m06-dashboard"[^>]*hidden/u);
+  assert.match(html,/id="m06-review-filter"/u);
+  assert.match(html,/id="m06-review-list"/u);
+  assert.match(html,/id="m06-review-count"/u);
+  assert.match(html,/SOURCE_VERIFICATION_PENDING|independent verification/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalReviewQueue\(drafts\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/ui\.reviewList\.replaceChildren\(\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/labels\.textContent = /u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/readGeneration/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/epoch !== sessionEpoch \|\| generation !== readGeneration/u);
+  assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/\/local\/review|\/admin\/review|localStorage|sessionStorage|innerHTML/u);
 });

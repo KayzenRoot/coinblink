@@ -76,3 +76,37 @@ export function createLocalEditorialActivity(drafts) {
     recent,
   });
 }
+
+/**
+ * A private read-only review queue computed strictly from an authenticated
+ * and bounded LOCAL D1 draft listing. The presence of a source URL never
+ * proves verification, rights, licensing or publication readiness.
+ */
+export function createLocalReviewQueue(drafts) {
+  // Also validates duplicate IDs, draft status, revisions and Unix seconds.
+  createLocalEditorialActivity(drafts);
+  const rows = drafts.map(draft => {
+    if (typeof draft.author_label !== 'string' || draft.author_label.length > 80 ||
+        typeof draft.source_url !== 'string' || draft.source_url.length > 500) {
+      throw new TypeError('Invalid LOCAL review metadata');
+    }
+    return Object.freeze({
+      id: draft.id,
+      title: draft.title,
+      revision: draft.revision,
+      updatedAtSeconds: draft.updated_at,
+      creditStatus: draft.author_label.trim() ? 'CREDIT_PRESENT_UNVERIFIED' : 'CREDIT_MISSING',
+      sourceStatus: 'SOURCE_VERIFICATION_PENDING',
+      publishingStatus: 'DRAFT_ONLY',
+    });
+  });
+  rows.sort((a,b) => b.updatedAtSeconds - a.updatedAtSeconds || a.id.localeCompare(b.id));
+  return Object.freeze({
+    mode: 'LOCAL_SYNTHETIC', source: 'CMS_D1_LOCAL',
+    status: 'MEASURED_LOCAL',
+    listingScope: rows.length === 100 ? 'UP_TO_100_LISTED' : 'MEASURED_LOCAL',
+    totalListed: rows.length,
+    missingCreditListed: rows.filter(row => row.creditStatus === 'CREDIT_MISSING').length,
+    rows: Object.freeze(rows),
+  });
+}

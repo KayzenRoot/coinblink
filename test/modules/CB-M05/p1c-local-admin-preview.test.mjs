@@ -26,6 +26,7 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-activity-scope').innerText(), 'MEASURED_LOCAL');
     assert.equal(await page.locator('#m06-revised-listed').innerText(), '0');
     assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
+    assert.equal(await page.locator('#m06-review-list li').count(), 0);
     await page.locator('[name="title"]').fill('LOCAL admin test draft');
     await page.locator('[name="summary"]').fill('Synthetic test draft never published');
     await page.locator('[name="body"]').fill('Private test body stored in local D1');
@@ -47,6 +48,9 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-listed-drafts').innerText(), '1', 'M06 count reflects authenticated local list');
     assert.equal(await page.locator('#m06-recent-activity li').count(), 1);
     assert.match(await page.locator('#m06-recent-activity').innerText(), /LOCAL admin test draft · rev 1/u);
+    assert.equal(await page.locator('#m06-review-list li').count(), 1);
+    assert.match(await page.locator('#m06-review-list').innerText(), /SOURCE_VERIFICATION_PENDING/);
+    assert.match(await page.locator('#m06-review-list').innerText(), /CREDIT_PRESENT_UNVERIFIED/);
     const response = await page.evaluate(async () => {
       const r = await fetch('/admin/articles', { credentials: 'same-origin' });
       return { status: r.status, body: await r.json() };
@@ -63,6 +67,8 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-activity-status').textContent(), 'UNAVAILABLE');
     assert.equal(await page.locator('#m06-revised-listed').textContent(), 'Unavailable');
     assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
+    assert.equal(await page.locator('#m06-review-list li').count(), 0);
+    assert.equal(await page.locator('#m06-review-count').textContent(), 'UNAVAILABLE');
     assert.equal(await page.locator('#draft-preview-body').textContent(), '', 'logout must clear draft body');
     assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0,
@@ -100,6 +106,8 @@ for (const admin of [false, true]) {
       assert.equal(await page.locator('#m06-listed-drafts').textContent(), 'Unavailable');
       assert.equal(await page.locator('#m06-activity-status').textContent(), 'UNAVAILABLE');
       assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
+      assert.equal(await page.locator('#m06-review-list li').count(), 0, 'review queue scrubs after 401');
+      assert.equal(await page.locator('#m06-review-count').textContent(), 'UNAVAILABLE');
       assert.equal(await page.locator('[name="body"]').inputValue(), '',
         'stale editable private draft must not remain in the form');
       assert.equal(await page.locator('#refresh').isVisible(), false,
@@ -204,4 +212,49 @@ test('M06-B recent activity derives only from two authenticated LOCAL drafts and
   } finally {
     await preview.close();
   }
+});
+
+test('M06-C private review queue filters listed drafts and preserves protected editor discard rules', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const page=preview.page;
+    assert.equal(await page.locator('#m06-dashboard').isVisible(),false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    async function save(title, credit) {
+      await page.locator('#new-draft').click();
+      await page.locator('[name="title"]').fill(title);
+      await page.locator('[name="summary"]').fill('Synthetic editorial review only, never published');
+      await page.locator('[name="body"]').fill('LOCAL_PRIVATE_BODY_NEVER_IN_QUEUE');
+      await page.locator('[name="sourceUrl"]').fill('https://example.org/mock-source');
+      await page.locator('[name="authorLabel"]').fill(credit);
+      await page.locator('#save').click();
+      await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    }
+    await save('Queue missing credit article','');
+    await save('Queue credited test article','Synthetic Author');
+    assert.equal(await page.locator('#m06-review-list li').count(),2);
+    assert.match(await page.locator('#m06-review-list').innerText(),/CREDIT_MISSING/);
+    assert.match(await page.locator('#m06-review-list').innerText(),/SOURCE_VERIFICATION_PENDING/);
+    assert.doesNotMatch(await page.locator('#m06-review-list').innerText(),/LOCAL_PRIVATE_BODY_NEVER_IN_QUEUE/);
+    await page.locator('#m06-review-filter').selectOption('missing-credit');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    assert.match(await page.locator('#m06-review-list').innerText(),/Queue missing credit article/);
+    await page.locator('#m06-review-filter').selectOption('revised');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    await page.locator('#m06-review-filter').selectOption('all');
+    await page.locator('#m06-review-list').getByRole('button',{name:/Queue missing credit article/}).click();
+    await page.getByText('Loaded draft revision 1').waitFor({timeout:20_000});
+    await page.locator('[name="title"]').fill('Unsaved queue edited title');
+    page.once('dialog', async dialog=>{assert.match(dialog.message(),/Discard unsaved changes/);await dialog.dismiss();});
+    await page.locator('#m06-review-list').getByRole('button',{name:/Queue credited test article/}).click();
+    assert.equal(await page.locator('[name="title"]').inputValue(),'Unsaved queue edited title');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+    assert.equal(await page.locator('#m06-dashboard').isVisible(),false);
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    assert.equal(await page.locator('#m06-review-count').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-filter').inputValue(),'all');
+    assert.equal(preview.networkAttempts.filter(x=>!x.allowed).length,0);
+  } finally { await preview.close(); }
 });

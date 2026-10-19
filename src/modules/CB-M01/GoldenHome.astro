@@ -340,6 +340,10 @@ const editorialR26Assets = {
           <p>{t("Try another category or search term. No live news is connected.")}</p>
           <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
+        <p class="news-official-discovery" data-m02-news-link>
+          <a href={locale === "pt-br" ? "/pt-br/news" : "/en/news"}>{locale === "pt-br" ? "Explorar histórias fictícias" : "Explore fictional stories"} <span aria-hidden="true">→</span></a>
+          <small>{locale === "pt-br" ? "DEMO offline. Não são notícias publicadas." : "Offline demo. No published news."}</small>
+        </p>
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
         <p class="news-official-discovery" data-editorial-workspace-handoff>
           <span>{t("Want to try the article editor?")}</span>

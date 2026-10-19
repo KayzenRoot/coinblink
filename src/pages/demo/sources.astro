@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SourceWorkbench from "../../modules/CB-M03/SourceWorkbench.astro";
+export const prerender = false;
+---
+<BaseLayout
+  title="CoinBlink · Fictional provenance lab (DEMO)"
+  description="Local-only synthetic source provenance examples. No ingestion, scraping, external requests or publication."
+>
+  <SourceWorkbench />
+</BaseLayout>

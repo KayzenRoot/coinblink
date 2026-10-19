@@ -23,17 +23,20 @@ export function createLocalSocialPreview(draft, channel) {
       source.username || source.password) {
     throw new TypeError('A non-credential HTTPS source reference is required');
   }
-  const channelName = channel === 'x' ? 'X' :
-    channel === 'instagram' ? 'Instagram' : 'TikTok';
+  const channelNames = { x: 'X', instagram: 'Instagram', tiktok: 'TikTok' };
+  const channelName = channelNames[channel];
   const headline = draft.title.trim();
   const summary = draft.summary.trim();
   const sourceLine = 'Source reference (NOT VERIFIED): ' + source.href;
-  const text = channel === 'x'
-    ? headline + '\n\n' + summary + '\n\n' + sourceLine
-    : channel === 'instagram'
-      ? 'LOCAL editorial concept: ' + headline + '\n\n' + summary + '\n\n' + sourceLine
-      : 'Opening (storyboard only): ' + headline +
-        '\nNarration concept (not a video): ' + summary + '\n' + sourceLine;
+  let text;
+  if (channel === 'x') {
+    text = headline + '\n\n' + summary + '\n\n' + sourceLine;
+  } else if (channel === 'instagram') {
+    text = 'LOCAL editorial concept: ' + headline + '\n\n' + summary + '\n\n' + sourceLine;
+  } else {
+    text = 'Opening (storyboard only): ' + headline +
+      '\nNarration concept (not a video): ' + summary + '\n' + sourceLine;
+  }
   return Object.freeze({
     mode: 'LOCAL_SYNTHETIC',
     channel,

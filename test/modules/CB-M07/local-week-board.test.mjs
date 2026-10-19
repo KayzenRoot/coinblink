@@ -92,6 +92,13 @@ test('M07-D invalid contracts, limits and duplicates fail closed', () => {
   ]) {
     assert.throws(() => createLocalWeeklyBoard([{ ...valid, ...replacement }]), TypeError);
   }
+  // All input contracts must be validated before the view-only channel filter.
+  assert.throws(() => createLocalWeeklyBoard([{
+    ...valid, channel: 'instagram', timeZone: 'Europe/Paris',
+  }], 'x', 'UTC'), TypeError);
+  assert.throws(() => createLocalWeeklyBoard([{
+    ...valid, channel: 'linkedin',
+  }], 'tiktok', 'UTC'), TypeError);
   assert.throws(() => createLocalWeeklyBoard([valid, valid]), TypeError);
   const many = Array.from({length: 20}, (_, n) =>
     idea(1, 'x', '2026-11-20T12:' + String(n).padStart(2, '0'), 'Bounded local title'));

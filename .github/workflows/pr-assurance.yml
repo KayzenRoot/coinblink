@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  checks: read
 
 concurrency:
   group: coinblink-pr-assurance-${{ github.event.pull_request.number }}
@@ -22,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [scope, review]
+        lane: [scope, review, quality]
     env:
       GITHUB_TOKEN: ${{ github.token }}
       GITHUB_REPOSITORY: ${{ github.repository }}

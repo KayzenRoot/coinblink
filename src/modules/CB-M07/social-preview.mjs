@@ -1,3 +1,5 @@
+import { createLocalReviewQueue } from '../CB-M06/owner-dashboard.mjs';
+
 // Pure, test-only Social Studio composition. No API, SDK, OAuth, scheduler,
 // publishing, URL navigation or credential use. Never a production message.
 export const SOCIAL_LOCAL_CHANNELS = Object.freeze(['x', 'instagram', 'tiktok']);

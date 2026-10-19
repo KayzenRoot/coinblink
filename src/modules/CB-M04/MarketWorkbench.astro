@@ -1,0 +1,55 @@
+---
+import { listMockMarkets, inspectMockMarket, MARKET_DEMO_POLICY } from "./market-lab.mjs";
+import clientUrl from "./market-lab.client.js?url&no-inline";
+const entries = listMockMarkets().items;
+---
+<main id="main" class="m04" data-m04-root>
+  <nav><a href="/en">← CoinBlink Home</a></nav>
+  <header>
+    <small>CB-M04 · MOCK · NO LIVE QUOTES · NO TRADING</small>
+    <h1>Market & radar demonstration</h1>
+    <p>Symbols below are real asset names but there are <strong>no market prices, rankings, predictions or live provider connections</strong>. All observations are offline examples.</p>
+    <p class="m04-policy">{MARKET_DEMO_POLICY}</p>
+  </header>
+  <section aria-labelledby="market-example-title">
+    <h2 id="market-example-title">Illustrative market observations</h2>
+    <label>Find an example asset
+      <input type="search" maxlength="32" data-m04-query autocomplete="off" placeholder="BTC, ETH or SOL" />
+    </label>
+    <p role="status" aria-live="polite" data-m04-count>{entries.length} unavailable example assets</p>
+    <div class="m04-grid">
+      {entries.map(item => <article data-m04-entry data-m04-searchable={[item.asset,item.pair,item.freshness].join(" ").toLowerCase()}>
+        <small>NOT LIVE · {item.freshness}</small>
+        <h3>{item.pair}</h3>
+        <dl>
+          <dt>Quote</dt><dd aria-label="Price unavailable">—</dd>
+          <dt>Currency / unit</dt><dd>{item.quoteCurrency} / {item.unit}</dd>
+          <dt>Time of observation</dt><dd>{item.observedAtUTC ?? "Unavailable"}</dd>
+          <dt>Illustration timestamp</dt><dd>{item.asOfUTC ?? "Unavailable"}</dd>
+          <dt>Rights</dt><dd>{item.rightsStatus}</dd>
+          <dt>Readiness</dt><dd>{inspectMockMarket(item).state}</dd>
+        </dl>
+      </article>)}
+    </div>
+    <p role="status" data-m04-empty hidden>No example assets match. No provider was queried.</p>
+  </section>
+  <section class="m04-radar" aria-labelledby="m04-radar-title">
+    <small>DEMO ONLY · NO EVENT DATA</small>
+    <h2 id="m04-radar-title">Radar 24h</h2>
+    <p>No verified event feed is connected. Market alerts, sentiment and 24-hour change remain unavailable.</p>
+    <output>UNAVAILABLE · NO LIVE DATA</output>
+  </section>
+</main>
+<script is:inline src={clientUrl}></script>
+<style>
+  .m04{padding:clamp(1.25rem,5vw,4rem);max-width:80rem;margin:0 auto;min-height:70vh}
+  .m04 nav a{color:#b8f34b}.m04 header{max-width:70ch}.m04 h1{font-size:clamp(2rem,5vw,4rem)}
+  .m04 header p{color:#b5c9bd}.m04 small,.m04-policy{color:#f5c981;font-weight:700}
+  .m04 label{display:grid;max-width:25rem;gap:.35rem;margin:1rem 0}
+  .m04 input{padding:.75rem;color:#fff;border-radius:.5rem;border:1px solid #719a79;background:#14251b}
+  .m04-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1rem}
+  .m04 article,.m04-radar{border:1px solid #456e4e;border-radius:.75rem;padding:1.25rem;background:#111e17}
+  .m04 article[hidden]{display:none}.m04 dl{display:grid;grid-template-columns:1fr 1.2fr;gap:.35rem .5rem}
+  .m04 dt{color:#b3c4b8}.m04 dd{margin:0;color:#faf0c9;overflow-wrap:anywhere}
+  .m04-radar{margin-top:2rem}.m04 output{color:#f5c981;font-weight:700}
+</style>

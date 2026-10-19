@@ -47,6 +47,15 @@ function classifyTrigger(name, reasons) {
     reasons.add('scheduled/deployment workflow trigger requires separate authorization');
   }
 }
+/** Normalize ordinary YAML quoted mapping keys and scalar values. */
+function unquoteYamlScalar(text) {
+  const value = text.trim();
+  const quote = value[0];
+  if (value.length >= 2 && (quote === '"' || quote === "'") && value.at(-1) === quote) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
 function classifyMapping(key, value, reasons) {
   classifyTrigger(key, reasons);
   // GitHub Actions documented GITHUB_TOKEN permissions, including status writes.
@@ -71,12 +80,12 @@ export function unsafeWorkflowLines(content) {
   const reasons = new Set();
   for (const originalLine of content.split('\n')) {
     const line = originalLine.split('#', 1)[0].trim();
-    const event = line.startsWith('- ') ? line.slice(2).split(':', 1)[0].trim() : '';
+    const event = line.startsWith('- ') ? unquoteYamlScalar(line.slice(2).split(':', 1)[0]) : '';
     classifyTrigger(event, reasons);
     const divider = line.indexOf(':');
     if (divider < 0) continue;
-    const key = line.slice(0, divider).trim();
-    const value = line.slice(divider + 1).trim();
+    const key = unquoteYamlScalar(line.slice(0, divider));
+    const value = unquoteYamlScalar(line.slice(divider + 1));
     classifyMapping(key, value, reasons);
   }
   return [...reasons];

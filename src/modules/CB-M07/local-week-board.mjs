@@ -1,5 +1,15 @@
 // M07-D LOCAL: a pure, read-only weekly projection of the existing in-memory ideas.
 // No timer, scheduler, storage, provider calls, fetch, publishing or persistence.
+/**
+ * Create an immutable weekly, read-only view of up to 20 synthetic LOCAL ideas.
+ * A conflict marks distinct drafts sharing a channel and exact UTC minute; no
+ * scheduling, persistence, publication or remote access occurs.
+ * @param {ReadonlyArray<object>} ideas Private M07-C in-memory calendar ideas.
+ * @param {'all'|'x'|'instagram'|'tiktok'} channelFilter View-only channel filter.
+ * @param {'UTC'|'America/Sao_Paulo'|'America/New_York'} timeZone Display timezone.
+ * @returns {Readonly<object>} Frozen week/day DTO and informational conflict count.
+ * @throws {TypeError} When an idea or filter violates the LOCAL synthetic contract.
+ */
 export function createLocalWeeklyBoard(ideas, channelFilter = 'all', timeZone = 'America/Sao_Paulo') {
   const channels = ['x', 'instagram', 'tiktok'];
   const zones = ['UTC', 'America/Sao_Paulo', 'America/New_York'];

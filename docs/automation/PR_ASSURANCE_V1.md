@@ -4,11 +4,12 @@
 
 ## Automated orchestration
 
-The workflow .github/workflows/pr-assurance.yml runs on pull requests targeting main: open, update, reopen and ready-for-review. It starts **two parallel, independent CI lanes** in Ubuntu with Node 22 and GitHub read-only permissions:
+The workflow .github/workflows/pr-assurance.yml runs on pull requests targeting main: open, update, reopen and ready-for-review. It starts **three parallel, independent CI lanes** in Ubuntu with Node 22 and GitHub read-only contents, pull-requests and checks permissions:
 
 | Lane | Responsibility | Result |
 | --- | --- | --- |
 | Scope | Check the exact PR head/base, all file paths, prevent accidental secret/GEF paths; scan complete changed workflows for elevated write tokens, pull_request_target, workflow_run and schedule/deployment triggers | Fail closed on confirmed prohibited paths, elevated workflow triggers, API errors or stale HEAD |
+| Quality | Read completed SonarCloud check runs and up to 12 associated GitHub annotations (bounded short wait); report issue paths/lines without altering or overriding the official check | Advisory diagnostic only; official SonarCloud quality gate remains mandatory |
 | Review | Inspect submitted review states, requested reviewers and CodeRabbit issue comments; distinguish rate-limit, missing and stale reviews; display formal HEAD APPROVED candidates | Informational summary, never fabricates approval or creates CI deadlock while human review is pending |
 
 Each lane executes the same fast Node built-in contract tests and emits a GitHub Actions summary. Each can run independently. They do **not** execute LLM agents, generate CodeRabbit reviews, approve PRs, commit, merge, deploy or publish. No paid APIs, credentials or new dependencies.

@@ -126,7 +126,9 @@ test('M07-D private CSP UI exposes labeled accessible filters; sessions scrub we
   assert.match(html, /MEMORY ONLY · NOT SCHEDULED · NOT POSTED/);
   assert.match(html, /script nonce="[a-f0-9]{64}" type="module"/);
   assert.match(LOCAL_CMS_UI_SCRIPT, /ui\.weekBoard\.replaceChildren\(\)/);
-  assert.match(LOCAL_CMS_UI_SCRIPT, /item\.textContent = idea\.localTime/);
+  assert.match(LOCAL_CMS_UI_SCRIPT, /button\.textContent = 'Open LOCAL draft · ' \+ idea\.title/);
+  assert.match(LOCAL_CMS_UI_SCRIPT, /detail\.textContent = ' · ' \+ idea\.localTime/);
+  assert.match(LOCAL_CMS_UI_SCRIPT, /lastDrafts\.find\(row => row\.id === idea\.draftId\)/);
   assert.match(LOCAL_CMS_UI_SCRIPT, /renderLocalWeekBoard\(\)/);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT, /localStorage|sessionStorage|indexedDB|\.innerHTML|\/local\/week|\/admin\/week/);
   assert.match(readFileSync('src/pages/admin/[...route].js', 'utf8'), /!import\.meta\.env\.DEV/);

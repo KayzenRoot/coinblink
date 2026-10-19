@@ -33,6 +33,24 @@ test('workflow guard blocks elevated triggers and write tokens', () => {
   assert.match(reasons.join(' '), /write-capable/);
   assert.match(reasons.join(' '), /scheduled/);
 });
+test('YAML sequence event syntax cannot bypass privileged trigger scan', () => {
+  const lines = unsafeWorkflowLines('on:\n  - push\n  - pull_request_target\n  - workflow_run:\npermissions:\n  contents: read\n');
+  assert.ok(lines.some(reason => reason.includes('pull_request_target')));
+  const scheduling = unsafeWorkflowLines('on:\n  - push\n  - schedule\n');
+  assert.ok(scheduling.some(reason => reason.includes('scheduled/deployment')));
+});
+
+test('a subsequent COMMENTED review does not revoke exact-HEAD approval', () => {
+  const reviews = [
+    {user:{login:'Independent'},state:'APPROVED',commit_id:HEAD,submitted_at:'2026-10-19T10:00:00Z'},
+    {user:{login:'Independent'},state:'COMMENTED',commit_id:HEAD,submitted_at:'2026-10-19T11:00:00Z'},
+  ];
+  assert.deepEqual(analyzeReviews({reviews,head:HEAD,author:'Owner'}).formalHeadApprovalCandidates,
+    ['Independent']);
+  reviews.push({user:{login:'Independent'},state:'DISMISSED',commit_id:HEAD,submitted_at:'2026-10-19T12:00:00Z'});
+  assert.deepEqual(analyzeReviews({reviews,head:HEAD,author:'Owner'}).formalHeadApprovalCandidates, []);
+});
+
 test('review candidates exclude author, bots, outdated approval, and dismissed latest', () => {
   const reviews = [
     {user:{login:'Owner'},state:'APPROVED',commit_id:HEAD,submitted_at:'2026-10-19T10:00:00Z'},

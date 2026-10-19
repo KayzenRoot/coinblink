@@ -1,0 +1,46 @@
+name: CoinBlink PR assurance (read-only)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Untrusted PR code must never receive write credentials, deployment tokens or secrets.
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: coinblink-pr-assurance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  assurance:
+    name: PR assurance / ${{ matrix.lane }} (read-only)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [scope, review]
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+      EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+    steps:
+      - name: Checkout untrusted PR with no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+      - name: Syntax and independent audit contract regression
+        run: |
+          node --check scripts/pr-assurance.mjs
+          node --test test/automation/pr-assurance.test.mjs
+      - name: Run bounded read-only PR audit
+        run: node scripts/pr-assurance.mjs ${{ matrix.lane }}

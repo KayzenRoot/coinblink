@@ -1,6 +1,7 @@
 // Real local D1 and virtual WebAuthn. Social Studio only formats text in memory.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import AxeBuilder from '@axe-core/playwright';
 import { startLocalCmsPreview } from '../CB-M05/p1c-local-preview.mjs';
 
 test('M07 LOCAL three channels use authenticated D1 metadata only; no posts or egress', {timeout:120_000}, async () => {
@@ -52,6 +53,12 @@ test('M07 LOCAL three channels use authenticated D1 metadata only; no posts or e
       assert.ok(cardBox && cardBox.x >= 0 && cardBox.x + cardBox.width <= width + 1,
         'LOCAL card must fit viewport ' + width);
     }
+    // Automated WCAG A/AA check of the actual protected visual preview.
+    const accessibility = await new AxeBuilder({page}).include('#m07-preview')
+      .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+    assert.deepEqual(accessibility.violations.map(({id,impact}) => ({id,impact})),[]);
+    assert.equal(await page.getByRole('article',{name:'Storyboard text mockup'}).isVisible(),true);
+    assert.equal(await page.getByLabel('Illustrative preview size (not a provider specification)').count(),1);
     await page.locator('#m07-clear').click();
     assert.equal(await page.locator('#m07-preview').isVisible(),false);
     assert.equal(await page.locator('#m07-preview-text').textContent(),'');

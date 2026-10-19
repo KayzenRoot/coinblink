@@ -1,5 +1,6 @@
 ---
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import { NEWS_MOCK_POLICY } from "./news-workbench.mjs";
 interface MockItem {
   slug: string;
@@ -20,6 +21,7 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
 ---
 <main id="main" class="m02-article">
   <nav aria-label={locale === "pt-br" ? "Navegação" : "Navigation"}><a href={base}>← {copy.back}</a></nav>
+  <LocalJourneyNav locale={locale} current="news" />
   {shown ? (
     <article>
       <p class="m02-status">{copy.detailDisclaimer} · {copy[shown.category] ?? shown.category}</p>

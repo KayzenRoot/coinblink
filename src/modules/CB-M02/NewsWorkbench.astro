@@ -1,6 +1,7 @@
 ---
 import { listMockNews, NEWS_MOCK_POLICY } from "./news-workbench.mjs";
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
 interface Props { locale?: "en" | "pt-br"; }
 const { locale = "en" } = Astro.props;
@@ -13,6 +14,7 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
   <nav aria-label={locale === "pt-br" ? "Navegação" : "Navigation"}>
     <a href={locale === "pt-br" ? "/pt-br" : "/en"}>{copy.home}</a>
   </nav>
+  <LocalJourneyNav locale={locale} current="news" />
   <header>
     <small class="m02-warning">{copy.disclaimer}</small>
     <h1 id="m02-title">{copy.directoryTitle}</h1>

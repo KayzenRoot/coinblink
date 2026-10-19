@@ -1,10 +1,12 @@
 ---
 import { SOURCE_DEMO_POLICY, inspectSyntheticSource, listSyntheticSources } from "./source-lab.mjs";
 import uiUrl from "./source-lab.client.js?url&no-inline";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 const rows = listSyntheticSources().items;
 ---
 <main id="main" class="m03" data-m03-root>
   <nav><a href="/en">← CoinBlink Home</a></nav>
+  <LocalJourneyNav current="sources" />
   <header>
     <small>M03 · OFFLINE MOCK · NO INGESTION · NO PUBLICATION</small>
     <h1>Sources & provenance lab</h1>

@@ -49,6 +49,10 @@ export function unsafeWorkflowLines(content) {
   ]);
   for (const originalLine of content.split('\n')) {
     const line = originalLine.split('#', 1)[0].trim();
+    // YAML event lists (on: followed by - pull_request_target) contain no colon.
+    const listEvent = line.startsWith('- ') ? line.slice(2).split(':', 1)[0].trim() : '';
+    if (triggers.has(listEvent)) reasons.add('pull_request_target/workflow_run requires separate risk authorization');
+    if (scheduled.has(listEvent)) reasons.add('scheduled/deployment workflow trigger requires separate authorization');
     const divider = line.indexOf(':');
     if (divider < 0) continue;
     const key = line.slice(0, divider).trim();
@@ -72,7 +76,8 @@ export function analyzeReviews({ reviews, head, author }) {
   const latest = new Map();
   for (const review of reviews) {
     const login = review.user?.login || '';
-    if (!login) continue;
+    if (!login || review.state === 'COMMENTED' || review.state === 'PENDING') continue;
+    // COMMENTED does not dismiss an earlier APPROVED; DISMISSED/CHANGES_REQUESTED do.
     const submitted = review.submitted_at || '';
     if (!latest.has(login) || submitted >= (latest.get(login).submitted_at || '')) {
       latest.set(login, review);

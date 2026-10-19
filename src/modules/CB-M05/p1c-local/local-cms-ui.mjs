@@ -2,10 +2,12 @@
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
+import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
+  const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -34,6 +36,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     reviewList: document.getElementById('m06-review-list'),
     reviewCount: document.getElementById('m06-review-count'),
     reviewScope: document.getElementById('m06-review-scope'),
+    socialDraft: document.getElementById('m07-draft'),
+    socialChannel: document.getElementById('m07-channel'),
+    socialGenerate: document.getElementById('m07-generate'),
+    socialClear: document.getElementById('m07-clear'),
+    socialPreview: document.getElementById('m07-preview'),
+    socialPreviewText: document.getElementById('m07-preview-text'),
+    socialStatus: document.getElementById('m07-status'),
+    socialRights: document.getElementById('m07-rights'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -106,7 +116,33 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.previewBody.textContent = body;
     ui.previewSource.textContent = source;
   }
+  function clearLocalSocialPreview() {
+    ui.socialPreview.hidden = true;
+    ui.socialPreviewText.textContent = '';
+    ui.socialRights.textContent = 'UNAVAILABLE';
+    ui.socialStatus.textContent = 'No LOCAL social preview';
+  }
+  function scrubLocalSocialStudio() {
+    clearLocalSocialPreview();
+    ui.socialDraft.replaceChildren();
+    ui.socialChannel.value = 'x';
+  }
+  function renderLocalSocialChoices() {
+    ui.socialDraft.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose an authenticated LOCAL draft';
+    ui.socialDraft.append(placeholder);
+    for (const draft of lastDrafts) {
+      const option = document.createElement('option');
+      option.value = draft.id;
+      option.textContent = draft.title + ' · rev ' + draft.revision;
+      ui.socialDraft.append(option);
+    }
+    ui.socialDraft.value = '';
+  }
   function hideLocalDashboard() {
+    scrubLocalSocialStudio();
     ui.dashboard.hidden = true;
     ui.listedDrafts.textContent = 'Unavailable';
     ui.measuredAt.textContent = 'Unavailable';
@@ -163,6 +199,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     lastReviewQueue = reviewQueue;
     ui.dashboard.hidden = false;
     renderLocalReviewQueue();
+    renderLocalSocialChoices();
   }
   function clearLocalSession() {
     sessionEpoch += 1;
@@ -337,6 +374,30 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   ui.reviewFilter.addEventListener('change', renderLocalReviewQueue);
+  ui.socialDraft.addEventListener('change', clearLocalSocialPreview);
+  ui.socialChannel.addEventListener('change', clearLocalSocialPreview);
+  ui.socialClear.addEventListener('click', clearLocalSocialPreview);
+  ui.socialGenerate.addEventListener('click', () => {
+    clearLocalSocialPreview();
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) {
+      ui.socialStatus.textContent = 'Select a listed LOCAL draft first';
+      return;
+    }
+    try {
+      const concept = createLocalSocialPreview(draft, ui.socialChannel.value);
+      if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      ui.socialPreviewText.textContent = concept.text;
+      ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
+        ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
+      ui.socialPreview.hidden = false;
+      ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
+    } catch {
+      clearLocalSocialPreview();
+      ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
+    }
+  });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
     renderDraftPreview();
@@ -556,6 +617,7 @@ ul{padding-left:20px}li{margin:6px 0}
 .m06-card h3{margin:0 0 6px;font-size:1rem}
 .m06-card strong{display:block;color:#c6f29c;overflow-wrap:anywhere}
 .m06-card small{color:#d7c68f}
+.m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
 footer{padding:24px 0;color:#b9c8bd}
 </style>
 </head><body>
@@ -621,6 +683,26 @@ footer{padding:24px 0;color:#b9c8bd}
 </select>
 <p role="status" aria-live="polite">Visible: <strong id="m06-review-count">UNAVAILABLE</strong> · scope: <strong id="m06-review-scope">UNAVAILABLE</strong></p>
 <ul id="m06-review-list" aria-label="Private LOCAL editorial review queue"></ul>
+</section>
+<section id="m07-social" aria-labelledby="m07-title">
+<h3 id="m07-title">M07 · LOCAL Social Studio (text-only sandbox)</h3>
+<p>Private previews for illustrative X, Instagram and TikTok layouts. Never approved, scheduled, posted or shared. A source URL does not establish licensing or reuse rights.</p>
+<label for="m07-draft">Authenticated draft from LOCAL D1 listing</label>
+<select id="m07-draft"><option value="">Choose an authenticated LOCAL draft</option></select>
+<label for="m07-channel">Illustrative channel format, not a provider integration</label>
+<select id="m07-channel">
+<option value="x">X concept</option>
+<option value="instagram">Instagram concept</option>
+<option value="tiktok">TikTok storyboard text</option>
+</select>
+<button id="m07-generate" type="button">Generate LOCAL text preview</button>
+<button id="m07-clear" type="button">Clear LOCAL preview</button>
+<p id="m07-status" role="status" aria-live="polite">No LOCAL social preview</p>
+<section id="m07-preview" aria-label="Private LOCAL social preview" hidden>
+<p id="m07-rights">UNAVAILABLE</p>
+<pre id="m07-preview-text" class="m07-concept"></pre>
+<p>NO POSTING · NO MEDIA UPLOAD · NO PROVIDER AUTH · NO PUBLICATION</p>
+</section>
 </section>
 </section>
 <section aria-label="Draft editor">

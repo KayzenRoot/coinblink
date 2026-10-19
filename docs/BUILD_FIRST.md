@@ -18,3 +18,7 @@
 ## CMS local com um comando
 
 Execute `npx playwright install chromium` uma vez, depois `npm run cms:local` para um CMS WebAuthn + D1 **somente local**. Veja [README](../README.md) para opção temporária, teste rápido e avisos. A rota de produção /admin permanece fechada; esse laboratório não publica conteúdo nem usa credenciais reais.
+
+## Studio local: iniciar Home + CMS em um comando
+
+`npm run studio:local` inicia a Home Astro em `127.0.0.1:4321` e o CMS M05 com D1 persistente local e credenciais WebAuthn **sintéticas** numa janela Chromium isolada. Requer `npm ci` e, na primeira utilização, `npx playwright install chromium`. Saia fechando a janela ou usando Ctrl+C. O banco local está em `.wrangler/coinblink-m05-drafts-local`, ignorado pelo Git. Não insira segredos reais, não é login de produção e não publica conteúdo.

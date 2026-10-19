@@ -22,6 +22,10 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-dashboard').isVisible(), true);
     assert.equal(await page.locator('#m06-listed-drafts').innerText(), '0', 'empty local D1 is legitimately measured');
     assert.match(await page.locator('#m06-measured-at').innerText(), /Z$/);
+    assert.equal(await page.locator('#m06-activity-status').innerText(), 'MEASURED_LOCAL');
+    assert.equal(await page.locator('#m06-activity-scope').innerText(), 'MEASURED_LOCAL');
+    assert.equal(await page.locator('#m06-revised-listed').innerText(), '0');
+    assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
     await page.locator('[name="title"]').fill('LOCAL admin test draft');
     await page.locator('[name="summary"]').fill('Synthetic test draft never published');
     await page.locator('[name="body"]').fill('Private test body stored in local D1');
@@ -41,6 +45,8 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 1);
     assert.equal(await page.locator('#m06-listed-drafts').innerText(), '1', 'M06 count reflects authenticated local list');
+    assert.equal(await page.locator('#m06-recent-activity li').count(), 1);
+    assert.match(await page.locator('#m06-recent-activity').innerText(), /LOCAL admin test draft · rev 1/u);
     const response = await page.evaluate(async () => {
       const r = await fetch('/admin/articles', { credentials: 'same-origin' });
       return { status: r.status, body: await r.json() };
@@ -54,6 +60,9 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-dashboard').isVisible(), false, 'dashboard hidden on logout');
     assert.equal(await page.locator('#m06-listed-drafts').textContent(), 'Unavailable');
     assert.equal(await page.locator('#m06-measured-at').textContent(), 'Unavailable');
+    assert.equal(await page.locator('#m06-activity-status').textContent(), 'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-revised-listed').textContent(), 'Unavailable');
+    assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
     assert.equal(await page.locator('#draft-preview-body').textContent(), '', 'logout must clear draft body');
     assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0,
@@ -89,6 +98,8 @@ for (const admin of [false, true]) {
         'private draft body must be scrubbed after a server-side 401');
       assert.equal(await page.locator('#m06-dashboard').isVisible(), false, 'dashboard must hide after 401 revocation');
       assert.equal(await page.locator('#m06-listed-drafts').textContent(), 'Unavailable');
+      assert.equal(await page.locator('#m06-activity-status').textContent(), 'UNAVAILABLE');
+      assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
       assert.equal(await page.locator('[name="body"]').inputValue(), '',
         'stale editable private draft must not remain in the form');
       assert.equal(await page.locator('#refresh').isVisible(), false,
@@ -143,6 +154,10 @@ test('M05 /admin persistent LOCAL D1 retains draft but expires synthetic Owner s
     await second.page.locator('#save').click();
     await second.page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout: 20_000 });
     assert.equal((await second.db.prepare('SELECT COUNT(*) AS n FROM cms_draft_revisions').first()).n, 2);
+    assert.equal(await second.page.locator('#m06-revised-listed').innerText(), '1');
+    assert.match(await second.page.locator('#m06-recent-activity').innerText(), /Restart-safe edited draft · rev 2/u);
+    await second.page.locator('#m06-recent-activity button').click();
+    await second.page.getByText('Loaded draft revision 2').waitFor({ timeout: 20_000 });
     await second.page.locator('#history').click();
     await second.page.getByText('Read-only revision history loaded: 2 versions').waitFor({ timeout: 20_000 });
     assert.match(await second.page.locator('#history-list').innerText(), /Revision 1/);
@@ -151,5 +166,42 @@ test('M05 /admin persistent LOCAL D1 retains draft but expires synthetic Owner s
     if (second) await second.close();
     if (first) await first.close();
     rmSync(persistenceRoot, { recursive: true, force: true });
+  }
+});
+
+
+test('M06-B recent activity derives only from two authenticated LOCAL drafts and is scrubbed on sign-out', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = preview.page;
+    assert.equal(await page.locator('#m06-dashboard').isVisible(), false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    async function save(title) {
+      await page.locator('#new-draft').click();
+      await page.locator('[name="title"]').fill(title);
+      await page.locator('[name="summary"]').fill('Local synthetic summary never published');
+      await page.locator('[name="body"]').fill('PRIVATE_BODIES_NOT_IN_ACTIVITY');
+      await page.locator('[name="sourceUrl"]').fill('https://example.org/demo');
+      await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+      await page.locator('#save').click();
+      await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    }
+    await save('Recent activity synthetic one');
+    await save('Recent activity synthetic two');
+    assert.equal(await page.locator('#m06-listed-drafts').innerText(), '2');
+    assert.equal(await page.locator('#m06-revised-listed').innerText(), '0');
+    assert.equal(await page.locator('#m06-recent-activity li').count(), 2);
+    assert.doesNotMatch(await page.locator('#m06-recent-activity').innerText(), /PRIVATE_BODIES_NOT_IN_ACTIVITY/);
+    await page.locator('#m06-recent-activity button').first().click();
+    await page.getByText('Loaded draft revision 1').waitFor({ timeout: 20_000 });
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated').waitFor({ timeout: 20_000 });
+    assert.equal(await page.locator('#m06-dashboard').isVisible(), false);
+    assert.equal(await page.locator('#m06-activity-scope').textContent(), 'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
+    assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0);
+  } finally {
+    await preview.close();
   }
 });

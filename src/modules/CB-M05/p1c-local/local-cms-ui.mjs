@@ -16,6 +16,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     previewSummary: document.getElementById('draft-preview-summary'),
     previewBody: document.getElementById('draft-preview-body'),
     previewSource: document.getElementById('draft-preview-source'),
+    unsaved: document.getElementById('unsaved-draft-status'),
     status: document.getElementById('session-status'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
@@ -36,6 +37,31 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   };
   let csrf = null;
   let lastDrafts = [];
+  let savedSnapshot = null;
+  const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
+  function draftSnapshot() {
+    return JSON.stringify(draftFields.map(name => ui.form.elements.namedItem(name).value));
+  }
+  function hasUnsavedChanges() {
+    return !!csrf && !ui.form.hidden && savedSnapshot !== null && draftSnapshot() !== savedSnapshot;
+  }
+  function showUnsavedChanges() {
+    ui.unsaved.hidden = !hasUnsavedChanges();
+  }
+  function acceptSavedDraft() {
+    savedSnapshot = draftSnapshot();
+    showUnsavedChanges();
+  }
+  function confirmDraftDiscard() {
+    return !hasUnsavedChanges() || window.confirm('Discard unsaved changes in this LOCAL draft?');
+  }
+  // Native browser navigation/refresh guard. Never persist text in browser storage.
+  // Revoked sessions and explicit sign-out still clear data without a prompt.
+  window.addEventListener?.('beforeunload', (event) => {
+    if (!hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
   const decode = (s) => {
     const t = s.replace(/-/g, '+').replace(/_/g, '/');
     const raw = atob(t + '='.repeat((4 - t.length % 4) % 4));
@@ -63,12 +89,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   function clearLocalSession() {
     csrf = null;
+    savedSnapshot = null;
     ui.form.reset();
     ui.draftId.value = '';
     ui.revision.value = '0';
     ui.save.textContent = 'Create draft';
     ui.form.hidden = true;
     renderDraftPreview();
+    showUnsavedChanges();
     ui.logout.hidden = true;
     ui.refresh.hidden = true;
     ui.history.hidden = true;
@@ -97,7 +125,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url)) {
+      if (response.status === 401 && (csrf ||
+          /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url))) {
+        // Denied article reads must erase stale drafts even if the local CSRF state
+        // was already cleared. After sign-in, deny from any protected route
+        // also revokes this browser editor's local authenticated state.
         clearLocalSession();
       }
       const error = new Error('Local request rejected (' + response.status + ')');
@@ -172,6 +204,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.history.hidden = false;
     ui.historyList.replaceChildren();
     renderDraftPreview();
+    acceptSavedDraft();
   }
   function renderDraftList() {
     ui.items.replaceChildren();
@@ -183,6 +216,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       button.type = 'button';
       button.textContent = draft.title + ' · rev ' + draft.revision;
       button.addEventListener('click', async () => {
+        if (!confirmDraftDiscard()) return;
         try {
           const result = await api('/local/articles/' + encodeURIComponent(draft.id));
           editDraft(result.draft);
@@ -200,7 +234,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.status.textContent = 'Local test session active';
   }
   ui.search.addEventListener('input', renderDraftList);
-  ui.form.addEventListener('input', renderDraftPreview);
+  ui.form.addEventListener('input', () => {
+    renderDraftPreview();
+    showUnsavedChanges();
+  });
   ui.login.addEventListener('click', async () => {
     ui.login.disabled = true;
     try {
@@ -224,6 +261,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       csrf = logged.csrf;
       ui.form.hidden = false;
       renderDraftPreview();
+      acceptSavedDraft();
       ui.logout.hidden = false;
       ui.refresh.hidden = false;
       ui.search.hidden = false;
@@ -264,16 +302,18 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.draftId.value = result.id;
       ui.revision.value = String(result.revision);
       ui.save.textContent = 'Save new revision';
+      acceptSavedDraft();
       await refresh();
       message('Saved LOCAL draft revision ' + result.revision + '; not published');
     } catch { message('Save rejected; reload draft to resolve possible revision conflict'); }
     finally { ui.save.disabled = false; }
   });
   document.getElementById('new-draft').addEventListener('click', () => {
+    if (!confirmDraftDiscard()) return;
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
     ui.history.hidden = true;
     ui.historyList.replaceChildren();
-    ui.save.textContent = 'Create draft'; renderDraftPreview(); message('New unsaved local draft');
+    ui.save.textContent = 'Create draft'; renderDraftPreview(); acceptSavedDraft(); message('New unsaved local draft');
   });
   ui.bootstrap.addEventListener('click', async () => {
     ui.bootstrap.disabled = true;
@@ -371,8 +411,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       clearLocalSession();
       message('Local test session ended');
     } catch {
-      // HttpOnly cookies cannot be cleared by JS: never falsely claim server revocation.
-      message('Logout not confirmed. Session may remain active; retry sign out or close this disposable browser.');
+      // Always remove private DOM/unsaved state even if the server refuses logout.
+      // HttpOnly cookies cannot be cleared by JS; do not claim server revocation.
+      clearLocalSession();
+      message('Logout not confirmed. Browser editor cleared; server session may remain active. Close this disposable browser or sign in again.');
     } finally { ui.logout.disabled = false; }
   });
 `;
@@ -453,6 +495,7 @@ footer{padding:24px 0;color:#b9c8bd}
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>
 <button id="new-draft" type="button">New draft</button>
+<p id="unsaved-draft-status" role="status" aria-live="polite" hidden>Unsaved changes in this LOCAL draft.</p>
 <button id="history" type="button" hidden>View revision history</button>
 <ul id="history-list" aria-label="Read-only draft revision history"></ul>
 <section id="draft-preview" class="draft-preview" aria-labelledby="draft-preview-label" hidden>

@@ -483,12 +483,19 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     assert.match(element('history-list').children[0].textContent, /Revision 2/);
     fetcher.failLogout = true;
     await element('logout').handlers.click();
-    assert.equal(element('draft').hidden, false, 'failed logout cannot claim revocation');
+    assert.equal(element('draft').hidden, true, 'failed logout must scrub the private local editor');
+    assert.equal(element('logout').hidden, true, 'failed logout removes privileged local controls');
     assert.match(element('message').textContent, /Logout not confirmed/);
-    assert.equal(formFields.title.value, 'Updated local UI revision, protected by D1', 'unconfirmed logout retains editable data for safe retry');
-    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NULL').first()).n, 1);
+    assert.match(element('message').textContent, /server session may remain active/);
+    assert.equal(formFields.title.value, '', 'unconfirmed logout must still erase private draft text');
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions WHERE revoked_at IS NULL').first()).n, 1,
+      'client-only scrubbing is not proof of server-side revocation');
     fetcher.failLogout = false;
+    await element('login').handlers.click();
+    assert.match(element('message').textContent, /Authenticated/,
+      'fresh synthetic passkey authentication is required after local session scrub');
     await element('logout').handlers.click();
+    assert.match(element('message').textContent, /Local test session ended/);
     assert.equal(element('draft').hidden, true);
     assert.equal(element('items').children.length, 0);
     assert.equal(element('draft-search').hidden, true, 'draft title filter not available after logout');

@@ -995,7 +995,11 @@ test('M05 LOCAL CMS QUOTA-WORKER: 100 concurrent challenges, exactly 3 acknowled
     assert.equal(refused, 97, 'every other concurrent request is refused with 429');
     assert.equal(await countRows(ctx.db, 'cms_challenges'), acknowledged,
       'acknowledged challenges must exist as rows: no acknowledged-but-missing and no unacknowledged-but-present rows');
-    const refusal = outcomes.find(response => response.status === 429);
+    // Concurrent Worker responses may have already-consumed bodies at the proxy
+    // boundary. Preserve the 100-response status/D1 proof above, then inspect a
+    // fresh sequential denial while the three-challenge quota remains full.
+    const refusal = await ask();
+    assert.equal(refusal.status, 429, 'saturated challenge quota denies another attempt');
     assert.match((await refusal.json()).error, /Too many active challenges/);
     await ctx.db.prepare(
       'UPDATE cms_challenges SET consumed_at=? WHERE challenge_digest=(SELECT challenge_digest FROM cms_challenges LIMIT 1)'

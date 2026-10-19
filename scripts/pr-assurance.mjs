@@ -38,35 +38,42 @@ export function classifyPaths(paths) {
   };
 }
 
-/** Avoid backtracking regex; check whole workflow line-by-line. */
-export function unsafeWorkflowLines(content) {
-  const reasons = new Set();
-  const triggers = new Set(['pull_request_target', 'workflow_run']);
-  const scheduled = new Set(['schedule', 'deployment_status']);
+/** Shared logic for YAML keys and sequence-style trigger entries. */
+function classifyTrigger(name, reasons) {
+  if (name === 'pull_request_target' || name === 'workflow_run') {
+    reasons.add('pull_request_target/workflow_run requires separate risk authorization');
+  }
+  if (name === 'schedule' || name === 'deployment_status') {
+    reasons.add('scheduled/deployment workflow trigger requires separate authorization');
+  }
+}
+function classifyMapping(key, value, reasons) {
+  classifyTrigger(key, reasons);
   const writeScopes = new Set([
     'contents', 'actions', 'checks', 'deployments', 'id-token',
     'issues', 'pull-requests', 'workflows', 'packages', 'security-events',
   ]);
+  if ((key === 'permissions' && (value === 'write-all' || value.includes('write'))) ||
+      (writeScopes.has(key) && value === 'write')) {
+    reasons.add('write-capable GitHub token permission');
+  }
+  if (key === 'on' && ['pull_request_target', 'workflow_run', 'schedule'].some(event =>
+    value.includes(event))) {
+    reasons.add('elevated inline workflow trigger requires separate authorization');
+  }
+}
+/** Avoid backtracking regex; inspect plain and list-form YAML workflow lines. */
+export function unsafeWorkflowLines(content) {
+  const reasons = new Set();
   for (const originalLine of content.split('\n')) {
     const line = originalLine.split('#', 1)[0].trim();
-    // YAML event lists (on: followed by - pull_request_target) contain no colon.
-    const listEvent = line.startsWith('- ') ? line.slice(2).split(':', 1)[0].trim() : '';
-    if (triggers.has(listEvent)) reasons.add('pull_request_target/workflow_run requires separate risk authorization');
-    if (scheduled.has(listEvent)) reasons.add('scheduled/deployment workflow trigger requires separate authorization');
+    const event = line.startsWith('- ') ? line.slice(2).split(':', 1)[0].trim() : '';
+    classifyTrigger(event, reasons);
     const divider = line.indexOf(':');
     if (divider < 0) continue;
     const key = line.slice(0, divider).trim();
     const value = line.slice(divider + 1).trim();
-    if (triggers.has(key)) reasons.add('pull_request_target/workflow_run requires separate risk authorization');
-    if (scheduled.has(key)) reasons.add('scheduled/deployment workflow trigger requires separate authorization');
-    if ((key === 'permissions' && (value === 'write-all' || value.includes('write'))) ||
-        (writeScopes.has(key) && value === 'write')) {
-      reasons.add('write-capable GitHub token permission');
-    }
-    if (key === 'on' && (value.includes('pull_request_target') ||
-        value.includes('workflow_run') || value.includes('schedule'))) {
-      reasons.add('elevated inline workflow trigger requires separate authorization');
-    }
+    classifyMapping(key, value, reasons);
   }
   return [...reasons];
 }

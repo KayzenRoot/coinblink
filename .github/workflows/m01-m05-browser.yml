@@ -6,6 +6,12 @@ on:
     paths:
       - ".github/workflows/m01-m05-browser.yml"
       - "src/modules/CB-M01/**"
+      - "src/pages/en.astro"
+      - "src/pages/pt-br.astro"
+      - "src/pages/index.astro"
+      - "src/pages/404.astro"
+      - "src/pages/demo/editorial/**"
+      - "src/layouts/**"
       - "src/modules/CB-M05/**"
       - "public/home-demo.js"
       - "public/m01-local-draft-preview.js"

@@ -145,7 +145,7 @@ test('M05 /admin persistent LOCAL D1 retains draft but expires synthetic Owner s
     await second.page.locator('#login').click();
     await second.page.getByText('Local test session active').waitFor({ timeout: 20_000 });
     assert.match(await second.page.locator('#items').innerText(), /Restart-safe synthetic draft/);
-    await second.page.getByRole('button', { name: /Restart-safe synthetic draft/ }).click();
+    await second.page.locator('#items').getByRole('button', { name: /Restart-safe synthetic draft/ }).click();
     await second.page.getByText('Loaded draft revision 1').waitFor({ timeout: 20_000 });
     assert.equal(await second.page.locator('#draft-preview-title').innerText(), 'Restart-safe synthetic draft');
     assert.equal(await second.page.locator('#save').innerText(), 'Save new revision');

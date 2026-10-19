@@ -33,6 +33,21 @@ test('workflow guard blocks elevated triggers and write tokens', () => {
   assert.match(reasons.join(' '), /write-capable/);
   assert.match(reasons.join(' '), /scheduled/);
 });
+test('all documented privileged GITHUB_TOKEN scopes, including statuses, fail closed', () => {
+  const writeScopes = [
+    'actions', 'artifact-metadata', 'attestations', 'checks', 'code-quality',
+    'contents', 'copilot-requests', 'deployments', 'id-token', 'issues',
+    'discussions', 'packages', 'pages', 'pull-requests', 'security-events',
+    'statuses',
+  ];
+  for (const permission of writeScopes) {
+    const workflow = 'on:\n  pull_request:\npermissions:\n  ' + permission + ': write\n';
+    assert.ok(unsafeWorkflowLines(workflow).includes('write-capable GitHub token permission'),
+      permission + ': write must not evade security review');
+  }
+  assert.deepEqual(unsafeWorkflowLines('permissions:\n  statuses: read\n  pages: none\n'), []);
+});
+
 test('YAML sequence event syntax cannot bypass privileged trigger scan', () => {
   const lines = unsafeWorkflowLines('on:\n  - push\n  - pull_request_target\n  - workflow_run:\npermissions:\n  contents: read\n');
   assert.ok(lines.some(reason => reason.includes('pull_request_target')));

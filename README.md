@@ -21,6 +21,27 @@ npm run preview
 
 Use `npm run lint`, `npm run typecheck`, `npm run test:unit` or `npm run test:e2e` when investigating or fixing a feature. The minimal automated workflow checks only installation and build; it does not deploy.
 
+## M05: CMS interativo com banco D1 LOCAL (sem GEF)
+
+O M05 já inclui um laboratório de CMS com D1 local, rascunhos persistentes e duas credenciais WebAuthn **sintéticas**. Para abrir em um computador com interface gráfica:
+
+```bash
+npm ci
+npx playwright install chromium
+npm run cms:local
+```
+
+O comando abre uma janela Chromium isolada em **`https://owner.example.test/admin/login`**, interceptada pelo Playwright e não publicada na internet. Clique em "Sign in with test passkey" e edite rascunhos no laboratório local. O banco de rascunhos é mantido somente no PC em `.wrangler/coinblink-m05-drafts-local` (ignorado pelo Git). Credenciais de teste são recriadas ao iniciar; sessões anteriores são revogadas. Feche a janela para encerrar.
+
+Comandos opcionais:
+
+```bash
+npm run cms:temporary    # mesmo editor; elimina o D1 temporário ao sair
+npm run cms:smoke        # valida login / rascunhos / logout em Chromium headless
+```
+
+**Limites claros:** esse é um ambiente LOCAL com passkeys de teste, não o painel Owner de produção. O D1 local não é um cofre criptografado. Não coloque senhas, chaves privadas, tokens ou conteúdo confidencial nele. O `/admin` do Astro de produção continua inacessível; nenhum Worker é publicado e nenhuma conta Cloudflare é utilizada. A versão pública `/demo/editorial/articles/new` continua sem armazenamento e permite exportar/importar Markdown.
+
 ## Roadmap
 
 See [module catalog](docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md), [product blueprint](docs/product/PRODUCT_BLUEPRINT_v0.1.md), [design bible](docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md), and [development guide](docs/BUILD_FIRST.md).

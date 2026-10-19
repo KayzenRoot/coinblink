@@ -48,6 +48,16 @@ test('all documented privileged GITHUB_TOKEN scopes, including statuses, fail cl
   assert.deepEqual(unsafeWorkflowLines('permissions:\n  statuses: read\n  pages: none\n'), []);
 });
 
+test('quoted YAML permission scalars and event keys do not bypass security scan', () => {
+  const dangerous = unsafeWorkflowLines(
+    "on:\n  'pull_request_target':\npermissions:\n  \"statuses\": \"write\"\n  'pages': 'write'\n");
+  assert.ok(dangerous.some(reason => reason.includes('pull_request_target')));
+  assert.ok(dangerous.some(reason => reason.includes('write-capable')));
+  const listEvent = unsafeWorkflowLines('on:\n  - "workflow_run"\n');
+  assert.ok(listEvent.some(reason => reason.includes('workflow_run')));
+  assert.deepEqual(unsafeWorkflowLines("permissions:\n  'statuses': 'read'\n"), []);
+});
+
 test('YAML sequence event syntax cannot bypass privileged trigger scan', () => {
   const lines = unsafeWorkflowLines('on:\n  - push\n  - pull_request_target\n  - workflow_run:\npermissions:\n  contents: read\n');
   assert.ok(lines.some(reason => reason.includes('pull_request_target')));

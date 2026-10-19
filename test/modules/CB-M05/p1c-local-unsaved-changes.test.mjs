@@ -52,11 +52,11 @@ for (const admin of [false, true]) {
       assert.equal(await guardTriggered(), true, 'editing a saved article guards reload');
       assert.equal(await status.isVisible(), true);
       page.once('dialog', async dialog => { await dialog.dismiss(); });
-      await page.getByRole('button', { name: /Saved title first revision/ }).click();
+      await page.locator('#items').getByRole('button', { name: /Saved title first revision/ }).click();
       assert.equal(await title.inputValue(), 'Unsaved replacement title',
         'cancelled switch must not replace current private form');
       page.once('dialog', async dialog => { await dialog.accept(); });
-      await page.getByRole('button', { name: /Saved title first revision/ }).click();
+      await page.locator('#items').getByRole('button', { name: /Saved title first revision/ }).click();
       await page.getByText('Loaded draft revision 1').waitFor({ timeout: 20_000 });
       assert.equal(await title.inputValue(), 'Saved title first revision');
       assert.equal(await status.isVisible(), false);

@@ -1,9 +1,10 @@
 // Dedicated LOCAL D1 fixture UI. Never imported by public Astro routes.
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
-import { createLocalOwnerDashboard } from '../../CB-M06/owner-dashboard.mjs';
+import { createLocalOwnerDashboard, createLocalEditorialActivity } from '../../CB-M06/owner-dashboard.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
+  const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -23,6 +24,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     dashboard: document.getElementById('m06-dashboard'),
     listedDrafts: document.getElementById('m06-listed-drafts'),
     measuredAt: document.getElementById('m06-measured-at'),
+    activityStatus: document.getElementById('m06-activity-status'),
+    activityScope: document.getElementById('m06-activity-scope'),
+    revisedListed: document.getElementById('m06-revised-listed'),
+    lastEdited: document.getElementById('m06-last-edited'),
+    recentActivity: document.getElementById('m06-recent-activity'),
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
@@ -97,11 +103,30 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.dashboard.hidden = true;
     ui.listedDrafts.textContent = 'Unavailable';
     ui.measuredAt.textContent = 'Unavailable';
+    ui.activityStatus.textContent = 'UNAVAILABLE';
+    ui.activityScope.textContent = 'UNAVAILABLE';
+    ui.revisedListed.textContent = 'Unavailable';
+    ui.lastEdited.textContent = 'Unavailable';
+    ui.recentActivity.replaceChildren();
   }
-  function showLocalDashboard(snapshot) {
+  function showLocalDashboard(snapshot, activity) {
     if (!csrf || ui.form.hidden) return hideLocalDashboard();
     ui.listedDrafts.textContent = String(snapshot.listedDraftsCount);
     ui.measuredAt.textContent = snapshot.asOfUTC;
+    ui.revisedListed.textContent = String(activity.revisedListedDraftsCount);
+    ui.lastEdited.textContent = activity.lastUpdatedUTC ?? 'No listed edits';
+    ui.activityStatus.textContent = activity.status;
+    ui.activityScope.textContent = activity.listingScope;
+    ui.recentActivity.replaceChildren();
+    for (const row of activity.recent) {
+      const li = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = row.title + ' · rev ' + row.revision + ' · ' + row.updatedAtUTC;
+      button.addEventListener('click', () => openLocalDraft(row));
+      li.append(button);
+      ui.recentActivity.append(li);
+    }
     ui.dashboard.hidden = false;
   }
   function clearLocalSession() {
@@ -225,6 +250,18 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderDraftPreview();
     acceptSavedDraft();
   }
+  async function openLocalDraft(draft) {
+    if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return;
+    const epoch = sessionEpoch;
+    try {
+      const result = await api('/local/articles/' + encodeURIComponent(draft.id));
+      if (epoch !== sessionEpoch || !csrf || ui.form.hidden) return;
+      editDraft(result.draft);
+      message('Loaded draft revision ' + result.draft.revision);
+    } catch {
+      if (epoch === sessionEpoch) message('Could not open draft');
+    }
+  }
   function renderDraftList() {
     ui.items.replaceChildren();
     const query = ui.search.value.trim().toLowerCase();
@@ -234,27 +271,23 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = draft.title + ' · rev ' + draft.revision;
-      button.addEventListener('click', async () => {
-        if (!confirmDraftDiscard()) return;
-        try {
-          const result = await api('/local/articles/' + encodeURIComponent(draft.id));
-          editDraft(result.draft);
-          message('Loaded draft revision ' + result.draft.revision);
-        } catch { message('Could not open draft'); }
-      });
+      button.addEventListener('click', () => openLocalDraft(draft));
       li.append(button);
       ui.items.append(li);
     }
   }
   async function refresh() {
     const epoch = sessionEpoch;
+    hideLocalDashboard();
+    if (csrf && !ui.form.hidden) ui.status.textContent = 'LOADING local editorial activity';
     try {
       const { drafts } = await api('/local/articles');
       if (epoch !== sessionEpoch || !csrf || ui.form.hidden) return;
       const snapshot = createLocalOwnerDashboard(drafts, new Date().toISOString());
+      const activity = createLocalEditorialActivity(drafts);
       lastDrafts = drafts;
       renderDraftList();
-      showLocalDashboard(snapshot);
+      showLocalDashboard(snapshot, activity);
       ui.status.textContent = 'Local test session active';
     } catch (error) {
       // A rejected or malformed list must never leave stale metrics visible.
@@ -525,6 +558,15 @@ footer{padding:24px 0;color:#b9c8bd}
 <div class="m06-card"><h3>Publishing</h3><strong>DISABLED</strong><small>Read-only local test</small></div>
 </div>
 <p>Observed after last authorized read (UTC): <time id="m06-measured-at">Unavailable</time></p>
+<section id="m06-activity" aria-labelledby="m06-activity-title">
+<h3 id="m06-activity-title">Recent LOCAL editorial activity · read-only</h3>
+<p>From the authenticated D1 list only; not public reporting, traffic or publishing data.</p>
+<p>Measurement status: <strong id="m06-activity-status">UNAVAILABLE</strong> · Listing scope: <strong id="m06-activity-scope">UNAVAILABLE</strong></p>
+<p>Listed drafts with revisions above 1: <strong id="m06-revised-listed">Unavailable</strong></p>
+<p>Latest listed edit (UTC): <time id="m06-last-edited">Unavailable</time></p>
+<h4>Five most recently edited LOCAL drafts (at most)</h4>
+<ol id="m06-recent-activity" aria-label="Recent private LOCAL draft activity"></ol>
+</section>
 </section>
 <section aria-label="Draft editor">
 <h2>Drafts</h2><button id="refresh" type="button" hidden>Refresh drafts</button>

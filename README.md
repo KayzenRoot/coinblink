@@ -42,6 +42,19 @@ npm run cms:smoke        # valida login / rascunhos / logout em Chromium headles
 
 **Limites claros:** esse é um ambiente LOCAL com passkeys de teste, não o painel Owner de produção. O D1 local não é um cofre criptografado. Não coloque senhas, chaves privadas, tokens ou conteúdo confidencial nele. O `/admin` do Astro de produção continua inacessível; nenhum Worker é publicado e nenhuma conta Cloudflare é utilizada. A versão pública `/demo/editorial/articles/new` continua sem armazenamento e permite exportar/importar Markdown.
 
+
+### Iniciar M01 + M05 juntos (ambiente LOCAL)
+
+```bash
+npm ci
+npx playwright install chromium   # somente na primeira vez
+npm run studio:local
+```
+
+Este comando inicia a Home no endereço `http://127.0.0.1:4321/en` (ou `/pt-br`) e abre uma janela **isolada** do M05 em Chromium com o Owner sintético. O rascunho D1 local fica em `.wrangler/coinblink-m05-drafts-local`. Fechar o navegador M05 ou interromper o terminal encerra o ambiente combinado. `npm run studio:check` apenas verifica se o launcher encontra os componentes instalados.
+
+**Não é integração de produção:** os dois sistemas executam localmente, sem publicar artigos, usar credenciais reais ou fazer deploy. A Home demonstra ligações e conteúdo fictício; a janela do CMS não está disponível por uma URL pública.
+
 ## Roadmap
 
 See [module catalog](docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md), [product blueprint](docs/product/PRODUCT_BLUEPRINT_v0.1.md), [design bible](docs/design/COINBLINK_VISUAL_DESIGN_BIBLE_v2.0_DRAFT.md), and [development guide](docs/BUILD_FIRST.md).

@@ -11,6 +11,7 @@ on:
       - "public/m01-local-draft-preview.js"
       - "public/m05-draft-preview.js"
       - "e2e/m01-*.spec.mjs"
+      - "e2e/m00-shell.spec.mjs"
       - "e2e/m05-*.spec.mjs"
       - "playwright.config.mjs"
       - "package.json"
@@ -44,5 +45,12 @@ jobs:
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: Build
         run: npm run build
-      - name: M01 source filtering and M01-M05 draft preview
-        run: ./node_modules/.bin/playwright test e2e/m01-official-sources-filter.spec.mjs e2e/m01-m05-local-draft-preview.spec.mjs e2e/m05-editorial-demo.spec.mjs e2e/m05-admin-prod-guard.spec.mjs
+      - name: M01 local acceptance and M01-M05 draft safety (EN/PT, desktop/tablet/mobile, accessibility)
+        run: |
+          ./node_modules/.bin/playwright test \
+            e2e/m00-shell.spec.mjs \
+            e2e/m01-editorial-handoff.spec.mjs \
+            e2e/m01-official-sources-filter.spec.mjs \
+            e2e/m01-m05-local-draft-preview.spec.mjs \
+            e2e/m05-editorial-demo.spec.mjs \
+            e2e/m05-admin-prod-guard.spec.mjs

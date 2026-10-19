@@ -14,3 +14,7 @@
 **Non-negotiable product protections:** never commit tokens or credentials; preserve user authentication/authorization and private draft isolation; never fabricate LIVE market/news data; do not publish externally without explicit owner authorization.
 
 **Archive:** the previous framework's documents, workflow and packages were removed from this candidate branch. Historical Git commits remain recoverable. Original Blender, animation and QA media formerly nested in framework evidence are copied under `assets/archive/`.
+
+## CMS local com um comando
+
+Execute `npx playwright install chromium` uma vez, depois `npm run cms:local` para um CMS WebAuthn + D1 **somente local**. Veja [README](../README.md) para opção temporária, teste rápido e avisos. A rota de produção /admin permanece fechada; esse laboratório não publica conteúdo nem usa credenciais reais.

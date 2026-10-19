@@ -15,7 +15,10 @@
     "typecheck": "astro check",
     "test:unit": "node --test",
     "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run build && npm run test:e2e"
+    "test": "npm run test:unit && npm run build && npm run test:e2e",
+    "cms:local": "node test/modules/CB-M05/p1c-local-preview.mjs --preview --admin --persist-local",
+    "cms:temporary": "node test/modules/CB-M05/p1c-local-preview.mjs --preview --admin",
+    "cms:smoke": "node test/modules/CB-M05/p1c-local-preview.mjs --smoke --admin"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

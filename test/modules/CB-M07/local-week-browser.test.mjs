@@ -113,3 +113,89 @@ test('M07-D: refresh, sign-out and revoked passkey erase private week data', {ti
     assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
   } finally { await app.close(); }
 });
+
+
+test('M07-E: weekly navigation opens only the authorized draft; keyboard and unsaved guard', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const { page } = app;
+    await signIn(page);
+    for (const title of ['First fictional weekly destination', 'Second fictional weekly destination']) {
+      await createFictionalDraft(page, title);
+      await page.locator('#new-draft').click();
+    }
+    await addConcept(page, 1);
+    await addConcept(page, 2, '2026-11-16T01:30');
+    await page.locator('#m07-week-zone').selectOption('America/New_York');
+    await page.locator('#m07-week-filter').selectOption('x');
+
+    const buttons = page.locator('#m07-week-board .m07-week-open');
+    assert.equal(await buttons.count(), 2);
+    assert.equal(await buttons.first().getAttribute('type'), 'button');
+    assert.match(await buttons.first().innerText(), /^Open LOCAL draft/);
+
+    await buttons.first().focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() =>
+      document.querySelector('[name="title"]').value === 'First fictional weekly destination');
+    assert.equal(await page.locator('#draft-id').count() >= 0, true);
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('name')), 'title');
+
+    await page.locator('[name="title"]').fill('PRIVATE UNSAVED TITLE');
+    page.once('dialog', async dialog => { assert.equal(dialog.type(), 'confirm'); await dialog.dismiss(); });
+    await buttons.nth(1).click();
+    assert.equal(await page.locator('[name="title"]').inputValue(), 'PRIVATE UNSAVED TITLE');
+    assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('m07-week-open')), true);
+
+    page.once('dialog', async dialog => { assert.equal(dialog.type(), 'confirm'); await dialog.accept(); });
+    await buttons.nth(1).click();
+    await page.waitForFunction(() =>
+      document.querySelector('[name="title"]').value === 'Second fictional weekly destination');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('name')), 'title');
+    await buttons.first().focus();
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() =>
+      document.querySelector('[name="title"]').value === 'First fictional weekly destination');
+
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 2);
+    assert.match(await page.locator('#m07-week-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally { await app.close(); }
+});
+
+test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const { page } = app;
+    await signIn(page);
+    await createFictionalDraft(page, 'Only fictional private weekly destination');
+    await page.locator('#new-draft').click();
+    await addConcept(page, 1);
+    const button = page.locator('#m07-week-board .m07-week-open').first();
+    assert.equal(await button.count(), 1);
+
+    await page.route('**/local/articles/*', route =>
+      route.fulfill({ status:404, contentType:'application/json', body:'{"error":"missing"}' }));
+    await button.click();
+    await page.getByText('LOCAL draft unavailable; refresh your list').waitFor({ timeout:10000 });
+    assert.equal(await page.locator('[name="body"]').inputValue(), '');
+    await page.unroute('**/local/articles/*');
+
+    const staleElement = await button.elementHandle();
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({ timeout:20000 });
+    await expectEmptyPrivateBoard(page);
+    await staleElement.evaluate(node => node.click());
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+
+    await addConcept(page, 1);
+    await page.route('**/local/articles/*', route =>
+      route.fulfill({ status:401, contentType:'application/json', body:'{"error":"unauthorized"}' }));
+    await page.locator('#m07-week-board .m07-week-open').click();
+    await page.getByText('Not authenticated', { exact:true }).waitFor({ timeout:20000 });
+    await expectEmptyPrivateBoard(page);
+    assert.equal(await page.locator('[name="body"]').inputValue(), '');
+    assert.equal(await page.locator('#m07-weekly').isVisible(), false);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally { await app.close(); }
+});

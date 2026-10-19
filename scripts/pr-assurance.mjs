@@ -108,7 +108,7 @@ export function codeRabbitState(comments, head) {
   return 'NOT_CONFIRMED_FOR_HEAD';
 }
 
-const safe = value => String(value).replaceAll('|', '\\|').replaceAll('\n', ' ').slice(0, 200);
+const safe = value => String(value).replaceAll('|', '/').replaceAll('\n', ' ').slice(0, 200);
 function writeSummary(body) {
   process.stdout.write(body + '\n');
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, body + '\n');
@@ -194,7 +194,7 @@ async function findSonar(ctx, attemptsRemaining) {
 }
 async function runQuality(ctx, label) {
   const sonar = await findSonar(ctx, 5);
-  if (!sonar || sonar.status !== 'completed') {
+  if (sonar?.status !== 'completed') {
     writeSummary('### 🔎 Quality evidence · ' + label +
       '\n- SonarCloud pending/not visible. No verdict inferred; protected check remains mandatory.');
     return;

@@ -163,6 +163,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.weekZone.value = 'America/Sao_Paulo';
     ui.weekFilter.value = 'all';
   }
+  /**
+   * Rebuild the session-gated weekly DOM with textContent and no external I/O.
+   * Invalid projections scrub ephemeral calendar data; filters never persist.
+   * @returns {void}
+   */
   function renderLocalWeekBoard() {
     ui.weekBoard.replaceChildren();
     ui.weekStatus.textContent = '0 shown · 0 conflicts · NOT SCHEDULED';
@@ -745,6 +750,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
 `;
 
+/**
+ * Render the disposable LOCAL CMS test fixture with a strict per-request CSP nonce.
+ * No private owner UI is imported by public Astro routes.
+ * @param {string} nonce Fresh 256-bit lowercase-hex CSP nonce.
+ * @returns {string} Restricted HTML with ephemeral in-memory editorial controls.
+ */
 export function renderLocalCmsUi(nonce) {
   if (typeof nonce !== 'string' || !/^[0-9a-f]{64}$/.test(nonce)) {
     throw new TypeError('Local UI requires a fresh 256-bit CSP nonce');

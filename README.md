@@ -61,6 +61,10 @@ See [module catalog](docs/product/ROADMAP_AND_MODULE_CATALOG_v0.1.md), [product 
 
 The six official publisher links currently form an external-source directory, **not** a live news feed or a license to republish. UI demonstrations and local CMS fixtures must not be represented as production-ready integrations. Work on M01/M05 should focus on a usable Home and editor without blocking further module implementation.
 
+## Continuidade dos chats e autorizações por botão
+
+O proprietário prefere **respostas com botões clicáveis de escolha ou autorização**, especialmente para aprovar o próximo passo e squash merges após auditoria. Para continuar em outro chat, leia [o guia de interação e handoff](docs/CHAT_WORKFLOW_AND_HANDOFF.md) e peça ao assistente que siga esse padrão. Isso **não dá autorização automática** para merge, deploy ou mudanças de segurança. Preferência registrada na [Issue #160](https://github.com/KayzenRoot/coinblink/issues/160).
+
 ## Development policy
 
 There is no GEF CLI, mandatory Work Order, module admission or checkpoint approval in the current development model. GitHub branch/ruleset settings are controlled separately from repository files and must be simplified there before retiring their legacy required-check contexts.

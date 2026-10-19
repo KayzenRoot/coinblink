@@ -184,7 +184,14 @@ test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:
     await page.locator('#refresh').click();
     await page.getByText('Local test session active').waitFor({ timeout:20000 });
     await expectEmptyPrivateBoard(page);
+    // Fixture allows authenticated /admin/articles/{id} reads, so checking
+    // only disallowed egress cannot detect an unauthorized stale click.
+    const draftReads = () => app.networkAttempts.filter(entry =>
+      /\/admin\/articles\/[0-9a-f-]{36}$/i.test(new URL(entry.url).pathname)).length;
+    const beforeStaleClick = draftReads();
     await staleElement.evaluate(node => node.click());
+    await page.waitForTimeout(250);
+    assert.equal(draftReads(), beforeStaleClick, 'Stale weekly button must not read a draft');
     assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
 
     await addConcept(page, 1);

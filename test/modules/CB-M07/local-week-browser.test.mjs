@@ -4,10 +4,12 @@ import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 import { startLocalCmsPreview } from '../CB-M05/p1c-local-preview.mjs';
 
+/** Authenticate using the disposable fixture's virtual local WebAuthn credential. */
 async function signIn(page) {
   await page.locator('#login').click();
   await page.getByText('Local test session active').waitFor({ timeout: 20000 });
 }
+/** Create one D1 LOCAL-only synthetic draft; no publishing side effects. */
 async function createFictionalDraft(page, title) {
   const values = {
     title,
@@ -22,6 +24,7 @@ async function createFictionalDraft(page, title) {
   await page.locator('#save').click();
   await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20000 });
 }
+/** Add a hypothetical in-memory idea for the indexed authorized local draft. */
 async function addConcept(page, index, localMinute = '2026-11-16T00:30') {
   await page.locator('#m07-draft').selectOption({ index });
   await page.locator('#m07-channel').selectOption('x');
@@ -29,6 +32,7 @@ async function addConcept(page, index, localMinute = '2026-11-16T00:30') {
   await page.locator('#m07-calendar-date').fill(localMinute);
   await page.locator('#m07-calendar-add').click();
 }
+/** Assert the weekly DOM and underlying list are erased after session changes. */
 async function expectEmptyPrivateBoard(page) {
   assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(), 0);
   assert.equal(await page.locator('#m07-calendar-list li').count(), 0);

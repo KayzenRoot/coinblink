@@ -4,7 +4,7 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
-import { createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
+import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
@@ -12,6 +12,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});
+  const localCalendarMinuteParts = (${localCalendarMinuteParts.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
   const addLocalCalendarIdea = (${addLocalCalendarIdea.toString()});
   const replaceLocalCalendarIdea = (${replaceLocalCalendarIdea.toString()});

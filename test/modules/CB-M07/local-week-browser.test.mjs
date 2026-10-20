@@ -24,6 +24,14 @@ async function createFictionalDraft(page, title) {
   await page.locator('#save').click();
   await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20000 });
 }
+/** Seed multiple fictional LOCAL drafts without coupling tests to D1 list ordering. */
+async function seedFictionalDrafts(page, titles) {
+  for (const title of titles) {
+    await createFictionalDraft(page, title);
+    await page.locator('#new-draft').click();
+  }
+}
+
 /** Add a hypothetical in-memory idea for the indexed authorized local draft. */
 async function addConcept(page, draftChoice, localMinute = '2026-11-16T00:30') {
   if (typeof draftChoice === 'string') {
@@ -63,10 +71,7 @@ test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no 
     const { page } = app;
     assert.equal(await page.locator('#m07-weekly').isVisible(), false);
     await signIn(page);
-    for (const title of ['First hypothetical editorial draft', 'Second hypothetical editorial draft']) {
-      await createFictionalDraft(page, title);
-      await page.locator('#new-draft').click();
-    }
+    await seedFictionalDrafts(page, ['First hypothetical editorial draft', 'Second hypothetical editorial draft']);
     assert.equal(await page.locator('#m07-draft option').count(), 3);
     await addConcept(page, 1);
     await addConcept(page, 2);
@@ -131,10 +136,7 @@ test('M07-E: weekly navigation opens only the authorized draft; keyboard and uns
   try {
     const { page } = app;
     await signIn(page);
-    for (const title of ['First fictional weekly destination', 'Second fictional weekly destination']) {
-      await createFictionalDraft(page, title);
-      await page.locator('#new-draft').click();
-    }
+    await seedFictionalDrafts(page, ['First fictional weekly destination', 'Second fictional weekly destination']);
     await addConcept(page, 'First fictional weekly destination');
     await addConcept(page, 'Second fictional weekly destination', '2026-11-16T01:30');
     await page.locator('#m07-week-zone').selectOption('America/New_York');
@@ -223,10 +225,7 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
   try {
     const { page } = app;
     await signIn(page);
-    for (const title of ['First fictional edit concept', 'Second fictional edit concept']) {
-      await createFictionalDraft(page, title);
-      await page.locator('#new-draft').click();
-    }
+    await seedFictionalDrafts(page, ['First fictional edit concept', 'Second fictional edit concept']);
     await addConcept(page, 'First fictional edit concept', '2026-11-16T00:30');
     await addConcept(page, 'Second fictional edit concept', '2026-11-16T00:30');
     assert.equal(await page.locator('.m07-week-conflict').count(), 2);

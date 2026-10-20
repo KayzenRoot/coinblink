@@ -1,0 +1,102 @@
+{
+  "mission": "CB-SONAR-147-CODEX-READONLY-001",
+  "status": "COMPLETE",
+  "accessStatus": "COMPLETE",
+  "project": "KayzenRoot_coinblink",
+  "branch": "main",
+  "referenceSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+  "observedMainSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+  "checkedAtUTC": "2026-10-20T11:18:49Z",
+  "source": "SonarCloud public API /api/issues/search; GET only; no credentials used",
+  "queryParameters": {
+    "componentKeys": "KayzenRoot_coinblink",
+    "branch": "main",
+    "sinceLeakPeriod": true,
+    "ps": 100
+  },
+  "pageHttpStatuses": [
+    {
+      "page": 1,
+      "httpStatus": 200,
+      "reportedTotal": 262,
+      "retrievedCount": 100
+    },
+    {
+      "page": 2,
+      "httpStatus": 200,
+      "reportedTotal": 262,
+      "retrievedCount": 100
+    },
+    {
+      "page": 3,
+      "httpStatus": 200,
+      "reportedTotal": 262,
+      "retrievedCount": 62
+    }
+  ],
+  "reportedTotal": 262,
+  "pagesFetched": 3,
+  "retrievedCount": 262,
+  "uniqueIssueCount": 262,
+  "duplicateCount": 0,
+  "paginationComplete": true,
+  "issueStatusCounts": {
+    "OPEN": 226,
+    "RESOLVED": 2,
+    "CLOSED": 34
+  },
+  "issueTypeCounts": {
+    "CODE_SMELL": 260,
+    "VULNERABILITY": 2
+  },
+  "openVulnerabilitySummary": {
+    "count": 2,
+    "severityCounts": {
+      "CRITICAL": 1,
+      "MAJOR": 1
+    }
+  },
+  "openSecurityImpactSeverityCounts": {
+    "HIGH": 1,
+    "MEDIUM": 1
+  },
+  "publicDetails": {
+    "issueRecordsPublished": false,
+    "issueSpecificDetailsWithheld": true,
+    "privateStorageRequired": true,
+    "reason": "Unresolved potentially exploitable HIGH/CRITICAL findings are present; issue keys, rules, components, lines, and messages are withheld from this public repository."
+  },
+  "githubMainCheck": {
+    "name": "SonarCloud Code Analysis",
+    "checkRunId": 118552202578,
+    "headSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+    "status": "completed",
+    "conclusion": "failure",
+    "failedCondition": "D Security Rating on New Code (minimum A)",
+    "annotations": 0,
+    "url": "https://github.com/KayzenRoot/coinblink/runs/118552202578"
+  },
+  "relatedGitHubState": {
+    "issue147": "OPEN",
+    "issue169": "OPEN",
+    "pr180": {
+      "state": "OPEN",
+      "headSha": "adc24255154c137daebebe2939a87103a6bc1a09",
+      "baseSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+      "sonarCheck": "pass on PR head",
+      "copilotCreditStatusCommentSeparate": true,
+      "modified": false
+    },
+    "pr181": {
+      "state": "OPEN",
+      "branch": "docs/cb-sonar-147-codex-handoff-20261020",
+      "evidenceBaseSha": "e1e4242f432ae53e36cf48acd3ee7e553cc80b47",
+      "baseSha": "aae3533973518e1af846c321a9df89d03a0918f5"
+    }
+  },
+  "limitations": [
+    "No issue-specific rule, path, line, message, or key is included in this public evidence.",
+    "Aggregate co-occurrence does not attribute a particular issue to the failed Security Rating condition.",
+    "No remediation, issue mutation, Quality Gate change, merge, or deploy was performed."
+  ]
+}

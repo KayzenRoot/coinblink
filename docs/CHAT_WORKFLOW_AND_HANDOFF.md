@@ -12,6 +12,14 @@ Este documento orienta a colaboração nos chats do CoinBlink. É uma **preferê
 - Manter o botão próximo ao fim da resposta, precedido de resultados e riscos principais. Quando o usuário disser “continue”, trabalhar efetivamente dentro do escopo e trazer nova escolha na resposta.
 - Preferir commits/PRs pequenos que produzam funcionalidades reais, com CI e correção dos erros detectados, evitando ciclos vazios de planejamento.
 
+## Modelo Solo Owner (decisão do proprietário, 2026-10-19)
+
+O CoinBlink é desenvolvido sob responsabilidade de um único proprietário. **Não exigir, recrutar nem convidar um segundo humano para revisão de PR como etapa obrigatória do nosso processo de trabalho.** Não conceder `write`, solicitar reviewers externos ou transferir responsabilidade sem uma nova autorização específica. O proprietário não precisa usar outras contas próprias para simular independência.
+
+O caminho padrão para cada PR é: **análise técnica automatizada** (Copilot Code Review quando disponível dentro do plano já contratado, SonarCloud, Socket e testes aplicáveis), análise de findings reais com Correction Delta mínimo, confirmação de **Build (Ubuntu)**, **SonarCloud Code Analysis** e **Socket Security: Pull Request Alerts** como três gates imutáveis, conferência de HEAD/base/escopo e zero threads bloqueantes, seguida de **autorização específica do proprietário para cada squash merge**. CodeRabbit é apenas complementar; review skipped/rate limited não é aprovação. Pareceres de IA não são `APPROVED` humano.
+
+**Importante:** remover a exigência do *processo de colaboração* não altera automaticamente as regras de branch protection no GitHub. Se a proteção real ainda exigir aprovação humana, manter o merge BLOCKED e informar a necessidade de adequação administrativa. A integração GitHub atual não tem permissão de administração para alterar essa regra; não fingir que foi removida. Preservar os três checks e nunca usar bypass, autoaprovação, auto-merge ou uma conta alternativa para contornar a proteção. Nenhuma mudança neste documento autoriza deploy, publicação, dados LIVE, D1 remoto, GEF ou promoção de checkpoint.
+
 ## Modelo de autorização para PR
 
 **Ao oferecer merge, usar um botão com mensagem estruturada** contendo, quando conhecidos:

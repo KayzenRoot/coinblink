@@ -3,6 +3,22 @@
 import { createLocalSocialPreview } from './social-preview.mjs';
 import { createLocalWeeklyBoard } from './local-week-board.mjs';
 
+/**
+ * Shared LOCAL civil-minute formatter. No locale parsing, clock callbacks or IO.
+ * Used by both the canonical edit validator and conflict suggestion projection.
+ */
+export function localCalendarMinuteFormatter(timeZone) {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  });
+}
+export function localCalendarMinuteParts(formatter, timestamp) {
+  const parts = formatter.formatToParts(new Date(timestamp));
+  return ['year', 'month', 'day', 'hour', 'minute'].map(type =>
+    Number(parts.find(row => row.type === type)?.value));
+}
+
 export function createLocalCalendarIdea(draft, channel, hypotheticalLocal, timeZone) {
   // This validator checks the existing authorized synthetic draft and rights.
   const concept = createLocalSocialPreview(draft, channel);
@@ -19,15 +35,8 @@ export function createLocalCalendarIdea(draft, channel, hypotheticalLocal, timeZ
       calendar.getUTCMinutes() !== minute) {
     throw new TypeError('Impossible hypothetical calendar date');
   }
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  });
-  const fieldsAt = timestamp => {
-    const parts = formatter.formatToParts(new Date(timestamp));
-    const get = type => Number(parts.find(part => part.type === type)?.value);
-    return [get('year'), get('month'), get('day'), get('hour'), get('minute')];
-  };
+  const formatter = localCalendarMinuteFormatter(timeZone);
+  const fieldsAt = timestamp => localCalendarMinuteParts(formatter, timestamp);
   // Offsets on either side of the selected local day cover DST transitions.
   const offsets = new Set();
   for (const delta of [-86400000, 0, 86400000]) {
@@ -108,18 +117,16 @@ export function suggestLocalConflictAlternatives(ideas, current, draft) {
   const overlaps = row => row !== current && row.draftId !== current.draftId &&
     row.channel === current.channel && row.utcISO === current.utcISO;
   if (!ideas.some(overlaps)) return Object.freeze([]);
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: current.timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  });
+  const formatter = localCalendarMinuteFormatter(current.timeZone);
   const alternatives = [];
   const base = Date.parse(current.utcISO);
   for (let step = 1; step <= 12 && alternatives.length < 3; step++) {
     const utc = new Date(base + step * 15 * 60_000);
-    const parts = formatter.formatToParts(utc);
-    const field = name => parts.find(part => part.type === name)?.value;
-    const local = field('year') + '-' + field('month') + '-' + field('day') +
-      'T' + field('hour') + ':' + field('minute');
+    const [year, month, day, hour, minute] = localCalendarMinuteParts(formatter, utc);
+    if (![year, month, day, hour, minute].every(Number.isInteger)) continue;
+    const two = value => String(value).padStart(2, '0');
+    const local = year + '-' + two(month) + '-' + two(day) +
+      'T' + two(hour) + ':' + two(minute);
     try {
       // The canonical validator rejects ambiguous/nonexistent DST wall times.
       const candidate = createLocalCalendarIdea(draft, current.channel, local, current.timeZone);

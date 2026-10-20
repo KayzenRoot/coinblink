@@ -347,10 +347,15 @@ test('M07-H focus invalidates removed or revised LOCAL drafts while retaining un
         await app.db.prepare('UPDATE cms_drafts SET revision=revision+1 WHERE id=?')
           .bind(draftId).run();
       } else if (mutation === 'removed') {
-        await app.db.prepare('DELETE FROM cms_draft_revisions WHERE draft_id=?')
-          .bind(draftId).run();
-        await app.db.prepare('DELETE FROM cms_drafts WHERE id=?')
-          .bind(draftId).run();
+        // The immutable D1 revision ledger cannot be deleted. Simulate a
+        // successful Owner/D1 listing where access to this draft was removed.
+        await page.route('**/admin/articles', async route => {
+          if (route.request().method() !== 'GET') return route.fallback();
+          await route.fulfill({
+            status:200, contentType:'application/json',
+            body:JSON.stringify({drafts:[]}),
+          });
+        });
       }
       const authenticatedResponse = page.waitForResponse(response =>
         new URL(response.url()).pathname === '/admin/articles' &&
@@ -372,4 +377,52 @@ test('M07-H focus invalidates removed or revised LOCAL drafts while retaining un
       assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
     } finally {await app.close();}
   }
+});
+
+test('M07-H late focus listing cannot restore a discarded channel preview', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page = app.page;
+    await openAuthenticatedSyntheticVariant(page, {
+      title:'Private fictional late-focus example',
+      summary:'Synthetic editorial metadata for stale focus response testing.',
+      body:'PRIVATE_LATE_FOCUS_BODY',
+      sourceUrl:'https://example.org/late-focus',
+      authorLabel:' '
+    });
+    let signalBlocked;
+    let release;
+    const blocked = new Promise(resolve => {signalBlocked = resolve;});
+    const gate = new Promise(resolve => {release = resolve;});
+    const endpoint = '**/admin/articles';
+    const handler = async route => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      signalBlocked();
+      await gate;
+      await route.fallback();
+    };
+    await page.route(endpoint, handler);
+    try {
+      const responseReady = page.waitForResponse(response =>
+        new URL(response.url()).pathname === '/admin/articles' &&
+        response.request().method() === 'GET');
+      await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+      await blocked;
+      await page.locator('#m07-channel').selectOption('instagram');
+      assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+      release();
+      assert.equal((await responseReady).status(),200);
+      await page.evaluate(() => new Promise(resolve =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+      assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+    } finally {
+      release();
+      await page.unroute(endpoint,handler);
+    }
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    assert.equal(await page.locator('#m07-card').getAttribute('data-channel'),'instagram');
+    assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
+  } finally {await app.close();}
 });

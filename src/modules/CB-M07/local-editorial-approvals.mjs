@@ -62,8 +62,8 @@ export function latestLocalApproval(events, draft, channel, authorizedDrafts = [
 
 export function recordLocalApproval(events, variant, action, authorizedDrafts, reason = '') {
   const latest = inspectLocalApprovalHistory(events, authorizedDrafts);
-  const draft = authorizedDrafts.find(row => row && row.id === variant?.draftId &&
-    row.revision === variant?.draftRevision);
+  const draft = authorizedDrafts.find(row => row?.id === variant?.draftId &&
+    row?.revision === variant?.draftRevision);
   requireCanonicalLocalVariant(variant, draft);
   if (!['SAVE','APPROVE','REJECT','RESET'].includes(action) ||
       typeof reason !== 'string' || events.length >= 120) {

@@ -491,12 +491,22 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const editable = !!saved && ui.variantText.value === saved.editableText;
       ui.approvalApprove.disabled = !editable || latest?.action !== 'SAVE';
       ui.approvalReject.disabled = !editable || latest?.action !== 'SAVE';
-      ui.approvalStatus.textContent = !saved ? 'Save this channel before review · NOT POSTED' :
-        !latest || latest.action === 'RESET' ? 'No active LOCAL editorial decision' :
-          'Version ' + latest.version + ' · ' + ({
-            SAVE:'PENDING LOCAL REVIEW', APPROVE:'APPROVED FOR LOCAL EDITORIAL REVIEW ONLY',
-            REJECT:'REJECTED FOR LOCAL EDITORIAL REVIEW',
-          })[latest.action] + ' · NOT POSTED · RIGHTS NOT CLEARED';
+      // Never present unsaved textarea edits as though that new text were approved.
+      let status = 'No active LOCAL editorial decision';
+      if (!saved) {
+        status = 'Save this channel before review · NOT POSTED';
+      } else if (!editable) {
+        status = 'Unsaved edits · approval applies only to the last saved version · NOT POSTED';
+      } else if (latest && latest.action !== 'RESET') {
+        const labels = {
+          SAVE:'PENDING LOCAL REVIEW',
+          APPROVE:'APPROVED FOR LOCAL EDITORIAL REVIEW ONLY',
+          REJECT:'REJECTED FOR LOCAL EDITORIAL REVIEW',
+        };
+        status = 'Version ' + latest.version + ' · ' + labels[latest.action] +
+          ' · NOT POSTED · RIGHTS NOT CLEARED';
+      }
+      ui.approvalStatus.textContent = status;
       for (const [index,event] of localApprovalEvents.entries()) {
         if (event.variant.draftId !== draft.id ||
             event.variant.draftRevision !== draft.revision ||

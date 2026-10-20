@@ -561,6 +561,10 @@ test('M07-I session-only editorial approve and reject follow exact per-channel s
     assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
     await page.locator('#m07-variant-text').fill('Imaginary version two for X.');
     assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    assert.match(await page.locator('#m07-approval-status').innerText(),
+      /Unsaved edits · approval applies only to the last saved version/);
+    assert.doesNotMatch(await page.locator('#m07-approval-status').innerText(),
+      /APPROVED FOR LOCAL EDITORIAL REVIEW ONLY/);
     await page.locator('#m07-variant-save').click();
     await page.getByText('Version 2 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
     await page.locator('#m07-approval-reason').fill('Fictional copy needs further review');

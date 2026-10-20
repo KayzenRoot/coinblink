@@ -29,4 +29,15 @@ export default defineConfig(
       globals: { ...globals.browser, ...globals.node },
     },
   },
+  {
+    // DOM code and page.evaluate callbacks use browser globals.
+    files: [
+      "public/**/*.js",
+      "src/modules/**/*.client.js",
+      "test/modules/CB-M07/local-week-browser.test.mjs",
+    ],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
 );

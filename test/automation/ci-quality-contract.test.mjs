@@ -5,9 +5,9 @@ import { readFileSync } from "node:fs";
 const workflow = readFileSync(".github/workflows/ci-quality.yml", "utf8");
 
 test("CB-CI-QUALITY-001 has only read-only, unprivileged PR triggers", () => {
-  assert.match(workflow, /^on:\n  pull_request:\n/mu);
-  assert.match(workflow, /^permissions:\n  contents: read\n/mu);
-  assert.doesNotMatch(workflow, /^  (pull_request_target|workflow_run|push|schedule|workflow_dispatch):/mu);
+  assert.match(workflow, /^on:\n {2}pull_request:\n/mu);
+  assert.match(workflow, /^permissions:\n {2}contents: read\n/mu);
+  assert.doesNotMatch(workflow, /^ {2}(pull_request_target|workflow_run|push|schedule|workflow_dispatch):/mu);
   assert.doesNotMatch(workflow, /^\s*(contents|pull-requests|issues|checks|statuses|actions|deployments|packages): write\s*$/mu);
   assert.doesNotMatch(workflow, /GITLEAKS_LICENSE|CODECOV_TOKEN|SONAR_TOKEN|cloudflare\/wrangler-action/u);
 });

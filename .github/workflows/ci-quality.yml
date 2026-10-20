@@ -66,7 +66,8 @@ jobs:
           node --experimental-test-coverage --test \
             --test-coverage-include='src/**' \
             --test-reporter=spec --test-reporter-destination=stdout \
-            --test-reporter=lcov --test-reporter-destination=coverage/lcov.info
+            --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \
+            'test/**/*.test.mjs'
       - name: Upload coverage artifact for audit (no vendor token)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

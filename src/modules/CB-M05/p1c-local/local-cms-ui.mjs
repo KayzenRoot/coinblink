@@ -838,6 +838,13 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
     return true;
   }
+  // Share one metadata equality contract between focused rechecks and LOCAL actions.
+  // A same-revision source, author, status or content change is NOT authorization.
+  function sameLocalSocialDraftMetadata(a, b) {
+    const fields = ['id', 'revision', 'title', 'summary', 'source_url',
+      'author_label', 'status', 'updated_at'];
+    return !!a && !!b && fields.every(key => a[key] === b[key]);
+  }
   async function verifyLocalSocialSession(epoch, selectedDraft) {
     if (!activeLocalSocialSession(epoch)) return null;
     try {
@@ -845,8 +852,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const result = await api('/local/articles');
       if (!activeLocalSocialSession(epoch)) return null;
       if (!Array.isArray(result.drafts) || result.drafts.length > 100 ||
-          (selectedDraft && !result.drafts.some(row => row.id === selectedDraft.id &&
-            row.revision === selectedDraft.revision))) {
+          (selectedDraft && !result.drafts.some(row =>
+            sameLocalSocialDraftMetadata(selectedDraft, row)))) {
         throw new TypeError('Authorized LOCAL draft listing changed');
       }
       return result.drafts;
@@ -870,10 +877,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
 
     // Keep the already-visible LOCAL preview only while its exact metadata
     // still matches the latest authenticated Owner/D1 listing.
-    const fields = ['id', 'revision', 'title', 'summary', 'source_url',
-      'author_label', 'status', 'updated_at'];
-    const sameDraft = (a, b) => !!a && !!b &&
-      fields.every(key => a[key] === b[key]);
+    const sameDraft = sameLocalSocialDraftMetadata;
     const authorizedSelected = authorizedDrafts.find(row => row.id === selectedId);
     const selectedStale = !!selectedDraft &&
       !sameDraft(selectedDraft, authorizedSelected);
@@ -1420,7 +1424,7 @@ footer{padding:24px 0;color:#b9c8bd}
 <h4>Saved-version editorial decision · LOCAL only</h4>
 <p>APPROVED FOR LOCAL EDITORIAL REVIEW ONLY never clears rights, posts or schedules. Save first; this session-only history disappears on refresh or sign-out.</p>
 <label for="m07-approval-reason">Rejection reason (8 to 240 characters required)</label>
-<textarea id="m07-approval-reason" minlength="8" maxlength="240" autocomplete="off"></textarea>
+<textarea id="m07-approval-reason" minlength="8" maxlength="240" autocomplete="off" required></textarea>
 <button id="m07-approval-approve" type="button" disabled>Approve saved LOCAL version</button>
 <button id="m07-approval-reject" type="button" disabled>Reject saved LOCAL version</button>
 <p id="m07-approval-status" role="status" aria-live="polite">No LOCAL editorial decision</p>

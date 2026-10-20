@@ -533,3 +533,71 @@ test('M07-H focused authorization handles concurrent typing and rejects stale re
     } finally { await app.close(); }
   }
 });
+
+
+test('M07-I session-only editorial approve and reject follow exact per-channel saved version', {timeout:120_000}, async()=>{
+  const app=await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page=app.page;
+    await openAuthenticatedSyntheticVariant(page,{
+      title:'Imaginary editorial approval scenario',
+      summary:'Fictional copy for local review only.',
+      body:'PRIVATE_BODY_NOT_IN_REVIEW_LOG',
+      sourceUrl:'https://example.org/editorial',
+      authorLabel:'Synthetic author',
+    });
+    assert.equal(await page.locator('#m07-approval-panel').isVisible(),true);
+    assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    await page.locator('#m07-variant-text').fill('Imaginary version one for X.');
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#m07-approval-approve').click();
+    await page.getByText('Version 1 · APPROVED FOR LOCAL EDITORIAL REVIEW ONLY',{exact:false}).waitFor();
+    assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    await page.locator('#m07-variant-text').fill('Imaginary version two for X.');
+    assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 2 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#m07-approval-reason').fill('Fictional copy needs further review');
+    await page.locator('#m07-approval-reject').click();
+    await page.getByText('Version 2 · REJECTED FOR LOCAL EDITORIAL REVIEW',{exact:false}).waitFor();
+    assert.equal(await page.locator('#m07-approval-audit li').count(),4);
+    assert.doesNotMatch(await page.locator('#m07-approval-audit').innerText(),/PRIVATE_BODY_NOT_IN_REVIEW_LOG/);
+    await page.locator('#m07-channel').selectOption('instagram');
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#m07-channel').selectOption('x');
+    await page.locator('#m07-generate').click();
+    await page.getByText('Version 2 · REJECTED FOR LOCAL EDITORIAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor();
+    assert.equal(await page.locator('#m07-approval-panel').isVisible(),false);
+    assert.equal(await page.locator('#m07-approval-audit li').count(),0);
+    assert.equal(await page.locator('#m07-approval-reason').inputValue(),'');
+    assert.equal(app.networkAttempts.filter(row=>!row.allowed).length,0);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,1);
+  } finally {await app.close();}
+});
+
+test('M07-I fail-closed decision after server-side LOCAL session revocation', {timeout:120_000}, async()=>{
+  const app=await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page=app.page;
+    await openAuthenticatedSyntheticVariant(page,{
+      title:'Fictional session revocation',summary:'Synthetic safety coverage',
+      body:'PRIVATE_REVOCATION_BODY',sourceUrl:'https://example.org/revocation',
+      authorLabel:'',
+    });
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
+      .bind(Math.floor(Date.now()/1000)).run();
+    await page.locator('#m07-approval-approve').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+    assert.equal(await page.locator('#m07-approval-panel').isVisible(),false);
+    assert.equal(await page.locator('#m07-approval-audit li').count(),0);
+    assert.equal(app.networkAttempts.filter(row=>!row.allowed).length,0);
+  } finally {await app.close();}
+});

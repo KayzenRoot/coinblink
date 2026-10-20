@@ -5,6 +5,7 @@ import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalRev
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
 import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
+import { inspectLocalApprovalHistory, latestLocalApproval, recordLocalApproval } from '../../CB-M07/local-editorial-approvals.mjs';
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
@@ -17,6 +18,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const requireCanonicalLocalVariant = (${requireCanonicalLocalVariant.toString()});
   const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
   const upsertLocalEditorialVariant = (${upsertLocalEditorialVariant.toString()});
+  const inspectLocalApprovalHistory = (${inspectLocalApprovalHistory.toString()});
+  const latestLocalApproval = (${latestLocalApproval.toString()});
+  const recordLocalApproval = (${recordLocalApproval.toString()});
   const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});
   const localCalendarMinuteParts = (${localCalendarMinuteParts.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
@@ -71,6 +75,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     variantSave: document.getElementById('m07-variant-save'),
     variantReset: document.getElementById('m07-variant-reset'),
     variantStatus: document.getElementById('m07-variant-status'),
+    approvalPanel: document.getElementById('m07-approval-panel'),
+    approvalApprove: document.getElementById('m07-approval-approve'),
+    approvalReject: document.getElementById('m07-approval-reject'),
+    approvalReason: document.getElementById('m07-approval-reason'),
+    approvalStatus: document.getElementById('m07-approval-status'),
+    approvalAudit: document.getElementById('m07-approval-audit'),
     calendarDate: document.getElementById('m07-calendar-date'),
     calendarZone: document.getElementById('m07-calendar-zone'),
     calendarAdd: document.getElementById('m07-calendar-add'),
@@ -111,6 +121,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
   let localEditorialVariants = [];
+  let localApprovalEvents = [];
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -177,6 +188,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.variantComposer.hidden = true;
     ui.variantText.value = '';
     ui.variantStatus.textContent = 'No editable LOCAL variant';
+    ui.approvalPanel.hidden = true;
+    ui.approvalReason.value = '';
+    ui.approvalStatus.textContent = 'No LOCAL editorial decision';
+    ui.approvalAudit.replaceChildren();
     ui.socialCard.removeAttribute('data-channel');
     ui.socialCard.removeAttribute('data-viewport');
   }
@@ -461,7 +476,44 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ' hypothetical concepts · memory only · NOT SCHEDULED';
     renderLocalWeekBoard();
   }
+  function renderLocalApproval() {
+    ui.approvalPanel.hidden = ui.variantComposer.hidden;
+    ui.approvalApprove.disabled = true;
+    ui.approvalReject.disabled = true;
+    ui.approvalAudit.replaceChildren();
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return;
+    const channel = ui.socialChannel.value;
+    try {
+      const saved = getLocalEditorialVariant(localEditorialVariants,draft,channel);
+      const latest = latestLocalApproval(localApprovalEvents,draft,channel,lastDrafts);
+      const editable = !!saved && ui.variantText.value === saved.editableText;
+      ui.approvalApprove.disabled = !editable || latest?.action !== 'SAVE';
+      ui.approvalReject.disabled = !editable || latest?.action !== 'SAVE';
+      ui.approvalStatus.textContent = !saved ? 'Save this channel before review · NOT POSTED' :
+        !latest || latest.action === 'RESET' ? 'No active LOCAL editorial decision' :
+          'Version ' + latest.version + ' · ' + ({
+            SAVE:'PENDING LOCAL REVIEW', APPROVE:'APPROVED FOR LOCAL EDITORIAL REVIEW ONLY',
+            REJECT:'REJECTED FOR LOCAL EDITORIAL REVIEW',
+          })[latest.action] + ' · NOT POSTED · RIGHTS NOT CLEARED';
+      for (const [index,event] of localApprovalEvents.entries()) {
+        if (event.variant.draftId !== draft.id ||
+            event.variant.draftRevision !== draft.revision ||
+            event.variant.channel !== channel) continue;
+        const row = document.createElement('li');
+        row.textContent = '#' + (index + 1) + ' · v' + event.version + ' · ' +
+          event.action + ' · ' + event.atUTC + (event.reason ? ' · ' + event.reason : '');
+        ui.approvalAudit.append(row);
+      }
+    } catch {
+      localApprovalEvents = [];
+      ui.approvalStatus.textContent = 'Invalid LOCAL review history cleared · NOT POSTED';
+      ui.approvalAudit.replaceChildren();
+    }
+  }
   function scrubLocalSocialStudio() {
+    localApprovalEvents = [];
     localEditorialVariants = [];
     clearLocalCalendar();
     ui.calendarZone.value = 'America/Sao_Paulo';
@@ -824,7 +876,16 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       try { requireCanonicalLocalVariant(row, current); return true; }
       catch { return false; }
     }));
-    if (!selectedStale) return;
+    localApprovalEvents = Object.freeze(localApprovalEvents.filter(event => {
+      const previous = lastDrafts.find(draft => draft.id === event.variant?.draftId &&
+        draft.revision === event.variant?.draftRevision);
+      const current = authorizedDrafts.find(draft => draft.id === event.variant?.draftId &&
+        draft.revision === event.variant?.draftRevision);
+      if (!sameDraft(previous,current)) return false;
+      try { requireCanonicalLocalVariant(event.variant,current); return true; }
+      catch { return false; }
+    }));
+    if (!selectedStale) { renderLocalApproval(); return; }
     clearLocalSocialPreview();
     lastDrafts = authorizedDrafts;
     renderDraftList();
@@ -874,6 +935,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.variantComposer.hidden = false;
       ui.variantStatus.textContent = saved ? 'Saved in this session only · NOT POSTED' :
         'Generated draft · save explicitly to retain in this session · NOT POSTED';
+      renderLocalApproval();
       ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
     } catch {
       clearLocalSocialPreview();
@@ -900,7 +962,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         channel, concept.editableText, authorizedDrafts);
       const card = createLocalSocialCard(concept);
       if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
+      const updatedApproval = recordLocalApproval(localApprovalEvents,concept,'SAVE',authorizedDrafts);
       localEditorialVariants = next;
+      localApprovalEvents = updatedApproval;
       socialPreviewGeneration += 1;
       ui.socialCardCopy.textContent = card.text;
       ui.socialCardLabels.textContent = card.labels;
@@ -908,13 +972,18 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
         ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
       ui.variantStatus.textContent = 'Saved in this session only · NOT POSTED';
+      ui.approvalReason.value = '';
+      renderLocalApproval();
     } catch {
       ui.variantStatus.textContent = 'LOCAL variant rejected: check authorized draft, text length and source · NOT POSTED';
     }
   });
   // Any user edit invalidates an in-flight LOCAL Reset, even if the text is
   // subsequently changed back to its original value before the GET completes.
-  ui.variantText.addEventListener('input', () => { socialActionGeneration += 1; });
+  ui.variantText.addEventListener('input', () => {
+    socialActionGeneration += 1;
+    renderLocalApproval();
+  });
   ui.variantReset.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
@@ -928,10 +997,53 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
         editableTextAtClick !== ui.variantText.value || ui.variantComposer.hidden) return;
     if (!activeLocalSocialSession(epoch)) return;
-    localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
-      !(row.draftId === draft.id && row.channel === channel)));
-    ui.socialGenerate.click();
+    try {
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const saved = getLocalEditorialVariant(localEditorialVariants,currentDraft,channel);
+      const history = saved ? recordLocalApproval(localApprovalEvents,saved,
+        'RESET',authorizedDrafts) : localApprovalEvents;
+      localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
+        !(row.draftId === draft.id && row.channel === channel)));
+      localApprovalEvents = history;
+      ui.socialGenerate.click();
+    } catch {
+      clearLocalSocialPreview();
+      ui.socialStatus.textContent = 'LOCAL reset unavailable; recheck draft';
+    }
   });
+  async function decideLocalVariant(action) {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableText = ui.variantText.value;
+    const reason = action === 'REJECT' ? ui.approvalReason.value : '';
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableText !== ui.variantText.value || ui.variantComposer.hidden ||
+        (action === 'REJECT' && reason !== ui.approvalReason.value)) return;
+    try {
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const saved = getLocalEditorialVariant(localEditorialVariants,currentDraft,channel);
+      if (!saved || saved.editableText !== editableText) throw new TypeError('Unsaved variant');
+      const history = recordLocalApproval(localApprovalEvents,saved,action,authorizedDrafts,reason);
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
+      localApprovalEvents = history;
+      socialPreviewGeneration += 1;
+      ui.approvalReason.value = '';
+      renderLocalApproval();
+    } catch {
+      ui.approvalStatus.textContent = 'LOCAL decision rejected; check saved version and reason · NOT POSTED';
+    }
+  }
+  ui.approvalApprove.addEventListener('click', () => decideLocalVariant('APPROVE'));
+  ui.approvalReject.addEventListener('click', () => decideLocalVariant('REJECT'));
+  ui.approvalReason.addEventListener('input', () => { socialActionGeneration += 1; });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
     renderDraftPreview();
@@ -1293,6 +1405,17 @@ footer{padding:24px 0;color:#b9c8bd}
 <button id="m07-variant-save" type="button">Save this channel in LOCAL memory</button>
 <button id="m07-variant-reset" type="button">Reset only this channel</button>
 <p id="m07-variant-status" role="status" aria-live="polite">No editable LOCAL variant</p>
+<section id="m07-approval-panel" aria-label="LOCAL channel editorial review and audit" hidden>
+<h4>Saved-version editorial decision · LOCAL only</h4>
+<p>APPROVED FOR LOCAL EDITORIAL REVIEW ONLY never clears rights, posts or schedules. Save first; this session-only history disappears on refresh or sign-out.</p>
+<label for="m07-approval-reason">Rejection reason (8 to 240 characters required)</label>
+<textarea id="m07-approval-reason" minlength="8" maxlength="240" autocomplete="off"></textarea>
+<button id="m07-approval-approve" type="button" disabled>Approve saved LOCAL version</button>
+<button id="m07-approval-reject" type="button" disabled>Reject saved LOCAL version</button>
+<p id="m07-approval-status" role="status" aria-live="polite">No LOCAL editorial decision</p>
+<h5>Selected channel · session-only audit</h5>
+<ol id="m07-approval-audit" aria-label="LOCAL editorial decision history"></ol>
+</section>
 </section>
 <p id="m07-status" role="status" aria-live="polite">No LOCAL social preview</p>
 <section id="m07-preview" aria-label="Private LOCAL social preview" hidden>

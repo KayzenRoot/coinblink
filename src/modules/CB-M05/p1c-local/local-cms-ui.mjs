@@ -103,6 +103,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let sessionExpiryTimer = null;
   let sessionEpoch = 0;
   let socialActionGeneration = 0;
+  // Tracks replacement of the rendered preview, not unsaved textarea input.
+  // Authorization checks must still scrub stale text if a user types meanwhile.
+  let socialPreviewGeneration = 0;
   let focusValidationGeneration = 0;
   let readGeneration = 0;
   let lastReviewQueue = null;
@@ -161,6 +164,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   function clearLocalSocialPreview() {
     socialActionGeneration += 1;
+    socialPreviewGeneration += 1;
     ui.socialPreview.hidden = true;
     ui.socialPreviewText.textContent = '';
     ui.socialRights.textContent = 'UNAVAILABLE';
@@ -793,12 +797,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const epoch = sessionEpoch;
     const validation = ++focusValidationGeneration;
-    const generation = socialActionGeneration;
+    const previewGeneration = socialPreviewGeneration;
     const selectedId = ui.socialDraft.value;
     const selectedDraft = lastDrafts.find(row => row.id === selectedId);
     const authorizedDrafts = await verifyLocalSocialSession(epoch);
     if (!authorizedDrafts || validation !== focusValidationGeneration ||
-        generation !== socialActionGeneration || !activeLocalSocialSession(epoch) ||
+        previewGeneration !== socialPreviewGeneration || !activeLocalSocialSession(epoch) ||
         selectedId !== ui.socialDraft.value) return;
 
     // Keep the already-visible LOCAL preview only while its exact metadata
@@ -897,6 +901,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const card = createLocalSocialCard(concept);
       if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
       localEditorialVariants = next;
+      socialPreviewGeneration += 1;
       ui.socialCardCopy.textContent = card.text;
       ui.socialCardLabels.textContent = card.labels;
       ui.socialPreviewText.textContent = concept.text;

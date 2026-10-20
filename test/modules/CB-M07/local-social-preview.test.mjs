@@ -426,3 +426,133 @@ test('M07-H late focus listing cannot restore a discarded channel preview', {tim
     assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
   } finally {await app.close();}
 });
+
+test('M07-H delayed focus clears revised or removed drafts despite concurrent typing', {timeout:180_000}, async () => {
+  for (const mutation of ['revised','removed','unchanged']) {
+    const app = await startLocalCmsPreview({headless:true,admin:true});
+    try {
+      const page = app.page;
+      await openAuthenticatedSyntheticVariant(page, {
+        title:'Fictional concurrent focus editorial item',
+        summary:'Synthetic private description for focus authorization regression.',
+        body:'PRIVATE_CONCURRENT_FOCUS_BODY',
+        sourceUrl:'https://example.org/concurrent-focus',
+        authorLabel:' '
+      });
+      const draftId = await page.locator('#m07-draft').inputValue();
+      if (mutation === 'revised') {
+        await app.db.prepare('UPDATE cms_drafts SET revision=revision+1 WHERE id=?')
+          .bind(draftId).run();
+      }
+      let release,signal;
+      const gate = new Promise(resolve => { release=resolve; });
+      const blocked = new Promise(resolve => { signal=resolve; });
+      const endpoint = '**/admin/articles';
+      const handler = async route => {
+        if (route.request().method() !== 'GET') return route.fallback();
+        signal();
+        await gate;
+        if (mutation === 'removed') {
+          return route.fulfill({status:200,contentType:'application/json',
+            body:JSON.stringify({drafts:[]})});
+        }
+        return route.fallback();
+      };
+      await page.route(endpoint,handler);
+      try {
+        const finished = page.waitForResponse(response =>
+          new URL(response.url()).pathname === '/admin/articles' &&
+          response.request().method() === 'GET');
+        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+        await blocked;
+        await page.locator('#m07-variant-text').fill('Concurrent fictional edit during the delayed focus check');
+        release();
+        assert.equal((await finished).status(),200);
+        if (mutation === 'unchanged') {
+          await page.evaluate(() => new Promise(resolve =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
+          assert.match(await page.locator('#m07-variant-text').inputValue(),/Concurrent fictional edit/);
+          assert.equal(await page.locator('#m07-draft').inputValue(),draftId);
+        } else {
+          await page.waitForFunction(() =>
+            document.getElementById('m07-card-copy').textContent === '' &&
+            document.getElementById('m07-variant-composer').hidden);
+          assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
+          assert.equal(await page.locator('#m07-draft').inputValue(),'');
+          assert.equal(await page.getByText('Local test session active').isVisible(),true);
+        }
+      } finally {
+        release();
+        await page.unroute(endpoint,handler);
+      }
+      assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
+    } finally { await app.close(); }
+  }
+});
+
+test('M07-H outdated focus listing cannot erase a newer validated preview or signed-out state', {timeout:120_000}, async () => {
+  for (const mode of ['new-preview','new-selection','signed-out']) {
+    const app = await startLocalCmsPreview({headless:true,admin:true});
+    try {
+      const page = app.page;
+      await openAuthenticatedSyntheticVariant(page, {
+        title:'Fictional newer preview for stale focus checking',
+        summary:'Synthetic editorial context for rejecting old list responses.',
+        body:'PRIVATE_PREVIEW_GENERATION_BODY',
+        sourceUrl:'https://example.org/focus-generation',
+        authorLabel:' '
+      });
+      let release,signal;
+      const gate=new Promise(resolve => {release=resolve;});
+      const blocked=new Promise(resolve => {signal=resolve;});
+      const endpoint='**/admin/articles';
+      let held=false;
+      let heldRequest=null;
+      const handler=async route => {
+        if (route.request().method() !== 'GET' || held) return route.fallback();
+        held=true;
+        heldRequest=route.request();
+        signal();
+        await gate;
+        return route.fulfill({status:200,contentType:'application/json',
+          body:JSON.stringify({drafts:[]})});
+      };
+      await page.route(endpoint,handler);
+      try {
+        const first=page.waitForResponse(response =>
+          response.request() === heldRequest && response.status()===200);
+        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+        await blocked;
+        if (mode === 'new-preview') {
+          await page.locator('#m07-generate').click();
+          await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+          assert.match(await page.locator('#m07-card-copy').innerText(),/newer preview/);
+        } else if (mode === 'new-selection') {
+          await page.locator('#m07-channel').selectOption('instagram');
+          await page.locator('#m07-generate').click();
+          await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+          assert.equal(await page.locator('#m07-card').getAttribute('data-channel'),'instagram');
+        } else {
+          await page.locator('#logout').click();
+          await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+        }
+        release();
+        assert.equal((await first).status(),200);
+        await page.evaluate(() => new Promise(resolve =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        if (mode === 'signed-out') {
+          assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+          assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+        } else {
+          assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
+          assert.match(await page.locator('#m07-card-copy').innerText(),/newer preview/);
+        }
+      } finally {
+        release();
+        await page.unroute(endpoint,handler);
+      }
+      assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
+    } finally { await app.close(); }
+  }
+});

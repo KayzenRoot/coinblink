@@ -456,87 +456,75 @@ test('M07-H late focus listing cannot restore a discarded channel preview', {tim
   } finally {await app.close();}
 });
 
-test('M07-H delayed focus clears revised or removed drafts despite concurrent typing', {timeout:180_000}, async () => {
-  for (const mutation of ['revised','removed','unchanged']) {
+test('M07-H focused authorization handles concurrent typing and rejects stale responses', {timeout:240_000}, async () => {
+  const cases = [
+    {name:'revised-typing', revised:true, typing:true, outcome:'scrub'},
+    {name:'removed-typing', removed:true, typing:true, outcome:'scrub'},
+    {name:'unchanged-typing', typing:true, outcome:'typed'},
+    {name:'new-preview', removed:true, next:'generate', outcome:'preview'},
+    {name:'new-selection', removed:true, next:'instagram', outcome:'preview'},
+    {name:'signed-out', removed:true, next:'logout', outcome:'scrub'},
+  ];
+  for (const scenario of cases) {
     const app = await startLocalCmsPreview({headless:true,admin:true});
     try {
       const page = app.page;
-      await openAuthenticatedSyntheticVariant(page, {
-        title:'Fictional concurrent focus editorial item',
-        summary:'Synthetic private description for focus authorization regression.',
-        body:'PRIVATE_CONCURRENT_FOCUS_BODY',
-        sourceUrl:'https://example.org/concurrent-focus',
+      await openAuthenticatedSyntheticVariant(page,{
+        title:'Fictional focused authorization scenario',
+        summary:'A private synthetic story for competing editorial list responses.',
+        body:'PRIVATE_FOCUS_CONCURRENCY_BODY',
+        sourceUrl:'https://example.org/focus-concurrency',
         authorLabel:' '
       });
       const draftId = await page.locator('#m07-draft').inputValue();
-      if (mutation === 'revised') {
+      if (scenario.revised) {
         await app.db.prepare('UPDATE cms_drafts SET revision=revision+1 WHERE id=?')
           .bind(draftId).run();
       }
-      const paused = await pauseFocusedArticleListing(page,{removed:mutation==='removed'});
-      try {
-        await page.locator('#m07-variant-text').fill('Concurrent fictional edit during the delayed focus check');
-        paused.release();
-        assert.equal((await paused.response).status(),200);
-        if (mutation === 'unchanged') {
-          await page.evaluate(() => new Promise(resolve =>
-            requestAnimationFrame(() => requestAnimationFrame(resolve))));
-          assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
-          assert.match(await page.locator('#m07-variant-text').inputValue(),/Concurrent fictional edit/);
-          assert.equal(await page.locator('#m07-draft').inputValue(),draftId);
-        } else {
-          await page.waitForFunction(() =>
-            document.getElementById('m07-card-copy').textContent === '' &&
-            document.getElementById('m07-variant-composer').hidden);
-          assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
-          assert.equal(await page.locator('#m07-draft').inputValue(),'');
-          assert.equal(await page.getByText('Local test session active').isVisible(),true);
-        }
-      } finally {
-        await paused.close();
-      }
-      assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
-    } finally { await app.close(); }
-  }
-});
-
-test('M07-H outdated focus listing cannot erase a newer validated preview or signed-out state', {timeout:120_000}, async () => {
-  for (const mode of ['new-preview','new-selection','signed-out']) {
-    const app = await startLocalCmsPreview({headless:true,admin:true});
-    try {
-      const page = app.page;
-      await openAuthenticatedSyntheticVariant(page, {
-        title:'Fictional newer preview for stale focus checking',
-        summary:'Synthetic editorial context for rejecting old list responses.',
-        body:'PRIVATE_PREVIEW_GENERATION_BODY',
-        sourceUrl:'https://example.org/focus-generation',
-        authorLabel:' '
+      const paused = await pauseFocusedArticleListing(page,{
+        removed:!!scenario.removed, firstOnly:!!scenario.next
       });
-      const paused = await pauseFocusedArticleListing(page,{removed:true,firstOnly:true});
       try {
-        if (mode === 'new-preview') {
-          await page.locator('#m07-generate').click();
-          await page.locator('#m07-variant-composer').waitFor({state:'visible'});
-          assert.match(await page.locator('#m07-card-copy').innerText(),/newer preview/);
-        } else if (mode === 'new-selection') {
+        if (scenario.typing) {
+          await page.locator('#m07-variant-text').fill('Concurrent user edit during the authenticated focus GET');
+        }
+        if (scenario.next === 'instagram') {
           await page.locator('#m07-channel').selectOption('instagram');
+        }
+        if (scenario.next === 'generate' || scenario.next === 'instagram') {
           await page.locator('#m07-generate').click();
           await page.locator('#m07-variant-composer').waitFor({state:'visible'});
-          assert.equal(await page.locator('#m07-card').getAttribute('data-channel'),'instagram');
-        } else {
+        }
+        if (scenario.next === 'logout') {
           await page.locator('#logout').click();
           await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
         }
         paused.release();
         assert.equal((await paused.response).status(),200);
-        await page.evaluate(() => new Promise(resolve =>
-          requestAnimationFrame(() => requestAnimationFrame(resolve))));
-        if (mode === 'signed-out') {
-          assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+        if (scenario.outcome === 'scrub' && !scenario.next) {
+          await page.waitForFunction(() =>
+            document.getElementById('m07-variant-composer').hidden &&
+            document.getElementById('m07-card-copy').textContent === '');
+          assert.equal(await page.locator('#m07-draft').inputValue(),'');
+          assert.equal(await page.getByText('Local test session active').isVisible(),true);
+        } else {
+          await page.evaluate(() => new Promise(resolve =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        }
+        if (scenario.outcome === 'scrub') {
           assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+          assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+          assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
         } else {
           assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
-          assert.match(await page.locator('#m07-card-copy').innerText(),/newer preview/);
+          assert.match(await page.locator('#m07-card-copy').innerText(),/focused authorization scenario/);
+          if (scenario.outcome === 'typed') {
+            assert.match(await page.locator('#m07-variant-text').inputValue(),/Concurrent user edit/);
+            assert.equal(await page.locator('#m07-draft').inputValue(),draftId);
+          }
+          if (scenario.next === 'instagram') {
+            assert.equal(await page.locator('#m07-card').getAttribute('data-channel'),'instagram');
+          }
         }
       } finally {
         await paused.close();

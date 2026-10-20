@@ -38,12 +38,13 @@ export function inspectLocalApprovalHistory(events, authorizedDrafts) {
         throw new TypeError('Invalid LOCAL approval version');
       }
     } else if (event.action === 'RESET') {
-      if (!prior || prior.action === 'RESET' || event.version !== prior.version ||
-          event.reason !== '' || event.variant.text !== prior.variant.text) {
+      if (!['SAVE','APPROVE','REJECT'].includes(prior?.action) ||
+          event.version !== prior?.version || event.reason !== '' ||
+          event.variant.text !== prior?.variant.text) {
         throw new TypeError('Invalid LOCAL approval reset');
       }
-    } else if (!prior || prior.action !== 'SAVE' || event.version !== prior.version ||
-        event.variant.text !== prior.variant.text ||
+    } else if (prior?.action !== 'SAVE' || event.version !== prior?.version ||
+        event.variant.text !== prior?.variant.text ||
         (event.action === 'APPROVE' && event.reason !== '') ||
         (event.action === 'REJECT' && (event.reason.length < 8 ||
           event.reason.length > 240 || event.reason !== event.reason.trim() ||

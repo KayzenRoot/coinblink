@@ -43,7 +43,9 @@ test('M07-I reset invalidates local approval; stale, forged and invalid decision
   log=write(log,tiktok,'REJECT','Fictional review feedback');
   log=write(log,tiktok,'RESET');
   assert.equal(latestLocalApproval(log,draft,'tiktok').action,'RESET');
+  assert.throws(()=>write(log,tiktok,'RESET'),TypeError);
   assert.throws(()=>write(log,tiktok,'APPROVE'),TypeError);
+  assert.throws(()=>write(Object.freeze([]),tiktok,'RESET'),TypeError);
   log=write(log,tiktok,'SAVE');
   assert.equal(latestLocalApproval(log,draft,'tiktok').version,2);
   for(const reason of ['', 'short',' leading reason','Bad\nreason','x'.repeat(241)]) {

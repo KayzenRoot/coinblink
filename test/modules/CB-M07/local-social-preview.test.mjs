@@ -306,7 +306,7 @@ test('M07-H Reset with delayed authorized GET preserves later user input and sav
       let allowResponse;
       const blocked = new Promise(resolve => { notifyBlocked = resolve; });
       const gate = new Promise(resolve => { allowResponse = resolve; });
-      const endpoint = '**/local/articles';
+      const endpoint = '**/admin/articles';
       const handler = async route => {
         if (route.request().method() !== 'GET') return route.fallback();
         notifyBlocked();
@@ -316,7 +316,7 @@ test('M07-H Reset with delayed authorized GET preserves later user input and sav
       await page.route(endpoint, handler);
       try {
         const responseReady = page.waitForResponse(response =>
-          new URL(response.url()).pathname === '/local/articles' &&
+          new URL(response.url()).pathname === '/admin/articles' &&
           response.request().method() === 'GET');
         await page.locator('#m07-variant-reset').click();
         await blocked;

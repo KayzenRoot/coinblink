@@ -76,3 +76,17 @@ export function addLocalCalendarIdea(existing, idea) {
     a.utcISO.localeCompare(b.utcISO) || a.channel.localeCompare(b.channel) ||
     a.draftId.localeCompare(b.draftId)));
 }
+
+/**
+ * Replace exactly one still-current synthetic idea without changing its draft.
+ * Identity guards stale controls; the existing immutable add contract rejects
+ * duplicates and keeps the maximum of 20 ideas.
+ */
+export function replaceLocalCalendarIdea(existing, current, replacement) {
+  if (!Array.isArray(existing) || existing.length > 20 ||
+      !current || !existing.includes(current) || !replacement ||
+      replacement.draftId !== current.draftId) {
+    throw new TypeError('LOCAL edit requires a current idea for the same authorized draft');
+  }
+  return addLocalCalendarIdea(existing.filter(row => row !== current), replacement);
+}

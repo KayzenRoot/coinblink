@@ -340,33 +340,24 @@ test('M07-G: conflict choices are synthetic, require explicit confirmation, rema
     await expectEmptyPrivateBoard(page);
     await staleConfirm.evaluate(node=>node.click());
     await expectEmptyPrivateBoard(page);
-    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
-    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally {await app.close();}
-});
-
-test('M07-G: cancel/reset and logout discard choices without applying hypothetical edits', {timeout:120_000}, async () => {
-  const app = await startLocalCmsPreview({headless:true,admin:true});
-  try {
-    const {page} = app;
-    await signIn(page);
-    await seedFictionalDrafts(page,['First fictional choice draft','Second fictional choice draft']);
-    await addConcept(page,'First fictional choice draft');
-    await addConcept(page,'Second fictional choice draft');
-    const entry = page.locator('#m07-calendar-list .m07-calendar-item')
-      .filter({hasText:'First fictional choice draft'}).first();
-    await entry.locator('.m07-conflict-suggest').click();
-    const chooser=entry.locator('.m07-suggestion-choice');
-    await chooser.selectOption({index:1});
-    await entry.locator('.m07-calendar-cancel').click();
-    assert.equal(await entry.locator('.m07-suggestion-panel').isVisible(),false);
-    assert.equal(await chooser.locator('option').count(),0);
+    // Same authenticated fixture: cancel and logout must also discard choices.
+    await addConcept(page,'First hypothetical conflict draft');
+    await addConcept(page,'Second hypothetical conflict draft');
+    const again = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:'First hypothetical conflict draft'}).first();
+    await again.locator('.m07-conflict-suggest').click();
+    const choiceAgain = again.locator('.m07-suggestion-choice');
+    await choiceAgain.selectOption({index:1});
+    await again.locator('.m07-calendar-cancel').click();
+    assert.equal(await again.locator('.m07-suggestion-panel').isVisible(),false);
+    assert.equal(await choiceAgain.locator('option').count(),0);
     assert.equal(await page.locator('.m07-week-conflict').count(),2);
-    await entry.locator('.m07-conflict-suggest').click();
-    assert.equal(await chooser.inputValue(),'');
+    await again.locator('.m07-conflict-suggest').click();
+    assert.equal(await choiceAgain.inputValue(),'');
     await page.locator('#logout').click();
     await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20000});
     await expectEmptyPrivateBoard(page);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
   } finally {await app.close();}
 });

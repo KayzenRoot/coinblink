@@ -327,7 +327,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       panel.className = 'm07-suggestion-panel';
       panel.hidden = true;
       const suggestStatus = document.createElement('p');
-      suggestStatus.setAttribute('role', 'status');
+      suggestStatus.setAttribute('aria-live', 'polite');
       suggestStatus.textContent = 'Hypothetical alternatives only · NOT SCHEDULED · NOT POSTED';
       const selection = select('m07-suggestion-choice',
         [['', 'Choose a hypothetical alternative before confirming']], '');
@@ -371,6 +371,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
           editStatus.textContent = 'Invalid or duplicate LOCAL idea; NOTHING SCHEDULED';
         }
       });
+      article.append(description, labels, remove, edit);
       const conflict = localCalendarIdeas.some(row => row !== item &&
         row.draftId !== item.draftId && row.channel === item.channel &&
         row.utcISO === item.utcISO);
@@ -427,7 +428,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         }
       });
       editor.append(legend, controls, panel, save, cancel, editStatus);
-      article.append(description, labels, remove, edit, editor);
+      article.append(editor);
       li.append(article);
       ui.calendarList.append(li);
     }

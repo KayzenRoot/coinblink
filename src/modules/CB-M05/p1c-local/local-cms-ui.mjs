@@ -4,7 +4,7 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
-import { createLocalCalendarIdea, addLocalCalendarIdea } from '../../CB-M07/local-calendar.mjs';
+import { createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
@@ -14,6 +14,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
   const addLocalCalendarIdea = (${addLocalCalendarIdea.toString()});
+  const replaceLocalCalendarIdea = (${replaceLocalCalendarIdea.toString()});
   const createLocalWeeklyBoard = (${createLocalWeeklyBoard.toString()});
   const ui = {
     id: document.getElementById('credential'),
@@ -253,16 +254,103 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const labels = document.createElement('small');
       labels.textContent = item.status + ' · ' + item.publication + ' · ' +
         item.sourceStatus + ' · ' + item.creditStatus + ' · ' + item.rights;
+      const epoch = sessionEpoch;
+      const generation = readGeneration;
+      // Detached, superseded, logged-out or delisted controls have no authority.
+      const current = () => epoch === sessionEpoch && generation === readGeneration &&
+        !!csrf && !ui.form.hidden && !ui.dashboard.hidden && li.isConnected &&
+        localCalendarIdeas.includes(item) && lastDrafts.some(row => row.id === item.draftId);
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.textContent = 'Remove hypothetical concept';
       remove.setAttribute('aria-label', 'Remove hypothetical concept for ' + item.title);
       remove.addEventListener('click', () => {
-        if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+        if (!current()) return;
         localCalendarIdeas = localCalendarIdeas.filter(row => row !== item);
         renderLocalCalendar();
       });
-      article.append(description, labels, remove);
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'm07-calendar-edit';
+      edit.textContent = 'Edit hypothetical concept';
+      edit.setAttribute('aria-label', 'Edit hypothetical concept for ' + item.title);
+      const editor = document.createElement('fieldset');
+      editor.className = 'm07-calendar-editor';
+      editor.hidden = true;
+      const legend = document.createElement('legend');
+      legend.textContent = 'Edit LOCAL hypothetical concept · ' + item.title;
+      const controls = document.createElement('div');
+      controls.className = 'm07-calendar-controls';
+      const labeled = (caption, control) => {
+        const label = document.createElement('label');
+        label.textContent = caption;
+        label.append(control);
+        controls.append(label);
+      };
+      const options = (control, values) => {
+        for (const [value, caption] of values) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = caption;
+          control.append(option);
+        }
+      };
+      const channel = document.createElement('select');
+      channel.className = 'm07-edit-channel';
+      options(channel, [['x', 'X'], ['instagram', 'Instagram'], ['tiktok', 'TikTok']]);
+      channel.value = item.channel;
+      labeled('Illustrative channel (not a real provider)', channel);
+      const time = document.createElement('input');
+      time.className = 'm07-edit-time';
+      time.type = 'datetime-local';
+      time.step = '60';
+      time.autocomplete = 'off';
+      time.value = item.hypotheticalLocal;
+      labeled('Hypothetical local date and minute', time);
+      const zone = document.createElement('select');
+      zone.className = 'm07-edit-zone';
+      options(zone, [['America/Sao_Paulo', 'São Paulo'], ['UTC', 'UTC'],
+        ['America/New_York', 'New York (DST test)']]);
+      zone.value = item.timeZone;
+      labeled('Fictional time zone', zone);
+      const save = document.createElement('button');
+      save.type = 'button';
+      save.className = 'm07-calendar-save';
+      save.textContent = 'Save LOCAL idea edit';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'm07-calendar-cancel';
+      cancel.textContent = 'Cancel idea edit';
+      const editStatus = document.createElement('p');
+      editStatus.setAttribute('role', 'status');
+      editStatus.setAttribute('aria-live', 'polite');
+      editStatus.textContent = 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+      edit.addEventListener('click', () => {
+        if (!current()) return;
+        editor.hidden = false;
+        time.focus();
+      });
+      cancel.addEventListener('click', () => {
+        if (!current()) return;
+        editor.hidden = true;
+        edit.focus();
+      });
+      save.addEventListener('click', () => {
+        if (!current()) return;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        if (!draft) return;
+        try {
+          const replacement = createLocalCalendarIdea(draft, channel.value, time.value, zone.value);
+          // Editing may change channel/minute, never the authorized draft ID.
+          localCalendarIdeas = replaceLocalCalendarIdea(localCalendarIdeas, item, replacement);
+          renderLocalCalendar();
+          ui.calendarStatus.textContent = 'Edited LOCAL hypothetical concept · memory only · NOT SCHEDULED · NOT POSTED';
+        } catch {
+          editStatus.textContent = 'Invalid or duplicate LOCAL idea; NOTHING SCHEDULED';
+        }
+      });
+      editor.append(legend, controls, save, cancel, editStatus);
+      article.append(description, labels, remove, edit, editor);
       li.append(article);
       ui.calendarList.append(li);
     }

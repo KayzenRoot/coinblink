@@ -203,10 +203,32 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         for (const idea of day.ideas) {
           const item = document.createElement('p');
           item.className = idea.collision ? 'm07-week-idea m07-week-conflict' : 'm07-week-idea';
-          item.textContent = idea.localTime + ' · ' + idea.channel.toUpperCase() + ' · ' +
-            idea.title + ' · ' + idea.status + ' · ' + idea.publication + ' · ' +
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'm07-week-open';
+          button.textContent = 'Open LOCAL draft · ' + idea.title;
+          const epoch = sessionEpoch;
+          const generation = readGeneration;
+          button.addEventListener('click', async () => {
+            // A stale idea or detached element must never authorize a draft lookup.
+            if (epoch !== sessionEpoch || generation !== readGeneration ||
+                !csrf || ui.form.hidden || ui.dashboard.hidden || !item.isConnected) return;
+            const draft = lastDrafts.find(row => row.id === idea.draftId);
+            if (!draft) {
+              message('LOCAL draft unavailable; refresh your list');
+              return;
+            }
+            if (await openLocalDraft(draft) && epoch === sessionEpoch &&
+                generation === readGeneration) {
+              ui.form.elements.namedItem('title').focus();
+            }
+          });
+          const detail = document.createElement('span');
+          detail.textContent = ' · ' + idea.localTime + ' · ' + idea.channel.toUpperCase() +
+            ' · ' + idea.status + ' · ' + idea.publication + ' · ' +
             idea.sourceStatus + ' · ' + idea.rights + ' · ' + idea.creditStatus +
             (idea.collision ? ' · HYPOTHETICAL TIME CONFLICT (NOT BLOCKING)' : '');
+          item.append(button, detail);
           article.append(item);
         }
         grid.append(article);
@@ -454,15 +476,30 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     acceptSavedDraft();
   }
   async function openLocalDraft(draft) {
-    if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return;
+    if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
     const epoch = sessionEpoch;
+    const generation = readGeneration;
+    const id = draft.id;
+    const initialSnapshot = draftSnapshot();
     try {
-      const result = await api('/local/articles/' + encodeURIComponent(draft.id));
-      if (epoch !== sessionEpoch || !csrf || ui.form.hidden) return;
+      const result = await api('/local/articles/' + encodeURIComponent(id));
+      // Never hydrate a prior-session, superseded-list or modified form.
+      if (epoch !== sessionEpoch || generation !== readGeneration || !csrf ||
+          ui.form.hidden || !lastDrafts.some(row => row.id === id) ||
+          draftSnapshot() !== initialSnapshot) return false;
+      if (!result.draft || result.draft.id !== id) {
+        message('LOCAL draft unavailable; refresh your list');
+        return false;
+      }
       editDraft(result.draft);
       message('Loaded draft revision ' + result.draft.revision);
-    } catch {
-      if (epoch === sessionEpoch) message('Could not open draft');
+      return true;
+    } catch (error) {
+      if (epoch === sessionEpoch && generation === readGeneration) {
+        message(error.status === 404 ?
+          'LOCAL draft unavailable; refresh your list' : 'Could not open draft');
+      }
+      return false;
     }
   }
   function renderDraftList() {
@@ -801,6 +838,7 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-week-day{box-sizing:border-box;min-width:0;border:1px solid #768977;border-radius:8px;background:#172820;padding:9px;overflow-wrap:anywhere}
 .m07-week-day h6{font-size:.9rem;margin:0 0 8px}
 .m07-week-idea{white-space:pre-wrap;overflow-wrap:anywhere;padding:6px;border-left:3px solid #bde874}
+.m07-week-open{max-width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere}
 .m07-week-conflict{border-left-color:#f2bd7d;font-weight:600}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
 .m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}

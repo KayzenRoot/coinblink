@@ -4,6 +4,35 @@ import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 import { startLocalCmsPreview } from '../CB-M05/p1c-local-preview.mjs';
 
+
+async function pauseFocusedArticleListing(page, {removed=false,firstOnly=false}={}) {
+  let signal,release;
+  const blocked = new Promise(resolve => {signal=resolve;});
+  const gate = new Promise(resolve => {release=resolve;});
+  const endpoint = '**/admin/articles';
+  let intercepted=null;
+  const handler = async route => {
+    if (route.request().method() !== 'GET' || (firstOnly && intercepted)) {
+      return route.fallback();
+    }
+    intercepted=route.request();
+    signal();
+    await gate;
+    return removed ? route.fulfill({status:200,contentType:'application/json',
+      body:JSON.stringify({drafts:[]})}) : route.fallback();
+  };
+  await page.route(endpoint,handler);
+  const response = page.waitForResponse(value =>
+    value.request() === intercepted && value.status() === 200);
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await blocked;
+  return {
+    release,
+    response,
+    close: async () => {release(); await page.unroute(endpoint,handler);},
+  };
+}
+
 async function openAuthenticatedSyntheticVariant(page, fixture) {
   await page.locator('#login').click();
   await page.getByText('Local test session active').waitFor({timeout:20_000});
@@ -444,30 +473,11 @@ test('M07-H delayed focus clears revised or removed drafts despite concurrent ty
         await app.db.prepare('UPDATE cms_drafts SET revision=revision+1 WHERE id=?')
           .bind(draftId).run();
       }
-      let release,signal;
-      const gate = new Promise(resolve => { release=resolve; });
-      const blocked = new Promise(resolve => { signal=resolve; });
-      const endpoint = '**/admin/articles';
-      const handler = async route => {
-        if (route.request().method() !== 'GET') return route.fallback();
-        signal();
-        await gate;
-        if (mutation === 'removed') {
-          return route.fulfill({status:200,contentType:'application/json',
-            body:JSON.stringify({drafts:[]})});
-        }
-        return route.fallback();
-      };
-      await page.route(endpoint,handler);
+      const paused = await pauseFocusedArticleListing(page,{removed:mutation==='removed'});
       try {
-        const finished = page.waitForResponse(response =>
-          new URL(response.url()).pathname === '/admin/articles' &&
-          response.request().method() === 'GET');
-        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-        await blocked;
         await page.locator('#m07-variant-text').fill('Concurrent fictional edit during the delayed focus check');
-        release();
-        assert.equal((await finished).status(),200);
+        paused.release();
+        assert.equal((await paused.response).status(),200);
         if (mutation === 'unchanged') {
           await page.evaluate(() => new Promise(resolve =>
             requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -483,8 +493,7 @@ test('M07-H delayed focus clears revised or removed drafts despite concurrent ty
           assert.equal(await page.getByText('Local test session active').isVisible(),true);
         }
       } finally {
-        release();
-        await page.unroute(endpoint,handler);
+        await paused.close();
       }
       assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
     } finally { await app.close(); }
@@ -503,27 +512,8 @@ test('M07-H outdated focus listing cannot erase a newer validated preview or sig
         sourceUrl:'https://example.org/focus-generation',
         authorLabel:' '
       });
-      let release,signal;
-      const gate=new Promise(resolve => {release=resolve;});
-      const blocked=new Promise(resolve => {signal=resolve;});
-      const endpoint='**/admin/articles';
-      let held=false;
-      let heldRequest=null;
-      const handler=async route => {
-        if (route.request().method() !== 'GET' || held) return route.fallback();
-        held=true;
-        heldRequest=route.request();
-        signal();
-        await gate;
-        return route.fulfill({status:200,contentType:'application/json',
-          body:JSON.stringify({drafts:[]})});
-      };
-      await page.route(endpoint,handler);
+      const paused = await pauseFocusedArticleListing(page,{removed:true,firstOnly:true});
       try {
-        const first=page.waitForResponse(response =>
-          response.request() === heldRequest && response.status()===200);
-        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-        await blocked;
         if (mode === 'new-preview') {
           await page.locator('#m07-generate').click();
           await page.locator('#m07-variant-composer').waitFor({state:'visible'});
@@ -537,8 +527,8 @@ test('M07-H outdated focus listing cannot erase a newer validated preview or sig
           await page.locator('#logout').click();
           await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
         }
-        release();
-        assert.equal((await first).status(),200);
+        paused.release();
+        assert.equal((await paused.response).status(),200);
         await page.evaluate(() => new Promise(resolve =>
           requestAnimationFrame(() => requestAnimationFrame(resolve))));
         if (mode === 'signed-out') {
@@ -549,8 +539,7 @@ test('M07-H outdated focus listing cannot erase a newer validated preview or sig
           assert.match(await page.locator('#m07-card-copy').innerText(),/newer preview/);
         }
       } finally {
-        release();
-        await page.unroute(endpoint,handler);
+        await paused.close();
       }
       assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
     } finally { await app.close(); }

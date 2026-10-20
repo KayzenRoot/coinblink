@@ -65,6 +65,17 @@ async function assertAccessibleAtViewports(page, root, rectTarget) {
   assert.deepEqual(result.violations.map(x => ({ id:x.id, impact:x.impact })), []);
 }
 
+/** Scoped synthetic sign-in fixture with guaranteed browser/DB cleanup. */
+async function withLocalSession(fn) {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    await signIn(app.page);
+    await fn(app.page,app);
+  } finally {
+    await app.close();
+  }
+}
+
 test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no egress', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({ headless:true, admin:true });
   try {
@@ -293,10 +304,7 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
 
 
 test('M07-G: conflict choices are synthetic, require explicit confirmation, remain accessible and fail closed', {timeout:120_000}, async () => {
-  const app = await startLocalCmsPreview({headless:true,admin:true});
-  try {
-    const {page} = app;
-    await signIn(page);
+  await withLocalSession(async (page,app) => {
     await seedFictionalDrafts(page, ['First hypothetical conflict draft', 'Second hypothetical conflict draft']);
     await addConcept(page,'First hypothetical conflict draft','2026-11-16T00:30');
     await addConcept(page,'Second hypothetical conflict draft','2026-11-16T00:30');
@@ -359,5 +367,5 @@ test('M07-G: conflict choices are synthetic, require explicit confirmation, rema
     await expectEmptyPrivateBoard(page);
     assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally {await app.close();}
+  });
 });

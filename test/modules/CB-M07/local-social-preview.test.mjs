@@ -135,6 +135,7 @@ test('M07-B keyboard-selectable viewport and visual card scrub when draft change
     await page.keyboard.press('End');
     assert.equal(await page.locator('#m07-viewport').inputValue(),'desktop');
     await page.locator('#m07-generate').click();
+    await page.locator('#m07-card').waitFor({state:'visible'});
     assert.equal(await page.locator('#m07-card').getAttribute('data-viewport'),'desktop');
     assert.match(await page.locator('#m07-card-copy').innerText(),/Private illustrative post/);
     assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/LOCAL_BODY_STAYS_PRIVATE/);
@@ -177,9 +178,11 @@ test('M07-H LOCAL per-channel variants are memory-only, explicitly saved and scr
     await preview('instagram');
     await page.locator('#m07-variant-text').fill('An independent Instagram caption, purely fictional');
     await page.locator('#m07-variant-save').click();
+    await page.waitForFunction(() => document.getElementById('m07-card-copy').textContent.includes('An independent Instagram caption'));
     await preview('tiktok');
     await page.locator('#m07-variant-text').fill('An independent TikTok storyboard, purely fictional');
     await page.locator('#m07-variant-save').click();
+    await page.waitForFunction(() => document.getElementById('m07-card-copy').textContent.includes('An independent TikTok storyboard'));
     await preview('x');
     assert.equal(await page.locator('#m07-variant-text').inputValue(),'A fictional X-only message for this LOCAL draft');
     await preview('instagram');

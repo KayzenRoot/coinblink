@@ -10,7 +10,7 @@ Read `AGENTS.md`, `README.md`, `docs/BUILD_FIRST.md`, `docs/CHAT_WORKFLOW_AND_HA
 
 ## What this PR does
 
-- Adds a read-only `pull_request` workflow with three separate checks: lint+Astro typecheck, **explicit Node test-file suite (`test/**/*.test.mjs`)** with built-in Node 22 experimental LCOV reporter, and Gitleaks v3 scanning checked-out Git history.
+- Adds a read-only `pull_request` workflow with three separate checks: lint+Astro typecheck, **bounded pure Node M02/M03/M04 + CI-contract test suite** with built-in Node 22 experimental LCOV reporter, and Gitleaks v3 scanning checked-out Git history.
 - Produces an LCOV artifact retained for 7 days. Codecov upload is **not** activated until student entitlement, plan limits, privacy and zero paid credit are verified independently. LCOV here only measures code imported/exercised by Node tests; it does not prove browser or Astro template coverage.
 - Uses pinned immutable Action commit hashes, `npm ci --ignore-scripts`, read-only `GITHUB_TOKEN` and disabled Gitleaks PR comments/SARIF artifacts to minimize permissions and accidental secret disclosure.
 - Runs independently of #173 PR assurance. Both workflows execute untrusted PR code; their green checks are **technical diagnostics, not independent code review**. Never count bots or an owner's alternate account as an independent human review.
@@ -27,3 +27,8 @@ Review format: APPROVED / CORRECTION REQUIRED / BLOCKED with baseline/head SHAs,
 ## Correction Delta 1 (initial CI baseline)
 
 Initial HEAD 7dd53cc1c286de2a9ddaa60a7f92890046145d6c: lint failed with 10 errors (7 pre-existing DOM global classification errors and 3 new regex-spacing errors in this PR), while typecheck passed with zero errors and one deprecation hint. Build, SonarCloud, Socket and Gitleaks were green. Correct the introduced regex formatting and configure browser globals narrowly in eslint.config.mjs, without disabling no-undef. Explicit test glob avoids running helper scripts under test/. Revalidate all CI on the correction HEAD. No merge, deploy, or checkpoint promotion.
+
+
+## Correction Delta 2 (browser prerequisite triage)
+
+First test run on 7dd53cc1c286de2a9ddaa60a7f92890046145d6c emitted LCOV but failed when implicit `node --test` discovery executed helper scripts and browser tests without a Chromium installation. The second iteration still used a broad `test/**/*.test.mjs` pattern and did not yet resolve Chromium prerequisites. This correction restricts the new quality baseline to deterministic M02/M03/M04 Node contract tests plus the workflow's own security-contract test. Existing module-specific Playwright/WebAuthn/D1 workflows remain unchanged and authoritative for browser acceptance. **Do not claim full Node-unit-suite coverage** or report an unmeasured coverage percentage. No suppression or relaxation of existing gate failures.

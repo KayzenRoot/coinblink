@@ -45,7 +45,7 @@ jobs:
           test "${{ steps.typecheck.outcome }}" = "success"
 
   tests:
-    name: CB quality / unit tests and LCOV baseline
+    name: CB quality / focused Node tests and LCOV baseline
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -60,14 +60,17 @@ jobs:
           cache: npm
       - name: Locked install
         run: npm ci --ignore-scripts
-      - name: Node unit suite with built-in LCOV coverage
+      - name: Pure Node contracts with built-in LCOV coverage
         run: |
           mkdir -p coverage
           node --experimental-test-coverage --test \
             --test-coverage-include='src/**' \
             --test-reporter=spec --test-reporter-destination=stdout \
             --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \
-            'test/**/*.test.mjs'
+            test/automation/ci-quality-contract.test.mjs \
+            'test/modules/CB-M02/*.test.mjs' \
+            'test/modules/CB-M03/*.test.mjs' \
+            'test/modules/CB-M04/*.test.mjs'
       - name: Upload coverage artifact for audit (no vendor token)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

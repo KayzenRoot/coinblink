@@ -4,6 +4,7 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
+import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant } from '../../CB-M07/local-editorial-variants.mjs';
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
@@ -12,6 +13,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
+  const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
+  const upsertLocalEditorialVariant = (${upsertLocalEditorialVariant.toString()});
   const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});
   const localCalendarMinuteParts = (${localCalendarMinuteParts.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
@@ -61,6 +65,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     socialCardFormat: document.getElementById('m07-card-format'),
     socialCardCopy: document.getElementById('m07-card-copy'),
     socialCardLabels: document.getElementById('m07-card-labels'),
+    variantComposer: document.getElementById('m07-variant-composer'),
+    variantText: document.getElementById('m07-variant-text'),
+    variantSave: document.getElementById('m07-variant-save'),
+    variantReset: document.getElementById('m07-variant-reset'),
+    variantStatus: document.getElementById('m07-variant-status'),
     calendarDate: document.getElementById('m07-calendar-date'),
     calendarZone: document.getElementById('m07-calendar-zone'),
     calendarAdd: document.getElementById('m07-calendar-add'),
@@ -93,6 +102,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let readGeneration = 0;
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
+  let localEditorialVariants = [];
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -154,6 +164,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialCardFormat.textContent = '';
     ui.socialCardCopy.textContent = '';
     ui.socialCardLabels.textContent = '';
+    ui.variantComposer.hidden = true;
+    ui.variantText.value = '';
+    ui.variantStatus.textContent = 'No editable LOCAL variant';
     ui.socialCard.removeAttribute('data-channel');
     ui.socialCard.removeAttribute('data-viewport');
   }
@@ -439,6 +452,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalWeekBoard();
   }
   function scrubLocalSocialStudio() {
+    localEditorialVariants = [];
     clearLocalCalendar();
     ui.calendarZone.value = 'America/Sao_Paulo';
     clearLocalSocialPreview();
@@ -748,7 +762,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       return;
     }
     try {
-      const concept = createLocalSocialPreview(draft, ui.socialChannel.value);
+      let concept = createLocalSocialPreview(draft, ui.socialChannel.value);
+      const saved = getLocalEditorialVariant(localEditorialVariants, draft, ui.socialChannel.value);
+      const defaultText = concept.text.replace(/\nSource reference \(NOT VERIFIED\): [^\n]*$/u,'').trim();
+      concept = saved ?? createLocalEditorialVariant(draft, ui.socialChannel.value, defaultText);
       const card = createLocalSocialCard(concept);
       if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
       ui.socialCard.dataset.channel = card.channel;
@@ -763,11 +780,43 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
         ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
       ui.socialPreview.hidden = false;
+      ui.variantText.value = concept.editableText;
+      ui.variantComposer.hidden = false;
+      ui.variantStatus.textContent = saved ? 'Saved in this session only · NOT POSTED' :
+        'Generated draft · save explicitly to retain in this session · NOT POSTED';
       ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
     } catch {
       clearLocalSocialPreview();
       ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
     }
+  });
+  ui.variantSave.addEventListener('click', () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    try {
+      const concept = createLocalEditorialVariant(draft, ui.socialChannel.value, ui.variantText.value);
+      const next = upsertLocalEditorialVariant(localEditorialVariants, draft, ui.socialChannel.value, concept.editableText);
+      const card = createLocalSocialCard(concept);
+      if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      localEditorialVariants = next;
+      ui.socialCardCopy.textContent = card.text;
+      ui.socialCardLabels.textContent = card.labels;
+      ui.socialPreviewText.textContent = concept.text;
+      ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
+        ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
+      ui.variantStatus.textContent = 'Saved in this session only · NOT POSTED';
+    } catch {
+      ui.variantStatus.textContent = 'LOCAL variant rejected: check authorized draft, text length and source · NOT POSTED';
+    }
+  });
+  ui.variantReset.addEventListener('click', () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
+      !(row.draftId === draft.id && row.channel === ui.socialChannel.value)));
+    ui.socialGenerate.click();
+    if (!ui.variantComposer.hidden) ui.variantStatus.textContent = 'Channel reset to synthetic source · NOT POSTED';
   });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
@@ -1011,6 +1060,8 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-week-open{max-width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere}
 .m07-week-conflict{border-left-color:#f2bd7d;font-weight:600}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
+#m07-variant-composer{border:1px solid #536b4c;padding:12px;border-radius:8px;margin:12px 0}
+#m07-variant-composer[hidden]{display:none}
 .m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}
 .m07-card{box-sizing:border-box;min-width:0;width:100%;max-width:600px;border-radius:16px;border:2px solid #81988e;background:#142821;color:#f6f8f5;padding:20px;overflow-wrap:anywhere}
 .m07-card[hidden]{display:none}
@@ -1112,6 +1163,13 @@ footer{padding:24px 0;color:#b9c8bd}
 </select>
 <button id="m07-generate" type="button">Generate LOCAL preview</button>
 <button id="m07-clear" type="button">Clear LOCAL preview</button>
+<section id="m07-variant-composer" aria-label="Independent synthetic channel editor" hidden>
+<label for="m07-variant-text">Edit only the selected channel's fictitious message (source and rights remain fixed)</label>
+<textarea id="m07-variant-text" maxlength="1600" minlength="8" autocomplete="off" spellcheck="true"></textarea>
+<button id="m07-variant-save" type="button">Save this channel in LOCAL memory</button>
+<button id="m07-variant-reset" type="button">Reset only this channel</button>
+<p id="m07-variant-status" role="status" aria-live="polite">No editable LOCAL variant</p>
+</section>
 <p id="m07-status" role="status" aria-live="polite">No LOCAL social preview</p>
 <section id="m07-preview" aria-label="Private LOCAL social preview" hidden>
 <p id="m07-rights">UNAVAILABLE</p>

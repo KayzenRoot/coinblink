@@ -145,3 +145,66 @@ test('M07-B keyboard-selectable viewport and visual card scrub when draft change
     assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
   } finally {await app.close();}
 });
+
+
+test('M07-H LOCAL per-channel variants are memory-only, explicitly saved and scrubbed', {timeout:120_000}, async () => {
+  const app=await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page=app.page;
+    assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    await page.locator('[name="title"]').fill('Fictional independent channel editorial sample');
+    await page.locator('[name="summary"]').fill('Only a synthetic media scenario for local variant testing.');
+    await page.locator('[name="body"]').fill('PRIVATE_BODY_NOT_EXPORTED');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/hypothetical');
+    await page.locator('[name="authorLabel"]').fill(' ');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    await page.locator('#m07-draft').selectOption({index:1});
+    const preview=async channel=>{
+      await page.locator('#m07-channel').selectOption(channel);
+      await page.locator('#m07-generate').click();
+      assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
+    };
+    await preview('x');
+    await page.locator('#m07-variant-text').fill('A fictional X-only message for this LOCAL draft');
+    // Typing in the textarea must not silently change the saved preview.
+    assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/X-only message/);
+    await page.locator('#m07-variant-save').click();
+    assert.match(await page.locator('#m07-card-copy').innerText(),/X-only message/);
+    assert.match(await page.locator('#m07-card-copy').innerText(),/NOT VERIFIED/);
+    await preview('instagram');
+    await page.locator('#m07-variant-text').fill('An independent Instagram caption, purely fictional');
+    await page.locator('#m07-variant-save').click();
+    await preview('tiktok');
+    await page.locator('#m07-variant-text').fill('An independent TikTok storyboard, purely fictional');
+    await page.locator('#m07-variant-save').click();
+    await preview('x');
+    assert.equal(await page.locator('#m07-variant-text').inputValue(),'A fictional X-only message for this LOCAL draft');
+    await preview('instagram');
+    assert.equal(await page.locator('#m07-variant-text').inputValue(),'An independent Instagram caption, purely fictional');
+    await page.locator('#m07-variant-text').fill('bad');
+    await page.locator('#m07-variant-save').click();
+    assert.match(await page.locator('#m07-variant-status').innerText(),/rejected/i);
+    assert.match(await page.locator('#m07-card-copy').innerText(),/independent Instagram caption/);
+    await page.locator('#m07-variant-reset').click();
+    assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/independent Instagram caption/);
+    await preview('x');
+    assert.match(await page.locator('#m07-card-copy').innerText(),/X-only message/);
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    await page.locator('#m07-draft').selectOption({index:1});
+    await preview('x');
+    assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/X-only message/);
+    const axe=await new AxeBuilder({page}).include('#m07-social')
+      .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+    assert.deepEqual(axe.violations.map(({id,impact})=>({id,impact})),[]);
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+    assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
+    assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+    assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+    assert.deepEqual(app.networkAttempts.filter(item=>!item.allowed),[]);
+  } finally { await app.close(); }
+});

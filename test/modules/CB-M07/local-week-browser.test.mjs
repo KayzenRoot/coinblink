@@ -244,8 +244,12 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     await editor.locator('.m07-calendar-cancel').click();
     assert.equal(await editor.isVisible(), false);
     assert.equal(await page.locator('.m07-week-conflict').count(), 2);
+    assert.equal(await editor.locator('.m07-edit-channel').inputValue(), 'x');
+    assert.equal(await editor.locator('.m07-edit-time').inputValue(), '2026-11-16T00:30');
 
     await firstConcept.locator('.m07-calendar-edit').click();
+    assert.equal(await editor.locator('[role="status"]').innerText(), 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED');
+    await editor.locator('.m07-edit-channel').selectOption('instagram');
     await editor.locator('.m07-edit-zone').selectOption('America/New_York');
     await editor.locator('.m07-edit-time').fill('2026-11-01T01:30');
     await editor.locator('.m07-calendar-save').click();

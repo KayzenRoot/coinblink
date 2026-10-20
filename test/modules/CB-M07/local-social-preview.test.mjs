@@ -28,8 +28,8 @@ test('M07 LOCAL three channels use authenticated D1 metadata only; no posts or e
     for (const channel of ['x','instagram','tiktok']) {
       await page.locator('#m07-channel').selectOption(channel);
       await page.locator('#m07-generate').click();
-      assert.equal(await page.locator('#m07-preview').isVisible(),true);
-      assert.equal(await page.locator('#m07-card').isVisible(),true);
+      await page.locator('#m07-preview').waitFor({state:'visible'});
+      await page.locator('#m07-card').waitFor({state:'visible'});
       assert.equal(await page.locator('#m07-card').getAttribute('data-channel'),channel);
       assert.match(await page.locator('#m07-card-copy').innerText(),/Synthetic social test article/);
       assert.match(await page.locator('#m07-card-labels').innerText(),/NOT_CLEARED/);
@@ -85,7 +85,7 @@ test('M07 LOCAL preview scrubs draft options/text on logout and 401 revoked sess
       await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
       await page.locator('#m07-draft').selectOption({index:1});
       await page.locator('#m07-generate').click();
-      assert.equal(await page.locator('#m07-preview').isVisible(),true);
+      await page.locator('#m07-preview').waitFor({state:'visible'});
     }
     await create();
     await page.locator('#logout').click();
@@ -165,14 +165,14 @@ test('M07-H LOCAL per-channel variants are memory-only, explicitly saved and scr
     const preview=async channel=>{
       await page.locator('#m07-channel').selectOption(channel);
       await page.locator('#m07-generate').click();
-      assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
+      await page.locator('#m07-variant-composer').waitFor({state:'visible'});
     };
     await preview('x');
     await page.locator('#m07-variant-text').fill('A fictional X-only message for this LOCAL draft');
     // Typing in the textarea must not silently change the saved preview.
     assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/X-only message/);
     await page.locator('#m07-variant-save').click();
-    assert.match(await page.locator('#m07-card-copy').innerText(),/X-only message/);
+    await page.waitForFunction(() => document.getElementById('m07-card-copy').textContent.includes('X-only message'));
     assert.match(await page.locator('#m07-card-copy').innerText(),/NOT VERIFIED/);
     await preview('instagram');
     await page.locator('#m07-variant-text').fill('An independent Instagram caption, purely fictional');
@@ -186,9 +186,11 @@ test('M07-H LOCAL per-channel variants are memory-only, explicitly saved and scr
     assert.equal(await page.locator('#m07-variant-text').inputValue(),'An independent Instagram caption, purely fictional');
     await page.locator('#m07-variant-text').fill('bad');
     await page.locator('#m07-variant-save').click();
-    assert.match(await page.locator('#m07-variant-status').innerText(),/rejected/i);
+    await page.waitForFunction(() => /rejected/i.test(document.getElementById('m07-variant-status').textContent));
     assert.match(await page.locator('#m07-card-copy').innerText(),/independent Instagram caption/);
     await page.locator('#m07-variant-reset').click();
+    await page.waitForFunction(() => !document.getElementById('m07-variant-composer').hidden &&
+      !document.getElementById('m07-card-copy').textContent.includes('independent Instagram caption'));
     assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/independent Instagram caption/);
     await preview('x');
     assert.match(await page.locator('#m07-card-copy').innerText(),/X-only message/);
@@ -206,5 +208,66 @@ test('M07-H LOCAL per-channel variants are memory-only, explicitly saved and scr
     assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
     assert.equal(await page.locator('#m07-card-copy').textContent(),'');
     assert.deepEqual(app.networkAttempts.filter(item=>!item.allowed),[]);
+  } finally { await app.close(); }
+});
+
+test('M07-H revocation denies LOCAL save, reset and generate before any preview mutation', {timeout:240_000}, async () => {
+  for (const action of ['save','reset','generate']) {
+    const app = await startLocalCmsPreview({headless:true,admin:true});
+    try {
+      const page = app.page;
+      await page.locator('#login').click();
+      await page.getByText('Local test session active').waitFor({timeout:20_000});
+      await page.locator('[name="title"]').fill('Revoked fictional draft');
+      await page.locator('[name="summary"]').fill('Fictional summary that must disappear after revocation.');
+      await page.locator('[name="body"]').fill('SENSITIVE_TEST_BODY');
+      await page.locator('[name="sourceUrl"]').fill('https://example.org/revoked');
+      await page.locator('[name="authorLabel"]').fill(' ');
+      await page.locator('#save').click();
+      await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+      await page.locator('#m07-draft').selectOption({index:1});
+      await page.locator('#m07-generate').click();
+      await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+      await page.locator('#m07-variant-text').fill('Fictional authorized variant before revocation');
+      const revoked=await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
+        .bind(Math.floor(Date.now()/1000)).run();
+      assert.equal(revoked.meta?.changes,1);
+      if (action === 'save') await page.locator('#m07-variant-save').click();
+      if (action === 'reset') await page.locator('#m07-variant-reset').click();
+      if (action === 'generate') await page.locator('#m07-generate').click();
+      await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+      assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
+      assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+      assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+      assert.equal(await page.locator('[name="body"]').inputValue(),'');
+      assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
+    } finally { await app.close(); }
+  }
+});
+
+test('M07-H client expiry timer erases private DOM even without another API request', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page=app.page;
+    await page.clock.install({time:Date.now()});
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    await page.locator('[name="title"]').fill('Session expiry fictional title');
+    await page.locator('[name="summary"]').fill('Fictional source summary for an expiring browser session.');
+    await page.locator('[name="body"]').fill('PRIVATE_SESSION_EXPIRY_BODY');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/expiry');
+    await page.locator('[name="authorLabel"]').fill(' ');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    await page.locator('#m07-draft').selectOption({index:1});
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    await page.clock.fastForward(1_200_500);
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+    assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
+    assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+    assert.equal(await page.locator('[name="body"]').inputValue(),'');
+    assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+    assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
   } finally { await app.close(); }
 });

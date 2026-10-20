@@ -98,7 +98,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     emergencyToken: document.getElementById('emergency-token'),
   };
   let csrf = null;
+  let sessionExpiresAt = 0;
+  let sessionExpiryTimer = null;
   let sessionEpoch = 0;
+  let socialActionGeneration = 0;
   let readGeneration = 0;
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
@@ -155,6 +158,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.previewSource.textContent = source;
   }
   function clearLocalSocialPreview() {
+    socialActionGeneration += 1;
     ui.socialPreview.hidden = true;
     ui.socialPreviewText.textContent = '';
     ui.socialRights.textContent = 'UNAVAILABLE';
@@ -535,6 +539,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
+    if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
+    sessionExpiryTimer = null;
+    sessionExpiresAt = 0;
     sessionEpoch += 1;
     readGeneration += 1;
     hideLocalDashboard();
@@ -563,6 +570,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.status.textContent = 'Not authenticated';
   }
   async function api(url, method = 'GET', body) {
+    const requestEpoch = sessionEpoch;
     const headers = {};
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -576,7 +584,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && (csrf ||
+      if (response.status === 401 && requestEpoch === sessionEpoch && (csrf ||
           /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url))) {
         // Denied article reads must erase stale drafts even if the local CSRF state
         // was already cleared. After sign-in, deny from any protected route
@@ -753,7 +761,41 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   });
   ui.socialClear.addEventListener('click', clearLocalSocialPreview);
-  ui.socialGenerate.addEventListener('click', () => {
+  function activeLocalSocialSession(epoch) {
+    if (epoch !== sessionEpoch || !csrf || ui.form.hidden || ui.dashboard.hidden) return false;
+    if (!sessionExpiresAt || Date.now() >= sessionExpiresAt) {
+      clearLocalSession();
+      return false;
+    }
+    return true;
+  }
+  async function verifyLocalSocialSession(epoch, selectedDraft) {
+    if (!activeLocalSocialSession(epoch)) return null;
+    try {
+      // Reuse the existing authenticated Owner/D1 listing, no new endpoint.
+      const result = await api('/local/articles');
+      if (!activeLocalSocialSession(epoch)) return null;
+      if (!Array.isArray(result.drafts) || result.drafts.length > 100 ||
+          (selectedDraft && !result.drafts.some(row => row.id === selectedDraft.id &&
+            row.revision === selectedDraft.revision))) {
+        throw new TypeError('Authorized LOCAL draft listing changed');
+      }
+      return result.drafts;
+    } catch {
+      if (epoch === sessionEpoch) clearLocalSession();
+      return null;
+    }
+  }
+  // Background tabs do not require polling. Recheck on return and before actions.
+  const recheckLocalSocialOnFocus = () => {
+    const epoch = sessionEpoch;
+    if (csrf && !ui.form.hidden) void verifyLocalSocialSession(epoch);
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) recheckLocalSocialOnFocus();
+  });
+  window.addEventListener('focus', recheckLocalSocialOnFocus);
+  ui.socialGenerate.addEventListener('click', async () => {
     clearLocalSocialPreview();
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
@@ -761,13 +803,21 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialStatus.textContent = 'Select a listed LOCAL draft first';
       return;
     }
+    const epoch = sessionEpoch;
+    const generation = socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        channel !== ui.socialChannel.value || draft.id !== ui.socialDraft.value) return;
     try {
-      let concept = createLocalSocialPreview(draft, ui.socialChannel.value);
-      const saved = getLocalEditorialVariant(localEditorialVariants, draft, ui.socialChannel.value);
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      let concept = createLocalSocialPreview(currentDraft, channel);
+      const saved = getLocalEditorialVariant(localEditorialVariants, currentDraft, channel);
       const defaultText = concept.text.replace(/\nSource reference \(NOT VERIFIED\): [^\n]*$/u,'').trim();
-      concept = saved ?? createLocalEditorialVariant(draft, ui.socialChannel.value, defaultText);
+      concept = saved ?? createLocalEditorialVariant(currentDraft, channel, defaultText);
       const card = createLocalSocialCard(concept);
-      if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
       ui.socialCard.dataset.channel = card.channel;
       ui.socialCard.dataset.viewport = ['mobile','desktop'].includes(ui.socialViewport.value)
         ? ui.socialViewport.value : 'mobile';
@@ -790,14 +840,26 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
     }
   });
-  ui.variantSave.addEventListener('click', () => {
+  ui.variantSave.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableText = ui.variantText.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableText !== ui.variantText.value || ui.variantComposer.hidden) return;
     try {
-      const concept = createLocalEditorialVariant(draft, ui.socialChannel.value, ui.variantText.value);
-      const next = upsertLocalEditorialVariant(localEditorialVariants, draft, ui.socialChannel.value, concept.editableText);
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const concept = createLocalEditorialVariant(currentDraft, channel, editableText);
+      const next = upsertLocalEditorialVariant(localEditorialVariants, currentDraft,
+        channel, concept.editableText, authorizedDrafts);
       const card = createLocalSocialCard(concept);
-      if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
       localEditorialVariants = next;
       ui.socialCardCopy.textContent = card.text;
       ui.socialCardLabels.textContent = card.labels;
@@ -809,14 +871,21 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.variantStatus.textContent = 'LOCAL variant rejected: check authorized draft, text length and source · NOT POSTED';
     }
   });
-  ui.variantReset.addEventListener('click', () => {
+  ui.variantReset.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
     if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        ui.variantComposer.hidden) return;
+    if (!activeLocalSocialSession(epoch)) return;
     localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
-      !(row.draftId === draft.id && row.channel === ui.socialChannel.value)));
+      !(row.draftId === draft.id && row.channel === channel)));
     ui.socialGenerate.click();
-    if (!ui.variantComposer.hidden) ui.variantStatus.textContent = 'Channel reset to synthetic source · NOT POSTED';
   });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
@@ -843,7 +912,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       if (!assertion) throw new Error('Passkey was not selected');
       const response = assertionJson(assertion);
       const logged = await api('/local/login', 'POST', { credentialId, challenge, response });
+      if (!Number.isSafeInteger(logged.expiresInSeconds) ||
+          logged.expiresInSeconds < 1 || logged.expiresInSeconds > 1200) {
+        throw new TypeError('Invalid LOCAL session expiry');
+      }
       csrf = logged.csrf;
+      sessionExpiresAt = Date.now() + logged.expiresInSeconds * 1000;
+      const authenticatedEpoch = sessionEpoch;
+      if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
+      sessionExpiryTimer = setTimeout(() => {
+        if (authenticatedEpoch === sessionEpoch && csrf) clearLocalSession();
+      }, logged.expiresInSeconds * 1000);
       ui.form.hidden = false;
       renderDraftPreview();
       acceptSavedDraft();

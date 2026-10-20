@@ -60,25 +60,53 @@ test('M07-H rejects invalid text, unauthorized sources, stale rows and oversized
   assert.throws(()=>createLocalEditorialVariant(longSource,'x','a'.repeat(1600)),RangeError);
 });
 
-test('M07-H rejects unsafe credit values and mutable carried-over rows', () => {
+test('M07-H rejects forged credit, source, rights and frozen rows', () => {
   const valid = createLocalEditorialVariant(draft,'x','Valid fictional example');
-  const otherCredit = Object.freeze({...valid,creditStatus:'CREDIT_PRESENT_UNVERIFIED'});
-  const accepted = upsertLocalEditorialVariant([otherCredit],draft,'instagram','Instagram-only example');
-  assert.equal(accepted.length,2);
-  assert.equal(accepted[0],otherCredit);
-  assert.ok(accepted.every(row => Object.isFrozen(row)));
-  assert.ok(Object.isFrozen(accepted));
-  assert.equal(getLocalEditorialVariant(accepted,draft,'x').creditStatus,'CREDIT_PRESENT_UNVERIFIED');
-  for (const invalidCredit of ['VERIFIED','CREDIT_MISSING ',null]) {
-    const invalid = Object.freeze({...valid,creditStatus:invalidCredit});
-    assert.throws(()=>upsertLocalEditorialVariant([invalid],draft,'instagram','Safe fictional example'),TypeError);
-    assert.throws(()=>getLocalEditorialVariant([invalid],draft,'x'),TypeError);
+  const creditedDraft = {...draft,author_label:'Fictional credit'};
+  const credited = createLocalEditorialVariant(creditedDraft,'x','Credit present example');
+  const accepted = upsertLocalEditorialVariant([credited],creditedDraft,'instagram',
+    'Instagram-only example',[creditedDraft]);
+  assert.equal(accepted[0],credited);
+  assert.ok(accepted.every(Object.isFrozen));
+  assert.equal(getLocalEditorialVariant(accepted,creditedDraft,'x').creditStatus,
+    'CREDIT_PRESENT_UNVERIFIED');
+  const forgeries = [
+    Object.freeze({...valid,creditStatus:'CREDIT_PRESENT_UNVERIFIED'}),
+    Object.freeze({...valid,text:'Fake text without attribution'}),
+    Object.freeze({...valid,text:valid.text.replace('NOT VERIFIED','VERIFIED')}),
+    Object.freeze({...valid,rights:'CLEARED'}),
+    Object.freeze({...valid,sourceStatus:'SOURCE_VERIFIED'}),
+    Object.freeze({...valid,channelName:'Another channel'}),
+    Object.freeze({...valid,editableText:'Another fictional message'}),
+    Object.freeze({...valid,unexpected:'extra field'}),
+    {...valid},
+  ];
+  for (const forged of forgeries) {
+    assert.throws(()=>getLocalEditorialVariant([forged],draft,'x'),TypeError);
+    assert.throws(()=>upsertLocalEditorialVariant([forged],draft,'instagram',
+      'Another valid example',[draft]),TypeError);
   }
-  const mutable = {...valid};
-  assert.throws(()=>upsertLocalEditorialVariant([mutable],draft,'instagram','Safe fictional example'),TypeError);
-  assert.throws(()=>getLocalEditorialVariant([mutable],draft,'x'),TypeError);
-  assert.equal(valid.creditStatus,'CREDIT_MISSING');
-  assert.equal(mutable.rights,'NOT_CLEARED');
+});
+
+test('M07-H rejects stale or unauthorized carried-over variants across drafts', () => {
+  const second = {...draft,id:'00000000-0000-0000-0000-000000000002',
+    source_url:'https://example.org/second',author_label:'Second author'};
+  const firstVariant = createLocalEditorialVariant(draft,'x','First fictional message');
+  let rows = upsertLocalEditorialVariant([firstVariant],second,'instagram',
+    'Second fictional caption',[draft,second]);
+  assert.equal(rows.length,2);
+  assert.equal(getLocalEditorialVariant(rows,second,'instagram').creditStatus,
+    'CREDIT_PRESENT_UNVERIFIED');
+  for (const unauthorized of [
+    [draft], [draft,{...second,revision:3}],
+    [draft,{...second,source_url:'https://example.org/changed'}],
+    [draft,{...second,author_label:''}],
+  ]) {
+    assert.throws(()=>upsertLocalEditorialVariant(rows,draft,'tiktok',
+      'Third fictional example',unauthorized),TypeError);
+  }
+  rows = upsertLocalEditorialVariant(rows,draft,'tiktok','Third fictional example',[draft,second]);
+  assert.equal(rows.length,3);
 });
 
 test('M07-H editor remains protected by nonce and never adds egress or persistence', () => {

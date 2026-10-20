@@ -23,6 +23,24 @@ export function createLocalEditorialVariant(draft, channel, editableText) {
   });
 }
 
+// A frozen row is not necessarily trustworthy. Rebuild from the authorized
+// D1 listing and require exact correspondence for source, credit and status.
+function requireCanonicalLocalVariant(row, authorizedDraft) {
+  if (!row || typeof row !== 'object' || Array.isArray(row) ||
+      Object.getPrototypeOf(row) !== Object.prototype || !Object.isFrozen(row)) {
+    throw new TypeError('Invalid LOCAL variant memory');
+  }
+  let canonical;
+  try { canonical = createLocalEditorialVariant(authorizedDraft, row.channel, row.editableText); }
+  catch { throw new TypeError('Invalid LOCAL variant memory'); }
+  const keys = Object.keys(canonical);
+  if (Object.keys(row).length !== keys.length ||
+      keys.some(key => !Object.hasOwn(row, key) || row[key] !== canonical[key])) {
+    throw new TypeError('Invalid LOCAL variant memory');
+  }
+  return row;
+}
+
 export function getLocalEditorialVariant(variants, draft, channel) {
   createLocalSocialPreview(draft, channel);
   if (!Array.isArray(variants) || variants.length > 60) {
@@ -30,25 +48,28 @@ export function getLocalEditorialVariant(variants, draft, channel) {
   }
   const saved = variants.find(row => row && row.draftId === draft.id &&
     row.draftRevision === draft.revision && row.channel === channel) ?? null;
-  if (saved && (!Object.isFrozen(saved) ||
-      !['CREDIT_MISSING', 'CREDIT_PRESENT_UNVERIFIED'].includes(saved.creditStatus))) {
-    throw new TypeError('Invalid LOCAL variant memory');
-  }
-  return saved;
+  return saved ? requireCanonicalLocalVariant(saved, draft) : null;
 }
 
-export function upsertLocalEditorialVariant(variants, draft, channel, editableText) {
-  const next = createLocalEditorialVariant(draft, channel, editableText);
-  if (!Array.isArray(variants) || variants.length > 60 ||
-      variants.some(row => !row || !Object.isFrozen(row) ||
-        row.mode !== 'LOCAL_SYNTHETIC' || row.status !== 'DEMO_ONLY' ||
-        row.publishingStatus !== 'DRAFT_ONLY' ||
-        row.sourceStatus !== 'SOURCE_VERIFICATION_PENDING' ||
-        !['CREDIT_MISSING', 'CREDIT_PRESENT_UNVERIFIED'].includes(row.creditStatus) ||
-        row.rights !== 'NOT_CLEARED' || !['x','instagram','tiktok'].includes(row.channel) ||
-        typeof row.draftId !== 'string' || !Number.isSafeInteger(row.draftRevision) ||
-        row.draftRevision < 1 || typeof row.editableText !== 'string')) {
+export function upsertLocalEditorialVariant(variants, draft, channel, editableText, authorizedDrafts = [draft]) {
+  if (!Array.isArray(authorizedDrafts) || authorizedDrafts.length > 100) {
+    throw new TypeError('Authorized LOCAL draft listing required');
+  }
+  const current = authorizedDrafts.find(row => row && row.id === draft?.id &&
+    row.revision === draft?.revision);
+  if (!current) throw new TypeError('Draft missing from authorized LOCAL listing');
+  const next = createLocalEditorialVariant(current, channel, editableText);
+  if (!Array.isArray(variants) || variants.length > 60) {
     throw new TypeError('Invalid LOCAL variant collection');
+  }
+  const keys = new Set();
+  for (const row of variants) {
+    const sourceDraft = authorizedDrafts.find(item => item && item.id === row?.draftId &&
+      item.revision === row?.draftRevision);
+    requireCanonicalLocalVariant(row, sourceDraft);
+    const key = row.draftId + ':' + row.draftRevision + ':' + row.channel;
+    if (keys.has(key)) throw new TypeError('Duplicate LOCAL variant');
+    keys.add(key);
   }
   const unchanged = variants.filter(row =>
     !(row.draftId === next.draftId && row.channel === next.channel));

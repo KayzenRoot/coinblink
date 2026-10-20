@@ -25,8 +25,13 @@ async function createFictionalDraft(page, title) {
   await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20000 });
 }
 /** Add a hypothetical in-memory idea for the indexed authorized local draft. */
-async function addConcept(page, index, localMinute = '2026-11-16T00:30') {
-  await page.locator('#m07-draft').selectOption({ index });
+async function addConcept(page, draftChoice, localMinute = '2026-11-16T00:30') {
+  if (typeof draftChoice === 'string') {
+    const option = page.locator('#m07-draft option').filter({ hasText:draftChoice });
+    await page.locator('#m07-draft').selectOption(await option.getAttribute('value'));
+  } else {
+    await page.locator('#m07-draft').selectOption({ index:draftChoice });
+  }
   await page.locator('#m07-channel').selectOption('x');
   await page.locator('#m07-calendar-zone').selectOption('UTC');
   await page.locator('#m07-calendar-date').fill(localMinute);
@@ -130,8 +135,8 @@ test('M07-E: weekly navigation opens only the authorized draft; keyboard and uns
       await createFictionalDraft(page, title);
       await page.locator('#new-draft').click();
     }
-    await addConcept(page, 1);
-    await addConcept(page, 2, '2026-11-16T01:30');
+    await addConcept(page, 'First fictional weekly destination');
+    await addConcept(page, 'Second fictional weekly destination', '2026-11-16T01:30');
     await page.locator('#m07-week-zone').selectOption('America/New_York');
     await page.locator('#m07-week-filter').selectOption('x');
 
@@ -222,8 +227,8 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
       await createFictionalDraft(page, title);
       await page.locator('#new-draft').click();
     }
-    await addConcept(page, 1, '2026-11-16T00:30');
-    await addConcept(page, 2, '2026-11-16T00:30');
+    await addConcept(page, 'First fictional edit concept', '2026-11-16T00:30');
+    await addConcept(page, 'Second fictional edit concept', '2026-11-16T00:30');
     assert.equal(await page.locator('.m07-week-conflict').count(), 2);
     const edits = page.locator('#m07-calendar-list .m07-calendar-edit');
     assert.equal(await edits.count(), 2);
@@ -255,7 +260,7 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     assert.match(await page.locator('#m07-week-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
 
     // Add another time for the same draft, then reject a duplicate edit.
-    await addConcept(page, 1, '2026-11-16T02:30');
+    await addConcept(page, 'First fictional edit concept', '2026-11-16T02:30');
     // Target the 01:30 edited idea for this draft, not the unrelated draft.
     const first = page.locator('#m07-calendar-list .m07-calendar-item')
       .filter({ hasText:'First fictional edit concept · INSTAGRAM · 2026-11-16T01:30' }).first();

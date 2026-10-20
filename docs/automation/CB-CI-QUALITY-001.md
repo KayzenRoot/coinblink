@@ -32,3 +32,8 @@ Initial HEAD 7dd53cc1c286de2a9ddaa60a7f92890046145d6c: lint failed with 10 error
 ## Correction Delta 2 (browser prerequisite triage)
 
 First test run on 7dd53cc1c286de2a9ddaa60a7f92890046145d6c emitted LCOV but failed when implicit `node --test` discovery executed helper scripts and browser tests without a Chromium installation. The second iteration still used a broad `test/**/*.test.mjs` pattern and did not yet resolve Chromium prerequisites. This correction restricts the new quality baseline to deterministic M02/M03/M04 Node contract tests plus the workflow's own security-contract test. Existing module-specific Playwright/WebAuthn/D1 workflows remain unchanged and authoritative for browser acceptance. **Do not claim full Node-unit-suite coverage** or report an unmeasured coverage percentage. No suppression or relaxation of existing gate failures.
+
+
+## Correction Delta 3 (precise ESLint browser globals)
+
+The second static baseline on 25d235bcf5fe2c9ea256c215043786b769c6798b failed with four `no-redeclare` findings because explorer-lookup.js, home-demo.js and m05-draft-preview.js already declare DOM globals via file-level comments. Scope browser environment only to files lacking these declarations; add only `window` in m05-draft-preview.js while respecting its existing `document` declaration. Preserve both lint rules and all product code; rerun CI on exact new HEAD.

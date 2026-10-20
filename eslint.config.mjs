@@ -30,14 +30,21 @@ export default defineConfig(
     },
   },
   {
-    // DOM code and page.evaluate callbacks use browser globals.
+    // Only source files without their own explicit DOM globals.
     files: [
-      "public/**/*.js",
+      "public/m01-local-draft-preview.js",
       "src/modules/**/*.client.js",
       "test/modules/CB-M07/local-week-browser.test.mjs",
     ],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
+    },
+  },
+  {
+    // This script already declares document in a file-level comment.
+    files: ["public/m05-draft-preview.js"],
+    languageOptions: {
+      globals: { window: "readonly" },
     },
   },
 );

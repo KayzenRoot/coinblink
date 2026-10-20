@@ -103,6 +103,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let sessionExpiryTimer = null;
   let sessionEpoch = 0;
   let socialActionGeneration = 0;
+  let focusValidationGeneration = 0;
   let readGeneration = 0;
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
@@ -788,9 +789,43 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   // Background tabs do not require polling. Recheck on return and before actions.
-  const recheckLocalSocialOnFocus = () => {
+  const recheckLocalSocialOnFocus = async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const epoch = sessionEpoch;
-    if (csrf && !ui.form.hidden) void verifyLocalSocialSession(epoch);
+    const validation = ++focusValidationGeneration;
+    const generation = socialActionGeneration;
+    const selectedId = ui.socialDraft.value;
+    const selectedDraft = lastDrafts.find(row => row.id === selectedId);
+    const authorizedDrafts = await verifyLocalSocialSession(epoch);
+    if (!authorizedDrafts || validation !== focusValidationGeneration ||
+        generation !== socialActionGeneration || !activeLocalSocialSession(epoch) ||
+        selectedId !== ui.socialDraft.value) return;
+
+    // Keep the already-visible LOCAL preview only while its exact metadata
+    // still matches the latest authenticated Owner/D1 listing.
+    const fields = ['id', 'revision', 'title', 'summary', 'source_url',
+      'author_label', 'status', 'updated_at'];
+    const sameDraft = (a, b) => !!a && !!b &&
+      fields.every(key => a[key] === b[key]);
+    const authorizedSelected = authorizedDrafts.find(row => row.id === selectedId);
+    const selectedStale = !!selectedDraft &&
+      !sameDraft(selectedDraft, authorizedSelected);
+
+    localEditorialVariants = Object.freeze(localEditorialVariants.filter(row => {
+      const previous = lastDrafts.find(draft => draft.id === row.draftId &&
+        draft.revision === row.draftRevision);
+      const current = authorizedDrafts.find(draft => draft.id === row.draftId &&
+        draft.revision === row.draftRevision);
+      if (!sameDraft(previous, current)) return false;
+      try { requireCanonicalLocalVariant(row, current); return true; }
+      catch { return false; }
+    }));
+    if (!selectedStale) return;
+    clearLocalSocialPreview();
+    lastDrafts = authorizedDrafts;
+    renderDraftList();
+    renderLocalSocialChoices();
+    ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
   };
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) recheckLocalSocialOnFocus();

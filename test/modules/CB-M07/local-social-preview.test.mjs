@@ -4,6 +4,22 @@ import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 import { startLocalCmsPreview } from '../CB-M05/p1c-local-preview.mjs';
 
+async function openAuthenticatedSyntheticVariant(page, fixture) {
+  await page.locator('#login').click();
+  await page.getByText('Local test session active').waitFor({timeout:20_000});
+  await page.locator('[name="title"]').fill(fixture.title);
+  await page.locator('[name="summary"]').fill(fixture.summary);
+  await page.locator('[name="body"]').fill(fixture.body);
+  await page.locator('[name="sourceUrl"]').fill(fixture.sourceUrl);
+  await page.locator('[name="authorLabel"]').fill(fixture.authorLabel);
+  await page.locator('#save').click();
+  await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+  await page.locator('#m07-draft').selectOption({index:1});
+  await page.locator('#m07-generate').click();
+  await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+}
+
+
 test('M07 LOCAL three channels use authenticated D1 metadata only; no posts or egress', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({headless:true,admin:true});
   try {
@@ -219,18 +235,7 @@ test('M07-H revocation denies LOCAL save, reset and generate before any preview 
     const app = await startLocalCmsPreview({headless:true,admin:true});
     try {
       const page = app.page;
-      await page.locator('#login').click();
-      await page.getByText('Local test session active').waitFor({timeout:20_000});
-      await page.locator('[name="title"]').fill('Revoked fictional draft');
-      await page.locator('[name="summary"]').fill('Fictional summary that must disappear after revocation.');
-      await page.locator('[name="body"]').fill('SENSITIVE_TEST_BODY');
-      await page.locator('[name="sourceUrl"]').fill('https://example.org/revoked');
-      await page.locator('[name="authorLabel"]').fill(' ');
-      await page.locator('#save').click();
-      await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
-      await page.locator('#m07-draft').selectOption({index:1});
-      await page.locator('#m07-generate').click();
-      await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+      await openAuthenticatedSyntheticVariant(page, {"title":"Revoked fictional draft","summary":"Fictional summary that must disappear after revocation.","body":"SENSITIVE_TEST_BODY","sourceUrl":"https://example.org/revoked","authorLabel":" "});
       await page.locator('#m07-variant-text').fill('Fictional authorized variant before revocation');
       const revoked=await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
         .bind(Math.floor(Date.now()/1000)).run();
@@ -253,18 +258,7 @@ test('M07-H client expiry timer erases private DOM even without another API requ
   try {
     const page=app.page;
     await page.clock.install({time:Date.now()});
-    await page.locator('#login').click();
-    await page.getByText('Local test session active').waitFor({timeout:20_000});
-    await page.locator('[name="title"]').fill('Session expiry fictional title');
-    await page.locator('[name="summary"]').fill('Fictional source summary for an expiring browser session.');
-    await page.locator('[name="body"]').fill('PRIVATE_SESSION_EXPIRY_BODY');
-    await page.locator('[name="sourceUrl"]').fill('https://example.org/expiry');
-    await page.locator('[name="authorLabel"]').fill(' ');
-    await page.locator('#save').click();
-    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
-    await page.locator('#m07-draft').selectOption({index:1});
-    await page.locator('#m07-generate').click();
-    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    await openAuthenticatedSyntheticVariant(page, {"title":"Session expiry fictional title","summary":"Fictional source summary for an expiring browser session.","body":"PRIVATE_SESSION_EXPIRY_BODY","sourceUrl":"https://example.org/expiry","authorLabel":" "});
     await page.clock.fastForward(1_200_500);
     await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
     assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
@@ -279,18 +273,7 @@ test('M07-H Reset with delayed authorized GET preserves later user input and sav
   const app = await startLocalCmsPreview({headless:true,admin:true});
   try {
     const page = app.page;
-    await page.locator('#login').click();
-    await page.getByText('Local test session active').waitFor({timeout:20_000});
-    await page.locator('[name="title"]').fill('Fictional Reset race article');
-    await page.locator('[name="summary"]').fill('Synthetic local scenario for asynchronous editing safety.');
-    await page.locator('[name="body"]').fill('PRIVATE_RESET_RACE_BODY');
-    await page.locator('[name="sourceUrl"]').fill('https://example.org/reset-race');
-    await page.locator('[name="authorLabel"]').fill(' ');
-    await page.locator('#save').click();
-    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
-    await page.locator('#m07-draft').selectOption({index:1});
-    await page.locator('#m07-generate').click();
-    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    await openAuthenticatedSyntheticVariant(page, {"title":"Fictional Reset race article","summary":"Synthetic local scenario for asynchronous editing safety.","body":"PRIVATE_RESET_RACE_BODY","sourceUrl":"https://example.org/reset-race","authorLabel":" "});
     const savedCaption = 'A saved fictional version that must survive a canceled Reset';
     const newerCaption = 'An unsaved newer edit made while Reset is awaiting the server';
     await page.locator('#m07-variant-text').fill(savedCaption);
@@ -342,4 +325,51 @@ test('M07-H Reset with delayed authorized GET preserves later user input and sav
     assert.match(await page.locator('#m07-card-copy').innerText(), /saved fictional version/);
     assert.equal(app.networkAttempts.filter(item => !item.allowed).length, 0);
   } finally {await app.close();}
+});
+
+test('M07-H focus invalidates removed or revised LOCAL drafts while retaining unchanged previews', {timeout:180_000}, async () => {
+  for (const mutation of ['unchanged', 'revised', 'removed']) {
+    const app = await startLocalCmsPreview({headless:true,admin:true});
+    try {
+      const page = app.page;
+      await openAuthenticatedSyntheticVariant(page, {
+        title:'Fictional focus revalidation article',
+        summary:'Private synthetic summary for checking an authorized D1 revision.',
+        body:'PRIVATE_FOCUS_BODY',
+        sourceUrl:'https://example.org/focus-check',
+        authorLabel:' '
+      });
+      const draftId = await page.locator('#m07-draft').inputValue();
+      assert.ok(draftId);
+      const oldText = await page.locator('#m07-card-copy').textContent();
+      assert.match(oldText, /focus revalidation article/);
+      if (mutation === 'revised') {
+        await app.db.prepare('UPDATE cms_drafts SET revision=revision+1 WHERE id=?')
+          .bind(draftId).run();
+      } else if (mutation === 'removed') {
+        await app.db.prepare('DELETE FROM cms_draft_revisions WHERE draft_id=?')
+          .bind(draftId).run();
+        await app.db.prepare('DELETE FROM cms_drafts WHERE id=?')
+          .bind(draftId).run();
+      }
+      const authenticatedResponse = page.waitForResponse(response =>
+        new URL(response.url()).pathname === '/admin/articles' &&
+        response.request().method() === 'GET');
+      await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+      assert.equal((await authenticatedResponse).status(),200);
+      if (mutation === 'unchanged') {
+        assert.equal(await page.locator('#m07-card-copy').textContent(),oldText);
+        assert.equal(await page.locator('#m07-variant-composer').isVisible(),true);
+        assert.equal(await page.locator('#m07-draft').inputValue(),draftId);
+      } else {
+        await page.waitForFunction(() =>
+          document.getElementById('m07-card-copy').textContent === '' &&
+          document.getElementById('m07-variant-composer').hidden);
+        assert.equal(await page.locator('#m07-variant-text').inputValue(),'');
+        assert.equal(await page.locator('#m07-draft').inputValue(),'');
+        assert.equal(await page.getByText('Local test session active').isVisible(),true);
+      }
+      assert.equal(app.networkAttempts.filter(item => !item.allowed).length,0);
+    } finally {await app.close();}
+  }
 });

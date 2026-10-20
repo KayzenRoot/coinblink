@@ -65,6 +65,17 @@ async function assertAccessibleAtViewports(page, root, rectTarget) {
   assert.deepEqual(result.violations.map(x => ({ id:x.id, impact:x.impact })), []);
 }
 
+/** Scoped synthetic sign-in fixture with guaranteed browser/DB cleanup. */
+async function withLocalSession(fn) {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    await signIn(app.page);
+    await fn(app.page,app);
+  } finally {
+    await app.close();
+  }
+}
+
 test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no egress', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({ headless:true, admin:true });
   try {
@@ -289,4 +300,72 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
     assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
   } finally { await app.close(); }
+});
+
+
+test('M07-G: conflict choices are synthetic, require explicit confirmation, remain accessible and fail closed', {timeout:120_000}, async () => {
+  await withLocalSession(async (page,app) => {
+    await seedFictionalDrafts(page, ['First hypothetical conflict draft', 'Second hypothetical conflict draft']);
+    await addConcept(page,'First hypothetical conflict draft','2026-11-16T00:30');
+    await addConcept(page,'Second hypothetical conflict draft','2026-11-16T00:30');
+    assert.equal(await page.locator('.m07-week-conflict').count(),2);
+    const first = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:'First hypothetical conflict draft'}).first();
+    const suggest = first.locator('.m07-conflict-suggest');
+    assert.equal(await suggest.count(),1);
+    await suggest.focus();
+    await page.keyboard.press('Enter');
+    const panel = first.locator('.m07-suggestion-panel');
+    assert.equal(await panel.isVisible(),true);
+    const chooser = panel.locator('.m07-suggestion-choice');
+    assert.equal(await chooser.locator('option').count(),4);
+    assert.equal(await chooser.inputValue(),'');
+    assert.match(await panel.innerText(),/NOT SCHEDULED|NOT POSTED/);
+    await panel.locator('.m07-suggestion-confirm').click();
+    assert.equal(await page.locator('.m07-week-conflict').count(),2,
+      'Unselected suggestion may not change a concept');
+    await assertAccessibleAtViewports(page,'#m07-calendar',
+      '#m07-calendar-list .m07-suggestion-panel:not([hidden])');
+
+    const candidate = await chooser.locator('option').nth(1).getAttribute('value');
+    assert.ok(candidate && candidate !== '2026-11-16T00:30:00.000Z');
+    await chooser.selectOption(candidate);
+    const staleConfirm = await panel.locator('.m07-suggestion-confirm').elementHandle();
+    await panel.locator('.m07-suggestion-confirm').click();
+    assert.equal(await page.locator('.m07-week-conflict').count(),0);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),2);
+    assert.match(await page.locator('#m07-calendar-status').innerText(),
+      /Edited LOCAL hypothetical concept/);
+    assert.match(await page.locator('#m07-week-status').innerText(),/NOT SCHEDULED · NOT POSTED/);
+    assert.equal(await page.locator('.m07-conflict-suggest').count(),0);
+    assert.doesNotMatch(await page.locator('#m07-calendar-list').innerText(),
+      /PRIVATE_EDITORIAL_BODY_MUST_NOT_APPEAR|example\.org/);
+
+    await staleConfirm.evaluate(node=>node.click());
+    assert.equal(await page.locator('#m07-calendar-list li').count(),2);
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    await expectEmptyPrivateBoard(page);
+    await staleConfirm.evaluate(node=>node.click());
+    await expectEmptyPrivateBoard(page);
+    // Same authenticated fixture: cancel and logout must also discard choices.
+    await addConcept(page,'First hypothetical conflict draft');
+    await addConcept(page,'Second hypothetical conflict draft');
+    const again = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:'First hypothetical conflict draft'}).first();
+    await again.locator('.m07-conflict-suggest').click();
+    const choiceAgain = again.locator('.m07-suggestion-choice');
+    await choiceAgain.selectOption({index:1});
+    await again.locator('.m07-calendar-cancel').click();
+    assert.equal(await again.locator('.m07-suggestion-panel').isVisible(),false);
+    assert.equal(await choiceAgain.locator('option').count(),0);
+    assert.equal(await page.locator('.m07-week-conflict').count(),2);
+    await again.locator('.m07-conflict-suggest').click();
+    assert.equal(await choiceAgain.inputValue(),'');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20000});
+    await expectEmptyPrivateBoard(page);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  });
 });

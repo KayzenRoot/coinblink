@@ -4,7 +4,7 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
-import { createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea } from '../../CB-M07/local-calendar.mjs';
+import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
@@ -12,10 +12,13 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});
+  const localCalendarMinuteParts = (${localCalendarMinuteParts.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
   const addLocalCalendarIdea = (${addLocalCalendarIdea.toString()});
   const replaceLocalCalendarIdea = (${replaceLocalCalendarIdea.toString()});
   const createLocalWeeklyBoard = (${createLocalWeeklyBoard.toString()});
+  const suggestLocalConflictAlternatives = (${suggestLocalConflictAlternatives.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -322,7 +325,23 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       editStatus.setAttribute('role', 'status');
       editStatus.setAttribute('aria-live', 'polite');
       editStatus.textContent = 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+      const panel = document.createElement('div');
+      panel.className = 'm07-suggestion-panel';
+      panel.hidden = true;
+      const suggestStatus = document.createElement('p');
+      suggestStatus.setAttribute('aria-live', 'polite');
+      suggestStatus.textContent = 'Hypothetical alternatives only · NOT SCHEDULED · NOT POSTED';
+      const selection = select('m07-suggestion-choice',
+        [['', 'Choose a hypothetical alternative before confirming']], '');
+      const pickLabel = document.createElement('label');
+      pickLabel.textContent = 'Available fictional times for ' + item.title;
+      pickLabel.append(selection);
+      const confirmSuggestion = action('m07-suggestion-confirm', 'Confirm hypothetical time change');
+      panel.append(suggestStatus, pickLabel, confirmSuggestion);
       const resetEditor = () => {
+        panel.hidden = true;
+        selection.replaceChildren();
+        selection.value = '';
         channel.value = item.channel;
         time.value = item.hypotheticalLocal;
         zone.value = item.timeZone;
@@ -354,8 +373,64 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
           editStatus.textContent = 'Invalid or duplicate LOCAL idea; NOTHING SCHEDULED';
         }
       });
-      editor.append(legend, controls, save, cancel, editStatus);
-      article.append(description, labels, remove, edit, editor);
+      article.append(description, labels, remove, edit);
+      const conflict = localCalendarIdeas.some(row => row !== item &&
+        row.draftId !== item.draftId && row.channel === item.channel &&
+        row.utcISO === item.utcISO);
+      if (conflict) {
+        const suggestions = action('m07-conflict-suggest', 'Suggest hypothetical conflict-free times');
+        suggestions.setAttribute('aria-label', 'Suggest hypothetical alternatives for ' + item.title);
+        suggestions.addEventListener('click', () => {
+          if (!current()) return;
+          const draft = lastDrafts.find(row => row.id === item.draftId);
+          if (!draft) return;
+          resetEditor();
+          editor.hidden = false;
+          panel.hidden = false;
+          try {
+            const times = suggestLocalConflictAlternatives(localCalendarIdeas, item, draft);
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Choose a hypothetical time to confirm';
+            selection.append(placeholder);
+            for (const candidate of times) {
+              const option = document.createElement('option');
+              option.value = candidate.utcISO;
+              option.textContent = candidate.hypotheticalLocal + ' ' + candidate.timeZone +
+                ' · ' + candidate.channel.toUpperCase() + ' · NOT SCHEDULED';
+              selection.append(option);
+            }
+            suggestStatus.textContent = times.length
+              ? times.length + ' hypothetical alternatives · select, then confirm manually · NOT POSTED'
+              : 'No valid alternatives in the next three hours · NOTHING SCHEDULED';
+            confirmSuggestion.disabled = times.length === 0;
+            selection.focus();
+          } catch {
+            panel.hidden = true;
+            editStatus.textContent = 'Alternatives unavailable; NOTHING SCHEDULED';
+          }
+        });
+        article.append(suggestions);
+      }
+      confirmSuggestion.addEventListener('click', () => {
+        if (!current() || editor.hidden || panel.hidden || !selection.value) return;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        if (!draft) return;
+        try {
+          // Recompute against the latest list before applying the user selection.
+          const fresh = suggestLocalConflictAlternatives(localCalendarIdeas, item, draft)
+            .find(row => row.utcISO === selection.value);
+          if (!fresh) throw new TypeError('Stale suggestion');
+          channel.value = fresh.channel;
+          time.value = fresh.hypotheticalLocal;
+          zone.value = fresh.timeZone;
+          save.click(); // Uses the existing validated, immutable LOCAL edit action.
+        } catch {
+          editStatus.textContent = 'Suggested time unavailable; refresh alternatives · NOTHING SCHEDULED';
+        }
+      });
+      editor.append(legend, controls, panel, save, cancel, editStatus);
+      article.append(editor);
       li.append(article);
       ui.calendarList.append(li);
     }

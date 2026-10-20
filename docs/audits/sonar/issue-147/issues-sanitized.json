@@ -1,0 +1,28 @@
+[
+  {
+    "key": "AaFR-cy5CJGJn4IVW2S7",
+    "rule": "python:S2245",
+    "type": "VULNERABILITY",
+    "severity": "MAJOR",
+    "impacts": [ { "softwareQuality": "SECURITY", "severity": "MEDIUM" } ],
+    "component": "KayzenRoot_coinblink:assets/archive/m01/blender-hero-scene.py",
+    "textRange": { "startLine": 145, "endLine": 145, "startOffset": 15, "endOffset": 43 },
+    "line": 145,
+    "message": "Make sure that using this pseudorandom number generator is safe here.",
+    "status": "OPEN",
+    "issueStatus": "OPEN"
+  },
+  {
+    "key": "AaFR-czUCJGJn4IVW2TB",
+    "rule": "python:S4790",
+    "type": "VULNERABILITY",
+    "severity": "CRITICAL",
+    "impacts": [ { "softwareQuality": "SECURITY", "severity": "HIGH" } ],
+    "component": "KayzenRoot_coinblink:assets/archive/m01/derive-hero-cinematic-exports.py",
+    "textRange": { "startLine": 213, "endLine": 213, "startOffset": 19, "endOffset": 23 },
+    "line": 213,
+    "message": "Make sure that hashing data is safe here.",
+    "status": "OPEN",
+    "issueStatus": "OPEN"
+  }
+]

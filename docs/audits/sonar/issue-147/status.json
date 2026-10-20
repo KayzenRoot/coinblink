@@ -1,0 +1,67 @@
+{
+  "mission": "CB-SONAR-147-PUBLIC-TRIAGE-001",
+  "extractionStatus": "COMPLETE",
+  "repository": "KayzenRoot/coinblink",
+  "branch": "docs/sonar-147-public-triage-20261020",
+  "observedAtUtc": "2026-10-20T12:09:01Z",
+  "source": {
+    "sonarCloudEndpoint": "https://sonarcloud.io/api/issues/search",
+    "requestMethod": "GET",
+    "query": "componentKeys=KayzenRoot_coinblink&branch=main&sinceLeakPeriod=true&ps=100&p={page}",
+    "mainSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+    "missionDocumentCommit": "5b50b0bd06c84b871c2e30f61495b4af873db844"
+  },
+  "pagination": {
+    "reportedTotal": 262,
+    "expectedPages": 3,
+    "pages": [
+      { "page": 1, "httpStatus": 200, "returned": 100 },
+      { "page": 2, "httpStatus": 200, "returned": 100 },
+      { "page": 3, "httpStatus": 200, "returned": 62 }
+    ],
+    "retrieved": 262,
+    "uniqueIssueKeys": 262,
+    "duplicateIssueKeys": 0,
+    "apiErrors": 0,
+    "complete": true
+  },
+  "securityFilter": {
+    "criteria": "OPEN or unresolved records with type VULNERABILITY or impacts.softwareQuality SECURITY",
+    "matchedRecords": 2,
+    "recordsPublished": 2,
+    "legacySeverityCounts": { "CRITICAL": 1, "MAJOR": 1 },
+    "securityImpactSeverityCounts": { "HIGH": 1, "MEDIUM": 1 }
+  },
+  "ruleMetadata": {
+    "method": "GET",
+    "endpoint": "https://sonarcloud.io/api/rules/show",
+    "requestedRules": [ "python:S2245", "python:S4790" ],
+    "httpStatus": 400,
+    "note": "Rule-detail endpoint rejected both read requests; issue rule keys and messages are preserved from the successful issue search response."
+  },
+  "qualityGate": {
+    "checkRunId": 118552202578,
+    "name": "SonarCloud Code Analysis",
+    "headSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+    "status": "completed",
+    "conclusion": "failure",
+    "condition": "D Security Rating on New Code (required >= A)",
+    "url": "https://github.com/KayzenRoot/coinblink/runs/118552202578",
+    "exactIssueAttribution": "UNCONFIRMED"
+  },
+  "sanitization": {
+    "publishedFields": [ "key", "rule", "type", "severity", "impacts", "component", "textRange", "line", "message", "status", "issueStatus" ],
+    "secretOrExploitFieldsIncluded": false,
+    "redactionsApplied": 0,
+    "rawApiPayloadsPublished": false,
+    "publicDisclosureWarningIncluded": true
+  },
+  "scope": {
+    "sourceCodeChanged": false,
+    "issuesMutated": false,
+    "qualityGateChanged": false,
+    "mainChanged": false,
+    "pr180OrPr181Changed": false,
+    "mergeOrDeployPerformed": false
+  }
+}

@@ -12,11 +12,7 @@ Read [README.md](README.md), [quick development guide](docs/BUILD_FIRST.md) and 
 
 ## Solo Owner pull-request reviews
 
-CoinBlink is a **single-owner project**. Do not require or recruit an external human collaborator as a standing process prerequisite for developing, technically reviewing, or preparing pull requests. The Owner does not want third-party repository participants. Do not invite contributors, add reviewers, or grant write access without a new, specific instruction.
-
-Use automated technical evidence instead: required Build (Ubuntu), SonarCloud Code Analysis, Socket Security: Pull Request Alerts, relevant module tests, and Copilot Code Review when available within the Owner's existing no-overage plan. CodeRabbit is optional and its skipped/rate-limited reviews must not count as completed substantive reviews. AI feedback is technical evidence, **not a forged GitHub human APPROVED review**. Do not ask the Owner to use their alternate accounts to impersonate independent people.
-
-**No extra independent-human-review gate is imposed by this project policy.** However, this documentation does **not** modify GitHub branch-protection rules. If GitHub actually requires human approvals, leave the PR blocked until the Owner explicitly changes that admin setting through an authorized mechanism. Keep all three required CI gates, zero unresolved blocking threads, accurate HEAD/base/diff verification, and a new explicit Owner authorization for each protected squash merge. Never automatically merge or bypass GitHub protections. No deploy, publication, LIVE, D1 remote, GEF, release or checkpoint promotion without separate authorization.
+This is a single-owner project. The **canonical PR-review policy**, including automated evidence, CI gates, collaborator restrictions, actual GitHub branch protection and per-merge Owner authorization, is maintained only in [the chat workflow and handoff guide](docs/CHAT_WORKFLOW_AND_HANDOFF.md#modelo-solo-owner-decisao-do-proprietario-2026-10-19). Follow that source; do not duplicate or override it here.
 
 ## Chat interaction preference
 

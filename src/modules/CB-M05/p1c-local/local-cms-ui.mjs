@@ -5,7 +5,7 @@ import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalRev
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
 import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
-import { inspectLocalApprovalHistory, latestLocalApproval, recordLocalApproval } from '../../CB-M07/local-editorial-approvals.mjs';
+import { requireCanonicalLocalApprovalEvent, inspectLocalApprovalHistory, latestLocalApproval, recordLocalApproval } from '../../CB-M07/local-editorial-approvals.mjs';
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
@@ -18,6 +18,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const requireCanonicalLocalVariant = (${requireCanonicalLocalVariant.toString()});
   const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
   const upsertLocalEditorialVariant = (${upsertLocalEditorialVariant.toString()});
+  const requireCanonicalLocalApprovalEvent = (${requireCanonicalLocalApprovalEvent.toString()});
   const inspectLocalApprovalHistory = (${inspectLocalApprovalHistory.toString()});
   const latestLocalApproval = (${latestLocalApproval.toString()});
   const recordLocalApproval = (${recordLocalApproval.toString()});

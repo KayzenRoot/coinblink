@@ -1,6 +1,22 @@
 // CB-M07-I-LOCAL-001. Volatile local editorial review, never real publishing approval.
 import { requireCanonicalLocalVariant } from './local-editorial-variants.mjs';
 
+// Keep the metadata guard independent of the approval state machine.
+// No browser storage, provider access, network call or mutable state.
+export function requireCanonicalLocalApprovalEvent(event) {
+  if (!event || typeof event !== 'object' || Array.isArray(event) ||
+      Object.getPrototypeOf(event) !== Object.prototype || !Object.isFrozen(event) ||
+      Object.keys(event).length !== 5 ||
+      !['action','version','variant','reason','atUTC'].every(key => Object.hasOwn(event,key)) ||
+      !['SAVE','APPROVE','REJECT','RESET'].includes(event.action) ||
+      typeof event.reason !== 'string' || typeof event.atUTC !== 'string' ||
+      !Number.isSafeInteger(event.version) || event.version < 1 ||
+      !Number.isFinite(Date.parse(event.atUTC))) {
+    throw new TypeError('Invalid LOCAL approval event');
+  }
+  return event;
+}
+
 // Every event retains the exact immutable, revalidated authorized draft variant.
 // A resave increments the channel-specific version and invalidates old decisions.
 export function inspectLocalApprovalHistory(events, authorizedDrafts) {
@@ -10,17 +26,8 @@ export function inspectLocalApprovalHistory(events, authorizedDrafts) {
   }
   const latest = new Map();
   for (const event of events) {
-    if (!event || typeof event !== 'object' || Array.isArray(event) ||
-        Object.getPrototypeOf(event) !== Object.prototype || !Object.isFrozen(event) ||
-        Object.keys(event).length !== 5 ||
-        !['action','version','variant','reason','atUTC'].every(key => Object.hasOwn(event,key)) ||
-        !['SAVE','APPROVE','REJECT','RESET'].includes(event.action) ||
-        typeof event.reason !== 'string' || typeof event.atUTC !== 'string' ||
-        !Number.isSafeInteger(event.version) || event.version < 1 ||
-        !Number.isFinite(Date.parse(event.atUTC))) {
-      throw new TypeError('Invalid LOCAL approval event');
-    }
-    const draft = authorizedDrafts.find(row => row && row.id === event.variant?.draftId &&
+    requireCanonicalLocalApprovalEvent(event);
+    const draft = authorizedDrafts.find(row => row?.id === event.variant?.draftId &&
       row.revision === event.variant?.draftRevision);
     requireCanonicalLocalVariant(event.variant, draft);
     const key = event.variant.draftId + ':' + event.variant.draftRevision +

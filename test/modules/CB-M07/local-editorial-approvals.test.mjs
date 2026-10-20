@@ -67,3 +67,22 @@ test('M07-I LOCAL controls are session-only and never grant posting or rights cl
   assert.match(html,/APPROVED FOR LOCAL EDITORIAL REVIEW ONLY/);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/localStorage|sessionStorage|indexedDB|innerHTML|window\.open/);
 });
+
+
+test('M07-I refactored canonical event guard still rejects forged metadata and allows canonical history',()=>{
+  const valid=write(Object.freeze([]),variant('x'),'SAVE');
+  assert.equal(inspectLocalApprovalHistory(valid,[draft]).size,1);
+  const event=valid[0];
+  for(const forged of [
+    null,
+    {...event},
+    Object.freeze({...event,extra:'unexpected'}),
+    Object.freeze({...event,action:'PUBLISH'}),
+    Object.freeze({...event,version:0}),
+    Object.freeze({...event,reason:123}),
+    Object.freeze({...event,atUTC:'not-a-time'}),
+  ]) {
+    assert.throws(()=>inspectLocalApprovalHistory([forged],[draft]),TypeError);
+  }
+  assert.match(LOCAL_CMS_UI_SCRIPT,/const requireCanonicalLocalApprovalEvent =/);
+});

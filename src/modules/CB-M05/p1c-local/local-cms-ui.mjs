@@ -917,6 +917,8 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-calendar-item{max-width:100%;border:1px solid #768977;border-radius:8px;background:#172820;padding:12px;overflow-wrap:anywhere;margin:8px 0}
 .m07-calendar-item p{white-space:pre-wrap;overflow-wrap:anywhere}
 .m07-calendar-item small{display:block;color:#d5e6c6}
+.m07-calendar-editor{box-sizing:border-box;min-width:0;max-width:100%}
+.m07-calendar-editor[hidden]{display:none}
 .m07-calendar-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
 .m07-calendar-controls label{display:block}
 .m07-calendar-controls input,.m07-calendar-controls select{max-width:100%;box-sizing:border-box}

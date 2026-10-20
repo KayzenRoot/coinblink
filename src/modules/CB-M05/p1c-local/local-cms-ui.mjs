@@ -269,10 +269,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         localCalendarIdeas = localCalendarIdeas.filter(row => row !== item);
         renderLocalCalendar();
       });
-      const edit = document.createElement('button');
-      edit.type = 'button';
-      edit.className = 'm07-calendar-edit';
-      edit.textContent = 'Edit hypothetical concept';
+      const action = (className, caption) => {
+        const control = document.createElement('button');
+        control.type = 'button';
+        control.className = className;
+        control.textContent = caption;
+        return control;
+      };
+      const edit = action('m07-calendar-edit', 'Edit hypothetical concept');
       edit.setAttribute('aria-label', 'Edit hypothetical concept for ' + item.title);
       const editor = document.createElement('fieldset');
       editor.className = 'm07-calendar-editor';
@@ -287,18 +291,20 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         label.append(control);
         controls.append(label);
       };
-      const options = (control, values) => {
-        for (const [value, caption] of values) {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = caption;
-          control.append(option);
+      const select = (className, choices, value) => {
+        const control = document.createElement('select');
+        control.className = className;
+        for (const [key, caption] of choices) {
+          const choice = document.createElement('option');
+          choice.value = key;
+          choice.textContent = caption;
+          control.append(choice);
         }
+        control.value = value;
+        return control;
       };
-      const channel = document.createElement('select');
-      channel.className = 'm07-edit-channel';
-      options(channel, [['x', 'X'], ['instagram', 'Instagram'], ['tiktok', 'TikTok']]);
-      channel.value = item.channel;
+      const channel = select('m07-edit-channel',
+        [['x', 'X'], ['instagram', 'Instagram'], ['tiktok', 'TikTok']], item.channel);
       labeled('Illustrative channel (not a real provider)', channel);
       const time = document.createElement('input');
       time.className = 'm07-edit-time';
@@ -307,20 +313,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       time.autocomplete = 'off';
       time.value = item.hypotheticalLocal;
       labeled('Hypothetical local date and minute', time);
-      const zone = document.createElement('select');
-      zone.className = 'm07-edit-zone';
-      options(zone, [['America/Sao_Paulo', 'São Paulo'], ['UTC', 'UTC'],
-        ['America/New_York', 'New York (DST test)']]);
-      zone.value = item.timeZone;
+      const zone = select('m07-edit-zone', [['America/Sao_Paulo', 'São Paulo'],
+        ['UTC', 'UTC'], ['America/New_York', 'New York (DST test)']], item.timeZone);
       labeled('Fictional time zone', zone);
-      const save = document.createElement('button');
-      save.type = 'button';
-      save.className = 'm07-calendar-save';
-      save.textContent = 'Save LOCAL idea edit';
-      const cancel = document.createElement('button');
-      cancel.type = 'button';
-      cancel.className = 'm07-calendar-cancel';
-      cancel.textContent = 'Cancel idea edit';
+      const save = action('m07-calendar-save', 'Save LOCAL idea edit');
+      const cancel = action('m07-calendar-cancel', 'Cancel idea edit');
       const editStatus = document.createElement('p');
       editStatus.setAttribute('role', 'status');
       editStatus.setAttribute('aria-live', 'polite');

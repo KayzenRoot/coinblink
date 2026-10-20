@@ -28,16 +28,23 @@ export function getLocalEditorialVariant(variants, draft, channel) {
   if (!Array.isArray(variants) || variants.length > 60) {
     throw new TypeError('Invalid LOCAL variant memory');
   }
-  return variants.find(row => row.draftId === draft.id &&
+  const saved = variants.find(row => row && row.draftId === draft.id &&
     row.draftRevision === draft.revision && row.channel === channel) ?? null;
+  if (saved && (!Object.isFrozen(saved) ||
+      !['CREDIT_MISSING', 'CREDIT_PRESENT_UNVERIFIED'].includes(saved.creditStatus))) {
+    throw new TypeError('Invalid LOCAL variant memory');
+  }
+  return saved;
 }
 
 export function upsertLocalEditorialVariant(variants, draft, channel, editableText) {
   const next = createLocalEditorialVariant(draft, channel, editableText);
   if (!Array.isArray(variants) || variants.length > 60 ||
-      variants.some(row => !row || row.mode !== 'LOCAL_SYNTHETIC' ||
-        row.status !== 'DEMO_ONLY' || row.publishingStatus !== 'DRAFT_ONLY' ||
+      variants.some(row => !row || !Object.isFrozen(row) ||
+        row.mode !== 'LOCAL_SYNTHETIC' || row.status !== 'DEMO_ONLY' ||
+        row.publishingStatus !== 'DRAFT_ONLY' ||
         row.sourceStatus !== 'SOURCE_VERIFICATION_PENDING' ||
+        !['CREDIT_MISSING', 'CREDIT_PRESENT_UNVERIFIED'].includes(row.creditStatus) ||
         row.rights !== 'NOT_CLEARED' || !['x','instagram','tiktok'].includes(row.channel) ||
         typeof row.draftId !== 'string' || !Number.isSafeInteger(row.draftRevision) ||
         row.draftRevision < 1 || typeof row.editableText !== 'string')) {

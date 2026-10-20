@@ -60,6 +60,27 @@ test('M07-H rejects invalid text, unauthorized sources, stale rows and oversized
   assert.throws(()=>createLocalEditorialVariant(longSource,'x','a'.repeat(1600)),RangeError);
 });
 
+test('M07-H rejects unsafe credit values and mutable carried-over rows', () => {
+  const valid = createLocalEditorialVariant(draft,'x','Valid fictional example');
+  const otherCredit = Object.freeze({...valid,creditStatus:'CREDIT_PRESENT_UNVERIFIED'});
+  const accepted = upsertLocalEditorialVariant([otherCredit],draft,'instagram','Instagram-only example');
+  assert.equal(accepted.length,2);
+  assert.equal(accepted[0],otherCredit);
+  assert.ok(accepted.every(row => Object.isFrozen(row)));
+  assert.ok(Object.isFrozen(accepted));
+  assert.equal(getLocalEditorialVariant(accepted,draft,'x').creditStatus,'CREDIT_PRESENT_UNVERIFIED');
+  for (const invalidCredit of ['VERIFIED','CREDIT_MISSING ',null]) {
+    const invalid = Object.freeze({...valid,creditStatus:invalidCredit});
+    assert.throws(()=>upsertLocalEditorialVariant([invalid],draft,'instagram','Safe fictional example'),TypeError);
+    assert.throws(()=>getLocalEditorialVariant([invalid],draft,'x'),TypeError);
+  }
+  const mutable = {...valid};
+  assert.throws(()=>upsertLocalEditorialVariant([mutable],draft,'instagram','Safe fictional example'),TypeError);
+  assert.throws(()=>getLocalEditorialVariant([mutable],draft,'x'),TypeError);
+  assert.equal(valid.creditStatus,'CREDIT_MISSING');
+  assert.equal(mutable.rights,'NOT_CLEARED');
+});
+
 test('M07-H editor remains protected by nonce and never adds egress or persistence', () => {
   const html=renderLocalCmsUi('bc'.repeat(32));
   assert.match(html,/id="m06-dashboard"[^>]*hidden/);

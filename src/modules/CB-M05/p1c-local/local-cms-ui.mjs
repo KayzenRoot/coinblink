@@ -872,6 +872,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.variantStatus.textContent = 'LOCAL variant rejected: check authorized draft, text length and source · NOT POSTED';
     }
   });
+  // Any user edit invalidates an in-flight LOCAL Reset, even if the text is
+  // subsequently changed back to its original value before the GET completes.
+  ui.variantText.addEventListener('input', () => { socialActionGeneration += 1; });
   ui.variantReset.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
@@ -879,10 +882,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     const epoch = sessionEpoch;
     const generation = ++socialActionGeneration;
     const channel = ui.socialChannel.value;
+    const editableTextAtClick = ui.variantText.value;
     const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
     if (!authorizedDrafts || generation !== socialActionGeneration ||
         draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
-        ui.variantComposer.hidden) return;
+        editableTextAtClick !== ui.variantText.value || ui.variantComposer.hidden) return;
     if (!activeLocalSocialSession(epoch)) return;
     localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
       !(row.draftId === draft.id && row.channel === channel)));

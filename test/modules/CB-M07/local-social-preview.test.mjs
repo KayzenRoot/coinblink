@@ -274,3 +274,72 @@ test('M07-H client expiry timer erases private DOM even without another API requ
     assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
   } finally { await app.close(); }
 });
+
+test('M07-H Reset with delayed authorized GET preserves later user input and saved preview', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page = app.page;
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    await page.locator('[name="title"]').fill('Fictional Reset race article');
+    await page.locator('[name="summary"]').fill('Synthetic local scenario for asynchronous editing safety.');
+    await page.locator('[name="body"]').fill('PRIVATE_RESET_RACE_BODY');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/reset-race');
+    await page.locator('[name="authorLabel"]').fill(' ');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    await page.locator('#m07-draft').selectOption({index:1});
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    const savedCaption = 'A saved fictional version that must survive a canceled Reset';
+    const newerCaption = 'An unsaved newer edit made while Reset is awaiting the server';
+    await page.locator('#m07-variant-text').fill(savedCaption);
+    await page.locator('#m07-variant-save').click();
+    await page.waitForFunction(value =>
+      document.getElementById('m07-card-copy').textContent.includes(value), savedCaption);
+
+    // Hold the authenticated GET after the Reset click. Page-level routing
+    // falls back to the existing network-isolated LOCAL D1 fixture route.
+    // The second iteration exercises edit-then-revert (the ABA race).
+    for (const reverted of [false, true]) {
+      let notifyBlocked;
+      let allowResponse;
+      const blocked = new Promise(resolve => { notifyBlocked = resolve; });
+      const gate = new Promise(resolve => { allowResponse = resolve; });
+      const endpoint = '**/local/articles';
+      const handler = async route => {
+        if (route.request().method() !== 'GET') return route.fallback();
+        notifyBlocked();
+        await gate;
+        await route.fallback();
+      };
+      await page.route(endpoint, handler);
+      try {
+        const responseReady = page.waitForResponse(response =>
+          new URL(response.url()).pathname === '/local/articles' &&
+          response.request().method() === 'GET');
+        await page.locator('#m07-variant-reset').click();
+        await blocked;
+        await page.locator('#m07-variant-text').fill(newerCaption);
+        if (reverted) await page.locator('#m07-variant-text').fill(savedCaption);
+        allowResponse();
+        assert.equal((await responseReady).status(), 200);
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(
+          () => requestAnimationFrame(resolve))));
+        assert.equal(await page.locator('#m07-variant-text').inputValue(),
+          reverted ? savedCaption : newerCaption);
+        assert.match(await page.locator('#m07-card-copy').innerText(), /saved fictional version/);
+        assert.equal(await page.locator('#m07-variant-composer').isVisible(), true);
+      } finally {
+        allowResponse();
+        await page.unroute(endpoint, handler);
+      }
+    }
+    // The saved version was not deleted by either canceled Reset.
+    await page.locator('#m07-generate').click();
+    await page.waitForFunction(value =>
+      document.getElementById('m07-variant-text').value === value, savedCaption);
+    assert.match(await page.locator('#m07-card-copy').innerText(), /saved fictional version/);
+    assert.equal(app.networkAttempts.filter(item => !item.allowed).length, 0);
+  } finally {await app.close();}
+});

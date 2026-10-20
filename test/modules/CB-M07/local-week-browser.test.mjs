@@ -39,6 +39,19 @@ async function expectEmptyPrivateBoard(page) {
   assert.doesNotMatch(await page.locator('#m07-week-board').innerText(), /PRIVATE_EDITORIAL_BODY|hypothetical editorial draft/i);
 }
 
+/** Share the responsive WCAG check across the existing weekly board and editable calendar. */
+async function assertAccessibleAtViewports(page, root, rectTarget) {
+  for (const width of [390, 768, 1366]) {
+    await page.setViewportSize({ width, height:900 });
+    const rect = await page.locator(rectTarget).boundingBox();
+    assert.ok(rect && rect.x >= -1 && rect.x + rect.width <= width + 1,
+      'LOCAL controls must fit the ' + width + 'px viewport');
+  }
+  const result = await new AxeBuilder({ page }).include(root)
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  assert.deepEqual(result.violations.map(x => ({ id:x.id, impact:x.impact })), []);
+}
+
 test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no egress', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({ headless:true, admin:true });
   try {
@@ -66,14 +79,7 @@ test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no 
     assert.doesNotMatch(await page.locator('#m07-week-board').innerText(), /PRIVATE_EDITORIAL_BODY|example\.org/);
     await page.locator('#m07-week-filter').focus();
     assert.equal(await page.evaluate(() => document.activeElement.id), 'm07-week-filter');
-    for (const width of [390, 768, 1366]) {
-      await page.setViewportSize({ width, height:900 });
-      const rect = await page.locator('#m07-weekly').boundingBox();
-      assert.ok(rect && rect.x >= -1 && rect.x + rect.width <= width + 1);
-    }
-    const accessibility = await new AxeBuilder({ page }).include('#m07-weekly')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
-    assert.deepEqual(accessibility.violations.map(x => ({ id:x.id, impact:x.impact })), []);
+    await assertAccessibleAtViewports(page, '#m07-weekly', '#m07-weekly');
     await page.locator('#m07-calendar-list button').first().click();
     assert.equal(await page.locator('.m07-week-conflict').count(), 0);
     await page.locator('#m07-calendar-clear').click();
@@ -221,9 +227,11 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     assert.equal(await page.locator('.m07-week-conflict').count(), 2);
     const edits = page.locator('#m07-calendar-list .m07-calendar-edit');
     assert.equal(await edits.count(), 2);
-    await edits.first().focus();
+    const firstConcept = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText:'First fictional edit concept' }).first();
+    await firstConcept.locator('.m07-calendar-edit').focus();
     await page.keyboard.press('Enter');
-    const editor = page.locator('#m07-calendar-list .m07-calendar-editor').first();
+    const editor = firstConcept.locator('.m07-calendar-editor');
     assert.equal(await editor.isVisible(), true);
     assert.equal(await page.evaluate(() => document.activeElement?.className), 'm07-edit-time');
     await editor.locator('.m07-edit-channel').selectOption('instagram');
@@ -232,7 +240,7 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     assert.equal(await editor.isVisible(), false);
     assert.equal(await page.locator('.m07-week-conflict').count(), 2);
 
-    await edits.first().click();
+    await firstConcept.locator('.m07-calendar-edit').click();
     await editor.locator('.m07-edit-zone').selectOption('America/New_York');
     await editor.locator('.m07-edit-time').fill('2026-11-01T01:30');
     await editor.locator('.m07-calendar-save').click();
@@ -248,9 +256,9 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
 
     // Add another time for the same draft, then reject a duplicate edit.
     await addConcept(page, 1, '2026-11-16T02:30');
-    // Chronological order: second draft at 00:30, edited first draft at 01:30,
-    // and a second idea for the first draft at 02:30.
-    const first = page.locator('#m07-calendar-list .m07-calendar-item').nth(1);
+    // Target the 01:30 edited idea for this draft, not the unrelated draft.
+    const first = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText:'First fictional edit concept · INSTAGRAM · 2026-11-16T01:30' }).first();
     await first.locator('.m07-calendar-edit').click();
     await first.locator('.m07-edit-channel').selectOption('x');
     await first.locator('.m07-edit-time').fill('2026-11-16T02:30');
@@ -258,15 +266,7 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     assert.match(await first.locator('[role="status"]').innerText(), /Invalid or duplicate/);
     assert.equal(await page.locator('#m07-calendar-list li').count(), 3);
 
-    for (const width of [390, 768, 1366]) {
-      await page.setViewportSize({ width, height:900 });
-      const rect = await first.locator('.m07-calendar-editor').boundingBox();
-      assert.ok(rect && rect.x >= -1 && rect.x + rect.width <= width + 1,
-        'LOCAL edit controls must fit the ' + width + 'px viewport');
-    }
-    const a11y = await new AxeBuilder({ page }).include('#m07-calendar')
-      .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
-    assert.deepEqual(a11y.violations.map(x => ({ id:x.id,impact:x.impact })), []);
+    await assertAccessibleAtViewports(page, '#m07-calendar', '#m07-calendar-list .m07-calendar-editor:not([hidden])');
     const oldEdit = await first.locator('.m07-calendar-save').elementHandle();
     const draftReads = () => app.networkAttempts.filter(entry =>
       /\/admin\/articles\/[0-9a-f-]{36}$/i.test(new URL(entry.url).pathname)).length;

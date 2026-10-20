@@ -1,6 +1,7 @@
 // M07-C: a bounded, synthetic-only, in-memory editorial idea list.
 // Absolutely no scheduler, clock callbacks, remote I/O, persistence, publish or provider use.
 import { createLocalSocialPreview } from './social-preview.mjs';
+import { createLocalWeeklyBoard } from './local-week-board.mjs';
 
 export function createLocalCalendarIdea(draft, channel, hypotheticalLocal, timeZone) {
   // This validator checks the existing authorized synthetic draft and rights.
@@ -89,4 +90,51 @@ export function replaceLocalCalendarIdea(existing, current, replacement) {
     throw new TypeError('LOCAL edit requires a current idea for the same authorized draft');
   }
   return addLocalCalendarIdea(existing.filter(row => row !== current), replacement);
+}
+
+
+/**
+ * Return at most three immutable, hypothetical suggestions for a genuine
+ * same-channel/UTC-minute collision across distinct LOCAL drafts.
+ * This pure helper never changes state; the caller must explicitly confirm.
+ */
+export function suggestLocalConflictAlternatives(ideas, current, draft) {
+  if (!Array.isArray(ideas) || !ideas.includes(current) || !draft ||
+      draft.id !== current.draftId) {
+    throw new TypeError('Suggestions require a current authorized LOCAL draft');
+  }
+  // Full DTO validation prevents malformed/private data from bypassing the contract.
+  createLocalWeeklyBoard(ideas, 'all', 'UTC');
+  const overlaps = row => row !== current && row.draftId !== current.draftId &&
+    row.channel === current.channel && row.utcISO === current.utcISO;
+  if (!ideas.some(overlaps)) return Object.freeze([]);
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: current.timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  });
+  const alternatives = [];
+  const base = Date.parse(current.utcISO);
+  for (let step = 1; step <= 12 && alternatives.length < 3; step++) {
+    const utc = new Date(base + step * 15 * 60_000);
+    const parts = formatter.formatToParts(utc);
+    const field = name => parts.find(part => part.type === name)?.value;
+    const local = field('year') + '-' + field('month') + '-' + field('day') +
+      'T' + field('hour') + ':' + field('minute');
+    try {
+      // The canonical validator rejects ambiguous/nonexistent DST wall times.
+      const candidate = createLocalCalendarIdea(draft, current.channel, local, current.timeZone);
+      if (candidate.utcISO !== utc.toISOString() ||
+          ideas.some(row => row !== current && row.channel === candidate.channel &&
+            row.utcISO === candidate.utcISO)) continue;
+      replaceLocalCalendarIdea(ideas, current, candidate);
+      alternatives.push(Object.freeze({
+        draftId: current.draftId, channel: candidate.channel,
+        hypotheticalLocal: candidate.hypotheticalLocal,
+        timeZone: candidate.timeZone, utcISO: candidate.utcISO,
+      }));
+    } catch {
+      // An invalid or unavailable time is never suggested or applied.
+    }
+  }
+  return Object.freeze(alternatives);
 }

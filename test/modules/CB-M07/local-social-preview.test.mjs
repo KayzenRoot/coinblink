@@ -197,7 +197,7 @@ test('M07-H LOCAL per-channel variants are memory-only, explicitly saved and scr
     await page.locator('#m07-draft').selectOption({index:1});
     await preview('x');
     assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/X-only message/);
-    const axe=await new AxeBuilder({page}).include('#m07-social')
+    const axe=await new AxeBuilder({page}).include('#m07-variant-composer')
       .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
     assert.deepEqual(axe.violations.map(({id,impact})=>({id,impact})),[]);
     await page.locator('#logout').click();

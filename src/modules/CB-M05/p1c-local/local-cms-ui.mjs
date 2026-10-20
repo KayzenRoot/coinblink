@@ -322,13 +322,21 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       editStatus.setAttribute('role', 'status');
       editStatus.setAttribute('aria-live', 'polite');
       editStatus.textContent = 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+      const resetEditor = () => {
+        channel.value = item.channel;
+        time.value = item.hypotheticalLocal;
+        zone.value = item.timeZone;
+        editStatus.textContent = 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+      };
       edit.addEventListener('click', () => {
         if (!current()) return;
+        resetEditor();
         editor.hidden = false;
         time.focus();
       });
       cancel.addEventListener('click', () => {
         if (!current()) return;
+        resetEditor();
         editor.hidden = true;
         edit.focus();
       });

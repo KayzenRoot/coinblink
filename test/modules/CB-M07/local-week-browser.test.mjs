@@ -248,7 +248,9 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
 
     // Add another time for the same draft, then reject a duplicate edit.
     await addConcept(page, 1, '2026-11-16T02:30');
-    const first = page.locator('#m07-calendar-list .m07-calendar-item').first();
+    // Chronological order: second draft at 00:30, edited first draft at 01:30,
+    // and a second idea for the first draft at 02:30.
+    const first = page.locator('#m07-calendar-list .m07-calendar-item').nth(1);
     await first.locator('.m07-calendar-edit').click();
     await first.locator('.m07-edit-channel').selectOption('x');
     await first.locator('.m07-edit-time').fill('2026-11-16T02:30');

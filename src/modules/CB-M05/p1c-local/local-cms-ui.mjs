@@ -4,7 +4,7 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
-import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant } from '../../CB-M07/local-editorial-variants.mjs';
+import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
@@ -14,6 +14,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
   const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
+  const requireCanonicalLocalVariant = (${requireCanonicalLocalVariant.toString()});
   const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
   const upsertLocalEditorialVariant = (${upsertLocalEditorialVariant.toString()});
   const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});

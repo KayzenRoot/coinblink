@@ -25,7 +25,7 @@ export function createLocalEditorialVariant(draft, channel, editableText) {
 
 // A frozen row is not necessarily trustworthy. Rebuild from the authorized
 // D1 listing and require exact correspondence for source, credit and status.
-function requireCanonicalLocalVariant(row, authorizedDraft) {
+export function requireCanonicalLocalVariant(row, authorizedDraft) {
   if (!row || typeof row !== 'object' || Array.isArray(row) ||
       Object.getPrototypeOf(row) !== Object.prototype || !Object.isFrozen(row)) {
     throw new TypeError('Invalid LOCAL variant memory');

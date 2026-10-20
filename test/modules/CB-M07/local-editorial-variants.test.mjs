@@ -118,6 +118,7 @@ test('M07-H editor remains protected by nonce and never adds egress or persisten
   assert.match(LOCAL_CMS_UI_SCRIPT,/localEditorialVariants = \[\]/);
   assert.match(LOCAL_CMS_UI_SCRIPT,/ui\.variantText\.value = ''/);
   assert.match(LOCAL_CMS_UI_SCRIPT,/upsertLocalEditorialVariant/);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/const requireCanonicalLocalVariant =/);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/localStorage|sessionStorage|indexedDB|innerHTML|\/local\/social|\/admin\/social|window\.open/);
   assert.match(html,/NOT POSTED/);
 });

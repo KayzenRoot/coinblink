@@ -6,7 +6,7 @@ import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M
 
 const draft=Object.freeze({
   id:'00000000-0000-0000-0000-0000000000f1',revision:2,status:'draft',
-  title:'Fictional title',summary:'Test-only',source_url:'https://example.org/fake',
+  title:'Fictional title',summary:'This is a longer fictional summary for LOCAL editorial testing.',source_url:'https://example.org/fake',
   author_label:'',updated_at:1760870000,body:'PRIVATE_BODY_ABC',
   sessionSecret:'PRIVATE_SESSION_ABC',
 });

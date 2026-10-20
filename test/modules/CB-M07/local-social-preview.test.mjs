@@ -535,17 +535,22 @@ test('M07-H focused authorization handles concurrent typing and rejects stale re
 });
 
 
-test('M07-I session-only editorial approve and reject follow exact per-channel saved version', {timeout:120_000}, async()=>{
+async function withLocalApprovalFixture(fixture, run) {
   const app=await startLocalCmsPreview({headless:true,admin:true});
   try {
-    const page=app.page;
-    await openAuthenticatedSyntheticVariant(page,{
+    await openAuthenticatedSyntheticVariant(app.page,fixture);
+    await run(app.page,app);
+  } finally {await app.close();}
+}
+
+test('M07-I session-only editorial approve and reject follow exact per-channel saved version', {timeout:120_000}, async()=>{
+  await withLocalApprovalFixture({
       title:'Imaginary editorial approval scenario',
       summary:'Fictional copy for local review only.',
       body:'PRIVATE_BODY_NOT_IN_REVIEW_LOG',
       sourceUrl:'https://example.org/editorial',
       authorLabel:'Synthetic author',
-    });
+    }, async (page,app) => {
     assert.equal(await page.locator('#m07-approval-panel').isVisible(),true);
     assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
     await page.locator('#m07-variant-text').fill('Imaginary version one for X.');
@@ -578,18 +583,15 @@ test('M07-I session-only editorial approve and reject follow exact per-channel s
     assert.equal(await page.locator('#m07-approval-reason').inputValue(),'');
     assert.equal(app.networkAttempts.filter(row=>!row.allowed).length,0);
     assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,1);
-  } finally {await app.close();}
+  });
 });
 
 test('M07-I fail-closed decision after server-side LOCAL session revocation', {timeout:120_000}, async()=>{
-  const app=await startLocalCmsPreview({headless:true,admin:true});
-  try {
-    const page=app.page;
-    await openAuthenticatedSyntheticVariant(page,{
+  await withLocalApprovalFixture({
       title:'Fictional session revocation',summary:'Synthetic safety coverage',
       body:'PRIVATE_REVOCATION_BODY',sourceUrl:'https://example.org/revocation',
       authorLabel:'',
-    });
+    }, async (page,app) => {
     await page.locator('#m07-variant-save').click();
     await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
     await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
@@ -599,5 +601,5 @@ test('M07-I fail-closed decision after server-side LOCAL session revocation', {t
     assert.equal(await page.locator('#m07-approval-panel').isVisible(),false);
     assert.equal(await page.locator('#m07-approval-audit li').count(),0);
     assert.equal(app.networkAttempts.filter(row=>!row.allowed).length,0);
-  } finally {await app.close();}
+  });
 });

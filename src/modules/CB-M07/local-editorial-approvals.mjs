@@ -11,7 +11,8 @@ export function requireCanonicalLocalApprovalEvent(event) {
       !['SAVE','APPROVE','REJECT','RESET'].includes(event.action) ||
       typeof event.reason !== 'string' || typeof event.atUTC !== 'string' ||
       !Number.isSafeInteger(event.version) || event.version < 1 ||
-      !Number.isFinite(Date.parse(event.atUTC))) {
+      !Number.isFinite(Date.parse(event.atUTC)) ||
+      event.atUTC !== new Date(event.atUTC).toISOString()) {
     throw new TypeError('Invalid LOCAL approval event');
   }
   return event;

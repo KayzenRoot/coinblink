@@ -88,3 +88,35 @@ test('M07-I refactored canonical event guard still rejects forged metadata and a
   }
   assert.match(LOCAL_CMS_UI_SCRIPT,/const requireCanonicalLocalApprovalEvent =/);
 });
+
+test('M07-I canonical UTC audit timestamps reject parseable but non-ISO formats',()=>{
+  const history=write(Object.freeze([]),variant('x'),'SAVE');
+  const event=history[0];
+  assert.equal(event.atUTC,new Date(event.atUTC).toISOString());
+  for (const atUTC of [
+    '2026-10-20', // Parseable date without time
+    '2026-10-20T21:43:29Z', // Milliseconds omitted
+    '2026-10-20T18:43:29.000-03:00', // Non-UTC offset
+    '2026-10-20T21:43:29.000+00:00', // Numeric UTC offset
+    '2026-10-20T21:43:29.000', // Local-time representation
+    '2026-10-20T21:43:29.000z', // Noncanonical lower-case suffix
+  ]) {
+    assert.ok(Number.isFinite(Date.parse(atUTC)), 'Fixture must be parseable: '+atUTC);
+    assert.throws(()=>inspectLocalApprovalHistory(
+      [Object.freeze({...event,atUTC})],[draft]),TypeError);
+  }
+});
+
+test('M07-I rejection reason remains mandatory with inclusive 8–240 character bounds',()=>{
+  const x=variant('x');
+  let history=write(Object.freeze([]),x,'SAVE');
+  assert.throws(()=>write(history,x,'REJECT',''),TypeError);
+  assert.throws(()=>write(history,x,'REJECT','r'.repeat(7)),TypeError);
+  assert.throws(()=>write(history,x,'REJECT','r'.repeat(241)),TypeError);
+  history=write(history,x,'REJECT','r'.repeat(8));
+  assert.equal(latestLocalApproval(history,draft,'x').reason.length,8);
+  const ig=variant('instagram');
+  history=write(history,ig,'SAVE');
+  history=write(history,ig,'REJECT','r'.repeat(240));
+  assert.equal(latestLocalApproval(history,draft,'instagram').reason.length,240);
+});

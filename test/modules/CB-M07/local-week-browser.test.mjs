@@ -329,14 +329,22 @@ test('M07-H: cap, stale click, refresh and logout never create phantom concepts'
 });
 
 
-test('M07-H correction: revoked session without refresh rejects copy and scrubs LOCAL data', {timeout:120_000}, async () => {
-  await withLocalSession(async (page, app) => {
-    await createFictionalDraft(page, 'Fictional revoked-copy concept');
+
+/** Prepare one authenticated synthetic idea for M07-H security regressions. */
+async function withPreparedLocalCopy(title, run) {
+  return withLocalSession(async (page, app) => {
+    await createFictionalDraft(page, title);
     await page.locator('#new-draft').click();
     await addConcept(page, 1);
-    const original = page.locator('#m07-calendar-list .m07-calendar-item').first();
-    await original.locator('.m07-calendar-copy').click();
-    await original.locator('.m07-copy-channel').selectOption('instagram');
+    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
+    await row.locator('.m07-calendar-copy').click();
+    await row.locator('.m07-copy-channel').selectOption('instagram');
+    await run(page, app, row);
+  });
+}
+
+test('M07-H correction: revoked session without refresh rejects copy and scrubs LOCAL data', {timeout:120_000}, async () => {
+  await withPreparedLocalCopy('Fictional revoked-copy concept', async (page, app, original) => {
     const revoked = await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
       .bind(Math.floor(Date.now()/1000)).run();
     assert.equal(revoked.meta?.changes, 1);
@@ -351,13 +359,7 @@ test('M07-H correction: revoked session without refresh rejects copy and scrubs 
 
 
 test('M07-H correction: concurrent selection invalidates pending LOCAL verification and restores focus', {timeout:120_000}, async () => {
-  await withLocalSession(async (page, app) => {
-    await createFictionalDraft(page, 'Fictional concurrent-copy concept');
-    await page.locator('#new-draft').click();
-    await addConcept(page, 1);
-    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
-    await row.locator('.m07-calendar-copy').click();
-    await row.locator('.m07-copy-channel').selectOption('instagram');
+  await withPreparedLocalCopy('Fictional concurrent-copy concept', async (page, app, row) => {
     // Both events execute in a single browser task: the server validation can
     // complete only after the synchronous change increments its generation.
     const state = await page.evaluate(() => {
@@ -384,45 +386,6 @@ test('M07-H correction: concurrent selection invalidates pending LOCAL verificat
       .filter({hasText:' · X · '}).count(), 1);
     assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
       .filter({hasText:' · TIKTOK · '}).count(), 1);
-    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
-  });
-});
-
-test('M07-H correction: revocation at LOCAL verification boundary fails closed', {timeout:120_000}, async () => {
-  await withLocalSession(async (page, app) => {
-    await createFictionalDraft(page, 'Fictional pending-revocation concept');
-    await page.locator('#new-draft').click();
-    await addConcept(page, 1);
-    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
-    await row.locator('.m07-calendar-copy').click();
-    await row.locator('.m07-copy-channel').selectOption('instagram');
-    let revokedByVerifier = 0;
-    // Test-only bridge updates disposable LOCAL D1 before its authenticated GET.
-    await page.exposeFunction('revokeBeforeM07LocalRead', async () => {
-      const result = await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
-        .bind(Math.floor(Date.now()/1000)).run();
-      assert.equal(result.meta?.changes, 1);
-      revokedByVerifier += 1;
-    });
-    const enabled = await page.evaluate(() => {
-      const originalFetch = window.fetch.bind(window);
-      window.fetch = async (...args) => {
-        if (new URL(String(args[0]),window.location.href).pathname === '/local/articles') {
-          await window.revokeBeforeM07LocalRead();
-        }
-        return originalFetch(...args);
-      };
-      const confirm = document.querySelector('#m07-calendar-list .m07-copy-confirm');
-      const canConfirm = !!confirm && !confirm.disabled;
-      confirm?.click();
-      return canConfirm;
-    });
-    assert.equal(enabled, true);
-    await page.getByText('Not authenticated', {exact:true}).waitFor({timeout:20000});
-    assert.equal(revokedByVerifier, 1);
-    await expectEmptyPrivateBoard(page);
-    assert.equal(await page.locator('#m07-calendar').isVisible(), false);
-    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
   });
 });

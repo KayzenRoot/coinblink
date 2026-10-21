@@ -329,44 +329,6 @@ test('M07-H: cap, stale click, refresh and logout never create phantom concepts'
 });
 
 
-/** Hold exactly one authenticated LOCAL read in the browser; no external routes. */
-async function holdLocalReadInPage(page) {
-  await page.evaluate(() => {
-    const originalFetch = window.fetch.bind(window);
-    let releaseRead;
-    const hold = new Promise(resolve => { releaseRead = resolve; });
-    const gate = {
-      started: false, completed: false,
-      release: () => releaseRead(),
-      restore: () => {
-        releaseRead();
-        window.fetch = originalFetch;
-        delete window.__cbM07TestReadGate;
-      },
-    };
-    window.__cbM07TestReadGate = gate;
-    window.fetch = async (...args) => {
-      const path = new URL(String(args[0]), window.location.href).pathname;
-      if (!gate.started && path === '/local/articles') {
-        gate.started = true;
-        await hold;
-        const response = await originalFetch(...args);
-        gate.completed = true;
-        return response;
-      }
-      return originalFetch(...args);
-    };
-  });
-  return {
-    waitStarted: () => page.waitForFunction(() => window.__cbM07TestReadGate?.started === true,
-      null, { timeout: 10000 }),
-    release: () => page.evaluate(() => window.__cbM07TestReadGate?.release()),
-    waitCompleted: () => page.waitForFunction(() => window.__cbM07TestReadGate?.completed === true,
-      null, { timeout: 10000 }),
-    restore: () => page.evaluate(() => window.__cbM07TestReadGate?.restore()),
-  };
-}
-
 test('M07-H correction: revoked session without refresh rejects copy and scrubs LOCAL data', {timeout:120_000}, async () => {
   await withLocalSession(async (page, app) => {
     await createFictionalDraft(page, 'Fictional revoked-copy concept');
@@ -387,44 +349,46 @@ test('M07-H correction: revoked session without refresh rejects copy and scrubs 
   });
 });
 
-test('M07-H correction: delayed verification cannot apply an obsolete channel; focus returns after success', {timeout:120_000}, async () => {
+
+test('M07-H correction: concurrent selection invalidates pending LOCAL verification and restores focus', {timeout:120_000}, async () => {
   await withLocalSession(async (page, app) => {
     await createFictionalDraft(page, 'Fictional concurrent-copy concept');
     await page.locator('#new-draft').click();
     await addConcept(page, 1);
     const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
     await row.locator('.m07-calendar-copy').click();
-    const channel = row.locator('.m07-copy-channel');
-    await channel.selectOption('instagram');
-    const gate = await holdLocalReadInPage(page);
-    try {
-      await row.locator('.m07-copy-confirm').click();
-      await gate.waitStarted();
-      assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), true);
-      await channel.selectOption('tiktok');
-      await gate.release();
-      await gate.waitCompleted();
-      await page.waitForTimeout(150);
-      assert.equal(await page.locator('#m07-calendar-list li').count(), 1,
-        'A completed but obsolete LOCAL validation must not copy');
-      assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), false);
-      await row.locator('.m07-copy-confirm').click();
-      await page.locator('#m07-calendar-list li').nth(1).waitFor({ timeout:15000 });
-      assert.equal(await page.locator('#m07-calendar-list li').count(), 2);
-      assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('m07-calendar-copy')), true,
-        'Focus must return to the source LOCAL copy button after replacing the list');
-      assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
-        .filter({hasText:' · X · '}).count(), 1);
-      assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
-        .filter({hasText:' · TIKTOK · '}).count(), 1);
-      assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
-    } finally {
-      await gate.restore();
-    }
+    await row.locator('.m07-copy-channel').selectOption('instagram');
+    // Both events execute in a single browser task: the server validation can
+    // complete only after the synchronous change increments its generation.
+    const state = await page.evaluate(() => {
+      const source = document.querySelector('#m07-calendar-list .m07-calendar-item');
+      const button = source.querySelector('.m07-copy-confirm');
+      const channel = source.querySelector('.m07-copy-channel');
+      const enabled = !button.disabled;
+      button.click();
+      const pendingDisabled = button.disabled;
+      channel.value = 'tiktok';
+      channel.dispatchEvent(new Event('change', { bubbles:true }));
+      return { enabled, pendingDisabled, chosen:channel.value };
+    });
+    assert.deepEqual(state, {enabled:true,pendingDisabled:true,chosen:'tiktok'});
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 1,
+      'Obsolete confirmation must not create a copy');
+    assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), false);
+    await row.locator('.m07-copy-confirm').click();
+    await page.locator('#m07-calendar-list li').nth(1).waitFor({timeout:15000});
+    assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('m07-calendar-copy')), true,
+      'Focus must return to the original copy control');
+    assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:' · X · '}).count(), 1);
+    assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:' · TIKTOK · '}).count(), 1);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
   });
 });
 
-test('M07-H correction: session revoked during server check fails closed', {timeout:120_000}, async () => {
+test('M07-H correction: revocation at LOCAL verification boundary fails closed', {timeout:120_000}, async () => {
   await withLocalSession(async (page, app) => {
     await createFictionalDraft(page, 'Fictional pending-revocation concept');
     await page.locator('#new-draft').click();
@@ -432,22 +396,34 @@ test('M07-H correction: session revoked during server check fails closed', {time
     const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
     await row.locator('.m07-calendar-copy').click();
     await row.locator('.m07-copy-channel').selectOption('instagram');
-    const gate = await holdLocalReadInPage(page);
-    try {
-      await row.locator('.m07-copy-confirm').click();
-      await gate.waitStarted();
-      const revoked = await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
+    let revokedByVerifier = 0;
+    // Test-only bridge updates disposable LOCAL D1 before its authenticated GET.
+    await page.exposeFunction('revokeBeforeM07LocalRead', async () => {
+      const result = await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
         .bind(Math.floor(Date.now()/1000)).run();
-      assert.equal(revoked.meta?.changes, 1);
-      await gate.release();
-      await gate.waitCompleted();
-      await page.getByText('Not authenticated', {exact:true}).waitFor({timeout:20000});
-      await expectEmptyPrivateBoard(page);
-      assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
-      assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
-    } finally {
-      await gate.restore();
-    }
+      assert.equal(result.meta?.changes, 1);
+      revokedByVerifier += 1;
+    });
+    const enabled = await page.evaluate(() => {
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = async (...args) => {
+        if (new URL(String(args[0]),window.location.href).pathname === '/local/articles') {
+          await window.revokeBeforeM07LocalRead();
+        }
+        return originalFetch(...args);
+      };
+      const confirm = document.querySelector('#m07-calendar-list .m07-copy-confirm');
+      const canConfirm = !!confirm && !confirm.disabled;
+      confirm?.click();
+      return canConfirm;
+    });
+    assert.equal(enabled, true);
+    await page.getByText('Not authenticated', {exact:true}).waitFor({timeout:20000});
+    assert.equal(revokedByVerifier, 1);
+    await expectEmptyPrivateBoard(page);
+    assert.equal(await page.locator('#m07-calendar').isVisible(), false);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
   });
 });
 

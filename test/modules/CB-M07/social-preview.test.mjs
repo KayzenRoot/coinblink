@@ -71,7 +71,8 @@ test('the LOCAL studio is nested inside authenticated hidden dashboard, with no 
   assert.match(html, /id="m07-draft"/u);
   assert.match(html, /NO POSTING/u);
   assert.match(html, /script nonce="[a-f0-9]{64}" type="module"/u);
-  assert.match(LOCAL_CMS_UI_SCRIPT, /createLocalSocialPreview\(draft, ui\.socialChannel\.value\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT, /createLocalSocialPreview\(currentDraft, channel\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT, /verifyLocalSocialSession\(epoch, draft\)/u);
   assert.match(LOCAL_CMS_UI_SCRIPT, /ui\.socialPreviewText\.textContent = concept\.text/u);
   assert.match(LOCAL_CMS_UI_SCRIPT, /ui\.socialDraft\.replaceChildren\(\)/u);
   assert.match(LOCAL_CMS_UI_SCRIPT, /if \(!csrf \|\| ui\.form\.hidden \|\| ui\.dashboard\.hidden\) return/u);

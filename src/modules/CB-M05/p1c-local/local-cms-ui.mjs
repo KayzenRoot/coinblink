@@ -4,6 +4,8 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
+import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
+import { requireCanonicalLocalApprovalEvent, inspectLocalApprovalHistory, latestLocalApproval, recordLocalApproval } from '../../CB-M07/local-editorial-approvals.mjs';
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
@@ -12,6 +14,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
+  const requireCanonicalLocalVariant = (${requireCanonicalLocalVariant.toString()});
+  const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
+  const upsertLocalEditorialVariant = (${upsertLocalEditorialVariant.toString()});
+  const requireCanonicalLocalApprovalEvent = (${requireCanonicalLocalApprovalEvent.toString()});
+  const inspectLocalApprovalHistory = (${inspectLocalApprovalHistory.toString()});
+  const latestLocalApproval = (${latestLocalApproval.toString()});
+  const recordLocalApproval = (${recordLocalApproval.toString()});
   const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});
   const localCalendarMinuteParts = (${localCalendarMinuteParts.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
@@ -61,6 +71,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     socialCardFormat: document.getElementById('m07-card-format'),
     socialCardCopy: document.getElementById('m07-card-copy'),
     socialCardLabels: document.getElementById('m07-card-labels'),
+    variantComposer: document.getElementById('m07-variant-composer'),
+    variantText: document.getElementById('m07-variant-text'),
+    variantSave: document.getElementById('m07-variant-save'),
+    variantReset: document.getElementById('m07-variant-reset'),
+    variantStatus: document.getElementById('m07-variant-status'),
+    approvalPanel: document.getElementById('m07-approval-panel'),
+    approvalApprove: document.getElementById('m07-approval-approve'),
+    approvalReject: document.getElementById('m07-approval-reject'),
+    approvalReason: document.getElementById('m07-approval-reason'),
+    approvalStatus: document.getElementById('m07-approval-status'),
+    approvalAudit: document.getElementById('m07-approval-audit'),
     calendarDate: document.getElementById('m07-calendar-date'),
     calendarZone: document.getElementById('m07-calendar-zone'),
     calendarAdd: document.getElementById('m07-calendar-add'),
@@ -89,10 +110,19 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     emergencyToken: document.getElementById('emergency-token'),
   };
   let csrf = null;
+  let sessionExpiresAt = 0;
+  let sessionExpiryTimer = null;
   let sessionEpoch = 0;
+  let socialActionGeneration = 0;
+  // Tracks replacement of the rendered preview, not unsaved textarea input.
+  // Authorization checks must still scrub stale text if a user types meanwhile.
+  let socialPreviewGeneration = 0;
+  let focusValidationGeneration = 0;
   let readGeneration = 0;
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
+  let localEditorialVariants = [];
+  let localApprovalEvents = [];
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -145,6 +175,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.previewSource.textContent = source;
   }
   function clearLocalSocialPreview() {
+    socialActionGeneration += 1;
+    socialPreviewGeneration += 1;
     ui.socialPreview.hidden = true;
     ui.socialPreviewText.textContent = '';
     ui.socialRights.textContent = 'UNAVAILABLE';
@@ -154,6 +186,13 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialCardFormat.textContent = '';
     ui.socialCardCopy.textContent = '';
     ui.socialCardLabels.textContent = '';
+    ui.variantComposer.hidden = true;
+    ui.variantText.value = '';
+    ui.variantStatus.textContent = 'No editable LOCAL variant';
+    ui.approvalPanel.hidden = true;
+    ui.approvalReason.value = '';
+    ui.approvalStatus.textContent = 'No LOCAL editorial decision';
+    ui.approvalAudit.replaceChildren();
     ui.socialCard.removeAttribute('data-channel');
     ui.socialCard.removeAttribute('data-viewport');
   }
@@ -438,7 +477,55 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ' hypothetical concepts · memory only · NOT SCHEDULED';
     renderLocalWeekBoard();
   }
+  function renderLocalApproval() {
+    ui.approvalPanel.hidden = ui.variantComposer.hidden;
+    ui.approvalApprove.disabled = true;
+    ui.approvalReject.disabled = true;
+    ui.approvalAudit.replaceChildren();
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return;
+    const channel = ui.socialChannel.value;
+    try {
+      const saved = getLocalEditorialVariant(localEditorialVariants,draft,channel);
+      const latest = latestLocalApproval(localApprovalEvents,draft,channel,lastDrafts);
+      const editable = !!saved && ui.variantText.value === saved.editableText;
+      ui.approvalApprove.disabled = !editable || latest?.action !== 'SAVE';
+      ui.approvalReject.disabled = !editable || latest?.action !== 'SAVE';
+      // Never present unsaved textarea edits as though that new text were approved.
+      let status = 'No active LOCAL editorial decision';
+      if (!saved) {
+        status = 'Save this channel before review · NOT POSTED';
+      } else if (!editable) {
+        status = 'Unsaved edits · approval applies only to the last saved version · NOT POSTED';
+      } else if (latest && latest.action !== 'RESET') {
+        const labels = {
+          SAVE:'PENDING LOCAL REVIEW',
+          APPROVE:'APPROVED FOR LOCAL EDITORIAL REVIEW ONLY',
+          REJECT:'REJECTED FOR LOCAL EDITORIAL REVIEW',
+        };
+        status = 'Version ' + latest.version + ' · ' + labels[latest.action] +
+          ' · NOT POSTED · RIGHTS NOT CLEARED';
+      }
+      ui.approvalStatus.textContent = status;
+      for (const [index,event] of localApprovalEvents.entries()) {
+        if (event.variant.draftId !== draft.id ||
+            event.variant.draftRevision !== draft.revision ||
+            event.variant.channel !== channel) continue;
+        const row = document.createElement('li');
+        row.textContent = '#' + (index + 1) + ' · v' + event.version + ' · ' +
+          event.action + ' · ' + event.atUTC + (event.reason ? ' · ' + event.reason : '');
+        ui.approvalAudit.append(row);
+      }
+    } catch {
+      localApprovalEvents = [];
+      ui.approvalStatus.textContent = 'Invalid LOCAL review history cleared · NOT POSTED';
+      ui.approvalAudit.replaceChildren();
+    }
+  }
   function scrubLocalSocialStudio() {
+    localApprovalEvents = [];
+    localEditorialVariants = [];
     clearLocalCalendar();
     ui.calendarZone.value = 'America/Sao_Paulo';
     clearLocalSocialPreview();
@@ -521,6 +608,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
+    if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
+    sessionExpiryTimer = null;
+    sessionExpiresAt = 0;
     sessionEpoch += 1;
     readGeneration += 1;
     hideLocalDashboard();
@@ -549,6 +639,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.status.textContent = 'Not authenticated';
   }
   async function api(url, method = 'GET', body) {
+    const requestEpoch = sessionEpoch;
     const headers = {};
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -562,7 +653,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && (csrf ||
+      if (response.status === 401 && requestEpoch === sessionEpoch && (csrf ||
           /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url))) {
         // Denied article reads must erase stale drafts even if the local CSRF state
         // was already cleared. After sign-in, deny from any protected route
@@ -739,7 +830,88 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   });
   ui.socialClear.addEventListener('click', clearLocalSocialPreview);
-  ui.socialGenerate.addEventListener('click', () => {
+  function activeLocalSocialSession(epoch) {
+    if (epoch !== sessionEpoch || !csrf || ui.form.hidden || ui.dashboard.hidden) return false;
+    if (!sessionExpiresAt || Date.now() >= sessionExpiresAt) {
+      clearLocalSession();
+      return false;
+    }
+    return true;
+  }
+  // Share one metadata equality contract between focused rechecks and LOCAL actions.
+  // A same-revision source, author, status or content change is NOT authorization.
+  function sameLocalSocialDraftMetadata(a, b) {
+    const fields = ['id', 'revision', 'title', 'summary', 'source_url',
+      'author_label', 'status', 'updated_at'];
+    return !!a && !!b && fields.every(key => a[key] === b[key]);
+  }
+  async function verifyLocalSocialSession(epoch, selectedDraft) {
+    if (!activeLocalSocialSession(epoch)) return null;
+    try {
+      // Reuse the existing authenticated Owner/D1 listing, no new endpoint.
+      const result = await api('/local/articles');
+      if (!activeLocalSocialSession(epoch)) return null;
+      if (!Array.isArray(result.drafts) || result.drafts.length > 100 ||
+          (selectedDraft && !result.drafts.some(row =>
+            sameLocalSocialDraftMetadata(selectedDraft, row)))) {
+        throw new TypeError('Authorized LOCAL draft listing changed');
+      }
+      return result.drafts;
+    } catch {
+      if (epoch === sessionEpoch) clearLocalSession();
+      return null;
+    }
+  }
+  // Background tabs do not require polling. Recheck on return and before actions.
+  const recheckLocalSocialOnFocus = async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    const epoch = sessionEpoch;
+    const validation = ++focusValidationGeneration;
+    const previewGeneration = socialPreviewGeneration;
+    const selectedId = ui.socialDraft.value;
+    const selectedDraft = lastDrafts.find(row => row.id === selectedId);
+    const authorizedDrafts = await verifyLocalSocialSession(epoch);
+    if (!authorizedDrafts || validation !== focusValidationGeneration ||
+        previewGeneration !== socialPreviewGeneration || !activeLocalSocialSession(epoch) ||
+        selectedId !== ui.socialDraft.value) return;
+
+    // Keep the already-visible LOCAL preview only while its exact metadata
+    // still matches the latest authenticated Owner/D1 listing.
+    const sameDraft = sameLocalSocialDraftMetadata;
+    const authorizedSelected = authorizedDrafts.find(row => row.id === selectedId);
+    const selectedStale = !!selectedDraft &&
+      !sameDraft(selectedDraft, authorizedSelected);
+
+    localEditorialVariants = Object.freeze(localEditorialVariants.filter(row => {
+      const previous = lastDrafts.find(draft => draft.id === row.draftId &&
+        draft.revision === row.draftRevision);
+      const current = authorizedDrafts.find(draft => draft.id === row.draftId &&
+        draft.revision === row.draftRevision);
+      if (!sameDraft(previous, current)) return false;
+      try { requireCanonicalLocalVariant(row, current); return true; }
+      catch { return false; }
+    }));
+    localApprovalEvents = Object.freeze(localApprovalEvents.filter(event => {
+      const previous = lastDrafts.find(draft => draft.id === event.variant?.draftId &&
+        draft.revision === event.variant?.draftRevision);
+      const current = authorizedDrafts.find(draft => draft.id === event.variant?.draftId &&
+        draft.revision === event.variant?.draftRevision);
+      if (!sameDraft(previous,current)) return false;
+      try { requireCanonicalLocalVariant(event.variant,current); return true; }
+      catch { return false; }
+    }));
+    if (!selectedStale) { renderLocalApproval(); return; }
+    clearLocalSocialPreview();
+    lastDrafts = authorizedDrafts;
+    renderDraftList();
+    renderLocalSocialChoices();
+    ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) recheckLocalSocialOnFocus();
+  });
+  window.addEventListener('focus', recheckLocalSocialOnFocus);
+  ui.socialGenerate.addEventListener('click', async () => {
     clearLocalSocialPreview();
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
@@ -747,10 +919,21 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialStatus.textContent = 'Select a listed LOCAL draft first';
       return;
     }
+    const epoch = sessionEpoch;
+    const generation = socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        channel !== ui.socialChannel.value || draft.id !== ui.socialDraft.value) return;
     try {
-      const concept = createLocalSocialPreview(draft, ui.socialChannel.value);
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      let concept = createLocalSocialPreview(currentDraft, channel);
+      const saved = getLocalEditorialVariant(localEditorialVariants, currentDraft, channel);
+      const defaultText = concept.text.replace(/\nSource reference \(NOT VERIFIED\): [^\n]*$/u,'').trim();
+      concept = saved ?? createLocalEditorialVariant(currentDraft, channel, defaultText);
       const card = createLocalSocialCard(concept);
-      if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
       ui.socialCard.dataset.channel = card.channel;
       ui.socialCard.dataset.viewport = ['mobile','desktop'].includes(ui.socialViewport.value)
         ? ui.socialViewport.value : 'mobile';
@@ -763,12 +946,119 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
         ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
       ui.socialPreview.hidden = false;
+      ui.variantText.value = concept.editableText;
+      ui.variantComposer.hidden = false;
+      ui.variantStatus.textContent = saved ? 'Saved in this session only · NOT POSTED' :
+        'Generated draft · save explicitly to retain in this session · NOT POSTED';
+      renderLocalApproval();
       ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
     } catch {
       clearLocalSocialPreview();
       ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
     }
   });
+  ui.variantSave.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableText = ui.variantText.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableText !== ui.variantText.value || ui.variantComposer.hidden) return;
+    try {
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const concept = createLocalEditorialVariant(currentDraft, channel, editableText);
+      const next = upsertLocalEditorialVariant(localEditorialVariants, currentDraft,
+        channel, concept.editableText, authorizedDrafts);
+      const card = createLocalSocialCard(concept);
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
+      const updatedApproval = recordLocalApproval(localApprovalEvents,concept,'SAVE',authorizedDrafts);
+      localEditorialVariants = next;
+      localApprovalEvents = updatedApproval;
+      socialPreviewGeneration += 1;
+      ui.socialCardCopy.textContent = card.text;
+      ui.socialCardLabels.textContent = card.labels;
+      ui.socialPreviewText.textContent = concept.text;
+      ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
+        ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
+      ui.variantStatus.textContent = 'Saved in this session only · NOT POSTED';
+      ui.approvalReason.value = '';
+      renderLocalApproval();
+    } catch {
+      ui.variantStatus.textContent = 'LOCAL variant rejected: check authorized draft, text length and source · NOT POSTED';
+    }
+  });
+  // Any user edit invalidates an in-flight LOCAL Reset, even if the text is
+  // subsequently changed back to its original value before the GET completes.
+  ui.variantText.addEventListener('input', () => {
+    socialActionGeneration += 1;
+    renderLocalApproval();
+  });
+  ui.variantReset.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableTextAtClick = ui.variantText.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableTextAtClick !== ui.variantText.value || ui.variantComposer.hidden) return;
+    if (!activeLocalSocialSession(epoch)) return;
+    try {
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const saved = getLocalEditorialVariant(localEditorialVariants,currentDraft,channel);
+      const history = saved ? recordLocalApproval(localApprovalEvents,saved,
+        'RESET',authorizedDrafts) : localApprovalEvents;
+      localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
+        !(row.draftId === draft.id && row.channel === channel)));
+      localApprovalEvents = history;
+      ui.socialGenerate.click();
+    } catch {
+      clearLocalSocialPreview();
+      ui.socialStatus.textContent = 'LOCAL reset unavailable; recheck draft';
+    }
+  });
+  async function decideLocalVariant(action) {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableText = ui.variantText.value;
+    const reason = action === 'REJECT' ? ui.approvalReason.value : '';
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableText !== ui.variantText.value || ui.variantComposer.hidden ||
+        (action === 'REJECT' && reason !== ui.approvalReason.value)) return;
+    try {
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const saved = getLocalEditorialVariant(localEditorialVariants,currentDraft,channel);
+      if (!saved || saved.editableText !== editableText) throw new TypeError('Unsaved variant');
+      const history = recordLocalApproval(localApprovalEvents,saved,action,authorizedDrafts,reason);
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
+      localApprovalEvents = history;
+      socialPreviewGeneration += 1;
+      ui.approvalReason.value = '';
+      renderLocalApproval();
+    } catch {
+      ui.approvalStatus.textContent = 'LOCAL decision rejected; check saved version and reason · NOT POSTED';
+    }
+  }
+  ui.approvalApprove.addEventListener('click', () => decideLocalVariant('APPROVE'));
+  ui.approvalReject.addEventListener('click', () => decideLocalVariant('REJECT'));
+  ui.approvalReason.addEventListener('input', () => { socialActionGeneration += 1; });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
     renderDraftPreview();
@@ -794,7 +1084,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       if (!assertion) throw new Error('Passkey was not selected');
       const response = assertionJson(assertion);
       const logged = await api('/local/login', 'POST', { credentialId, challenge, response });
+      if (!Number.isSafeInteger(logged.expiresInSeconds) ||
+          logged.expiresInSeconds < 1 || logged.expiresInSeconds > 1200) {
+        throw new TypeError('Invalid LOCAL session expiry');
+      }
       csrf = logged.csrf;
+      sessionExpiresAt = Date.now() + logged.expiresInSeconds * 1000;
+      const authenticatedEpoch = sessionEpoch;
+      if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
+      sessionExpiryTimer = setTimeout(() => {
+        if (authenticatedEpoch === sessionEpoch && csrf) clearLocalSession();
+      }, logged.expiresInSeconds * 1000);
       ui.form.hidden = false;
       renderDraftPreview();
       acceptSavedDraft();
@@ -1011,6 +1311,8 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-week-open{max-width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere}
 .m07-week-conflict{border-left-color:#f2bd7d;font-weight:600}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
+#m07-variant-composer{border:1px solid #536b4c;padding:12px;border-radius:8px;margin:12px 0}
+#m07-variant-composer[hidden]{display:none}
 .m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}
 .m07-card{box-sizing:border-box;min-width:0;width:100%;max-width:600px;border-radius:16px;border:2px solid #81988e;background:#142821;color:#f6f8f5;padding:20px;overflow-wrap:anywhere}
 .m07-card[hidden]{display:none}
@@ -1112,6 +1414,24 @@ footer{padding:24px 0;color:#b9c8bd}
 </select>
 <button id="m07-generate" type="button">Generate LOCAL preview</button>
 <button id="m07-clear" type="button">Clear LOCAL preview</button>
+<section id="m07-variant-composer" aria-label="Independent synthetic channel editor" hidden>
+<label for="m07-variant-text">Edit only the selected channel's fictitious message (source and rights remain fixed)</label>
+<textarea id="m07-variant-text" maxlength="1600" minlength="8" autocomplete="off" spellcheck="true"></textarea>
+<button id="m07-variant-save" type="button">Save this channel in LOCAL memory</button>
+<button id="m07-variant-reset" type="button">Reset only this channel</button>
+<p id="m07-variant-status" role="status" aria-live="polite">No editable LOCAL variant</p>
+<section id="m07-approval-panel" aria-label="LOCAL channel editorial review and audit" hidden>
+<h4>Saved-version editorial decision · LOCAL only</h4>
+<p>APPROVED FOR LOCAL EDITORIAL REVIEW ONLY never clears rights, posts or schedules. Save first; this session-only history disappears on refresh or sign-out.</p>
+<label for="m07-approval-reason">Rejection reason (8 to 240 characters required)</label>
+<textarea id="m07-approval-reason" minlength="8" maxlength="240" autocomplete="off" required></textarea>
+<button id="m07-approval-approve" type="button" disabled>Approve saved LOCAL version</button>
+<button id="m07-approval-reject" type="button" disabled>Reject saved LOCAL version</button>
+<p id="m07-approval-status" role="status" aria-live="polite">No LOCAL editorial decision</p>
+<h5>Selected channel · session-only audit</h5>
+<ol id="m07-approval-audit" aria-label="LOCAL editorial decision history"></ol>
+</section>
+</section>
 <p id="m07-status" role="status" aria-live="polite">No LOCAL social preview</p>
 <section id="m07-preview" aria-label="Private LOCAL social preview" hidden>
 <p id="m07-rights">UNAVAILABLE</p>

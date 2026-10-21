@@ -1,12 +1,12 @@
 # CB-SONAR-147-CODEX-READONLY-001
 
-**Mission:** investigate SonarQube Cloud main Security Rating D for KayzenRoot/coinblink, issue #147. **Execution engine: Codex**, without switching to ChatGPT Work. Operational reference only; not evidence of a completed investigation.
+**Mission (historical 2026-10-20):** investigate SonarQube Cloud main Security Rating D for KayzenRoot/coinblink, issue #147. **Execution engine: Codex**, without switching to ChatGPT Work. The dated aggregate result is recorded in this PR; this text is not standing authorization to rerun, publish, or remediate.
 **Prepared:** 2026-10-20 | **Repository:** https://github.com/KayzenRoot/coinblink
-**Reference main SHA:** aae3533973518e1af846c321a9df89d03a0918f5 (reconfirm immediately).
-**Protected PR:** https://github.com/KayzenRoot/coinblink/pull/180 (reference HEAD adc24255154c137daebebe2939a87103a6bc1a09; recheck, never modify).
-**Evidence branch / PR:** this document lives on branch docs/cb-sonar-147-codex-handoff-20261020. Only sanitized evidence commits may update this branch and its own documentation PR; NO other branch writes.
+**Historical main SHA:** aae3533973518e1af846c321a9df89d03a0918f5. **Later main (2026-10-21):** c3001ccfb663ad0c84085e07783f8d4566b394a4, SonarCloud Quality Gate PASS. Reconfirm for any newly authorized investigation.
+**Related PR:** https://github.com/KayzenRoot/coinblink/pull/180 (historical HEAD adc24255154c137daebebe2939a87103a6bc1a09; now MERGED; never modify through this document).
+**Evidence branch / PR:** docs/cb-sonar-147-codex-handoff-20261020 / PR #181. Further evidence writes require a new specific Owner authorization, are limited to this branch, and must remain safely aggregated; NO other branch writes.
 
-## 0. Authorized operations and absolute limits
+## 0. Historical authorized operations and absolute limits (not a standing grant)
 
 - SonarCloud: ONLY GET reads on the project and relevant rule descriptions. Do not alter issue states, credentials, Quality Gates, settings or baselines.
 - GitHub: read current main, issue #147, issue #169, and PR #180. The ONLY write allowed is sanitized evidence under docs/audits/sonar/issue-147/ on the same handoff branch, with a commit updating the handoff PR. No issue comments or other PR/branch modifications.
@@ -18,9 +18,9 @@
 ## 1. Readiness/preflight
 
 1. Check git remote URL points to KayzenRoot/coinblink and fetch refs; do not reset or discard unrelated local changes.
-2. Verify main SHA. If main differs from the reference, record both SHAs and investigate the currently failing main check without silently claiming equality.
-3. Verify Issue #147 is open, PR #180 state/HEAD unchanged and no writes to it; note its Copilot MEDIUM creditStatus thread is separate.
-4. From GitHub check-runs, confirm exact failure and its main SHA. Expected historic condition: SonarCloud Code Analysis FAILURE, D Security Rating on New Code (minimum A), check 118552202578 on the reference SHA.
+2. Verify current main SHA and its check. If it differs from the historic reference, record both and distinguish the historic failing check from the current Quality Gate without claiming they match.
+3. Check current Issue #147 and PR #180 states (historically OPEN, now CLOSED/completed and MERGED respectively). Never demand the historical states nor modify these resources; the Copilot creditStatus finding was separate.
+4. Check GitHub checks by exact SHA: historical run 118552202578 was FAILURE with D Security Rating on New Code (minimum A). On later main c3001ccf... SonarCloud reports SUCCESS. Do not conflate the runs.
 5. Verify SonarCloud project permission Browse. If no login/authorized API access is available in Codex, report BLOCKED. Do not steal browser cookies, inspect token stores or bypass authentication.
 
 ## 2. SonarCloud safe read-only retrieval
@@ -63,5 +63,7 @@ Before committing inspect the staged diff and run a secrets/redaction scan; fail
 - Return to ChatGPT with only: status, exact main SHA, safe evidence GitHub URL(s), counts, identified severity bands, limitations, PR #180 preservation, branch HEAD and explicit statement that no merge/deploy occurred.
 
 ## 6. Operator handoff
+
+This 2026-10-20 historical extraction is COMPLETE only for its old observed SHA. Issue #147 is now CLOSED and PR #180 is MERGED. Do not automatically rerun these instructions or disclose additional details; any fresh mission needs explicit Owner authorization.
 
 Codex is the execution tool. ChatGPT chat is the permanent coordination/decision interface. Do not require ChatGPT Work or file downloads. If evidence is safe, store it through a non-merged GitHub PR; any code remediation is a later, separately authorized task.

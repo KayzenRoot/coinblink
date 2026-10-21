@@ -76,7 +76,13 @@
     "annotations": 0,
     "url": "https://github.com/KayzenRoot/coinblink/runs/118552202578"
   },
-  "relatedGitHubState": {
+  "limitations": [
+    "No issue-specific rule, path, line, message, or key is included in this public evidence.",
+    "Aggregate co-occurrence does not attribute a particular issue to the failed Security Rating condition.",
+    "No remediation, issue mutation, Quality Gate change, merge, or deploy was performed.",
+    "relatedGitHubStateAtObservation is a historical 2026-10-20 snapshot; laterGitHubReadback reflects later GitHub state without re-running the SonarCloud issue query."
+  ],
+  "relatedGitHubStateAtObservation": {
     "issue147": "OPEN",
     "issue169": "OPEN",
     "pr180": {
@@ -94,9 +100,33 @@
       "baseSha": "aae3533973518e1af846c321a9df89d03a0918f5"
     }
   },
-  "limitations": [
-    "No issue-specific rule, path, line, message, or key is included in this public evidence.",
-    "Aggregate co-occurrence does not attribute a particular issue to the failed Security Rating condition.",
-    "No remediation, issue mutation, Quality Gate change, merge, or deploy was performed."
-  ]
+  "laterGitHubReadback": {
+    "asOfDate": "2026-10-21",
+    "mainSha": "c3001ccfb663ad0c84085e07783f8d4566b394a4",
+    "issue147": {
+      "state": "CLOSED",
+      "stateReason": "completed",
+      "closedAt": "2026-10-20T17:19:37Z"
+    },
+    "issue169": {
+      "state": "OPEN"
+    },
+    "pr180": {
+      "state": "MERGED",
+      "headSha": "dc4d45556d8a53303eddb0653518df5c5829b54a"
+    },
+    "pr182": {
+      "state": "OPEN",
+      "draft": true,
+      "headSha": "309e9f1b382216cc5fa5b8ee38b85cbcb39e72f9"
+    },
+    "mainSonarCloudCheck": {
+      "status": "completed",
+      "conclusion": "success",
+      "qualityGate": "passed",
+      "reportedNewIssues": 226,
+      "reportedSecurityHotspots": 0
+    },
+    "limitations": "GitHub states and SonarCloud check summary only; no fresh issue-specific SonarCloud extraction or confirmed remediation."
+  }
 }

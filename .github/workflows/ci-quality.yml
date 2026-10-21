@@ -1,0 +1,99 @@
+name: CoinBlink quality baseline (CB-CI-QUALITY-001)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Diagnostics only: do not change existing Build, SonarCloud or Socket protection.
+# No pull_request_target, privileged tokens, deployments or paid SaaS.
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: CB quality / lint and typecheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked install
+        run: npm ci --ignore-scripts
+      - name: Lint baseline
+        id: lint
+        continue-on-error: true
+        run: npm run lint
+      - name: Astro typecheck baseline
+        id: typecheck
+        if: always()
+        continue-on-error: true
+        run: npm run typecheck
+      - name: Publish actual static validation outcomes
+        if: always()
+        run: |
+          echo "Lint: ${{ steps.lint.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Typecheck: ${{ steps.typecheck.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          test "${{ steps.lint.outcome }}" = "success"
+          test "${{ steps.typecheck.outcome }}" = "success"
+
+  tests:
+    name: CB quality / focused Node tests and LCOV baseline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked install
+        run: npm ci --ignore-scripts
+      - name: Pure Node contracts with built-in LCOV coverage
+        run: |
+          mkdir -p coverage
+          node --experimental-test-coverage --test \
+            --test-coverage-include='src/**' \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \
+            test/automation/ci-quality-contract.test.mjs \
+            'test/modules/CB-M02/*.test.mjs' \
+            'test/modules/CB-M03/*.test.mjs' \
+            'test/modules/CB-M04/*.test.mjs'
+      - name: Upload coverage artifact for audit (no vendor token)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cb-ci-quality-lcov
+          path: coverage/lcov.info
+          retention-days: 7
+          if-no-files-found: warn
+
+  secrets:
+    name: CB quality / Gitleaks secrets scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout git history read-only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan for hardcoded secrets (personal public repo, no license key)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+          GITLEAKS_ENABLE_SUMMARY: "false"

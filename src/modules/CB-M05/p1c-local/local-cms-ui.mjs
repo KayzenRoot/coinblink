@@ -440,7 +440,6 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       copyLabel.append(copyChannel);
       const copyPreview = document.createElement('p');
       copyPreview.className = 'm07-copy-preview';
-      copyPreview.setAttribute('role', 'status');
       copyPreview.setAttribute('aria-live', 'polite');
       const confirmCopy = action('m07-copy-confirm', 'Confirm LOCAL hypothetical copy');
       const cancelCopy = action('m07-copy-cancel', 'Cancel LOCAL hypothetical copy');

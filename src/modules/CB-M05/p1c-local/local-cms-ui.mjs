@@ -119,6 +119,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let socialPreviewGeneration = 0;
   let focusValidationGeneration = 0;
   let readGeneration = 0;
+  // Invalidate in-flight editor reads when a newer navigation replaces them.
+  let draftOpenGeneration = 0;
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
   let localEditorialVariants = [];
@@ -613,6 +615,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     sessionExpiresAt = 0;
     sessionEpoch += 1;
     readGeneration += 1;
+    draftOpenGeneration += 1;
     hideLocalDashboard();
     ui.reviewFilter.value = 'all';
     csrf = null;
@@ -738,12 +741,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
     const epoch = sessionEpoch;
     const generation = readGeneration;
+    const openGeneration = ++draftOpenGeneration;
     const id = draft.id;
     const initialSnapshot = draftSnapshot();
     try {
       const result = await api('/local/articles/' + encodeURIComponent(id));
       // Never hydrate a prior-session, superseded-list or modified form.
-      if (epoch !== sessionEpoch || generation !== readGeneration || !csrf ||
+      if (epoch !== sessionEpoch || generation !== readGeneration ||
+          openGeneration !== draftOpenGeneration || !csrf ||
           ui.form.hidden || !lastDrafts.some(row => row.id === id) ||
           draftSnapshot() !== initialSnapshot) return false;
       if (!result.draft || result.draft.id !== id) {
@@ -754,7 +759,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       message('Loaded draft revision ' + result.draft.revision);
       return true;
     } catch (error) {
-      if (epoch === sessionEpoch && generation === readGeneration) {
+      if (epoch === sessionEpoch && generation === readGeneration &&
+          openGeneration === draftOpenGeneration) {
         message(error.status === 404 ?
           'LOCAL draft unavailable; refresh your list' : 'Could not open draft');
       }
@@ -1146,6 +1152,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
   document.getElementById('new-draft').addEventListener('click', () => {
     if (!confirmDraftDiscard()) return;
+    draftOpenGeneration += 1;
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
     ui.history.hidden = true;
     ui.historyList.replaceChildren();

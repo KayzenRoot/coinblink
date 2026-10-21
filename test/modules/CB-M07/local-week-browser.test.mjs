@@ -231,6 +231,44 @@ test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:
 });
 
 
+
+test('M07-E: a delayed weekly read cannot overwrite New draft', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  let releaseRead = () => {};
+  try {
+    const { page } = app;
+    await signIn(page);
+    await createFictionalDraft(page, 'Fictional stale weekly destination');
+    await page.locator('#new-draft').click();
+    await addConcept(page, 'Fictional stale weekly destination');
+    let notifyRead;
+    const started = new Promise(resolve => { notifyRead = resolve; });
+    const held = new Promise(resolve => { releaseRead = resolve; });
+    await page.route('**/admin/articles/*', async route => {
+      notifyRead();
+      await held;
+      await route.continue();
+    });
+    await page.locator('#m07-week-board .m07-week-open').first().click();
+    await started;
+    await page.locator('#new-draft').click();
+    assert.equal(await page.locator('[name="title"]').inputValue(), '');
+    const response = page.waitForResponse(value =>
+      new URL(value.url()).pathname.startsWith('/admin/articles/'));
+    releaseRead();
+    await response;
+    await page.waitForTimeout(150);
+    assert.equal(await page.locator('[name="title"]').inputValue(), '');
+    assert.equal(await page.locator('[name="body"]').inputValue(), '');
+    assert.equal(await page.locator('#draft-id').inputValue(), '');
+    assert.equal(await page.locator('#draft-preview').isVisible(), false);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally {
+    releaseRead();
+    await app.close();
+  }
+});
+
 test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and stale controls', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({ headless:true, admin:true });
   try {

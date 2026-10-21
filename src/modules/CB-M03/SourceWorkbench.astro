@@ -13,12 +13,21 @@ const rows = listSyntheticSources().items;
     <p>Every entry is invented and belongs to <code>example.test</code>. No publisher was contacted and no rights were granted.</p>
     <p class="policy">{SOURCE_DEMO_POLICY}</p>
   </header>
-  <label>Filter fictional sources
-    <input type="search" data-m03-query maxlength="80" autocomplete="off" placeholder="Source label or status" />
-  </label>
+  <div class="m03-filters">
+    <label>Filter fictional sources
+      <input type="search" data-m03-query maxlength="80" autocomplete="off" placeholder="Source label or status" />
+    </label>
+    <label>Inspection outcome
+      <select data-m03-state-filter>
+        <option value="all">All outcomes</option>
+        <option value="DENIED_RIGHTS">Rights not cleared</option>
+        <option value="UNAVAILABLE">Provider unavailable</option>
+      </select>
+    </label>
+  </div>
   <p role="status" data-m03-count aria-live="polite">{rows.length} synthetic source examples</p>
   <div class="m03-grid">
-    {rows.map(row => <article data-m03-entry data-m03-searchable={[row.label,row.originUrl,row.status].join(" ").toLowerCase()}>
+    {rows.map(row => <article data-m03-entry data-m03-state={inspectSyntheticSource(row).state} data-m03-searchable={[row.label,row.originUrl,row.status].join(" ").toLowerCase()}>
       <small>MOCK · RIGHTS NOT CLEARED · NOT INGESTED</small>
       <h2>{row.label}</h2>
       <p><code>{row.originUrl}</code></p>
@@ -37,8 +46,10 @@ const rows = listSyntheticSources().items;
   .m03{padding:clamp(1.25rem,5vw,4rem);max-width:76rem;margin:0 auto;min-height:70vh}
   .m03 a{color:#b8f34b}.m03 header{max-width:64ch}.m03 h1{font-size:clamp(2rem,5vw,4rem)}
   .m03 small,.m03 .policy{color:#f5c981;font-weight:700}.m03 header p{color:#b5c9bd}
-  .m03 label{display:grid;gap:.4rem;margin:1.25rem 0;max-width:26rem}
-  .m03 input{padding:.75rem;border:1px solid #719a79;border-radius:.5rem;background:#14251b;color:#fff}
+  .m03-filters{display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0}
+  .m03-filters label{display:grid;flex:1 1 16rem;gap:.4rem;max-width:26rem}
+  .m03 input,.m03 select{padding:.75rem;border:1px solid #719a79;border-radius:.5rem;background:#14251b;color:#fff}
+  .m03 input:focus-visible,.m03 select:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
   .m03-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1rem}
   .m03 article{border:1px solid #456e4e;border-radius:.75rem;padding:1.25rem;background:#101e17}
   .m03 article[hidden]{display:none}.m03 h2{font-size:1.2rem}.m03 code{overflow-wrap:anywhere}

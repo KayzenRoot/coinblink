@@ -232,6 +232,53 @@ test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:
 
 
 
+
+test('M07-E: a delayed weekly read cannot overwrite New draft', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  let releaseRead = () => {};
+  try {
+    const { page } = app;
+    await signIn(page);
+    await createFictionalDraft(page, 'Fictional stale weekly destination');
+    await page.locator('#new-draft').click();
+    await addConcept(page, 'Fictional stale weekly destination');
+    let notifyRead;
+    const draftId = await page.locator('#m07-draft').inputValue();
+    let notifyDelivered;
+    const delivered = new Promise(resolve => { notifyDelivered = resolve; });
+    const started = new Promise(resolve => { notifyRead = resolve; });
+    const held = new Promise(resolve => { releaseRead = resolve; });
+    await page.route('**/admin/articles/*', async route => {
+      notifyRead();
+      await held;
+      // A synthetic response makes the delayed hydration race deterministic.
+      // Only this LOCAL test route is intercepted; no real service is contacted.
+      await route.fulfill({ status:200, contentType:'application/json',
+        body:JSON.stringify({ draft: {
+          id:draftId, revision:1, title:'STALE_PRIVATE_EDITOR_TITLE',
+          summary:'Fictional private summary only', body:'STALE_PRIVATE_EDITOR_BODY',
+          source_url:'https://example.org/fiction', author_label:'',
+        } }) });
+      notifyDelivered();
+    });
+    await page.locator('#m07-week-board .m07-week-open').first().click();
+    await started;
+    await page.locator('#new-draft').click();
+    assert.equal(await page.locator('[name="title"]').inputValue(), '');
+    releaseRead();
+    await delivered;
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('[name="title"]').inputValue(), '');
+    assert.equal(await page.locator('[name="body"]').inputValue(), '');
+    assert.equal(await page.locator('#draft-id').inputValue(), '');
+    assert.equal(await page.locator('#draft-preview').isVisible(), false);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally {
+    releaseRead();
+    await app.close();
+  }
+});
+
 test('M07-H: accessible assisted cross-channel copy previews, confirms, and preserves originals', {timeout:120_000}, async () => {
   await withLocalSession(async (page, app) => {
     await createFictionalDraft(page, 'Fictional cross-channel LOCAL concept');

@@ -1,5 +1,6 @@
 ---
 import { listMockNews, NEWS_MOCK_POLICY } from "./news-workbench.mjs";
+import { listMockTopics } from "./news-reader-guide.mjs";
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
@@ -7,6 +8,7 @@ interface Props { locale?: "en" | "pt-br"; }
 const { locale = "en" } = Astro.props;
 const copy = newsCopy(locale);
 const news = listMockNews();
+const topics = listMockTopics();
 const categories = ["all", "security", "protocol", "education"] as const;
 const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
 ---
@@ -22,6 +24,15 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
     <small>CB-M02 · {NEWS_MOCK_POLICY}</small>
     <span class="sr-only">MOCK / FICTIONAL / NOT PUBLISHED</span>
   </header>
+  <section class="m02-topics" aria-labelledby="m02-topics-title">
+    <h2 id="m02-topics-title">{copy.topicTitle}</h2>
+    <p>{copy.topicExplanation}</p>
+    <div class="m02-topic-actions">
+      {topics.map(topic => <button type="button" data-m02-topic={topic.category} aria-label={copy.exploreTopic + " " + copy[topic.category]}>
+        {copy[topic.category]} · {topic.count}
+      </button>)}
+    </div>
+  </section>
   <div class="m02-controls">
     <label>{copy.search}
       <input type="search" maxlength="80" data-m02-search placeholder={copy.searchHint} autocomplete="off" />
@@ -55,6 +66,11 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
   .cb-m02 header h1{font-size:clamp(2rem,4vw,3.75rem);line-height:1.12}
   .cb-m02 header p,.cb-m02 article p{color:#b9cbbf}
   .m02-warning{color:#f5c981;font-weight:650;letter-spacing:.025em}
+  .m02-topics{margin:1.25rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .m02-topics h2{font-size:1.4rem;margin:.1rem 0}
+  .m02-topics p{color:#b9cbbf}
+  .m02-topic-actions{display:flex;flex-wrap:wrap;gap:.75rem}
+  .m02-topic-actions button{cursor:pointer;color:#e9f6eb;background:#18291f;border:1px solid #809c81;border-radius:999px;min-height:2.75rem;padding:.65rem 1rem}
   .m02-controls{display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0}
   .m02-controls label{display:grid;gap:.5rem;flex:1 1 15rem}
   .m02-controls input,.m02-controls select{width:100%;padding:.85rem;color:#fff;background:#18291f;border:1px solid #809c81;border-radius:.5rem}

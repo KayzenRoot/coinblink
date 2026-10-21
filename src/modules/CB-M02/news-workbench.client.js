@@ -5,6 +5,7 @@ for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
   const search = root.querySelector("[data-m02-search]");
   const category = root.querySelector("[data-m02-category-select]");
   const reset = root.querySelector("[data-m02-reset]");
+  const topics = [...root.querySelectorAll("[data-m02-topic]")];
   const count = root.querySelector("[data-m02-result-count]");
   const empty = root.querySelector("[data-m02-empty]");
   const entries = [...root.querySelectorAll("[data-m02-entry]")];
@@ -22,6 +23,13 @@ for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
   };
   search.addEventListener("input", filter);
   category.addEventListener("change", filter);
+  for (const button of topics) {
+    button.addEventListener("click", () => {
+      search.value = "";
+      category.value = button.dataset.m02Topic;
+      filter();
+    });
+  }
   reset.addEventListener("click", () => {
     search.value = "";
     category.value = "all";

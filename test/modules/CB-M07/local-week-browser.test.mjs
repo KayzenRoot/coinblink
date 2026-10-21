@@ -317,6 +317,7 @@ test('M07-H: cap, stale click, refresh and logout never create phantom concepts'
     await addConcept(page, 1);
     const later = await page.locator('#m07-calendar-list .m07-calendar-copy').first().elementHandle();
     await page.locator('#logout').click();
+    await page.getByText('Not authenticated', {exact:true}).waitFor({timeout:20000});
     await expectEmptyPrivateBoard(page);
     await later.evaluate(node => node.click());
     assert.equal(await page.locator('#m07-calendar-list li').count(), 0);

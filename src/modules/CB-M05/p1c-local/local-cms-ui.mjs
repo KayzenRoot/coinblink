@@ -419,7 +419,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const copy = action('m07-calendar-copy', 'Copy hypothetical concept to another channel');
       copy.setAttribute('aria-label', 'Copy hypothetical concept for ' + item.title + ' to another channel');
       const copyPanel = document.createElement('fieldset');
-      copyPanel.className = 'm07-calendar-editor m07-copy-panel';
+      copyPanel.className = 'm07-copy-panel';
       copyPanel.hidden = true;
       const copyLegend = document.createElement('legend');
       copyLegend.textContent = 'Copy LOCAL concept for ' + item.title + ' · MEMORY ONLY';
@@ -1390,6 +1390,8 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-calendar-item small{display:block;color:#d5e6c6}
 .m07-calendar-editor{box-sizing:border-box;min-width:0;max-width:100%}
 .m07-calendar-editor[hidden]{display:none}
+.m07-copy-panel{box-sizing:border-box;min-width:0;max-width:100%;border:1px solid #768977;border-radius:8px}
+.m07-copy-panel[hidden]{display:none}
 .m07-calendar-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
 .m07-calendar-controls label{display:block}
 .m07-calendar-controls input,.m07-calendar-controls select{max-width:100%;box-sizing:border-box}

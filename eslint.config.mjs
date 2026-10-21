@@ -30,11 +30,12 @@ export default defineConfig(
     },
   },
   {
-    // Only source files without their own explicit DOM globals.
+    // Only browser scripts/tests without their own explicit DOM globals.
     files: [
       "public/m01-local-draft-preview.js",
       "src/modules/**/*.client.js",
       "test/modules/CB-M07/local-week-browser.test.mjs",
+      "test/modules/CB-M07/local-social-preview.test.mjs",
     ],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

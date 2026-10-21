@@ -4,7 +4,8 @@
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
-import { createLocalCalendarIdea, addLocalCalendarIdea } from '../../CB-M07/local-calendar.mjs';
+import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
+import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
@@ -12,9 +13,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
+  const requireCanonicalLocalVariant = (${requireCanonicalLocalVariant.toString()});
+  const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
+  const upsertLocalEditorialVariant = (${upsertLocalEditorialVariant.toString()});
+  const localCalendarMinuteFormatter = (${localCalendarMinuteFormatter.toString()});
+  const localCalendarMinuteParts = (${localCalendarMinuteParts.toString()});
   const createLocalCalendarIdea = (${createLocalCalendarIdea.toString()});
   const addLocalCalendarIdea = (${addLocalCalendarIdea.toString()});
+  const replaceLocalCalendarIdea = (${replaceLocalCalendarIdea.toString()});
   const createLocalWeeklyBoard = (${createLocalWeeklyBoard.toString()});
+  const suggestLocalConflictAlternatives = (${suggestLocalConflictAlternatives.toString()});
   const ui = {
     id: document.getElementById('credential'),
     login: document.getElementById('login'),
@@ -57,6 +66,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     socialCardFormat: document.getElementById('m07-card-format'),
     socialCardCopy: document.getElementById('m07-card-copy'),
     socialCardLabels: document.getElementById('m07-card-labels'),
+    variantComposer: document.getElementById('m07-variant-composer'),
+    variantText: document.getElementById('m07-variant-text'),
+    variantSave: document.getElementById('m07-variant-save'),
+    variantReset: document.getElementById('m07-variant-reset'),
+    variantStatus: document.getElementById('m07-variant-status'),
     calendarDate: document.getElementById('m07-calendar-date'),
     calendarZone: document.getElementById('m07-calendar-zone'),
     calendarAdd: document.getElementById('m07-calendar-add'),
@@ -85,10 +99,18 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     emergencyToken: document.getElementById('emergency-token'),
   };
   let csrf = null;
+  let sessionExpiresAt = 0;
+  let sessionExpiryTimer = null;
   let sessionEpoch = 0;
+  let socialActionGeneration = 0;
+  // Tracks replacement of the rendered preview, not unsaved textarea input.
+  // Authorization checks must still scrub stale text if a user types meanwhile.
+  let socialPreviewGeneration = 0;
+  let focusValidationGeneration = 0;
   let readGeneration = 0;
   let lastReviewQueue = null;
   let localCalendarIdeas = [];
+  let localEditorialVariants = [];
   let lastDrafts = [];
   let savedSnapshot = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
@@ -141,6 +163,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.previewSource.textContent = source;
   }
   function clearLocalSocialPreview() {
+    socialActionGeneration += 1;
+    socialPreviewGeneration += 1;
     ui.socialPreview.hidden = true;
     ui.socialPreviewText.textContent = '';
     ui.socialRights.textContent = 'UNAVAILABLE';
@@ -150,6 +174,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialCardFormat.textContent = '';
     ui.socialCardCopy.textContent = '';
     ui.socialCardLabels.textContent = '';
+    ui.variantComposer.hidden = true;
+    ui.variantText.value = '';
+    ui.variantStatus.textContent = 'No editable LOCAL variant';
     ui.socialCard.removeAttribute('data-channel');
     ui.socialCard.removeAttribute('data-viewport');
   }
@@ -203,10 +230,32 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         for (const idea of day.ideas) {
           const item = document.createElement('p');
           item.className = idea.collision ? 'm07-week-idea m07-week-conflict' : 'm07-week-idea';
-          item.textContent = idea.localTime + ' · ' + idea.channel.toUpperCase() + ' · ' +
-            idea.title + ' · ' + idea.status + ' · ' + idea.publication + ' · ' +
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'm07-week-open';
+          button.textContent = 'Open LOCAL draft · ' + idea.title;
+          const epoch = sessionEpoch;
+          const generation = readGeneration;
+          button.addEventListener('click', async () => {
+            // A stale idea or detached element must never authorize a draft lookup.
+            if (epoch !== sessionEpoch || generation !== readGeneration ||
+                !csrf || ui.form.hidden || ui.dashboard.hidden || !item.isConnected) return;
+            const draft = lastDrafts.find(row => row.id === idea.draftId);
+            if (!draft) {
+              message('LOCAL draft unavailable; refresh your list');
+              return;
+            }
+            if (await openLocalDraft(draft) && epoch === sessionEpoch &&
+                generation === readGeneration) {
+              ui.form.elements.namedItem('title').focus();
+            }
+          });
+          const detail = document.createElement('span');
+          detail.textContent = ' · ' + idea.localTime + ' · ' + idea.channel.toUpperCase() +
+            ' · ' + idea.status + ' · ' + idea.publication + ' · ' +
             idea.sourceStatus + ' · ' + idea.rights + ' · ' + idea.creditStatus +
             (idea.collision ? ' · HYPOTHETICAL TIME CONFLICT (NOT BLOCKING)' : '');
+          item.append(button, detail);
           article.append(item);
         }
         grid.append(article);
@@ -231,16 +280,180 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const labels = document.createElement('small');
       labels.textContent = item.status + ' · ' + item.publication + ' · ' +
         item.sourceStatus + ' · ' + item.creditStatus + ' · ' + item.rights;
+      const epoch = sessionEpoch;
+      const generation = readGeneration;
+      // Detached, superseded, logged-out or delisted controls have no authority.
+      const current = () => epoch === sessionEpoch && generation === readGeneration &&
+        !!csrf && !ui.form.hidden && !ui.dashboard.hidden && li.isConnected &&
+        localCalendarIdeas.includes(item) && lastDrafts.some(row => row.id === item.draftId);
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.textContent = 'Remove hypothetical concept';
       remove.setAttribute('aria-label', 'Remove hypothetical concept for ' + item.title);
       remove.addEventListener('click', () => {
-        if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+        if (!current()) return;
         localCalendarIdeas = localCalendarIdeas.filter(row => row !== item);
         renderLocalCalendar();
       });
-      article.append(description, labels, remove);
+      const action = (className, caption) => {
+        const control = document.createElement('button');
+        control.type = 'button';
+        control.className = className;
+        control.textContent = caption;
+        return control;
+      };
+      const edit = action('m07-calendar-edit', 'Edit hypothetical concept');
+      edit.setAttribute('aria-label', 'Edit hypothetical concept for ' + item.title);
+      const editor = document.createElement('fieldset');
+      editor.className = 'm07-calendar-editor';
+      editor.hidden = true;
+      const legend = document.createElement('legend');
+      legend.textContent = 'Edit LOCAL hypothetical concept · ' + item.title;
+      const controls = document.createElement('div');
+      controls.className = 'm07-calendar-controls';
+      const labeled = (caption, control) => {
+        const label = document.createElement('label');
+        label.textContent = caption;
+        label.append(control);
+        controls.append(label);
+      };
+      const select = (className, choices, value) => {
+        const control = document.createElement('select');
+        control.className = className;
+        for (const [key, caption] of choices) {
+          const choice = document.createElement('option');
+          choice.value = key;
+          choice.textContent = caption;
+          control.append(choice);
+        }
+        control.value = value;
+        return control;
+      };
+      const channel = select('m07-edit-channel',
+        [['x', 'X'], ['instagram', 'Instagram'], ['tiktok', 'TikTok']], item.channel);
+      labeled('Illustrative channel (not a real provider)', channel);
+      const time = document.createElement('input');
+      time.className = 'm07-edit-time';
+      time.type = 'datetime-local';
+      time.step = '60';
+      time.autocomplete = 'off';
+      time.value = item.hypotheticalLocal;
+      labeled('Hypothetical local date and minute', time);
+      const zone = select('m07-edit-zone', [['America/Sao_Paulo', 'São Paulo'],
+        ['UTC', 'UTC'], ['America/New_York', 'New York (DST test)']], item.timeZone);
+      labeled('Fictional time zone', zone);
+      const save = action('m07-calendar-save', 'Save LOCAL idea edit');
+      const cancel = action('m07-calendar-cancel', 'Cancel idea edit');
+      const editStatus = document.createElement('p');
+      editStatus.setAttribute('role', 'status');
+      editStatus.setAttribute('aria-live', 'polite');
+      editStatus.textContent = 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+      const panel = document.createElement('div');
+      panel.className = 'm07-suggestion-panel';
+      panel.hidden = true;
+      const suggestStatus = document.createElement('p');
+      suggestStatus.setAttribute('aria-live', 'polite');
+      suggestStatus.textContent = 'Hypothetical alternatives only · NOT SCHEDULED · NOT POSTED';
+      const selection = select('m07-suggestion-choice',
+        [['', 'Choose a hypothetical alternative before confirming']], '');
+      const pickLabel = document.createElement('label');
+      pickLabel.textContent = 'Available fictional times for ' + item.title;
+      pickLabel.append(selection);
+      const confirmSuggestion = action('m07-suggestion-confirm', 'Confirm hypothetical time change');
+      panel.append(suggestStatus, pickLabel, confirmSuggestion);
+      const resetEditor = () => {
+        panel.hidden = true;
+        selection.replaceChildren();
+        selection.value = '';
+        channel.value = item.channel;
+        time.value = item.hypotheticalLocal;
+        zone.value = item.timeZone;
+        editStatus.textContent = 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+      };
+      edit.addEventListener('click', () => {
+        if (!current()) return;
+        resetEditor();
+        editor.hidden = false;
+        time.focus();
+      });
+      cancel.addEventListener('click', () => {
+        if (!current()) return;
+        resetEditor();
+        editor.hidden = true;
+        edit.focus();
+      });
+      save.addEventListener('click', () => {
+        if (!current()) return;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        if (!draft) return;
+        try {
+          const replacement = createLocalCalendarIdea(draft, channel.value, time.value, zone.value);
+          // Editing may change channel/minute, never the authorized draft ID.
+          localCalendarIdeas = replaceLocalCalendarIdea(localCalendarIdeas, item, replacement);
+          renderLocalCalendar();
+          ui.calendarStatus.textContent = 'Edited LOCAL hypothetical concept · memory only · NOT SCHEDULED · NOT POSTED';
+        } catch {
+          editStatus.textContent = 'Invalid or duplicate LOCAL idea; NOTHING SCHEDULED';
+        }
+      });
+      article.append(description, labels, remove, edit);
+      const conflict = localCalendarIdeas.some(row => row !== item &&
+        row.draftId !== item.draftId && row.channel === item.channel &&
+        row.utcISO === item.utcISO);
+      if (conflict) {
+        const suggestions = action('m07-conflict-suggest', 'Suggest hypothetical conflict-free times');
+        suggestions.setAttribute('aria-label', 'Suggest hypothetical alternatives for ' + item.title);
+        suggestions.addEventListener('click', () => {
+          if (!current()) return;
+          const draft = lastDrafts.find(row => row.id === item.draftId);
+          if (!draft) return;
+          resetEditor();
+          editor.hidden = false;
+          panel.hidden = false;
+          try {
+            const times = suggestLocalConflictAlternatives(localCalendarIdeas, item, draft);
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Choose a hypothetical time to confirm';
+            selection.append(placeholder);
+            for (const candidate of times) {
+              const option = document.createElement('option');
+              option.value = candidate.utcISO;
+              option.textContent = candidate.hypotheticalLocal + ' ' + candidate.timeZone +
+                ' · ' + candidate.channel.toUpperCase() + ' · NOT SCHEDULED';
+              selection.append(option);
+            }
+            suggestStatus.textContent = times.length
+              ? times.length + ' hypothetical alternatives · select, then confirm manually · NOT POSTED'
+              : 'No valid alternatives in the next three hours · NOTHING SCHEDULED';
+            confirmSuggestion.disabled = times.length === 0;
+            selection.focus();
+          } catch {
+            panel.hidden = true;
+            editStatus.textContent = 'Alternatives unavailable; NOTHING SCHEDULED';
+          }
+        });
+        article.append(suggestions);
+      }
+      confirmSuggestion.addEventListener('click', () => {
+        if (!current() || editor.hidden || panel.hidden || !selection.value) return;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        if (!draft) return;
+        try {
+          // Recompute against the latest list before applying the user selection.
+          const fresh = suggestLocalConflictAlternatives(localCalendarIdeas, item, draft)
+            .find(row => row.utcISO === selection.value);
+          if (!fresh) throw new TypeError('Stale suggestion');
+          channel.value = fresh.channel;
+          time.value = fresh.hypotheticalLocal;
+          zone.value = fresh.timeZone;
+          save.click(); // Uses the existing validated, immutable LOCAL edit action.
+        } catch {
+          editStatus.textContent = 'Suggested time unavailable; refresh alternatives · NOTHING SCHEDULED';
+        }
+      });
+      editor.append(legend, controls, panel, save, cancel, editStatus);
+      article.append(editor);
       li.append(article);
       ui.calendarList.append(li);
     }
@@ -249,6 +462,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalWeekBoard();
   }
   function scrubLocalSocialStudio() {
+    localEditorialVariants = [];
     clearLocalCalendar();
     ui.calendarZone.value = 'America/Sao_Paulo';
     clearLocalSocialPreview();
@@ -331,6 +545,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
+    if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
+    sessionExpiryTimer = null;
+    sessionExpiresAt = 0;
     sessionEpoch += 1;
     readGeneration += 1;
     hideLocalDashboard();
@@ -359,6 +576,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.status.textContent = 'Not authenticated';
   }
   async function api(url, method = 'GET', body) {
+    const requestEpoch = sessionEpoch;
     const headers = {};
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -372,7 +590,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!response.ok) {
       // Fail closed on expired/revoked sessions: do not leave private draft text
       // readable in an old visible form after a denied authenticated read.
-      if (response.status === 401 && (csrf ||
+      if (response.status === 401 && requestEpoch === sessionEpoch && (csrf ||
           /^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url))) {
         // Denied article reads must erase stale drafts even if the local CSRF state
         // was already cleared. After sign-in, deny from any protected route
@@ -454,15 +672,30 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     acceptSavedDraft();
   }
   async function openLocalDraft(draft) {
-    if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return;
+    if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
     const epoch = sessionEpoch;
+    const generation = readGeneration;
+    const id = draft.id;
+    const initialSnapshot = draftSnapshot();
     try {
-      const result = await api('/local/articles/' + encodeURIComponent(draft.id));
-      if (epoch !== sessionEpoch || !csrf || ui.form.hidden) return;
+      const result = await api('/local/articles/' + encodeURIComponent(id));
+      // Never hydrate a prior-session, superseded-list or modified form.
+      if (epoch !== sessionEpoch || generation !== readGeneration || !csrf ||
+          ui.form.hidden || !lastDrafts.some(row => row.id === id) ||
+          draftSnapshot() !== initialSnapshot) return false;
+      if (!result.draft || result.draft.id !== id) {
+        message('LOCAL draft unavailable; refresh your list');
+        return false;
+      }
       editDraft(result.draft);
       message('Loaded draft revision ' + result.draft.revision);
-    } catch {
-      if (epoch === sessionEpoch) message('Could not open draft');
+      return true;
+    } catch (error) {
+      if (epoch === sessionEpoch && generation === readGeneration) {
+        message(error.status === 404 ?
+          'LOCAL draft unavailable; refresh your list' : 'Could not open draft');
+      }
+      return false;
     }
   }
   function renderDraftList() {
@@ -534,7 +767,75 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   });
   ui.socialClear.addEventListener('click', clearLocalSocialPreview);
-  ui.socialGenerate.addEventListener('click', () => {
+  function activeLocalSocialSession(epoch) {
+    if (epoch !== sessionEpoch || !csrf || ui.form.hidden || ui.dashboard.hidden) return false;
+    if (!sessionExpiresAt || Date.now() >= sessionExpiresAt) {
+      clearLocalSession();
+      return false;
+    }
+    return true;
+  }
+  async function verifyLocalSocialSession(epoch, selectedDraft) {
+    if (!activeLocalSocialSession(epoch)) return null;
+    try {
+      // Reuse the existing authenticated Owner/D1 listing, no new endpoint.
+      const result = await api('/local/articles');
+      if (!activeLocalSocialSession(epoch)) return null;
+      if (!Array.isArray(result.drafts) || result.drafts.length > 100 ||
+          (selectedDraft && !result.drafts.some(row => row.id === selectedDraft.id &&
+            row.revision === selectedDraft.revision))) {
+        throw new TypeError('Authorized LOCAL draft listing changed');
+      }
+      return result.drafts;
+    } catch {
+      if (epoch === sessionEpoch) clearLocalSession();
+      return null;
+    }
+  }
+  // Background tabs do not require polling. Recheck on return and before actions.
+  const recheckLocalSocialOnFocus = async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    const epoch = sessionEpoch;
+    const validation = ++focusValidationGeneration;
+    const previewGeneration = socialPreviewGeneration;
+    const selectedId = ui.socialDraft.value;
+    const selectedDraft = lastDrafts.find(row => row.id === selectedId);
+    const authorizedDrafts = await verifyLocalSocialSession(epoch);
+    if (!authorizedDrafts || validation !== focusValidationGeneration ||
+        previewGeneration !== socialPreviewGeneration || !activeLocalSocialSession(epoch) ||
+        selectedId !== ui.socialDraft.value) return;
+
+    // Keep the already-visible LOCAL preview only while its exact metadata
+    // still matches the latest authenticated Owner/D1 listing.
+    const fields = ['id', 'revision', 'title', 'summary', 'source_url',
+      'author_label', 'status', 'updated_at'];
+    const sameDraft = (a, b) => !!a && !!b &&
+      fields.every(key => a[key] === b[key]);
+    const authorizedSelected = authorizedDrafts.find(row => row.id === selectedId);
+    const selectedStale = !!selectedDraft &&
+      !sameDraft(selectedDraft, authorizedSelected);
+
+    localEditorialVariants = Object.freeze(localEditorialVariants.filter(row => {
+      const previous = lastDrafts.find(draft => draft.id === row.draftId &&
+        draft.revision === row.draftRevision);
+      const current = authorizedDrafts.find(draft => draft.id === row.draftId &&
+        draft.revision === row.draftRevision);
+      if (!sameDraft(previous, current)) return false;
+      try { requireCanonicalLocalVariant(row, current); return true; }
+      catch { return false; }
+    }));
+    if (!selectedStale) return;
+    clearLocalSocialPreview();
+    lastDrafts = authorizedDrafts;
+    renderDraftList();
+    renderLocalSocialChoices();
+    ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) recheckLocalSocialOnFocus();
+  });
+  window.addEventListener('focus', recheckLocalSocialOnFocus);
+  ui.socialGenerate.addEventListener('click', async () => {
     clearLocalSocialPreview();
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
@@ -542,10 +843,21 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialStatus.textContent = 'Select a listed LOCAL draft first';
       return;
     }
+    const epoch = sessionEpoch;
+    const generation = socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        channel !== ui.socialChannel.value || draft.id !== ui.socialDraft.value) return;
     try {
-      const concept = createLocalSocialPreview(draft, ui.socialChannel.value);
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      let concept = createLocalSocialPreview(currentDraft, channel);
+      const saved = getLocalEditorialVariant(localEditorialVariants, currentDraft, channel);
+      const defaultText = concept.text.replace(/\nSource reference \(NOT VERIFIED\): [^\n]*$/u,'').trim();
+      concept = saved ?? createLocalEditorialVariant(currentDraft, channel, defaultText);
       const card = createLocalSocialCard(concept);
-      if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
       ui.socialCard.dataset.channel = card.channel;
       ui.socialCard.dataset.viewport = ['mobile','desktop'].includes(ui.socialViewport.value)
         ? ui.socialViewport.value : 'mobile';
@@ -558,11 +870,67 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
         ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
       ui.socialPreview.hidden = false;
+      ui.variantText.value = concept.editableText;
+      ui.variantComposer.hidden = false;
+      ui.variantStatus.textContent = saved ? 'Saved in this session only · NOT POSTED' :
+        'Generated draft · save explicitly to retain in this session · NOT POSTED';
       ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
     } catch {
       clearLocalSocialPreview();
       ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
     }
+  });
+  ui.variantSave.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableText = ui.variantText.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableText !== ui.variantText.value || ui.variantComposer.hidden) return;
+    try {
+      const currentDraft = authorizedDrafts.find(row => row.id === draft.id &&
+        row.revision === draft.revision);
+      const concept = createLocalEditorialVariant(currentDraft, channel, editableText);
+      const next = upsertLocalEditorialVariant(localEditorialVariants, currentDraft,
+        channel, concept.editableText, authorizedDrafts);
+      const card = createLocalSocialCard(concept);
+      if (!activeLocalSocialSession(epoch) || generation !== socialActionGeneration) return;
+      localEditorialVariants = next;
+      socialPreviewGeneration += 1;
+      ui.socialCardCopy.textContent = card.text;
+      ui.socialCardLabels.textContent = card.labels;
+      ui.socialPreviewText.textContent = concept.text;
+      ui.socialRights.textContent = concept.channelName + ' · ' + concept.publishingStatus +
+        ' · ' + concept.sourceStatus + ' · ' + concept.creditStatus + ' · ' + concept.rights;
+      ui.variantStatus.textContent = 'Saved in this session only · NOT POSTED';
+    } catch {
+      ui.variantStatus.textContent = 'LOCAL variant rejected: check authorized draft, text length and source · NOT POSTED';
+    }
+  });
+  // Any user edit invalidates an in-flight LOCAL Reset, even if the text is
+  // subsequently changed back to its original value before the GET completes.
+  ui.variantText.addEventListener('input', () => { socialActionGeneration += 1; });
+  ui.variantReset.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || ui.dashboard.hidden || ui.variantComposer.hidden) return;
+    const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
+    if (!draft) return clearLocalSocialPreview();
+    const epoch = sessionEpoch;
+    const generation = ++socialActionGeneration;
+    const channel = ui.socialChannel.value;
+    const editableTextAtClick = ui.variantText.value;
+    const authorizedDrafts = await verifyLocalSocialSession(epoch, draft);
+    if (!authorizedDrafts || generation !== socialActionGeneration ||
+        draft.id !== ui.socialDraft.value || channel !== ui.socialChannel.value ||
+        editableTextAtClick !== ui.variantText.value || ui.variantComposer.hidden) return;
+    if (!activeLocalSocialSession(epoch)) return;
+    localEditorialVariants = Object.freeze(localEditorialVariants.filter(row =>
+      !(row.draftId === draft.id && row.channel === channel)));
+    ui.socialGenerate.click();
   });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
@@ -589,7 +957,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       if (!assertion) throw new Error('Passkey was not selected');
       const response = assertionJson(assertion);
       const logged = await api('/local/login', 'POST', { credentialId, challenge, response });
+      if (!Number.isSafeInteger(logged.expiresInSeconds) ||
+          logged.expiresInSeconds < 1 || logged.expiresInSeconds > 1200) {
+        throw new TypeError('Invalid LOCAL session expiry');
+      }
       csrf = logged.csrf;
+      sessionExpiresAt = Date.now() + logged.expiresInSeconds * 1000;
+      const authenticatedEpoch = sessionEpoch;
+      if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
+      sessionExpiryTimer = setTimeout(() => {
+        if (authenticatedEpoch === sessionEpoch && csrf) clearLocalSession();
+      }, logged.expiresInSeconds * 1000);
       ui.form.hidden = false;
       renderDraftPreview();
       acceptSavedDraft();
@@ -792,6 +1170,8 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-calendar-item{max-width:100%;border:1px solid #768977;border-radius:8px;background:#172820;padding:12px;overflow-wrap:anywhere;margin:8px 0}
 .m07-calendar-item p{white-space:pre-wrap;overflow-wrap:anywhere}
 .m07-calendar-item small{display:block;color:#d5e6c6}
+.m07-calendar-editor{box-sizing:border-box;min-width:0;max-width:100%}
+.m07-calendar-editor[hidden]{display:none}
 .m07-calendar-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
 .m07-calendar-controls label{display:block}
 .m07-calendar-controls input,.m07-calendar-controls select{max-width:100%;box-sizing:border-box}
@@ -801,8 +1181,11 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-week-day{box-sizing:border-box;min-width:0;border:1px solid #768977;border-radius:8px;background:#172820;padding:9px;overflow-wrap:anywhere}
 .m07-week-day h6{font-size:.9rem;margin:0 0 8px}
 .m07-week-idea{white-space:pre-wrap;overflow-wrap:anywhere;padding:6px;border-left:3px solid #bde874}
+.m07-week-open{max-width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere}
 .m07-week-conflict{border-left-color:#f2bd7d;font-weight:600}
 .m07-concept{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #768977;border-radius:8px;padding:14px;background:#172820}
+#m07-variant-composer{border:1px solid #536b4c;padding:12px;border-radius:8px;margin:12px 0}
+#m07-variant-composer[hidden]{display:none}
 .m07-stage{display:flex;align-items:flex-start;max-width:100%;overflow-wrap:anywhere;padding:12px 0}
 .m07-card{box-sizing:border-box;min-width:0;width:100%;max-width:600px;border-radius:16px;border:2px solid #81988e;background:#142821;color:#f6f8f5;padding:20px;overflow-wrap:anywhere}
 .m07-card[hidden]{display:none}
@@ -904,6 +1287,13 @@ footer{padding:24px 0;color:#b9c8bd}
 </select>
 <button id="m07-generate" type="button">Generate LOCAL preview</button>
 <button id="m07-clear" type="button">Clear LOCAL preview</button>
+<section id="m07-variant-composer" aria-label="Independent synthetic channel editor" hidden>
+<label for="m07-variant-text">Edit only the selected channel's fictitious message (source and rights remain fixed)</label>
+<textarea id="m07-variant-text" maxlength="1600" minlength="8" autocomplete="off" spellcheck="true"></textarea>
+<button id="m07-variant-save" type="button">Save this channel in LOCAL memory</button>
+<button id="m07-variant-reset" type="button">Reset only this channel</button>
+<p id="m07-variant-status" role="status" aria-live="polite">No editable LOCAL variant</p>
+</section>
 <p id="m07-status" role="status" aria-live="polite">No LOCAL social preview</p>
 <section id="m07-preview" aria-label="Private LOCAL social preview" hidden>
 <p id="m07-rights">UNAVAILABLE</p>

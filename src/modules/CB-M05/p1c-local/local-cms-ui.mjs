@@ -415,6 +415,128 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         }
       });
       article.append(description, labels, remove, edit);
+
+      // M07-H: confirm a cross-channel copy of this still-current LOCAL idea.
+      // No provider I/O, draft write, timer, scheduler or persistent storage.
+      const copy = action('m07-calendar-copy', 'Copy hypothetical concept to another channel');
+      copy.setAttribute('aria-label', 'Copy hypothetical concept for ' + item.title + ' to another channel');
+      const copyPanel = document.createElement('fieldset');
+      copyPanel.className = 'm07-copy-panel';
+      copyPanel.hidden = true;
+      const copyLegend = document.createElement('legend');
+      copyLegend.textContent = 'Copy LOCAL concept for ' + item.title + ' · MEMORY ONLY';
+      const copyLabel = document.createElement('label');
+      copyLabel.textContent = 'Destination channel (no provider connection)';
+      const copyChannel = document.createElement('select');
+      copyChannel.className = 'm07-copy-channel';
+      for (const [value, label] of [
+        ['', 'Choose a different hypothetical channel'],
+        ['x', 'X'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'],
+      ]) {
+        if (value === item.channel) continue;
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        copyChannel.append(option);
+      }
+      copyLabel.append(copyChannel);
+      const copyPreview = document.createElement('p');
+      copyPreview.className = 'm07-copy-preview';
+      copyPreview.setAttribute('aria-live', 'polite');
+      const confirmCopy = action('m07-copy-confirm', 'Confirm LOCAL hypothetical copy');
+      const cancelCopy = action('m07-copy-cancel', 'Cancel LOCAL hypothetical copy');
+      let copyValidationGeneration = 0;
+      const copyReset = () => {
+        // Cancel pending authorization reads when the panel is reset or reopened.
+        copyValidationGeneration += 1;
+        copyChannel.value = '';
+        copyPreview.textContent = 'Choose a destination for preview · NOT SCHEDULED · NOT POSTED';
+        confirmCopy.disabled = true;
+      };
+      const copyCandidate = () => {
+        if (!current() || !activeLocalSocialSession(epoch) || copyPanel.hidden ||
+            !['x', 'instagram', 'tiktok'].includes(copyChannel.value) ||
+            copyChannel.value === item.channel) return null;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        if (!draft) return null;
+        const candidate = createLocalCalendarIdea(draft, copyChannel.value,
+          item.hypotheticalLocal, item.timeZone);
+        // Dry-run the canonical immutable gate, including the 20-concept cap.
+        addLocalCalendarIdea(localCalendarIdeas, candidate);
+        return candidate;
+      };
+      copy.addEventListener('click', () => {
+        if (!current() || !activeLocalSocialSession(epoch)) return;
+        copyReset();
+        copyPanel.hidden = false;
+        copyChannel.focus();
+      });
+      copyChannel.addEventListener('change', () => {
+        // A new channel selection supersedes an in-flight server recheck.
+        copyValidationGeneration += 1;
+        if (!current() || !activeLocalSocialSession(epoch) || copyPanel.hidden) return;
+        confirmCopy.disabled = true;
+        try {
+          const candidate = copyCandidate();
+          if (!candidate) throw new TypeError('Unavailable destination');
+          copyPreview.textContent = 'Preview only · ' + candidate.channel.toUpperCase() +
+            ' · ' + candidate.hypotheticalLocal + ' ' + candidate.timeZone +
+            ' · ' + candidate.status + ' · ' + candidate.publication +
+            ' · NOT SCHEDULED · NOT POSTED';
+          confirmCopy.disabled = false;
+        } catch {
+          copyPreview.textContent = 'Duplicate, invalid time, unavailable draft or 20-concept limit · NOTHING SCHEDULED';
+        }
+      });
+      cancelCopy.addEventListener('click', () => {
+        if (!current() || !activeLocalSocialSession(epoch)) return;
+        copyReset();
+        copyPanel.hidden = true;
+        copy.focus();
+      });
+      confirmCopy.addEventListener('click', async () => {
+        if (!current() || !activeLocalSocialSession(epoch) || confirmCopy.disabled) return;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        const selectedChannel = copyChannel.value;
+        const initialIdeas = localCalendarIdeas;
+        try {
+          // The preview is never authorization. Re-check this exact selection.
+          if (!draft || !copyCandidate()) throw new TypeError('Unavailable destination');
+        } catch {
+          confirmCopy.disabled = true;
+          copyPreview.textContent = 'Destination no longer available; choose again · NOTHING SCHEDULED';
+          return;
+        }
+        const validation = ++copyValidationGeneration;
+        confirmCopy.disabled = true; // No double submission while verification is pending.
+        copyPreview.textContent = 'Checking LOCAL authorization · NOTHING SCHEDULED';
+        // Reuse the existing authenticated Owner/D1 read; 401 clears the UI.
+        const authorized = await verifyLocalSocialSession(epoch, draft);
+        // Reject responses made obsolete by logout, refresh, cancel, channel switch,
+        // changes to the draft list, or replacement of the calendar DOM.
+        if (!authorized || validation !== copyValidationGeneration ||
+            !current() || !activeLocalSocialSession(epoch) || copyPanel.hidden ||
+            selectedChannel !== copyChannel.value || initialIdeas !== localCalendarIdeas ||
+            lastDrafts.find(row => row.id === item.draftId) !== draft ||
+            !authorized.some(row => sameLocalSocialDraftMetadata(draft, row))) return;
+        try {
+          const candidate = copyCandidate();
+          if (!candidate) throw new TypeError('Unavailable destination');
+          localCalendarIdeas = addLocalCalendarIdea(localCalendarIdeas, candidate);
+          renderLocalCalendar();
+          ui.calendarStatus.textContent = 'Copied LOCAL hypothetical concept · MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+          // The old confirm button is detached. Restore focus to its source idea.
+          const sourceIndex = localCalendarIdeas.indexOf(item);
+          ui.calendarList.children[sourceIndex]?.querySelector('.m07-calendar-copy')?.focus();
+        } catch {
+          if (current() && validation === copyValidationGeneration) {
+            confirmCopy.disabled = true;
+            copyPreview.textContent = 'Destination no longer available; choose again · NOTHING SCHEDULED';
+          }
+        }
+      });
+      copyPanel.append(copyLegend, copyLabel, copyPreview, confirmCopy, cancelCopy);
+      article.append(copy, copyPanel);
       const conflict = localCalendarIdeas.some(row => row !== item &&
         row.draftId !== item.draftId && row.channel === item.channel &&
         row.utcISO === item.utcISO);
@@ -1306,6 +1428,8 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-calendar-item small{display:block;color:#d5e6c6}
 .m07-calendar-editor{box-sizing:border-box;min-width:0;max-width:100%}
 .m07-calendar-editor[hidden]{display:none}
+.m07-copy-panel{box-sizing:border-box;min-width:0;max-width:100%;border:1px solid #768977;border-radius:8px}
+.m07-copy-panel[hidden]{display:none}
 .m07-calendar-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
 .m07-calendar-controls label{display:block}
 .m07-calendar-controls input,.m07-calendar-controls select{max-width:100%;box-sizing:border-box}

@@ -31,6 +31,7 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
         {categories.map(category => <option value={category}>{copy[category]}</option>)}
       </select>
     </label>
+    <button type="button" class="m02-clear" data-m02-reset>{copy.resetFilters}</button>
   </div>
   <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label={copy.results}>{news.items.length} {copy.results}</p>
   <div class="m02-results">
@@ -57,8 +58,9 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
   .m02-controls{display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0}
   .m02-controls label{display:grid;gap:.5rem;flex:1 1 15rem}
   .m02-controls input,.m02-controls select{width:100%;padding:.85rem;color:#fff;background:#18291f;border:1px solid #809c81;border-radius:.5rem}
+  .m02-controls .m02-clear{align-self:end;min-height:3rem;padding:.85rem 1.2rem;background:#b8f34b;color:#111c17;border:1px solid #b8f34b;border-radius:.5rem;font-weight:700;cursor:pointer}
   .m02-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}
   .m02-results article{border:1px solid #456e4e;border-radius:.8rem;padding:1.35rem;background:#111c17}
   .m02-results article[hidden]{display:none}
-  .cb-m02 a:focus-visible,.cb-m02 input:focus-visible,.cb-m02 select:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .cb-m02 a:focus-visible,.cb-m02 input:focus-visible,.cb-m02 select:focus-visible,.cb-m02 button:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

@@ -70,5 +70,5 @@ test("M03 inspection outcome combines with text, empty state and reset", () => {
 });
 
 test("M03 filter remains DOM-only and cannot ingest, persist or publish", () => {
-  assert.doesNotMatch(clientSource, /\\bfetch\\s*\\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|indexedDB|\\/admin\\/|\\bimport\\b/u);
+  assert.doesNotMatch(clientSource, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|indexedDB|\/admin\/|\bimport\b/u);
 });

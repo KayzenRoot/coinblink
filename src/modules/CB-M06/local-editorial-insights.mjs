@@ -35,7 +35,7 @@ export function createLocalEditorialInsights(queue, asOfUTC) {
       throw new TypeError('Invalid or future-dated private LOCAL review metadata');
     }
     ids.add(row.id);
-    if (row.creditStatus === 'CREDIT_MISSING') missingCredit++;
+    missingCredit += Number(row.creditStatus === 'CREDIT_MISSING');
     if (row.revision > 1) revised++;
     if (observedSeconds - row.updatedAtSeconds >= 7 * 86400) olderThanSevenDays++;
     if (observedSeconds - row.updatedAtSeconds < 86400) editedLast24Hours++;

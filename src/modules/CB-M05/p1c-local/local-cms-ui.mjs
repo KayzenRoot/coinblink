@@ -443,7 +443,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       copyPreview.setAttribute('aria-live', 'polite');
       const confirmCopy = action('m07-copy-confirm', 'Confirm LOCAL hypothetical copy');
       const cancelCopy = action('m07-copy-cancel', 'Cancel LOCAL hypothetical copy');
+      let copyValidationGeneration = 0;
       const copyReset = () => {
+        // Cancel pending authorization reads when the panel is reset or reopened.
+        copyValidationGeneration += 1;
         copyChannel.value = '';
         copyPreview.textContent = 'Choose a destination for preview · NOT SCHEDULED · NOT POSTED';
         confirmCopy.disabled = true;
@@ -467,6 +470,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         copyChannel.focus();
       });
       copyChannel.addEventListener('change', () => {
+        // A new channel selection supersedes an in-flight server recheck.
+        copyValidationGeneration += 1;
         if (!current() || !activeLocalSocialSession(epoch) || copyPanel.hidden) return;
         confirmCopy.disabled = true;
         try {
@@ -487,18 +492,45 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         copyPanel.hidden = true;
         copy.focus();
       });
-      confirmCopy.addEventListener('click', () => {
+      confirmCopy.addEventListener('click', async () => {
         if (!current() || !activeLocalSocialSession(epoch) || confirmCopy.disabled) return;
+        const draft = lastDrafts.find(row => row.id === item.draftId);
+        const selectedChannel = copyChannel.value;
+        const initialIdeas = localCalendarIdeas;
         try {
-          // Revalidate the *latest* authorized draft and current idea list.
+          // The preview is never authorization. Re-check this exact selection.
+          if (!draft || !copyCandidate()) throw new TypeError('Unavailable destination');
+        } catch {
+          confirmCopy.disabled = true;
+          copyPreview.textContent = 'Destination no longer available; choose again · NOTHING SCHEDULED';
+          return;
+        }
+        const validation = ++copyValidationGeneration;
+        confirmCopy.disabled = true; // No double submission while verification is pending.
+        copyPreview.textContent = 'Checking LOCAL authorization · NOTHING SCHEDULED';
+        // Reuse the existing authenticated Owner/D1 read; 401 clears the UI.
+        const authorized = await verifyLocalSocialSession(epoch, draft);
+        // Reject responses made obsolete by logout, refresh, cancel, channel switch,
+        // changes to the draft list, or replacement of the calendar DOM.
+        if (!authorized || validation !== copyValidationGeneration ||
+            !current() || !activeLocalSocialSession(epoch) || copyPanel.hidden ||
+            selectedChannel !== copyChannel.value || initialIdeas !== localCalendarIdeas ||
+            lastDrafts.find(row => row.id === item.draftId) !== draft ||
+            !authorized.some(row => sameLocalSocialDraftMetadata(draft, row))) return;
+        try {
           const candidate = copyCandidate();
           if (!candidate) throw new TypeError('Unavailable destination');
           localCalendarIdeas = addLocalCalendarIdea(localCalendarIdeas, candidate);
           renderLocalCalendar();
           ui.calendarStatus.textContent = 'Copied LOCAL hypothetical concept · MEMORY ONLY · NOT SCHEDULED · NOT POSTED';
+          // The old confirm button is detached. Restore focus to its source idea.
+          const sourceIndex = localCalendarIdeas.indexOf(item);
+          ui.calendarList.children[sourceIndex]?.querySelector('.m07-calendar-copy')?.focus();
         } catch {
-          confirmCopy.disabled = true;
-          copyPreview.textContent = 'Destination no longer available; choose again · NOTHING SCHEDULED';
+          if (current() && validation === copyValidationGeneration) {
+            confirmCopy.disabled = true;
+            copyPreview.textContent = 'Destination no longer available; choose again · NOTHING SCHEDULED';
+          }
         }
       });
       copyPanel.append(copyLegend, copyLabel, copyPreview, confirmCopy, cancelCopy);

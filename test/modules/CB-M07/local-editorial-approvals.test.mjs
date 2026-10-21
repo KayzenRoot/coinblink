@@ -120,3 +120,20 @@ test('M07-I rejection reason remains mandatory with inclusive 8–240 character 
   history=write(history,ig,'REJECT','r'.repeat(240));
   assert.equal(latestLocalApproval(history,draft,'instagram').reason.length,240);
 });
+
+test('M07-I rejection reasons reject every ASCII control and preserve Unicode',()=>{
+  const x=variant('x');
+  const saved=write(Object.freeze([]),x,'SAVE');
+  for(const code of [...Array.from({length:32},(_,i)=>i),127]) {
+    const reason='Needs'+String.fromCharCode(code)+'editorial review';
+    assert.throws(()=>write(saved,x,'REJECT',reason),TypeError,
+      'ASCII control code '+code+' must remain rejected');
+  }
+  for(const code of [0x80,0x85,0x1f600]) {
+    const reason='Needs'+String.fromCodePoint(code)+'editorial review';
+    const accepted=write(saved,x,'REJECT',reason);
+    assert.equal(accepted.at(-1).reason,reason);
+  }
+  assert.match(inspectLocalApprovalHistory.toString(),/codePointAt\(0\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/codePointAt\(0\)/u);
+});

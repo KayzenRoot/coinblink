@@ -49,7 +49,10 @@ export function inspectLocalApprovalHistory(events, authorizedDrafts) {
         (event.action === 'APPROVE' && event.reason !== '') ||
         (event.action === 'REJECT' && (event.reason.length < 8 ||
           event.reason.length > 240 || event.reason !== event.reason.trim() ||
-          /[\u0000-\u001f\u007f]/u.test(event.reason)))) {
+          Array.from(event.reason).some(character => {
+            const code = character.codePointAt(0);
+            return code <= 0x1f || code === 0x7f;
+          })))) {
       throw new TypeError('Invalid LOCAL editorial decision');
     }
     latest.set(key, event);

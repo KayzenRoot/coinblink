@@ -40,6 +40,8 @@ test("M07 LOCAL control-character safety contract stays active under strict ESLi
     status: "draft",
     updated_at: 1760870000,
   });
+  assert.match(createLocalEditorialVariant.toString(), /function containsUnsafeAsciiControl/u,
+    "browser-inlined LOCAL validator must include its safety guard");
   const forbidden = [
     ...Array.from({ length: 9 }, (_, code) => code),
     11, 12, ...Array.from({ length: 18 }, (_, n) => n + 14), 127,

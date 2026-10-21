@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue, OWNER_DASHBOARD_MODE, OWNER_DASHBOARD_SOURCE,
   OWNER_DASHBOARD_LIST_LIMIT } from '../../../src/modules/CB-M06/owner-dashboard.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
+import { createLocalEditorialInsights } from '../../../src/modules/CB-M06/local-editorial-insights.mjs';
 
 const asOf = '2026-10-19T15:00:00.000Z';
 
@@ -46,7 +47,7 @@ test('M06 LOCAL panel is hidden before authentication and uses nonce-CSP, existi
   assert.match(ui, /UNAVAILABLE/u);
   assert.match(ui, /DISABLED/u);
   assert.match(ui, /script nonce="[a-f0-9]{64}" type="module"/u);
-  assert.match(LOCAL_CMS_UI_SCRIPT, /createLocalOwnerDashboard\(drafts, new Date\(\)\.toISOString\(\)\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT, /createLocalOwnerDashboard\(drafts, asOfUTC\)/u);
   assert.match(LOCAL_CMS_UI_SCRIPT, /ui\.dashboard\.hidden = true/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT, /fetch\(['"]\/(?:local|admin)\/dashboard/u);
   const publicAdmin = readFileSync('src/pages/admin/[...route].js', 'utf8');
@@ -179,4 +180,67 @@ test('M06-C review queue is protected DOM-only and clears on logout or denied re
   assert.match(LOCAL_CMS_UI_SCRIPT,/readGeneration/u);
   assert.match(LOCAL_CMS_UI_SCRIPT,/epoch !== sessionEpoch \|\| generation !== readGeneration/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/\/local\/review|\/admin\/review|localStorage|sessionStorage|innerHTML/u);
+});
+
+
+test('M06-D models 7 UTC days, aged work and missing credits without leaking private fields', () => {
+  const now = '2026-10-21T12:00:00.000Z';
+  const epoch = iso => Math.floor(Date.parse(iso) / 1000);
+  const rows = [
+    {...editorialRow(1,1,epoch('2026-10-21T10:00:00Z'),'Private A'),author_label:'',source_url:'https://example.org/private-a'},
+    {...editorialRow(2,3,epoch('2026-10-17T12:00:00Z'),'Private B'),author_label:'Editor',source_url:'https://example.org/private-b'},
+    {...editorialRow(3,2,epoch('2026-10-13T11:59:59Z'),'Private C'),author_label:'',source_url:'https://example.org/private-c'},
+  ];
+  const model = createLocalEditorialInsights(createLocalReviewQueue(rows), now);
+  assert.equal(model.listedDraftsCount, 3);
+  assert.equal(model.missingCreditListed, 2);
+  assert.equal(model.revisedListed, 2);
+  assert.equal(model.olderThanSevenDaysListed, 1);
+  assert.equal(model.editedLast24HoursListed, 1);
+  assert.deepEqual(model.dailyLastEditsUTC.map(day => day.lastEditedListedDrafts), [0,0,1,0,0,0,1]);
+  assert.equal(model.dailyLastEditsUTC[0].dayUTC,'2026-10-15');
+  assert.equal(model.dailyLastEditsUTC[6].dayUTC,'2026-10-21');
+  assert.equal(model.sourceVerificationStatus, 'PENDING');
+  assert.equal(model.publishingStatus, 'DISABLED');
+  assert.ok(Object.isFrozen(model) && Object.isFrozen(model.dailyLastEditsUTC) &&
+    Object.isFrozen(model.dailyLastEditsUTC[0]));
+  assert.doesNotMatch(JSON.stringify(model), /Private A|Private B|Private C|example\.org|source_url|author_label/);
+  const empty = createLocalEditorialInsights(createLocalReviewQueue([]), now);
+  assert.equal(empty.listedDraftsCount, 0);
+  assert.ok(empty.dailyLastEditsUTC.every(day => day.lastEditedListedDrafts === 0));
+});
+
+test('M06-D refuses forged/future dated measurements and marks bounded 100-row sample partial', () => {
+  const now = '2026-10-21T12:00:00.000Z';
+  const valid = {...editorialRow(1,1,Date.parse('2026-10-21T11:00:00Z') / 1000),
+    author_label:'',source_url:'https://example.org/rights-unknown'};
+  const source = createLocalReviewQueue([valid]);
+  for (const when of [null,'NOW','2026-10-21','2026-10-21T12:00:00Z','2026-02-30T12:00:00.000Z']) {
+    assert.throws(() => createLocalEditorialInsights(source, when), TypeError);
+  }
+  for (const invalid of [null,{}, {...source,mode:'LIVE'}, {...source,totalListed:99},
+    {...source,rows:[{...source.rows[0],updatedAtSeconds:Date.parse('2026-10-21T12:01:00Z') / 1000}]},
+    {...source,rows:[{...source.rows[0],publishingStatus:'PUBLISHED'}]},
+    {...source,totalListed:2,rows:[source.rows[0],source.rows[0]]}]) {
+    assert.throws(() => createLocalEditorialInsights(invalid, now), TypeError);
+  }
+  const hundred = createLocalReviewQueue(Array.from({length:100},(_,i)=>({
+    ...valid,id:String(i).padStart(36,'0')
+  })));
+  assert.equal(createLocalEditorialInsights(hundred, now).listingScope, 'UP_TO_100_LISTED');
+});
+
+test('M06-D insight cards, age-filter and logout scrub stay behind synthetic auth', () => {
+  const html = renderLocalCmsUi('ac'.repeat(32));
+  for (const id of ['m06-insights-status','m06-insights-scope','m06-insights-missing',
+    'm06-insights-older','m06-insights-recent','m06-insights-trend']) {
+    assert.match(html, new RegExp('id="' + id + '"'));
+  }
+  assert.match(html,/id="m06-dashboard"[^>]*hidden/u);
+  assert.match(html,/value="older-seven-days"/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalEditorialInsights\(reviewQueue, asOfUTC\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/ui\.insightsTrend\.replaceChildren\(\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/lastEditorialInsights = null/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/epoch !== sessionEpoch \|\| generation !== readGeneration/u);
+  assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/\/(?:local|admin)\/insights|localStorage|sessionStorage/u);
 });

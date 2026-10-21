@@ -2,6 +2,7 @@
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
+import { createLocalEditorialInsights } from '../../CB-M06/local-editorial-insights.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
 import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
@@ -12,6 +13,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
+  const createLocalEditorialInsights = (${createLocalEditorialInsights.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
   const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
@@ -57,6 +59,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     reviewList: document.getElementById('m06-review-list'),
     reviewCount: document.getElementById('m06-review-count'),
     reviewScope: document.getElementById('m06-review-scope'),
+    insightsStatus: document.getElementById('m06-insights-status'),
+    insightsScope: document.getElementById('m06-insights-scope'),
+    insightsMissing: document.getElementById('m06-insights-missing'),
+    insightsOlder: document.getElementById('m06-insights-older'),
+    insightsRecent: document.getElementById('m06-insights-recent'),
+    insightsTrend: document.getElementById('m06-insights-trend'),
     socialDraft: document.getElementById('m07-draft'),
     socialChannel: document.getElementById('m07-channel'),
     socialGenerate: document.getElementById('m07-generate'),
@@ -122,6 +130,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   // Invalidate in-flight editor reads when a newer navigation replaces them.
   let draftOpenGeneration = 0;
   let lastReviewQueue = null;
+  let lastEditorialInsights = null;
   let localCalendarIdeas = [];
   let localEditorialVariants = [];
   let localApprovalEvents = [];
@@ -682,6 +691,13 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.lastEdited.textContent = 'Unavailable';
     ui.recentActivity.replaceChildren();
     lastReviewQueue = null;
+    lastEditorialInsights = null;
+    ui.insightsStatus.textContent = 'UNAVAILABLE';
+    ui.insightsScope.textContent = 'UNAVAILABLE';
+    ui.insightsMissing.textContent = 'Unavailable';
+    ui.insightsOlder.textContent = 'Unavailable';
+    ui.insightsRecent.textContent = 'Unavailable';
+    ui.insightsTrend.replaceChildren();
     ui.reviewList.replaceChildren();
     ui.reviewCount.textContent = 'UNAVAILABLE';
     ui.reviewScope.textContent = 'UNAVAILABLE';
@@ -694,6 +710,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     for (const row of lastReviewQueue.rows) {
       if (filter === 'missing-credit' && row.creditStatus !== 'CREDIT_MISSING') continue;
       if (filter === 'revised' && row.revision <= 1) continue;
+      if (filter === 'older-seven-days' &&
+          (!lastEditorialInsights || row.updatedAtSeconds >
+            Date.parse(lastEditorialInsights.asOfUTC) / 1000 - 7 * 86400)) continue;
       const li = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
@@ -708,7 +727,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.reviewCount.textContent = String(shown) + ' of ' + lastReviewQueue.totalListed + ' listed LOCAL drafts';
     ui.reviewScope.textContent = lastReviewQueue.listingScope;
   }
-  function showLocalDashboard(snapshot, activity, reviewQueue) {
+  function showLocalDashboard(snapshot, activity, reviewQueue, insights) {
     if (!csrf || ui.form.hidden) return hideLocalDashboard();
     ui.listedDrafts.textContent = String(snapshot.listedDraftsCount);
     ui.measuredAt.textContent = snapshot.asOfUTC;
@@ -727,6 +746,18 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.recentActivity.append(li);
     }
     lastReviewQueue = reviewQueue;
+    lastEditorialInsights = insights;
+    ui.insightsStatus.textContent = insights.status;
+    ui.insightsScope.textContent = insights.listingScope;
+    ui.insightsMissing.textContent = String(insights.missingCreditListed);
+    ui.insightsOlder.textContent = String(insights.olderThanSevenDaysListed);
+    ui.insightsRecent.textContent = String(insights.editedLast24HoursListed);
+    ui.insightsTrend.replaceChildren();
+    for (const day of insights.dailyLastEditsUTC) {
+      const li = document.createElement('li');
+      li.textContent = day.dayUTC + ': ' + day.lastEditedListedDrafts + ' listed draft(s) last edited';
+      ui.insightsTrend.append(li);
+    }
     ui.dashboard.hidden = false;
     renderLocalReviewQueue();
     renderLocalSocialChoices();
@@ -911,13 +942,15 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     try {
       const { drafts } = await api('/local/articles');
       if (epoch !== sessionEpoch || generation !== readGeneration || !csrf || ui.form.hidden) return;
-      const snapshot = createLocalOwnerDashboard(drafts, new Date().toISOString());
+      const asOfUTC = new Date().toISOString();
+      const snapshot = createLocalOwnerDashboard(drafts, asOfUTC);
       const activity = createLocalEditorialActivity(drafts);
       const reviewQueue = createLocalReviewQueue(drafts);
+      const insights = createLocalEditorialInsights(reviewQueue, asOfUTC);
       if (epoch !== sessionEpoch || generation !== readGeneration || !csrf || ui.form.hidden) return;
       lastDrafts = drafts;
       renderDraftList();
-      showLocalDashboard(snapshot, activity, reviewQueue);
+      showLocalDashboard(snapshot, activity, reviewQueue, insights);
       ui.status.textContent = 'Local test session active';
     } catch (error) {
       // Ignore superseded reads, never revoke a freshly re-authenticated session.
@@ -1515,6 +1548,19 @@ footer{padding:24px 0;color:#b9c8bd}
 <h4>Five most recently edited LOCAL drafts (at most)</h4>
 <ol id="m06-recent-activity" aria-label="Recent private LOCAL draft activity"></ol>
 </section>
+<section id="m06-insights" aria-labelledby="m06-insights-title">
+<h3 id="m06-insights-title">LOCAL editorial command center · private, read-only</h3>
+<p>Only up to 100 authenticated LOCAL D1 draft rows. No public audience, revenue, editorial verification or publication reporting. All timestamps UTC.</p>
+<p>Status: <strong id="m06-insights-status">UNAVAILABLE</strong> · Listing scope: <strong id="m06-insights-scope">UNAVAILABLE</strong></p>
+<div class="m06-grid" aria-label="Private LOCAL editorial workload">
+<div class="m06-card"><h4>Missing author credits</h4><strong id="m06-insights-missing">Unavailable</strong><small>Draft metadata only</small></div>
+<div class="m06-card"><h4>No edit for 7+ days</h4><strong id="m06-insights-older">Unavailable</strong><small>Not a publishing deadline</small></div>
+<div class="m06-card"><h4>Last edited in 24h</h4><strong id="m06-insights-recent">Unavailable</strong><small>Not readers or visits</small></div>
+</div>
+<h4>Drafts by UTC day of most recent edit · trailing 7 calendar days</h4>
+<ol id="m06-insights-trend" aria-label="Private seven-day LOCAL editorial activity"></ol>
+<p>Source verification remains pending; no reuse or publishing approval is inferred.</p>
+</section>
 <section id="m06-review" aria-labelledby="m06-review-title">
 <h3 id="m06-review-title">LOCAL editorial review queue · read-only</h3>
 <p>Only listed test drafts. An HTTPS source URL does not verify the publisher, licence or reuse rights. All sources require independent verification; nothing is approved for publication.</p>
@@ -1523,6 +1569,7 @@ footer{padding:24px 0;color:#b9c8bd}
 <option value="all">All listed drafts</option>
 <option value="missing-credit">Missing author credit</option>
 <option value="revised">Revised drafts (revision above 1)</option>
+<option value="older-seven-days">No edit for 7+ days</option>
 </select>
 <p role="status" aria-live="polite">Visible: <strong id="m06-review-count">UNAVAILABLE</strong> · scope: <strong id="m06-review-scope">UNAVAILABLE</strong></p>
 <ul id="m06-review-list" aria-label="Private LOCAL editorial review queue"></ul>

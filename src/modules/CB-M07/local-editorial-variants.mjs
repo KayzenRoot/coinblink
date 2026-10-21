@@ -3,10 +3,21 @@
 import { createLocalSocialPreview } from './social-preview.mjs';
 
 export function createLocalEditorialVariant(draft, channel, editableText) {
+  // Preserve the original ASCII control blacklist without no-control-regex exceptions.
+  // TAB, LF and CR remain permitted inside a non-edge-trimmed LOCAL variant.
+  function containsUnsafeAsciiControl(text) {
+    for (let i = 0; i < text.length; i++) {
+      const code = text.charCodeAt(i);
+      if (code <= 0x08 || code === 0x0b || code === 0x0c ||
+          (code >= 0x0e && code <= 0x1f) || code === 0x7f) return true;
+    }
+    return false;
+  }
+
   const concept = createLocalSocialPreview(draft, channel);
   if (typeof editableText !== 'string' || editableText !== editableText.trim() ||
       editableText.length < 8 || editableText.length > 1600 ||
-      /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(editableText)) {
+      containsUnsafeAsciiControl(editableText)) {
     throw new TypeError('LOCAL variant must contain 8..1600 printable characters');
   }
   // Attribution is derived from the validated draft, never editable or optional.

@@ -533,3 +533,121 @@ test('M07-H focused authorization handles concurrent typing and rejects stale re
     } finally { await app.close(); }
   }
 });
+
+
+async function withLocalApprovalFixture(fixture, run) {
+  const app=await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    await openAuthenticatedSyntheticVariant(app.page,fixture);
+    await run(app.page,app);
+  } finally {await app.close();}
+}
+
+test('M07-I session-only editorial approve and reject follow exact per-channel saved version', {timeout:120_000}, async()=>{
+  await withLocalApprovalFixture({
+      title:'Imaginary editorial approval scenario',
+      summary:'Fictional copy for local review only.',
+      body:'PRIVATE_BODY_NOT_IN_REVIEW_LOG',
+      sourceUrl:'https://example.org/editorial',
+      authorLabel:'Synthetic author',
+    }, async (page,app) => {
+    assert.equal(await page.locator('#m07-approval-panel').isVisible(),true);
+    assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    const reasonInput = page.locator('#m07-approval-reason');
+    assert.equal(await reasonInput.getAttribute('required'),'');
+    assert.equal(await reasonInput.evaluate(node => node.validity.valueMissing),true);
+    await page.locator('#m07-variant-text').fill('Imaginary version one for X.');
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#m07-approval-approve').click();
+    await page.getByText('Version 1 · APPROVED FOR LOCAL EDITORIAL REVIEW ONLY',{exact:false}).waitFor();
+    assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    await page.locator('#m07-variant-text').fill('Imaginary version two for X.');
+    assert.equal(await page.locator('#m07-approval-approve').isDisabled(),true);
+    assert.match(await page.locator('#m07-approval-status').innerText(),
+      /Unsaved edits · approval applies only to the last saved version/);
+    assert.doesNotMatch(await page.locator('#m07-approval-status').innerText(),
+      /APPROVED FOR LOCAL EDITORIAL REVIEW ONLY/);
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 2 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await reasonInput.fill('Fictional copy needs further review');
+    assert.equal(await reasonInput.evaluate(node => node.checkValidity()),true);
+    await page.locator('#m07-approval-reject').click();
+    await page.getByText('Version 2 · REJECTED FOR LOCAL EDITORIAL REVIEW',{exact:false}).waitFor();
+    assert.equal(await page.locator('#m07-approval-audit li').count(),4);
+    assert.doesNotMatch(await page.locator('#m07-approval-audit').innerText(),/PRIVATE_BODY_NOT_IN_REVIEW_LOG/);
+    await page.locator('#m07-channel').selectOption('instagram');
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-variant-composer').waitFor({state:'visible'});
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#m07-channel').selectOption('x');
+    await page.locator('#m07-generate').click();
+    await page.getByText('Version 2 · REJECTED FOR LOCAL EDITORIAL REVIEW',{exact:false}).waitFor();
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor();
+    assert.equal(await page.locator('#m07-approval-panel').isVisible(),false);
+    assert.equal(await page.locator('#m07-approval-audit li').count(),0);
+    assert.equal(await page.locator('#m07-approval-reason').inputValue(),'');
+    assert.equal(app.networkAttempts.filter(row=>!row.allowed).length,0);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,1);
+  });
+});
+
+test('M07-I fail-closed decision after server-side LOCAL session revocation', {timeout:120_000}, async()=>{
+  await withLocalApprovalFixture({
+      title:'Fictional session revocation',summary:'Synthetic safety coverage',
+      body:'PRIVATE_REVOCATION_BODY',sourceUrl:'https://example.org/revocation',
+      authorLabel:'',
+    }, async (page,app) => {
+    await page.locator('#m07-variant-save').click();
+    await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+    await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
+      .bind(Math.floor(Date.now()/1000)).run();
+    await page.locator('#m07-approval-approve').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+    assert.equal(await page.locator('#m07-approval-panel').isVisible(),false);
+    assert.equal(await page.locator('#m07-approval-audit li').count(),0);
+    assert.equal(app.networkAttempts.filter(row=>!row.allowed).length,0);
+  });
+});
+
+test('M07-I LOCAL actions reject same-revision stale source, credit or summary metadata', {timeout:240_000}, async()=>{
+  const scenarios=[
+    {field:'source_url',value:'https://example.org/new-unapproved-source',action:'SAVE'},
+    {field:'author_label',value:'Replaced synthetic attribution',action:'APPROVE'},
+    {field:'summary',value:'Changed synthetic D1 summary without revision change.',action:'RESET'},
+  ];
+  for (const {field,value,action} of scenarios) {
+    await withLocalApprovalFixture({
+      title:'Fictional same-revision metadata authorization check',
+      summary:'Authorized baseline summary for local validation.',
+      body:'SYNTHETIC_PRIVATE_BODY_STALE_METADATA',
+      sourceUrl:'https://example.org/authorized-source',
+      authorLabel:'Original synthetic author',
+    },async (page,app)=>{
+      const draftId=await page.locator('#m07-draft').inputValue();
+      const initial=await app.db.prepare(
+        'SELECT revision, source_url, author_label, summary FROM cms_drafts WHERE id=?')
+        .bind(draftId).first();
+      assert.equal(initial.revision,1);
+      if (action!=='SAVE') {
+        await page.locator('#m07-variant-save').click();
+        await page.getByText('Version 1 · PENDING LOCAL REVIEW',{exact:false}).waitFor();
+      }
+      const updated=await app.db.prepare(
+        'UPDATE cms_drafts SET '+field+'=? WHERE id=?').bind(value,draftId).run();
+      assert.equal(updated.meta?.changes,1);
+      assert.equal((await app.db.prepare('SELECT revision FROM cms_drafts WHERE id=?')
+        .bind(draftId).first()).revision,initial.revision);
+      const control=action==='SAVE'?'#m07-variant-save':
+        action==='APPROVE'?'#m07-approval-approve':'#m07-variant-reset';
+      await page.locator(control).click();
+      await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+      assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+      assert.equal(await page.locator('#m07-approval-audit li').count(),0);
+      assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+      assert.equal(app.networkAttempts.filter(item=>!item.allowed).length,0);
+    });
+  }
+});

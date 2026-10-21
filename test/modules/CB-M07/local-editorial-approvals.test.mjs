@@ -1,0 +1,139 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createLocalEditorialVariant } from '../../../src/modules/CB-M07/local-editorial-variants.mjs';
+import { inspectLocalApprovalHistory, latestLocalApproval, recordLocalApproval } from '../../../src/modules/CB-M07/local-editorial-approvals.mjs';
+import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
+
+const draft=Object.freeze({
+  id:'00000000-0000-0000-0000-0000000000f1',revision:2,status:'draft',
+  title:'Fictional title',summary:'This is a longer fictional summary for LOCAL editorial testing.',source_url:'https://example.org/fake',
+  author_label:'',updated_at:1760870000,body:'PRIVATE_BODY_ABC',
+  sessionSecret:'PRIVATE_SESSION_ABC',
+});
+const variant=(channel,text='Fictional local caption')=>createLocalEditorialVariant(draft,channel,text);
+const write=(history,row,action,reason='')=>recordLocalApproval(history,row,action,[draft],reason);
+
+test('M07-I versioned immutable per-channel save, approve, resave and reject',()=>{
+  let log=Object.freeze([]);
+  const x1=variant('x');
+  assert.throws(()=>write(log,x1,'APPROVE'),TypeError);
+  log=write(log,x1,'SAVE');
+  assert.equal(latestLocalApproval(log,draft,'x').version,1);
+  log=write(log,x1,'APPROVE');
+  assert.throws(()=>write(log,x1,'REJECT','Needs editorial review'),TypeError);
+  const x2=variant('x','Updated fictional caption');
+  log=write(log,x2,'SAVE');
+  assert.equal(latestLocalApproval(log,draft,'x').version,2);
+  assert.equal(latestLocalApproval(log,draft,'x').action,'SAVE');
+  log=write(log,x2,'REJECT','Requires another revision');
+  const instagram=variant('instagram');
+  log=write(log,instagram,'SAVE');
+  log=write(log,instagram,'APPROVE');
+  assert.equal(latestLocalApproval(log,draft,'x').action,'REJECT');
+  assert.equal(latestLocalApproval(log,draft,'instagram').version,1);
+  assert.equal(latestLocalApproval(log,draft,'tiktok'),null);
+  assert.ok(log.every(Object.isFrozen));
+  assert.doesNotMatch(JSON.stringify(log),/PRIVATE_BODY_ABC|PRIVATE_SESSION_ABC/);
+  assert.equal(inspectLocalApprovalHistory(log,[draft]).size,2);
+});
+
+test('M07-I reset invalidates local approval; stale, forged and invalid decisions fail closed',()=>{
+  const tiktok=variant('tiktok');
+  let log=write(Object.freeze([]),tiktok,'SAVE');
+  log=write(log,tiktok,'REJECT','Fictional review feedback');
+  log=write(log,tiktok,'RESET');
+  assert.equal(latestLocalApproval(log,draft,'tiktok').action,'RESET');
+  assert.throws(()=>write(log,tiktok,'RESET'),TypeError);
+  assert.throws(()=>write(log,tiktok,'APPROVE'),TypeError);
+  assert.throws(()=>write(Object.freeze([]),tiktok,'RESET'),TypeError);
+  log=write(log,tiktok,'SAVE');
+  assert.equal(latestLocalApproval(log,draft,'tiktok').version,2);
+  for(const reason of ['', 'short',' leading reason','Bad\nreason','x'.repeat(241)]) {
+    assert.throws(()=>write(log,tiktok,'REJECT',reason),TypeError);
+  }
+  assert.throws(()=>write(log,tiktok,'APPROVE','Publish now'),TypeError);
+  assert.throws(()=>inspectLocalApprovalHistory([...log,{...log[0]}],[draft]),TypeError);
+  assert.throws(()=>inspectLocalApprovalHistory(log,[{...draft,revision:3}]),TypeError);
+  assert.throws(()=>inspectLocalApprovalHistory(log,[{...draft,source_url:'https://example.org/forged'}]),TypeError);
+  assert.throws(()=>inspectLocalApprovalHistory(log,[{...draft,author_label:'Fake credit'}]),TypeError);
+});
+
+test('M07-I LOCAL controls are session-only and never grant posting or rights clearance',()=>{
+  const html=renderLocalCmsUi('ab'.repeat(32));
+  for(const id of ['m07-approval-panel','m07-approval-approve','m07-approval-reject',
+    'm07-approval-reason','m07-approval-status','m07-approval-audit']) {
+    assert.ok(html.includes('id="'+id+'"'));
+  }
+  assert.match(LOCAL_CMS_UI_SCRIPT,/localApprovalEvents = \[\]/);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/const recordLocalApproval =/);
+  assert.match(html,/APPROVED FOR LOCAL EDITORIAL REVIEW ONLY/);
+  assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/localStorage|sessionStorage|indexedDB|innerHTML|window\.open/);
+});
+
+
+test('M07-I refactored canonical event guard still rejects forged metadata and allows canonical history',()=>{
+  const valid=write(Object.freeze([]),variant('x'),'SAVE');
+  assert.equal(inspectLocalApprovalHistory(valid,[draft]).size,1);
+  const event=valid[0];
+  for(const forged of [
+    null,
+    {...event},
+    Object.freeze({...event,extra:'unexpected'}),
+    Object.freeze({...event,action:'PUBLISH'}),
+    Object.freeze({...event,version:0}),
+    Object.freeze({...event,reason:123}),
+    Object.freeze({...event,atUTC:'not-a-time'}),
+  ]) {
+    assert.throws(()=>inspectLocalApprovalHistory([forged],[draft]),TypeError);
+  }
+  assert.match(LOCAL_CMS_UI_SCRIPT,/const requireCanonicalLocalApprovalEvent =/);
+});
+
+test('M07-I canonical UTC audit timestamps reject parseable but non-ISO formats',()=>{
+  const history=write(Object.freeze([]),variant('x'),'SAVE');
+  const event=history[0];
+  assert.equal(event.atUTC,new Date(event.atUTC).toISOString());
+  for (const atUTC of [
+    '2026-10-20', // Parseable date without time
+    '2026-10-20T21:43:29Z', // Milliseconds omitted
+    '2026-10-20T18:43:29.000-03:00', // Non-UTC offset
+    '2026-10-20T21:43:29.000+00:00', // Numeric UTC offset
+    '2026-10-20T21:43:29.000', // Local-time representation
+    '2026-10-20T21:43:29.000z', // Noncanonical lower-case suffix
+  ]) {
+    assert.ok(Number.isFinite(Date.parse(atUTC)), 'Fixture must be parseable: '+atUTC);
+    assert.throws(()=>inspectLocalApprovalHistory(
+      [Object.freeze({...event,atUTC})],[draft]),TypeError);
+  }
+});
+
+test('M07-I rejection reason remains mandatory with inclusive 8–240 character bounds',()=>{
+  const x=variant('x');
+  let history=write(Object.freeze([]),x,'SAVE');
+  assert.throws(()=>write(history,x,'REJECT',''),TypeError);
+  assert.throws(()=>write(history,x,'REJECT','r'.repeat(7)),TypeError);
+  assert.throws(()=>write(history,x,'REJECT','r'.repeat(241)),TypeError);
+  history=write(history,x,'REJECT','r'.repeat(8));
+  assert.equal(latestLocalApproval(history,draft,'x').reason.length,8);
+  const ig=variant('instagram');
+  history=write(history,ig,'SAVE');
+  history=write(history,ig,'REJECT','r'.repeat(240));
+  assert.equal(latestLocalApproval(history,draft,'instagram').reason.length,240);
+});
+
+test('M07-I rejection reasons reject every ASCII control and preserve Unicode',()=>{
+  const x=variant('x');
+  const saved=write(Object.freeze([]),x,'SAVE');
+  for(const code of [...Array.from({length:32},(_,i)=>i),127]) {
+    const reason='Needs'+String.fromCharCode(code)+'editorial review';
+    assert.throws(()=>write(saved,x,'REJECT',reason),TypeError,
+      'ASCII control code '+code+' must remain rejected');
+  }
+  for(const code of [0x80,0x85,0x1f600]) {
+    const reason='Needs'+String.fromCodePoint(code)+'editorial review';
+    const accepted=write(saved,x,'REJECT',reason);
+    assert.equal(accepted.at(-1).reason,reason);
+  }
+  assert.match(inspectLocalApprovalHistory.toString(),/codePointAt\(0\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/codePointAt\(0\)/u);
+});

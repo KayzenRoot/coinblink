@@ -329,19 +329,42 @@ test('M07-H: cap, stale click, refresh and logout never create phantom concepts'
 });
 
 
-/** Bound synthetic routed-request waits so failures cannot strand CI workers. */
-async function boundedWait(promise, label, timeoutMs = 12000) {
-  let timer;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(label + ' within ' + timeoutMs + 'ms')), timeoutMs);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timer);
-  }
+/** Hold exactly one authenticated LOCAL read in the browser; no external routes. */
+async function holdLocalReadInPage(page) {
+  await page.evaluate(() => {
+    const originalFetch = window.fetch.bind(window);
+    let releaseRead;
+    const hold = new Promise(resolve => { releaseRead = resolve; });
+    const gate = {
+      started: false, completed: false,
+      release: () => releaseRead(),
+      restore: () => {
+        releaseRead();
+        window.fetch = originalFetch;
+        delete window.__cbM07TestReadGate;
+      },
+    };
+    window.__cbM07TestReadGate = gate;
+    window.fetch = async (...args) => {
+      const path = new URL(String(args[0]), window.location.href).pathname;
+      if (!gate.started && path === '/local/articles') {
+        gate.started = true;
+        await hold;
+        const response = await originalFetch(...args);
+        gate.completed = true;
+        return response;
+      }
+      return originalFetch(...args);
+    };
+  });
+  return {
+    waitStarted: () => page.waitForFunction(() => window.__cbM07TestReadGate?.started === true,
+      null, { timeout: 10000 }),
+    release: () => page.evaluate(() => window.__cbM07TestReadGate?.release()),
+    waitCompleted: () => page.waitForFunction(() => window.__cbM07TestReadGate?.completed === true,
+      null, { timeout: 10000 }),
+    restore: () => page.evaluate(() => window.__cbM07TestReadGate?.restore()),
+  };
 }
 
 test('M07-H correction: revoked session without refresh rejects copy and scrubs LOCAL data', {timeout:120_000}, async () => {
@@ -373,28 +396,17 @@ test('M07-H correction: delayed verification cannot apply an obsolete channel; f
     await row.locator('.m07-calendar-copy').click();
     const channel = row.locator('.m07-copy-channel');
     await channel.selectOption('instagram');
-    let startedRead;
-    const started = new Promise(resolve => { startedRead = resolve; });
-    let allowRead;
-    const held = new Promise(resolve => { allowRead = resolve; });
-    await page.route('**/local/articles', async route => {
-      startedRead();
-      await held;
-      await route.fallback();
-    }, {times:1});
+    const gate = await holdLocalReadInPage(page);
     try {
       await row.locator('.m07-copy-confirm').click();
-      await boundedWait(started, 'LOCAL verification request was not intercepted');
+      await gate.waitStarted();
       assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), true);
       await channel.selectOption('tiktok');
-      const response = page.waitForResponse(res =>
-        new URL(res.url()).pathname === '/local/articles' && res.request().method() === 'GET',
-      { timeout:15000 });
-      allowRead();
-      await response;
+      await gate.release();
+      await gate.waitCompleted();
       await page.waitForTimeout(150);
       assert.equal(await page.locator('#m07-calendar-list li').count(), 1,
-        'Stale server response must not copy the earlier selection');
+        'A completed but obsolete LOCAL validation must not copy');
       assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), false);
       await row.locator('.m07-copy-confirm').click();
       await page.locator('#m07-calendar-list li').nth(1).waitFor({ timeout:15000 });
@@ -407,8 +419,7 @@ test('M07-H correction: delayed verification cannot apply an obsolete channel; f
         .filter({hasText:' · TIKTOK · '}).count(), 1);
       assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
     } finally {
-      allowRead();
-      await page.unroute('**/local/articles');
+      await gate.restore();
     }
   });
 });
@@ -421,29 +432,21 @@ test('M07-H correction: session revoked during server check fails closed', {time
     const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
     await row.locator('.m07-calendar-copy').click();
     await row.locator('.m07-copy-channel').selectOption('instagram');
-    let notifyStarted;
-    const started = new Promise(resolve => { notifyStarted = resolve; });
-    let release;
-    const held = new Promise(resolve => { release = resolve; });
-    await page.route('**/local/articles', async route => {
-      notifyStarted();
-      await held;
-      await route.fallback();
-    }, {times:1});
+    const gate = await holdLocalReadInPage(page);
     try {
       await row.locator('.m07-copy-confirm').click();
-      await boundedWait(started, 'LOCAL verification request was not intercepted');
+      await gate.waitStarted();
       const revoked = await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
         .bind(Math.floor(Date.now()/1000)).run();
       assert.equal(revoked.meta?.changes, 1);
-      release();
+      await gate.release();
+      await gate.waitCompleted();
       await page.getByText('Not authenticated', {exact:true}).waitFor({timeout:20000});
       await expectEmptyPrivateBoard(page);
       assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
       assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
     } finally {
-      release();
-      await page.unroute('**/local/articles');
+      await gate.restore();
     }
   });
 });

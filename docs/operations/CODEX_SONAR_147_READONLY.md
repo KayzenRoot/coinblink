@@ -1,6 +1,6 @@
 # CB-SONAR-147-CODEX-READONLY-001
 
-**Mission (historical 2026-10-20):** investigate SonarQube Cloud main Security Rating D for KayzenRoot/coinblink, issue #147. **Execution engine: Codex**, without switching to ChatGPT Work. The dated aggregate result is recorded in this PR; this text is not standing authorization to rerun, publish, or remediate.
+**Mission (historical 2026-10-20):** investigate the previously reported SonarQube Cloud main Security Rating D concern for KayzenRoot/coinblink, issue #147. The referenced check on aae3533 was actually SUCCESS; previous D incidents concern other commits. **Execution engine: Codex**, without switching to ChatGPT Work. The dated aggregate result is recorded in this PR; this text is not standing authorization to rerun, publish, or remediate.
 **Prepared:** 2026-10-20 | **Repository:** https://github.com/KayzenRoot/coinblink
 **Historical main SHA:** aae3533973518e1af846c321a9df89d03a0918f5. **Later main (2026-10-21):** c3001ccfb663ad0c84085e07783f8d4566b394a4, SonarCloud Quality Gate PASS. Reconfirm for any newly authorized investigation.
 **Related PR:** https://github.com/KayzenRoot/coinblink/pull/180 (historical HEAD adc24255154c137daebebe2939a87103a6bc1a09; now MERGED; never modify through this document).
@@ -18,10 +18,10 @@
 ## 1. Readiness/preflight
 
 1. Check git remote URL points to KayzenRoot/coinblink and fetch refs; do not reset or discard unrelated local changes.
-2. Verify current main SHA and its check. If it differs from the historic reference, record both and distinguish the historic failing check from the current Quality Gate without claiming they match.
+2. Verify current main SHA and its check. If it differs from the historical reference, record both. The check on historical SHA aae3533 passed; earlier D failures on other SHAs and later Quality Gates are separate observations.
 3. Check current Issue #147 and PR #180 states (historically OPEN, now CLOSED/completed and MERGED respectively). Never demand the historical states nor modify these resources; the Copilot creditStatus finding was separate.
-4. Check GitHub checks by exact SHA: historical run 118552202578 was FAILURE with D Security Rating on New Code (minimum A). On later main c3001ccf... SonarCloud reports SUCCESS. Do not conflate the runs.
-5. Verify SonarCloud project permission Browse. If no login/authorized API access is available in Codex, report BLOCKED. Do not steal browser cookies, inspect token stores or bypass authentication.
+4. Check GitHub checks by exact SHA: historical run 118552202578 on aae3533 was SUCCESS / Quality Gate passed. Earlier main D failures occurred on other SHAs. On later main c3001ccf... SonarCloud also reports SUCCESS. Never infer a failed check from historical issue counts.
+5. Verify authorization for SonarCloud read-only access through either the API or an explicitly authorized GUI session. If the API is unavailable but authorized GUI access exists, use the GUI fallback described below. Report BLOCKED for access only when neither method is available. Do not steal browser cookies, inspect token stores or bypass authentication.
 
 ## 2. SonarCloud safe read-only retrieval
 
@@ -30,35 +30,35 @@ Use ONLY GET requests to https://sonarcloud.io. Start with:
 GET https://sonarcloud.io/api/issues/search?componentKeys=KayzenRoot_coinblink&branch=main&sinceLeakPeriod=true&ps=100&p=1
 
 - Continue p=2,3,... until API reported total is completely covered. Reconcile total, pages retrieved, raw count, unique keys, duplicate keys, errors and HTTP status for every page. Do not invent time or severity ordering.
-- If API requires authentication, use ONLY a pre-existing explicitly authorized secure environment/interactive method supported by the local Codex client. Never ask for secrets in ChatGPT, write tokens in a URL, print them, store them in files or commit them. If no such method exists, finish BLOCKED.
+- If API requires authentication, use ONLY a pre-existing explicitly authorized secure environment/interactive method supported by the local Codex client. Never ask for secrets in ChatGPT, write tokens in a URL, print them, store them in files or commit them. If secure API access is unavailable, attempt ONLY the already-authorized GUI fallback; report access BLOCKED only if neither path is available.
 - If receiving HTML/login, 401/403/404, rate limit, malformed JSON or incompatible paging, record only sanitized error category/status and stop or perform a limited GET-only supported diagnostic. Never interpret blocked/empty as zero vulnerabilities.
-- If sinceLeakPeriod=true returns zero while the main check says D, perform one additional GET-only diagnostic query without sinceLeakPeriod, labelled separately; do not silently replace the primary result.
+- If sinceLeakPeriod=true returns zero but the currently inspected exact-SHA check reports a conflicting issue/rating condition, perform one additional GET-only diagnostic query without sinceLeakPeriod, labelled separately; do not silently replace the primary result.
 - For obtained rule keys, optional GET https://sonarcloud.io/api/rules/show?key=<percent-encoded-rule-key>, subject to authentication and GET-only rule.
-- If no API access but authorized GUI browser access exists in Codex, inspect the visible UI in read-only mode, label findings PARTIAL unless full pagination/record reconciliation is proven.
+- If no API access but explicitly authorized GUI browser access exists in Codex, inspect the visible UI in read-only mode. Label findings PARTIAL if enumeration, count reconciliation or required evidence is incomplete; a fully reconciled, authorized GUI extraction may be COMPLETE even without API pages. Do not claim completeness from a partial page or screenshot.
 
 ## 3. Sanitization and evidence model
 
-Per issue ALLOWLIST only: key, rule, type, severity, impacts (softwareQuality and severity only), component, textRange, line, message, status, issueStatus, creationDate, updateDate if present. Never manufacture missing fields.
+Per-issue ALLOWLIST (for internal screening and, only when independently safe and below HIGH/CRITICAL/BLOCKER, optional public output): key, rule, type, severity, impacts (softwareQuality and severity only), component, textRange, line, message, status, issueStatus, creationDate, updateDate if present. Never manufacture missing fields. Assess the highest severity across available issue and security-impact classifications.
 Per metadata: project, branch, referenceSha, observedMainSha, checkedAtUTC, source, queryParameters, pageHttpStatuses, reportedTotal, pagesFetched, retrievedCount, uniqueIssueCount, paginationComplete, accessStatus COMPLETE/PARTIAL/BLOCKED, limitations.
 Examine ALL allowed free-text fields for private URLs, tokens, credentials, personally identifying details, leaked secrets or raw source code and replace unsafe spans with [REDACTED]. Do not serialize original HTTP payloads, headers, sessions or environmental variables.
 
-IMPORTANT PUBLIC-REPO RULE: If any finding describes an unresolved potentially exploitable HIGH/CRITICAL/BLOCKER vulnerability, DO NOT push its issue-specific path, line, message, exploitation instructions or detailed rules into this public GitHub repository. Commit only a NON-SENSITIVE status summary (counts/status/blocked reason, without secrets or exploit paths) and mark detailed evidence as needing owner-approved private storage. Do not claim full detailed JSON is safely published. Keep any detailed data only in an untracked local file protected by workstation permissions, not committed or uploaded, pending owner instruction. Do not provide exploit instructions.
+IMPORTANT PUBLIC-REPO RULE: For EVERY finding classified HIGH, CRITICAL or BLOCKER by either issue severity or security-impact severity, regardless of status, exploitability judgment or operator preference, publish ONLY NON-SENSITIVE aggregate status/count metadata. NEVER publish its issue key, rule, component, path, line, message, issue record, raw payload, exploit instructions or any issue-identifying combination in this public repository. If such a finding exists, omit `issues-sanitized.json` entirely in this mission and publish aggregate counts/status only. Screen all aggregate text for secrets and indirect identification; fail closed if unsafe. Detailed records require separate Owner-approved safe private handling and are not authorized for this public PR. Do not claim full detailed JSON was published; do not provide exploit instructions.
 
 ## 4. GitHub evidence outputs and minimal writing rights
 
 Evidence directory: docs/audits/sonar/issue-147/ . On the handoff branch ONLY, create or update:
 
 - status.json: always safe sanitized summary with status, main SHA, counts, HTTP status codes, metadata and limitations; no issue-level exploit details.
-- issues-sanitized.json: sanitized allowlisted issue records ONLY when they are demonstrably safe for a PUBLIC repository. Otherwise omit it and note withheld-for-private-storage in status.json.
-- report.md: concise factual interpretation; rule, severity, file:line only when safe to publish, distinguishing aggregated Sonar Rating D from a specific technical finding. Separate PR #180 findings, including its Sonar 1 new issue and Copilot creditStatus thread, from main #147.
+- issues-sanitized.json: optional sanitized allowlisted records ONLY when demonstrably safe for a PUBLIC repository, none is HIGH/CRITICAL/BLOCKER under any available security classification, and separately authorized. If any finding is HIGH/CRITICAL/BLOCKER, omit this file entirely and record only aggregate counts/status and the disclosure limitation in status.json.
+- report.md: concise factual interpretation with aggregate status/counts for every HIGH/CRITICAL/BLOCKER finding, never issue-specific identifiers or file:line at those severities. Lower-severity issue details remain subject to separate authorization and public-disclosure screening. Distinguish older D incidents from the SUCCESS historical check on aae3533; keep PR #180 and its creditStatus review concern separate from main #147.
 
 Before committing inspect the staged diff and run a secrets/redaction scan; fail closed if unsafe. Do not add personal data, any environment file or credential. Stage ONLY the three evidence paths above. Commit/push to docs/cb-sonar-147-codex-handoff-20261020 ONLY, update the existing documentation PR; do not create any new PR or push main. If push is unavailable, leave a safe local report and declare the GitHub upload BLOCKED, without changing permissions.
 
 ## 5. Acceptance, STOP and handback
 
-- COMPLETE only when access and authorization verified, all API pages read, counts match, records sanitized, risks categorized, evidence safe for public GitHub and committed to the allowed branch.
-- PARTIAL when the API/UI provides only some valid results; record all omissions.
-- BLOCKED when there is no authorized access, paging cannot be reconciled, or safe-publication cannot be guaranteed. A BLOCKED state is not zero issues.
+- COMPLETE only when read-only API OR authorized GUI access is verified, all required issues/pages or GUI records are enumerated and reconciled against reliable totals, risks are categorized, sensitive records are withheld, and safe aggregate evidence is committed to the allowed branch. API pages are not required when a fully reconciled authorized GUI extraction proves completeness.
+- PARTIAL when authorized API/GUI yields valid but incomplete enumeration or reconciliation; record all omissions and do not claim COMPLETE.
+- BLOCKED when neither API nor GUI access is authorized, or when evidence cannot be safely recorded even as aggregate status. Treat inconsistent results as PARTIAL if a trustworthy partial report is possible, otherwise BLOCKED; neither state means zero issues.
 - HIGH/CRITICAL: STOP all implementation and provide only risk-safe evidence and next decision. No change to Sonar issue status or Quality Gate.
 - Return to ChatGPT with only: status, exact main SHA, safe evidence GitHub URL(s), counts, identified severity bands, limitations, PR #180 preservation, branch HEAD and explicit statement that no merge/deploy occurred.
 

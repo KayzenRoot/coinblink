@@ -8,7 +8,7 @@
 
 ## Historical main check (observed SHA only)
 
-The GitHub check [SonarCloud Code Analysis #118552202578](https://github.com/KayzenRoot/coinblink/runs/118552202578) completed with **failure** on the exact observed main SHA. Its reported failed condition is **D Security Rating on New Code (minimum A)**. The check has zero GitHub annotations; that does not mean SonarCloud reported zero issues.
+The GitHub check [SonarCloud Code Analysis #118552202578](https://github.com/KayzenRoot/coinblink/runs/118552202578) completed with **SUCCESS / Quality Gate passed** on the exact observed main SHA. This was independently verified against the GitHub check result for that SHA. Earlier Security Rating D failures concerned other historical commits and must not be attributed to this successful check. Zero GitHub annotations do not establish zero SonarCloud issues.
 
 ## SonarCloud aggregate
 
@@ -21,7 +21,7 @@ The primary query used componentKeys=KayzenRoot_coinblink, branch=main, sinceLea
 - The two OPEN vulnerability records aggregate to one CRITICAL and one MAJOR.
 - OPEN security impacts aggregate to one HIGH and one MEDIUM.
 
-At the observed SHA, the aggregate contained unresolved vulnerability findings alongside the failing main check. The precise contribution to the historical D rating remains **UNCONFIRMED**, and the records were not rechecked at the current main SHA. This canonical public report omits all issue keys, rules, components, paths, lines, messages and exploit details. PR #181 does not include issues-sanitized.json; any additional detailed review or disclosure requires a separate Owner authorization and security screening.
+The dated API aggregate included vulnerability findings, **separately from the successful GitHub check**. The aggregation does not establish that those findings caused a Quality Gate failure, nor that their historical states remained unchanged when a later check ran. The issue records were not freshly re-extracted at the current main SHA. This canonical public report omits all issue keys, rules, components, paths, lines, messages and exploit details. PR #181 does not include issues-sanitized.json; any additional detailed review or disclosure requires a separate Owner authorization and security screening.
 
 ## Related items and preservation
 
@@ -35,7 +35,7 @@ At the observed SHA, the aggregate contained unresolved vulnerability findings a
 - Protected `main` observed at `c3001ccfb663ad0c84085e07783f8d4566b394a4`.
 - SonarCloud check on that commit: **SUCCESS / Quality Gate passed**, reporting **226 new issues** and **0 Security Hotspots**. This does **not** establish remediation of each historic vulnerability; current issue-level status was not re-extracted.
 - Issue #147 is CLOSED (`completed`), PR #180 is MERGED, and Issue #169 remains OPEN.
-- Historic D, counts and severity bands above are tied only to the old reference SHA. The separate Draft PR #182 contains alternative public issue-level evidence that is deliberately **not** promoted into this aggregate report.
+- Historical issue counts and severity bands above belong to the dated extraction, not to a failed check on the reference SHA. The separate Draft PR #182 contains alternative public issue-level evidence that is deliberately **not** promoted into this aggregate report.
 
 ## Recommendation
 

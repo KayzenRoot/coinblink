@@ -71,16 +71,17 @@
     "checkRunId": 118552202578,
     "headSha": "aae3533973518e1af846c321a9df89d03a0918f5",
     "status": "completed",
-    "conclusion": "failure",
-    "failedCondition": "D Security Rating on New Code (minimum A)",
+    "conclusion": "success",
     "annotations": 0,
-    "url": "https://github.com/KayzenRoot/coinblink/runs/118552202578"
+    "url": "https://github.com/KayzenRoot/coinblink/runs/118552202578",
+    "qualityGate": "passed"
   },
   "limitations": [
     "No issue-specific rule, path, line, message, or key is included in this public evidence.",
-    "Aggregate co-occurrence does not attribute a particular issue to the failed Security Rating condition.",
+    "The dated API issue counts do not imply a failed Quality Gate on the same SHA. Historical run 118552202578 was SUCCESS; earlier D failures on other SHAs are distinct.",
     "No remediation, issue mutation, Quality Gate change, merge, or deploy was performed.",
-    "relatedGitHubStateAtObservation is a historical 2026-10-20 snapshot; laterGitHubReadback reflects later GitHub state without re-running the SonarCloud issue query."
+    "relatedGitHubStateAtObservation is a historical 2026-10-20 snapshot; laterGitHubReadback reflects later GitHub state without re-running the SonarCloud issue query.",
+    "The issue status snapshot and the GitHub Quality Gate check have different semantics; the snapshot does not prove present-day remediation or non-remediation."
   ],
   "relatedGitHubStateAtObservation": {
     "issue147": "OPEN",

@@ -261,6 +261,7 @@ test('M07-H: accessible assisted cross-channel copy previews, confirms, and pres
     await open.click();
     await channel.selectOption('instagram');
     await panel.locator('.m07-copy-confirm').click();
+    await page.locator('#m07-calendar-list li').nth(1).waitFor({ timeout:15000 });
     assert.equal(await page.locator('#m07-calendar-list li').count(), 2);
     assert.match(await page.locator('#m07-calendar-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
     assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
@@ -279,6 +280,7 @@ test('M07-H: accessible assisted cross-channel copy previews, confirms, and pres
     assert.match(await p.locator('.m07-copy-preview').innerText(), /Duplicate/);
     await p.locator('.m07-copy-channel').selectOption('tiktok');
     await p.locator('.m07-copy-confirm').click();
+    await page.locator('#m07-calendar-list li').nth(2).waitFor({ timeout:15000 });
     assert.equal(await page.locator('#m07-calendar-list li').count(), 3);
     assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
       .filter({ hasText: ' · TIKTOK · ' }).count(), 1);
@@ -327,6 +329,21 @@ test('M07-H: cap, stale click, refresh and logout never create phantom concepts'
 });
 
 
+/** Bound synthetic routed-request waits so failures cannot strand CI workers. */
+async function boundedWait(promise, label, timeoutMs = 12000) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(label + ' within ' + timeoutMs + 'ms')), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 test('M07-H correction: revoked session without refresh rejects copy and scrubs LOCAL data', {timeout:120_000}, async () => {
   await withLocalSession(async (page, app) => {
     await createFictionalDraft(page, 'Fictional revoked-copy concept');
@@ -363,15 +380,16 @@ test('M07-H correction: delayed verification cannot apply an obsolete channel; f
     await page.route('**/local/articles', async route => {
       startedRead();
       await held;
-      await route.continue();
+      await route.fallback();
     }, {times:1});
     try {
       await row.locator('.m07-copy-confirm').click();
-      await started;
+      await boundedWait(started, 'LOCAL verification request was not intercepted');
       assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), true);
       await channel.selectOption('tiktok');
       const response = page.waitForResponse(res =>
-        new URL(res.url()).pathname === '/local/articles' && res.request().method() === 'GET');
+        new URL(res.url()).pathname === '/local/articles' && res.request().method() === 'GET',
+      { timeout:15000 });
       allowRead();
       await response;
       await page.waitForTimeout(150);
@@ -379,6 +397,7 @@ test('M07-H correction: delayed verification cannot apply an obsolete channel; f
         'Stale server response must not copy the earlier selection');
       assert.equal(await row.locator('.m07-copy-confirm').isDisabled(), false);
       await row.locator('.m07-copy-confirm').click();
+      await page.locator('#m07-calendar-list li').nth(1).waitFor({ timeout:15000 });
       assert.equal(await page.locator('#m07-calendar-list li').count(), 2);
       assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('m07-calendar-copy')), true,
         'Focus must return to the source LOCAL copy button after replacing the list');
@@ -409,11 +428,11 @@ test('M07-H correction: session revoked during server check fails closed', {time
     await page.route('**/local/articles', async route => {
       notifyStarted();
       await held;
-      await route.continue();
+      await route.fallback();
     }, {times:1});
     try {
       await row.locator('.m07-copy-confirm').click();
-      await started;
+      await boundedWait(started, 'LOCAL verification request was not intercepted');
       const revoked = await app.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
         .bind(Math.floor(Date.now()/1000)).run();
       assert.equal(revoked.meta?.changes, 1);

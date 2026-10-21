@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createLocalCalendarIdea, addLocalCalendarIdea } from '../../../src/modules/CB-M07/local-calendar.mjs';
+import { createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../../src/modules/CB-M07/local-calendar.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 
 const draft = Object.freeze({
@@ -75,4 +75,99 @@ test('M07-C calendar stays inside private dashboard with CSP, labeled accessible
   assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalCalendarIdea\(draft, ui\.socialChannel\.value/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/localStorage|sessionStorage|indexedDB|window\.open|\/local\/calendar|\/admin\/calendar|\.innerHTML/u);
   assert.match(readFileSync('src/pages/admin/[...route].js','utf8'),/!import\.meta\.env\.DEV/u);
+});
+
+
+test('M07-F immutable edit keeps draft identity, supports 20 ideas and updates weekly collision projection', () => {
+  const second = { ...draft, id:'00000000-0000-0000-0000-000000000002', title:'Second fictional draft' };
+  const a = createLocalCalendarIdea(draft,'x','2026-11-20T12:30','UTC');
+  const b = createLocalCalendarIdea(second,'x','2026-11-20T12:30','UTC');
+  const original = Object.freeze([a,b]);
+  const edited = createLocalCalendarIdea(draft,'instagram','2026-11-20T14:30','UTC');
+  const revised = replaceLocalCalendarIdea(original,a,edited);
+  assert.equal(original[0],a);
+  assert.ok(Object.isFrozen(revised));
+  assert.equal(revised.length,2);
+  assert.equal(revised[0],b);
+  assert.equal(revised[1],edited);
+  assert.equal(revised[1].draftId,a.draftId);
+  assert.equal(revised[1].publication,'DRAFT_ONLY');
+  assert.equal(revised[1].rights,'NOT_CLEARED');
+  assert.ok(Object.isFrozen(revised[1]));
+  assert.doesNotMatch(JSON.stringify(revised),/PRIVATE_BODY|PRIVATE_SECRET|example\.org/);
+
+  let many=[];
+  for(let i=0;i<20;i++){
+    many=addLocalCalendarIdea(many,createLocalCalendarIdea(draft,'x',
+      '2026-11-20T12:'+String(i).padStart(2,'0'),'UTC'));
+  }
+  const editLast=createLocalCalendarIdea(draft,'tiktok','2026-11-20T20:00','UTC');
+  const full=replaceLocalCalendarIdea(many,many[19],editLast);
+  assert.equal(full.length,20);
+  assert.equal(many[19].channel,'x');
+  assert.equal(full[19],editLast);
+});
+
+test('M07-F rejects stale, cross-draft, duplicate and invalid DST edits without mutating originals', () => {
+  const initial=createLocalCalendarIdea(draft,'x','2026-11-20T12:30','UTC');
+  const next=createLocalCalendarIdea(draft,'x','2026-11-20T14:30','UTC');
+  const other={...draft,id:'00000000-0000-0000-0000-000000000002'};
+  const wrong=createLocalCalendarIdea(other,'x','2026-11-20T12:31','UTC');
+  const items=Object.freeze([initial,next]);
+  const serialized=JSON.stringify(items);
+  assert.throws(()=>replaceLocalCalendarIdea(items,{...initial},next),TypeError);
+  assert.throws(()=>replaceLocalCalendarIdea(items,initial,wrong),TypeError);
+  assert.throws(()=>replaceLocalCalendarIdea(items,initial,next),RangeError);
+  assert.throws(()=>replaceLocalCalendarIdea(items,initial,null),TypeError);
+  assert.throws(()=>replaceLocalCalendarIdea(null,initial,next),TypeError);
+  for (const wall of ['2026-03-08T02:30','2026-11-01T01:30']) {
+    assert.throws(()=>createLocalCalendarIdea(draft,'x',wall,'America/New_York'),TypeError);
+  }
+  assert.equal(JSON.stringify(items),serialized);
+});
+
+
+test('M07-G proposes 3 frozen LOCAL alternatives only for cross-draft exact-slot collision', () => {
+  const second = {...draft,id:'00000000-0000-0000-0000-000000000002',
+    title:'Second private fictional article'};
+  const first = createLocalCalendarIdea(draft,'x','2026-11-20T12:00','UTC');
+  const another = createLocalCalendarIdea(second,'x','2026-11-20T12:00','UTC');
+  const blocked = createLocalCalendarIdea(second,'x','2026-11-20T12:15','UTC');
+  const items = Object.freeze([first,another,blocked]);
+  const prior = JSON.stringify(items);
+  const suggestions = suggestLocalConflictAlternatives(items,first,draft);
+  assert.equal(suggestions.length,3);
+  assert.deepEqual(suggestions.map(x=>x.hypotheticalLocal),
+    ['2026-11-20T12:30','2026-11-20T12:45','2026-11-20T13:00']);
+  assert.ok(Object.isFrozen(suggestions));
+  for (const row of suggestions) {
+    assert.ok(Object.isFrozen(row));
+    assert.equal(row.draftId,draft.id);
+    assert.equal(row.channel,'x');
+    assert.equal(row.timeZone,'UTC');
+    assert.doesNotMatch(JSON.stringify(row), /PRIVATE_BODY|PRIVATE_SECRET|example\.org/);
+  }
+  assert.equal(JSON.stringify(items),prior, 'Proposals must never edit state');
+  assert.equal(suggestLocalConflictAlternatives([first],first,draft).length,0);
+  assert.throws(()=>suggestLocalConflictAlternatives(items,{...first},draft),TypeError);
+  assert.throws(()=>suggestLocalConflictAlternatives(items,first,second),TypeError);
+});
+
+test('M07-G suggestions reuse DST and bounded duplicate validation', () => {
+  const second = {...draft,id:'00000000-0000-0000-0000-000000000002'};
+  const first = createLocalCalendarIdea(draft,'x','2026-11-01T00:45','America/New_York');
+  const concurrent = createLocalCalendarIdea(second,'x','2026-11-01T00:45','America/New_York');
+  const suggestions = suggestLocalConflictAlternatives([first,concurrent],first,draft);
+  assert.ok(suggestions.length > 0);
+  assert.ok(suggestions.length <= 3);
+  assert.ok(suggestions.every(x=>x.timeZone==='America/New_York'));
+  assert.ok(suggestions.every(x=>x.utcISO!==first.utcISO));
+  assert.ok(suggestions.every(x=>!/T01:/.test(x.hypotheticalLocal)),
+    'Ambiguous DST fallback times are never proposed');
+  const replacement = createLocalCalendarIdea(draft,'x',
+    suggestions[0].hypotheticalLocal,suggestions[0].timeZone);
+  assert.equal(replacement.utcISO,suggestions[0].utcISO);
+  assert.equal(replaceLocalCalendarIdea([first,concurrent],first,replacement).length,2);
+  const bad = {...first,rights:'CLEARED'};
+  assert.throws(()=>suggestLocalConflictAlternatives([bad,concurrent],bad,draft),TypeError);
 });

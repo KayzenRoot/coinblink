@@ -24,9 +24,22 @@ async function createFictionalDraft(page, title) {
   await page.locator('#save').click();
   await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20000 });
 }
+/** Seed multiple fictional LOCAL drafts without coupling tests to D1 list ordering. */
+async function seedFictionalDrafts(page, titles) {
+  for (const title of titles) {
+    await createFictionalDraft(page, title);
+    await page.locator('#new-draft').click();
+  }
+}
+
 /** Add a hypothetical in-memory idea for the indexed authorized local draft. */
-async function addConcept(page, index, localMinute = '2026-11-16T00:30') {
-  await page.locator('#m07-draft').selectOption({ index });
+async function addConcept(page, draftChoice, localMinute = '2026-11-16T00:30') {
+  if (typeof draftChoice === 'string') {
+    const option = page.locator('#m07-draft option').filter({ hasText:draftChoice });
+    await page.locator('#m07-draft').selectOption(await option.getAttribute('value'));
+  } else {
+    await page.locator('#m07-draft').selectOption({ index:draftChoice });
+  }
   await page.locator('#m07-channel').selectOption('x');
   await page.locator('#m07-calendar-zone').selectOption('UTC');
   await page.locator('#m07-calendar-date').fill(localMinute);
@@ -39,16 +52,37 @@ async function expectEmptyPrivateBoard(page) {
   assert.doesNotMatch(await page.locator('#m07-week-board').innerText(), /PRIVATE_EDITORIAL_BODY|hypothetical editorial draft/i);
 }
 
+/** Share the responsive WCAG check across the existing weekly board and editable calendar. */
+async function assertAccessibleAtViewports(page, root, rectTarget) {
+  for (const width of [390, 768, 1366]) {
+    await page.setViewportSize({ width, height:900 });
+    const rect = await page.locator(rectTarget).boundingBox();
+    assert.ok(rect && rect.x >= -1 && rect.x + rect.width <= width + 1,
+      'LOCAL controls must fit the ' + width + 'px viewport');
+  }
+  const result = await new AxeBuilder({ page }).include(root)
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  assert.deepEqual(result.violations.map(x => ({ id:x.id, impact:x.impact })), []);
+}
+
+/** Scoped synthetic sign-in fixture with guaranteed browser/DB cleanup. */
+async function withLocalSession(fn) {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    await signIn(app.page);
+    await fn(app.page,app);
+  } finally {
+    await app.close();
+  }
+}
+
 test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no egress', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({ headless:true, admin:true });
   try {
     const { page } = app;
     assert.equal(await page.locator('#m07-weekly').isVisible(), false);
     await signIn(page);
-    for (const title of ['First hypothetical editorial draft', 'Second hypothetical editorial draft']) {
-      await createFictionalDraft(page, title);
-      await page.locator('#new-draft').click();
-    }
+    await seedFictionalDrafts(page, ['First hypothetical editorial draft', 'Second hypothetical editorial draft']);
     assert.equal(await page.locator('#m07-draft option').count(), 3);
     await addConcept(page, 1);
     await addConcept(page, 2);
@@ -66,14 +100,7 @@ test('M07-D: LOCAL weekly collision, channel filter, zone boundary, WCAG and no 
     assert.doesNotMatch(await page.locator('#m07-week-board').innerText(), /PRIVATE_EDITORIAL_BODY|example\.org/);
     await page.locator('#m07-week-filter').focus();
     assert.equal(await page.evaluate(() => document.activeElement.id), 'm07-week-filter');
-    for (const width of [390, 768, 1366]) {
-      await page.setViewportSize({ width, height:900 });
-      const rect = await page.locator('#m07-weekly').boundingBox();
-      assert.ok(rect && rect.x >= -1 && rect.x + rect.width <= width + 1);
-    }
-    const accessibility = await new AxeBuilder({ page }).include('#m07-weekly')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
-    assert.deepEqual(accessibility.violations.map(x => ({ id:x.id, impact:x.impact })), []);
+    await assertAccessibleAtViewports(page, '#m07-weekly', '#m07-weekly');
     await page.locator('#m07-calendar-list button').first().click();
     assert.equal(await page.locator('.m07-week-conflict').count(), 0);
     await page.locator('#m07-calendar-clear').click();
@@ -112,4 +139,233 @@ test('M07-D: refresh, sign-out and revoked passkey erase private week data', {ti
     await expectEmptyPrivateBoard(page);
     assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
   } finally { await app.close(); }
+});
+
+
+test('M07-E: weekly navigation opens only the authorized draft; keyboard and unsaved guard', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const { page } = app;
+    await signIn(page);
+    await seedFictionalDrafts(page, ['First fictional weekly destination', 'Second fictional weekly destination']);
+    await addConcept(page, 'First fictional weekly destination');
+    await addConcept(page, 'Second fictional weekly destination', '2026-11-16T01:30');
+    await page.locator('#m07-week-zone').selectOption('America/New_York');
+    await page.locator('#m07-week-filter').selectOption('x');
+
+    const buttons = page.locator('#m07-week-board .m07-week-open');
+    assert.equal(await buttons.count(), 2);
+    assert.equal(await buttons.first().getAttribute('type'), 'button');
+    assert.match(await buttons.first().innerText(), /^Open LOCAL draft/);
+
+    await buttons.first().focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() =>
+      document.querySelector('[name="title"]').value === 'First fictional weekly destination');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('name')), 'title');
+
+    await page.locator('[name="title"]').fill('PRIVATE UNSAVED TITLE');
+    page.once('dialog', async dialog => { assert.equal(dialog.type(), 'confirm'); await dialog.dismiss(); });
+    await buttons.nth(1).click();
+    assert.equal(await page.locator('[name="title"]').inputValue(), 'PRIVATE UNSAVED TITLE');
+    assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('m07-week-open')), true);
+
+    page.once('dialog', async dialog => { assert.equal(dialog.type(), 'confirm'); await dialog.accept(); });
+    await buttons.nth(1).click();
+    await page.waitForFunction(() =>
+      document.querySelector('[name="title"]').value === 'Second fictional weekly destination');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('name')), 'title');
+    await buttons.first().focus();
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() =>
+      document.querySelector('[name="title"]').value === 'First fictional weekly destination');
+
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 2);
+    assert.match(await page.locator('#m07-week-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally { await app.close(); }
+});
+
+test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const { page } = app;
+    await signIn(page);
+    await createFictionalDraft(page, 'Only fictional private weekly destination');
+    await page.locator('#new-draft').click();
+    await addConcept(page, 1);
+    const button = page.locator('#m07-week-board .m07-week-open').first();
+    assert.equal(await button.count(), 1);
+
+    await page.route('**/admin/articles/*', route =>
+      route.fulfill({ status:404, contentType:'application/json', body:'{"error":"missing"}' }));
+    await button.click();
+    await page.getByText('LOCAL draft unavailable; refresh your list').waitFor({ timeout:10000 });
+    assert.equal(await page.locator('[name="body"]').inputValue(), '');
+    await page.unroute('**/admin/articles/*');
+
+    const staleElement = await button.elementHandle();
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({ timeout:20000 });
+    await expectEmptyPrivateBoard(page);
+    // Fixture allows authenticated /admin/articles/{id} reads, so checking
+    // only disallowed egress cannot detect an unauthorized stale click.
+    const draftReads = () => app.networkAttempts.filter(entry =>
+      /\/admin\/articles\/[0-9a-f-]{36}$/i.test(new URL(entry.url).pathname)).length;
+    const beforeStaleClick = draftReads();
+    await staleElement.evaluate(node => node.click());
+    await page.waitForTimeout(250);
+    assert.equal(draftReads(), beforeStaleClick, 'Stale weekly button must not read a draft');
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+
+    await addConcept(page, 1);
+    await page.route('**/admin/articles/*', route =>
+      route.fulfill({ status:401, contentType:'application/json', body:'{"error":"unauthorized"}' }));
+    await page.locator('#m07-week-board .m07-week-open').click();
+    await page.getByText('Not authenticated', { exact:true }).waitFor({ timeout:20000 });
+    await expectEmptyPrivateBoard(page);
+    assert.equal(await page.locator('[name="body"]').inputValue(), '');
+    assert.equal(await page.locator('#m07-weekly').isVisible(), false);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally { await app.close(); }
+});
+
+
+test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and stale controls', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const { page } = app;
+    await signIn(page);
+    await seedFictionalDrafts(page, ['First fictional edit concept', 'Second fictional edit concept']);
+    await addConcept(page, 'First fictional edit concept', '2026-11-16T00:30');
+    await addConcept(page, 'Second fictional edit concept', '2026-11-16T00:30');
+    assert.equal(await page.locator('.m07-week-conflict').count(), 2);
+    const edits = page.locator('#m07-calendar-list .m07-calendar-edit');
+    assert.equal(await edits.count(), 2);
+    const firstConcept = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText:'First fictional edit concept' }).first();
+    await firstConcept.locator('.m07-calendar-edit').focus();
+    await page.keyboard.press('Enter');
+    const editor = firstConcept.locator('.m07-calendar-editor');
+    assert.equal(await editor.isVisible(), true);
+    assert.equal(await page.evaluate(() => document.activeElement?.className), 'm07-edit-time');
+    await editor.locator('.m07-edit-channel').selectOption('instagram');
+    await editor.locator('.m07-edit-time').fill('2026-11-16T01:30');
+    await editor.locator('.m07-calendar-cancel').click();
+    assert.equal(await editor.isVisible(), false);
+    assert.equal(await page.locator('.m07-week-conflict').count(), 2);
+    assert.equal(await editor.locator('.m07-edit-channel').inputValue(), 'x');
+    assert.equal(await editor.locator('.m07-edit-time').inputValue(), '2026-11-16T00:30');
+
+    await firstConcept.locator('.m07-calendar-edit').click();
+    assert.equal(await editor.locator('[role="status"]').innerText(), 'MEMORY ONLY · NOT SCHEDULED · NOT POSTED');
+    await editor.locator('.m07-edit-channel').selectOption('instagram');
+    await editor.locator('.m07-edit-zone').selectOption('America/New_York');
+    await editor.locator('.m07-edit-time').fill('2026-11-01T01:30');
+    await editor.locator('.m07-calendar-save').click();
+    assert.match(await editor.locator('[role="status"]').innerText(), /Invalid or duplicate/);
+    assert.equal(await page.locator('.m07-week-conflict').count(), 2);
+    await editor.locator('.m07-edit-zone').selectOption('UTC');
+    await editor.locator('.m07-edit-time').fill('2026-11-16T01:30');
+    await editor.locator('.m07-calendar-save').click();
+    assert.equal(await page.locator('.m07-week-conflict').count(), 0);
+    assert.match(await page.locator('#m07-calendar-status').innerText(), /Edited LOCAL hypothetical concept/);
+    assert.match(await page.locator('#m07-calendar-list').innerText(), /INSTAGRAM/);
+    assert.match(await page.locator('#m07-week-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
+
+    // Add another time for the same draft, then reject a duplicate edit.
+    await addConcept(page, 'First fictional edit concept', '2026-11-16T02:30');
+    // Target the 01:30 edited idea for this draft, not the unrelated draft.
+    const first = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText:'First fictional edit concept · INSTAGRAM · 2026-11-16T01:30' }).first();
+    await first.locator('.m07-calendar-edit').click();
+    await first.locator('.m07-edit-channel').selectOption('x');
+    await first.locator('.m07-edit-time').fill('2026-11-16T02:30');
+    await first.locator('.m07-calendar-save').click();
+    assert.match(await first.locator('[role="status"]').innerText(), /Invalid or duplicate/);
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 3);
+
+    await assertAccessibleAtViewports(page, '#m07-calendar', '#m07-calendar-list .m07-calendar-editor:not([hidden])');
+    const oldEdit = await first.locator('.m07-calendar-save').elementHandle();
+    const draftReads = () => app.networkAttempts.filter(entry =>
+      /\/admin\/articles\/[0-9a-f-]{36}$/i.test(new URL(entry.url).pathname)).length;
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({ timeout:20000 });
+    await expectEmptyPrivateBoard(page);
+    const readsBefore = draftReads();
+    await oldEdit.evaluate(node => node.click());
+    await page.waitForTimeout(200);
+    assert.equal(draftReads(),readsBefore);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),0);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  } finally { await app.close(); }
+});
+
+
+test('M07-G: conflict choices are synthetic, require explicit confirmation, remain accessible and fail closed', {timeout:120_000}, async () => {
+  await withLocalSession(async (page,app) => {
+    await seedFictionalDrafts(page, ['First hypothetical conflict draft', 'Second hypothetical conflict draft']);
+    await addConcept(page,'First hypothetical conflict draft','2026-11-16T00:30');
+    await addConcept(page,'Second hypothetical conflict draft','2026-11-16T00:30');
+    assert.equal(await page.locator('.m07-week-conflict').count(),2);
+    const first = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:'First hypothetical conflict draft'}).first();
+    const suggest = first.locator('.m07-conflict-suggest');
+    assert.equal(await suggest.count(),1);
+    await suggest.focus();
+    await page.keyboard.press('Enter');
+    const panel = first.locator('.m07-suggestion-panel');
+    assert.equal(await panel.isVisible(),true);
+    const chooser = panel.locator('.m07-suggestion-choice');
+    assert.equal(await chooser.locator('option').count(),4);
+    assert.equal(await chooser.inputValue(),'');
+    assert.match(await panel.innerText(),/NOT SCHEDULED|NOT POSTED/);
+    await panel.locator('.m07-suggestion-confirm').click();
+    assert.equal(await page.locator('.m07-week-conflict').count(),2,
+      'Unselected suggestion may not change a concept');
+    await assertAccessibleAtViewports(page,'#m07-calendar',
+      '#m07-calendar-list .m07-suggestion-panel:not([hidden])');
+
+    const candidate = await chooser.locator('option').nth(1).getAttribute('value');
+    assert.ok(candidate && candidate !== '2026-11-16T00:30:00.000Z');
+    await chooser.selectOption(candidate);
+    const staleConfirm = await panel.locator('.m07-suggestion-confirm').elementHandle();
+    await panel.locator('.m07-suggestion-confirm').click();
+    assert.equal(await page.locator('.m07-week-conflict').count(),0);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),2);
+    assert.match(await page.locator('#m07-calendar-status').innerText(),
+      /Edited LOCAL hypothetical concept/);
+    assert.match(await page.locator('#m07-week-status').innerText(),/NOT SCHEDULED · NOT POSTED/);
+    assert.equal(await page.locator('.m07-conflict-suggest').count(),0);
+    assert.doesNotMatch(await page.locator('#m07-calendar-list').innerText(),
+      /PRIVATE_EDITORIAL_BODY_MUST_NOT_APPEAR|example\.org/);
+
+    await staleConfirm.evaluate(node=>node.click());
+    assert.equal(await page.locator('#m07-calendar-list li').count(),2);
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    await expectEmptyPrivateBoard(page);
+    await staleConfirm.evaluate(node=>node.click());
+    await expectEmptyPrivateBoard(page);
+    // Same authenticated fixture: cancel and logout must also discard choices.
+    await addConcept(page,'First hypothetical conflict draft');
+    await addConcept(page,'Second hypothetical conflict draft');
+    const again = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({hasText:'First hypothetical conflict draft'}).first();
+    await again.locator('.m07-conflict-suggest').click();
+    const choiceAgain = again.locator('.m07-suggestion-choice');
+    await choiceAgain.selectOption({index:1});
+    await again.locator('.m07-calendar-cancel').click();
+    assert.equal(await again.locator('.m07-suggestion-panel').isVisible(),false);
+    assert.equal(await choiceAgain.locator('option').count(),0);
+    assert.equal(await page.locator('.m07-week-conflict').count(),2);
+    await again.locator('.m07-conflict-suggest').click();
+    assert.equal(await choiceAgain.inputValue(),'');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20000});
+    await expectEmptyPrivateBoard(page);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,2);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  });
 });

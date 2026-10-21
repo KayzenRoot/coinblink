@@ -15,6 +15,18 @@ for (const [locale, title, sample, query] of [
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
     await expect(page.locator("[data-m02-entry]")).toHaveCount(3);
     await expect(page.getByText(sample, { exact: true })).toBeVisible();
+    // Browser-level verification of accent-insensitive search and accessible reset.
+    await page.locator("[data-m02-search]").fill(locale === "pt-br" ? "SEGURANCA" : "SAFETY");
+    await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(1);
+    await page.locator("[data-m02-category-select]").selectOption("protocol");
+    await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(0);
+    await expect(page.locator("[data-m02-empty]")).toBeVisible();
+    await page.getByRole("button", { name: locale === "pt-br" ? "Limpar filtros" : "Clear filters" }).click();
+    await expect(page.locator("[data-m02-search]")).toHaveValue("");
+    await expect(page.locator("[data-m02-category-select]")).toHaveValue("all");
+    await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(3);
+    await expect(page.locator("[data-m02-empty]")).toBeHidden();
+    await expect(page.locator("[data-m02-search]")).toBeFocused();
     await page.locator("[data-m02-search]").fill("unlikely-query-for-demo");
     await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(0);
     await expect(page.locator("[data-m02-empty]")).toBeVisible();

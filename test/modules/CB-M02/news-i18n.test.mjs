@@ -17,6 +17,8 @@ test("M02 localizes exactly the same 3 invented, unpublished rows", () => {
     assert.equal(resolveMockNews(pt.slug).item, row);
   }
   assert.match(newsCopy("pt-br").disclaimer, /NÃO PUBLICADAS/u);
+  assert.equal(newsCopy("en").resetFilters, "Clear filters");
+  assert.equal(newsCopy("pt-br").resetFilters, "Limpar filtros");
   assert.equal(newsCopy("de").disclaimer, newsCopy("en").disclaimer);
 });
 test("M02 public routes never import drafts, provider secrets or external sources", () => {

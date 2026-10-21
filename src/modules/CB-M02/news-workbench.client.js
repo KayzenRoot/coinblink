@@ -4,6 +4,7 @@ const normalizeSearch = value => value.normalize("NFD").replace(/[\u0300-\u036f]
 for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
   const search = root.querySelector("[data-m02-search]");
   const category = root.querySelector("[data-m02-category-select]");
+  const reset = root.querySelector("[data-m02-reset]");
   const count = root.querySelector("[data-m02-result-count]");
   const empty = root.querySelector("[data-m02-empty]");
   const entries = [...root.querySelectorAll("[data-m02-entry]")];
@@ -21,4 +22,10 @@ for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
   };
   search.addEventListener("input", filter);
   category.addEventListener("change", filter);
+  reset.addEventListener("click", () => {
+    search.value = "";
+    category.value = "all";
+    filter();
+    search.focus();
+  });
 }

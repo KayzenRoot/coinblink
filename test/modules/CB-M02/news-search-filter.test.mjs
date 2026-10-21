@@ -7,8 +7,9 @@ const clientSource = readFileSync(new URL("../../../src/modules/CB-M02/news-work
 
 function makeWorkbench() {
   const listeners = new Map();
-  const search = { value: "", addEventListener: (name, callback) => listeners.set("search:" + name, callback) };
+  const search = { value: "", focused: false, focus() { this.focused = true; }, addEventListener: (name, callback) => listeners.set("search:" + name, callback) };
   const category = { value: "all", addEventListener: (name, callback) => listeners.set("category:" + name, callback) };
+  const reset = { addEventListener: (name, callback) => listeners.set("reset:" + name, callback) };
   const count = { textContent: "3 exemplos fictícios", dataset: { m02CountLabel: "exemplos fictícios" } };
   const empty = { hidden: true };
   const entries = [
@@ -19,6 +20,7 @@ function makeWorkbench() {
   const elements = new Map([
     ["[data-m02-search]", search],
     ["[data-m02-category-select]", category],
+    ["[data-m02-reset]", reset],
     ["[data-m02-result-count]", count],
     ["[data-m02-empty]", empty],
   ]);
@@ -28,7 +30,7 @@ function makeWorkbench() {
   };
   const document = { querySelectorAll: key => key === "[data-m02-root]" ? [root] : [] };
   runInNewContext(clientSource, { globalThis: { document } }, { filename: "news-workbench.client.js" });
-  return { search, category, count, empty, entries, onInput: () => listeners.get("search:input")(), onChange: () => listeners.get("category:change")() };
+  return { search, category, count, empty, entries, onInput: () => listeners.get("search:input")(), onChange: () => listeners.get("category:change")(), onReset: () => listeners.get("reset:click")() };
 }
 
 test("M02 fictional localized search folds diacritics and case without network", () => {
@@ -57,10 +59,12 @@ test("M02 category filtering, empty results and reset remain local", () => {
   ui.category.value = "security";
   ui.onChange();
   assert.deepEqual(ui.entries.map(x => x.hidden), [false, true, true]);
-  ui.search.value = "";
-  ui.category.value = "all";
-  ui.onInput();
+  ui.onReset();
+  assert.equal(ui.search.value, "");
+  assert.equal(ui.category.value, "all");
+  assert.equal(ui.search.focused, true);
   assert.deepEqual(ui.entries.map(x => x.hidden), [false, false, false]);
+  assert.equal(ui.count.textContent, "3 exemplos fictícios");
   assert.equal(ui.empty.hidden, true);
 });
 

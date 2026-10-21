@@ -231,6 +231,100 @@ test('M07-E: draft missing, revoked session and stale UI fail closed', {timeout:
 });
 
 
+
+test('M07-H: accessible assisted cross-channel copy previews, confirms, and preserves originals', {timeout:120_000}, async () => {
+  await withLocalSession(async (page, app) => {
+    await createFictionalDraft(page, 'Fictional cross-channel LOCAL concept');
+    await page.locator('#new-draft').click();
+    await addConcept(page, 1, '2026-11-16T00:30');
+    const original = page.locator('#m07-calendar-list .m07-calendar-item').first();
+    const open = original.locator('.m07-calendar-copy');
+    assert.equal(await open.getAttribute('type'), 'button');
+    assert.match(await open.getAttribute('aria-label'), /Copy hypothetical concept/);
+    await open.focus();
+    await page.keyboard.press('Enter');
+    const panel = original.locator('.m07-copy-panel');
+    assert.equal(await panel.isVisible(), true);
+    assert.equal(await page.evaluate(() => document.activeElement?.className), 'm07-copy-channel');
+    const channel = panel.locator('.m07-copy-channel');
+    assert.deepEqual(await channel.locator('option').evaluateAll(options => options.map(o => o.value)),
+      ['', 'instagram', 'tiktok']);
+    await channel.selectOption('instagram');
+    assert.match(await panel.locator('.m07-copy-preview').innerText(),
+      /Preview only.*INSTAGRAM.*PLANNED_CONCEPT_ONLY.*DRAFT_ONLY.*NOT SCHEDULED.*NOT POSTED/);
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 1, 'Preview must not add an idea');
+    await panel.locator('.m07-copy-cancel').click();
+    assert.equal(await panel.isVisible(), false);
+    assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('m07-calendar-copy')), true);
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 1);
+
+    await open.click();
+    await channel.selectOption('instagram');
+    await panel.locator('.m07-copy-confirm').click();
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 2);
+    assert.match(await page.locator('#m07-calendar-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
+    assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText: ' · X · ' }).count(), 1, 'Original must remain unchanged');
+    assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText: ' · INSTAGRAM · ' }).count(), 1);
+    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(), 2);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+
+    const originalAgain = page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText: ' · X · ' }).first();
+    await originalAgain.locator('.m07-calendar-copy').click();
+    const p = originalAgain.locator('.m07-copy-panel');
+    await p.locator('.m07-copy-channel').selectOption('instagram');
+    assert.equal(await p.locator('.m07-copy-confirm').isDisabled(), true);
+    assert.match(await p.locator('.m07-copy-preview').innerText(), /Duplicate/);
+    await p.locator('.m07-copy-channel').selectOption('tiktok');
+    await p.locator('.m07-copy-confirm').click();
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 3);
+    assert.equal(await page.locator('#m07-calendar-list .m07-calendar-item')
+      .filter({ hasText: ' · TIKTOK · ' }).count(), 1);
+    assert.match(await page.locator('#m07-week-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
+    await page.locator('#m07-calendar-list .m07-calendar-item').first()
+      .locator('.m07-calendar-copy').click();
+    await assertAccessibleAtViewports(page, '#m07-calendar', '#m07-calendar');
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  });
+});
+
+test('M07-H: cap, stale click, refresh and logout never create phantom concepts', {timeout:120_000}, async () => {
+  await withLocalSession(async (page, app) => {
+    await createFictionalDraft(page, 'Fictional bounded copied concept');
+    await page.locator('#new-draft').click();
+    for (let minute = 0; minute < 20; minute++) {
+      await addConcept(page, 1, '2026-11-16T00:' + String(minute).padStart(2, '0'));
+    }
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 20);
+    const stale = await page.locator('#m07-calendar-list .m07-calendar-copy').first().elementHandle();
+    const first = page.locator('#m07-calendar-list .m07-calendar-item').first();
+    await first.locator('.m07-calendar-copy').click();
+    const panel = first.locator('.m07-copy-panel');
+    await panel.locator('.m07-copy-channel').selectOption('instagram');
+    assert.equal(await panel.locator('.m07-copy-confirm').isDisabled(), true);
+    assert.match(await panel.locator('.m07-copy-preview').innerText(), /20-concept limit/);
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 20);
+    const existingReads = app.networkAttempts.length;
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    await expectEmptyPrivateBoard(page);
+    await stale.evaluate(node => node.click());
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 0);
+    assert.equal(app.networkAttempts.length, existingReads + 1, 'Only the refresh GET is permitted');
+
+    await addConcept(page, 1);
+    const later = await page.locator('#m07-calendar-list .m07-calendar-copy').first().elementHandle();
+    await page.locator('#logout').click();
+    await expectEmptyPrivateBoard(page);
+    await later.evaluate(node => node.click());
+    assert.equal(await page.locator('#m07-calendar-list li').count(), 0);
+    assert.equal((await app.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed), []);
+  });
+});
+
 test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and stale controls', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({ headless:true, admin:true });
   try {

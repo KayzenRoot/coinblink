@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "mission": "CB-SEC-182-CONFIDENTIAL-READONLY-001",
+  "purpose": "defensive_static_security_triage",
+  "publication_status": "NOT_PUBLISHED_AWAITING_OWNER_AUTHORIZATION",
+  "repository": "KayzenRoot/coinblink",
+  "main_sha": "751da7bdf55578c73a0165af322f8e314ebcb38e",
+  "historical_pr": 182,
+  "historical_head_sha": "309e9f1b382216cc5fa5b8ee38b85cbcb39e72f9",
+  "historical_pr_state": "CLOSED_UNMERGED",
+  "review_method": "read_only_github_source_inspection",
+  "historical_baseline": {
+    "cases": 2,
+    "historical_impact_counts": {
+      "HIGH": 1,
+      "MEDIUM": 1
+    },
+    "historical_status_is_not_current_status": true
+  },
+  "preflight": {
+    "main_sha_verified": true,
+    "historical_head_sha_verified": true,
+    "historical_pr_closed_unmerged_verified": true,
+    "canonical_aggregate_evidence_verified": true,
+    "source_read_from_exact_main": true,
+    "source_diffs_written": 0,
+    "github_writes_performed": 0
+  },
+  "assessment": {
+    "reviewed_cases": 2,
+    "historical_patterns_still_present_in_current_source": 2,
+    "cases_with_non_security_use_context_in_static_review": 2,
+    "demonstrated_exploitable_security_risks": 0,
+    "current_issue_level_sonar_states_verified": false,
+    "runtime_validation_performed": false,
+    "static_evidence_sufficiency": "PARTIAL",
+    "confidence": "MODERATE_FOR_CONTEXT_LOW_FOR_RUNTIME_EXPOSURE",
+    "overall_verdict": "NO_CURRENT_RISK_ESTABLISHED",
+    "interpretation": "No exploitable security risk was established by static source-context review; this does not prove vulnerability absence, runtime safety or issue remediation.",
+    "remediation_decision": "NO_IMMEDIATE_CODE_CHANGE_JUSTIFIED_BY_THIS_STATIC_REVIEW",
+    "follow_up": "OPTIONAL_PRIVATE_TARGETED_VALIDATION_BEFORE_CLOSING_HISTORICAL_FINDINGS"
+  },
+  "privacy": {
+    "scope": "AGGREGATE_ONLY",
+    "issue_level_details_included": false,
+    "source_paths_or_lines_included": false,
+    "rule_ids_or_issue_ids_included": false,
+    "issue_messages_or_code_snippets_included": false,
+    "credentials_or_exploit_instructions_included": false,
+    "screening": "PASSED_LOCAL_ALLOWLIST_AND_PATTERN_CHECK"
+  },
+  "limitations": [
+    "Source review was static and read-only; no tests or exploits were executed.",
+    "No proof of end-to-end runtime reachability or lack of external exposure.",
+    "GitHub source search is not an exhaustive dependency or dataflow analysis.",
+    "Historical scanner findings were not freshly queried from the scanner at the current main SHA.",
+    "No human security approval or full remediation claim is implied.",
+    "Published historical issue-level exposure remains a separate privacy concern."
+  ]
+}

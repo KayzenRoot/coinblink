@@ -65,6 +65,14 @@ A leitura automática dos documentos de repositório **não é garantida em conv
 
 A **fonte da verdade operacional é sempre o repositório na data da próxima sessão**, não os SHAs históricos deste handoff.
 
+## Fluxo simplificado Chat + Codex (preferência atualizada em 2026-10-20)
+
+- **Chat é o centro de decisões.** Repositório GitHub é fonte persistente de handoffs; Codex executa tarefas externas ou complexas. Não exigir troca para Work para dar continuidade.
+- Quando uma missão precisar de instruções ou arquivos, criar documento de handoff em **branch documental própria, com PR sem merge**. Entregar no chat o link GitHub e um prompt curto para Codex ler o documento diretamente por ref/URL verificados, dispensando downloads e anexos manuais.
+- O Codex poderá salvar **evidências sanitizadas diretamente em branch/PR especificamente autorizada**, depois de verificar confidencialidade e segredos. Nunca gravar vulnerabilidades exploráveis não corrigidas em repositório público.
+- As permissões da missão devem ser explícitas: escopo de leitura/escrita, caminhos permitidos, STOP CONDITION e proibição de merge/deploy por padrão. Nenhum handoff autoriza fusão automática, mudança de Quality Gate ou operação LIVE.
+- A investigação SonarCloud #147 foi registrada em 2026-10-20. Consultar [handoff Codex](operations/CODEX_SONAR_147_READONLY.md), [relatório agregado histórico](audits/sonar/issue-147/report.md) e [status histórico](audits/sonar/issue-147/status.json). A Issue #147 foi encerrada e a PR #180 integrada posteriormente; revalidar o estado atual. A PR #182 permanece um relatório público alternativo em Draft, não a fonte canônica deste handoff. Qualquer nova investigação, escrita ou divulgação exige autorização específica.
+
 ## Limites
 
 - Este guia **não substitui** `README.md`, `docs/BUILD_FIRST.md`, testes nem controles de segurança.

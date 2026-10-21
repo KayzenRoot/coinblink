@@ -27,6 +27,15 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-revised-listed').innerText(), '0');
     assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
     assert.equal(await page.locator('#m06-review-list li').count(), 0);
+    assert.equal(await page.locator('#m06-insights-status').innerText(), 'MEASURED_LOCAL');
+    assert.equal(await page.locator('#m06-insights-scope').innerText(), 'MEASURED_LOCAL');
+    assert.equal(await page.locator('#m06-insights-missing').innerText(), '0');
+    assert.equal(await page.locator('#m06-insights-older').innerText(), '0');
+    assert.equal(await page.locator('#m06-insights-recent').innerText(), '0');
+    assert.equal(await page.locator('#m06-insights-trend li').count(), 7);
+    await page.locator('#m06-review-filter').selectOption('older-seven-days');
+    assert.equal(await page.locator('#m06-review-list li').count(), 0);
+    await page.locator('#m06-review-filter').selectOption('all');
     await page.locator('[name="title"]').fill('LOCAL admin test draft');
     await page.locator('[name="summary"]').fill('Synthetic test draft never published');
     await page.locator('[name="body"]').fill('Private test body stored in local D1');
@@ -51,6 +60,15 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-review-list li').count(), 1);
     assert.match(await page.locator('#m06-review-list').innerText(), /SOURCE_VERIFICATION_PENDING/);
     assert.match(await page.locator('#m06-review-list').innerText(), /CREDIT_PRESENT_UNVERIFIED/);
+    assert.equal(await page.locator('#m06-insights-missing').innerText(), '0');
+    assert.equal(await page.locator('#m06-insights-older').innerText(), '0');
+    assert.equal(await page.locator('#m06-insights-recent').innerText(), '1');
+    assert.equal(await page.locator('#m06-insights-trend li').count(), 7);
+    assert.equal((await page.locator('#m06-insights-trend').innerText()).includes('LOCAL admin test draft'), false);
+    await page.locator('#m06-review-filter').selectOption('older-seven-days');
+    assert.equal(await page.locator('#m06-review-list li').count(), 0);
+    await page.locator('#m06-review-filter').selectOption('all');
+    assert.equal(await page.locator('#m06-review-list li').count(), 1);
     const response = await page.evaluate(async () => {
       const r = await fetch('/admin/articles', { credentials: 'same-origin' });
       return { status: r.status, body: await r.json() };
@@ -69,6 +87,12 @@ test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and re
     assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
     assert.equal(await page.locator('#m06-review-list li').count(), 0);
     assert.equal(await page.locator('#m06-review-count').textContent(), 'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-insights-status').textContent(), 'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-insights-scope').textContent(), 'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-insights-missing').textContent(), 'Unavailable');
+    assert.equal(await page.locator('#m06-insights-older').textContent(), 'Unavailable');
+    assert.equal(await page.locator('#m06-insights-recent').textContent(), 'Unavailable');
+    assert.equal(await page.locator('#m06-insights-trend li').count(), 0);
     assert.equal(await page.locator('#draft-preview-body').textContent(), '', 'logout must clear draft body');
     assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0,

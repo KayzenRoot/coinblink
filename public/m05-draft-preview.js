@@ -174,7 +174,7 @@ export function parseLocalDraftMarkdown(raw) {
     let restored = angles;
     if (isVersion2) {
       const titleEscape = isTitle ? /&#35;/gu : /^&#35;/gmu;
-      restored = angles.replace(titleEscape, "#");
+      restored = angles.replaceAll(titleEscape, "#");
     }
     return isVersion2 ? restored.replaceAll("&amp;", "&") : restored;
   };

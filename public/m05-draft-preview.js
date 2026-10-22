@@ -171,12 +171,11 @@ export function parseLocalDraftMarkdown(raw) {
     const angles = value.replaceAll("&lt;", "<").replaceAll("&gt;", ">");
     // Decode the v2 heading escape before ampersands: literal &#35;
     // must not be mistaken for an originally encoded leading '#'.
-    let restored = angles;
-    if (isVersion2) {
-      const titleEscape = isTitle ? /&#35;/gu : /^&#35;/gmu;
-      restored = angles.replaceAll(titleEscape, "#");
-    }
-    return isVersion2 ? restored.replaceAll("&amp;", "&") : restored;
+    if (!isVersion2) return angles;
+    const restored = isTitle
+      ? angles.replaceAll("&#35;", "#")
+      : angles.replaceAll(/^&#35;/gmu, "#");
+    return restored.replaceAll("&amp;", "&");
   };
   const result = prepareLocalDraft({
     title: restore(title, true),

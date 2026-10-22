@@ -182,3 +182,59 @@ for (const locale of ["en", "pt-br"]) {
     expect(writes).toEqual([]);
   });
 }
+
+
+for (const locale of ["en", "pt-br"]) {
+  test("M02 source evidence review stays local and rejects malformed import: " + locale, async ({ page }) => {
+    const { addLocalSource } = await import("../src/modules/CB-M05/local-source-notes.mjs");
+    await page.setViewportSize({ width: 390, height: 844 });
+    const remote = [], writes = [];
+    page.on("request", request => {
+      if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) remote.push(request.url());
+      if (!["GET", "HEAD"].includes(request.method())) writes.push(request.url());
+    });
+    await page.goto("/" + locale + "/news");
+    const root = page.locator("[data-m02-local-preview]");
+    const input = root.locator("[data-m02-draft-file]");
+    const panel = root.locator("[data-m02-evidence-review]");
+    await expect(panel).toBeHidden();
+    const body = addLocalSource(
+      "TODO verify the fictional 42% report. [^cb9] These numbers are only local editorial claims.",
+      "Uncited example", "https://example.test/uncited",
+    ).value;
+    const draft = prepareLocalDraft({
+      title: "Fictional evidence review", author: "Synthetic editor",
+      summary: "This story is a private fixture for source-integrity review.",
+      body, source: "https://example.test/original",
+    });
+    await input.setInputFiles({ name: "fixture.md", mimeType: "text/markdown", buffer: Buffer.from(draftToMarkdown(draft)) });
+    await expect(panel).toBeVisible();
+    await expect(root.locator("[data-m02-evidence-summary]")).toContainText("3");
+    await expect(root.locator("[data-m02-evidence-signals] li")).toHaveCount(3);
+    await expect(panel).toContainText("[^cb9]");
+    await expect(panel).toContainText("[^cb1]");
+    await expect(panel).toContainText(locale === "pt-br" ? "NÃO VERIFICA" : "DOES NOT VERIFY");
+    await expect(panel.locator("a,img,iframe,script")).toHaveCount(0);
+    await input.setInputFiles({ name: "invalid.md", mimeType: "text/markdown", buffer: Buffer.from("# invalid") });
+    await expect(panel).toBeHidden();
+    await expect(root.locator("[data-m02-evidence-signals] li")).toHaveCount(0);
+    const clean = prepareLocalDraft({
+      title: "Another fictional story", author: "Synthetic editor",
+      summary: "A fictional clean looking article with no cited sources.",
+      body: "A fictional body longer than forty characters without any citation notes.",
+      source: "https://example.test/clean",
+    });
+    await input.setInputFiles({ name: "clean.md", mimeType: "text/markdown", buffer: Buffer.from(draftToMarkdown(clean)) });
+    await expect(panel).toBeVisible();
+    await expect(root.locator("[data-m02-evidence-summary]")).toContainText("0");
+    await expect(panel).toContainText(locale === "pt-br" ? "Não é verificação" : "Not verification");
+    await root.locator("[data-m02-draft-clear]").click();
+    await expect(panel).toBeHidden();
+    await page.reload();
+    await expect(page.locator("[data-m02-evidence-review]")).toBeHidden();
+    const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(scan.violations).toEqual([]);
+    expect(remote).toEqual([]);
+    expect(writes).toEqual([]);
+  });
+}

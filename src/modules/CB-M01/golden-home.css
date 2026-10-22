@@ -613,9 +613,6 @@
   .cb-home .chain-lookup__warning { font-size:12px; }
 }
 
-/* Keep the M01 brand lockup horizontal without changing Steward-owned global styles. */
-.cb-home .brand { flex-direction:row; }
-
 @media (min-width:1281px) {
   .cb-home .demo-banner { min-height:22px; padding-block:1px; }
   .cb-home .cb-header { min-height:48px; gap:clamp(9px,1.1vw,17px); }
@@ -675,8 +672,6 @@
     radial-gradient(ellipse at 67% 35%, rgb(166 255 78 / 14%), transparent 60%);
   pointer-events: none;
 }
-.cb-home .coin-art { filter: drop-shadow(0 12px 17px rgb(0 0 0 / 52%)) drop-shadow(0 0 14px rgb(143 239 60 / 35%)); }
-
 .cb-home .scene-energy {
   position:absolute;
   z-index:0;
@@ -754,8 +749,6 @@
 }
 .cb-home .sentiment-gauge b { color:var(--muted); font-size:24px; line-height:1; }
 .cb-home .sentiment-gauge small { margin-top:3px; background:#101914; padding:1px 4px; }
-.cb-home .promo-scene { opacity:.92; filter:drop-shadow(0 0 14px rgb(131 233 63 / 15%)); }
-.cb-home .promo-panel { background:radial-gradient(circle at 84% 38%,rgb(136 227 71 / 26%),transparent 42%),linear-gradient(125deg,#101b14,#0a100d 66%); }
 .cb-home .news-art { position:relative; isolation:isolate; overflow:hidden; text-shadow:0 0 12px rgb(255 238 155 / 40%); }
 .cb-home .news-art::before {
   content:"";

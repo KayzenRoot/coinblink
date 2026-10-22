@@ -65,12 +65,14 @@ const pt = locale === "pt-br";
   import { buildLocalEvidenceReport } from "./local-evidence-report.mjs";
 
   const root = document.querySelector("[data-m02-local-preview]");
-  if (root) {
-    const article = root.querySelector("[data-m02-draft-article]");
-    const draftBody = root.querySelector("[data-m02-draft-body]");
-    const panel = root.querySelector("[data-m02-evidence-review]");
-    const summary = root.querySelector("[data-m02-evidence-summary]");
-    const list = root.querySelector("[data-m02-evidence-signals]");
+  const article = root?.querySelector("[data-m02-draft-article]");
+  const draftBody = root?.querySelector("[data-m02-draft-body]");
+  const panel = root?.querySelector("[data-m02-evidence-review]");
+  const summary = root?.querySelector("[data-m02-evidence-summary]");
+  const list = root?.querySelector("[data-m02-evidence-signals]");
+  if (root instanceof HTMLElement && article instanceof HTMLElement
+      && draftBody instanceof HTMLElement && panel instanceof HTMLElement
+      && summary instanceof HTMLElement && list instanceof HTMLElement) {
     const pt = root.dataset.locale === "pt-br";
     const labels = pt
       ? { repair: "Corrigir notas estruturadas", missing: "Citação sem fonte definida",

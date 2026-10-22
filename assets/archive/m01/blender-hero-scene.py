@@ -118,6 +118,22 @@ def add_rock(name, location, scale, mat, subdivisions=2, facet_mat=None):
     return obj
 
 
+def triangulate_ridge_faces(xs, ys):
+    faces = []
+    width = len(xs)
+    for row in range(len(ys) - 1):
+        for column in range(width - 1):
+            a = row * width + column
+            b = a + 1
+            c = a + width
+            d = c + 1
+            if random.choice((True, False)):
+                faces.extend(((a, b, d), (a, d, c)))
+            else:
+                faces.extend(((a, b, c), (b, d, c)))
+    return faces
+
+
 def add_ridge(materials):
     # A layered, denser basalt range; the left side stays low and dark.
     xs = [-8.0 + index * 0.2 for index in range(81)]
@@ -134,18 +150,7 @@ def add_ridge(materials):
             jagged = random.uniform(-0.12, 0.12)
             z = 0.12 + (0.28 + peaks + jagged) * row_factors[row]
             vertices.append((x, y, max(0.08, z)))
-    faces = []
-    width = len(xs)
-    for row in range(len(ys) - 1):
-        for column in range(width - 1):
-            a = row * width + column
-            b = a + 1
-            c = a + width
-            d = c + 1
-            if random.choice((True, False)):
-                faces.extend(((a, b, d), (a, d, c)))
-            else:
-                faces.extend(((a, b, c), (b, d, c)))
+    faces = triangulate_ridge_faces(xs, ys)
     mesh = bpy.data.meshes.new("Original triangulated basalt ridge")
     mesh.from_pydata(vertices, [], faces)
     mesh.materials.clear()

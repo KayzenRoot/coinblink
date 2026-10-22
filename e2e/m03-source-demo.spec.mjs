@@ -27,6 +27,33 @@ test("M03 synthetic sources are accessible, filter locally and never ingest", as
   await outcome.selectOption("all");
   await expect(page.locator("[data-m03-entry]:visible")).toHaveCount(3);
   await expect(page.locator("[data-m03-count]")).toContainText("3 synthetic source examples");
+  await expect(page.getByRole("heading", { name: "Source evidence readiness · DEMO" })).toBeVisible();
+  await expect(page.locator(".m03-evidence-summary")).toContainText("0 approved for public use");
+  const firstReport = page.locator("[data-m03-entry]").first().locator(".m03-report");
+  await firstReport.locator("summary").click();
+  await expect(firstReport).toHaveAttribute("open", "");
+  await expect(firstReport).toContainText("NOT_CAPTURED");
+  await expect(firstReport).toContainText("NO_DIGEST");
+  await expect(firstReport).toContainText("Reuse remains BLOCKED");
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(page.locator("[data-m03-comparison]")).toContainText("Select two different fictional sources");
+  await page.locator("[data-m03-left]").selectOption("demo-source-alpha");
+  await page.locator("[data-m03-right]").selectOption("demo-source-alpha");
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(page.locator("[data-m03-comparison]")).toContainText("No evidence was retrieved");
+  await page.locator("[data-m03-right]").selectOption("demo-source-gamma");
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(page.locator("[data-m03-comparison]")).toContainText("DENIED_RIGHTS");
+  await expect(page.locator("[data-m03-comparison]")).toContainText("UNAVAILABLE");
+  await expect(page.locator("[data-m03-comparison]")).toContainText("BOTH BLOCKED · NO INGESTION · NO PUBLICATION");
+  for (const width of [390, 768, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    const bounds = await page.locator(".m03-comparison").boundingBox();
+    expect(bounds).toBeTruthy();
+    expect(bounds.x).toBeGreaterThanOrEqual(-1);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
+  }
+
   await expect(page.locator("[data-m03-empty]")).toBeHidden();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   expect(network).toEqual([]);

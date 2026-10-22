@@ -12,6 +12,53 @@ const SOURCE_MARKER = "\n\n" + SOURCE_HEADING + "\n";
 const CLAIM_LINE = /^\[CB-CLAIM-(0[1-9]|1[0-2]) \| (NEEDS_HUMAN_REVIEW|REVIEW_NOTED_NOT_VERIFIED) \| source=(none|cb(?:[1-9]|1[0-2]))\] (.{10,220})$/u;
 const SOURCE_LINE = /^\[\^cb([1-9]|1[0-2])\]: (.+) \| https:\/\/\S+$/u;
 
+function parseLocalSourceIds(sourcePart) {
+  const sourceIds = new Set();
+  if (!sourcePart) return sourceIds;
+  const lines = sourcePart.slice(SOURCE_MARKER.length).split("\n");
+  if (lines.length < 1 || lines.length > MAX_LOCAL_CLAIMS) {
+    throw new RangeError("Malformed source-note section");
+  }
+  for (const line of lines) {
+    const match = SOURCE_LINE.exec(line);
+    if (!match || sourceIds.has(Number(match[1]))) {
+      throw new RangeError("Malformed or duplicate source note");
+    }
+    sourceIds.add(Number(match[1]));
+  }
+  return sourceIds;
+}
+
+function parseLocalClaimQueue(withClaims) {
+  const queueIndex = withClaims.lastIndexOf(CLAIM_MARKER);
+  const prose = queueIndex < 0 ? withClaims : withClaims.slice(0, queueIndex);
+  if ((queueIndex < 0 && withClaims.includes(LOCAL_CLAIM_HEADING))
+      || (queueIndex >= 0 && prose.includes(LOCAL_CLAIM_HEADING))) {
+    throw new RangeError("Malformed or duplicate claim queue");
+  }
+  const claims = [];
+  if (queueIndex < 0) return { prose, claims };
+  const lines = withClaims.slice(queueIndex + CLAIM_MARKER.length).split("\n");
+  if (lines.length < 1 || lines.length > MAX_LOCAL_CLAIMS) {
+    throw new RangeError("Invalid claim count");
+  }
+  const ids = new Set();
+  for (const line of lines) {
+    const match = CLAIM_LINE.exec(line);
+    if (!match || ids.has(Number(match[1])) || /[|<>\r\n]/u.test(match[4])) {
+      throw new RangeError("Malformed or duplicate claim item");
+    }
+    const claim = Object.freeze({
+      id: Number(match[1]), state: match[2],
+      sourceId: match[3] === "none" ? null : Number(match[3].slice(2)),
+      claim: match[4],
+    });
+    ids.add(claim.id);
+    claims.push(claim);
+  }
+  return { prose, claims };
+}
+
 function parseBody(body) {
   if (typeof body !== "string" || body.length > MAX_DRAFT) {
     throw new RangeError("Local article exceeds its maximum size");
@@ -25,47 +72,8 @@ function parseBody(body) {
   if (sourceIndex >= 0 && withClaims.includes(SOURCE_HEADING)) {
     throw new RangeError("Duplicate source-note section");
   }
-  const sourceIds = new Set();
-  if (sourcePart) {
-    const lines = sourcePart.slice(SOURCE_MARKER.length).split("\n");
-    if (lines.length < 1 || lines.length > MAX_LOCAL_CLAIMS) {
-      throw new RangeError("Malformed source-note section");
-    }
-    for (const line of lines) {
-      const match = SOURCE_LINE.exec(line);
-      if (!match || sourceIds.has(Number(match[1]))) {
-        throw new RangeError("Malformed or duplicate source note");
-      }
-      sourceIds.add(Number(match[1]));
-    }
-  }
-  const queueIndex = withClaims.lastIndexOf(CLAIM_MARKER);
-  const prose = queueIndex < 0 ? withClaims : withClaims.slice(0, queueIndex);
-  if ((queueIndex < 0 && withClaims.includes(LOCAL_CLAIM_HEADING))
-      || (queueIndex >= 0 && prose.includes(LOCAL_CLAIM_HEADING))) {
-    throw new RangeError("Malformed or duplicate claim queue");
-  }
-  const claims = [];
-  if (queueIndex >= 0) {
-    const lines = withClaims.slice(queueIndex + CLAIM_MARKER.length).split("\n");
-    if (lines.length < 1 || lines.length > MAX_LOCAL_CLAIMS) {
-      throw new RangeError("Invalid claim count");
-    }
-    const ids = new Set();
-    for (const line of lines) {
-      const match = CLAIM_LINE.exec(line);
-      if (!match || ids.has(Number(match[1])) || /[|<>\r\n]/u.test(match[4])) {
-        throw new RangeError("Malformed or duplicate claim item");
-      }
-      const claim = Object.freeze({
-        id: Number(match[1]), state: match[2],
-        sourceId: match[3] === "none" ? null : Number(match[3].slice(2)),
-        claim: match[4],
-      });
-      ids.add(claim.id);
-      claims.push(claim);
-    }
-  }
+  const sourceIds = parseLocalSourceIds(sourcePart);
+  const { prose, claims } = parseLocalClaimQueue(withClaims);
   return { prose, claims, sourcePart, sourceIds };
 }
 

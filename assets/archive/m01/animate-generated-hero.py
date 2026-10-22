@@ -23,13 +23,16 @@ STILL_DIR = EVIDENCE / "hero-cinematic-motion-stills"
 SPRITE_DIR = EVIDENCE / "lightning-sprites-v2"
 MODE = os.environ.get("CB_HERO_ANIMATION_MODE", "frames").lower()
 
+SECONDARY_RIGHT_SPRITE = "lightning-05-secondary-right.png"
+SECONDARY_LEFT_SPRITE = "lightning-06-secondary-left.png"
+
 SPRITE_OPACITY = {
     "lightning-01-charge.png": 0.28,
     "lightning-02-descent.png": 0.45,
     "lightning-03-impact.png": 0.82,
     "lightning-04-afterglow.png": 0.34,
-    "lightning-05-secondary-right.png": 0.66,
-    "lightning-06-secondary-left.png": 0.52,
+    SECONDARY_RIGHT_SPRITE: 0.66,
+    SECONDARY_LEFT_SPRITE: 0.52,
     "lightning-07-ground-fade.png": 0.20,
 }
 SPRITE_SCHEDULE = {
@@ -37,13 +40,13 @@ SPRITE_SCHEDULE = {
     "lightning-02-descent.png": ((20, 21),),
     "lightning-03-impact.png": ((22, 23),),
     "lightning-04-afterglow.png": ((24, 28),),
-    "lightning-05-secondary-right.png": ((60, 61),),
-    "lightning-06-secondary-left.png": ((72, 73),),
+    SECONDARY_RIGHT_SPRITE: ((60, 61),),
+    SECONDARY_LEFT_SPRITE: ((72, 73),),
     "lightning-07-ground-fade.png": ((29, 34), (62, 66), (74, 79)),
 }
 SPRITE_X_OFFSETS = {
-    "lightning-05-secondary-right.png": 0.28,
-    "lightning-06-secondary-left.png": -0.22,
+    SECONDARY_RIGHT_SPRITE: 0.28,
+    SECONDARY_LEFT_SPRITE: -0.22,
 }
 FLASH_STRENGTH_KEYS = (
     (1, 1.0), (21, 1.0), (22, 1.18), (23, 1.28), (24, 1.16),
@@ -100,32 +103,8 @@ def create_sprite_material(name: str, image: bpy.types.Image, opacity: float):
     return material
 
 
-def build_animation():
-    if not IMAGE.is_file():
-        raise FileNotFoundError(f"Generated image source missing: {IMAGE}")
 
-    bpy.ops.object.select_all(action="SELECT")
-    bpy.ops.object.delete(use_global=False)
-
-    scene = bpy.context.scene
-    scene.render.engine = "CYCLES"
-    scene.cycles.device = "CPU"
-    scene.cycles.samples = 1
-    scene.cycles.use_denoising = False
-    scene.render.resolution_percentage = 100
-    scene.render.resolution_x = 1600
-    scene.render.resolution_y = 800
-    scene.render.fps = 24
-    scene.render.fps_base = 1.0
-    scene.frame_start = 1
-    scene.frame_end = 96
-    scene.render.film_transparent = False
-    scene.view_settings.view_transform = "Standard"
-    scene.view_settings.look = "None"
-    scene.view_settings.exposure = 0.0
-    scene.view_settings.gamma = 1.0
-    scene.world.color = (0.0, 0.0, 0.0)
-
+def create_image_plate():
     # One image-mapped card with a small safety bleed for the camera's slow drift.
     half_width = 1.015
     half_height = 0.5075
@@ -162,6 +141,17 @@ def build_animation():
     links.new(emission.outputs["Emission"], output.inputs["Surface"])
     card.data.materials.append(material)
 
+    return mesh, image, material, emission
+
+
+def set_constant_sprite_interpolation(sprite):
+    if sprite.animation_data and sprite.animation_data.action:
+        for curve in getattr(sprite.animation_data.action, "fcurves", ()):
+            for point in curve.keyframe_points:
+                point.interpolation = "CONSTANT"
+
+
+def animate_sprite_overlays(mesh, image):
     for index, (filename, opacity) in enumerate(SPRITE_OPACITY.items()):
         sprite_path = SPRITE_DIR / filename
         if not sprite_path.is_file():
@@ -190,11 +180,11 @@ def build_animation():
             sprite.keyframe_insert(data_path="hide_render", frame=start_frame)
             sprite.hide_render = True
             sprite.keyframe_insert(data_path="hide_render", frame=end_frame + 1)
-        if sprite.animation_data and sprite.animation_data.action:
-            for curve in getattr(sprite.animation_data.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    point.interpolation = "CONSTANT"
+        set_constant_sprite_interpolation(sprite)
 
+
+
+def animate_exposure_flashes(material, emission):
     for frame, strength in FLASH_STRENGTH_KEYS:
         emission.inputs["Strength"].default_value = strength
         emission.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
@@ -203,6 +193,26 @@ def build_animation():
             for point in curve.keyframe_points:
                 point.interpolation = "LINEAR"
 
+
+
+def set_camera_curve_interpolation(curve):
+    for point in curve.keyframe_points:
+        if curve.data_path == "location":
+            point.interpolation = "LINEAR"
+        else:
+            point.interpolation = "BEZIER"
+            point.handle_left_type = "AUTO_CLAMPED"
+            point.handle_right_type = "AUTO_CLAMPED"
+
+
+def configure_camera_interpolation(camera, camera_data):
+    for animation in (camera.animation_data, camera_data.animation_data):
+        if animation and animation.action:
+            for curve in getattr(animation.action, "fcurves", ()):
+                set_camera_curve_interpolation(curve)
+
+
+def configure_cinematic_camera(scene):
     camera_data = bpy.data.cameras.new("Slow cinematic camera")
     camera_data.type = "ORTHO"
     camera_data.ortho_scale = 2.0
@@ -224,16 +234,40 @@ def build_animation():
     for frame, offset_x in x_keys:
         camera.location.x = offset_x
         camera.keyframe_insert(data_path="location", index=0, frame=frame)
-    for animation in (camera.animation_data, camera_data.animation_data):
-        if animation and animation.action:
-            for curve in getattr(animation.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    if curve.data_path == "location":
-                        point.interpolation = "LINEAR"
-                    else:
-                        point.interpolation = "BEZIER"
-                        point.handle_left_type = "AUTO_CLAMPED"
-                        point.handle_right_type = "AUTO_CLAMPED"
+    configure_camera_interpolation(camera, camera_data)
+
+
+
+def build_animation():
+    if not IMAGE.is_file():
+        raise FileNotFoundError(f"Generated image source missing: {IMAGE}")
+
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.delete(use_global=False)
+
+    scene = bpy.context.scene
+    scene.render.engine = "CYCLES"
+    scene.cycles.device = "CPU"
+    scene.cycles.samples = 1
+    scene.cycles.use_denoising = False
+    scene.render.resolution_percentage = 100
+    scene.render.resolution_x = 1600
+    scene.render.resolution_y = 800
+    scene.render.fps = 24
+    scene.render.fps_base = 1.0
+    scene.frame_start = 1
+    scene.frame_end = 96
+    scene.render.film_transparent = False
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
+    scene.world.color = (0.0, 0.0, 0.0)
+
+    mesh, image, material, emission = create_image_plate()
+    animate_sprite_overlays(mesh, image)
+    animate_exposure_flashes(material, emission)
+    configure_cinematic_camera(scene)
 
     scene["workOrder"] = "CB-M01-WO-001"
     scene["sourceImage"] = IMAGE.relative_to(ROOT).as_posix()

@@ -76,19 +76,39 @@ try {
     for (const [view, route] of routes) {
       const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "networkidle" });
       assert.equal(response?.status(), 200, `${view} route responds successfully at ${viewport.name}`);
-      assert.equal(await page.locator("[data-module='CB-M05']").getAttribute("data-view"), view);
-      assert.equal(await page.getByText("MOCK / SECURITY DISABLED", { exact: true }).count(), 1);
-      assert.equal(await page.locator("[data-module='CB-M05'] h1").count(), 1, `${view} has one module page heading`);
-      assert.equal(await page.locator("[data-module='CB-M05'] form, [data-module='CB-M05'] input, [data-module='CB-M05'] textarea").count(), 0, `${view} has no credential or mutation form controls`);
-      assert.equal(await page.locator("[data-module='CB-M05'] button").evaluateAll((buttons) => buttons.every((button) => button.disabled)), true, `${view} has no enabled action buttons`);
-      const articlesLink = page.locator(".m05-nav a[href='/admin/articles']");
-      assert.equal(await articlesLink.getAttribute("aria-current"), view === "articles" ? "page" : null, `${view} marks only the current Articles page`);
-      assert.equal(await articlesLink.evaluate((link) => link.classList.contains("m05-nav__link--active")), ["articles", "article-new", "article-edit"].includes(view), `${view} retains the Articles group highlight`);
-      const dimensions = await page.evaluate(() => ({
-        viewport: document.documentElement.clientWidth,
-        page: document.documentElement.scrollWidth,
-        body: document.body.scrollWidth,
-      }));
+      const [workspaceSnapshot, mockDisclosureCount] = await Promise.all([
+        page.evaluate(() => {
+          const moduleRoot = document.querySelector("[data-module='CB-M05']");
+          const articlesLink = document.querySelector(".m05-nav a[href='/admin/articles']");
+          return {
+            moduleCount: document.querySelectorAll("[data-module='CB-M05']").length,
+            view: moduleRoot?.getAttribute("data-view") ?? null,
+            headingCount: document.querySelectorAll("[data-module='CB-M05'] h1").length,
+            formControlCount: document.querySelectorAll("[data-module='CB-M05'] form, [data-module='CB-M05'] input, [data-module='CB-M05'] textarea").length,
+            buttonsDisabled: [...document.querySelectorAll("[data-module='CB-M05'] button")].every((button) => button.disabled),
+            articlesAriaCurrent: articlesLink?.getAttribute("aria-current") ?? null,
+            articlesGroupActive: articlesLink?.classList.contains("m05-nav__link--active") ?? false,
+            dimensions: {
+              viewport: document.documentElement.clientWidth,
+              page: document.documentElement.scrollWidth,
+              body: document.body.scrollWidth,
+            },
+            title: document.title,
+            language: document.querySelector("html")?.getAttribute("lang") ?? null,
+            robots: document.querySelector("meta[name='robots']")?.getAttribute("content") ?? null,
+          };
+        }),
+        page.getByText("MOCK / SECURITY DISABLED", { exact: true }).count(),
+      ]);
+      assert.equal(workspaceSnapshot.moduleCount, 1, `${view} has one M05 module root`);
+      assert.equal(workspaceSnapshot.view, view);
+      assert.equal(mockDisclosureCount, 1);
+      assert.equal(workspaceSnapshot.headingCount, 1, `${view} has one module page heading`);
+      assert.equal(workspaceSnapshot.formControlCount, 0, `${view} has no credential or mutation form controls`);
+      assert.equal(workspaceSnapshot.buttonsDisabled, true, `${view} has no enabled action buttons`);
+      assert.equal(workspaceSnapshot.articlesAriaCurrent, view === "articles" ? "page" : null, `${view} marks only the current Articles page`);
+      assert.equal(workspaceSnapshot.articlesGroupActive, ["articles", "article-new", "article-edit"].includes(view), `${view} retains the Articles group highlight`);
+      const { dimensions } = workspaceSnapshot;
       assert.ok(dimensions.page <= dimensions.viewport, `${view}/${viewport.name} has horizontal page overflow: ${JSON.stringify(dimensions)}`);
       assert.ok(dimensions.body <= dimensions.viewport, `${view}/${viewport.name} body overflows horizontally: ${JSON.stringify(dimensions)}`);
 
@@ -100,9 +120,9 @@ try {
       assert.deepEqual(blockingViolations, [], `${view}/${viewport.name} has critical or serious accessibility findings`);
       assert.deepEqual(accessibility.violations, [], `${view}/${viewport.name} has Axe violations`);
       const fixtureMetadata = {
-        title: await page.title(),
-        language: await page.locator("html").getAttribute("lang"),
-        robots: await page.locator("meta[name='robots']").getAttribute("content"),
+        title: workspaceSnapshot.title,
+        language: workspaceSnapshot.language,
+        robots: workspaceSnapshot.robots,
         documentWidth: dimensions.page,
         documentViewport: dimensions.viewport,
         bodyWidth: dimensions.body,
@@ -124,11 +144,19 @@ try {
 
       if (view === "articles" && viewport.name === "desktop") {
         await page.keyboard.press("Tab");
-        assert.equal(await page.evaluate(() => document.activeElement?.classList.contains("fixture-skip-link")), true, "the skip link receives first keyboard focus");
-        assert.equal(await page.locator(".fixture-skip-link").evaluate((element) => getComputedStyle(element).transform), "matrix(1, 0, 0, 1, 0, 0)", "the skip link becomes visible on focus");
+        const skipLinkFocus = await page.evaluate(() => ({
+          isSkipLink: document.activeElement?.classList.contains("fixture-skip-link") ?? false,
+          transform: getComputedStyle(document.querySelector(".fixture-skip-link")).transform,
+        }));
+        assert.equal(skipLinkFocus.isSkipLink, true, "the skip link receives first keyboard focus");
+        assert.equal(skipLinkFocus.transform, "matrix(1, 0, 0, 1, 0, 0)", "the skip link becomes visible on focus");
         await page.keyboard.press("Tab");
-        assert.equal(await page.evaluate(() => document.activeElement?.classList.contains("m05-brand")), true, "the first M05 link follows the skip link in keyboard order");
-        assert.equal(await page.locator(".m05-brand").evaluate((element) => getComputedStyle(element).outlineStyle), "solid", "the focused M05 link has a visible focus outline");
+        const brandFocus = await page.evaluate(() => ({
+          isBrand: document.activeElement?.classList.contains("m05-brand") ?? false,
+          outlineStyle: getComputedStyle(document.querySelector(".m05-brand")).outlineStyle,
+        }));
+        assert.equal(brandFocus.isBrand, true, "the first M05 link follows the skip link in keyboard order");
+        assert.equal(brandFocus.outlineStyle, "solid", "the focused M05 link has a visible focus outline");
       }
     }
   }

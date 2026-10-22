@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { execFileSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:net";
@@ -79,6 +79,100 @@ async function stopServer() {
     await Promise.race([once(server, "exit"), new Promise((resolveExit) => setTimeout(resolveExit, 3_000))]);
   }
   return server.exitCode !== null || server.signalCode !== null;
+}
+
+async function readIntegratedViewportSnapshot(page, allowedOrigin) {
+  return page.locator(".hero-cinematic-preview img").evaluate(async (image, expectedOrigin) => {
+    await image.decode();
+    const document = image.ownerDocument;
+    const scene = image.closest(".hero-scene");
+    const imageRect = image.getBoundingClientRect();
+    const cinematicPreview = {
+      fullyDecoded: true,
+      complete: image.complete,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      path: new URL(image.currentSrc).pathname,
+      currentOrigin: new URL(image.currentSrc).origin,
+      allowedOrigin: expectedOrigin,
+      previewActive: scene.classList.contains("has-cinematic-preview"),
+      visible: globalThis.getComputedStyle(image.parentElement).opacity !== "0",
+      sceneOpacity: globalThis.getComputedStyle(scene).opacity,
+      objectFit: globalThis.getComputedStyle(image).objectFit,
+      objectPosition: globalThis.getComputedStyle(image).objectPosition,
+      widthOnScreen: imageRect.width,
+      heightOnScreen: imageRect.height,
+      selectedSource: image.currentSrc,
+      visibleArtworkStart: imageRect.left + imageRect.width * 0.58,
+      copyRight: scene.parentElement.querySelector(".hero-copy").getBoundingClientRect().right,
+      loading: image.loading,
+      fetchPriority: image.fetchPriority,
+    };
+    const coin = document.querySelector(".hero-panel .coin-art");
+    const coinScene = coin.closest(".hero-scene");
+    const coinRect = coin.getBoundingClientRect();
+    const bitcoinScene = {
+      decorative: coin.getAttribute("aria-hidden") === "true",
+      present: coinRect.width > 45 && coinRect.height > 45,
+      perspective: globalThis.getComputedStyle(coinScene).perspective,
+      transform: globalThis.getComputedStyle(coin).transform,
+      imageCount: coin.querySelectorAll("image").length,
+    };
+    const coinArt = document.querySelector(".hero-panel svg.coin-art");
+    const reliefLayers = {
+      rimCircles: coinArt.querySelectorAll(".coin-relief circle").length,
+      reflection: coinArt.querySelector(".coin-specular") !== null,
+      hidden: coinArt.getAttribute("aria-hidden") === "true",
+      glyph: Array.from(coinArt.querySelectorAll("text")).some((node) => node.textContent === "₿"),
+    };
+    const rockscape = document.querySelector(".hero-panel .hero-rockscape");
+    const mountainLayers = {
+      backgroundFacets: rockscape.querySelectorAll(".hero-rock-facets-back path").length,
+      foregroundFacets: rockscape.querySelectorAll(".hero-rock-facets-front path").length,
+      mist: rockscape.querySelector(".hero-ridge-mist") !== null,
+      decorative: rockscape.getAttribute("aria-hidden") === "true",
+      externalImages: rockscape.querySelectorAll("image").length,
+      svgWidth: rockscape.getBoundingClientRect().width,
+    };
+    const heroScene = document.querySelector(".hero-scene");
+    const materialLayer = globalThis.getComputedStyle(heroScene, "::after");
+    const materialCoin = heroScene.querySelector(".coin-art");
+    const materialOverlay = {
+      localTexture: materialLayer.backgroundImage !== "none"
+        && (materialLayer.backgroundImage.includes("hero-mineral-texture") || materialLayer.backgroundImage.includes("data:image/svg+xml")),
+      nonInteractive: materialLayer.pointerEvents === "none",
+      behindCoin: Number(materialLayer.zIndex) < Number(globalThis.getComputedStyle(materialCoin).zIndex),
+      decorative: heroScene.getAttribute("aria-hidden") === "true",
+    };
+    const promoPanel = document.querySelector(".promo-panel");
+    const promoRect = promoPanel.getBoundingClientRect();
+    const promoCtaRect = promoPanel.querySelector('a[href="#demo-data"]').getBoundingClientRect();
+    const promoSvg = promoPanel.querySelector("svg.promo-scene");
+    const promoAccent = globalThis.getComputedStyle(promoPanel, "::before");
+    const promoGeometry = {
+      ctaInside: promoCtaRect.left >= promoRect.left - 1 && promoCtaRect.right <= promoRect.right + 1
+        && promoCtaRect.top >= promoRect.top - 1 && promoCtaRect.bottom <= promoRect.bottom + 1,
+      decorative: promoSvg.getAttribute("aria-hidden") === "true" && promoAccent.pointerEvents === "none",
+      hasAtmosphere: promoAccent.content !== "none" && promoAccent.content !== "normal",
+    };
+    return {
+      title: document.title,
+      homeCount: document.querySelectorAll(".cb-home").length,
+      cinematicPreview,
+      bitcoinScene,
+      reliefLayers,
+      mountainLayers,
+      materialOverlay,
+      editorialArtworkCount: document.querySelectorAll(".news-art > svg.editorial-artwork").length,
+      promoGeometry,
+      developmentToolbarCount: document.querySelectorAll("astro-dev-toolbar").length,
+      dimensions: {
+        viewport: document.documentElement.clientWidth,
+        document: document.documentElement.scrollWidth,
+      },
+      robotsMeta: document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? null,
+    };
+  }, allowedOrigin);
 }
 
 await mkdir(screenshotDir, { recursive: true });
@@ -167,34 +261,10 @@ try {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     const response = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
-    assert.equal(await page.title(), "CoinBlink · Crypto news in a blink");
-    assert.equal(await page.locator(".cb-home").count(), 1);
-    const cinematicPreview = await page.locator(".hero-cinematic-preview img").evaluate(async (image, origin) => {
-      await image.decode();
-      const scene = image.closest(".hero-scene");
-      const rect = image.getBoundingClientRect();
-      return {
-        fullyDecoded: true,
-        complete: image.complete,
-        width: image.naturalWidth,
-        height: image.naturalHeight,
-        path: new URL(image.currentSrc).pathname,
-        currentOrigin: new URL(image.currentSrc).origin,
-        allowedOrigin: origin,
-        previewActive: scene.classList.contains("has-cinematic-preview"),
-        visible: globalThis.getComputedStyle(image.parentElement).opacity !== "0",
-        sceneOpacity: globalThis.getComputedStyle(scene).opacity,
-        objectFit: globalThis.getComputedStyle(image).objectFit,
-        objectPosition: globalThis.getComputedStyle(image).objectPosition,
-        widthOnScreen: rect.width,
-        heightOnScreen: rect.height,
-        selectedSource: image.currentSrc,
-        visibleArtworkStart: image.getBoundingClientRect().left + image.getBoundingClientRect().width * 0.58,
-        copyRight: scene.parentElement.querySelector(".hero-copy").getBoundingClientRect().right,
-        loading: image.loading,
-        fetchPriority: image.fetchPriority,
-      };
-    }, report.origin);
+    const viewportSnapshot = await readIntegratedViewportSnapshot(page, report.origin);
+    assert.equal(viewportSnapshot.title, "CoinBlink · Crypto news in a blink");
+    assert.equal(viewportSnapshot.homeCount, 1);
+    const { cinematicPreview, bitcoinScene, reliefLayers, mountainLayers, materialOverlay, promoGeometry, dimensions } = viewportSnapshot;
     assert.ok(cinematicPreview.complete && cinematicPreview.fullyDecoded
       && cinematicPreview.width === 640 && cinematicPreview.height === 320,
       viewport.name + " Blender motion derivative must fully decode at 640x320");
@@ -215,77 +285,26 @@ try {
     if (viewport.name === "mobile") {
       assert.equal(cinematicPreview.sceneOpacity, "1", "loaded Blender motion must not inherit fallback dimming on mobile");
     }
-    const bitcoinScene = await page.locator(".hero-panel .coin-art").evaluate((coin) => {
-      const scene = coin.closest(".hero-scene");
-      const box = coin.getBoundingClientRect();
-      return {
-        decorative: coin.getAttribute("aria-hidden") === "true",
-        present: box.width > 45 && box.height > 45,
-        perspective: globalThis.getComputedStyle(scene).perspective,
-        transform: globalThis.getComputedStyle(coin).transform,
-        imageCount: coin.querySelectorAll("image").length,
-      };
-    });
     assert.ok(bitcoinScene.decorative && bitcoinScene.present && bitcoinScene.imageCount === 0,
       viewport.name + " local Bitcoin vector must stay decorative and visible");
     assert.notEqual(bitcoinScene.perspective, "none", viewport.name + " must retain scene perspective");
     assert.notEqual(bitcoinScene.transform, "none", viewport.name + " must retain coin transform");
-    const reliefLayers = await page.locator(".hero-panel svg.coin-art").evaluate((coin) => ({
-      rimCircles: coin.querySelectorAll(".coin-relief circle").length,
-      reflection: coin.querySelector(".coin-specular") !== null,
-      hidden: coin.getAttribute("aria-hidden") === "true",
-      glyph: Array.from(coin.querySelectorAll("text")).some((node) => node.textContent === "₿"),
-    }));
     assert.ok(reliefLayers.rimCircles === 2 && reliefLayers.reflection
       && reliefLayers.hidden && reliefLayers.glyph,
       viewport.name + " hero must preserve original decorative minted rim and Bitcoin glyph");
-    const mountainLayers = await page.locator(".hero-panel .hero-rockscape").evaluate((art) => ({
-      backgroundFacets: art.querySelectorAll(".hero-rock-facets-back path").length,
-      foregroundFacets: art.querySelectorAll(".hero-rock-facets-front path").length,
-      mist: art.querySelector(".hero-ridge-mist") !== null,
-      decorative: art.getAttribute("aria-hidden") === "true",
-      externalImages: art.querySelectorAll("image").length,
-      svgWidth: art.getBoundingClientRect().width,
-    }));
     assert.ok(mountainLayers.backgroundFacets >= 4 && mountainLayers.foregroundFacets >= 4
       && mountainLayers.mist && mountainLayers.decorative && mountainLayers.externalImages === 0
       && mountainLayers.svgWidth > 40,
       viewport.name + " rockscape facets and mist must remain local, visible and decorative");
-    const materialOverlay = await page.locator(".hero-scene").evaluate((scene) => {
-      const layer = globalThis.getComputedStyle(scene, "::after");
-      const coin = scene.querySelector(".coin-art");
-      return {
-        localTexture: layer.backgroundImage !== "none" && (layer.backgroundImage.includes("hero-mineral-texture") || layer.backgroundImage.includes("data:image/svg+xml")),
-        nonInteractive: layer.pointerEvents === "none",
-        behindCoin: Number(layer.zIndex) < Number(globalThis.getComputedStyle(coin).zIndex),
-        decorative: scene.getAttribute("aria-hidden") === "true",
-      };
-    });
     assert.ok(materialOverlay.localTexture && materialOverlay.nonInteractive
       && materialOverlay.behindCoin && materialOverlay.decorative,
       viewport.name + " mineral texture must be self-hosted and noninteractive behind coin: " + JSON.stringify(materialOverlay));
-    assert.equal(await page.locator(".news-art > svg.editorial-artwork").count(), 4,
+    assert.equal(viewportSnapshot.editorialArtworkCount, 4,
       viewport.name + " must render four original local illustrative thumbnails");
-    const promoGeometry = await page.locator(".promo-panel").evaluate((panel) => {
-      const parent = panel.getBoundingClientRect();
-      const cta = panel.querySelector('a[href="#demo-data"]').getBoundingClientRect();
-      const svg = panel.querySelector("svg.promo-scene");
-      const accent = globalThis.getComputedStyle(panel, "::before");
-      return {
-        ctaInside: cta.left >= parent.left - 1 && cta.right <= parent.right + 1
-          && cta.top >= parent.top - 1 && cta.bottom <= parent.bottom + 1,
-        decorative: svg.getAttribute("aria-hidden") === "true" && accent.pointerEvents === "none",
-        hasAtmosphere: accent.content !== "none" && accent.content !== "normal",
-      };
-    });
     assert.ok(promoGeometry.ctaInside, viewport.name + " promotional CTA must remain inside its panel");
     assert.ok(promoGeometry.decorative && promoGeometry.hasAtmosphere,
       viewport.name + " promo atmospheric layers must be present and non-interactive");
-    assert.equal(await page.locator("astro-dev-toolbar").count(), 0, "visual evidence must exclude the development toolbar");
-    const dimensions = await page.evaluate(() => ({
-      viewport: globalThis.document.documentElement.clientWidth,
-      document: globalThis.document.documentElement.scrollWidth,
-    }));
+    assert.equal(viewportSnapshot.developmentToolbarCount, 0, "visual evidence must exclude the development toolbar");
     assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " /en horizontal overflow: " + JSON.stringify(dimensions));
     const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
     const pageAxe = await new AxeBuilder({ page }).analyze();
@@ -296,8 +315,7 @@ try {
       targets: item.nodes.map((node) => node.target),
     }));
     const screenshotPath = join(screenshotDir, "r26-home-integrated-" + viewport.name + "-" + viewport.width + "x" + viewport.height + ".png");
-    await page.screenshot({ path: screenshotPath, fullPage: false });
-    const screenshot = await readFile(screenshotPath);
+    const screenshot = await page.screenshot({ path: screenshotPath, fullPage: false });
     const performance = await page.evaluate(() => {
       const image = globalThis.document.querySelector(".hero-cinematic-preview img");
       const resource = image?.currentSrc
@@ -326,7 +344,7 @@ try {
       || performance.previewImage.encodedBodyBytes <= 1_500_000,
     viewport.name + " rendered WebP resource must remain below the 1.5 MB cap");
     const headers = response.headers();
-    const robotsMeta = await page.locator('meta[name="robots"]').getAttribute("content");
+    const robotsMeta = viewportSnapshot.robotsMeta;
     assert.ok(robotsMeta?.includes("noindex"), "integrated /en must retain noindex");
     assert.equal(headers["x-content-type-options"], "nosniff");
     assert.equal(headers["x-frame-options"], "DENY");
@@ -349,21 +367,23 @@ try {
       bytes: screenshot.length,
     });
     if (viewport.name === "desktop") {
-      report.desktopGeometry = await page.evaluate(() => {
+      const desktopSnapshot = await page.evaluate(() => {
         const rect = (selector) => {
-        const box = globalThis.document.querySelector(selector).getBoundingClientRect();
+          const box = globalThis.document.querySelector(selector).getBoundingClientRect();
           return { x: box.x, y: box.y, width: box.width, height: box.height, bottom: box.bottom };
         };
-        return Object.fromEntries([".demo-banner", ".cb-header", ".brand", ".hero-panel", ".market-panel", ".ticker-strip", ".trending-strip", ".category-rail", ".content-grid", "#latest-news", ".news-cards", "#newsletter"].map((selector) => [selector, rect(selector)]));
-      });
-      // Golden desktop uses a vertical editorial thumbnail beside its text,
-      // never a banner stacked over a card headline. Assert real DOM geometry.
-      report.desktopEditorialCardGeometry = await page.locator(".news-card").first().evaluate((card) => {
+        const desktopGeometry = Object.fromEntries([".demo-banner", ".cb-header", ".brand", ".hero-panel", ".market-panel", ".ticker-strip", ".trending-strip", ".category-rail", ".content-grid", "#latest-news", ".news-cards", "#newsletter"].map((selector) => [selector, rect(selector)]));
+        const card = globalThis.document.querySelector(".news-card");
         const art = card.querySelector(".news-art").getBoundingClientRect();
         const copy = card.lastElementChild.getBoundingClientRect();
-        return { artRight: art.right, artTop: art.top, artBottom: art.bottom,
+        const desktopEditorialCardGeometry = { artRight: art.right, artTop: art.top, artBottom: art.bottom,
           copyLeft: copy.left, copyTop: copy.top, copyBottom: copy.bottom };
+        return { desktopGeometry, desktopEditorialCardGeometry };
       });
+      report.desktopGeometry = desktopSnapshot.desktopGeometry;
+      // Golden desktop uses a vertical editorial thumbnail beside its text,
+      // never a banner stacked over a card headline. Assert real DOM geometry.
+      report.desktopEditorialCardGeometry = desktopSnapshot.desktopEditorialCardGeometry;
       assert.ok(
         report.desktopEditorialCardGeometry.artRight <= report.desktopEditorialCardGeometry.copyLeft + 1
           && Math.abs(report.desktopEditorialCardGeometry.artTop - report.desktopEditorialCardGeometry.copyTop) <= 1,
@@ -371,7 +391,8 @@ try {
       );
     }
     if (viewport.name === "mobile") {
-      report.mobileHero = await page.locator(".hero-panel").evaluate((hero) => {
+      report.mobileHero = await page.evaluate(() => {
+        const hero = globalThis.document.querySelector(".hero-panel");
         const box = (element) => {
           const value = element.getBoundingClientRect();
           return { left: value.left, right: value.right, top: value.top, bottom: value.bottom, height: value.height };
@@ -506,7 +527,8 @@ try {
   const assetResponse = await assetPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
   assert.equal(assetResponse?.status(), 200, "static asset probe must use the built local route");
   const staticImages = assetPage.locator(".promo-image img, .editorial-image img");
-  for (let index = 0; index < await staticImages.count(); index += 1) {
+  const staticImageCount = await staticImages.count();
+  for (let index = 0; index < staticImageCount; index += 1) {
     const image = staticImages.nth(index);
     await image.scrollIntoViewIfNeeded();
     await image.evaluate((element) => element.decode());
@@ -559,7 +581,8 @@ try {
   const staticFallbackResponse = await staticFallbackPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
   assert.equal(staticFallbackResponse?.status(), 200, "static fallback probe must use the built local route");
   const failedImages = staticFallbackPage.locator(".promo-image img, .editorial-image img");
-  for (let index = 0; index < await failedImages.count(); index += 1) {
+  const failedImageCount = await failedImages.count();
+  for (let index = 0; index < failedImageCount; index += 1) {
     await failedImages.nth(index).scrollIntoViewIfNeeded();
   }
   await staticFallbackPage.waitForLoadState("networkidle");

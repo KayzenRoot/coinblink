@@ -163,33 +163,75 @@ try {
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto(origin, { waitUntil: "networkidle" });
-    assert.equal(await page.title(), "CoinBlink Golden Home · isolated module fixture");
-    assert.equal(await page.locator("astro-dev-toolbar").count(), 0, "captured visual fixtures must not include Astro's development toolbar");
-    assert.equal(await page.locator("#main").count(), 1);
-    for (const section of ["#market-overview", "#radar-24h", "#latest-news", "#newsletter", "#demo-data"]) {
-      assert.equal(await page.locator(section).count(), 1, "missing " + section);
-    }
-    const dimensions = await page.evaluate(() => {
-      const viewport = globalThis.document.documentElement.clientWidth;
+    const viewportSnapshot = await page.evaluate(({ sectionSelectors, viewportName }) => {
+      const document = globalThis.document;
+      const viewportWidth = document.documentElement.clientWidth;
       const overflowing = [...globalThis.document.querySelectorAll("body *")].map((element) => {
         const rect = element.getBoundingClientRect();
         return { tag: element.tagName, className: String(element.className), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
-      }).filter((element) => element.right > viewport + 1).slice(0, 12);
-      return { viewport, document: globalThis.document.documentElement.scrollWidth, overflowing };
+      }).filter((element) => element.right > viewportWidth + 1).slice(0, 12);
+      const readRect = (selector) => {
+        const rect = document.querySelector(selector).getBoundingClientRect();
+        return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+      };
+      const trendingLayout = viewportName === "mobile"
+        ? (() => {
+          const strip = document.querySelector(".trending-strip");
+          const children = [...strip.children];
+          return {
+            clientWidth: strip.clientWidth,
+            scrollWidth: strip.scrollWidth,
+            childRects: children.map((child) => {
+              const rect = child.getBoundingClientRect();
+              return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
+            }),
+          };
+        })()
+        : null;
+      const desktopGeometry = viewportName === "desktop"
+        ? {
+          demoBanner: readRect(".demo-banner"),
+          header: readRect(".cb-header"),
+          brand: readRect(".brand"),
+          brandImage: readRect(".brand img"),
+          brandName: readRect(".brand-name"),
+          trendingItems: document.querySelectorAll(".trend-item").length,
+          categoryLabels: [...document.querySelectorAll(".category-chip")].map((item) => item.dataset.category),
+          primaryNav: readRect(".primary-nav"),
+          headerTools: readRect(".header-tools"),
+          hero: readRect(".hero-panel"),
+          market: readRect(".market-panel"),
+          ticker: readRect(".ticker-strip"),
+          trending: readRect(".trending-strip"),
+          categories: readRect(".category-rail"),
+          signals: readRect(".content-grid"),
+          latestNews: readRect("#latest-news"),
+          latestNewsCards: readRect(".news-cards"),
+          newsletter: readRect("#newsletter"),
+        }
+        : null;
+      return {
+        title: document.title,
+        developmentToolbarCount: document.querySelectorAll("astro-dev-toolbar").length,
+        mainCount: document.querySelectorAll("#main").length,
+        sectionCounts: Object.fromEntries(sectionSelectors.map((selector) => [selector, document.querySelectorAll(selector).length])),
+        dimensions: { viewport: viewportWidth, document: document.documentElement.scrollWidth, overflowing },
+        trendingLayout,
+        desktopGeometry,
+      };
+    }, {
+      sectionSelectors: ["#market-overview", "#radar-24h", "#latest-news", "#newsletter", "#demo-data"],
+      viewportName: viewport.name,
     });
+    assert.equal(viewportSnapshot.title, "CoinBlink Golden Home · isolated module fixture");
+    assert.equal(viewportSnapshot.developmentToolbarCount, 0, "captured visual fixtures must not include Astro's development toolbar");
+    assert.equal(viewportSnapshot.mainCount, 1);
+    for (const [section, count] of Object.entries(viewportSnapshot.sectionCounts)) {
+      assert.equal(count, 1, "missing " + section);
+    }
+    const { dimensions, trendingLayout } = viewportSnapshot;
     assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " horizontal overflow: " + JSON.stringify(dimensions));
     if (viewport.name === "mobile") {
-      const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
-        const children = [...strip.children];
-        return {
-          clientWidth: strip.clientWidth,
-          scrollWidth: strip.scrollWidth,
-          childRects: children.map((child) => {
-            const rect = child.getBoundingClientRect();
-            return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
-          }),
-        };
-      });
       assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
       assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
       const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
@@ -215,32 +257,7 @@ try {
       fullPageAxeViolations: encodeViolations(pageAxe),
     });
     if (viewport.name === "desktop") {
-      const desktopGeometry = await page.evaluate(() => {
-        const readRect = (selector) => {
-          const rect = globalThis.document.querySelector(selector).getBoundingClientRect();
-          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
-        };
-        return {
-          demoBanner: readRect(".demo-banner"),
-          header: readRect(".cb-header"),
-          brand: readRect(".brand"),
-          brandImage: readRect(".brand img"),
-          brandName: readRect(".brand-name"),
-          trendingItems: globalThis.document.querySelectorAll(".trend-item").length,
-          categoryLabels: [...globalThis.document.querySelectorAll(".category-chip")].map((item) => item.dataset.category),
-          primaryNav: readRect(".primary-nav"),
-          headerTools: readRect(".header-tools"),
-          hero: readRect(".hero-panel"),
-          market: readRect(".market-panel"),
-          ticker: readRect(".ticker-strip"),
-          trending: readRect(".trending-strip"),
-          categories: readRect(".category-rail"),
-          signals: readRect(".content-grid"),
-          latestNews: readRect("#latest-news"),
-          latestNewsCards: readRect(".news-cards"),
-          newsletter: readRect("#newsletter"),
-        };
-      });
+      const desktopGeometry = viewportSnapshot.desktopGeometry;
       results.at(-1).desktopGeometry = desktopGeometry;
       interactionChecks.desktopGeometry = desktopGeometry;
       const geometryViolations = [];
@@ -282,13 +299,14 @@ try {
   const checkProducerCase = async ({ path, expected, forbidden }) => {
     const response = await page.goto(new URL(path, origin).href, { waitUntil: "networkidle" });
     assert.equal(response?.status(), 200, "offline producer fixture route must render: " + path);
-    const states = {
-      news: await page.locator("#latest-news").getAttribute("data-m01-news-source-state"),
-      sources: await page.locator("[data-m01-source-feed-state]").getAttribute("data-m01-source-feed-state"),
-      markets: await page.locator("#market-overview").getAttribute("data-m01-market-source-state"),
-    };
+    const [news, sources, markets, bodyText] = await Promise.all([
+      page.locator("#latest-news").getAttribute("data-m01-news-source-state"),
+      page.locator("[data-m01-source-feed-state]").getAttribute("data-m01-source-feed-state"),
+      page.locator("#market-overview").getAttribute("data-m01-market-source-state"),
+      page.locator("body").innerText(),
+    ]);
+    const states = { news, sources, markets };
     assert.deepEqual(states, expected, "producer input must be isolated and fail closed in real Astro HTML");
-    const bodyText = await page.locator("body").innerText();
     assert.match(bodyText, /DEMO/u, "a producer fixture must not remove DEMO labeling");
     for (const secret of forbidden) {
       assert.equal(bodyText.includes(secret), false, "unlicensed fixture payload leaked into Home: " + secret);
@@ -349,19 +367,24 @@ try {
   for (const width of [850, 851, 1024, 1050, 1051]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(origin, { waitUntil: "networkidle" });
-    const documentWidth = await page.evaluate(() => globalThis.document.documentElement.scrollWidth);
+    const responsiveSnapshot = await page.evaluate((measureTrending) => {
+      const documentWidth = globalThis.document.documentElement.scrollWidth;
+      if (!measureTrending) return { documentWidth, trendingLayout: null };
+
+      const strip = globalThis.document.querySelector(".trending-strip");
+      const title = strip.querySelector("h2").getBoundingClientRect();
+      const items = [...strip.querySelectorAll(".trend-item")]
+        .filter((item) => globalThis.getComputedStyle(item).display !== "none")
+        .map((item) => {
+          const rect = item.getBoundingClientRect();
+          return { left: rect.left, top: rect.top, bottom: rect.bottom };
+        });
+      return { documentWidth, trendingLayout: { title: { left: title.left, top: title.top, bottom: title.bottom }, items } };
+    }, width > 760 && width <= 1050);
+    const { documentWidth } = responsiveSnapshot;
     assert.ok(documentWidth <= width, `responsive navigation must not create horizontal overflow at ${width}px: ${documentWidth}`);
     if (width > 760 && width <= 1050) {
-      const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
-        const title = strip.querySelector("h2").getBoundingClientRect();
-        const items = [...strip.querySelectorAll(".trend-item")]
-          .filter((item) => globalThis.getComputedStyle(item).display !== "none")
-          .map((item) => {
-            const rect = item.getBoundingClientRect();
-            return { left: rect.left, top: rect.top, bottom: rect.bottom };
-          });
-        return { title: { left: title.left, top: title.top, bottom: title.bottom }, items };
-      });
+      const { trendingLayout } = responsiveSnapshot;
       assert.equal(trendingLayout.items.length, 3, "tablet trending strip must show three items");
       const tabletRowTop = Math.max(trendingLayout.title.top, ...trendingLayout.items.map((item) => item.top));
       const tabletRowBottom = Math.min(trendingLayout.title.bottom, ...trendingLayout.items.map((item) => item.bottom));
@@ -380,8 +403,9 @@ try {
       assert.equal(await nav.isVisible(), false, `collapsed navigation must stay closed at ${width}px`);
       await toggle.click();
       assert.equal(await toggle.getAttribute("aria-expanded"), "true");
-      assert.equal(await links.count(), 8);
-      for (let index = 0; index < await links.count(); index += 1) {
+      const mobileLinkCount = await links.count();
+      assert.equal(mobileLinkCount, 8);
+      for (let index = 0; index < mobileLinkCount; index += 1) {
         assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be reachable at ${width}px`);
       }
       for (const label of ["Tools", "Videos", "About"]) {
@@ -404,8 +428,9 @@ try {
     } else {
       assert.equal(await toggle.isVisible(), false, "desktop navigation does not use a hidden menu toggle");
       assert.equal(await nav.isVisible(), true);
-      assert.equal(await links.count(), 8);
-      for (let index = 0; index < await links.count(); index += 1) {
+      const desktopLinkCount = await links.count();
+      assert.equal(desktopLinkCount, 8);
+      for (let index = 0; index < desktopLinkCount; index += 1) {
         assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be visible at ${width}px`);
       }
       for (const label of ["Tools", "Videos", "About"]) {
@@ -459,8 +484,10 @@ try {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(origin, { waitUntil: "networkidle" });
-  const mobileSearchVisible = await page.locator(".search-box").isVisible();
-  const mobileSearchInputVisible = await page.locator("[data-news-search]").isVisible();
+  const [mobileSearchVisible, mobileSearchInputVisible] = await Promise.all([
+    page.locator(".search-box").isVisible(),
+    page.locator("[data-news-search]").isVisible(),
+  ]);
   assert.equal(mobileSearchVisible, false, "mobile must not show an inactive search affordance");
   assert.equal(mobileSearchInputVisible, false, "mobile search input is intentionally unavailable");
   interactionChecks.mobileSearch = { visible: mobileSearchVisible, inputVisible: mobileSearchInputVisible, intentionallyUnavailable: true };

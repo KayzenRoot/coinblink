@@ -126,13 +126,16 @@ export async function waitForAstroServer({
   const deadline = now() + timeoutMs;
   let lastError;
 
-  while (now() < deadline) {
+  const probeUntilReady = async () => {
+    if (now() >= deadline) {
+      throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+    }
     const childError = getChildError();
     if (childError) throw new Error(`Astro fixture could not start: ${childError.message}`);
     assertAstroChildRunning(child);
     if (!childAnnouncedOrigin(getChildOutput(), expectedOrigin)) {
       await waitForReadinessRetry({ deadline, intervalMs, now, sleep });
-      continue;
+      return probeUntilReady();
     }
 
     const result = await runBoundedReadinessProbe({ probe, expectedOrigin, remainingMs: deadline - now() });
@@ -141,7 +144,8 @@ export async function waitForAstroServer({
     if (result.error) lastError = result.error;
     else if (result.response) lastError = new Error(`Fixture returned HTTP ${result.response.status}`);
     await waitForReadinessRetry({ deadline, intervalMs, now, sleep });
-  }
+    return probeUntilReady();
+  };
 
-  throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+  return probeUntilReady();
 }

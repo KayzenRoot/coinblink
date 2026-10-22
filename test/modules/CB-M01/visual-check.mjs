@@ -160,126 +160,131 @@ try {
     if (!isFixtureOriginRequest(request.url(), origin)) externalRequests.push(request.url());
   });
 
-  for (const viewport of viewports) {
-    await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto(origin, { waitUntil: "networkidle" });
-    const viewportSnapshot = await page.evaluate(({ sectionSelectors, viewportName }) => {
-      const document = globalThis.document;
-      const viewportWidth = document.documentElement.clientWidth;
-      const overflowing = [...globalThis.document.querySelectorAll("body *")].map((element) => {
-        const rect = element.getBoundingClientRect();
-        return { tag: element.tagName, className: String(element.className), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
-      }).filter((element) => element.right > viewportWidth + 1).slice(0, 12);
-      const readRect = (selector) => {
-        const rect = document.querySelector(selector).getBoundingClientRect();
-        return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
-      };
-      const trendingLayout = viewportName === "mobile"
-        ? (() => {
-          const strip = document.querySelector(".trending-strip");
-          const children = [...strip.children];
-          return {
-            clientWidth: strip.clientWidth,
-            scrollWidth: strip.scrollWidth,
-            childRects: children.map((child) => {
-              const rect = child.getBoundingClientRect();
-              return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
-            }),
-          };
-        })()
-        : null;
-      const desktopGeometry = viewportName === "desktop"
-        ? {
-          demoBanner: readRect(".demo-banner"),
-          header: readRect(".cb-header"),
-          brand: readRect(".brand"),
-          brandImage: readRect(".brand img"),
-          brandName: readRect(".brand-name"),
-          trendingItems: document.querySelectorAll(".trend-item").length,
-          categoryLabels: [...document.querySelectorAll(".category-chip")].map((item) => item.dataset.category),
-          primaryNav: readRect(".primary-nav"),
-          headerTools: readRect(".header-tools"),
-          hero: readRect(".hero-panel"),
-          market: readRect(".market-panel"),
-          ticker: readRect(".ticker-strip"),
-          trending: readRect(".trending-strip"),
-          categories: readRect(".category-rail"),
-          signals: readRect(".content-grid"),
-          latestNews: readRect("#latest-news"),
-          latestNewsCards: readRect(".news-cards"),
-          newsletter: readRect("#newsletter"),
-        }
-        : null;
-      return {
-        title: document.title,
-        developmentToolbarCount: document.querySelectorAll("astro-dev-toolbar").length,
-        mainCount: document.querySelectorAll("#main").length,
-        sectionCounts: Object.fromEntries(sectionSelectors.map((selector) => [selector, document.querySelectorAll(selector).length])),
-        dimensions: { viewport: viewportWidth, document: document.documentElement.scrollWidth, overflowing },
-        trendingLayout,
-        desktopGeometry,
-      };
-    }, {
-      sectionSelectors: ["#market-overview", "#radar-24h", "#latest-news", "#newsletter", "#demo-data"],
-      viewportName: viewport.name,
-    });
-    assert.equal(viewportSnapshot.title, "CoinBlink Golden Home · isolated module fixture");
-    assert.equal(viewportSnapshot.developmentToolbarCount, 0, "captured visual fixtures must not include Astro's development toolbar");
-    assert.equal(viewportSnapshot.mainCount, 1);
-    for (const [section, count] of Object.entries(viewportSnapshot.sectionCounts)) {
-      assert.equal(count, 1, "missing " + section);
-    }
-    const { dimensions, trendingLayout } = viewportSnapshot;
-    assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " horizontal overflow: " + JSON.stringify(dimensions));
-    if (viewport.name === "mobile") {
-      assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
-      assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
-      const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
-      const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
-      assert.ok(
-        mobileRowBottom > mobileRowTop,
-        "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
-      );
-      interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 5 };
-    }
-    const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
-    const pageAxe = await new AxeBuilder({ page }).analyze();
-    const encodeViolations = (axe) => axe.violations.map((violation) => ({
-      id: violation.id,
-      impact: violation.impact,
-      description: violation.description,
-      nodes: violation.nodes.map((node) => ({ target: node.target, summary: node.failureSummary })),
-    }));
-    results.push({
-      ...viewport,
-      documentWidth: dimensions.document,
-      axeViolations: encodeViolations(moduleAxe),
-      fullPageAxeViolations: encodeViolations(pageAxe),
-    });
-    if (viewport.name === "desktop") {
-      const desktopGeometry = viewportSnapshot.desktopGeometry;
-      results.at(-1).desktopGeometry = desktopGeometry;
-      interactionChecks.desktopGeometry = desktopGeometry;
-      const geometryViolations = [];
-      if (desktopGeometry.brandName.left <= desktopGeometry.brandImage.right - 2) geometryViolations.push("brand mark and wordmark are not arranged side by side");
-      if (desktopGeometry.header.height > 60) geometryViolations.push("header exceeds the compact Golden header envelope");
-      if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
-      if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
-      if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
-      if (desktopGeometry.latestNews.top < 700) geometryViolations.push("latest-news and newsletter begin too early compared with the Golden lower fold");
-      if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
-      if (desktopGeometry.latestNewsCards.bottom > viewport.height) geometryViolations.push("all four demo story cards must remain inside the desktop first fold");
-      if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
-      if (desktopGeometry.trendingItems !== 5) geometryViolations.push("five demo trend placeholders are required");
-      assert.deepEqual(
-        desktopGeometry.categoryLabels,
-        ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"],
-        "the Golden's ten editorial categories must be available with All as a filter",
-      );
-      assert.deepEqual(geometryViolations, [], `desktop Golden geometry failed: ${JSON.stringify(desktopGeometry)}; ${geometryViolations.join("; ")}`);
-    }
-    await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
-  }
+  // Every viewport uses the same Page; serialize each complete capture to
+  // preserve navigation, accessibility scan, and screenshot ordering.
+  await viewports.reduce(
+    (serialViewport, viewport) => serialViewport.then(async () => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto(origin, { waitUntil: "networkidle" });
+      const viewportSnapshot = await page.evaluate(({ sectionSelectors, viewportName }) => {
+        const document = globalThis.document;
+        const viewportWidth = document.documentElement.clientWidth;
+        const overflowing = [...globalThis.document.querySelectorAll("body *")].map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { tag: element.tagName, className: String(element.className), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
+        }).filter((element) => element.right > viewportWidth + 1).slice(0, 12);
+        const readRect = (selector) => {
+          const rect = document.querySelector(selector).getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+        };
+        const trendingLayout = viewportName === "mobile"
+          ? (() => {
+            const strip = document.querySelector(".trending-strip");
+            const children = [...strip.children];
+            return {
+              clientWidth: strip.clientWidth,
+              scrollWidth: strip.scrollWidth,
+              childRects: children.map((child) => {
+                const rect = child.getBoundingClientRect();
+                return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
+              }),
+            };
+          })()
+          : null;
+        const desktopGeometry = viewportName === "desktop"
+          ? {
+            demoBanner: readRect(".demo-banner"),
+            header: readRect(".cb-header"),
+            brand: readRect(".brand"),
+            brandImage: readRect(".brand img"),
+            brandName: readRect(".brand-name"),
+            trendingItems: document.querySelectorAll(".trend-item").length,
+            categoryLabels: [...document.querySelectorAll(".category-chip")].map((item) => item.dataset.category),
+            primaryNav: readRect(".primary-nav"),
+            headerTools: readRect(".header-tools"),
+            hero: readRect(".hero-panel"),
+            market: readRect(".market-panel"),
+            ticker: readRect(".ticker-strip"),
+            trending: readRect(".trending-strip"),
+            categories: readRect(".category-rail"),
+            signals: readRect(".content-grid"),
+            latestNews: readRect("#latest-news"),
+            latestNewsCards: readRect(".news-cards"),
+            newsletter: readRect("#newsletter"),
+          }
+          : null;
+        return {
+          title: document.title,
+          developmentToolbarCount: document.querySelectorAll("astro-dev-toolbar").length,
+          mainCount: document.querySelectorAll("#main").length,
+          sectionCounts: Object.fromEntries(sectionSelectors.map((selector) => [selector, document.querySelectorAll(selector).length])),
+          dimensions: { viewport: viewportWidth, document: document.documentElement.scrollWidth, overflowing },
+          trendingLayout,
+          desktopGeometry,
+        };
+      }, {
+        sectionSelectors: ["#market-overview", "#radar-24h", "#latest-news", "#newsletter", "#demo-data"],
+        viewportName: viewport.name,
+      });
+      assert.equal(viewportSnapshot.title, "CoinBlink Golden Home · isolated module fixture");
+      assert.equal(viewportSnapshot.developmentToolbarCount, 0, "captured visual fixtures must not include Astro's development toolbar");
+      assert.equal(viewportSnapshot.mainCount, 1);
+      for (const [section, count] of Object.entries(viewportSnapshot.sectionCounts)) {
+        assert.equal(count, 1, "missing " + section);
+      }
+      const { dimensions, trendingLayout } = viewportSnapshot;
+      assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " horizontal overflow: " + JSON.stringify(dimensions));
+      if (viewport.name === "mobile") {
+        assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
+        assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
+        const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
+        const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
+        assert.ok(
+          mobileRowBottom > mobileRowTop,
+          "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
+        );
+        interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 5 };
+      }
+      const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
+      const pageAxe = await new AxeBuilder({ page }).analyze();
+      const encodeViolations = (axe) => axe.violations.map((violation) => ({
+        id: violation.id,
+        impact: violation.impact,
+        description: violation.description,
+        nodes: violation.nodes.map((node) => ({ target: node.target, summary: node.failureSummary })),
+      }));
+      results.push({
+        ...viewport,
+        documentWidth: dimensions.document,
+        axeViolations: encodeViolations(moduleAxe),
+        fullPageAxeViolations: encodeViolations(pageAxe),
+      });
+      if (viewport.name === "desktop") {
+        const desktopGeometry = viewportSnapshot.desktopGeometry;
+        results.at(-1).desktopGeometry = desktopGeometry;
+        interactionChecks.desktopGeometry = desktopGeometry;
+        const geometryViolations = [];
+        if (desktopGeometry.brandName.left <= desktopGeometry.brandImage.right - 2) geometryViolations.push("brand mark and wordmark are not arranged side by side");
+        if (desktopGeometry.header.height > 60) geometryViolations.push("header exceeds the compact Golden header envelope");
+        if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
+        if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
+        if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
+        if (desktopGeometry.latestNews.top < 700) geometryViolations.push("latest-news and newsletter begin too early compared with the Golden lower fold");
+        if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
+        if (desktopGeometry.latestNewsCards.bottom > viewport.height) geometryViolations.push("all four demo story cards must remain inside the desktop first fold");
+        if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
+        if (desktopGeometry.trendingItems !== 5) geometryViolations.push("five demo trend placeholders are required");
+        assert.deepEqual(
+          desktopGeometry.categoryLabels,
+          ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"],
+          "the Golden's ten editorial categories must be available with All as a filter",
+        );
+        assert.deepEqual(geometryViolations, [], `desktop Golden geometry failed: ${JSON.stringify(desktopGeometry)}; ${geometryViolations.join("; ")}`);
+      }
+      await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
+    }),
+    Promise.resolve(),
+  );
 
   // Exercise the real Astro->GoldenHome producer prop path with mock-only
   // fixture routes. The Golden Home visual source and approved art stay untouched.
@@ -322,7 +327,7 @@ try {
   interactionChecks.syntheticProducerSmoke = producerSmoke;
 
   const mobileHeroGeometry = [];
-  for (const width of [390, 360, 320]) {
+  await [390, 360, 320].reduce((serialWidth, width) => serialWidth.then(async () => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto(origin, { waitUntil: "networkidle" });
     const geometry = await page.locator(".hero-panel").evaluate((hero) => {
@@ -361,7 +366,7 @@ try {
     if (!geometry.ctasWithinHero) violations.push("hero action extends outside the panel");
     assert.deepEqual(violations, [], `mobile hero geometry failed at ${width}px: ${JSON.stringify(geometry)}`);
     mobileHeroGeometry.push({ width, ...geometry });
-  }
+  }), Promise.resolve());
   interactionChecks.mobileHeroGeometry = mobileHeroGeometry;
 
   const verifyResponsiveWidth = async (width) => {
@@ -406,12 +411,18 @@ try {
       await toggle.click();
       assert.equal(await toggle.getAttribute("aria-expanded"), "true");
       const mobileLinkCount = responsiveSnapshot.navigationLinkCount;
-      for (let index = 0; index < mobileLinkCount; index += 1) {
-        assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be reachable at ${width}px`);
-      }
-      for (const label of ["Tools", "Videos", "About"]) {
-        assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
-      }
+      await Array.from({ length: mobileLinkCount }, (_, index) => index).reduce(
+        (serialLink, index) => serialLink.then(async () => {
+          assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be reachable at ${width}px`);
+        }),
+        Promise.resolve(),
+      );
+      await ["Tools", "Videos", "About"].reduce(
+        (serialLink, label) => serialLink.then(async () => {
+          assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
+        }),
+        Promise.resolve(),
+      );
       await page.getByRole("link", { name: "Tools", exact: true }).click();
       assert.equal(new URL(page.url()).hash, "#chain-lookup", `mouse can activate Tools at ${width}px`);
       assert.equal(await toggle.getAttribute("aria-expanded"), "false");
@@ -430,12 +441,18 @@ try {
       assert.equal(await toggle.isVisible(), false, "desktop navigation does not use a hidden menu toggle");
       assert.equal(await nav.isVisible(), true);
       const desktopLinkCount = responsiveSnapshot.navigationLinkCount;
-      for (let index = 0; index < desktopLinkCount; index += 1) {
-        assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be visible at ${width}px`);
-      }
-      for (const label of ["Tools", "Videos", "About"]) {
-        assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
-      }
+      await Array.from({ length: desktopLinkCount }, (_, index) => index).reduce(
+        (serialLink, index) => serialLink.then(async () => {
+          assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be visible at ${width}px`);
+        }),
+        Promise.resolve(),
+      );
+      await ["Tools", "Videos", "About"].reduce(
+        (serialLink, label) => serialLink.then(async () => {
+          assert.equal(await page.getByRole("link", { name: label, exact: true }).isVisible(), true, `${label} must be reachable at ${width}px`);
+        }),
+        Promise.resolve(),
+      );
       const headerRects = await page.evaluate(() => [".brand", "#primary-nav", ".header-tools"].map((selector) => {
         const rect = globalThis.document.querySelector(selector).getBoundingClientRect();
         return { selector, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
@@ -474,11 +491,13 @@ try {
   assert.equal(new URL(page.url()).hash, "#demo-data");
   assert.match(await page.locator("#demo-data").textContent(), /Video publishing and live feeds are unavailable/);
   interactionChecks.unavailableNavigation = { toolsTarget: "#chain-lookup", videosTarget: "#demo-data", destinationStatusVerified: true };
-  let searchReachedByKeyboard = false;
-  for (let step = 0; step < 20 && !searchReachedByKeyboard; step += 1) {
+  const focusSearchWithTab = async (remainingTabs) => {
+    if (remainingTabs === 0) return false;
     await page.keyboard.press("Tab");
-    searchReachedByKeyboard = await page.evaluate(() => globalThis.document.activeElement === globalThis.document.querySelector("[data-news-search]"));
-  }
+    const searchFocused = await page.evaluate(() => globalThis.document.activeElement === globalThis.document.querySelector("[data-news-search]"));
+    return searchFocused || focusSearchWithTab(remainingTabs - 1);
+  };
+  const searchReachedByKeyboard = await focusSearchWithTab(20);
   assert.equal(searchReachedByKeyboard, true, "keyboard Tab must reach the visible search input");
   const searchFocusStyle = await page.locator("[data-news-search]").evaluate((input) => ({
     outlineStyle: globalThis.getComputedStyle(input).outlineStyle,

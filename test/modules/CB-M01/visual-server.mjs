@@ -30,10 +30,15 @@ export async function waitForFixtureReady({
   const deadline = now() + timeoutMs;
   let lastError;
 
-  while (now() < deadline) {
+  const probeUntilReady = async () => {
+    if (now() >= deadline) {
+      throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+    }
     assertFixtureRunning(child);
     const remainingMs = deadline - now();
-    if (remainingMs <= 0) break;
+    if (remainingMs <= 0) {
+      throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+    }
 
     const controller = new AbortController();
     let abortTimer;
@@ -64,10 +69,14 @@ export async function waitForFixtureReady({
     else if (response) lastError = new Error(`Fixture returned HTTP ${response.status}`);
 
     const remainingAfterProbe = deadline - now();
-    if (remainingAfterProbe > 0) await sleep(Math.min(intervalMs, remainingAfterProbe));
-  }
+    if (remainingAfterProbe <= 0) {
+      throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+    }
+    await sleep(Math.min(intervalMs, remainingAfterProbe));
+    return probeUntilReady();
+  };
 
-  throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+  return probeUntilReady();
 }
 
 export async function removeFixtureTempRootAfterExit(child, fixtureTempRoot, remove = rm) {

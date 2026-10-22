@@ -551,11 +551,15 @@ try {
   assert.equal(assetResponse?.status(), 200, "static asset probe must use the built local route");
   const staticImages = assetPage.locator(".promo-image img, .editorial-image img");
   const staticImageCount = await staticImages.count();
-  for (let index = 0; index < staticImageCount; index += 1) {
-    const image = staticImages.nth(index);
-    await image.scrollIntoViewIfNeeded();
-    await image.evaluate((element) => element.decode());
-  }
+  // Lazy images need ordered scroll/decode steps on the same Page.
+  await Array.from({ length: staticImageCount }, (_, index) => index).reduce(
+    (serialImage, index) => serialImage.then(async () => {
+      const image = staticImages.nth(index);
+      await image.scrollIntoViewIfNeeded();
+      await image.evaluate((element) => element.decode());
+    }),
+    Promise.resolve(),
+  );
   report.staticAssetLoads = await staticImages.evaluateAll((images) => images.map((image) => {
     const picture = image.closest("picture");
     const region = picture.dataset.previewRegion;
@@ -605,9 +609,10 @@ try {
   assert.equal(staticFallbackResponse?.status(), 200, "static fallback probe must use the built local route");
   const failedImages = staticFallbackPage.locator(".promo-image img, .editorial-image img");
   const failedImageCount = await failedImages.count();
-  for (let index = 0; index < failedImageCount; index += 1) {
-    await failedImages.nth(index).scrollIntoViewIfNeeded();
-  }
+  await Array.from({ length: failedImageCount }, (_, index) => index).reduce(
+    (serialImage, index) => serialImage.then(() => failedImages.nth(index).scrollIntoViewIfNeeded()),
+    Promise.resolve(),
+  );
   await staticFallbackPage.waitForLoadState("networkidle");
   report.staticFallbackBehavior = await staticFallbackPage.locator(".promo-panel, .news-art").evaluateAll((regions) => regions.map((region) => {
     const picture = region.querySelector("picture[data-preview-region]");
@@ -627,10 +632,12 @@ try {
   assert.ok(Array.from(staticFallbackRequests.values()).every((count) => count === 1 || count === 2));
   await staticFallbackContext.close();
 
-  for (const scenario of [
+  // These profiles share the same constrained-resource budget on one host;
+  // preserve the intentional isolated, serial performance run order.
+  await [
     { name: "slow-desktop-motion-opt-in", width: 1536, height: 864, effectiveType: "4g", expected: "motion" },
     { name: "slow-mobile-limited-connection", width: 390, height: 844, effectiveType: "3g", expected: "static" },
-  ]) {
+  ].reduce((serialScenario, scenario) => serialScenario.then(async () => {
     const constrainedContext = await browser.newContext();
     const constrainedPage = await constrainedContext.newPage();
     const constrainedRequests = [];
@@ -740,7 +747,7 @@ try {
       longTaskDurationMs: vitals.longTaskSupported ? Math.round(vitals.longTaskDurationMs * 100) / 100 : null,
     });
     await constrainedContext.close();
-  }
+  }), Promise.resolve());
 
   const partialFailurePage = await context.newPage();
   let motionRequests = 0;

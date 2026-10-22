@@ -22,7 +22,7 @@ export const visualInputPaths = Object.freeze([
   "test/modules/CB-M01/GoldenHome.contract.test.mjs",
   "test/modules/CB-M01/R26StaticAssets.contract.test.mjs",
   "src/modules/CB-M01/r26-static-assets-preflight.mjs",
-  ".engineering/evidence/CB-M01-WO-001/r26-static-asset-provenance.json",
+  "assets/archive/m01/r26-static-asset-provenance.json",
   ".engineering/evidence/CB-M01-WO-001/r26-static-asset-derivatives.json",
   ".engineering/evidence/CB-M01-WO-001/prepare-r26-static-assets.py",
   ".engineering/evidence/CB-M01-WO-001/build-r26-static-asset-provenance.py",

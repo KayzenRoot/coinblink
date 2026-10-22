@@ -22,6 +22,8 @@ test("literal find handles case sensitivity, punctuation, and multiline input", 
   assert.equal(findInLocalDraft("a.b a-b a.b", "a.b").count, 2);
   assert.equal(findInLocalDraft("a\nb a\nb", "a\nb").count, 2);
   assert.equal(findInLocalDraft("a[b] a[b]", "[b]").count, 2);
+  assert.equal(findInLocalDraft("a\\b ab a$b ab", "a\\b").count, 1);
+  assert.equal(findInLocalDraft("a$b ab a$b", "a$b").count, 2);
 });
 
 test("the spans are valid textarea offsets after Unicode surrogate pairs", () => {

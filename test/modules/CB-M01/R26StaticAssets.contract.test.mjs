@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { validateR26StaticAssetManifest } from "../../../src/modules/CB-M01/r26-static-assets-preflight.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("../../../", import.meta.url)));
-const manifestPath = join(repoRoot, ".engineering", "evidence", "CB-M01-WO-001", "r26-static-asset-provenance.json");
+const manifestPath = join(repoRoot, "assets", "archive", "m01", "r26-static-asset-provenance.json");
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const payloads = new Map();
 for (const asset of manifest.assets) {

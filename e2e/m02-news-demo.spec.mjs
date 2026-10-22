@@ -1,3 +1,4 @@
+import { prepareLocalDraft, draftToMarkdown } from "../public/m05-draft-preview.js";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 for (const [locale, title, sample, query] of [
@@ -74,3 +75,50 @@ test("M01 links to the separate M02 fictitious news workbench in both locales", 
     await expect(handoff).toHaveAttribute("href", "/" + locale + "/news");
   }
 });
+
+for (const locale of ["en", "pt-br"]) {
+  test("M02 private M05 article preview rejects forged HTML and keeps data in tab: " + locale, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const external = [], writes = [];
+    page.on("request", request => {
+      if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) external.push(request.url());
+      if (!["GET", "HEAD"].includes(request.method())) writes.push(request.url());
+    });
+    await page.goto("/" + locale + "/news");
+    const root = page.locator("[data-m02-local-preview]");
+    const input = root.locator("[data-m02-draft-file]");
+    const article = root.locator("[data-m02-draft-article]");
+    await expect(article).toBeHidden();
+    const original = prepareLocalDraft({
+      title: "Private article <img src=x onerror=alert(1)>", author: "Fictional author",
+      summary: "A sample summary that exists only inside the local browser.",
+      body: "A purely fictional article with <script>alert(1)</script> and no publication or network transfer.",
+      source: "https://example.test/fixture",
+    });
+    const raw = draftToMarkdown(original);
+    await input.setInputFiles({ name: "safe.md", mimeType: "text/markdown", buffer: Buffer.from(raw) });
+    await expect(article).toBeVisible();
+    await expect(article.locator("[data-m02-draft-title]")).toHaveText(original.title);
+    await expect(article.locator("[data-m02-draft-body]")).toContainText("<script>alert(1)</script>");
+    await expect(article.locator("img,iframe,script")).toHaveCount(0);
+    await expect(article.locator("[data-m02-draft-title]")).toBeFocused();
+    await expect(root).toContainText(locale === "pt-br" ? "NÃO PUBLICADO" : "NOT PUBLISHED");
+    await expect(page.locator("[data-m02-entry]")).toHaveCount(3);
+    await input.setInputFiles({ name: "bad.md", mimeType: "text/markdown", buffer: Buffer.from("# invalid") });
+    await expect(article).toBeHidden();
+    await expect(root.locator("[data-m02-draft-status]")).toContainText(locale === "pt-br" ? "Arquivo inválido" : "Invalid file");
+    await input.setInputFiles({ name: "large.md", mimeType: "text/markdown", buffer: Buffer.alloc(64001, 120) });
+    await expect(article).toBeHidden();
+    await input.setInputFiles({ name: "safe.md", mimeType: "text/markdown", buffer: Buffer.from(raw) });
+    await expect(article).toBeVisible();
+    await root.locator("[data-m02-draft-clear]").click();
+    await expect(article).toBeHidden();
+    await expect(input).toBeFocused();
+    await page.reload();
+    await expect(page.locator("[data-m02-draft-article]")).toBeHidden();
+    const audit = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+    expect(audit.violations).toEqual([]);
+    expect(external).toEqual([]);
+    expect(writes).toEqual([]);
+  });
+}

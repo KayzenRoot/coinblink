@@ -1,8 +1,11 @@
 ---
 import { listMockMarkets, inspectMockMarket, MARKET_DEMO_POLICY } from "./market-lab.mjs";
 import clientUrl from "./market-lab.client.js?url&no-inline";
+import { inspectMockReadiness, summarizeMockReadiness } from "./market-readiness.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 const entries = listMockMarkets().items;
+const summary = summarizeMockReadiness();
+const inspected = entries.map(item => ({ item, report: inspectMockReadiness(item.asset).report }));
 ---
 <main id="main" class="m04" data-m04-root>
   <nav><a href="/en">← CoinBlink Home</a></nav>
@@ -13,6 +16,13 @@ const entries = listMockMarkets().items;
     <p>Symbols below are real asset names but there are <strong>no market prices, rankings, predictions or live provider connections</strong>. All observations are offline examples.</p>
     <p class="m04-policy">{MARKET_DEMO_POLICY}</p>
   </header>
+  <section class="m04-readiness" aria-labelledby="m04-readiness-title">
+    <h2 id="m04-readiness-title">Offline market data readiness · DEMO</h2>
+    <p><strong>{summary.total}</strong> example assets · <strong>{summary.stale}</strong> dated illustrations ·
+      <strong>{summary.unavailable}</strong> without illustration time ·
+      <strong>{summary.live}</strong> live feeds · <strong>{summary.tradable}</strong> tradable assets.</p>
+    <p>Readiness here is only a mock validation exercise. No real price or trading signal exists.</p>
+  </section>
   <section aria-labelledby="market-example-title">
     <h2 id="market-example-title">Illustrative market observations</h2>
     <div class="m04-controls">
@@ -29,7 +39,7 @@ const entries = listMockMarkets().items;
     </div>
     <p role="status" aria-live="polite" data-m04-count>{entries.length} unavailable example assets</p>
     <div class="m04-grid">
-      {entries.map(item => <article data-m04-entry data-m04-freshness={item.freshness} data-m04-searchable={[item.asset,item.pair,item.freshness].join(" ").toLowerCase()}>
+      {inspected.map(({ item, report }) => <article data-m04-entry data-m04-asset={item.asset} data-m04-freshness={item.freshness} data-m04-searchable={[item.asset,item.pair,item.freshness].join(" ").toLowerCase()}>
         <small>NOT LIVE · {item.freshness}</small>
         <h3>{item.pair}</h3>
         <dl>
@@ -40,9 +50,35 @@ const entries = listMockMarkets().items;
           <dt>Rights</dt><dd>{item.rightsStatus}</dd>
           <dt>Readiness</dt><dd>{inspectMockMarket(item).state}</dd>
         </dl>
+        {report ? <details class="m04-readiness-detail">
+          <summary>Inspect offline readiness for {item.asset}</summary>
+          <p>NOT LIVE · NO QUOTES · NOT TRADABLE</p>
+          <ul>{report.blockers.map(blocker => <li>{blocker}</li>)}</ul>
+          <p>Next step: {report.nextStep}</p>
+        </details> : <p>Offline readiness unavailable · NOT TRADABLE</p>}
       </article>)}
     </div>
     <p role="status" data-m04-empty hidden>No example assets match. No provider was queried.</p>
+  </section>
+  <section class="m04-compare" aria-labelledby="m04-compare-title">
+    <h2 id="m04-compare-title">Compare unavailable market examples</h2>
+    <p>Comparison is fictional and displays only blocked readiness states. No numbers or prices.</p>
+    <div class="m04-compare-controls">
+      <label>First example asset
+        <select data-m04-first>
+          <option value="">Choose first asset</option>
+          {entries.map(item => <option value={item.asset}>{item.pair}</option>)}
+        </select>
+      </label>
+      <label>Second example asset
+        <select data-m04-second>
+          <option value="">Choose second asset</option>
+          {entries.map(item => <option value={item.asset}>{item.pair}</option>)}
+        </select>
+      </label>
+      <button type="button" data-m04-compare>Compare offline readiness</button>
+    </div>
+    <p role="status" aria-live="polite" data-m04-comparison>Select two different mock assets. Trading remains unavailable.</p>
   </section>
   <section class="m04-radar" aria-labelledby="m04-radar-title">
     <small>DEMO ONLY · NO EVENT DATA</small>
@@ -59,7 +95,15 @@ const entries = listMockMarkets().items;
   .m04-controls{display:flex;flex-wrap:wrap;gap:1rem;margin:1rem 0}
   .m04-controls label{display:grid;flex:1 1 15rem;max-width:25rem;gap:.35rem}
   .m04 input,.m04 select{min-height:2.75rem;padding:.75rem;color:#fff;border-radius:.5rem;border:1px solid #719a79;background:#14251b}
-  .m04 input:focus-visible,.m04 select:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .m04 input:focus-visible,.m04 select:focus-visible,.m04 button:focus-visible,.m04 summary:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .m04-readiness,.m04-compare{margin:1.25rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.75rem;background:#111e17}
+  .m04-readiness p,.m04-compare p{color:#d0e4d6}
+  .m04-readiness-detail{margin-top:1rem;border-top:1px solid #456e4e;padding-top:.8rem}
+  .m04-readiness-detail summary{cursor:pointer;color:#b8f34b}
+  .m04-readiness-detail li{overflow-wrap:anywhere;font-size:.9rem}
+  .m04-compare-controls{display:flex;flex-wrap:wrap;align-items:end;gap:1rem}
+  .m04-compare-controls label{display:grid;flex:1 1 13rem;gap:.4rem}
+  .m04-compare-controls button{background:#b8f34b;color:#102015;font-weight:700;border:0;border-radius:.5rem;min-height:2.75rem;padding:.7rem 1rem;cursor:pointer}
   .m04-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1rem}
   .m04 article,.m04-radar{border:1px solid #456e4e;border-radius:.75rem;padding:1.25rem;background:#111e17}
   .m04 article[hidden]{display:none}.m04 dl{display:grid;grid-template-columns:1fr 1.2fr;gap:.35rem .5rem}

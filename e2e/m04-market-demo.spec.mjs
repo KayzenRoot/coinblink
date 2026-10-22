@@ -30,6 +30,34 @@ test("M04 market radar is offline, accessible and has no quotes", async ({ page 
   await expect(page.locator("[data-m04-entry]:visible")).toHaveCount(3);
   await expect(page.locator("[data-m04-empty]")).toBeHidden();
   await expect(page.locator("[data-m04-count]")).toHaveText("3 unavailable example assets");
+  await expect(page.getByRole("heading", { name: "Offline market data readiness · DEMO" })).toBeVisible();
+  await expect(page.locator(".m04-readiness")).toContainText("0 live feeds");
+  await expect(page.locator(".m04-readiness")).toContainText("0 tradable assets");
+  const report = page.locator("[data-m04-entry]").first().locator(".m04-readiness-detail");
+  await report.locator("summary").click();
+  await expect(report).toHaveAttribute("open", "");
+  await expect(report).toContainText("RIGHTS_NOT_CLEARED");
+  await expect(report).toContainText("NO_LIVE_FEED");
+  await expect(report).toContainText("NO_CAPTURED_OBSERVATION");
+  const compare = page.getByRole("button", { name: "Compare offline readiness" });
+  await compare.click();
+  await expect(page.locator("[data-m04-comparison]")).toContainText("Choose two different offline examples");
+  await page.locator("[data-m04-first]").selectOption("BTC");
+  await page.locator("[data-m04-second]").selectOption("BTC");
+  await compare.click();
+  await expect(page.locator("[data-m04-comparison]")).toContainText("No market data was fetched");
+  await page.locator("[data-m04-second]").selectOption("ETH");
+  await compare.click();
+  await expect(page.locator("[data-m04-comparison]")).toContainText("BTC (STALE) and ETH (UNAVAILABLE)");
+  await expect(page.locator("[data-m04-comparison]")).toContainText("BOTH NOT LIVE · NO QUOTES · NO TRADING");
+  for (const width of [390, 768, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    const bounds = await page.locator(".m04-compare").boundingBox();
+    expect(bounds).toBeTruthy();
+    expect(bounds.x).toBeGreaterThanOrEqual(-1);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
+  }
+
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   expect(outside).toEqual([]);
   const audit = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();

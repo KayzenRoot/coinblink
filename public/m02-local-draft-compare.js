@@ -71,11 +71,15 @@ if (root) {
       return;
     }
     const result = compareLocalDraftExports(drafts.before, drafts.after);
-    count.textContent = result.identicalContents
-      ? (pt ? "Nenhuma diferença encontrada nos cinco campos. A identidade histórica NÃO foi comprovada."
-        : "No differences in five fields. Historical identity is NOT verified.")
-      : (pt ? String(result.changedCount) + " campo(s) alterado(s) entre as duas exportações locais."
-        : String(result.changedCount) + " field(s) changed between two local exports.");
+    if (result.identicalContents) {
+      count.textContent = pt
+        ? "Nenhuma diferença encontrada nos cinco campos. A identidade histórica NÃO foi comprovada."
+        : "No differences in five fields. Historical identity is NOT verified.";
+    } else {
+      count.textContent = pt
+        ? String(result.changedCount) + " campo(s) alterado(s) entre as duas exportações locais."
+        : String(result.changedCount) + " field(s) changed between two local exports.";
+    }
     for (const change of result.changes) {
       const li = document.createElement("li");
       const name = document.createElement("strong");

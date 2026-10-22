@@ -46,7 +46,7 @@ function stripTerminalEscapes(output) {
     if (output.codePointAt(index) === 0x1b && output[index + 1] === "[") {
       index += 2;
       while (index < output.length) {
-        const code = output.charCodeAt(index);
+        const code = output.codePointAt(index);
         if (code >= 0x40 && code <= 0x7e) break;
         index += 1;
       }
@@ -62,7 +62,7 @@ export function childAnnouncedOrigin(output, expectedOrigin) {
   const expected = new URL(expectedOrigin).origin;
 
   return normalizedOutput.split(/\r?\n/u).some((line) => {
-    const localUrl = line.match(/\bLocal\s+(https?:\/\/\S+)/iu)?.[1];
+    const localUrl = /\bLocal\s+(https?:\/\/\S+)/iu.exec(line)?.[1];
     if (!localUrl) return false;
     try {
       return new URL(localUrl).origin === expected;

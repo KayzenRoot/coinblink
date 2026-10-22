@@ -121,6 +121,7 @@ test('M07-D private CSP UI exposes labeled accessible filters; sessions scrub we
   const html = renderLocalCmsUi('ab'.repeat(32));
   for (const id of ['m07-weekly', 'm07-week-zone', 'm07-week-filter',
     'm07-week-status', 'm07-week-board']) assert.match(html, new RegExp('id="' + id + '"'));
+  assert.match(html, /id="m07-week-board" role="region" aria-label="Private weekly hypothetical editorial board"/);
   assert.match(html, /for="m07-week-zone"/);
   assert.match(html, /for="m07-week-filter"/);
   assert.match(html, /MEMORY ONLY · NOT SCHEDULED · NOT POSTED/);

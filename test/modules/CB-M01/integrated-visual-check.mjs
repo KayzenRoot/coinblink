@@ -71,7 +71,7 @@ async function saveReport(status, failure = null) {
 }
 
 async function stopServer() {
-  if (!server || server.exitCode !== null || server.signalCode !== null) return true;
+  if (server?.exitCode !== null || server?.signalCode !== null) return true;
   server.kill();
   await Promise.race([once(server, "exit"), new Promise((resolveExit) => setTimeout(resolveExit, 3_000))]);
   if (server.exitCode === null && server.signalCode === null) {
@@ -327,7 +327,7 @@ try {
     viewport.name + " rendered WebP resource must remain below the 1.5 MB cap");
     const headers = response.headers();
     const robotsMeta = await page.locator('meta[name="robots"]').getAttribute("content");
-    assert.ok(robotsMeta && robotsMeta.includes("noindex"), "integrated /en must retain noindex");
+    assert.ok(robotsMeta?.includes("noindex"), "integrated /en must retain noindex");
     assert.equal(headers["x-content-type-options"], "nosniff");
     assert.equal(headers["x-frame-options"], "DENY");
     assert.ok(headers["x-robots-tag"]?.includes("noindex"), "integrated /en must return a noindex header");

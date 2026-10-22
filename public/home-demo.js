@@ -14,7 +14,7 @@ if (cinematicImage?.complete) revealCinematicPreview();
 else cinematicImage?.addEventListener("load", revealCinematicPreview, { once: true });
 
 function closeMenu({ returnFocus = false } = {}) {
-  if (!menu || menu.getAttribute("aria-expanded") !== "true") return;
+  if (menu?.getAttribute("aria-expanded") !== "true") return;
   menu.setAttribute("aria-expanded", "false");
   nav?.classList.remove("is-open");
   if (returnFocus) menu.focus();
@@ -33,9 +33,12 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 const isPortuguese = document.querySelector(".cb-home")?.dataset.locale === "pt-br";
-const placeholderCount = (n) => isPortuguese
-  ? String(n) + (n === 1 ? " exemplo" : " exemplos")
-  : String(n) + (n === 1 ? " placeholder" : " placeholders");
+const placeholderCount = (n) => {
+  let noun;
+  if (isPortuguese) noun = n === 1 ? "exemplo" : "exemplos";
+  else noun = n === 1 ? "placeholder" : "placeholders";
+  return String(n) + " " + noun;
+};
 
 let selected = "All";
 let searchText = "";

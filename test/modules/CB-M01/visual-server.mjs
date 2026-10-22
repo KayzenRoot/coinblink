@@ -71,7 +71,7 @@ export async function waitForFixtureReady({
 }
 
 export async function removeFixtureTempRootAfterExit(child, fixtureTempRoot, remove = rm) {
-  if (child && child.exitCode === null && child.signalCode === null) return false;
+  if (child?.exitCode === null && child.signalCode === null) return false;
   await remove(fixtureTempRoot, { recursive: true, force: true });
   return true;
 }

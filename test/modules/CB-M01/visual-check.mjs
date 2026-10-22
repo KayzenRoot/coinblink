@@ -89,7 +89,7 @@ async function waitForChildExit(child, timeoutMs) {
 }
 
 async function stopAstroServer(child) {
-  if (!child || child.exitCode !== null || child.signalCode !== null) return true;
+  if (child?.exitCode !== null || child?.signalCode !== null) return true;
   child.kill();
   if (await waitForChildExit(child, 3_000)) return true;
   child.kill("SIGKILL");

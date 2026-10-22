@@ -11,8 +11,8 @@ const escapeMarkdown = (value) => value
   .replaceAll("&", "&amp;")
   .replaceAll("<", "&lt;")
   .replaceAll(">", "&gt;")
-  .replace(/^#/gmu, "&#35;");
-const escapeLegacyMarkdown = (value) => value.replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+  .replaceAll(/^#/gmu, "&#35;");
+const escapeLegacyMarkdown = (value) => value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 // A heading's '#' must be encoded even when it is not the first character.
 // Use a single pass so literal "&#35;" remains distinguishable from a real '#'.
 const escapeTitleV2 = (value) => value.replace(/[&<>#]/gu, (character) => ({

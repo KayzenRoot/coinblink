@@ -369,7 +369,8 @@ try {
     await page.goto(origin, { waitUntil: "networkidle" });
     const responsiveSnapshot = await page.evaluate((measureTrending) => {
       const documentWidth = globalThis.document.documentElement.scrollWidth;
-      if (!measureTrending) return { documentWidth, trendingLayout: null };
+      const navigationLinkCount = globalThis.document.querySelectorAll("#primary-nav a").length;
+      if (!measureTrending) return { documentWidth, navigationLinkCount, trendingLayout: null };
 
       const strip = globalThis.document.querySelector(".trending-strip");
       const title = strip.querySelector("h2").getBoundingClientRect();
@@ -379,10 +380,11 @@ try {
           const rect = item.getBoundingClientRect();
           return { left: rect.left, top: rect.top, bottom: rect.bottom };
         });
-      return { documentWidth, trendingLayout: { title: { left: title.left, top: title.top, bottom: title.bottom }, items } };
+      return { documentWidth, navigationLinkCount, trendingLayout: { title: { left: title.left, top: title.top, bottom: title.bottom }, items } };
     }, width > 760 && width <= 1050);
     const { documentWidth } = responsiveSnapshot;
     assert.ok(documentWidth <= width, `responsive navigation must not create horizontal overflow at ${width}px: ${documentWidth}`);
+    assert.equal(responsiveSnapshot.navigationLinkCount, 8, `all eight navigation links must exist at ${width}px`);
     if (width > 760 && width <= 1050) {
       const { trendingLayout } = responsiveSnapshot;
       assert.equal(trendingLayout.items.length, 3, "tablet trending strip must show three items");
@@ -403,8 +405,7 @@ try {
       assert.equal(await nav.isVisible(), false, `collapsed navigation must stay closed at ${width}px`);
       await toggle.click();
       assert.equal(await toggle.getAttribute("aria-expanded"), "true");
-      const mobileLinkCount = await links.count();
-      assert.equal(mobileLinkCount, 8);
+      const mobileLinkCount = responsiveSnapshot.navigationLinkCount;
       for (let index = 0; index < mobileLinkCount; index += 1) {
         assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be reachable at ${width}px`);
       }
@@ -428,8 +429,7 @@ try {
     } else {
       assert.equal(await toggle.isVisible(), false, "desktop navigation does not use a hidden menu toggle");
       assert.equal(await nav.isVisible(), true);
-      const desktopLinkCount = await links.count();
-      assert.equal(desktopLinkCount, 8);
+      const desktopLinkCount = responsiveSnapshot.navigationLinkCount;
       for (let index = 0; index < desktopLinkCount; index += 1) {
         assert.equal(await links.nth(index).isVisible(), true, `navigation link ${index + 1} must be visible at ${width}px`);
       }

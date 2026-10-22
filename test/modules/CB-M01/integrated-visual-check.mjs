@@ -81,8 +81,8 @@ async function stopServer() {
   return server.exitCode !== null || server.signalCode !== null;
 }
 
-async function readIntegratedViewportSnapshot(page, allowedOrigin) {
-  return page.locator(".hero-cinematic-preview img").evaluate(async (image, expectedOrigin) => {
+async function readIntegratedViewportSnapshot(page, allowedOrigin, viewportName) {
+  return page.locator(".hero-cinematic-preview img").evaluate(async (image, { expectedOrigin, viewportName }) => {
     await image.decode();
     const document = image.ownerDocument;
     const scene = image.closest(".hero-scene");
@@ -155,6 +155,54 @@ async function readIntegratedViewportSnapshot(page, allowedOrigin) {
       decorative: promoSvg.getAttribute("aria-hidden") === "true" && promoAccent.pointerEvents === "none",
       hasAtmosphere: promoAccent.content !== "none" && promoAccent.content !== "normal",
     };
+    const desktopSnapshot = viewportName === "desktop"
+      ? (() => {
+        const rect = (selector) => {
+          const box = document.querySelector(selector).getBoundingClientRect();
+          return { x: box.x, y: box.y, width: box.width, height: box.height, bottom: box.bottom };
+        };
+        const desktopGeometry = Object.fromEntries([".demo-banner", ".cb-header", ".brand", ".hero-panel", ".market-panel", ".ticker-strip", ".trending-strip", ".category-rail", ".content-grid", "#latest-news", ".news-cards", "#newsletter"].map((selector) => [selector, rect(selector)]));
+        const card = document.querySelector(".news-card");
+        const art = card.querySelector(".news-art").getBoundingClientRect();
+        const copy = card.lastElementChild.getBoundingClientRect();
+        return {
+          desktopGeometry,
+          desktopEditorialCardGeometry: {
+            artRight: art.right,
+            artTop: art.top,
+            artBottom: art.bottom,
+            copyLeft: copy.left,
+            copyTop: copy.top,
+            copyBottom: copy.bottom,
+          },
+        };
+      })()
+      : null;
+    const mobileHero = viewportName === "mobile"
+      ? (() => {
+        const hero = document.querySelector(".hero-panel");
+        const box = (element) => {
+          const value = element.getBoundingClientRect();
+          return { left: value.left, right: value.right, top: value.top, bottom: value.bottom, height: value.height };
+        };
+        const overlaps = (first, second) => first.left < second.right && first.right > second.left && first.top < second.bottom && first.bottom > second.top;
+        const ctas = [...hero.querySelectorAll(".hero-actions a")].map((element) => ({
+          label: element.textContent.trim(),
+          ...box(element),
+          minHeight: Number.parseFloat(globalThis.getComputedStyle(element).minHeight),
+        }));
+        const status = box(hero.querySelector(".hero-stat"));
+        const coin = box(hero.querySelector(".coin-art"));
+        return {
+          ctas,
+          status,
+          coin,
+          ctaStatusOverlap: ctas.some((cta) => overlaps(cta, status)),
+          ctaCoinOverlap: ctas.some((cta) => overlaps(cta, coin)),
+          statusCoinOverlap: overlaps(status, coin),
+        };
+      })()
+      : null;
     return {
       title: document.title,
       homeCount: document.querySelectorAll(".cb-home").length,
@@ -165,6 +213,9 @@ async function readIntegratedViewportSnapshot(page, allowedOrigin) {
       materialOverlay,
       editorialArtworkCount: document.querySelectorAll(".news-art > svg.editorial-artwork").length,
       promoGeometry,
+      desktopGeometry: desktopSnapshot?.desktopGeometry ?? null,
+      desktopEditorialCardGeometry: desktopSnapshot?.desktopEditorialCardGeometry ?? null,
+      mobileHero,
       developmentToolbarCount: document.querySelectorAll("astro-dev-toolbar").length,
       dimensions: {
         viewport: document.documentElement.clientWidth,
@@ -172,7 +223,7 @@ async function readIntegratedViewportSnapshot(page, allowedOrigin) {
       },
       robotsMeta: document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? null,
     };
-  }, allowedOrigin);
+  }, { expectedOrigin: allowedOrigin, viewportName });
 }
 
 await mkdir(screenshotDir, { recursive: true });
@@ -261,7 +312,7 @@ try {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     const response = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
-    const viewportSnapshot = await readIntegratedViewportSnapshot(page, report.origin);
+    const viewportSnapshot = await readIntegratedViewportSnapshot(page, report.origin, viewport.name);
     assert.equal(viewportSnapshot.title, "CoinBlink · Crypto news in a blink");
     assert.equal(viewportSnapshot.homeCount, 1);
     const { cinematicPreview, bitcoinScene, reliefLayers, mountainLayers, materialOverlay, promoGeometry, dimensions } = viewportSnapshot;
@@ -367,23 +418,10 @@ try {
       bytes: screenshot.length,
     });
     if (viewport.name === "desktop") {
-      const desktopSnapshot = await page.evaluate(() => {
-        const rect = (selector) => {
-          const box = globalThis.document.querySelector(selector).getBoundingClientRect();
-          return { x: box.x, y: box.y, width: box.width, height: box.height, bottom: box.bottom };
-        };
-        const desktopGeometry = Object.fromEntries([".demo-banner", ".cb-header", ".brand", ".hero-panel", ".market-panel", ".ticker-strip", ".trending-strip", ".category-rail", ".content-grid", "#latest-news", ".news-cards", "#newsletter"].map((selector) => [selector, rect(selector)]));
-        const card = globalThis.document.querySelector(".news-card");
-        const art = card.querySelector(".news-art").getBoundingClientRect();
-        const copy = card.lastElementChild.getBoundingClientRect();
-        const desktopEditorialCardGeometry = { artRight: art.right, artTop: art.top, artBottom: art.bottom,
-          copyLeft: copy.left, copyTop: copy.top, copyBottom: copy.bottom };
-        return { desktopGeometry, desktopEditorialCardGeometry };
-      });
-      report.desktopGeometry = desktopSnapshot.desktopGeometry;
+      report.desktopGeometry = viewportSnapshot.desktopGeometry;
       // Golden desktop uses a vertical editorial thumbnail beside its text,
       // never a banner stacked over a card headline. Assert real DOM geometry.
-      report.desktopEditorialCardGeometry = desktopSnapshot.desktopEditorialCardGeometry;
+      report.desktopEditorialCardGeometry = viewportSnapshot.desktopEditorialCardGeometry;
       assert.ok(
         report.desktopEditorialCardGeometry.artRight <= report.desktopEditorialCardGeometry.copyLeft + 1
           && Math.abs(report.desktopEditorialCardGeometry.artTop - report.desktopEditorialCardGeometry.copyTop) <= 1,
@@ -391,29 +429,7 @@ try {
       );
     }
     if (viewport.name === "mobile") {
-      report.mobileHero = await page.evaluate(() => {
-        const hero = globalThis.document.querySelector(".hero-panel");
-        const box = (element) => {
-          const value = element.getBoundingClientRect();
-          return { left: value.left, right: value.right, top: value.top, bottom: value.bottom, height: value.height };
-        };
-        const overlaps = (first, second) => first.left < second.right && first.right > second.left && first.top < second.bottom && first.bottom > second.top;
-        const ctas = [...hero.querySelectorAll(".hero-actions a")].map((element) => ({
-          label: element.textContent.trim(),
-          ...box(element),
-          minHeight: Number.parseFloat(globalThis.getComputedStyle(element).minHeight),
-        }));
-        const status = box(hero.querySelector(".hero-stat"));
-        const coin = box(hero.querySelector(".coin-art"));
-        return {
-          ctas,
-          status,
-          coin,
-          ctaStatusOverlap: ctas.some((cta) => overlaps(cta, status)),
-          ctaCoinOverlap: ctas.some((cta) => overlaps(cta, coin)),
-          statusCoinOverlap: overlaps(status, coin),
-        };
-      });
+      report.mobileHero = viewportSnapshot.mobileHero;
       assert.equal(report.mobileHero.ctas.length, 2);
       assert.ok(report.mobileHero.ctas.every((cta) => cta.minHeight >= 44));
       assert.equal(report.mobileHero.ctaStatusOverlap, false);

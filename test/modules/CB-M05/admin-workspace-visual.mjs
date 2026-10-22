@@ -142,24 +142,29 @@ try {
       const bytes = await page.screenshot({ path: screenshotPath });
       results.at(-1).screenshot = { path: screenshotName, sha256: sha256(bytes), bytes: bytes.length, width: viewport.width, height: viewport.height };
 
-      if (view === "articles" && viewport.name === "desktop") {
-        await page.keyboard.press("Tab");
-        const skipLinkFocus = await page.evaluate(() => ({
-          isSkipLink: document.activeElement?.classList.contains("fixture-skip-link") ?? false,
-          transform: getComputedStyle(document.querySelector(".fixture-skip-link")).transform,
-        }));
-        assert.equal(skipLinkFocus.isSkipLink, true, "the skip link receives first keyboard focus");
-        assert.equal(skipLinkFocus.transform, "matrix(1, 0, 0, 1, 0, 0)", "the skip link becomes visible on focus");
-        await page.keyboard.press("Tab");
-        const brandFocus = await page.evaluate(() => ({
-          isBrand: document.activeElement?.classList.contains("m05-brand") ?? false,
-          outlineStyle: getComputedStyle(document.querySelector(".m05-brand")).outlineStyle,
-        }));
-        assert.equal(brandFocus.isBrand, true, "the first M05 link follows the skip link in keyboard order");
-        assert.equal(brandFocus.outlineStyle, "solid", "the focused M05 link has a visible focus outline");
-      }
     }
   }
+
+  // Keyboard focus is a separate stateful scenario: keep Tab and its
+  // subsequent focus assertions ordered instead of repeating them in the
+  // route-by-viewport rendering matrix.
+  await page.setViewportSize({ width: 1536, height: 864 });
+  const articlesResponse = await page.goto(`${baseUrl}/admin/articles`, { waitUntil: "networkidle" });
+  assert.equal(articlesResponse?.status(), 200, "articles route responds before its keyboard focus check");
+  await page.keyboard.press("Tab");
+  const skipLinkFocus = await page.evaluate(() => ({
+    isSkipLink: document.activeElement?.classList.contains("fixture-skip-link") ?? false,
+    transform: getComputedStyle(document.querySelector(".fixture-skip-link")).transform,
+  }));
+  assert.equal(skipLinkFocus.isSkipLink, true, "the skip link receives first keyboard focus");
+  assert.equal(skipLinkFocus.transform, "matrix(1, 0, 0, 1, 0, 0)", "the skip link becomes visible on focus");
+  await page.keyboard.press("Tab");
+  const brandFocus = await page.evaluate(() => ({
+    isBrand: document.activeElement?.classList.contains("m05-brand") ?? false,
+    outlineStyle: getComputedStyle(document.querySelector(".m05-brand")).outlineStyle,
+  }));
+  assert.equal(brandFocus.isBrand, true, "the first M05 link follows the skip link in keyboard order");
+  assert.equal(brandFocus.outlineStyle, "solid", "the focused M05 link has a visible focus outline");
 
   assert.deepEqual(consoleErrors, [], "browser console has no errors");
   assert.deepEqual(pageErrors, [], "browser has no uncaught page errors");

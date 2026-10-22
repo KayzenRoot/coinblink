@@ -364,7 +364,7 @@ try {
   }
   interactionChecks.mobileHeroGeometry = mobileHeroGeometry;
 
-  for (const width of [850, 851, 1024, 1050, 1051]) {
+  const verifyResponsiveWidth = async (width) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(origin, { waitUntil: "networkidle" });
     const responsiveSnapshot = await page.evaluate((measureTrending) => {
@@ -452,7 +452,13 @@ try {
       await page.waitForURL(/#footer$/, { timeout: 5_000 });
       assert.equal(new URL(page.url()).hash, "#footer", "keyboard can activate About in the desktop navigation");
     }
-  }
+  };
+  // These checks share one Page, so viewport changes, navigation and their
+  // observations must form a deliberate ordered sequence.
+  await [850, 851, 1024, 1050, 1051].reduce(
+    (serialWidth, width) => serialWidth.then(() => verifyResponsiveWidth(width)),
+    Promise.resolve(),
+  );
 
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.goto(origin, { waitUntil: "networkidle" });

@@ -308,7 +308,7 @@ try {
     if (!isFixtureOriginRequest(request.url(), report.origin)) report.externalRequests.push(request.url());
   });
 
-  for (const viewport of viewports) {
+  const verifyViewport = async (viewport) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     const response = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
@@ -438,7 +438,14 @@ try {
       await page.locator(".secondary-action").click();
       assert.equal(new URL(page.url()).hash, "#market-overview", "mobile CTA must remain clickable on integrated /en");
     }
-  }
+  };
+  // The same Playwright Page is resized and navigated for every case. Keep
+  // those dependent browser transactions ordered while composing them as a
+  // serial promise chain.
+  await viewports.reduce(
+    (serialViewport, viewport) => serialViewport.then(() => verifyViewport(viewport)),
+    Promise.resolve(),
+  );
   // R26: verify that the Blender motion derivative is local and reduced motion selects the static master.
   // Run after screenshots, so the media preference probe cannot alter the Golden captures.
   await page.setViewportSize({ width: 1536, height: 864 });

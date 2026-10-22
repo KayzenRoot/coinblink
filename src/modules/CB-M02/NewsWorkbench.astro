@@ -4,6 +4,7 @@ import { listMockTopics } from "./news-reader-guide.mjs";
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import LocalArticlePreview from "./LocalArticlePreview.astro";
+import LocalDraftCompare from "./LocalDraftCompare.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
 interface Props { locale?: "en" | "pt-br"; }
 const { locale = "en" } = Astro.props;
@@ -59,6 +60,7 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
   </div>
   <p data-m02-empty role="status" hidden>{copy.empty}</p>
   <LocalArticlePreview locale={locale} />
+  <LocalDraftCompare locale={locale} />
 </main>
 <script is:inline src={newsUiUrl}></script>
 <style>

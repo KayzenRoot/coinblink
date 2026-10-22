@@ -1,0 +1,52 @@
+---
+interface Props { locale?: "en" | "pt-br"; }
+const { locale = "en" } = Astro.props;
+const pt = locale === "pt-br";
+---
+<section data-m02-revision-compare data-locale={locale} class="m02-revision" aria-labelledby="m02-revision-title">
+  <div class="m02-revision-head">
+    <div>
+      <small>{pt ? "M02 + M05 · COMPARAÇÃO PRIVADA" : "M02 + M05 · PRIVATE COMPARISON"}</small>
+      <h2 id="m02-revision-title">{pt ? "Comparar duas versões de rascunho" : "Compare two draft exports"}</h2>
+      <p>{pt ? "Selecione duas exportações .md do editor demonstrativo M05 para ver o que mudou. Nenhum arquivo é enviado ou salvo." : "Choose two .md exports from the M05 demo editor to inspect changes. Files are never uploaded or stored."}</p>
+    </div>
+    <strong>{pt ? "NÃO É HISTÓRICO PUBLICADO" : "NOT A PUBLISHED HISTORY"}</strong>
+  </div>
+  <div class="m02-revision-inputs">
+    <div>
+      <label for="m02-revision-before">{pt ? "Exportação anterior (.md)" : "Earlier export (.md)"}</label>
+      <input id="m02-revision-before" type="file" accept=".md,text/markdown" data-m02-compare-before aria-describedby="m02-revision-help" />
+    </div>
+    <div>
+      <label for="m02-revision-after">{pt ? "Exportação posterior (.md)" : "Later export (.md)"}</label>
+      <input id="m02-revision-after" type="file" accept=".md,text/markdown" data-m02-compare-after aria-describedby="m02-revision-help" />
+    </div>
+  </div>
+  <p id="m02-revision-help">{pt ? "Máximo de 64 KB por arquivo. Trechos de até 140 caracteres. Ordem e identidade dos arquivos não são verificadas." : "Maximum 64 KB per file. Excerpts of up to 140 characters. File order and identity are not verified."}</p>
+  <button type="button" data-m02-compare-clear>{pt ? "Apagar comparação" : "Clear comparison"}</button>
+  <p data-m02-compare-status role="status" aria-live="polite">{pt ? "Selecione as duas exportações para comparar." : "Choose both exports to compare."}</p>
+  <section data-m02-compare-result aria-label={pt ? "Diferenças entre exportações" : "Differences between exports"} hidden>
+    <h3>{pt ? "Mudanças encontradas" : "Detected changes"}</h3>
+    <p data-m02-compare-count></p>
+    <ol data-m02-compare-changes></ol>
+    <p>{pt ? "Comparação estrutural, não auditoria de fatos, licenças ou histórico editorial. Nada foi publicado." : "Structural comparison, not fact-checking, licensing or editorial history. Nothing was published."}</p>
+  </section>
+</section>
+<script is:inline type="module" src="/m02-local-draft-compare.js"></script>
+<style>
+  .m02-revision{margin-top:2rem;padding:clamp(1rem,3vw,2rem);border:1px solid #597b64;border-radius:1rem;background:#101e17;overflow-wrap:anywhere}
+  .m02-revision-head{display:flex;gap:1rem;justify-content:space-between;flex-wrap:wrap}
+  .m02-revision-head small,.m02-revision-head strong{color:#f5c981;font-weight:700}
+  .m02-revision-head h2{font-size:clamp(1.5rem,3vw,2.2rem)}
+  .m02-revision-head strong{border:1px solid #f5c981;padding:.6rem;border-radius:.5rem;align-self:start}
+  .m02-revision-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1rem}
+  .m02-revision-inputs label{display:block;margin:.5rem 0;font-weight:700}
+  .m02-revision input{max-width:100%;color:#fff;padding:.65rem;border:1px solid #809c81;border-radius:.5rem}
+  .m02-revision button{padding:.8rem 1rem;border:0;border-radius:.5rem;color:#111c17;background:#b8f34b;font-weight:700;cursor:pointer;margin-top:.8rem}
+  .m02-revision :is(button,input):focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .m02-revision p{color:#c1d3c5;line-height:1.65}
+  .m02-revision [hidden]{display:none}
+  .m02-revision ol{padding-left:1.5rem}
+  .m02-revision li{padding:.75rem 0;border-bottom:1px solid #456e4e}
+  .m02-revision li p{margin:.4rem 0;white-space:pre-wrap;overflow-wrap:anywhere}
+</style>

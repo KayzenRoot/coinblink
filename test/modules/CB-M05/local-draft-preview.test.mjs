@@ -26,6 +26,15 @@ test("source-backed local draft can be exported with explicit unpublished review
   assert.equal(safeDraftFilename(result.title), "a-verifiable-original-draft-headline.md");
 });
 
+test("local export filenames trim separators without regex suffix backtracking", () => {
+  assert.equal(safeDraftFilename("---Árvore / dados---"), "arvore-dados.md");
+  assert.equal(safeDraftFilename("-----"), "coinblink-draft.md");
+  assert.equal(safeDraftFilename(""), "coinblink-draft.md");
+  assert.equal(safeDraftFilename("A".repeat(140)), "a".repeat(60) + ".md");
+  assert.equal(safeDraftFilename("A".repeat(140) + "!".repeat(30000)), "a".repeat(60) + ".md");
+  assert.equal(safeDraftFilename("/// --- B _ C +++ ///"), "b-c.md");
+});
+
 test("invalid sources or incomplete inputs fail closed, with no Markdown export", () => {
   for (const source of [
     "", "javascript:alert(1)", "http://example.org/story",

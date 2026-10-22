@@ -192,9 +192,14 @@ export function parseLocalDraftMarkdown(raw) {
 }
 
 export function safeDraftFilename(title) {
-  const slug = clean(title, MAX_TITLE)
+  const kebab = clean(title, MAX_TITLE)
     .normalize("NFKD").replace(/[\u0300-\u036f]/gu, "")
-    .toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-+/u, "").replace(/-+$/u, "").slice(0, 60);
+    .toLowerCase().replace(/[^a-z0-9]+/gu, "-");
+  // The non-alphanumeric runs above produce at most one hyphen at each edge.
+  // Explicit slicing avoids the unanchored /-+$/ suffix scan (Sonar S5852).
+  const start = kebab.startsWith("-") ? 1 : 0;
+  const end = kebab.endsWith("-") ? kebab.length - 1 : kebab.length;
+  const slug = kebab.slice(start, end).slice(0, 60);
   return (slug || "coinblink-draft") + ".md";
 }
 

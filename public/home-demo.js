@@ -35,8 +35,10 @@ document.addEventListener("pointerdown", (event) => {
 const isPortuguese = document.querySelector(".cb-home")?.dataset.locale === "pt-br";
 const placeholderCount = (n) => {
   let noun;
-  if (isPortuguese) noun = n === 1 ? "exemplo" : "exemplos";
-  else noun = n === 1 ? "placeholder" : "placeholders";
+  if (isPortuguese && n === 1) noun = "exemplo";
+  else if (isPortuguese) noun = "exemplos";
+  else if (n === 1) noun = "placeholder";
+  else noun = "placeholders";
   return String(n) + " " + noun;
 };
 

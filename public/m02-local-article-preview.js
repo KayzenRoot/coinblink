@@ -1,8 +1,9 @@
+/* global document, window */
 // Browser-only M02 article preview. Reuse canonical M05 exported Markdown parser.
 import { parseLocalDraftMarkdown } from "./m05-draft-preview.js";
 export const MAX_LOCAL_ARTICLE_BYTES = 64000;
 export function parseLocalArticlePreview(name, size, raw) {
-  if (typeof name !== "string" || !/^[^/\\\u0000-\u001f]+\.md$/iu.test(name) ||
+  if (typeof name !== "string" || !/^[^/\\]+\.md$/iu.test(name) || /\p{Cc}/u.test(name) ||
       !Number.isSafeInteger(size) || size <= 0 || size > MAX_LOCAL_ARTICLE_BYTES ||
       typeof raw !== "string" || raw.length > MAX_LOCAL_ARTICLE_BYTES) {
     throw new TypeError("Invalid local CoinBlink Markdown");

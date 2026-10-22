@@ -49,14 +49,14 @@ const entries = rows.map(row => ({ row, report: inspectSyntheticProvenance(row.i
         <dt>Capture time</dt><dd>None. No capture occurred.</dd>
         <dt>Public reuse</dt><dd>DENIED</dd>
       </dl>
-      <details class="m03-report">
+      {report ? <details class="m03-report">
         <summary>Inspect fictional evidence for {row.label}</summary>
         <p>Safety outcome: {report.inspection}. Reuse remains BLOCKED.</p>
         <dl>
           {report.checks.map(check => <><dt>{check.label}</dt><dd>{check.state}</dd></>)}
           <dt>Required next step</dt><dd>{report.action}</dd>
         </dl>
-      </details>
+      </details> : <p>Fictional evidence report unavailable · REUSE BLOCKED</p>}
     </article>)}
   </div>
   <p data-m03-empty hidden>No synthetic sources match. No external search was made.</p>

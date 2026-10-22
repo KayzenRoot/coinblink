@@ -144,6 +144,13 @@ def create_image_plate():
     return mesh, image, material, emission
 
 
+def set_constant_sprite_interpolation(sprite):
+    if sprite.animation_data and sprite.animation_data.action:
+        for curve in getattr(sprite.animation_data.action, "fcurves", ()):
+            for point in curve.keyframe_points:
+                point.interpolation = "CONSTANT"
+
+
 def animate_sprite_overlays(mesh, image):
     for index, (filename, opacity) in enumerate(SPRITE_OPACITY.items()):
         sprite_path = SPRITE_DIR / filename
@@ -173,10 +180,7 @@ def animate_sprite_overlays(mesh, image):
             sprite.keyframe_insert(data_path="hide_render", frame=start_frame)
             sprite.hide_render = True
             sprite.keyframe_insert(data_path="hide_render", frame=end_frame + 1)
-        if sprite.animation_data and sprite.animation_data.action:
-            for curve in getattr(sprite.animation_data.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    point.interpolation = "CONSTANT"
+        set_constant_sprite_interpolation(sprite)
 
 
 
@@ -189,6 +193,19 @@ def animate_exposure_flashes(material, emission):
             for point in curve.keyframe_points:
                 point.interpolation = "LINEAR"
 
+
+
+def configure_camera_interpolation(camera, camera_data):
+    for animation in (camera.animation_data, camera_data.animation_data):
+        if animation and animation.action:
+            for curve in getattr(animation.action, "fcurves", ()):
+                for point in curve.keyframe_points:
+                    if curve.data_path == "location":
+                        point.interpolation = "LINEAR"
+                    else:
+                        point.interpolation = "BEZIER"
+                        point.handle_left_type = "AUTO_CLAMPED"
+                        point.handle_right_type = "AUTO_CLAMPED"
 
 
 def configure_cinematic_camera(scene):
@@ -213,16 +230,7 @@ def configure_cinematic_camera(scene):
     for frame, offset_x in x_keys:
         camera.location.x = offset_x
         camera.keyframe_insert(data_path="location", index=0, frame=frame)
-    for animation in (camera.animation_data, camera_data.animation_data):
-        if animation and animation.action:
-            for curve in getattr(animation.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    if curve.data_path == "location":
-                        point.interpolation = "LINEAR"
-                    else:
-                        point.interpolation = "BEZIER"
-                        point.handle_left_type = "AUTO_CLAMPED"
-                        point.handle_right_type = "AUTO_CLAMPED"
+    configure_camera_interpolation(camera, camera_data)
 
 
 

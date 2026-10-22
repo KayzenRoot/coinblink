@@ -3,6 +3,7 @@
 // No real Owner provisioning or production secrets are supported here.
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalEditorialInsights } from '../../CB-M06/local-editorial-insights.mjs';
+import { createLocalEditorialTriage } from '../../CB-M06/local-editorial-triage.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
 import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
@@ -14,6 +15,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
   const createLocalEditorialInsights = (${createLocalEditorialInsights.toString()});
+  const createLocalEditorialTriage = (${createLocalEditorialTriage.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
   const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
@@ -65,6 +67,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     insightsOlder: document.getElementById('m06-insights-older'),
     insightsRecent: document.getElementById('m06-insights-recent'),
     insightsTrend: document.getElementById('m06-insights-trend'),
+    triageStatus: document.getElementById('m06-triage-status'),
+    triageScope: document.getElementById('m06-triage-scope'),
+    triageCount: document.getElementById('m06-triage-count'),
+    triageFilter: document.getElementById('m06-triage-filter'),
+    triageList: document.getElementById('m06-triage-list'),
+    triageCredit: document.getElementById('m06-triage-credit'),
+    triageAged: document.getElementById('m06-triage-aged'),
+    triageBoth: document.getElementById('m06-triage-both'),
     socialDraft: document.getElementById('m07-draft'),
     socialChannel: document.getElementById('m07-channel'),
     socialGenerate: document.getElementById('m07-generate'),
@@ -131,6 +141,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let draftOpenGeneration = 0;
   let lastReviewQueue = null;
   let lastEditorialInsights = null;
+  let lastEditorialTriage = null;
   let localCalendarIdeas = [];
   let localEditorialVariants = [];
   let localApprovalEvents = [];
@@ -692,6 +703,15 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.recentActivity.replaceChildren();
     lastReviewQueue = null;
     lastEditorialInsights = null;
+    lastEditorialTriage = null;
+    ui.triageList.replaceChildren();
+    ui.triageStatus.textContent = 'UNAVAILABLE';
+    ui.triageScope.textContent = 'UNAVAILABLE';
+    ui.triageCount.textContent = 'UNAVAILABLE';
+    ui.triageCredit.textContent = 'Unavailable';
+    ui.triageAged.textContent = 'Unavailable';
+    ui.triageBoth.textContent = 'Unavailable';
+    ui.triageFilter.value = 'all';
     ui.insightsStatus.textContent = 'UNAVAILABLE';
     ui.insightsScope.textContent = 'UNAVAILABLE';
     ui.insightsMissing.textContent = 'Unavailable';
@@ -727,7 +747,38 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.reviewCount.textContent = String(shown) + ' of ' + lastReviewQueue.totalListed + ' listed LOCAL drafts';
     ui.reviewScope.textContent = lastReviewQueue.listingScope;
   }
-  function showLocalDashboard(snapshot, activity, reviewQueue, insights) {
+  function renderLocalEditorialTriage() {
+    ui.triageList.replaceChildren();
+    if (!lastEditorialTriage || !csrf || ui.form.hidden || ui.dashboard.hidden) return;
+    let shown = 0;
+    const filter = ui.triageFilter.value;
+    for (const row of lastEditorialTriage.items) {
+      if (filter === 'missing-credit' && !row.creditMissing) continue;
+      if (filter === 'aged' && !row.aged) continue;
+      if (filter === 'both' && !(row.creditMissing && row.aged)) continue;
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = row.title + ' · rev ' + row.revision;
+      const epoch = sessionEpoch;
+      const generation = readGeneration;
+      button.addEventListener('click', () => {
+        if (epoch !== sessionEpoch || generation !== readGeneration ||
+            !csrf || ui.form.hidden || ui.dashboard.hidden || !item.isConnected ||
+            !lastDrafts.some(draft => draft.id === row.id)) return;
+        void openLocalDraft(row);
+      });
+      const reason = document.createElement('span');
+      reason.textContent = ' · ' + row.attention + ' · ' + row.reasons.join(' · ') +
+        ' · DRAFT_ONLY · NOT VERIFIED';
+      item.append(button, reason);
+      ui.triageList.append(item);
+      shown++;
+    }
+    ui.triageCount.textContent = shown + ' of ' + lastEditorialTriage.totalListed +
+      ' authenticated LOCAL drafts (listed only)';
+  }
+  function showLocalDashboard(snapshot, activity, reviewQueue, insights, triage) {
     if (!csrf || ui.form.hidden) return hideLocalDashboard();
     ui.listedDrafts.textContent = String(snapshot.listedDraftsCount);
     ui.measuredAt.textContent = snapshot.asOfUTC;
@@ -747,6 +798,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
     lastReviewQueue = reviewQueue;
     lastEditorialInsights = insights;
+    lastEditorialTriage = triage;
+    ui.triageStatus.textContent = triage.status;
+    ui.triageScope.textContent = triage.listingScope;
+    ui.triageCredit.textContent = String(triage.requiringCredit);
+    ui.triageAged.textContent = String(triage.agedListed);
+    ui.triageBoth.textContent = String(triage.requiringBoth);
     ui.insightsStatus.textContent = insights.status;
     ui.insightsScope.textContent = insights.listingScope;
     ui.insightsMissing.textContent = String(insights.missingCreditListed);
@@ -760,6 +817,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
     ui.dashboard.hidden = false;
     renderLocalReviewQueue();
+    renderLocalEditorialTriage();
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
@@ -947,10 +1005,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       const activity = createLocalEditorialActivity(drafts);
       const reviewQueue = createLocalReviewQueue(drafts);
       const insights = createLocalEditorialInsights(reviewQueue, asOfUTC);
+      const triage = createLocalEditorialTriage(reviewQueue, insights);
       if (epoch !== sessionEpoch || generation !== readGeneration || !csrf || ui.form.hidden) return;
       lastDrafts = drafts;
       renderDraftList();
-      showLocalDashboard(snapshot, activity, reviewQueue, insights);
+      showLocalDashboard(snapshot, activity, reviewQueue, insights, triage);
       ui.status.textContent = 'Local test session active';
     } catch (error) {
       // Ignore superseded reads, never revoke a freshly re-authenticated session.
@@ -960,6 +1019,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   ui.reviewFilter.addEventListener('change', renderLocalReviewQueue);
+  ui.triageFilter.addEventListener('change', renderLocalEditorialTriage);
   ui.weekFilter.addEventListener('change', renderLocalWeekBoard);
   ui.weekZone.addEventListener('change', renderLocalWeekBoard);
   ui.calendarAdd.addEventListener('click', () => {
@@ -1573,6 +1633,26 @@ footer{padding:24px 0;color:#b9c8bd}
 </select>
 <p role="status" aria-live="polite">Visible: <strong id="m06-review-count">UNAVAILABLE</strong> · scope: <strong id="m06-review-scope">UNAVAILABLE</strong></p>
 <ul id="m06-review-list" aria-label="Private LOCAL editorial review queue"></ul>
+</section>
+<section id="m06-triage" aria-labelledby="m06-triage-title">
+<h3 id="m06-triage-title">Owner editorial attention desk · private LOCAL triage</h3>
+<p>Priorities order only the already-authenticated draft listing. Not a risk score, licence, source verification, sign-off or publishing permission.</p>
+<p>Status: <strong id="m06-triage-status">UNAVAILABLE</strong> · scope: <strong id="m06-triage-scope">UNAVAILABLE</strong></p>
+<div class="m06-grid" aria-label="Private LOCAL attention counts">
+<div class="m06-card"><h4>Missing credits (listed)</h4><strong id="m06-triage-credit">Unavailable</strong></div>
+<div class="m06-card"><h4>No edit for 7+ full days</h4><strong id="m06-triage-aged">Unavailable</strong></div>
+<div class="m06-card"><h4>Both reasons (listed)</h4><strong id="m06-triage-both">Unavailable</strong></div>
+</div>
+<label for="m06-triage-filter">Show LOCAL attention items</label>
+<select id="m06-triage-filter">
+<option value="all">All listed drafts, highest attention first</option>
+<option value="missing-credit">Missing author credit</option>
+<option value="aged">No edit for 7+ days</option>
+<option value="both">Missing credit and 7+ days</option>
+</select>
+<p role="status" aria-live="polite">Visible: <strong id="m06-triage-count">UNAVAILABLE</strong></p>
+<ol id="m06-triage-list" aria-label="Private LOCAL attention order"></ol>
+<p>Every source still needs human verification; every item remains a draft. This view is limited to at most 100 listed rows.</p>
 </section>
 <section id="m07-social" aria-labelledby="m07-title">
 <h3 id="m07-title">M07 · LOCAL Social Studio (text-only sandbox)</h3>

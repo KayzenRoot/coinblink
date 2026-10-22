@@ -132,6 +132,9 @@ for (const admin of [false, true]) {
       assert.equal(await page.locator('#m06-recent-activity li').count(), 0);
       assert.equal(await page.locator('#m06-review-list li').count(), 0, 'review queue scrubs after 401');
       assert.equal(await page.locator('#m06-review-count').textContent(), 'UNAVAILABLE');
+      assert.equal(await page.locator('#m06-triage-list li').count(), 0, 'private triage must scrub after 401');
+      assert.equal(await page.locator('#m06-triage-count').textContent(), 'UNAVAILABLE');
+      assert.equal(await page.locator('#m06-triage-filter').inputValue(), 'all');
       assert.equal(await page.locator('[name="body"]').inputValue(), '',
         'stale editable private draft must not remain in the form');
       assert.equal(await page.locator('#refresh').isVisible(), false,
@@ -261,6 +264,22 @@ test('M06-C private review queue filters listed drafts and preserves protected e
     assert.match(await page.locator('#m06-review-list').innerText(),/CREDIT_MISSING/);
     assert.match(await page.locator('#m06-review-list').innerText(),/SOURCE_VERIFICATION_PENDING/);
     assert.doesNotMatch(await page.locator('#m06-review-list').innerText(),/LOCAL_PRIVATE_BODY_NEVER_IN_QUEUE/);
+    assert.equal(await page.locator('#m06-triage-status').textContent(), 'MEASURED_LOCAL');
+    assert.equal(await page.locator('#m06-triage-credit').textContent(), '1');
+    assert.equal(await page.locator('#m06-triage-aged').textContent(), '0');
+    assert.equal(await page.locator('#m06-triage-both').textContent(), '0');
+    assert.equal(await page.locator('#m06-triage-list li').count(), 2);
+    assert.match(await page.locator('#m06-triage-list li').first().innerText(), /Queue missing credit article/);
+    assert.match(await page.locator('#m06-triage-list').innerText(), /SOURCE_VERIFICATION_PENDING/);
+    assert.doesNotMatch(await page.locator('#m06-triage-list').innerText(),/LOCAL_PRIVATE_BODY_NEVER_IN_QUEUE/);
+    await page.locator('#m06-triage-filter').selectOption('both');
+    assert.equal(await page.locator('#m06-triage-list li').count(), 0);
+    await page.locator('#m06-triage-filter').selectOption('missing-credit');
+    assert.equal(await page.locator('#m06-triage-list li').count(), 1);
+    await page.locator('#m06-triage-list').getByRole('button',{name:/Queue missing credit article/}).click();
+    await page.getByText('Loaded draft revision 1').waitFor({timeout:20_000});
+    await page.locator('#m06-triage-filter').selectOption('all');
+    assert.equal(await page.locator('#m06-triage-list li').count(), 2);
     await page.locator('#m06-review-filter').selectOption('missing-credit');
     assert.equal(await page.locator('#m06-review-list li').count(),1);
     assert.match(await page.locator('#m06-review-list').innerText(),/Queue missing credit article/);
@@ -279,6 +298,10 @@ test('M06-C private review queue filters listed drafts and preserves protected e
     assert.equal(await page.locator('#m06-review-list li').count(),0);
     assert.equal(await page.locator('#m06-review-count').textContent(),'UNAVAILABLE');
     assert.equal(await page.locator('#m06-review-filter').inputValue(),'all');
+    assert.equal(await page.locator('#m06-triage-list li').count(),0);
+    assert.equal(await page.locator('#m06-triage-count').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-triage-credit').textContent(),'Unavailable');
+    assert.equal(await page.locator('#m06-triage-filter').inputValue(),'all');
     assert.equal(preview.networkAttempts.filter(x=>!x.allowed).length,0);
   } finally { await preview.close(); }
 });

@@ -7,6 +7,27 @@ const LOCAL_SOURCE_HEADING = "### CoinBlink source notes (unverified)";
 const MAX_LOCAL_ARTICLE_LENGTH = 12000;
 const MAX_LOCAL_SOURCES = 12;
 
+function canonicalSourceMetadata(matched, ids, urls) {
+  const id = Number(matched[1]);
+  const title = matched[2];
+  const rawUrl = matched[3];
+  if (title.length < 1 || title.length > 90 || title !== title.trim()
+      || /[\r\n\t|<>]/u.test(title) || title.includes("[") || title.includes("]") || title.includes("\\")
+      || rawUrl.length > 500 || /[\s|<>]/u.test(rawUrl)) {
+    throw new RangeError("Invalid source label or URL");
+  }
+  let url;
+  try { url = new URL(rawUrl); }
+  catch { throw new RangeError("Invalid source URL"); }
+  if (url.protocol !== "https:" || url.username || url.password
+      || !url.hostname.includes(".") || url.hostname.endsWith(".")
+      || url.href.length > 500 || url.href !== rawUrl
+      || ids.has(id) || urls.has(rawUrl)) {
+    throw new RangeError("Noncanonical or duplicate source note");
+  }
+  return Object.freeze({ id, title, url: rawUrl });
+}
+
 function parseSourceNotes(body) {
   if (typeof body !== "string" || body.length > MAX_LOCAL_ARTICLE_LENGTH) {
     throw new RangeError("Local article exceeds the size limit");
@@ -33,26 +54,10 @@ function parseSourceNotes(body) {
   for (const line of lines) {
     const matched = /^\[\^cb([1-9]|1[0-2])\]: (.+) \| (https:\/\/\S+)$/u.exec(line);
     if (!matched) throw new RangeError("Malformed source note");
-    const id = Number(matched[1]);
-    const title = matched[2];
-    const rawUrl = matched[3];
-    if (title.length < 1 || title.length > 90 || title !== title.trim()
-      || /[\r\n\t|<>]/u.test(title) || title.includes("[") || title.includes("]") || title.includes("\\")
-      || rawUrl.length > 500 || /[\s|<>]/u.test(rawUrl)) {
-      throw new RangeError("Invalid source label or URL");
-    }
-    let url;
-    try { url = new URL(rawUrl); }
-    catch { throw new RangeError("Invalid source URL"); }
-    if (url.protocol !== "https:" || url.username || url.password
-        || !url.hostname.includes(".") || url.hostname.endsWith(".")
-        || url.href.length > 500 || url.href !== rawUrl
-        || ids.has(id) || urls.has(rawUrl)) {
-      throw new RangeError("Noncanonical or duplicate source note");
-    }
-    ids.add(id);
-    urls.add(rawUrl);
-    sources.push(Object.freeze({ id, title, url: rawUrl }));
+    const source = canonicalSourceMetadata(matched, ids, urls);
+    ids.add(source.id);
+    urls.add(source.url);
+    sources.push(source);
   }
   return Object.freeze({ prose, sources: Object.freeze(sources) });
 }

@@ -276,18 +276,25 @@ def construct_minted_coin(gold, gold_face, gold_edge, gold_highlight):
     return pivot
 
 
+def minted_face_index_style(index, gold_edge, gold_highlight):
+    if index % 6 == 0:
+        return 1.58, 0.0045, gold_highlight
+    return 1.625, 0.0025, gold_edge
+
+
 def add_minted_relief(pivot, gold_edge, gold_highlight):
     # Fine minted radial indices add face detail that remains legible at hero scale.
     for index in range(72):
         angle = 2.0 * math.pi * index / 72.0
-        inner = 1.58 if index % 6 == 0 else 1.625
+        inner, thickness, tick_material = minted_face_index_style(
+            index, gold_edge, gold_highlight)
         outer = 1.69
         tick = add_polyline(
             f"Minted face index {index + 1:02d}",
             [(inner * math.cos(angle), inner * math.sin(angle), 0.112),
              (outer * math.cos(angle), outer * math.sin(angle), 0.112)],
-            0.0045 if index % 6 == 0 else 0.0025,
-            gold_highlight if index % 6 == 0 else gold_edge,
+            thickness,
+            tick_material,
         )
         tick.parent = pivot
 

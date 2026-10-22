@@ -195,17 +195,21 @@ def animate_exposure_flashes(material, emission):
 
 
 
+def set_camera_curve_interpolation(curve):
+    for point in curve.keyframe_points:
+        if curve.data_path == "location":
+            point.interpolation = "LINEAR"
+        else:
+            point.interpolation = "BEZIER"
+            point.handle_left_type = "AUTO_CLAMPED"
+            point.handle_right_type = "AUTO_CLAMPED"
+
+
 def configure_camera_interpolation(camera, camera_data):
     for animation in (camera.animation_data, camera_data.animation_data):
         if animation and animation.action:
             for curve in getattr(animation.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    if curve.data_path == "location":
-                        point.interpolation = "LINEAR"
-                    else:
-                        point.interpolation = "BEZIER"
-                        point.handle_left_type = "AUTO_CLAMPED"
-                        point.handle_right_type = "AUTO_CLAMPED"
+                set_camera_curve_interpolation(curve)
 
 
 def configure_cinematic_camera(scene):

@@ -50,3 +50,13 @@ test("archived Blender helper ordering and safety boundaries remain explicit", a
   assert.match(animation, /LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY/u);
   assert.match(scene, /LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY/u);
 });
+
+test("Blender helper extractions preserve minted-style choices and camera interpolation", () => {
+  const interpreter = process.platform === "win32" ? "python" : "python3";
+  const script = "import ast\nimport pathlib\nimport sys\nfrom types import SimpleNamespace\n\ndef isolated_function(path, name):\n    tree = ast.parse(pathlib.Path(path).read_text(encoding=\"utf-8\"), filename=path)\n    funcs = [item for item in tree.body if isinstance(item, ast.FunctionDef) and item.name == name]\n    assert len(funcs) == 1, (path, name)\n    ns = {}\n    exec(compile(ast.Module(body=funcs, type_ignores=[]), path, \"exec\"), ns)\n    return ns[name]\n\nanimation, scene = sys.argv[1:]\nselect = isolated_function(scene, \"minted_face_index_style\")\nedge, highlight = object(), object()\nfor index in range(72):\n    expected = (1.58, 0.0045, highlight) if index % 6 == 0 else (1.625, 0.0025, edge)\n    result = select(index, edge, highlight)\n    assert result == expected, (index, result, expected)\n\napply_curve = isolated_function(animation, \"set_camera_curve_interpolation\")\nfor data_path in (\"location\", \"ortho_scale\", \"rotation_euler\"):\n    pts = [SimpleNamespace(interpolation=\"BEFORE\", handle_left_type=\"OLD-L\", handle_right_type=\"OLD-R\") for _ in range(3)]\n    apply_curve(SimpleNamespace(data_path=data_path, keyframe_points=pts))\n    for point in pts:\n        if data_path == \"location\":\n            assert (point.interpolation, point.handle_left_type, point.handle_right_type) == (\"LINEAR\", \"OLD-L\", \"OLD-R\")\n        else:\n            assert (point.interpolation, point.handle_left_type, point.handle_right_type) == (\"BEZIER\", \"AUTO_CLAMPED\", \"AUTO_CLAMPED\")\nprint(\"Blender helper semantics validated: 72 material styles and 9 camera keyframes\")";
+  const probe = spawnSync(interpreter, [
+    "-c", script, fileURLToPath(animationPath), fileURLToPath(scenePath),
+  ], { encoding: "utf8", timeout: 10000 });
+  assert.equal(probe.error, undefined, probe.error?.message);
+  assert.equal(probe.status, 0, probe.stderr || probe.stdout);
+});

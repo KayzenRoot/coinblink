@@ -6,6 +6,11 @@ if (root) {
   const rows = [...root.querySelectorAll("[data-m04-entry]")];
   const status = root.querySelector("[data-m04-count]");
   const empty = root.querySelector("[data-m04-empty]");
+  const first = root.querySelector("[data-m04-first]");
+  const second = root.querySelector("[data-m04-second]");
+  const compare = root.querySelector("[data-m04-compare]");
+  const result = root.querySelector("[data-m04-comparison]");
+  const assets = new Map(rows.map(row => [row.dataset.m04Asset, row]));
   const filter = () => {
     const q = search.value.trim().toLowerCase();
     let visible = 0;
@@ -20,4 +25,15 @@ if (root) {
   };
   search.addEventListener("input", filter);
   freshness.addEventListener("change", filter);
+  compare.addEventListener("click", () => {
+    const left = assets.get(first.value);
+    const right = assets.get(second.value);
+    if (!left || !right || left === right) {
+      result.textContent = "Choose two different offline examples. No market data was fetched.";
+      return;
+    }
+    result.textContent = left.dataset.m04Asset + " (" + left.dataset.m04Freshness +
+      ") and " + right.dataset.m04Asset + " (" + right.dataset.m04Freshness +
+      ") · BOTH NOT LIVE · NO QUOTES · NO TRADING";
+  });
 }

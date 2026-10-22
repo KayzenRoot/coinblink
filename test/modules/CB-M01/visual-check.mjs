@@ -227,7 +227,7 @@ try {
           brandImage: readRect(".brand img"),
           brandName: readRect(".brand-name"),
           trendingItems: globalThis.document.querySelectorAll(".trend-item").length,
-          categoryLabels: [...globalThis.document.querySelectorAll(".category-chip")].map((item) => item.getAttribute("data-category")),
+          categoryLabels: [...globalThis.document.querySelectorAll(".category-chip")].map((item) => item.dataset.category),
           primaryNav: readRect(".primary-nav"),
           headerTools: readRect(".header-tools"),
           hero: readRect(".hero-panel"),

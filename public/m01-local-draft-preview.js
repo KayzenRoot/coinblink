@@ -1,10 +1,10 @@
 // Strictly local M01 reader preview for a never-published M05 Markdown export.
 // No upload, fetch, persistence, live story ingestion, HTML insertion or URL navigation.
-import { parseLocalDraftMarkdown } from "/m05-draft-preview.js";
+import { parseLocalDraftMarkdown } from "./m05-draft-preview.js";
 
 const root = document.querySelector("[data-m01-local-draft-preview]");
 if (root) {
-  const pt = root.getAttribute("data-locale") === "pt-br";
+  const pt = root.dataset.locale === "pt-br";
   const fileInput = root.querySelector("[data-m01-draft-file]");
   const status = root.querySelector("[data-m01-draft-status]");
   const clear = root.querySelector("[data-m01-draft-clear]");

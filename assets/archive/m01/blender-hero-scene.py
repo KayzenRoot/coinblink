@@ -221,6 +221,19 @@ def set_keyframes(obj, data_path, values):
 
 
 
+def add_coin_torus(pivot, name, radius, minor, z, mat):
+    bpy.ops.mesh.primitive_torus_add(major_radius=radius, minor_radius=minor,
+                                     major_segments=144, minor_segments=12,
+                                     location=(0.0, 0.0, z))
+    obj = bpy.context.object
+    obj.name = name
+    obj.parent = pivot
+    obj.data.materials.append(mat)
+    for face in obj.data.polygons:
+        face.use_smooth = True
+    return obj
+
+
 def construct_minted_coin(gold, gold_face, gold_edge, gold_highlight):
     # Original extruded, ridged coin. The parent makes subtle camera-facing motion possible.
     pivot = bpy.data.objects.new("Animated Bitcoin coin pivot", None)
@@ -254,23 +267,11 @@ def construct_minted_coin(gold, gold_face, gold_edge, gold_highlight):
         groove.dimensions = (0.035, 0.075, 0.15)
         groove.data.materials.append(gold_edge)
 
-    def add_torus(name, radius, minor, z, mat):
-        bpy.ops.mesh.primitive_torus_add(major_radius=radius, minor_radius=minor,
-                                         major_segments=144, minor_segments=12,
-                                         location=(0.0, 0.0, z))
-        obj = bpy.context.object
-        obj.name = name
-        obj.parent = pivot
-        obj.data.materials.append(mat)
-        for face in obj.data.polygons:
-            face.use_smooth = True
-        return obj
-
-    add_torus("Outer coin face bead", 1.73, 0.028, 0.106, gold_highlight)
-    add_torus("Inner engraved coin ring", 1.53, 0.012, 0.109, gold_edge)
-    add_torus("Fine inner gold ring", 1.46, 0.009, 0.111, gold_highlight)
-    add_torus("Inner relief border", 1.39, 0.009, 0.112, gold_edge)
-    add_torus("B emblem inner medallion", 0.82, 0.009, 0.112, gold_highlight)
+    add_coin_torus(pivot, "Outer coin face bead", 1.73, 0.028, 0.106, gold_highlight)
+    add_coin_torus(pivot, "Inner engraved coin ring", 1.53, 0.012, 0.109, gold_edge)
+    add_coin_torus(pivot, "Fine inner gold ring", 1.46, 0.009, 0.111, gold_highlight)
+    add_coin_torus(pivot, "Inner relief border", 1.39, 0.009, 0.112, gold_edge)
+    add_coin_torus(pivot, "B emblem inner medallion", 0.82, 0.009, 0.112, gold_highlight)
 
     return pivot
 

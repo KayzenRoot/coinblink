@@ -33,7 +33,7 @@ export async function waitForFixtureReady({
   // Each attempt starts only after the previous probe and its bounded sleep have settled,
   // so readiness stays strictly sequential and bounded by the same deadline and interval.
   const attempt = async (lastError) => {
-    if (!(now() < deadline)) throw notReady(lastError);
+    if (now() >= deadline) throw notReady(lastError);
     assertFixtureRunning(child);
     const remainingMs = deadline - now();
     if (remainingMs <= 0) throw notReady(lastError);

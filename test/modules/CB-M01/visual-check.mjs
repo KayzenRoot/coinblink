@@ -166,6 +166,29 @@ try {
     if (!isFixtureOriginRequest(request.url(), origin)) externalRequests.push(request.url());
   });
 
+  const assertMobileTrendingStrip = async () => {
+    const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
+      const children = [...strip.children];
+      return {
+        clientWidth: strip.clientWidth,
+        scrollWidth: strip.scrollWidth,
+        childRects: children.map((child) => {
+          const rect = child.getBoundingClientRect();
+          return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
+        }),
+      };
+    });
+    assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
+    assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
+    const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
+    const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
+    assert.ok(
+      mobileRowBottom > mobileRowTop,
+      "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
+    );
+    interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 5 };
+  };
+
   const checkViewport = async (viewport) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto(origin, { waitUntil: "networkidle" });
@@ -186,28 +209,7 @@ try {
       return { viewport, document: globalThis.document.documentElement.scrollWidth, overflowing };
     });
     assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " horizontal overflow: " + JSON.stringify(dimensions));
-    if (viewport.name === "mobile") {
-      const trendingLayout = await page.locator(".trending-strip").evaluate((strip) => {
-        const children = [...strip.children];
-        return {
-          clientWidth: strip.clientWidth,
-          scrollWidth: strip.scrollWidth,
-          childRects: children.map((child) => {
-            const rect = child.getBoundingClientRect();
-            return { className: child.className, left: rect.left, top: rect.top, bottom: rect.bottom };
-          }),
-        };
-      });
-      assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
-      assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
-      const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
-      const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
-      assert.ok(
-        mobileRowBottom > mobileRowTop,
-        "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
-      );
-      interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 5 };
-    }
+    if (viewport.name === "mobile") await assertMobileTrendingStrip();
     const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
     const pageAxe = await new AxeBuilder({ page }).analyze();
     const encodeViolations = (axe) => axe.violations.map((violation) => ({

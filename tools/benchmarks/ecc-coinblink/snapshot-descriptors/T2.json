@@ -1,0 +1,9 @@
+{
+  "task": "T2",
+  "repo": "KayzenRoot/coinblink",
+  "base_sha": "491417e8c8d1c14b516c970a998eddc6a4ac7a09",
+  "tree_sha": "ec190c5f70a4a1828421f1ca5d3077f247494788",
+  "materialized": false,
+  "state": "NOT_MATERIALIZED",
+  "method": "git archive from a separately verified local clone; no network; snapshots not included"
+}

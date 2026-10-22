@@ -108,6 +108,40 @@ async function waitUntilReady() {
   }
 }
 
+function assertMobileTrendingLayout(trendingLayout, interactionChecks) {
+  assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
+  assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
+  const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
+  const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
+  assert.ok(
+    mobileRowBottom > mobileRowTop,
+    "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
+  );
+  interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 5 };
+}
+
+function assertDesktopGeometry({ desktopGeometry, viewport, result, interactionChecks }) {
+  result.desktopGeometry = desktopGeometry;
+  interactionChecks.desktopGeometry = desktopGeometry;
+  const geometryViolations = [];
+  if (desktopGeometry.brandName.left <= desktopGeometry.brandImage.right - 2) geometryViolations.push("brand mark and wordmark are not arranged side by side");
+  if (desktopGeometry.header.height > 60) geometryViolations.push("header exceeds the compact Golden header envelope");
+  if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
+  if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
+  if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
+  if (desktopGeometry.latestNews.top < 700) geometryViolations.push("latest-news and newsletter begin too early compared with the Golden lower fold");
+  if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
+  if (desktopGeometry.latestNewsCards.bottom > viewport.height) geometryViolations.push("all four demo story cards must remain inside the desktop first fold");
+  if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
+  if (desktopGeometry.trendingItems !== 5) geometryViolations.push("five demo trend placeholders are required");
+  assert.deepEqual(
+    desktopGeometry.categoryLabels,
+    ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"],
+    "the Golden's ten editorial categories must be available with All as a filter",
+  );
+  assert.deepEqual(geometryViolations, [], `desktop Golden geometry failed: ${JSON.stringify(desktopGeometry)}; ${geometryViolations.join("; ")}`);
+}
+
 const results = [];
 const consoleErrors = [];
 const pageErrors = [];
@@ -235,15 +269,7 @@ try {
       const { dimensions, trendingLayout } = viewportSnapshot;
       assert.ok(dimensions.document <= dimensions.viewport, viewport.name + " horizontal overflow: " + JSON.stringify(dimensions));
       if (viewport.name === "mobile") {
-        assert.ok(trendingLayout.scrollWidth > trendingLayout.clientWidth, "mobile trending items must be horizontally scrollable");
-        assert.equal(trendingLayout.childRects.length, 6, "mobile trending strip must show its title and all five items");
-        const mobileRowTop = Math.max(...trendingLayout.childRects.map((child) => child.top));
-        const mobileRowBottom = Math.min(...trendingLayout.childRects.map((child) => child.bottom));
-        assert.ok(
-          mobileRowBottom > mobileRowTop,
-          "mobile trending title and all items must remain on a single row: " + JSON.stringify(trendingLayout),
-        );
-        interactionChecks.trendingStrip.mobile = { horizontallyScrollable: true, singleRow: true, visibleItems: 5 };
+        assertMobileTrendingLayout(trendingLayout, interactionChecks);
       }
       const moduleAxe = await new AxeBuilder({ page }).include(".cb-home").analyze();
       const pageAxe = await new AxeBuilder({ page }).analyze();
@@ -260,26 +286,7 @@ try {
         fullPageAxeViolations: encodeViolations(pageAxe),
       });
       if (viewport.name === "desktop") {
-        const desktopGeometry = viewportSnapshot.desktopGeometry;
-        results.at(-1).desktopGeometry = desktopGeometry;
-        interactionChecks.desktopGeometry = desktopGeometry;
-        const geometryViolations = [];
-        if (desktopGeometry.brandName.left <= desktopGeometry.brandImage.right - 2) geometryViolations.push("brand mark and wordmark are not arranged side by side");
-        if (desktopGeometry.header.height > 60) geometryViolations.push("header exceeds the compact Golden header envelope");
-        if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
-        if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
-        if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
-        if (desktopGeometry.latestNews.top < 700) geometryViolations.push("latest-news and newsletter begin too early compared with the Golden lower fold");
-        if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
-        if (desktopGeometry.latestNewsCards.bottom > viewport.height) geometryViolations.push("all four demo story cards must remain inside the desktop first fold");
-        if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
-        if (desktopGeometry.trendingItems !== 5) geometryViolations.push("five demo trend placeholders are required");
-        assert.deepEqual(
-          desktopGeometry.categoryLabels,
-          ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"],
-          "the Golden's ten editorial categories must be available with All as a filter",
-        );
-        assert.deepEqual(geometryViolations, [], `desktop Golden geometry failed: ${JSON.stringify(desktopGeometry)}; ${geometryViolations.join("; ")}`);
+        assertDesktopGeometry({ desktopGeometry: viewportSnapshot.desktopGeometry, viewport, result: results.at(-1), interactionChecks });
       }
       await page.screenshot({ path: join(evidenceDir, "golden-home-" + viewport.name + ".png"), fullPage: false });
     }),

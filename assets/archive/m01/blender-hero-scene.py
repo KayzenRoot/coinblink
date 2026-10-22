@@ -155,7 +155,12 @@ def add_ridge(materials):
     bpy.context.collection.objects.link(ridge)
     for polygon in mesh.polygons:
         height = sum(mesh.vertices[index].co.z for index in polygon.vertices) / len(polygon.vertices)
-        polygon.material_index = 0 if height < 0.85 else (1 if height < 1.7 else 2)
+        if height < 0.85:
+            polygon.material_index = 0
+        elif height < 1.7:
+            polygon.material_index = 1
+        else:
+            polygon.material_index = 2
         polygon.use_smooth = False
     return ridge
 
@@ -208,6 +213,167 @@ def set_keyframes(obj, data_path, values):
                 keyframe.interpolation = "BEZIER"
                 keyframe.handle_left_type = "AUTO_CLAMPED"
                 keyframe.handle_right_type = "AUTO_CLAMPED"
+
+
+
+def construct_minted_coin(gold, gold_face, gold_edge, gold_highlight):
+    # Original extruded, ridged coin. The parent makes subtle camera-facing motion possible.
+    pivot = bpy.data.objects.new("Animated Bitcoin coin pivot", None)
+    bpy.context.collection.objects.link(pivot)
+    pivot.location = (2.45, -0.18, 2.62)
+    # Turn the face into a clear 3/4 view so the thick, ribbed edge reads in the render.
+    pivot.rotation_euler = (math.radians(70.0), math.radians(-5.0), math.radians(-40.0))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=144, radius=1.88, depth=0.2, location=(0.0, 0.0, 0.0))
+    coin = bpy.context.object
+    coin.name = "Thick beveled gold Bitcoin coin"
+    coin.parent = pivot
+    coin.data.materials.append(gold)
+    coin.data.materials.append(gold_face)
+    for polygon in coin.data.polygons:
+        if abs(polygon.normal.z) > 0.96:
+            polygon.material_index = 1
+    bevel = coin.modifiers.new("Rounded minted rim", "BEVEL")
+    bevel.width = 0.045
+    bevel.segments = 4
+    coin.modifiers.new("Weighted coin normals", "WEIGHTED_NORMAL")
+
+    # Narrow antique-gold bars break up the edge and make the minted thickness visible.
+    for index in range(48):
+        angle = 2.0 * math.pi * index / 48.0
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, 0.0, 0.0))
+        groove = bpy.context.object
+        groove.name = f"Coin edge notch {index + 1:02d}"
+        groove.parent = pivot
+        groove.location = (1.875 * math.cos(angle), 1.875 * math.sin(angle), 0.0)
+        groove.rotation_euler.z = angle
+        groove.dimensions = (0.035, 0.075, 0.15)
+        groove.data.materials.append(gold_edge)
+
+    def add_torus(name, radius, minor, z, mat):
+        bpy.ops.mesh.primitive_torus_add(major_radius=radius, minor_radius=minor,
+                                         major_segments=144, minor_segments=12,
+                                         location=(0.0, 0.0, z))
+        obj = bpy.context.object
+        obj.name = name
+        obj.parent = pivot
+        obj.data.materials.append(mat)
+        for face in obj.data.polygons:
+            face.use_smooth = True
+        return obj
+
+    add_torus("Outer coin face bead", 1.73, 0.028, 0.106, gold_highlight)
+    add_torus("Inner engraved coin ring", 1.53, 0.012, 0.109, gold_edge)
+    add_torus("Fine inner gold ring", 1.46, 0.009, 0.111, gold_highlight)
+    add_torus("Inner relief border", 1.39, 0.009, 0.112, gold_edge)
+    add_torus("B emblem inner medallion", 0.82, 0.009, 0.112, gold_highlight)
+
+    return pivot
+
+
+def add_minted_relief(pivot, gold_edge, gold_highlight):
+    # Fine minted radial indices add face detail that remains legible at hero scale.
+    for index in range(72):
+        angle = 2.0 * math.pi * index / 72.0
+        inner = 1.58 if index % 6 == 0 else 1.625
+        outer = 1.69
+        tick = add_polyline(
+            f"Minted face index {index + 1:02d}",
+            [(inner * math.cos(angle), inner * math.sin(angle), 0.112),
+             (outer * math.cos(angle), outer * math.sin(angle), 0.112)],
+            0.0045 if index % 6 == 0 else 0.0025,
+            gold_highlight if index % 6 == 0 else gold_edge,
+        )
+        tick.parent = pivot
+
+    # Fine radial engraving in the dark coin face creates visible minted relief.
+    for index in range(32):
+        angle = 2.0 * math.pi * index / 32.0
+        inner = 0.93 if index % 2 == 0 else 1.02
+        outer = 1.34
+        line = add_polyline(
+            f"Coin face engraving {index + 1:02d}",
+            [(inner * math.cos(angle), inner * math.sin(angle), 0.115),
+             (outer * math.cos(angle), outer * math.sin(angle), 0.115)],
+            0.0035 if index % 2 == 0 else 0.002,
+            gold_edge if index % 2 == 0 else gold_highlight,
+        )
+        line.parent = pivot
+
+    for index in range(16):
+        angle = 2.0 * math.pi * index / 16.0
+        bpy.ops.mesh.primitive_uv_sphere_add(
+            segments=12, ring_count=6, radius=0.024,
+            location=(1.43 * math.cos(angle), 1.43 * math.sin(angle), 0.125),
+        )
+        rivet = bpy.context.object
+        rivet.name = f"Coin medallion rivet {index + 1:02d}"
+        rivet.parent = pivot
+        rivet.data.materials.append(gold_highlight)
+        for face in rivet.data.polygons:
+            face.use_smooth = True
+
+    # The B and two narrow stems are new geometry, not pixels taken from the reference.
+    bpy.ops.object.text_add(location=(0.0, 0.0, 0.114))
+    glyph = bpy.context.object
+    glyph.name = "Raised Bitcoin B symbol"
+    glyph.data.body = "B"
+    glyph.data.align_x = "CENTER"
+    glyph.data.align_y = "CENTER"
+    glyph.data.size = 1.68
+    glyph.data.extrude = 0.025
+    glyph.data.bevel_depth = 0.009
+    glyph.data.bevel_resolution = 2
+    glyph.parent = pivot
+    glyph.data.materials.append(gold_highlight)
+    for index, x in enumerate((-0.23, 0.23)):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(x, 0.0, 0.156))
+        stem = bpy.context.object
+        stem.name = f"Bitcoin symbol stem {index + 1}"
+        stem.parent = pivot
+        stem.location = (x, 0.0, 0.156)
+        stem.dimensions = (0.034, 1.25, 0.024)
+        stem.data.materials.append(gold_highlight)
+
+
+
+def animate_glowing_motes(spark_mat):
+    # Few restrained light motes, each with tiny drift across the 2-second study.
+    for index, (x, y, z, radius) in enumerate((
+        (0.35, -0.05, 4.3, 0.035), (4.6, -0.25, 4.65, 0.028), (5.15, 0.0, 1.4, 0.03),
+        (-0.85, 0.25, 3.25, 0.022), (5.8, 0.15, 2.6, 0.026), (1.0, -0.5, 4.55, 0.024),
+    )):
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=radius, location=(x, y, z))
+        mote = bpy.context.object
+        mote.name = f"Quiet lime particle {index + 1}"
+        mote.data.materials.append(spark_mat)
+        initial = mote.location.copy()
+        mote.keyframe_insert(data_path="location", frame=1)
+        mote.location.z += 0.18
+        mote.location.x += 0.05 * (-1 if index % 2 else 1)
+        mote.keyframe_insert(data_path="location", frame=13)
+        mote.location = initial
+        mote.keyframe_insert(data_path="location", frame=25)
+
+
+
+def animate_coin_and_lighting(pivot, chart_shader):
+    key = add_area("Large warm key light", (-3.0, -5.5, 7.0), (2.3, 0.0, 2.5), 1180.0, (1.0, 0.72, 0.40), 2.5)
+    add_area("Soft frontal coin fill", (4.5, -5.0, 4.2), (2.4, 0.0, 2.6), 680.0, (1.0, 0.89, 0.65), 2.1)
+    add_area("Lime mountain rim light", (4.8, 2.2, 5.4), (3.5, 1.0, 1.8), 820.0, (0.55, 1.0, 0.24), 1.8)
+    add_area("Broad lime rock wash", (0.2, -2.8, 6.2), (1.8, 2.5, 0.2), 940.0, (0.36, 1.0, 0.16), 5.8)
+    add_area("Quiet warm backlight", (2.0, 4.0, 6.4), (2.5, 0.0, 2.3), 980.0, (1.0, 0.58, 0.23), 1.7)
+
+    # Smooth sweeping highlight and a restrained coin wobble: never a fast spin.
+    for frame, tilt in ((1, math.radians(-5.0)), (13, math.radians(-1.5)), (25, math.radians(-5.0))):
+        pivot.rotation_euler.y = tilt
+        pivot.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
+    for frame, x in ((1, -3.0), (13, 2.0), (25, -3.0)):
+        key.location.x = x
+        key.keyframe_insert(data_path="location", index=0, frame=frame)
+    for frame, strength in ((1, 2.0), (13, 2.5), (25, 2.0)):
+        chart_shader.inputs["Strength"].default_value = strength
+        chart_shader.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
+
 
 
 def build_scene():
@@ -311,152 +477,10 @@ def build_scene():
         add_candlestick(f"Background market candle {index + 1:02d}", x, 1.75, z,
                         height, chart_dim, chart_mat)
 
-    # Original extruded, ridged coin. The parent makes subtle camera-facing motion possible.
-    pivot = bpy.data.objects.new("Animated Bitcoin coin pivot", None)
-    bpy.context.collection.objects.link(pivot)
-    pivot.location = (2.45, -0.18, 2.62)
-    # Turn the face into a clear 3/4 view so the thick, ribbed edge reads in the render.
-    pivot.rotation_euler = (math.radians(70.0), math.radians(-5.0), math.radians(-40.0))
-    bpy.ops.mesh.primitive_cylinder_add(vertices=144, radius=1.88, depth=0.2, location=(0.0, 0.0, 0.0))
-    coin = bpy.context.object
-    coin.name = "Thick beveled gold Bitcoin coin"
-    coin.parent = pivot
-    coin.data.materials.append(gold)
-    coin.data.materials.append(gold_face)
-    for polygon in coin.data.polygons:
-        if abs(polygon.normal.z) > 0.96:
-            polygon.material_index = 1
-    bevel = coin.modifiers.new("Rounded minted rim", "BEVEL")
-    bevel.width = 0.045
-    bevel.segments = 4
-    coin.modifiers.new("Weighted coin normals", "WEIGHTED_NORMAL")
-
-    # Narrow antique-gold bars break up the edge and make the minted thickness visible.
-    for index in range(48):
-        angle = 2.0 * math.pi * index / 48.0
-        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, 0.0, 0.0))
-        groove = bpy.context.object
-        groove.name = f"Coin edge notch {index + 1:02d}"
-        groove.parent = pivot
-        groove.location = (1.875 * math.cos(angle), 1.875 * math.sin(angle), 0.0)
-        groove.rotation_euler.z = angle
-        groove.dimensions = (0.035, 0.075, 0.15)
-        groove.data.materials.append(gold_edge)
-
-    def add_torus(name, radius, minor, z, mat):
-        bpy.ops.mesh.primitive_torus_add(major_radius=radius, minor_radius=minor,
-                                         major_segments=144, minor_segments=12,
-                                         location=(0.0, 0.0, z))
-        obj = bpy.context.object
-        obj.name = name
-        obj.parent = pivot
-        obj.data.materials.append(mat)
-        for face in obj.data.polygons:
-            face.use_smooth = True
-        return obj
-
-    add_torus("Outer coin face bead", 1.73, 0.028, 0.106, gold_highlight)
-    add_torus("Inner engraved coin ring", 1.53, 0.012, 0.109, gold_edge)
-    add_torus("Fine inner gold ring", 1.46, 0.009, 0.111, gold_highlight)
-    add_torus("Inner relief border", 1.39, 0.009, 0.112, gold_edge)
-    add_torus("B emblem inner medallion", 0.82, 0.009, 0.112, gold_highlight)
-
-    # Fine minted radial indices add face detail that remains legible at hero scale.
-    for index in range(72):
-        angle = 2.0 * math.pi * index / 72.0
-        inner = 1.58 if index % 6 == 0 else 1.625
-        outer = 1.69
-        tick = add_polyline(
-            f"Minted face index {index + 1:02d}",
-            [(inner * math.cos(angle), inner * math.sin(angle), 0.112),
-             (outer * math.cos(angle), outer * math.sin(angle), 0.112)],
-            0.0045 if index % 6 == 0 else 0.0025,
-            gold_highlight if index % 6 == 0 else gold_edge,
-        )
-        tick.parent = pivot
-
-    # Fine radial engraving in the dark coin face creates visible minted relief.
-    for index in range(32):
-        angle = 2.0 * math.pi * index / 32.0
-        inner = 0.93 if index % 2 == 0 else 1.02
-        outer = 1.34
-        line = add_polyline(
-            f"Coin face engraving {index + 1:02d}",
-            [(inner * math.cos(angle), inner * math.sin(angle), 0.115),
-             (outer * math.cos(angle), outer * math.sin(angle), 0.115)],
-            0.0035 if index % 2 == 0 else 0.002,
-            gold_edge if index % 2 == 0 else gold_highlight,
-        )
-        line.parent = pivot
-
-    for index in range(16):
-        angle = 2.0 * math.pi * index / 16.0
-        bpy.ops.mesh.primitive_uv_sphere_add(
-            segments=12, ring_count=6, radius=0.024,
-            location=(1.43 * math.cos(angle), 1.43 * math.sin(angle), 0.125),
-        )
-        rivet = bpy.context.object
-        rivet.name = f"Coin medallion rivet {index + 1:02d}"
-        rivet.parent = pivot
-        rivet.data.materials.append(gold_highlight)
-        for face in rivet.data.polygons:
-            face.use_smooth = True
-
-    # The B and two narrow stems are new geometry, not pixels taken from the reference.
-    bpy.ops.object.text_add(location=(0.0, 0.0, 0.114))
-    glyph = bpy.context.object
-    glyph.name = "Raised Bitcoin B symbol"
-    glyph.data.body = "B"
-    glyph.data.align_x = "CENTER"
-    glyph.data.align_y = "CENTER"
-    glyph.data.size = 1.68
-    glyph.data.extrude = 0.025
-    glyph.data.bevel_depth = 0.009
-    glyph.data.bevel_resolution = 2
-    glyph.parent = pivot
-    glyph.data.materials.append(gold_highlight)
-    for index, x in enumerate((-0.23, 0.23)):
-        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(x, 0.0, 0.156))
-        stem = bpy.context.object
-        stem.name = f"Bitcoin symbol stem {index + 1}"
-        stem.parent = pivot
-        stem.location = (x, 0.0, 0.156)
-        stem.dimensions = (0.034, 1.25, 0.024)
-        stem.data.materials.append(gold_highlight)
-
-    # Few restrained light motes, each with tiny drift across the 2-second study.
-    for index, (x, y, z, radius) in enumerate((
-        (0.35, -0.05, 4.3, 0.035), (4.6, -0.25, 4.65, 0.028), (5.15, 0.0, 1.4, 0.03),
-        (-0.85, 0.25, 3.25, 0.022), (5.8, 0.15, 2.6, 0.026), (1.0, -0.5, 4.55, 0.024),
-    )):
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=radius, location=(x, y, z))
-        mote = bpy.context.object
-        mote.name = f"Quiet lime particle {index + 1}"
-        mote.data.materials.append(spark_mat)
-        initial = mote.location.copy()
-        mote.keyframe_insert(data_path="location", frame=1)
-        mote.location.z += 0.18
-        mote.location.x += 0.05 * (-1 if index % 2 else 1)
-        mote.keyframe_insert(data_path="location", frame=13)
-        mote.location = initial
-        mote.keyframe_insert(data_path="location", frame=25)
-
-    key = add_area("Large warm key light", (-3.0, -5.5, 7.0), (2.3, 0.0, 2.5), 1180.0, (1.0, 0.72, 0.40), 2.5)
-    add_area("Soft frontal coin fill", (4.5, -5.0, 4.2), (2.4, 0.0, 2.6), 680.0, (1.0, 0.89, 0.65), 2.1)
-    add_area("Lime mountain rim light", (4.8, 2.2, 5.4), (3.5, 1.0, 1.8), 820.0, (0.55, 1.0, 0.24), 1.8)
-    add_area("Broad lime rock wash", (0.2, -2.8, 6.2), (1.8, 2.5, 0.2), 940.0, (0.36, 1.0, 0.16), 5.8)
-    add_area("Quiet warm backlight", (2.0, 4.0, 6.4), (2.5, 0.0, 2.3), 980.0, (1.0, 0.58, 0.23), 1.7)
-
-    # Smooth sweeping highlight and a restrained coin wobble: never a fast spin.
-    for frame, tilt in ((1, math.radians(-5.0)), (13, math.radians(-1.5)), (25, math.radians(-5.0))):
-        pivot.rotation_euler.y = tilt
-        pivot.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
-    for frame, x in ((1, -3.0), (13, 2.0), (25, -3.0)):
-        key.location.x = x
-        key.keyframe_insert(data_path="location", index=0, frame=frame)
-    for frame, strength in ((1, 2.0), (13, 2.5), (25, 2.0)):
-        chart_shader.inputs["Strength"].default_value = strength
-        chart_shader.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
+    pivot = construct_minted_coin(gold, gold_face, gold_edge, gold_highlight)
+    add_minted_relief(pivot, gold_edge, gold_highlight)
+    animate_glowing_motes(spark_mat)
+    animate_coin_and_lighting(pivot, chart_shader)
 
     camera_data = bpy.data.cameras.new("CoinBlink cinematic camera")
     camera_data.type = "PERSP"
@@ -503,7 +527,6 @@ def configure_cycles_device(scene):
 
 
 def render_mode(scene):
-    should_render = True
     if MODE == "preview":
         scene.render.resolution_x, scene.render.resolution_y = 800, 400
         scene.cycles.samples = 8
@@ -533,9 +556,9 @@ def render_mode(scene):
     configure_cycles_device(scene)
     bpy.context.preferences.filepaths.save_version = 0
     bpy.ops.wm.save_as_mainfile(filepath=str(EVIDENCE_DIR / "hero-cinematic-production.blend"))
-    if should_render and MODE == "motion":
+    if MODE == "motion":
         bpy.ops.render.render(animation=True)
-    elif should_render:
+    else:
         bpy.ops.render.render(write_still=True)
     print(f"CB_HERO_RENDER_COMPLETE mode={MODE} engine={scene.render.engine} device={scene.cycles.device} ")
     print(f"CB_HERO_OUTPUT={scene.render.filepath}")

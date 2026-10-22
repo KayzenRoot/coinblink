@@ -5,6 +5,7 @@ import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalRev
   OWNER_DASHBOARD_LIST_LIMIT } from '../../../src/modules/CB-M06/owner-dashboard.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 import { createLocalEditorialInsights } from '../../../src/modules/CB-M06/local-editorial-insights.mjs';
+import { createLocalEditorialTriage } from '../../../src/modules/CB-M06/local-editorial-triage.mjs';
 
 const asOf = '2026-10-19T15:00:00.000Z';
 
@@ -243,4 +244,71 @@ test('M06-D insight cards, age-filter and logout scrub stay behind synthetic aut
   assert.match(LOCAL_CMS_UI_SCRIPT,/lastEditorialInsights = null/u);
   assert.match(LOCAL_CMS_UI_SCRIPT,/epoch !== sessionEpoch \|\| generation !== readGeneration/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/\/(?:local|admin)\/insights|localStorage|sessionStorage/u);
+});
+
+
+test('M06-E LOCAL attention triage derives ordered, immutable reasons only from validated review metadata', () => {
+  const now = '2026-10-21T12:00:00.000Z';
+  const epoch = text => Math.floor(Date.parse(text) / 1000);
+  const draft = (id, updated_at, author_label) => ({
+    ...editorialRow(id, 1, updated_at, 'Private example draft ' + id),
+    author_label, source_url: 'https://example.org/private',
+  });
+  const rows = [
+    draft(1, epoch('2026-10-01T10:00:00Z'), ''),
+    draft(2, epoch('2026-10-02T10:00:00Z'), 'Test Author'),
+    draft(3, epoch('2026-10-21T11:00:00Z'), ''),
+    draft(4, epoch('2026-10-21T11:00:00Z'), 'Test Author'),
+  ];
+  const queue = createLocalReviewQueue(rows);
+  const insights = createLocalEditorialInsights(queue, now);
+  const triage = createLocalEditorialTriage(queue, insights);
+  assert.equal(triage.status,'MEASURED_LOCAL');
+  assert.deepEqual([triage.totalListed,triage.requiringCredit,triage.agedListed,triage.requiringBoth],[4,2,2,1]);
+  assert.deepEqual(triage.items.map(x => x.id), [rows[0].id,rows[2].id,rows[1].id,rows[3].id]);
+  assert.deepEqual(triage.items.map(x => x.attention),
+    ['CREDIT_AND_AGED','CREDIT_MISSING','AGED_DRAFT','VERIFY_SOURCE']);
+  assert.deepEqual(triage.items[0].reasons,
+    ['CREDIT_MISSING','NO_EDIT_7_DAYS','SOURCE_VERIFICATION_PENDING']);
+  assert.ok(Object.isFrozen(triage) && Object.isFrozen(triage.items) &&
+    triage.items.every(x => Object.isFrozen(x) && Object.isFrozen(x.reasons)));
+  assert.equal(triage.verificationStatus, 'NOT_VERIFIED');
+  assert.equal(triage.publishingStatus, 'DISABLED');
+  assert.doesNotMatch(JSON.stringify(triage), /PRIVATE_SUMMARY|NEVER_INCLUDE_IN_ACTIVITY|example\.org|source_url|author_label/u);
+});
+
+test('M06-E fails closed on inconsistent insights and keeps the 100-row list explicitly partial', () => {
+  const now='2026-10-21T12:00:00.000Z';
+  const sample={...editorialRow(1,1,Date.parse('2026-10-21T11:00:00Z') / 1000),
+    author_label:'',source_url:'https://example.org/private'};
+  const queue=createLocalReviewQueue([sample]);
+  const insights=createLocalEditorialInsights(queue,now);
+  for (const invalid of [null,{}, {...insights,status:'PUBLISHED'},
+    {...insights,missingCreditListed:0}, {...insights,listedDraftsCount:2}]) {
+    assert.throws(() => createLocalEditorialTriage(queue,invalid), TypeError);
+  }
+  const hundred=Array.from({length:100},(_,index)=>({
+    ...sample,id:String(index).padStart(36,'0'),author_label:index%2?'Test Author':'',
+  }));
+  const capped=createLocalReviewQueue(hundred);
+  const result=createLocalEditorialTriage(capped,createLocalEditorialInsights(capped,now));
+  assert.equal(result.listingScope,'UP_TO_100_LISTED');
+  assert.equal(result.totalListed,100);
+  assert.equal(result.requiringCredit,50);
+  assert.equal(createLocalEditorialTriage(createLocalReviewQueue([]),
+    createLocalEditorialInsights(createLocalReviewQueue([]),now)).totalListed,0);
+});
+
+test('M06-E triage remains private, session-bound, CSP-gated and scrubbed in the shared CMS', () => {
+  const html=renderLocalCmsUi('ff'.repeat(32));
+  for (const id of ['m06-triage-status','m06-triage-scope','m06-triage-filter','m06-triage-count',
+    'm06-triage-list','m06-triage-credit','m06-triage-aged','m06-triage-both']) {
+    assert.match(html,new RegExp('id="'+id+'"'));
+  }
+  assert.match(html,/id="m06-dashboard"[^>]*hidden/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalEditorialTriage\(reviewQueue, insights\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/ui\.triageList\.replaceChildren\(\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/epoch !== sessionEpoch \|\| generation !== readGeneration/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/!item\.isConnected/u);
+  assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/\/local\/triage|\/admin\/triage|localStorage|sessionStorage|innerHTML/u);
 });

@@ -63,6 +63,29 @@ if (root) {
     scrubResult();
     status.textContent = empty;
   }
+  function compareMessage(result) {
+    if (result.identicalContents) {
+      return pt ? "Nenhuma diferença encontrada nos cinco campos. A identidade histórica NÃO foi comprovada."
+        : "No differences in five fields. Historical identity is NOT verified.";
+    }
+    const changed = String(result.changedCount);
+    return pt ? changed + " campo(s) alterado(s) entre as duas exportações locais."
+      : changed + " field(s) changed between two local exports.";
+  }
+  function addChangeRow(change) {
+    const li = document.createElement("li");
+    const name = document.createElement("strong");
+    name.textContent = labels[change.field];
+    const previous = document.createElement("p");
+    const next = document.createElement("p");
+    const emptyLabel = pt ? "(vazio)" : "(empty)";
+    previous.textContent = (pt ? "Antes (trecho): " : "Before (excerpt): ")
+      + (change.beforeExcerpt || emptyLabel);
+    next.textContent = (pt ? "Depois (trecho): " : "After (excerpt): ")
+      + (change.afterExcerpt || emptyLabel);
+    li.append(name, previous, next);
+    rows.append(li);
+  }
   function displayIfReady() {
     scrubResult();
     if (!drafts.before || !drafts.after) {
@@ -71,28 +94,8 @@ if (root) {
       return;
     }
     const result = compareLocalDraftExports(drafts.before, drafts.after);
-    if (result.identicalContents) {
-      count.textContent = pt
-        ? "Nenhuma diferença encontrada nos cinco campos. A identidade histórica NÃO foi comprovada."
-        : "No differences in five fields. Historical identity is NOT verified.";
-    } else {
-      count.textContent = pt
-        ? String(result.changedCount) + " campo(s) alterado(s) entre as duas exportações locais."
-        : String(result.changedCount) + " field(s) changed between two local exports.";
-    }
-    for (const change of result.changes) {
-      const li = document.createElement("li");
-      const name = document.createElement("strong");
-      name.textContent = labels[change.field];
-      const previous = document.createElement("p");
-      const next = document.createElement("p");
-      previous.textContent = (pt ? "Antes (trecho): " : "Before (excerpt): ")
-        + (change.beforeExcerpt || (pt ? "(vazio)" : "(empty)"));
-      next.textContent = (pt ? "Depois (trecho): " : "After (excerpt): ")
-        + (change.afterExcerpt || (pt ? "(vazio)" : "(empty)"));
-      li.append(name, previous, next);
-      rows.append(li);
-    }
+    count.textContent = compareMessage(result);
+    for (const change of result.changes) addChangeRow(change);
     output.hidden = false;
     status.textContent = pt
       ? "Comparação local pronta. Sem verificação, histórico oficial ou publicação."

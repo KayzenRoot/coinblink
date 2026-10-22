@@ -616,10 +616,12 @@ try {
   if (runFailure) throw runFailure;
   await mkdir(evidenceDir, { recursive: true });
   const { readFile } = await import("node:fs/promises");
-  await Promise.all(results.map(async (result) => {
-    const screenshot = await readFile(join(evidenceDir, "golden-home-" + result.name + ".png"));
-    result.screenshotSha256 = createHash("sha256").update(screenshot).digest("hex");
-  }));
+  const screenshots = await Promise.all(results.map(({ name }) =>
+    readFile(join(evidenceDir, "golden-home-" + name + ".png"))
+  ));
+  results.forEach((result, index) => {
+    result.screenshotSha256 = createHash("sha256").update(screenshots[index]).digest("hex");
+  });
   const violations = results.flatMap((result) => result.axeViolations);
   if (violations.length) throw new Error("Axe violations: " + JSON.stringify(violations, null, 2));
   const globalViolations = results.flatMap((result) => result.fullPageAxeViolations);

@@ -76,6 +76,19 @@ test("review cues are explicit heuristics, not automated verification", () => {
   assert.equal(analyzeLocalCitationHygiene("No numbers and no review tags.").totalHints, 0);
 });
 
+test("numeric claim hints retain decimal percent and common currency formats", () => {
+  for (const prose of [
+    "The reported rate moved 42,5% in one session.",
+    "The report listed R$ 500,25 as a local amount.",
+    "The report listed US$ 3.25 as a dollar amount.",
+    "The report listed $ 7.5 as a dollar amount.",
+  ]) {
+    const result = analyzeLocalCitationHygiene(prose);
+    assert.equal(result.totalHints, 1, prose);
+    assert.equal(result.hints[0].kind, "numeric_claim_without_local_citation", prose);
+  }
+});
+
 test("heuristics never inspect the source-note appendix for numeric values", () => {
   const source = addLocalSource(prose, "Coin 99 report", "https://example.org/data?value=42%25");
   const audit = analyzeLocalCitationHygiene(source.value);

@@ -56,7 +56,7 @@ function imageRecordPattern(kind) {
 function validateImagePayloadMetadata(record, buffer, kind, maxBytes, failures) {
   const expectedFormat = kind === "webp" ? "WEBP" : "PNG";
   const dimensions = kind === "webp" ? dimensionsFromWebp(buffer) : dimensionsFromPng(buffer);
-  if (!dimensions || dimensions.format !== expectedFormat) failures.push("INVALID_BINARY_SIGNATURE_OR_HEADER");
+  if (dimensions?.format !== expectedFormat) failures.push("INVALID_BINARY_SIGNATURE_OR_HEADER");
   if (record.format !== expectedFormat) failures.push("INVALID_FORMAT_METADATA");
   if (record.bytes !== buffer.length) failures.push("BYTE_COUNT_MISMATCH");
   if (buffer.length === 0 || buffer.length > maxBytes) failures.push("ASSET_EXCEEDS_BYTE_BUDGET");
@@ -85,7 +85,7 @@ function validateImageRecord(record, kind, maxBytes, payloads, failures, masterS
 }
 
 function validateManifestIdentity(manifest, failures) {
-  if (!manifest || manifest.schemaVersion !== 1 || manifest.workOrder !== "CB-M01-WO-001") {
+  if (manifest?.schemaVersion !== 1 || manifest?.workOrder !== "CB-M01-WO-001") {
     failures.push("INVALID_MANIFEST_IDENTITY");
   }
   if (manifest?.productState !== "DRAFT_DEMO_ONLY_NOT_PUBLISHED") failures.push("INVALID_PRODUCT_STATE");

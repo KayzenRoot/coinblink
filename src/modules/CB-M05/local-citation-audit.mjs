@@ -96,7 +96,9 @@ function stripLocalClaimNotes(body) {
 }
 const MARKER_PATTERN = /\[\^cb(\d+)\]/gu;
 const REVIEW_PLACEHOLDER = /\b(?:TODO|FIXME|TBD|CITATION NEEDED|SOURCE NEEDED|FONTE PENDENTE|VERIFICAR FONTE|CHECAR FONTE)\b|\[(?:citation needed|source needed|fonte\??|verificar)\]/iu;
-const NUMERIC_CLAIM = /(?:\b\d+(?:[.,]\d+)?\s*%|\b(?:R\$|US\$|\$)\s*\d+(?:[.,]\d+)?)/iu;
+const NUMERIC_PERCENTAGE_CLAIM = /\b\d+(?:[.,]\d+)?\s*%/iu;
+const NUMERIC_CODED_CURRENCY_CLAIM = /\b(?:R\$|US\$)\s*\d+(?:[.,]\d+)?/iu;
+const NUMERIC_DOLLAR_CLAIM = /\$\s*\d+(?:[.,]\d+)?/iu;
 
 function freezeNumbers(values) {
   return Object.freeze([...values].sort((a, b) => a - b));
@@ -111,7 +113,9 @@ function makeHints(prose) {
     const text = paragraph.trim();
     if (!text) continue;
     const hasPlaceholder = REVIEW_PLACEHOLDER.test(text);
-    const hasNumeric = NUMERIC_CLAIM.test(text) && !/\[\^cb\d+\]/u.test(text);
+    const hasNumeric = (NUMERIC_PERCENTAGE_CLAIM.test(text)
+      || NUMERIC_CODED_CURRENCY_CLAIM.test(text)
+      || NUMERIC_DOLLAR_CLAIM.test(text)) && !/\[\^cb\d+\]/u.test(text);
     if (!hasPlaceholder && !hasNumeric) continue;
     total += 1;
     if (hints.length < MAX_CITATION_HINTS) {

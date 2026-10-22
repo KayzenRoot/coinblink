@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { runInNewContext } from 'node:vm';
 import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant } from '../../../src/modules/CB-M07/local-editorial-variants.mjs';
 import { createLocalSocialCard } from '../../../src/modules/CB-M07/social-card.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
@@ -121,4 +122,15 @@ test('M07-H editor remains protected by nonce and never adds egress or persisten
   assert.match(LOCAL_CMS_UI_SCRIPT,/const requireCanonicalLocalVariant =/);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/localStorage|sessionStorage|indexedDB|innerHTML|\/local\/social|\/admin\/social|window\.open/);
   assert.match(html,/NOT POSTED/);
+});
+
+test('serialized M07-H browser validator retains the standalone ASCII control guard', () => {
+  const definitionsEnd = LOCAL_CMS_UI_SCRIPT.indexOf('  const ui = {');
+  assert.ok(definitionsEnd > 0, 'browser validator definitions must precede DOM binding');
+  const definitions = LOCAL_CMS_UI_SCRIPT.slice(0, definitionsEnd);
+  const browserValidator = runInNewContext(definitions + '\ncreateLocalEditorialVariant;', { URL });
+  assert.throws(
+    () => browserValidator(draft, 'x', 'Valid fictional\u0001 caption'),
+    /LOCAL variant must contain/u,
+  );
 });

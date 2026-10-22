@@ -5,6 +5,7 @@ import test from "node:test";
 
 const component = await readFile(new URL("../../../src/modules/CB-M01/GoldenHome.astro", import.meta.url), "utf8");
 const stylesheet = await readFile(new URL("../../../src/modules/CB-M01/golden-home.css", import.meta.url), "utf8");
+const globalStylesheet = await readFile(new URL("../../../src/styles/global.css", import.meta.url), "utf8");
 const provenance = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/lightning-sprites-provenance.json", import.meta.url), "utf8"));
 const promptEvidence = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/sprite-prompts.json", import.meta.url), "utf8"));
 const motionProvenance = JSON.parse(await readFile(new URL("../../../.engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json", import.meta.url), "utf8"));
@@ -62,7 +63,8 @@ test("normal motion uses the local Blender derivative and reduced motion selects
   assert.match(component, /<div class="hero-scene" aria-hidden="true">/u);
   assert.doesNotMatch(component, /hero-lightning|lightning-sprites\//u);
   assert.doesNotMatch(stylesheet, /@keyframes cb-lightning|hero-lightning-frame/u);
-  assert.match(stylesheet, /@media \(prefers-reduced-motion:\s*reduce\)/u);
+  assert.doesNotMatch(stylesheet, /@media \(prefers-reduced-motion:\s*reduce\)/u);
+  assert.match(globalStylesheet, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*?animation-duration:\s*0\.01ms\s*!important/u);
 });
 
 test("Blender provenance derives the motion from the static image pipeline without granting release", async () => {

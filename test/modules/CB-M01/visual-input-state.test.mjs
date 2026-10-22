@@ -49,6 +49,7 @@ test("visual provenance covers every rendered source and fixture configuration i
     "test/modules/CB-M01/astro-integration.config.mjs",
     "test/modules/CB-M01/visual-server.mjs",
     "test/modules/CB-M01/visual-request-origin.mjs",
+    "assets/archive/m01/r26-static-asset-provenance.json",
     "package-lock.json",
   ]) assert.ok(visualInputPaths.includes(path), "missing visual input from provenance boundary: " + path);
 });

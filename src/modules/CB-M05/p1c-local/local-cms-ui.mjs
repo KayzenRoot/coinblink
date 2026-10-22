@@ -6,7 +6,7 @@ import { createLocalEditorialInsights } from '../../CB-M06/local-editorial-insig
 import { createLocalEditorialTriage } from '../../CB-M06/local-editorial-triage.mjs';
 import { createLocalSocialPreview } from '../../CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../CB-M07/social-card.mjs';
-import { createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
+import { containsUnsafeAsciiControl, createLocalEditorialVariant, getLocalEditorialVariant, upsertLocalEditorialVariant, requireCanonicalLocalVariant } from '../../CB-M07/local-editorial-variants.mjs';
 import { requireCanonicalLocalApprovalEvent, inspectLocalApprovalHistory, latestLocalApproval, recordLocalApproval } from '../../CB-M07/local-editorial-approvals.mjs';
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
@@ -18,6 +18,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const createLocalEditorialTriage = (${createLocalEditorialTriage.toString()});
   const createLocalSocialPreview = (${createLocalSocialPreview.toString()});
   const createLocalSocialCard = (${createLocalSocialCard.toString()});
+  const containsUnsafeAsciiControl = (${containsUnsafeAsciiControl.toString()});
   const createLocalEditorialVariant = (${createLocalEditorialVariant.toString()});
   const requireCanonicalLocalVariant = (${requireCanonicalLocalVariant.toString()});
   const getLocalEditorialVariant = (${getLocalEditorialVariant.toString()});
@@ -1744,7 +1745,7 @@ footer{padding:24px 0;color:#b9c8bd}
 </select></label>
 </div>
 <p id="m07-week-status" role="status" aria-live="polite">0 shown · 0 conflicts · NOT SCHEDULED</p>
-<div id="m07-week-board" aria-label="Private weekly hypothetical editorial board"></div>
+<div id="m07-week-board" role="region" aria-label="Private weekly hypothetical editorial board"></div>
 </section>
 </section>
 </section>

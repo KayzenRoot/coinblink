@@ -92,7 +92,7 @@ function checkedProseEdit(prose, notes) {
 
 function matchPattern(query, caseSensitive) {
   if (typeof query !== "string" || query.length < 1 || query.length > MAX_SEARCH_LENGTH) return null;
-  return new RegExp(query.replace(ESCAPABLE, "\\$&"), caseSensitive ? "gu" : "giu");
+  return new RegExp(query.replace(ESCAPABLE, String.raw`\$&`), caseSensitive ? "gu" : "giu");
 }
 
 /** Span offsets are UTF-16 code units, as expected by textarea.setSelectionRange().
@@ -208,8 +208,8 @@ if (typeof document !== "undefined") {
 
     replaceSelectedButton.addEventListener("click", () => {
       const { selectionStart: start, selectionEnd: end } = body;
-      const match = scan().spans.find((span) => span.start === start && span.end === end);
-      if (!match) {
+      const hasExactMatch = scan().spans.some((span) => span.start === start && span.end === end);
+      if (!hasExactMatch) {
         report("Find and select an exact match before replacing it.");
         return;
       }

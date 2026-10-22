@@ -67,8 +67,8 @@ export function createLocalCalendarIdea(draft, channel, hypotheticalLocal, timeZ
 }
 
 export function addLocalCalendarIdea(existing, idea) {
-  if (!Array.isArray(existing) || existing.length > 20 || !idea ||
-      idea.mode !== 'LOCAL_SYNTHETIC' || idea.status !== 'PLANNED_CONCEPT_ONLY' ||
+  if (!Array.isArray(existing) || existing.length > 20 ||
+      idea?.mode !== 'LOCAL_SYNTHETIC' || idea.status !== 'PLANNED_CONCEPT_ONLY' ||
       idea.publication !== 'DRAFT_ONLY' || idea.rights !== 'NOT_CLEARED' ||
       idea.sourceStatus !== 'SOURCE_VERIFICATION_PENDING' ||
       !['CREDIT_MISSING','CREDIT_PRESENT_UNVERIFIED'].includes(idea.creditStatus) ||

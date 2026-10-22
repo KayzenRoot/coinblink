@@ -98,6 +98,12 @@ export function listLocalClaimReviews(body) {
   })));
 }
 
+export function formatLocalClaimSourceStatus(item) {
+  if (item.sourceId === null) return "No source attached";
+  if (item.sourceAvailable) return "Linked to [^cb" + item.sourceId + "] (not checked)";
+  return "MISSING linked reference [^cb" + item.sourceId + "]";
+}
+
 export function addLocalClaimReview(body, quote, sourceId = null) {
   const parsed = parseBody(body);
   if (parsed.claims.length >= MAX_LOCAL_CLAIMS) throw new RangeError("Maximum of 12 local review items reached");
@@ -180,9 +186,7 @@ if (typeof document !== "undefined") {
           const li = document.createElement("li");
           const description = document.createElement("span");
           description.textContent = "#" + item.id + " · " + item.state
-            + " · " + (item.sourceId === null ? "No source attached"
-              : item.sourceAvailable ? "Linked to [^cb" + item.sourceId + "] (not checked)"
-                : "MISSING linked reference [^cb" + item.sourceId + "]")
+            + " · " + formatLocalClaimSourceStatus(item)
             + " · " + item.claim;
           li.append(description);
           const toggle = document.createElement("button");

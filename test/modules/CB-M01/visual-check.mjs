@@ -168,16 +168,16 @@ try {
 
   const desktopGeometryViolations = (desktopGeometry, viewport) => {
     const geometryViolations = [];
-  if (desktopGeometry.brandName.left <= desktopGeometry.brandImage.right - 2) geometryViolations.push("brand mark and wordmark are not arranged side by side");
-  if (desktopGeometry.header.height > 60) geometryViolations.push("header exceeds the compact Golden header envelope");
-  if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
-  if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
-  if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
-  if (desktopGeometry.latestNews.top < 700) geometryViolations.push("latest-news and newsletter begin too early compared with the Golden lower fold");
-  if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
-  if (desktopGeometry.latestNewsCards.bottom > viewport.height) geometryViolations.push("all four demo story cards must remain inside the desktop first fold");
-  if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
-  if (desktopGeometry.trendingItems !== 5) geometryViolations.push("five demo trend placeholders are required");
+    if (desktopGeometry.brandName.left <= desktopGeometry.brandImage.right - 2) geometryViolations.push("brand mark and wordmark are not arranged side by side");
+    if (desktopGeometry.header.height > 60) geometryViolations.push("header exceeds the compact Golden header envelope");
+    if (desktopGeometry.hero.top > 78) geometryViolations.push("hero begins below the compact first-fold target");
+    if (desktopGeometry.hero.height > 300) geometryViolations.push("hero exceeds the Golden reference height envelope");
+    if (desktopGeometry.latestNews.top > 735) geometryViolations.push("latest-news panel begins below the compact first-fold target");
+    if (desktopGeometry.latestNews.top < 700) geometryViolations.push("latest-news and newsletter begin too early compared with the Golden lower fold");
+    if (desktopGeometry.latestNewsCards.top > 780) geometryViolations.push("latest-news demo cards are pushed out of the first fold");
+    if (desktopGeometry.latestNewsCards.bottom > viewport.height) geometryViolations.push("all four demo story cards must remain inside the desktop first fold");
+    if (desktopGeometry.newsletter.top > 735) geometryViolations.push("newsletter panel begins below the compact first-fold target");
+    if (desktopGeometry.trendingItems !== 5) geometryViolations.push("five demo trend placeholders are required");
     return geometryViolations;
   };
 

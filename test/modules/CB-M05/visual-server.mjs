@@ -43,7 +43,7 @@ export async function cleanupVisualFixture({ browser, server }) {
 function stripTerminalEscapes(output) {
   let normalized = "";
   for (let index = 0; index < output.length; index += 1) {
-    if (output.charCodeAt(index) === 0x1b && output[index + 1] === "[") {
+    if (output.codePointAt(index) === 0x1b && output[index + 1] === "[") {
       index += 2;
       while (index < output.length) {
         const code = output.charCodeAt(index);

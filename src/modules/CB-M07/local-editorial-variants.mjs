@@ -7,7 +7,7 @@ export function createLocalEditorialVariant(draft, channel, editableText) {
   // TAB, LF and CR remain permitted inside a non-edge-trimmed LOCAL variant.
   function containsUnsafeAsciiControl(text) {
     for (let i = 0; i < text.length; i++) {
-      const code = text.charCodeAt(i);
+      const code = text.codePointAt(i);
       if (code <= 0x08 || code === 0x0b || code === 0x0c ||
           (code >= 0x0e && code <= 0x1f) || code === 0x7f) return true;
     }

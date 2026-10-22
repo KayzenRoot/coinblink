@@ -4,7 +4,8 @@ import { resolve } from "node:path";
 import test from "node:test";
 import {
   MAX_LOCAL_CLAIMS, LOCAL_CLAIM_HEADING, LOCAL_CLAIM_PENDING, LOCAL_CLAIM_NOTED,
-  addLocalClaimReview, listLocalClaimReviews, markLocalClaimReview, removeLocalClaimReview,
+  addLocalClaimReview, formatLocalClaimSourceStatus, listLocalClaimReviews,
+  markLocalClaimReview, removeLocalClaimReview,
 } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 import {
   addLocalSource, listLocalSources, removeLocalSource, LOCAL_SOURCE_HEADING,
@@ -15,6 +16,15 @@ import {
 
 const prose = "This CoinBlink article mentions a statement that still needs checking.";
 const sentence = "The project reported a substantial increase that still needs independent confirmation.";
+
+test("claim source status copy distinguishes unattached, linked and missing references", () => {
+  assert.equal(formatLocalClaimSourceStatus({ sourceId: null, sourceAvailable: true }),
+    "No source attached");
+  assert.equal(formatLocalClaimSourceStatus({ sourceId: 2, sourceAvailable: true }),
+    "Linked to [^cb2] (not checked)");
+  assert.equal(formatLocalClaimSourceStatus({ sourceId: 2, sourceAvailable: false }),
+    "MISSING linked reference [^cb2]");
+});
 
 test("local claim queue is empty unless an author adds an explicit claim", () => {
   assert.deepEqual(listLocalClaimReviews(prose), []);

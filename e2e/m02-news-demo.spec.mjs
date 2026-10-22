@@ -122,3 +122,63 @@ for (const locale of ["en", "pt-br"]) {
     expect(writes).toEqual([]);
   });
 }
+
+
+for (const locale of ["en", "pt-br"]) {
+  test("M02 local export revision comparison safely identifies changed fields: " + locale, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const foreign = [], writes = [];
+    page.on("request", request => {
+      if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) foreign.push(request.url());
+      if (!["GET", "HEAD"].includes(request.method())) writes.push(request.url());
+    });
+    await page.goto("/" + locale + "/news");
+    const root = page.locator("[data-m02-revision-compare]");
+    const before = root.locator("[data-m02-compare-before]");
+    const after = root.locator("[data-m02-compare-after]");
+    const result = root.locator("[data-m02-compare-result]");
+    await expect(result).toBeHidden();
+    const original = prepareLocalDraft({
+      title: "Fictional version one", author: "Sample reporter",
+      summary: "This is a fictional local article for comparison tests.",
+      body: "The earlier fictional text contains no real assertions or publishing permission.",
+      source: "https://example.test/first",
+    });
+    const revised = prepareLocalDraft({
+      title: "Fictional version two <img src=x onerror=alert(1)>", author: "Sample reporter",
+      summary: "This is a fictional local article for comparison tests.",
+      body: "The later fictional article contains <script>alert(1)</script> as inert text, never HTML.",
+      source: "https://example.test/first",
+    });
+    const oldMarkdown = draftToMarkdown(original);
+    const newMarkdown = draftToMarkdown(revised);
+    await before.setInputFiles({ name: "earlier.md", mimeType: "text/markdown", buffer: Buffer.from(oldMarkdown) });
+    await expect(result).toBeHidden();
+    await after.setInputFiles({ name: "later.md", mimeType: "text/markdown", buffer: Buffer.from(newMarkdown) });
+    await expect(result).toBeVisible();
+    await expect(root.locator("[data-m02-compare-changes] li")).toHaveCount(2);
+    await expect(root.locator("[data-m02-compare-count]")).toContainText("2");
+    await expect(result).toContainText("<img src=x onerror=alert(1)>");
+    await expect(result).toContainText("<script>alert(1)</script>");
+    await expect(result.locator("img,script,iframe")).toHaveCount(0);
+    await expect(page.locator("[data-m02-entry]")).toHaveCount(3);
+    await after.setInputFiles({ name: "invalid.md", mimeType: "text/markdown", buffer: Buffer.from("# invalid") });
+    await expect(result).toBeHidden();
+    await expect(root.locator("[data-m02-compare-status]")).toContainText(locale === "pt-br" ? "inválida" : "Invalid");
+    await after.setInputFiles({ name: "oversize.md", mimeType: "text/markdown", buffer: Buffer.alloc(64001, 120) });
+    await expect(result).toBeHidden();
+    await after.setInputFiles({ name: "later.md", mimeType: "text/markdown", buffer: Buffer.from(oldMarkdown) });
+    await expect(result).toBeVisible();
+    await expect(root.locator("[data-m02-compare-changes] li")).toHaveCount(0);
+    await expect(root.locator("[data-m02-compare-count]")).toContainText(locale === "pt-br" ? "Nenhuma diferença" : "No differences");
+    await root.locator("[data-m02-compare-clear]").click();
+    await expect(result).toBeHidden();
+    await expect(before).toBeFocused();
+    await page.reload();
+    await expect(page.locator("[data-m02-compare-result]")).toBeHidden();
+    const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(scan.violations).toEqual([]);
+    expect(foreign).toEqual([]);
+    expect(writes).toEqual([]);
+  });
+}

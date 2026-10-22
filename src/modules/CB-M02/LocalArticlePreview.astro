@@ -24,6 +24,14 @@ const pt = locale === "pt-br";
     <p class="m02-local-summary" data-m02-draft-summary></p>
     <p class="m02-local-body" data-m02-draft-body></p>
     <p>{pt ? "Fonte informada, não verificada:" : "Provided source, not verified:"} <span data-m02-draft-source></span></p>
+
+  <section class="m02-evidence" data-m02-evidence-review aria-labelledby="m02-evidence-title" hidden>
+    <h4 id="m02-evidence-title">{pt ? "Revisão estrutural das fontes" : "Structural source review"}</h4>
+    <p class="m02-evidence-disclaimer">{pt ? "HEURÍSTICA LOCAL · NÃO VERIFICA FATOS, LINKS, DIREITOS OU PUBLICAÇÃO" : "LOCAL HEURISTIC · DOES NOT VERIFY FACTS, LINKS, RIGHTS OR PUBLICATION"}</p>
+    <p data-m02-evidence-summary></p>
+    <ul data-m02-evidence-signals></ul>
+    <p>{pt ? "Referências e marcações de revisão são apenas texto declarado no arquivo importado." : "Citations and review markers are only text declared in the imported file."}</p>
+  </section>
   </article>
 </section>
 <script is:inline type="module" src="/m02-local-article-preview.js"></script>
@@ -42,5 +50,70 @@ const pt = locale === "pt-br";
   .m02-local-article[hidden],.m02-local-preview button[hidden]{display:none}
   .m02-local-article h3{font-size:clamp(1.8rem,5vw,3rem);line-height:1.12}
   .m02-local-summary{font-size:1.2rem;color:#e9f6eb}
+
+  .m02-evidence{margin-top:1.25rem;padding:1rem;border:1px solid #718668;border-radius:.6rem;background:#18291f}
+  .m02-evidence[hidden]{display:none}
+  .m02-evidence h4{font-size:1.2rem;margin:.25rem 0}
+  .m02-evidence .m02-evidence-disclaimer{color:#f5c981;font-weight:700}
+  .m02-evidence ul{padding-left:1.4rem;overflow-wrap:anywhere}
+  .m02-evidence li{margin:.5rem 0;white-space:pre-wrap}
+
   .m02-local-body{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
+
+<script>
+  import { buildLocalEvidenceReport } from "./local-evidence-report.mjs";
+
+  const root = document.querySelector("[data-m02-local-preview]");
+  if (root) {
+    const article = root.querySelector("[data-m02-draft-article]");
+    const draftBody = root.querySelector("[data-m02-draft-body]");
+    const panel = root.querySelector("[data-m02-evidence-review]");
+    const summary = root.querySelector("[data-m02-evidence-summary]");
+    const list = root.querySelector("[data-m02-evidence-signals]");
+    const pt = root.dataset.locale === "pt-br";
+    const labels = pt
+      ? { repair: "Corrigir notas estruturadas", missing: "Citação sem fonte definida",
+        unused: "Fonte não citada", explicit_review_marker: "Revisão pendente",
+        numeric_claim_without_local_citation: "Número sem citação local" }
+      : { repair: "Repair structured notes", missing: "Citation without source definition",
+        unused: "Source not cited", explicit_review_marker: "Review pending",
+        numeric_claim_without_local_citation: "Number without local citation" };
+
+    function render() {
+      list.replaceChildren();
+      if (article.hidden || !draftBody.textContent) {
+        panel.hidden = true;
+        summary.textContent = "";
+        return;
+      }
+      const report = buildLocalEvidenceReport(draftBody.textContent);
+      if (report.requiresRepair) {
+        summary.textContent = pt ? "Notas inválidas. Revisão manual necessária; sem aprovação."
+          : "Invalid notes. Manual repair required; no approval.";
+      } else {
+        summary.textContent = pt
+          ? String(report.signalCount) + " alerta(s) estruturais. "
+            + String(report.citedSources) + "/" + String(report.sourceCount) + " fontes citadas. Não é verificação."
+          : String(report.signalCount) + " structural signal(s). "
+            + String(report.citedSources) + "/" + String(report.sourceCount) + " sources cited. Not verification.";
+      }
+      for (const signal of report.signals) {
+        const entry = document.createElement("li");
+        entry.textContent = labels[signal.kind] + ": " + signal.value;
+        list.append(entry);
+      }
+      if (report.hiddenHints > 0) {
+        const extra = document.createElement("li");
+        extra.textContent = (pt ? "Outros alertas não exibidos: " : "Additional signals not displayed: ")
+          + String(report.hiddenHints);
+        list.append(extra);
+      }
+      panel.hidden = false;
+    }
+
+    new MutationObserver(render).observe(draftBody, { childList: true, characterData: true, subtree: true });
+    render();
+  }
+</script>
+

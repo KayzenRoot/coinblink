@@ -23,13 +23,15 @@ STILL_DIR = EVIDENCE / "hero-cinematic-motion-stills"
 SPRITE_DIR = EVIDENCE / "lightning-sprites-v2"
 MODE = os.environ.get("CB_HERO_ANIMATION_MODE", "frames").lower()
 
+SECONDARY_RIGHT_SPRITE = "lightning-05-secondary-right.png"
+SECONDARY_LEFT_SPRITE = "lightning-06-secondary-left.png"
 SPRITE_OPACITY = {
     "lightning-01-charge.png": 0.28,
     "lightning-02-descent.png": 0.45,
     "lightning-03-impact.png": 0.82,
     "lightning-04-afterglow.png": 0.34,
-    "lightning-05-secondary-right.png": 0.66,
-    "lightning-06-secondary-left.png": 0.52,
+    SECONDARY_RIGHT_SPRITE: 0.66,
+    SECONDARY_LEFT_SPRITE: 0.52,
     "lightning-07-ground-fade.png": 0.20,
 }
 SPRITE_SCHEDULE = {
@@ -37,13 +39,13 @@ SPRITE_SCHEDULE = {
     "lightning-02-descent.png": ((20, 21),),
     "lightning-03-impact.png": ((22, 23),),
     "lightning-04-afterglow.png": ((24, 28),),
-    "lightning-05-secondary-right.png": ((60, 61),),
-    "lightning-06-secondary-left.png": ((72, 73),),
+    SECONDARY_RIGHT_SPRITE: ((60, 61),),
+    SECONDARY_LEFT_SPRITE: ((72, 73),),
     "lightning-07-ground-fade.png": ((29, 34), (62, 66), (74, 79)),
 }
 SPRITE_X_OFFSETS = {
-    "lightning-05-secondary-right.png": 0.28,
-    "lightning-06-secondary-left.png": -0.22,
+    SECONDARY_RIGHT_SPRITE: 0.28,
+    SECONDARY_LEFT_SPRITE: -0.22,
 }
 FLASH_STRENGTH_KEYS = (
     (1, 1.0), (21, 1.0), (22, 1.18), (23, 1.28), (24, 1.16),
@@ -100,14 +102,7 @@ def create_sprite_material(name: str, image: bpy.types.Image, opacity: float):
     return material
 
 
-def build_animation():
-    if not IMAGE.is_file():
-        raise FileNotFoundError(f"Generated image source missing: {IMAGE}")
-
-    bpy.ops.object.select_all(action="SELECT")
-    bpy.ops.object.delete(use_global=False)
-
-    scene = bpy.context.scene
+def _configure_scene(scene):
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
     scene.cycles.samples = 1
@@ -126,6 +121,8 @@ def build_animation():
     scene.view_settings.gamma = 1.0
     scene.world.color = (0.0, 0.0, 0.0)
 
+
+def _build_card_mesh():
     # One image-mapped card with a small safety bleed for the camera's slow drift.
     half_width = 1.015
     half_height = 0.5075
@@ -139,13 +136,26 @@ def build_animation():
     for loop_index, uv in zip(mesh.polygons[0].loop_indices,
                               ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0))):
         uv_layer.data[loop_index].uv = uv
-    card = bpy.data.objects.new("Generated OpenAI hero plate", mesh)
-    bpy.context.collection.objects.link(card)
+    return mesh
 
-    image = bpy.data.images.load(str(IMAGE), check_existing=True)
+
+def _load_packed_image(path):
+    image = bpy.data.images.load(str(path), check_existing=True)
     image.colorspace_settings.name = "sRGB"
     image.pack()
-    image.filepath = "//" + Path(os.path.relpath(IMAGE, EVIDENCE)).as_posix()
+    image.filepath = "//" + Path(os.path.relpath(path, EVIDENCE)).as_posix()
+    return image
+
+
+def _set_interpolation(owner, interpolation):
+    animation = owner.animation_data
+    if animation and animation.action:
+        for curve in getattr(animation.action, "fcurves", ()):
+            for point in curve.keyframe_points:
+                point.interpolation = interpolation
+
+
+def _build_hero_material(image):
     material = bpy.data.materials.new("Unmodified generated hero pixels")
     material.use_nodes = True
     nodes = material.node_tree.nodes
@@ -160,20 +170,32 @@ def build_animation():
     emission.inputs["Strength"].default_value = 1.0
     links.new(texture.outputs["Color"], emission.inputs["Color"])
     links.new(emission.outputs["Emission"], output.inputs["Surface"])
-    card.data.materials.append(material)
+    return material, emission
 
+
+def _key_sprite_visibility(sprite, filename):
+    sprite.hide_render = True
+    sprite.keyframe_insert(data_path="hide_render", frame=1)
+    for start_frame, end_frame in SPRITE_SCHEDULE[filename]:
+        sprite.hide_render = False
+        sprite.keyframe_insert(data_path="hide_render", frame=start_frame)
+        sprite.hide_render = True
+        sprite.keyframe_insert(data_path="hide_render", frame=end_frame + 1)
+
+
+def _add_lightning_sprites(card_mesh, base_image):
     for index, (filename, opacity) in enumerate(SPRITE_OPACITY.items()):
         sprite_path = SPRITE_DIR / filename
         if not sprite_path.is_file():
             raise FileNotFoundError(f"Lightning sprite missing: {sprite_path}")
         sprite_image = bpy.data.images.load(str(sprite_path), check_existing=True)
-        if tuple(sprite_image.size) != tuple(image.size):
+        if tuple(sprite_image.size) != tuple(base_image.size):
             raise ValueError(f"Lightning sprite canvas does not match base image: {sprite_path}")
         sprite_image.colorspace_settings.name = "sRGB"
         sprite_image.pack()
         sprite_image.filepath = "//" + Path(os.path.relpath(sprite_path, EVIDENCE)).as_posix()
 
-        sprite_mesh = mesh.copy()
+        sprite_mesh = card_mesh.copy()
         sprite = bpy.data.objects.new(f"Generated lightning sprite {index + 1:02d}", sprite_mesh)
         bpy.context.collection.objects.link(sprite)
         sprite.location = (SPRITE_X_OFFSETS.get(filename, 0.0), 0.0,
@@ -182,27 +204,18 @@ def build_animation():
             f"ImageGen lightning overlay {index + 1:02d}", sprite_image, opacity)
         sprite.data.materials.clear()
         sprite.data.materials.append(sprite_material)
+        _key_sprite_visibility(sprite, filename)
+        _set_interpolation(sprite, "CONSTANT")
 
-        sprite.hide_render = True
-        sprite.keyframe_insert(data_path="hide_render", frame=1)
-        for start_frame, end_frame in SPRITE_SCHEDULE[filename]:
-            sprite.hide_render = False
-            sprite.keyframe_insert(data_path="hide_render", frame=start_frame)
-            sprite.hide_render = True
-            sprite.keyframe_insert(data_path="hide_render", frame=end_frame + 1)
-        if sprite.animation_data and sprite.animation_data.action:
-            for curve in getattr(sprite.animation_data.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    point.interpolation = "CONSTANT"
 
+def _keyframe_flash_strength(emission, material):
     for frame, strength in FLASH_STRENGTH_KEYS:
         emission.inputs["Strength"].default_value = strength
         emission.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
-    if material.node_tree.animation_data and material.node_tree.animation_data.action:
-        for curve in getattr(material.node_tree.animation_data.action, "fcurves", ()):
-            for point in curve.keyframe_points:
-                point.interpolation = "LINEAR"
+    _set_interpolation(material.node_tree, "LINEAR")
 
+
+def _build_camera(scene):
     camera_data = bpy.data.cameras.new("Slow cinematic camera")
     camera_data.type = "ORTHO"
     camera_data.ortho_scale = 2.0
@@ -210,7 +223,10 @@ def build_animation():
     bpy.context.collection.objects.link(camera)
     camera.location = (0.0, 0.0, 8.0)
     scene.camera = camera
+    return camera, camera_data
 
+
+def _keyframe_camera(camera, camera_data):
     # Four-second seamless breathing push: under 1.3% zoom and 1.6% lateral drift.
     # The final key is frame 97 so frames 1-96 cover exactly four seconds without
     # duplicating the loop's first image at its last frame.
@@ -234,6 +250,31 @@ def build_animation():
                         point.interpolation = "BEZIER"
                         point.handle_left_type = "AUTO_CLAMPED"
                         point.handle_right_type = "AUTO_CLAMPED"
+
+
+def build_animation():
+    if not IMAGE.is_file():
+        raise FileNotFoundError(f"Generated image source missing: {IMAGE}")
+
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.delete(use_global=False)
+
+    scene = bpy.context.scene
+    _configure_scene(scene)
+
+    mesh = _build_card_mesh()
+    card = bpy.data.objects.new("Generated OpenAI hero plate", mesh)
+    bpy.context.collection.objects.link(card)
+
+    image = _load_packed_image(IMAGE)
+    material, emission = _build_hero_material(image)
+    card.data.materials.append(material)
+
+    _add_lightning_sprites(mesh, image)
+    _keyframe_flash_strength(emission, material)
+
+    camera, camera_data = _build_camera(scene)
+    _keyframe_camera(camera, camera_data)
 
     scene["workOrder"] = "CB-M01-WO-001"
     scene["sourceImage"] = IMAGE.relative_to(ROOT).as_posix()

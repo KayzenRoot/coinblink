@@ -28,12 +28,15 @@ export async function waitForFixtureReady({
   sleep = delay,
 }) {
   const deadline = now() + timeoutMs;
-  let lastError;
+  const notReady = (lastError) => new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
 
-  while (now() < deadline) {
+  // Each attempt starts only after the previous probe and its bounded sleep have settled,
+  // so readiness stays strictly sequential and bounded by the same deadline and interval.
+  const attempt = async (lastError) => {
+    if (!(now() < deadline)) throw notReady(lastError);
     assertFixtureRunning(child);
     const remainingMs = deadline - now();
-    if (remainingMs <= 0) break;
+    if (remainingMs <= 0) throw notReady(lastError);
 
     const controller = new AbortController();
     let abortTimer;
@@ -60,18 +63,20 @@ export async function waitForFixtureReady({
 
     assertFixtureRunning(child);
     if (response?.ok) return response;
-    if (probeError) lastError = probeError;
-    else if (response) lastError = new Error(`Fixture returned HTTP ${response.status}`);
+    let nextError = lastError;
+    if (probeError) nextError = probeError;
+    else if (response) nextError = new Error(`Fixture returned HTTP ${response.status}`);
 
     const remainingAfterProbe = deadline - now();
     if (remainingAfterProbe > 0) await sleep(Math.min(intervalMs, remainingAfterProbe));
-  }
+    return attempt(nextError);
+  };
 
-  throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+  return attempt(undefined);
 }
 
 export async function removeFixtureTempRootAfterExit(child, fixtureTempRoot, remove = rm) {
-  if (child && child.exitCode === null && child.signalCode === null) return false;
+  if (child?.exitCode === null && child?.signalCode === null) return false;
   await remove(fixtureTempRoot, { recursive: true, force: true });
   return true;
 }

@@ -64,6 +64,11 @@ async function availablePort() {
   return address.port;
 }
 
+// Runs async steps strictly in order: each step starts only after the previous one settles.
+function runInOrder(items, step) {
+  return items.reduce((chain, item, index) => chain.then(() => step(item, index)), Promise.resolve());
+}
+
 async function saveReport(status, failure = null) {
   report.status = status;
   if (failure) report.failure = { name: String(failure.name || "Error"), message: String(failure.message || failure).slice(0, 2_000) };
@@ -71,7 +76,7 @@ async function saveReport(status, failure = null) {
 }
 
 async function stopServer() {
-  if (!server || server.exitCode !== null || server.signalCode !== null) return true;
+  if (!(server?.exitCode === null && server?.signalCode === null)) return true;
   server.kill();
   await Promise.race([once(server, "exit"), new Promise((resolveExit) => setTimeout(resolveExit, 3_000))]);
   if (server.exitCode === null && server.signalCode === null) {
@@ -163,7 +168,7 @@ try {
     if (!isFixtureOriginRequest(request.url(), report.origin)) report.externalRequests.push(request.url());
   });
 
-  for (const viewport of viewports) {
+  await runInOrder(viewports, async (viewport) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     const response = await page.goto(report.origin + "/en", { waitUntil: "networkidle" });
     assert.equal(response?.status(), 200, viewport.name + " /en must return HTTP 200");
@@ -327,7 +332,7 @@ try {
     viewport.name + " rendered WebP resource must remain below the 1.5 MB cap");
     const headers = response.headers();
     const robotsMeta = await page.locator('meta[name="robots"]').getAttribute("content");
-    assert.ok(robotsMeta && robotsMeta.includes("noindex"), "integrated /en must retain noindex");
+    assert.ok(robotsMeta?.includes("noindex"), "integrated /en must retain noindex");
     assert.equal(headers["x-content-type-options"], "nosniff");
     assert.equal(headers["x-frame-options"], "DENY");
     assert.ok(headers["x-robots-tag"]?.includes("noindex"), "integrated /en must return a noindex header");
@@ -401,7 +406,7 @@ try {
       await page.locator(".secondary-action").click();
       assert.equal(new URL(page.url()).hash, "#market-overview", "mobile CTA must remain clickable on integrated /en");
     }
-  }
+  });
   // R26: verify that the Blender motion derivative is local and reduced motion selects the static master.
   // Run after screenshots, so the media preference probe cannot alter the Golden captures.
   await page.setViewportSize({ width: 1536, height: 864 });
@@ -506,11 +511,12 @@ try {
   const assetResponse = await assetPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
   assert.equal(assetResponse?.status(), 200, "static asset probe must use the built local route");
   const staticImages = assetPage.locator(".promo-image img, .editorial-image img");
-  for (let index = 0; index < await staticImages.count(); index += 1) {
+  const staticImageCount = await staticImages.count();
+  await runInOrder(Array.from({ length: staticImageCount }, (_, index) => index), async (index) => {
     const image = staticImages.nth(index);
     await image.scrollIntoViewIfNeeded();
     await image.evaluate((element) => element.decode());
-  }
+  });
   report.staticAssetLoads = await staticImages.evaluateAll((images) => images.map((image) => {
     const picture = image.closest("picture");
     const region = picture.dataset.previewRegion;
@@ -559,9 +565,8 @@ try {
   const staticFallbackResponse = await staticFallbackPage.goto(report.origin + "/en", { waitUntil: "networkidle" });
   assert.equal(staticFallbackResponse?.status(), 200, "static fallback probe must use the built local route");
   const failedImages = staticFallbackPage.locator(".promo-image img, .editorial-image img");
-  for (let index = 0; index < await failedImages.count(); index += 1) {
-    await failedImages.nth(index).scrollIntoViewIfNeeded();
-  }
+  const failedImageCount = await failedImages.count();
+  await runInOrder(Array.from({ length: failedImageCount }, (_, index) => index), (index) => failedImages.nth(index).scrollIntoViewIfNeeded());
   await staticFallbackPage.waitForLoadState("networkidle");
   report.staticFallbackBehavior = await staticFallbackPage.locator(".promo-panel, .news-art").evaluateAll((regions) => regions.map((region) => {
     const picture = region.querySelector("picture[data-preview-region]");
@@ -581,10 +586,10 @@ try {
   assert.ok(Array.from(staticFallbackRequests.values()).every((count) => count === 1 || count === 2));
   await staticFallbackContext.close();
 
-  for (const scenario of [
+  await runInOrder([
     { name: "slow-desktop-motion-opt-in", width: 1536, height: 864, effectiveType: "4g", expected: "motion" },
     { name: "slow-mobile-limited-connection", width: 390, height: 844, effectiveType: "3g", expected: "static" },
-  ]) {
+  ], async (scenario) => {
     const constrainedContext = await browser.newContext();
     const constrainedPage = await constrainedContext.newPage();
     const constrainedRequests = [];
@@ -694,7 +699,7 @@ try {
       longTaskDurationMs: vitals.longTaskSupported ? Math.round(vitals.longTaskDurationMs * 100) / 100 : null,
     });
     await constrainedContext.close();
-  }
+  });
 
   const partialFailurePage = await context.newPage();
   let motionRequests = 0;

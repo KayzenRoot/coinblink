@@ -96,7 +96,7 @@ function stripLocalClaimNotes(body) {
 }
 const MARKER_PATTERN = /\[\^cb(\d+)\]/gu;
 const REVIEW_PLACEHOLDER = /\b(?:TODO|FIXME|TBD|CITATION NEEDED|SOURCE NEEDED|FONTE PENDENTE|VERIFICAR FONTE|CHECAR FONTE)\b|\[(?:citation needed|source needed|fonte\??|verificar)\]/iu;
-const NUMERIC_CLAIM = /(?:\b\d+(?:[.,]\d+)?\s*%|\b(?:R\$|US\$|\$)\s*\d+(?:[.,]\d+)?)/iu;
+const NUMERIC_CLAIM = /\b\d+(?:[.,]\d+)?\s*%|\b(?:R|US)?\$\s*\d+(?:[.,]\d+)?/iu;
 
 function freezeNumbers(values) {
   return Object.freeze([...values].sort((a, b) => a - b));

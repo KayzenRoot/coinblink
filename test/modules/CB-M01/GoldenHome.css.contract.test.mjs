@@ -7,9 +7,17 @@ const globalStylesheet = await readFile(new URL("../../../src/styles/global.css"
 const baseLayout = await readFile(new URL("../../../src/layouts/BaseLayout.astro", import.meta.url), "utf8");
 const englishHome = await readFile(new URL("../../../src/pages/en.astro", import.meta.url), "utf8");
 const portugueseHome = await readFile(new URL("../../../src/pages/pt-br.astro", import.meta.url), "utf8");
+const sentimentGaugeRule = stylesheet.match(/\.cb-home \.sentiment-gauge \{([^}]*)\}/u)?.[1] ?? "";
 
 test("GoldenHome keeps the brand lockup horizontal within the module stylesheet", () => {
   assert.match(stylesheet, /\.cb-home \.brand \{[^}]*flex-direction:\s*row\s*;/u);
+});
+
+test("sentiment gauge avoids values overridden by border and padding shorthands", () => {
+  assert.doesNotMatch(sentimentGaugeRule, /border-top-color\s*:/u);
+  assert.doesNotMatch(sentimentGaugeRule, /padding-bottom\s*:/u);
+  assert.match(sentimentGaugeRule, /border:\s*0/u);
+  assert.match(sentimentGaugeRule, /padding:\s*0 0 3px/u);
 });
 
 test("GoldenHome relies on the shared reduced-motion guard instead of duplicating it", () => {

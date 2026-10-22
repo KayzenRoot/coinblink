@@ -299,12 +299,12 @@ try {
   const checkProducerCase = async ({ path, expected, forbidden }) => {
     const response = await page.goto(new URL(path, origin).href, { waitUntil: "networkidle" });
     assert.equal(response?.status(), 200, "offline producer fixture route must render: " + path);
-    const [news, sources, markets, bodyText] = await Promise.all([
-      page.locator("#latest-news").getAttribute("data-m01-news-source-state"),
-      page.locator("[data-m01-source-feed-state]").getAttribute("data-m01-source-feed-state"),
-      page.locator("#market-overview").getAttribute("data-m01-market-source-state"),
-      page.locator("body").innerText(),
-    ]);
+    const { news, sources, markets, bodyText } = await page.evaluate(() => ({
+      news: globalThis.document.querySelector("#latest-news")?.dataset.m01NewsSourceState ?? null,
+      sources: globalThis.document.querySelector("[data-m01-source-feed-state]")?.dataset.m01SourceFeedState ?? null,
+      markets: globalThis.document.querySelector("#market-overview")?.dataset.m01MarketSourceState ?? null,
+      bodyText: globalThis.document.body.innerText,
+    }));
     const states = { news, sources, markets };
     assert.deepEqual(states, expected, "producer input must be isolated and fail closed in real Astro HTML");
     assert.match(bodyText, /DEMO/u, "a producer fixture must not remove DEMO labeling");

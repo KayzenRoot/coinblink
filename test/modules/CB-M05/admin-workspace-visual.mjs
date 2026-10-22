@@ -82,7 +82,7 @@ try {
           const articlesLink = document.querySelector(".m05-nav a[href='/admin/articles']");
           return {
             moduleCount: document.querySelectorAll("[data-module='CB-M05']").length,
-            view: moduleRoot?.getAttribute("data-view") ?? null,
+            view: moduleRoot?.dataset.view ?? null,
             headingCount: document.querySelectorAll("[data-module='CB-M05'] h1").length,
             formControlCount: document.querySelectorAll("[data-module='CB-M05'] form, [data-module='CB-M05'] input, [data-module='CB-M05'] textarea").length,
             buttonsDisabled: [...document.querySelectorAll("[data-module='CB-M05'] button")].every((button) => button.disabled),

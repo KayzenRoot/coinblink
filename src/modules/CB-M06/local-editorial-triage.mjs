@@ -24,9 +24,9 @@ export function createLocalEditorialTriage(queue, insights) {
     }
     const missingCredit = row.creditStatus === "CREDIT_MISSING";
     const aged = observedSeconds - row.updatedAtSeconds >= 7 * 86400;
-    const attention = missingCredit && aged ? "CREDIT_AND_AGED"
-      : missingCredit ? "CREDIT_MISSING"
-        : aged ? "AGED_DRAFT" : "VERIFY_SOURCE";
+    let attention = "VERIFY_SOURCE";
+    if (aged) attention = "AGED_DRAFT";
+    if (missingCredit) attention = aged ? "CREDIT_AND_AGED" : "CREDIT_MISSING";
     const reasons = Object.freeze([
       ...(missingCredit ? ["CREDIT_MISSING"] : []),
       ...(aged ? ["NO_EDIT_7_DAYS"] : []),

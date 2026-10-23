@@ -31,7 +31,7 @@ test('M05 LOCAL CMS schema splitter preserves trigger bodies under adversarial w
   const statements = splitLocalSchemaStatements(schema);
   assert.ok(statements.length >= 8, 'all local schema statements must be applied');
   const triggers = statements.filter(statement => /^CREATE TRIGGER\b/iu.test(statement));
-  assert.equal(triggers.length, 6, 'revision, audit and Owner review immutability triggers must all be applied');
+  assert.equal(triggers.length, 4, 'revision and audit immutability triggers must all be applied');
   assert.ok(triggers.every(statement => statement.includes('BEGIN') && statement.includes('END')));
 
   const adversarialSchema = [
@@ -51,7 +51,7 @@ test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupp
       "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
     ).all();
     assert.deepEqual(before.results.map(row => row.name),
-      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_owner_review_no_delete', 'cms_owner_review_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
+      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
     await assert.rejects(
       ctx.db.prepare(`CREATE OR REPLACE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
         BEGIN SELECT RAISE(ABORT, 'local CMS revisions are immutable'); END`).run(),
@@ -61,7 +61,7 @@ test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupp
       "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
     ).all();
     assert.deepEqual(after.results.map(row => row.name),
-      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_owner_review_no_delete', 'cms_owner_review_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
+      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
   } finally {
     await ctx.mf.dispose();
   }

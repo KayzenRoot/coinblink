@@ -84,28 +84,6 @@ CREATE TABLE cms_draft_revisions (
   FOREIGN KEY (actor_owner_id) REFERENCES cms_owner(owner_id)
 );
 
-
--- Additive LOCAL-only review extension; not publication authorization.
-CREATE TABLE IF NOT EXISTS cms_owner_reviews (
-  draft_id TEXT NOT NULL,
-  revision INTEGER NOT NULL CHECK (revision >= 1),
-  actor_owner_id INTEGER NOT NULL CHECK (actor_owner_id = 1),
-  decision TEXT NOT NULL CHECK (decision IN ('PREVIEW_REVIEWED','CHANGES_REQUESTED')),
-  note TEXT NOT NULL CHECK (length(note) BETWEEN 10 AND 500),
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (draft_id, revision),
-  FOREIGN KEY (draft_id, revision) REFERENCES cms_draft_revisions(draft_id, revision),
-  FOREIGN KEY (actor_owner_id) REFERENCES cms_owner(owner_id)
-);
-CREATE TRIGGER IF NOT EXISTS cms_owner_review_no_update BEFORE UPDATE ON cms_owner_reviews
-BEGIN
-  SELECT RAISE(ABORT, 'local Owner review is immutable');
-END;
-CREATE TRIGGER IF NOT EXISTS cms_owner_review_no_delete BEFORE DELETE ON cms_owner_reviews
-BEGIN
-  SELECT RAISE(ABORT, 'local Owner review is immutable');
-END;
-
 CREATE TABLE cms_bootstrap_tickets (
   ticket_digest TEXT PRIMARY KEY CHECK (length(ticket_digest) = 64),
   expires_at INTEGER NOT NULL,

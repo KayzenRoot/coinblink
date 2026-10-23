@@ -7,6 +7,7 @@ import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { splitLocalSchemaStatements } from './p1c-local-preview.mjs';
+import { installLocalOwnerReviewSchema } from './p1c-fixtures/owner-review-schema.mjs';
 import {
   CMS_TEST_ORIGIN,
   CMS_TEST_RP_ID,
@@ -56,6 +57,7 @@ async function setup() {
   try {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
     for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    await installLocalOwnerReviewSchema(db);
     const authenticator = makeSyntheticAuthenticator('primary');
     await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,1)').run();
     const challenge = 'TEST-LOCAL-REG-' + randomUUID();

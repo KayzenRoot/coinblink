@@ -17,6 +17,7 @@ import {
   CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization,
 } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { createLocalAdminRouter } from '../../../src/modules/CB-M05/p1c-local/local-admin-router.mjs';
+import { installLocalOwnerReviewSchema } from './p1c-fixtures/owner-review-schema.mjs';
 
 const SCHEMA_URL = new URL('./p1c-fixtures/schema.sql', import.meta.url);
 const ALLOWED_STATIC = new Set([
@@ -71,14 +72,8 @@ async function applySchema(db, persistent) {
     presentTables.forEach((present, index) => {
       assert.equal(present?.name, requiredTables[index], 'local database has missing table ' + requiredTables[index]);
     });
-    // Preserve persistent v1 LOCAL Owner, drafts and history. Append review-only DDL.
-    const extension = splitLocalSchemaStatements(readFileSync(SCHEMA_URL, 'utf8'))
-      .filter(statement => /^CREATE TABLE IF NOT EXISTS cms_owner_reviews\b/u.test(statement) ||
-        /^CREATE TRIGGER IF NOT EXISTS cms_owner_review_no_(?:update|delete)\b/u.test(statement));
-    assert.equal(extension.length, 3, 'incomplete LOCAL review extension');
-    await db.batch(extension.map(statement => db.prepare(statement)));
-    const ready = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cms_owner_reviews'").first();
-    assert.equal(ready?.name, 'cms_owner_reviews', 'LOCAL review table missing');
+    // Do not touch existing Owner, credentials, drafts, immutable history or metadata.
+    await installLocalOwnerReviewSchema(db);
     return false;
   }
   assert.equal(existing, null, 'database must start empty unless explicit persistent preview');
@@ -87,6 +82,7 @@ async function applySchema(db, persistent) {
   assert.ok(statements.length >= 8);
   // D1 batch retains SQL statement order and applies this dependent DDL as one unit.
   await db.batch(statements.map(statement => db.prepare(statement)));
+  await installLocalOwnerReviewSchema(db);
   if (persistent) {
     await db.prepare(`CREATE TABLE cms_local_preview_metadata (
       id INTEGER PRIMARY KEY CHECK(id=1),

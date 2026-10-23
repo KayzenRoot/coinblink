@@ -988,8 +988,9 @@ function methodNotAllowed(request) {
   const allowed = LOCAL_ALLOWED_METHODS.get(route);
   if (allowed) return json({ error: 'Method not allowed' }, 405, { Allow: [...allowed].sort((left, right) => left.localeCompare(right)).join(', ') });
   if (ARTICLE_ROUTE_PATTERN.test(route)) {
-    const allow = route.endsWith('/review') ? 'GET, POST' :
-      route.endsWith('/revisions') || route.endsWith('/export') ? 'GET' : 'GET, PATCH';
+    let allow = 'GET, PATCH';
+    if (route.endsWith('/review')) allow = 'GET, POST';
+    else if (route.endsWith('/revisions') || route.endsWith('/export')) allow = 'GET';
     return json({ error: 'Method not allowed' }, 405, { Allow: allow });
   }
   return null;

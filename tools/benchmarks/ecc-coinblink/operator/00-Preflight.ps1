@@ -3,7 +3,10 @@ Set-StrictMode -Version Latest
 function Resolve-Directory([string]$p) {
   $i=Get-Item -LiteralPath $p -Force -ErrorAction Stop
   if(-not $i.PSIsContainer){throw "Directory expected"}
-  return [IO.Path]::GetFullPath($i.FullName).TrimEnd([char]92,[char]'/')
+  $full=[IO.Path]::GetFullPath($i.FullName)
+  $volumeRoot=[IO.Path]::GetPathRoot($full)
+  if([string]::Equals($full,$volumeRoot,[StringComparison]::OrdinalIgnoreCase)){return $full}
+  return $full.TrimEnd([char]92,[char]'/')
 }
 function Reject-Reparse([string]$p) {
   $curr=[IO.Path]::GetFullPath($p)
@@ -32,6 +35,14 @@ function Check-Pack([string]$pack) {
   if(-not (Test-Path -LiteralPath (Join-Path $pack '00_LEIA_PRIMEIRO.md') -PathType Leaf) -or
      -not (Test-Path -LiteralPath (Join-Path $pack 'snapshot-descriptors\T1.json') -PathType Leaf)) {throw 'Invalid PackRoot'}
   Reject-Reparse $pack
+  # An offline pack must never be operated from inside any live Git worktree.
+  $cursor=$pack
+  while($cursor){
+    if(Test-Path -LiteralPath (Join-Path $cursor '.git')){throw 'PackRoot must be outside every Git checkout'}
+    $parent=Split-Path -Parent $cursor
+    if(-not $parent -or $parent -eq $cursor){break}
+    $cursor=$parent
+  }
 }
 function Inventory([string]$root) {
   $x=@(Get-ChildItem -LiteralPath $root -Force -Recurse)

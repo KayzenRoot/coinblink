@@ -18,6 +18,12 @@ $cases=@(foreach($task in @('T1','T2','T3')){
   if($LASTEXITCODE -ne 0){throw "Git object absent $task; NO fetch"}
   $tree=(& git -C $repo rev-parse ($d.base_sha+'^{tree}') 2>&1 | Out-String).Trim()
   if($LASTEXITCODE -ne 0 -or $tree -cne $d.tree_sha){throw "Historical tree mismatch $task"}
+  # Git archives may contain symbolic links or submodules. Reject them before tar extraction.
+  $entries=@(& git -C $repo ls-tree -r $d.base_sha)
+  if($LASTEXITCODE -ne 0){throw "Cannot inspect tree entries $task"}
+  if(@($entries | Where-Object {$_ -match '^(120000|160000)\s'}).Count -gt 0){
+    throw "Archive contains symlink or submodule: STOP $task"
+  }
   $d
 })
 New-Item -ItemType Directory -Path $destination -ErrorAction Stop | Out-Null
@@ -30,8 +36,17 @@ foreach($d in $cases){
   $tmp=Join-Path $taskRoot '_archive.tmp.tar'
   & git -C $repo archive --format=tar --output=$tmp $d.base_sha
   if($LASTEXITCODE -ne 0){throw "Archive failed $($d.task)"}
-  & tar -tf $tmp *> $null
+  $names=@(& tar -tf $tmp)
   if($LASTEXITCODE -ne 0){throw 'Corrupt tar'}
+  if($names.Count -eq 0){throw 'Empty archive'}
+  foreach($name in $names){
+    # Reject traversal, Windows alternate separators, absolute paths and drive paths.
+    if([string]::IsNullOrWhiteSpace($name) -or $name.Contains([char]92) -or
+      $name.StartsWith('/') -or $name -match '^[a-zA-Z]:' -or
+      $name -match '(^|/)\.\.(/|$)' -or $name -match '(^|/)(CON|PRN|AUX|NUL)(\.|/|$)'){
+      throw "Unsafe archive path in $($d.task): STOP"
+    }
+  }
   & tar -xf $tmp -C $dest
   if($LASTEXITCODE -ne 0){throw 'Unpack failed'}
   Remove-Item -LiteralPath $tmp -Force

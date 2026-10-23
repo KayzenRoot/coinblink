@@ -27,7 +27,15 @@ Get-ChildItem -LiteralPath $source -Force | ForEach-Object {Copy-Item -LiteralPa
 Assert-Inventory $dest $hashes
 if($Arm -eq 'B'){
   $skills=Join-Path $pack 'agent-materials\adapted-skills'
-  foreach($skill in @(Get-ChildItem -LiteralPath $skills -Directory)){
+  $expected=@('ecc-ai-regression','ecc-change-impact','ecc-module-regression','ecc-pr-test-analyzer')
+  $skillDirs=@(Get-ChildItem -LiteralPath $skills -Directory -Force)
+  if($skillDirs.Count -ne 4){throw 'Unexpected ECC skill inventory'}
+  foreach($skill in $skillDirs){
+    if($skill.Name -notin $expected -or
+      ($skill.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or
+      -not (Test-Path -LiteralPath (Join-Path $skill.FullName 'SKILL.md') -PathType Leaf)){
+      throw 'Unsafe or incomplete ECC skill entry'
+    }
     $target=Join-Path $dest ".agents\skills\$($skill.Name)"
     if(Test-Path -LiteralPath $target){throw 'Skill collision'}
     New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null

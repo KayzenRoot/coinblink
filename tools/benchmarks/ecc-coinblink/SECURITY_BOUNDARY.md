@@ -7,3 +7,5 @@ Não há execução automática de benchmarks nem GitHub Actions adicionadas. N�
 Limites: scripts/prompt público não impedem o agente de procurar PR histórica se tiver acesso à rede; execução futura só é válida com isolamento efetivo da rede e do filesystem. `git archive` não contém dependências; não instalar automaticamente. Sem dados reais, sem secrets, sem publicação, sem deploy, sem merge sem autorização do Owner.
 
 Status: `INTEGRATION_PROPOSED`, `BENCHMARK_READY=false`, `RUNS_COMPLETED=0`.
+
+**Delta de auditoria:** o GitHub registrou SonarCloud FAILED na PR #209 por nova Security Rating C. Até consulta do issue individual, tratar como bloqueio de integração. A verificação de nomes TAR e a recusa de links ocorrem antes de extrair; estes controles não constituem sandbox para arquivos não confiáveis. Nunca permitir que o operador receba um commit-base arbitrário nem arquivos TAR de terceiros.

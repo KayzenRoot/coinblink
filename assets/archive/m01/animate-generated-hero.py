@@ -226,6 +226,23 @@ def _build_camera(scene):
     return camera, camera_data
 
 
+def _set_camera_curve_interpolation(animation):
+    if not (animation and animation.action):
+        return
+    for curve in getattr(animation.action, "fcurves", ()):
+        for point in curve.keyframe_points:
+            _set_camera_point_interpolation(curve, point)
+
+
+def _set_camera_point_interpolation(curve, point):
+    if curve.data_path == "location":
+        point.interpolation = "LINEAR"
+        return
+    point.interpolation = "BEZIER"
+    point.handle_left_type = "AUTO_CLAMPED"
+    point.handle_right_type = "AUTO_CLAMPED"
+
+
 def _keyframe_camera(camera, camera_data):
     # Four-second seamless breathing push: under 1.3% zoom and 1.6% lateral drift.
     # The final key is frame 97 so frames 1-96 cover exactly four seconds without
@@ -241,15 +258,7 @@ def _keyframe_camera(camera, camera_data):
         camera.location.x = offset_x
         camera.keyframe_insert(data_path="location", index=0, frame=frame)
     for animation in (camera.animation_data, camera_data.animation_data):
-        if animation and animation.action:
-            for curve in getattr(animation.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    if curve.data_path == "location":
-                        point.interpolation = "LINEAR"
-                    else:
-                        point.interpolation = "BEZIER"
-                        point.handle_left_type = "AUTO_CLAMPED"
-                        point.handle_right_type = "AUTO_CLAMPED"
+        _set_camera_curve_interpolation(animation)
 
 
 def build_animation():

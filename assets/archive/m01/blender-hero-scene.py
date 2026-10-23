@@ -394,12 +394,22 @@ def _build_coin_body(mats):
 def _build_coin_ornaments(pivot, mats):
     gold_highlight = mats["gold_highlight"]
     gold_edge = mats["gold_edge"]
+    _add_coin_rings(pivot, gold_highlight, gold_edge)
+    _add_minted_face_indices(pivot, gold_highlight, gold_edge)
+    _add_face_engraving(pivot, gold_highlight, gold_edge)
+    _add_medallion_rivets(pivot, gold_highlight)
+    _add_bitcoin_symbol(pivot, gold_highlight)
+
+
+def _add_coin_rings(pivot, gold_highlight, gold_edge):
     _add_coin_torus(pivot, "Outer coin face bead", 1.73, 0.028, 0.106, gold_highlight)
     _add_coin_torus(pivot, "Inner engraved coin ring", 1.53, 0.012, 0.109, gold_edge)
     _add_coin_torus(pivot, "Fine inner gold ring", 1.46, 0.009, 0.111, gold_highlight)
     _add_coin_torus(pivot, "Inner relief border", 1.39, 0.009, 0.112, gold_edge)
     _add_coin_torus(pivot, "B emblem inner medallion", 0.82, 0.009, 0.112, gold_highlight)
 
+
+def _add_minted_face_indices(pivot, gold_highlight, gold_edge):
     # Fine minted radial indices add face detail that remains legible at hero scale.
     for index in range(72):
         angle = 2.0 * math.pi * index / 72.0
@@ -414,6 +424,8 @@ def _build_coin_ornaments(pivot, mats):
         )
         tick.parent = pivot
 
+
+def _add_face_engraving(pivot, gold_highlight, gold_edge):
     # Fine radial engraving in the dark coin face creates visible minted relief.
     for index in range(32):
         angle = 2.0 * math.pi * index / 32.0
@@ -428,6 +440,8 @@ def _build_coin_ornaments(pivot, mats):
         )
         line.parent = pivot
 
+
+def _add_medallion_rivets(pivot, gold_highlight):
     for index in range(16):
         angle = 2.0 * math.pi * index / 16.0
         bpy.ops.mesh.primitive_uv_sphere_add(
@@ -441,6 +455,8 @@ def _build_coin_ornaments(pivot, mats):
         for face in rivet.data.polygons:
             face.use_smooth = True
 
+
+def _add_bitcoin_symbol(pivot, gold_highlight):
     # The B and two narrow stems are new geometry, not pixels taken from the reference.
     bpy.ops.object.text_add(location=(0.0, 0.0, 0.114))
     glyph = bpy.context.object

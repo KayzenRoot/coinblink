@@ -1463,10 +1463,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   // A file from the PUBLIC M03 demo is never authority. No CMS API is called
   // during inspection or application; the Owner still saves the form manually.
   ui.sourceTransferFile.addEventListener('change', async () => {
-    clearMockSourceTransfer();
     const file = ui.sourceTransferFile.files?.[0];
+    clearMockSourceTransfer();
     if (!file) return;
-    if (!csrf || ui.form.hidden || !/\\.json$/iu.test(file.name) ||
+    if (!csrf || ui.form.hidden || !/\.json$/iu.test(file.name) ||
         file.size < 1 || file.size > 2048) {
       clearMockSourceTransfer('Rejected: invalid or oversized MOCK source report.');
       return;

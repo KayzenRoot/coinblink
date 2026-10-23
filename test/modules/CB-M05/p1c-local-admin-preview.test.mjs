@@ -344,6 +344,7 @@ test('M03 to M05 local Owner source report is inspected, applied only on explici
       'explicit Apply must not issue a D1 write');
     await upload(payload);
     await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    page.once('dialog', dialog => dialog.accept());
     await page.locator('#new-draft').click();
     assert.equal(await page.locator('#source-transfer-review').isVisible(), false,
       'new draft must scrub previously inspected report');

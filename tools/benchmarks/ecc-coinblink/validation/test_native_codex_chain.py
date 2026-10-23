@@ -66,7 +66,9 @@ def verify_surface_inventory(surface, summary):
             raise ValueError("inventory count mismatch")
         if len(paths) != len(set(paths)) or paths != sorted(paths):
             raise ValueError("duplicate or unsorted inventory")
-        if not all(pattern.fullmatch(path) for path in paths):
+        if not all(pattern.fullmatch(path) and
+                   not any(segment in (".", "..") for segment in path.split("/"))
+                   for path in paths):
             raise ValueError("invalid inventory path")
     return True
 

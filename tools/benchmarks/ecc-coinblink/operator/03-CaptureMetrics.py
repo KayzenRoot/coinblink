@@ -71,7 +71,7 @@ if not run_dir.is_dir() or not origin_file.is_file():
     raise SystemExit("Prepared run and RUN_ORIGIN.json required")
 try:
     origin = json.loads(origin_file.read_text(encoding="utf-8-sig"))
-except (OSError, UnicodeError, ValueError) as exc:
+except (OSError, ValueError) as exc:
     raise SystemExit("Invalid run origin metadata") from exc
 if not isinstance(origin, dict) or origin.get("run_id") != args.run_id:
     raise SystemExit("Run origin does not match the selected run ID")

@@ -25,6 +25,8 @@ jobs:
           persist-credentials: false
       - name: Validate four skills, 18 NOT_RUN entries and synthetic Python telemetry
         run: python3 -m unittest discover -s tools/benchmarks/ecc-coinblink/validation -p 'test_*.py' -v
+      - name: Measure stdlib Python executable-line coverage in synthetic subprocesses
+        run: python3 tools/benchmarks/ecc-coinblink/validation/measure_python_coverage.py
 
   windows:
     name: ECC offline / PowerShell isolation (Windows)

@@ -159,6 +159,30 @@ class CollectorContracts(unittest.TestCase):
         self.assertEqual(data["malformed_lines"], 1)
         self.assertIsNone(data["usage"]["input_tokens"])
 
+    def test_invalid_usage_types_do_not_invent_cost_or_tokens(self):
+        invalid = (
+            '{"type":"thread.started"}\n'
+            '{"type":"turn.completed","usage":{"input_tokens":true,"output_tokens":-1}}\n'
+        )
+        (self.run / "codex.jsonl").write_text(invalid, encoding="utf-8")
+        self.assertEqual(self.invoke().returncode, 0)
+        result = json.loads(self.output.read_text(encoding="utf-8"))
+        self.assertIsNone(result["usage"]["input_tokens"])
+        self.assertIsNone(result["usage"]["output_tokens"])
+        self.assertIsNone(result["cost_usd"])
+
+    def test_untrusted_origin_invalid_json_is_rejected(self):
+        (self.run / "RUN_ORIGIN.json").write_text("{invalid", encoding="utf-8")
+        self.assertNotEqual(self.invoke().returncode, 0)
+        self.assertFalse(self.output.exists())
+
+    def test_oversized_log_is_rejected_without_metrics(self):
+        with (self.run / "codex.jsonl").open("wb") as stream:
+            stream.seek(32 * 1024 * 1024)
+            stream.write(b"x")
+        self.assertNotEqual(self.invoke().returncode, 0)
+        self.assertFalse(self.output.exists())
+
     def test_existing_output_is_not_overwritten(self):
         self.assertEqual(self.invoke().returncode, 0)
         saved = self.output.read_bytes()

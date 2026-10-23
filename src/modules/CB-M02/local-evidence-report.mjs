@@ -30,3 +30,18 @@ export function buildLocalEvidenceReport(body) {
     signals: Object.freeze(signals),
   });
 }
+
+// Suggestions only: no editorial approval, source verification, storage or publication.
+const MAX_LOCAL_EVIDENCE_ACTIONS = 12;
+
+export function buildLocalEvidenceActions(report) {
+  const items = report.signals.slice(0, MAX_LOCAL_EVIDENCE_ACTIONS).map(signal =>
+    Object.freeze({ kind: signal.kind, value: String(signal.value).slice(0, 140) }));
+  if (!items.length) {
+    items.push(Object.freeze({ kind: "manual", value: "" }));
+  }
+  return Object.freeze({
+    items: Object.freeze(items),
+    hiddenCount: Math.max(0, report.signalCount - Math.min(report.signals.length, MAX_LOCAL_EVIDENCE_ACTIONS)),
+  });
+}

@@ -35,6 +35,9 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+      - name: Validate Python collector on Windows with synthetic fixtures
+        shell: pwsh
+        run: python -m unittest discover -s tools/benchmarks/ecc-coinblink/validation -p 'test_*.py' -v
       - name: Validate synthetic A/B workspace isolation and quarantine
         shell: pwsh
         run: ./tools/benchmarks/ecc-coinblink/validation/Invoke-OfflineSelfTest.ps1

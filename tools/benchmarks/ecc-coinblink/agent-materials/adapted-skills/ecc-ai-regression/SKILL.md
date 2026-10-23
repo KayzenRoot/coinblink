@@ -1,9 +1,24 @@
 ---
 name: ecc-ai-regression
-description: Testes de regressão contra pontos cegos de IA usando Node Test Runner, Astro e Playwright existentes no CoinBlink.
+description: Planeje testes de regressão independentes para correções geradas por IA no CoinBlink, usando Node Test Runner, Astro e Playwright existentes.
 ---
-# ECC experimental: AI Regression
+# ECC experimental · AI Regression Testing
 
-Adaptado de affaan-m/ECC@90606c8315ee09cafc303515c5f33024db6b9882 (licença MIT). Projeto CoinBlink governa com `AGENTS.md`.
+Adaptação de princípios de affaan-m/ECC@90606c8315ee09cafc303515c5f33024db6b9882, licença MIT. O AGENTS.md do CoinBlink prevalece. Exemplos Next.js, Vitest, NextRequest e /bug-check do ECC upstream NÃO são comandos deste projeto.
 
-Quando um bug for corrigido, registre o contrato prévio e proponha um teste que falhe antes da correção; não enfraqueça asserções existentes. Cubra caminhos felizes, erro, autorização, sessões revogadas, dados sintéticos e DOM inerte quando aplicável. Compare comportamentos de código e fluxos locais, não invente equivalência com produção. Use apenas Node Test Runner, Astro e Playwright **já presentes**; exemplos Next.js/Vitest/NextRequest do ECC não se aplicam. Para corrida use barreiras/eventos e deadlines, não apenas sleeps. Se dependência ou navegador estiver ausente, reporte NOT_RUN; sem npm install implícito, rede, secrets, publicação ou bypass.
+## Quando ativar
+Após um bug reproduzido, refatoração que deve preservar contrato ou correção onde um teste criado pelo próprio implementador pode reforçar um falso positivo. Use proporcionalmente ao impacto.
+
+## Protocolo
+1. Congele comportamento observável anterior, entradas sintéticas e asserções essenciais. Não copie patches de PRs históricas como resposta de benchmark.
+2. Escreva um caso reproduzível capaz de falhar no baseline defeituoso, quando permitido. Não enfraqueça testes existentes nem adicione assertions tautológicas.
+3. Separe happy path, entradas inválidas, concorrência, sessões revogadas/401, CSRF/Origin, dados locais EN/PT e conteúdo HTML inerte quando aplicáveis.
+4. Para races de browser, controle ordem das respostas por barreiras ou eventos determinísticos com timeout. Evite aprovação baseada apenas em sleeps.
+5. Reutilize Node Test Runner e Playwright existentes. Se navegador, fixture ou licença estiverem indisponíveis, marque NOT_RUN e não simule PASS.
+6. Compare baseline negativo, referência positiva e mutantes em juiz **independente e privado**, se o experimento for autorizado. O implementador não deve acessar esses oráculos.
+
+## Saída esperada
+Para cada caso: descrição da regressão, mudança protegida, teste, saída real, exit code e estado PASS/FAIL/NOT_RUN. Qualquer conclusão sobre cobertura exige medição real. Escopo A/B e 18 linhas NOT_RUN devem permanecer imutáveis antes do ensaio.
+
+## Limites
+Sem instalar dependências automaticamente, acesso externo, execução de agentes, juízes privados, dados LIVE, pagamentos, publicação, merge ou deploy por implicação.

@@ -1,13 +1,8 @@
 ---
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import NewsArticle from "../../../modules/CB-M02/NewsArticle.astro";
+import LocalizedNewsPage from "../../../modules/CB-M09/LocalizedNewsPage.astro";
 import { resolveMockNews } from "../../../modules/CB-M02/news-workbench.mjs";
 export const prerender = false;
-const { slug } = Astro.params;
-const detail = resolveMockNews(slug);
-if (!detail.item) Astro.response.status = 404;
+const result = resolveMockNews(Astro.params.slug);
+if (!result.item) Astro.response.status = 404;
 ---
-<BaseLayout lang="es" title="CoinBlink · Lectura ficticia (DEMO)"
-  description="Ejemplo educativo inventado y no publicado.">
-  <NewsArticle locale="es" item={detail.item} />
-</BaseLayout>
+<LocalizedNewsPage locale="es" slug={Astro.params.slug} />

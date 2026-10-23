@@ -32,8 +32,11 @@ test("M09 Spanish route and switcher preserve noindex and validate slugs", () =>
   const component = readFileSync("src/modules/CB-M09/NewsLocaleSwitch.astro", "utf8");
   const layout = readFileSync("src/layouts/BaseLayout.astro", "utf8");
   const workbench = readFileSync("src/modules/CB-M02/NewsWorkbench.astro", "utf8");
-  assert.match(listing, /lang="es"/u);
-  assert.match(detail, /lang="es"/u);
+  assert.match(listing, /locale="es"/u);
+  assert.match(detail, /locale="es"/u);
+  const page = readFileSync("src/modules/CB-M09/LocalizedNewsPage.astro", "utf8");
+  assert.match(page, /lang={copy.lang}/u);
+  assert.match(page, /lang: "es"/u);
   assert.match(detail, /Astro\.response\.status = 404/u);
   assert.match(component, /resolveMockNews\(slug\)\.item/u);
   assert.match(component, /aria-current/u);

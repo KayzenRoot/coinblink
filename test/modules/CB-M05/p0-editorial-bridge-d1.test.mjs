@@ -7,6 +7,7 @@ import test from 'node:test';
 import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { splitLocalSchemaStatements } from './p1c-local-preview.mjs';
+import { installLocalOwnerReviewSchema } from './p1c-fixtures/owner-review-schema.mjs';
 import {
   CMS_TEST_ORIGIN,
   CMS_TEST_RP_ID,
@@ -56,6 +57,7 @@ async function setup() {
   try {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
     for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    await installLocalOwnerReviewSchema(db);
     const authenticator = makeSyntheticAuthenticator('primary');
     await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,1)').run();
     const challenge = 'TEST-LOCAL-REG-' + randomUUID();
@@ -174,9 +176,108 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.deepEqual(await tableSnapshot(ctx.db), beforeCurrentRevisionReads,
       'stale and current revision exports do not mutate local D1');
 
+
+    // Review is exact-revision, private and does not authorize publication.
+    const reviewRoute = '/local/articles/' + id + '/review';
+    const validReview = { expectedRevision: 2, decision: 'PREVIEW_REVIEWED',
+      note: 'Local editorial note. Source facts and rights remain unverified.' };
+    assert.equal((await ctx.run(reviewRoute)).status, 401, 'no Owner session, no private review read');
+    assert.equal((await ctx.run(reviewRoute, 'GET', undefined, { ...ctx.login, fetchSite: 'cross-site' })).status, 403);
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview)).status, 403, 'no session, no private review');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, { cookie: ctx.login.cookie })).status, 403,
+      'missing CSRF is denied');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview,
+      { ...ctx.login, fetchSite: 'cross-site' })).status, 403);
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, expectedRevision: 1 },
+      ctx.login)).status, 409, 'old revision cannot receive a current review');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, decision: 'PUBLISH_APPROVED' },
+      ctx.login)).status, 400, 'no publishing transition exists');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, note: 'short' },
+      ctx.login)).status, 400, 'invalid note is refused');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, note: 'Control newline\nattempt is invalid.' },
+      ctx.login)).status, 400, 'embedded ASCII control is refused');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, extra: true },
+      ctx.login)).status, 400, 'forged extra properties are refused');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 201);
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 409,
+      'only one immutable review per saved revision');
+    const reviewResponse = await ctx.run(reviewRoute, 'GET', undefined, ctx.login);
+    assert.equal(reviewResponse.status, 200);
+    const reviewDetails = await reviewResponse.json();
+    assert.equal(reviewDetails.review.decision, 'PREVIEW_REVIEWED');
+    assert.equal(reviewDetails.publication, 'DISABLED');
+    assert.equal(reviewDetails.rights, 'NOT_CLEARED');
+    await assert.rejects(ctx.db.prepare('DELETE FROM cms_owner_reviews WHERE draft_id=?')
+      .bind(id).run(), /immutable/u, 'stored Owner review cannot be deleted');
+    await assert.rejects(ctx.db.prepare('UPDATE cms_owner_reviews SET note=? WHERE draft_id=?')
+      .bind('An unauthorized overwrite.',id).run(), /immutable/u);
+    assert.equal((await ctx.db.prepare('SELECT status FROM cms_drafts WHERE id=?').bind(id).first()).status,
+      'draft', 'no review publishes the article');
+    const third = await ctx.run('/local/articles/' + id, 'PATCH', {
+      ...example, title: 'A fresh local draft revision requires another Owner review',
+      expectedRevision: 2, idempotencyKey: idempotency(),
+    }, ctx.login);
+    assert.equal(third.status, 200);
+    assert.equal((await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json()).review,
+      null, 'review of superseded content is not attached to a new revision');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 409,
+      'stale review replay cannot attach to the newer revision');
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_owner_reviews WHERE draft_id=?')
+      .bind(id).first()).n, 1, 'old review preserved as immutable evidence');
     assert.equal((await ctx.run('/local/logout', 'POST', {}, ctx.login)).status, 200);
+    assert.equal((await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).status, 401);
     assert.equal((await ctx.run(route + '?revision=2', 'GET', undefined, ctx.login)).status, 401,
       'revoked session cannot export');
+  } finally {
+    await ctx.mf.dispose();
+    rmSync(ctx.state, { recursive: true, force: true });
+  }
+});
+
+test('M05 Owner review additive schema upgrade retains an existing LOCAL D1 draft', { timeout: 90_000 }, async () => {
+  const ctx = await setup();
+  try {
+    // Simulate the original v1 database inside an isolated disposable D1 only.
+    await ctx.db.prepare('DROP TABLE cms_owner_reviews').run();
+    const legacy = await ctx.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='cms_owner_reviews'",
+    ).first();
+    assert.equal(legacy, null, 'original D1 v1 has no Owner review extension');
+    const created = await ctx.run('/local/articles', 'POST', {
+      ...example, idempotencyKey: idempotency(),
+    }, ctx.login);
+    assert.equal(created.status, 201);
+    const { id } = await created.json();
+    const saved = await ctx.db.prepare(
+      'SELECT id,title,summary,body,status,revision,source_url,author_label FROM cms_drafts WHERE id=?',
+    ).bind(id).first();
+    const history = await ctx.db.prepare(
+      'SELECT draft_id,revision,body,title FROM cms_draft_revisions WHERE draft_id=?',
+    ).bind(id).all();
+
+    await installLocalOwnerReviewSchema(ctx.db);
+    await installLocalOwnerReviewSchema(ctx.db);
+    const retained = await ctx.db.prepare(
+      'SELECT id,title,summary,body,status,revision,source_url,author_label FROM cms_drafts WHERE id=?',
+    ).bind(id).first();
+    const retainedHistory = await ctx.db.prepare(
+      'SELECT draft_id,revision,body,title FROM cms_draft_revisions WHERE draft_id=?',
+    ).bind(id).all();
+    assert.deepEqual(retained, saved, 'add-only review upgrade preserves existing D1 draft');
+    assert.deepEqual(retainedHistory.results, history.results, 'revision history is identical');
+    const triggers = await ctx.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'cms_owner_review_%' ORDER BY name",
+    ).all();
+    assert.deepEqual(triggers.results.map(row => row.name),
+      ['cms_owner_review_no_delete', 'cms_owner_review_no_update'],
+      'idempotent upgrade creates exactly the two review immutability guards');
+    const review = await ctx.run('/local/articles/' + id + '/review', 'POST', {
+      expectedRevision: 1, decision: 'CHANGES_REQUESTED',
+      note: 'LOCAL process feedback, not publication clearance.',
+    }, ctx.login);
+    assert.equal(review.status, 201, 'upgraded v1 D1 accepts current Owner review');
+    assert.equal((await ctx.db.prepare('SELECT status FROM cms_drafts WHERE id=?').bind(id).first()).status,
+      'draft', 'migration and review cannot publish a draft');
   } finally {
     await ctx.mf.dispose();
     rmSync(ctx.state, { recursive: true, force: true });

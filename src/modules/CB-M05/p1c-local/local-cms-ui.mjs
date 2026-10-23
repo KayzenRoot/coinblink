@@ -120,6 +120,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     save: document.getElementById('save'),
     exportDraft: document.getElementById('export-draft'),
     exportStatus: document.getElementById('export-status'),
+    ownerReview: document.getElementById('owner-review'),
+    ownerReviewDecision: document.getElementById('owner-review-decision'),
+    ownerReviewNote: document.getElementById('owner-review-note'),
+    ownerReviewSubmit: document.getElementById('owner-review-submit'),
+    ownerReviewStatus: document.getElementById('owner-review-status'),
     sourceTransferFile: document.getElementById('source-transfer-file'),
     sourceTransferReview: document.getElementById('source-transfer-review'),
     sourceTransferApply: document.getElementById('source-transfer-apply'),
@@ -858,6 +863,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     hideLocalDashboard();
     ui.reviewFilter.value = 'all';
     csrf = null;
+    resetOwnerReview();
     clearMockSourceTransfer();
     savedSnapshot = null;
     ui.form.reset();
@@ -969,6 +975,70 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.deviceList.append(item);
     }
   }
+
+  function resetOwnerReview() {
+    ui.ownerReview.hidden = true;
+    ui.ownerReviewDecision.value = 'PREVIEW_REVIEWED';
+    ui.ownerReviewNote.value = '';
+    ui.ownerReviewSubmit.disabled = true;
+    ui.ownerReviewStatus.textContent = 'No Owner review of this saved revision. No publishing rights.';
+  }
+  async function loadOwnerReview() {
+    resetOwnerReview();
+    const id = ui.draftId.value, revision = Number(ui.revision.value);
+    if (!csrf || !id || !Number.isSafeInteger(revision) || revision < 1) return;
+    const epoch = sessionEpoch, generation = draftOpenGeneration, snapshot = draftSnapshot();
+    try {
+      const state = await api('/local/articles/' + encodeURIComponent(id) + '/review');
+      if (epoch !== sessionEpoch || generation !== draftOpenGeneration || !csrf ||
+          ui.draftId.value !== id || Number(ui.revision.value) !== revision ||
+          snapshot !== draftSnapshot() || hasUnsavedChanges()) return;
+      if (state.revision !== revision || state.publication !== 'DISABLED' ||
+          state.rights !== 'NOT_CLEARED') throw new TypeError('Invalid review contract');
+      ui.ownerReview.hidden = false;
+      if (state.review) {
+        ui.ownerReviewStatus.textContent = 'Saved Owner review of LOCAL revision ' + revision +
+          ': ' + state.review.decision + '. Rights NOT CLEARED; NOT PUBLISHED.';
+        ui.ownerReviewNote.value = state.review.note;
+        ui.ownerReviewSubmit.disabled = true;
+      } else {
+        ui.ownerReviewStatus.textContent = 'No review for LOCAL revision ' + revision +
+          '. You may record a private process note.';
+        ui.ownerReviewSubmit.disabled = false;
+      }
+    } catch {
+      if (epoch === sessionEpoch && generation === draftOpenGeneration) {
+        ui.ownerReviewStatus.textContent = 'Review state unavailable. No decision permitted.';
+        ui.ownerReviewSubmit.disabled = true;
+      }
+    }
+  }
+  ui.ownerReviewSubmit.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || !ui.draftId.value || hasUnsavedChanges() || ui.ownerReviewSubmit.disabled) {
+      ui.ownerReviewStatus.textContent = 'Save the draft and reload the current review state first.';
+      return;
+    }
+    const id = ui.draftId.value, revision = Number(ui.revision.value);
+    const epoch = sessionEpoch, generation = draftOpenGeneration, snapshot = draftSnapshot();
+    const decision = ui.ownerReviewDecision.value, note = ui.ownerReviewNote.value.trim();
+    if (!window.confirm('Record immutable LOCAL Owner review of saved revision ' + revision +
+        '? This does not verify facts, grant source rights, or publish.')) return;
+    ui.ownerReviewSubmit.disabled = true;
+    try {
+      const record = await api('/local/articles/' + encodeURIComponent(id) + '/review', 'POST',
+        { expectedRevision: revision, decision, note });
+      if (epoch !== sessionEpoch || generation !== draftOpenGeneration || !csrf ||
+          ui.draftId.value !== id || snapshot !== draftSnapshot()) return;
+      if (record.revision !== revision || record.decision !== decision ||
+          record.publication !== 'DISABLED') throw new TypeError('Invalid review response');
+      ui.ownerReviewStatus.textContent = 'Review saved for LOCAL revision ' + revision +
+        '. Private M02 import only; NOT PUBLISHED; source rights NOT CLEARED.';
+    } catch {
+      if (epoch === sessionEpoch && generation === draftOpenGeneration && csrf) {
+        ui.ownerReviewStatus.textContent = 'Review rejected or stale. Reopen the saved revision.';
+      }
+    }
+  });
   function editDraft(draft) {
     clearMockSourceTransfer();
     ui.form.elements.namedItem('title').value = draft.title;
@@ -985,6 +1055,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.historyList.replaceChildren();
     renderDraftPreview();
     acceptSavedDraft();
+    void loadOwnerReview();
   }
   async function openLocalDraft(draft) {
     if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
@@ -1322,6 +1393,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.approvalReason.addEventListener('input', () => { socialActionGeneration += 1; });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
+    if (hasUnsavedChanges()) ui.ownerReviewSubmit.disabled = true;
     renderDraftPreview();
     if (exportAbortController && hasUnsavedChanges()) exportAbortController.abort();
     showUnsavedChanges();
@@ -1528,6 +1600,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
       acceptSavedDraft();
       await refresh();
+      await loadOwnerReview();
       message('Saved LOCAL draft revision ' + result.revision + '; not published');
     } catch { message('Save rejected; reload draft to resolve possible revision conflict'); }
     finally { ui.save.disabled = false; showUnsavedChanges(); }
@@ -1539,6 +1612,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (exportAbortController) exportAbortController.abort();
     exportAbortController = null;
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
+    resetOwnerReview();
     ui.history.hidden = true;
     ui.exportDraft.hidden = true;
     ui.exportStatus.textContent = '';
@@ -1946,6 +2020,16 @@ footer{padding:24px 0;color:#b9c8bd}
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>
 <button id="new-draft" type="button">New draft</button>
+<section id="owner-review" aria-labelledby="owner-review-title" hidden>
+<h3 id="owner-review-title">LOCAL Owner review of saved revision</h3>
+<p>An immutable process note, not a verification of facts, source rights, approval for publication or LIVE authentication. Export the Markdown manually to M02 for private browser preview.</p>
+<label for="owner-review-decision">Review decision</label>
+<select id="owner-review-decision"><option value="PREVIEW_REVIEWED">Reviewed for private preview only</option><option value="CHANGES_REQUESTED">Changes requested</option></select>
+<label for="owner-review-note">Reason or note (10 to 500 characters)</label>
+<textarea id="owner-review-note" minlength="10" maxlength="500" spellcheck="true"></textarea>
+<button id="owner-review-submit" type="button" disabled>Record LOCAL Owner review</button>
+<p id="owner-review-status" role="status" aria-live="polite">No Owner review of this saved revision. No publishing rights.</p>
+</section>
 <button id="export-draft" type="button" hidden disabled>Export saved revision to Markdown for M02</button>
 <p id="export-status" role="status" aria-live="polite"></p>
 <p id="unsaved-draft-status" role="status" aria-live="polite" hidden>Unsaved changes in this LOCAL draft.</p>

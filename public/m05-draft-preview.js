@@ -260,7 +260,6 @@ if (typeof document !== "undefined") {
     window.addEventListener("beforeunload", event => {
       if (!hasUnexportedEdits()) return;
       event.preventDefault();
-      event.returnValue = "";
     });
     newDraftButton.addEventListener("click", () => {
       if (hasUnexportedEdits() && !window.confirm("Discard unexported changes and start a new local draft?")) return;

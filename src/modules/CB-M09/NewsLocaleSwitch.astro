@@ -1,0 +1,38 @@
+---
+import { resolveMockNews } from "../CB-M02/news-workbench.mjs";
+interface Props {
+  locale: "en" | "pt-br" | "es";
+  slug?: string;
+}
+const { locale, slug } = Astro.props;
+const safeSlug = slug && resolveMockNews(slug).item ? "/" + slug : "";
+const languages = [
+  { key: "en", name: "English" },
+  { key: "pt-br", name: "Português (Brasil)" },
+  { key: "es", name: "Español" },
+] as const;
+const title = locale === "es" ? "Idioma de esta demostración" : locale === "pt-br"
+  ? "Idioma desta demonstração" : "Demo language";
+---
+<nav data-m09-language-nav class="m09-language-nav" aria-label={title}>
+  <p>{title}</p>
+  <ul>{languages.map(language => <li>
+    <a lang={language.key === "pt-br" ? "pt-BR" : language.key} href={"/" + language.key + "/news" + safeSlug}
+      aria-current={language.key === locale ? "page" : undefined}>{language.name}</a>
+  </li>)}</ul>
+</nav>
+{locale === "es" && <nav class="m09-other-demos" aria-label="Otras demostraciones disponibles en inglés">
+  <p>Las demás secciones todavía están en inglés (DEMO).</p>
+  <a href="/demo/sources">Fuentes (EN)</a>
+  <a href="/demo/markets">Mercados (EN)</a>
+  <a href="/demo/editorial/articles">Editor (EN)</a>
+</nav>}
+<style>
+  .m09-language-nav,.m09-other-demos{margin:1rem 0;padding:.9rem 1.2rem;border:1px solid #456e4e;border-radius:.7rem;background:#101e17}
+  .m09-language-nav p,.m09-other-demos p{margin:0 0 .6rem;color:#d6e4d8;font-size:.95rem}
+  .m09-language-nav ul{display:flex;flex-wrap:wrap;gap:.65rem 1rem;list-style:none;padding:0;margin:0}
+  .m09-language-nav a,.m09-other-demos a{display:inline-block;color:#b8f34b;padding:.45rem .3rem;text-underline-offset:4px}
+  .m09-language-nav a[aria-current=page]{font-weight:800;color:#f9d594;text-decoration-thickness:2px}
+  .m09-other-demos a{margin-right:1rem}
+  .m09-language-nav a:focus-visible,.m09-other-demos a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

@@ -1,4 +1,22 @@
 // Fictional P0 specimens only. English identifiers and source data remain canonical.
+const es = Object.freeze({
+  "demo-wallet-safety": Object.freeze({
+    title: "Taller ficticio sobre seguridad de billeteras",
+    summary: "Escenario inventado para practicar la lectura de un artículo educativo. No ocurrió ningún evento real.",
+    body: "En este ejercicio imaginario, se comparan opciones de recuperación sin utilizar claves reales.",
+  }),
+  "demo-protocol-classroom": Object.freeze({
+    title: "Aula imaginaria sobre protocolos",
+    summary: "Demostración ficticia de cómo se explicaría un protocolo. No es un anuncio auténtico.",
+    body: "Una clase inventada examina confirmaciones de red. No representa ninguna noticia real.",
+  }),
+  "demo-chain-basics": Object.freeze({
+    title: "Tutorial de registros ficticios",
+    summary: "Ejemplo educativo sintético, sin precios ni noticias reales de criptoactivos.",
+    body: "Un registro inventado permite explorar estados hipotéticos de transacciones de forma segura.",
+  }),
+});
+
 const pt = Object.freeze({
   "demo-wallet-safety": Object.freeze({
     title: "Oficina fictícia de segurança de carteiras",
@@ -17,6 +35,27 @@ const pt = Object.freeze({
   }),
 });
 const copies = Object.freeze({
+  es: Object.freeze({
+    directoryTitle: "Explorar noticias ficticias",
+    disclaimer: "SOLO DEMOSTRACIÓN · HISTORIAS INVENTADAS · NO PUBLICADAS",
+    explanation: "Explora escenarios educativos imaginarios. No hay noticias ni precios en vivo, borradores privados o solicitudes externas.",
+    home: "Inicio (EN)", list: "Todas las historias ficticias", search: "Buscar ejemplos ficticios",
+    searchHint: "Busca un título o tema", category: "Categoría del ejemplo",
+    resetFilters: "Borrar filtros",
+    topicTitle: "Explorar temas educativos ficticios",
+    topicExplanation: "Elige un tema de este ejercicio sin conexión. No se consultan noticias reales.",
+    exploreTopic: "Explorar tema ficticio",
+    readingPath: "Ruta de lectura ficticia", step: "Ejemplo", of: "de",
+    pathDisclaimer: "Ejercicios sin conexión, no noticias reales",
+    previousExample: "Ejemplo ficticio anterior", nextExample: "Siguiente ejemplo ficticio",
+    pathStart: "Inicio de la ruta", pathEnd: "Fin de la ruta",
+    all: "Todos los ejemplos", security: "Seguridad", protocol: "Protocolos", education: "Educación",
+    results: "ejemplos ficticios", empty: "No hay ejemplos ficticios coincidentes. No se hicieron búsquedas externas.",
+    read: "Leer ejemplo ficticio", back: "Volver a las historias ficticias",
+    missingTitle: "Ejemplo ficticio no encontrado",
+    missing: "Este ejemplo no existe. No se ha accedido a ninguna noticia real ni borrador privado.",
+    detailDisclaimer: "EJEMPLO INVENTADO · NUNCA PUBLICADO COMO NOTICIA",
+  }),
   en: Object.freeze({
     directoryTitle: "Fictional news discovery",
     disclaimer: "DEMO ONLY · INVENTED STORIES · NOT PUBLISHED",
@@ -68,7 +107,6 @@ export function newsCopy(locale = "en") {
 }
 export function localizeMockNews(item, locale = "en") {
   if (!item) return null;
-  if (locale !== "pt-br") return item;
-  const translated = pt[item.slug];
+  const translated = locale === "pt-br" ? pt[item.slug] : locale === "es" ? es[item.slug] : null;
   return translated ? { ...item, ...translated } : item;
 }

@@ -43,14 +43,15 @@ test("M10 topic filtering never invents content or grants newsletter delivery ri
 test("M10 DOM contracts do not contain email form, storage, network or privileged CMS calls", () => {
   const astro = readFileSync("src/modules/CB-M10/NewsletterWorkbench.astro", "utf8");
   const code = readFileSync("src/modules/CB-M10/newsletter-preview.mjs", "utf8");
+  const client = readFileSync("src/modules/CB-M10/newsletter-preview.client.js", "utf8");
   assert.match(astro, /data-m10-preview/u);
   assert.match(astro, /newsletter-preview\.client\.js\?url&no-inline/u);
   assert.match(astro, /newsletter-preview\.css\?url&no-inline/u);
   assert.doesNotMatch(astro, /<script>(?!\s*<\/script>)/u);
   assert.doesNotMatch(astro, /<style>/u);
   assert.match(astro, /data-m10-clear/u);
-  assert.match(astro, /textContent/u);
+  assert.match(client, /textContent/u);
   assert.match(astro, /NO SUBSCRIBERS/u);
-  assert.doesNotMatch(astro + code, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|navigator\.clipboard|innerHTML|type="email"|form action=|sendBeacon|\/admin\/api/u);
+  assert.doesNotMatch(astro + code + client, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|navigator\.clipboard|innerHTML|type="email"|form action=|sendBeacon|\/admin\/api/u);
   assert.match(readFileSync("src/pages/demo/newsletter.astro", "utf8"), /NewsletterWorkbench/u);
 });

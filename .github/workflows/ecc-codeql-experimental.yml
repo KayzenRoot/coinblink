@@ -55,14 +55,12 @@ jobs:
           if not files:
               raise SystemExit("BLOCKED: CodeQL returned no local SARIF evidence")
           summary = []
+          ecc_findings = []
           for file in files:
               data = json.loads(file.read_text(encoding="utf-8"))
               for run in data.get("runs", []):
                   results = run.get("results", [])
-                  summary.append({
-                      "tool": run.get("tool", {}).get("driver", {}).get("name"),
-                      "results": len(results),
-                      "findings": [
+                  findings = [
                           {
                               "rule": result.get("ruleId"),
                               "level": result.get("level"),
@@ -81,7 +79,22 @@ jobs:
                               "message": result.get("message", {}).get("text", "")[:180],
                           }
                           for result in results[:30]
-                      ],
+                      ]
+                  summary.append({
+                      "tool": run.get("tool", {}).get("driver", {}).get("name"),
+                      "results": len(results),
+                      "findings": findings,
                   })
+                  ecc_findings.extend(
+                      item for item in findings
+                      if (item["path"] or "").startswith((
+                          "tools/benchmarks/ecc-coinblink/",
+                          ".agents/skills/ecc-",
+                          ".github/workflows/ecc-",
+                      ))
+                  )
           print("ECC_CODEQL_READ_ONLY_SARIF=" + json.dumps(summary, sort_keys=True))
+          print("ECC_CODEQL_ECC_FINDINGS=" + json.dumps(ecc_findings, sort_keys=True))
+          if ecc_findings:
+              raise SystemExit("BLOCKED: CodeQL issues inside the ECC experiment")
           PY

@@ -5,8 +5,8 @@ from pathlib import Path
 import subprocess
 import sys
 import unittest
+import unittest.mock as mock
 from datetime import datetime, timezone, timedelta
-from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / "pilot" / "PrepareCodexPilot.py"
 

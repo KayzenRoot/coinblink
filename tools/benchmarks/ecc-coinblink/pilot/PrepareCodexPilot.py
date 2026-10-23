@@ -14,7 +14,6 @@ import re
 from pathlib import Path
 import shutil
 import subprocess
-import sys
 import tempfile
 
 PACK = Path(__file__).resolve().parents[1]

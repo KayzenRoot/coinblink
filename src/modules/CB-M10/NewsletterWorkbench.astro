@@ -2,7 +2,7 @@
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import { listMockNewsletterTopics, NEWSLETTER_DEMO_POLICY } from "./newsletter-preview.mjs";
 const topics = listMockNewsletterTopics();
-const labels = {
+const labels: Record<string, string> = {
   all: "All fictional learning topics", security: "Security practice",
   protocol: "Protocol examples", education: "Educational examples",
 };

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown, safeDraftFilename } from "../../../public/m05-draft-preview.js";
+import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown, safeDraftFilename } from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 import { addLocalSource } from "../../../src/modules/CB-M05/local-source-notes.mjs";
 import { addLocalClaimReview } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 import { evaluateLocalEditorialChecklist } from "../../../src/modules/CB-M05/local-editorial-checklist.mjs";

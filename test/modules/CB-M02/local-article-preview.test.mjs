@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { prepareLocalDraft, draftToMarkdown } from "../../../public/m05-draft-preview.js";
-import { parseLocalArticlePreview, MAX_LOCAL_ARTICLE_BYTES } from "../../../public/m02-local-article-preview.js";
+import { prepareLocalDraft, draftToMarkdown } from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
+import { parseLocalArticlePreview, MAX_LOCAL_ARTICLE_BYTES } from "../../../src/modules/CB-M02/local-article-preview.client.mjs";
 const draft = prepareLocalDraft({
   title: "Fictional story <script>alert(1)</script>", author: "Demo author",
   summary: "A long enough fictional article summary used only in testing.",
@@ -26,7 +26,7 @@ test("M02 rejects bad file name, invalid size and forged exports", () => {
   ]) assert.throws(() => parseLocalArticlePreview(name,size,raw));
 });
 test("M02 client is inert, tab-scoped and has stale-read cleanup", () => {
-  const js = readFileSync("public/m02-local-article-preview.js","utf8");
+  const js = readFileSync("src/modules/CB-M02/local-article-preview.client.mjs","utf8");
   const page = readFileSync("src/modules/CB-M02/LocalArticlePreview.astro","utf8");
   assert.match(js, /parseLocalDraftMarkdown/u);
   assert.match(js, /request !== generation/u);

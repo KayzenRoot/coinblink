@@ -2,6 +2,7 @@
 // No cloud account, deployment binding, real Owner credentials or publishing.
 import { verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 import { renderLocalCmsUi } from './local-cms-ui.mjs';
+import { createPersistedDraftMarkdown } from '../local-draft-markdown.mjs';
 
 export const CMS_TEST_ORIGIN = 'https://owner.example.test';
 export const CMS_TEST_RP_ID = 'owner.example.test';
@@ -412,6 +413,54 @@ async function readDraft(request, db, secret, currentTime, id, revisionsOnly) {
     'SELECT id,title,summary,body,source_url,author_label,status,revision FROM cms_drafts WHERE id=? AND owner_id=1'
   ).bind(id).first();
   return article ? json({ draft: article }) : denied(404);
+}
+
+async function exportPersistedDraft(request, db, secret, currentTime, id) {
+  if (!ownerReadOrigin(request)) return denied();
+  const who = await session(request, db, secret, currentTime);
+  if (!who) return denied(401);
+
+  const url = new URL(request.url);
+  const revisions = url.searchParams.getAll('revision');
+  if ([...url.searchParams.keys()].length !== 1 || revisions.length !== 1 ||
+      !/^[1-9]\d*$/.test(revisions[0])) return denied(400);
+  const requestedRevision = Number(revisions[0]);
+  if (!Number.isSafeInteger(requestedRevision)) return denied(400);
+
+  // One read statement binds the current draft and immutable revision to the same D1 snapshot.
+  // A stale revision, non-draft state, or missing history row fails closed.
+  const record = await db.prepare(
+    `SELECT d.id,d.title,d.summary,d.body,d.source_url,d.author_label,d.status,d.revision,
+            r.revision AS stored_revision
+       FROM cms_drafts d
+       LEFT JOIN cms_draft_revisions r
+         ON r.draft_id=d.id AND r.revision=? AND r.actor_owner_id=1
+      WHERE d.id=? AND d.owner_id=1`
+  ).bind(requestedRevision, id).first();
+  if (!record) return denied(404);
+  if (record.status !== 'draft' || record.revision !== requestedRevision ||
+      record.stored_revision !== requestedRevision) return denied(409);
+
+  let exported;
+  try {
+    exported = createPersistedDraftMarkdown(record);
+  } catch {
+    return json({ error: 'Draft is not compatible with canonical Markdown export' }, 422);
+  }
+  return new Response(exported.markdown, {
+    status: 200,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'text/markdown; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="' + exported.filename + '"',
+      'Content-Length': String(exported.byteLength),
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+      'Referrer-Policy': 'no-referrer',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+    },
+  });
 }
 
 async function updateDraft(request, db, secret, currentTime, id) {
@@ -870,9 +919,10 @@ const LOCAL_FIXED_ROUTES = new Map([
 ]);
 
 async function dispatchArticleRequest(request, db, secret, currentTime, route, method) {
-  const match = /^\/local\/articles\/([0-9a-f-]{36})(?:\/(revisions))?$/i.exec(route);
+  const match = /^\/local\/articles\/([0-9a-f-]{36})(?:\/(revisions|export))?$/i.exec(route);
   if (!match || !validId(match[1])) return null;
   if (method === 'GET') {
+    if (match[2] === 'export') return exportPersistedDraft(request, db, secret, currentTime, match[1]);
     return readDraft(request, db, secret, currentTime, match[1], match[2] === 'revisions');
   }
   if (method === 'PATCH' && !match[2]) {
@@ -893,14 +943,15 @@ const LOCAL_ALLOWED_METHODS = (() => {
   }
   return allowed;
 })();
-const ARTICLE_ROUTE_PATTERN = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
+const ARTICLE_ROUTE_PATTERN = /^\/local\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export))?$/i;
 
 function methodNotAllowed(request) {
   const route = new URL(request.url).pathname;
   const allowed = LOCAL_ALLOWED_METHODS.get(route);
   if (allowed) return json({ error: 'Method not allowed' }, 405, { Allow: [...allowed].sort((left, right) => left.localeCompare(right)).join(', ') });
   if (ARTICLE_ROUTE_PATTERN.test(route)) {
-    return json({ error: 'Method not allowed' }, 405, { Allow: route.endsWith('/revisions') ? 'GET' : 'GET, PATCH' });
+    const allow = route.endsWith('/revisions') || route.endsWith('/export') ? 'GET' : 'GET, PATCH';
+    return json({ error: 'Method not allowed' }, 405, { Allow: allow });
   }
   return null;
 }

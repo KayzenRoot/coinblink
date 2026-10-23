@@ -11,7 +11,7 @@ import {
 } from "../../../src/modules/CB-M05/local-source-notes.mjs";
 import {
   prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown,
-} from "../../../public/m05-draft-preview.js";
+} from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 
 const prose = "This CoinBlink article mentions a statement that still needs checking.";
 const sentence = "The project reported a substantial increase that still needs independent confirmation.";
@@ -127,5 +127,7 @@ test("browser UI uses external same-origin module and text-only claims, not publ
   assert.match(module, /new MutationObserver\(render\)/u);
   assert.doesNotMatch(module, /^import /mu);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML)\b/u);
-  assert.doesNotMatch(ui, /<script>\s*import /u);
+  assert.match(ui, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared browser entry is processed by Astro into an external bundle");
+  assert.doesNotMatch(ui, /<script\s+is:inline[^>]*>\s*import /u);
 });

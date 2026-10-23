@@ -1,0 +1,184 @@
+import assert from 'node:assert/strict';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { convertV4MiniflareOptions, Miniflare, NoOpLog } from 'miniflare';
+import { verifyRegistrationResponse } from '@simplewebauthn/server';
+import { splitLocalSchemaStatements } from './p1c-local-preview.mjs';
+import {
+  CMS_TEST_ORIGIN,
+  CMS_TEST_RP_ID,
+  createLocalCmsHandler,
+  webauthnChallengeFromHex,
+} from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
+import {
+  makeSyntheticAuthenticator,
+  makeRegistrationResponse,
+  makeAuthenticationResponse,
+} from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
+import { parseLocalDraftMarkdown } from '../../../src/modules/CB-M05/local-draft-markdown.mjs';
+
+const schema = readFileSync('test/modules/CB-M05/p1c-fixtures/schema.sql', 'utf8');
+const example = Object.freeze({
+  title: 'Persisted local export has exact fields',
+  summary: 'A synthetic saved summary that remains unverified and local only.',
+  body: 'A synthetic persisted article body with enough text for the canonical draft format.',
+  sourceUrl: 'https://example.test/original-story',
+  authorLabel: 'Synthetic Owner label',
+});
+const idempotency = () => randomBytes(24).toString('base64url');
+
+function makeRequest(route, method = 'GET', body, { cookie = '', csrf = '', origin = CMS_TEST_ORIGIN, fetchSite = 'same-origin' } = {}) {
+  const headers = { origin, 'content-type': 'application/json' };
+  if (fetchSite) headers['sec-fetch-site'] = fetchSite;
+  if (cookie) headers.cookie = cookie;
+  if (csrf) headers['x-cb-csrf'] = csrf;
+  return new Request(CMS_TEST_ORIGIN + route, {
+    method,
+    headers,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+}
+
+async function setup() {
+  const state = mkdtempSync(path.join(tmpdir(), 'cb-m05-editorial-bridge-'));
+  const mf = new Miniflare(convertV4MiniflareOptions({
+    name: 'coinblink-m05-editorial-bridge-' + randomUUID(),
+    script: 'export default { async fetch() { return new Response("LOCAL ONLY") } }',
+    modules: true,
+    compatibilityDate: '2026-10-13',
+    d1Databases: { CMS_D1_LOCAL: '00000000-0000-4000-8000-000000000086' },
+    resourcePersistencePath: state,
+    log: new NoOpLog(),
+  }));
+  try {
+    const db = await mf.getD1Database('CMS_D1_LOCAL');
+    for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+    const authenticator = makeSyntheticAuthenticator('primary');
+    await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,1)').run();
+    const challenge = 'TEST-LOCAL-REG-' + randomUUID();
+    const registration = await verifyRegistrationResponse({
+      response: makeRegistrationResponse(authenticator, { challenge }),
+      expectedChallenge: challenge,
+      expectedOrigin: CMS_TEST_ORIGIN,
+      expectedRPID: CMS_TEST_RP_ID,
+      requireUserPresence: true,
+      requireUserVerification: true,
+    });
+    assert.equal(registration.verified, true);
+    await db.prepare(
+      'INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind) VALUES (?,1,?,0,?)',
+    ).bind(authenticator.id, registration.registrationInfo.credential.publicKey, 'primary').run();
+    let milliseconds = Date.now();
+    const env = {
+      CB_M05_LOCAL_TEST_ONLY: 'true',
+      CMS_D1_LOCAL: db,
+      CMS_TEST_HMAC_KEY: randomBytes(32).toString('hex'),
+    };
+    const handle = createLocalCmsHandler({ now: () => milliseconds });
+    const run = (route, method = 'GET', body, options = {}) => handle(makeRequest(route, method, body, options), env);
+    const challengeResponse = await run('/local/challenge', 'POST', { credentialId: authenticator.id });
+    assert.equal(challengeResponse.status, 200);
+    const issued = await challengeResponse.json();
+    const assertion = makeAuthenticationResponse(authenticator, {
+      challenge: webauthnChallengeFromHex(issued.challenge),
+    });
+    const logged = await run('/local/login', 'POST', {
+      challenge: issued.challenge,
+      credentialId: authenticator.id,
+      response: assertion,
+    });
+    assert.equal(logged.status, 200);
+    const login = await logged.json();
+    const cookie = logged.headers.get('set-cookie').split(';')[0];
+    return { mf, db, env, run, state, login: { cookie, csrf: login.csrf }, setTime: value => { milliseconds = value; } };
+  } catch (error) {
+    await mf.dispose();
+    throw error;
+  }
+}
+
+async function tableSnapshot(db) {
+  const names = ['cms_drafts', 'cms_draft_revisions', 'cms_audit_events', 'cms_sessions'];
+  const entries = await Promise.all(names.map(async name => {
+    const row = await db.prepare('SELECT COUNT(*) AS count FROM ' + name).first();
+    return [name, row.count];
+  }));
+  return Object.fromEntries(entries);
+}
+
+test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical and read-only', { timeout: 90_000 }, async () => {
+  const ctx = await setup();
+  try {
+    const created = await ctx.run('/local/articles', 'POST', { ...example, idempotencyKey: idempotency() }, ctx.login);
+    assert.equal(created.status, 201);
+    const { id } = await created.json();
+    const route = '/local/articles/' + id + '/export';
+    const before = await tableSnapshot(ctx.db);
+
+    assert.equal((await ctx.run(route + '?revision=1')).status, 401, 'missing session is denied');
+    assert.equal((await ctx.run(route + '?revision=1', 'GET', undefined, { ...ctx.login, fetchSite: 'cross-site' })).status, 403,
+      'cross-site read is denied');
+    assert.equal((await ctx.run(route, 'GET', undefined, ctx.login)).status, 400,
+      'missing requested revision is rejected for an authenticated Owner');
+    assert.equal((await ctx.run(route + '?revision=1&revision=1', 'GET', undefined, ctx.login)).status, 400,
+      'duplicate revision parameters are rejected');
+    assert.equal((await ctx.run(route + '?revision=1&extra=1', 'GET', undefined, ctx.login)).status, 400,
+      'unknown export query parameters are rejected');
+    assert.equal((await ctx.run(route + '?revision=1', 'POST', undefined, ctx.login)).status, 405,
+      'export never accepts a write method');
+
+    const response = await ctx.run(route + '?revision=1', 'GET', undefined, ctx.login);
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type') || '', /^text\/markdown; charset=utf-8$/u);
+    assert.match(response.headers.get('content-disposition') || '', /^attachment; filename="[a-z0-9-]+\.md"$/u);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+    const markdown = await response.text();
+    assert.equal(Buffer.byteLength(markdown, 'utf8'), Number(response.headers.get('content-length')));
+    const parsed = parseLocalDraftMarkdown(markdown);
+    assert.deepEqual(
+      { title: parsed.title, summary: parsed.summary, body: parsed.body, author: parsed.author, source: parsed.source },
+      { title: example.title, summary: example.summary, body: example.body, author: example.authorLabel, source: example.sourceUrl },
+    );
+    assert.doesNotMatch(markdown, /csrf|session|credential|token|privateKey/iu);
+    assert.deepEqual(await tableSnapshot(ctx.db), before, 'successful export does not mutate local D1');
+
+    const incompatibleBody = 'x'.repeat(12_001);
+    const tooLarge = await ctx.run('/local/articles', 'POST', {
+      ...example, body: incompatibleBody, idempotencyKey: idempotency(),
+    }, ctx.login);
+    assert.equal(tooLarge.status, 201, 'CMS accepts its wider body contract');
+    const largeId = (await tooLarge.json()).id;
+    const beforeRejectedExport = await tableSnapshot(ctx.db);
+    const rejected = await ctx.run('/local/articles/' + largeId + '/export?revision=1', 'GET', undefined, ctx.login);
+    assert.equal(rejected.status, 422, 'incompatible CMS text is not silently truncated');
+    assert.match((await rejected.json()).error, /canonical Markdown/u);
+    assert.deepEqual(await tableSnapshot(ctx.db), beforeRejectedExport, 'validation failure does not alter D1');
+    assert.equal((await ctx.db.prepare('SELECT body FROM cms_drafts WHERE id=?').bind(largeId).first()).body, incompatibleBody);
+
+    const changed = await ctx.run('/local/articles/' + id, 'PATCH', {
+      ...example, title: 'Persisted revision two is the only current export',
+      expectedRevision: 1, idempotencyKey: idempotency(),
+    }, ctx.login);
+    assert.equal(changed.status, 200);
+    const beforeCurrentRevisionReads = await tableSnapshot(ctx.db);
+    const stale = await ctx.run(route + '?revision=1', 'GET', undefined, ctx.login);
+    assert.equal(stale.status, 409, 'concurrent or superseded revisions are not exported');
+    const current = await ctx.run(route + '?revision=2', 'GET', undefined, ctx.login);
+    assert.equal(current.status, 200);
+    assert.equal(parseLocalDraftMarkdown(await current.text()).title, 'Persisted revision two is the only current export');
+    assert.deepEqual(await tableSnapshot(ctx.db), beforeCurrentRevisionReads,
+      'stale and current revision exports do not mutate local D1');
+
+    assert.equal((await ctx.run('/local/logout', 'POST', {}, ctx.login)).status, 200);
+    assert.equal((await ctx.run(route + '?revision=2', 'GET', undefined, ctx.login)).status, 401,
+      'revoked session cannot export');
+  } finally {
+    await ctx.mf.dispose();
+    rmSync(ctx.state, { recursive: true, force: true });
+  }
+});

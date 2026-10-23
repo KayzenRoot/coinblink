@@ -77,6 +77,20 @@ test('M05 C1 privileged /admin HTML + draft API are session-bound and keep synth
   assert.equal((await handler(request('/admin/articles', { method: 'POST', headers, body: '{}' }), env)).status, 403,
     'CSRF-less mutations must be denied, even with a session');
 });
+test('M05 C1 /admin maps persisted export through the session-bound GET adapter only', async () => {
+  seen.length = 0;
+  const cookie = '__Host-cb_m05_local=' + token;
+  const headers = { cookie };
+  const route = '/admin/articles/11111111-1111-4111-8111-111111111111/export?revision=1';
+  const before = seen.length;
+  assert.equal((await handler(request(route, { headers }), env)).status, 404,
+    'an authenticated export reaches the D1 lookup but exports no missing record');
+  assert.ok(seen.length > before, 'the GET export is mapped to the existing local CMS handler');
+  const afterGet = seen.length;
+  assert.equal((await handler(request(route, { method: 'POST', headers, body: '{}' }), env)).status, 404,
+    'the admin adapter does not map export writes');
+  assert.equal(seen.length, afterGet, 'a prohibited export method does not reach D1');
+});
 test('M05 C1 public Astro dispatch refuses privileged routes in non-development bundles', () => {
   const source = readFileSync(new URL('../../../src/pages/admin/[...route].js', import.meta.url), 'utf8');
   assert.match(source, /!import\.meta\.env\.DEV/);

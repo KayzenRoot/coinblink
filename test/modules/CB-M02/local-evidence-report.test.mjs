@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { buildLocalEvidenceReport, buildLocalEvidenceActions, LOCAL_EVIDENCE_STATUS } from "../../../src/modules/CB-M02/local-evidence-report.mjs";
 import { analyzeLocalCitationHygiene } from "../../../src/modules/CB-M05/local-citation-audit.mjs";
 import { addLocalSource, insertLocalCitation } from "../../../src/modules/CB-M05/local-source-notes.mjs";
-import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown } from "../../../public/m05-draft-preview.js";
+import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown } from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 
 test("M02 and M05 agree on canonical notes after an M05 Markdown export roundtrip", () => {
   const original = "A fictional article needs structural sources reviewed by an editor.";

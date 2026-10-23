@@ -386,3 +386,53 @@ test('M03 to M05 local Owner source report is inspected, applied only on explici
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0);
   } finally { await preview.close(); }
 });
+
+test('M05 LOCAL Owner can inspect immutable per-revision review history; logout scrubs notes', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = preview.page;
+    assert.equal(await page.locator('#owner-review').isVisible(), false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('Synthetic first review history title');
+    await page.locator('[name="summary"]').fill('Fictional local editorial note history summary');
+    await page.locator('[name="body"]').fill('PRIVATE_LOCAL_ARTICLE_BODY');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/history');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    await page.locator('#owner-review').waitFor({ state:'visible', timeout:20_000 });
+    await page.locator('#owner-review-note').fill('FIRST_PRIVATE_LOCAL_NOTE <img src=x onerror=alert(1)>');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.getByText('Saved Owner review of LOCAL revision 1').waitFor({ timeout:20_000 });
+    await page.locator('#owner-review-history-panel').evaluate(node => { node.open = true; });
+    assert.equal(await page.locator('#owner-review-history li').count(), 1);
+    assert.match(await page.locator('#owner-review-history').innerText(), /Revision 1 \(current\).*FIRST_PRIVATE_LOCAL_NOTE/u);
+    assert.equal(await page.locator('#owner-review-history img').count(), 0, 'private review text is never HTML');
+
+    await page.locator('[name="title"]').fill('Synthetic second review history title');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout:20_000 });
+    await page.locator('#owner-review-status').getByText('No review for LOCAL revision 2', { exact:false }).waitFor({ timeout:20_000 });
+    assert.equal(await page.locator('#owner-review-history li').count(), 1);
+    assert.match(await page.locator('#owner-review-history').innerText(), /Revision 1 \(superseded\)/u);
+    await page.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await page.locator('#owner-review-note').fill('SECOND_PRIVATE_LOCAL_NOTE requires edits.');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.getByText('Saved Owner review of LOCAL revision 2').waitFor({ timeout:20_000 });
+    assert.equal(await page.locator('#owner-review-history li').count(), 2);
+    assert.match(await page.locator('#owner-review-history li').first().innerText(), /Revision 2 \(current\).*CHANGES_REQUESTED/u);
+    assert.match(await page.locator('#owner-review-history li').last().innerText(), /Revision 1 \(superseded\)/u);
+    assert.equal((await preview.db.prepare('SELECT status FROM cms_drafts').first()).status, 'draft');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor({ timeout:20_000 });
+    assert.equal(await page.locator('#owner-review-history li').count(), 0);
+    assert.equal(await page.locator('#owner-review').isVisible(), false);
+    assert.equal(await page.locator('#owner-review-note').inputValue(), '');
+    assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
+    assert.deepEqual(preview.networkAttempts.filter(q => !q.allowed), []);
+  } finally {
+    await preview.close();
+  }
+});

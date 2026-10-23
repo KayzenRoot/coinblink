@@ -125,6 +125,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ownerReviewNote: document.getElementById('owner-review-note'),
     ownerReviewSubmit: document.getElementById('owner-review-submit'),
     ownerReviewStatus: document.getElementById('owner-review-status'),
+    ownerReviewHistory: document.getElementById('owner-review-history'),
     sourceTransferFile: document.getElementById('source-transfer-file'),
     sourceTransferReview: document.getElementById('source-transfer-review'),
     sourceTransferApply: document.getElementById('source-transfer-apply'),
@@ -982,6 +983,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.ownerReviewNote.value = '';
     ui.ownerReviewSubmit.disabled = true;
     ui.ownerReviewStatus.textContent = 'No Owner review of this saved revision. No publishing rights.';
+    ui.ownerReviewHistory.replaceChildren();
   }
   async function loadOwnerReview() {
     resetOwnerReview();
@@ -994,7 +996,25 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
           ui.draftId.value !== id || Number(ui.revision.value) !== revision ||
           snapshot !== draftSnapshot() || hasUnsavedChanges()) return;
       if (state.revision !== revision || state.publication !== 'DISABLED' ||
-          state.rights !== 'NOT_CLEARED') throw new TypeError('Invalid review contract');
+          state.rights !== 'NOT_CLEARED' || state.historyLimit !== 100 ||
+          !Array.isArray(state.history) || state.history.length > 100 ||
+          state.history.some(row => !Number.isSafeInteger(row.revision) ||
+            row.revision < 1 || row.revision > revision ||
+            !['PREVIEW_REVIEWED', 'CHANGES_REQUESTED'].includes(row.decision) ||
+            typeof row.note !== 'string' || row.note.length > 500 ||
+            !Number.isSafeInteger(row.createdAt))) {
+        throw new TypeError('Invalid review history contract');
+      }
+      let previousRevision = revision + 1;
+      for (const row of state.history) {
+        if (row.revision >= previousRevision) throw new TypeError('Unordered Owner review history');
+        previousRevision = row.revision;
+        const item = document.createElement('li');
+        item.textContent = 'Revision ' + row.revision +
+          (row.revision === revision ? ' (current)' : ' (superseded)') +
+          ' · ' + row.decision + ' · ' + row.note;
+        ui.ownerReviewHistory.append(item);
+      }
       ui.ownerReview.hidden = false;
       if (state.review) {
         ui.ownerReviewStatus.textContent = 'Saved Owner review of LOCAL revision ' + revision +
@@ -1033,6 +1053,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
           record.publication !== 'DISABLED') throw new TypeError('Invalid review response');
       ui.ownerReviewStatus.textContent = 'Review saved for LOCAL revision ' + revision +
         '. Private M02 import only; NOT PUBLISHED; source rights NOT CLEARED.';
+      await loadOwnerReview();
     } catch {
       if (epoch === sessionEpoch && generation === draftOpenGeneration && csrf) {
         ui.ownerReviewStatus.textContent = 'Review rejected or stale. Reopen the saved revision.';
@@ -2029,6 +2050,9 @@ footer{padding:24px 0;color:#b9c8bd}
 <textarea id="owner-review-note" minlength="10" maxlength="500" spellcheck="true"></textarea>
 <button id="owner-review-submit" type="button" disabled>Record LOCAL Owner review</button>
 <p id="owner-review-status" role="status" aria-live="polite">No Owner review of this saved revision. No publishing rights.</p>
+<details id="owner-review-history-panel"><summary>Private Owner review history (up to 100 decisions)</summary>
+<p>Older decisions refer only to superseded LOCAL revisions. They never grant publishing rights or source clearance.</p>
+<ol id="owner-review-history" aria-label="Private immutable Owner review decisions"></ol></details>
 </section>
 <button id="export-draft" type="button" hidden disabled>Export saved revision to Markdown for M02</button>
 <p id="export-status" role="status" aria-live="polite"></p>

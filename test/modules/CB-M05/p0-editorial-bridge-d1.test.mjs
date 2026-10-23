@@ -207,6 +207,20 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.equal(reviewDetails.review.decision, 'PREVIEW_REVIEWED');
     assert.equal(reviewDetails.publication, 'DISABLED');
     assert.equal(reviewDetails.rights, 'NOT_CLEARED');
+    assert.equal(reviewDetails.historyLimit, 100);
+    assert.deepEqual(reviewDetails.history.map(row => row.revision), [2]);
+    assert.equal(reviewDetails.history[0].decision, 'PREVIEW_REVIEWED');
+    assert.equal(reviewDetails.history[0].note, validReview.note);
+    const readOnlyReviewSnapshot = await ctx.db.prepare(
+      'SELECT revision,decision,note FROM cms_owner_reviews WHERE draft_id=? ORDER BY revision DESC',
+    ).bind(id).all();
+    assert.equal((await ctx.run(reviewRoute + '?unexpected=1', 'GET', undefined, ctx.login)).status, 400);
+    assert.equal((await ctx.run(reviewRoute, 'PATCH', {}, ctx.login)).status, 405);
+    assert.equal((await ctx.run('/local/articles/' + '00000000-0000-4000-8000-000000000000' +
+      '/review', 'GET', undefined, ctx.login)).status, 404);
+    assert.deepEqual((await ctx.db.prepare(
+      'SELECT revision,decision,note FROM cms_owner_reviews WHERE draft_id=? ORDER BY revision DESC',
+    ).bind(id).all()).results, readOnlyReviewSnapshot.results, 'private history GET does not write to D1');
     await assert.rejects(ctx.db.prepare('DELETE FROM cms_owner_reviews WHERE draft_id=?')
       .bind(id).run(), /immutable/u, 'stored Owner review cannot be deleted');
     await assert.rejects(ctx.db.prepare('UPDATE cms_owner_reviews SET note=? WHERE draft_id=?')
@@ -218,14 +232,30 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
       expectedRevision: 2, idempotencyKey: idempotency(),
     }, ctx.login);
     assert.equal(third.status, 200);
-    assert.equal((await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json()).review,
-      null, 'review of superseded content is not attached to a new revision');
+    const superseded = await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json();
+    assert.equal(superseded.review, null, 'old process approval never applies to a new revision');
+    assert.deepEqual(superseded.history.map(row => row.revision), [2]);
+    assert.equal(superseded.publication, 'DISABLED');
+    assert.equal(superseded.rights, 'NOT_CLEARED');
     assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 409,
       'stale review replay cannot attach to the newer revision');
     assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_owner_reviews WHERE draft_id=?')
       .bind(id).first()).n, 1, 'old review preserved as immutable evidence');
+    const newDecision = await ctx.run(reviewRoute, 'POST', {
+      expectedRevision: 3, decision: 'CHANGES_REQUESTED',
+      note: 'The newer synthetic revision needs further local checks.',
+    }, ctx.login);
+    assert.equal(newDecision.status, 201);
+    const twoDecisions = await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json();
+    assert.equal(twoDecisions.review.decision, 'CHANGES_REQUESTED');
+    assert.deepEqual(twoDecisions.history.map(row => row.revision), [3, 2],
+      'both current and immutable superseded decisions remain available only to Owner');
+    assert.equal(twoDecisions.history[1].note, validReview.note);
+    assert.equal((await ctx.db.prepare('SELECT status FROM cms_drafts WHERE id=?').bind(id).first()).status,
+      'draft', 'review history never changes publication state');
     assert.equal((await ctx.run('/local/logout', 'POST', {}, ctx.login)).status, 200);
     assert.equal((await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).status, 401);
+    assert.equal((await ctx.run(reviewRoute + '?unexpected=1', 'GET', undefined, ctx.login)).status, 400);
     assert.equal((await ctx.run(route + '?revision=2', 'GET', undefined, ctx.login)).status, 401,
       'revoked session cannot export');
   } finally {

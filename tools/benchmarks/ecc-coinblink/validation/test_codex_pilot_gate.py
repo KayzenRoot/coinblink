@@ -46,9 +46,11 @@ class GateContracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
 
     def test_gate_without_private_receipt_rejected(self):
+        now = datetime.now(timezone.utc)
+        expected_head = "a" * 40
         with mock.patch.object(self.module, "GATE", Path("/impossible-ecc-private-receipt-absent-2026")):
             with self.assertRaises(SystemExit):
-                self.module.private_gate("ecc-change-impact", "a" * 40, datetime.now(timezone.utc))
+                self.module.private_gate("ecc-change-impact", expected_head, now)
 
     def test_gate_rejects_paid_credits_and_expired_receipt(self):
         from tempfile import TemporaryDirectory

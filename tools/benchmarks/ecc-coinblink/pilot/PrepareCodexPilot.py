@@ -37,6 +37,8 @@ REQUIRED_TRUE = (
 GATE_SCHEMA = "ecc-coinblink-pilot-human-approval-v1"
 TOKEN_LIKE_ENV = ("OPENAI_API_KEY", "CODEX_API_KEY", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT")
 BLOCKED = "BLOCKED_ACCESS_OR_COST_UNVERIFIED"
+SKILLS_DIRECTORY = ".agents"
+SKILL_FILENAME = "SKILL.md"
 
 
 def stop(reason):
@@ -45,6 +47,18 @@ def stop(reason):
 
 def sha256(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def check_skill_integrity():
+    """Check the original and B-arm copies against links and accidental drift."""
+    for name in SKILLS:
+        canonical = ROOT / SKILLS_DIRECTORY / "skills" / name / SKILL_FILENAME
+        twin = PACK / "agent-materials" / "adapted-skills" / name / SKILL_FILENAME
+        for item in (canonical, twin):
+            if item.is_symlink() or not item.is_file():
+                stop("Missing or linked skill")
+        if canonical.read_bytes() != twin.read_bytes():
+            stop("Agent skill copy drift")
 
 
 def package_contract(skill):
@@ -62,14 +76,7 @@ def package_contract(skill):
     fixture = (PACK / "pilot" / "SYNTHETIC_FIXTURE.md").read_bytes()
     if len(fixture) > 32768 or b"sealed-judges" in fixture:
         stop("Synthetic fixture out of bounds")
-    for name in SKILLS:
-        canonical = (ROOT / ".agents" / "skills" / name / "SKILL.md")
-        twin = PACK / "agent-materials" / "adapted-skills" / name / "SKILL.md"
-        for item in (canonical, twin):
-            if item.is_symlink() or not item.is_file():
-                stop("Missing or linked skill")
-        if canonical.read_bytes() != twin.read_bytes():
-            stop("Agent skill copy drift")
+    check_skill_integrity()
     if skill not in SKILLS:
         stop("Unknown skill")
     return fixture
@@ -77,6 +84,16 @@ def package_contract(skill):
 
 def is_reparse(path):
     return path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction())
+
+
+def require_recent_approval_time(record, current_time):
+    """Keep parsing and expiry checks independent from receipt validation."""
+    try:
+        stamp = datetime.fromisoformat(record["confirmed_at_utc"].replace("Z", "+00:00"))
+    except (KeyError, ValueError, AttributeError):
+        stop("Missing or invalid timestamp")
+    if stamp.tzinfo is None or stamp > current_time or current_time - stamp > timedelta(minutes=15):
+        stop("Receipt expired; obtain fresh manual approval")
 
 
 def private_gate(skill, source_head, current_time):
@@ -98,12 +115,7 @@ def private_gate(skill, source_head, current_time):
         stop("Owner has not verified every required access/cost/isolation gate")
     if record.get("execution_mode") != "included_allowance_only":
         stop("No paid usage is permitted")
-    try:
-        stamp = datetime.fromisoformat(record["confirmed_at_utc"].replace("Z", "+00:00"))
-    except (KeyError, ValueError, AttributeError):
-        stop("Missing or invalid timestamp")
-    if stamp.tzinfo is None or stamp > current_time or current_time - stamp > timedelta(minutes=15):
-        stop("Receipt expired; obtain fresh manual approval")
+    require_recent_approval_time(record, current_time)
     if not record.get("ui_evidence_reference") or not isinstance(record["ui_evidence_reference"], str):
         stop("Independent account UI evidence reference required")
     if len(record["ui_evidence_reference"]) > 250:
@@ -145,10 +157,10 @@ def prepare_synthetic_workspace(fixture):
         (fixture_path / "SYNTHETIC_FIXTURE.md").write_bytes(fixture)
         records = {"fixture_sha256": sha256(fixture), "skills": {}}
         for name in SKILLS:
-            target = root / ".agents" / "skills" / name
+            target = root / SKILLS_DIRECTORY / "skills" / name
             target.mkdir(parents=True)
-            content = (ROOT / ".agents" / "skills" / name / "SKILL.md").read_bytes()
-            (target / "SKILL.md").write_bytes(content)
+            content = (ROOT / SKILLS_DIRECTORY / "skills" / name / SKILL_FILENAME).read_bytes()
+            (target / SKILL_FILENAME).write_bytes(content)
             records["skills"][name] = sha256(content)
         assert not (root / ".git").exists()
         return root, records

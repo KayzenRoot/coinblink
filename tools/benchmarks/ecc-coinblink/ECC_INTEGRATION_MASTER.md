@@ -53,3 +53,7 @@ Snapshot de auditoria: 2026-10-23. **Esta PR é experimental. Nenhum ECC foi inc
 5. Revalidar segurança e CI no HEAD final e só então propor merge específico.
 
 Este documento **não** é um gate para o desenvolvimento de outros módulos e não concede permissão para gastos, instalações, deploy ou merge.
+
+## Auditoria da cadeia nativa Codex (23/10/2026)
+
+Snapshot upstream versionado em `native-codex/pinned-manifest.json`, análise detalhada em `native-codex/INSTALL_CHAIN_AUDIT.md`, testes estáticos em `validation/test_native_codex_chain.py`. O marketplace aponta à raiz; o manifesto thin legado escapa do cache; hooks SessionStart, MCP npx, sync legado e git hooks globais estão bloqueados. Instalação e desinstalação não foram executadas.

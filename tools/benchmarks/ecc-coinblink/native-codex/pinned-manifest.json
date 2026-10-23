@@ -1,0 +1,100 @@
+{
+  "schema": "coinblink-ecc-native-static-v1",
+  "upstream": {
+    "repo": "affaan-m/ECC",
+    "commit": "90606c8315ee09cafc303515c5f33024db6b9882",
+    "tree": "9172b168b070a802bbc0a7c53a4ca968e761a8c6",
+    "version": "2.2.3",
+    "license": "MIT",
+    "truncated": false,
+    "entries": 6361,
+    "skills": 311,
+    "agents": 71,
+    "commands": 97
+  },
+  "marketplace": {
+    "name": "ecc",
+    "plugin": "ecc",
+    "source": "local",
+    "path": "./",
+    "install": "AVAILABLE",
+    "authentication": "ON_INSTALL"
+  },
+  "root_plugin": {
+    "manifest": ".codex-plugin/plugin.json",
+    "version": "2.2.3",
+    "skills": "./skills/",
+    "mcp": "./.mcp.json",
+    "hooks": "./hooks/codex-hooks.json",
+    "assets": [
+      "./assets/ecc-icon.svg",
+      "./assets/hero.png"
+    ],
+    "claimed_skills": 281
+  },
+  "thin_plugin": {
+    "manifest": "plugins/ecc/.codex-plugin/plugin.json",
+    "skills": "../../skills/",
+    "mcp": "../../.mcp.json",
+    "claimed_skills": 249
+  },
+  "risks": {
+    "session_hook_event": "SessionStart",
+    "hook_type": "command",
+    "hook_bootstrap": "scripts/hooks/plugin-hook-bootstrap.js",
+    "mcp_command": "npx",
+    "mcp_args": [
+      "-y",
+      "chrome-devtools-mcp@1.10.1"
+    ],
+    "installer_auto_dependencies": true,
+    "legacy_global_git_hooks": true,
+    "legacy_user_config_writes": true
+  },
+  "cache": {
+    "prefix": "plugins/cache/ecc/ecc",
+    "verified": false,
+    "discovery_verified": false
+  },
+  "rollback": {
+    "native": "codex plugin remove ecc@ecc",
+    "marketplace": "codex plugin marketplace remove ecc",
+    "legacy_preview": "node scripts/ecc.js uninstall --legacy-codex-sync --dry-run",
+    "legacy_commit": "node scripts/ecc.js uninstall --legacy-codex-sync",
+    "performed": false
+  },
+  "gates": {
+    "installed": false,
+    "hooks_trusted": false,
+    "mcp_started": false,
+    "script_executed": false,
+    "codex_run": false,
+    "status": "BLOCKED_ACCESS_OR_COST_UNVERIFIED"
+  },
+  "blobs": {
+    ".agents/plugins/marketplace.json": "a69ad37099e1355b9bf55847382702e0d1650c03",
+    ".codex-plugin/plugin.json": "c24f7453c8a455105a839842a2408688e3b2b559",
+    "plugins/ecc/.codex-plugin/plugin.json": "9ea47bdb13f24acfaf399f384fd040df29d75bc3",
+    ".mcp.json": "9860a4dbeafc26ce2233df1a0914916feb543582",
+    "hooks/codex-hooks.json": "a8830770877e7aa54ee7366aa95de873fd4383b6",
+    ".codex/config.toml": "c817791e4b2d40b3be8ec767121b84503cfcd7d6",
+    "install.sh": "8d6aaa9c5195a10437f3a88615614a7ec46c51eb",
+    "install.ps1": "b30600dd9b441bdd1725b6aee5516c34bb46649f",
+    "scripts/sync-ecc-to-codex.sh": "18a11f939d5ca7eac2d23fa0a73522a23e8dabc6",
+    "scripts/codex/check-plugin-cache.js": "6839b413cc78d6755cc56f61be0d57f4754b5fa6",
+    "scripts/codex/install-global-git-hooks.sh": "22702a5f56a9a46dc992d7eee2e306320eb62755",
+    "scripts/hooks/plugin-hook-bootstrap.js": "5f05a0aa5887d03ecd58dc769cfcd460390eb18b",
+    "scripts/hooks/session-start-bootstrap.js": "4897fc8ccfad7ea115ffca3fe509d5e29f16fff7",
+    "scripts/uninstall.js": "0a7f412315e4ffa17f3d9586d0b2ccaca9fb7bd1",
+    "scripts/ecc.js": "04257cba12d8e00c9e9eca2744f309671bc22399",
+    "scripts/install-apply.js": "a10ef950881e6a8dfeb2904d6a2823af83d7f159",
+    "scripts/lib/codex-legacy-sync.js": "12cdc392b76eb1dea94b5e09cc9115073cbf0604",
+    "skills/configure-ecc/SKILL.md": "532eedd8bc5203b6f193626768f8976e07b9375f",
+    "agents/pr-test-analyzer.md": "07bf41ebda6590a73a274e4598e3a00dc654a919",
+    "assets/ecc-icon.svg": "0a8b73b131c1e9862b8c7022ca1a63d846864ac2",
+    "assets/hero.png": "4264c7db7f8124c825a4f9f01a36e3a39b5f7d88",
+    "scripts/hooks/run-with-flags.js": "00c6663089615248711a1d60a919895d78eb473f",
+    "scripts/hooks/session-start.js": "486c52963761994c9f947503194f54f379e6cca7d",
+    "scripts/lib/resolve-ecc-root.js": "b6f6eaf2599003edbd5c3b81b744bf0b3760a39b"
+  }
+}

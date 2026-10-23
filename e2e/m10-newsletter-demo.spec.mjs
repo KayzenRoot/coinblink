@@ -3,7 +3,9 @@ import AxeBuilder from "@axe-core/playwright";
 
 test("M10 composes and clears an unsent mock digest without collecting data or contacting services", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const external = [], writes = [];
+  const external = [], writes = [], browserErrors = [];
+  page.on("pageerror", error => browserErrors.push(error.message));
+  page.on("console", message => { if (message.type() === "error") browserErrors.push(message.text()); });
   page.on("request", req => {
     if (!req.url().startsWith("http://127.0.0.1:4321/") && !req.url().startsWith("data:")) external.push(req.url());
     if (!["GET", "HEAD"].includes(req.method())) writes.push(req.url());
@@ -18,6 +20,15 @@ test("M10 composes and clears an unsent mock digest without collecting data or c
   await expect(page.getByRole("textbox", { name: /email/u })).toHaveCount(0);
   await topic.selectOption("security");
   await run.click();
+  if (await preview.isHidden()) {
+    const info = await page.evaluate(() => ({
+      status: document.querySelector("[data-m10-status]")?.textContent,
+      topic: document.querySelector("[data-m10-topic]")?.value,
+      scripts: [...document.querySelectorAll("script")].map(script => script.src),
+      markup: document.querySelector("[data-m10-title]")?.outerHTML,
+    }));
+    throw new Error("M10 browser init diagnostic " + JSON.stringify({ ...info, browserErrors }));
+  }
   await expect(preview).toBeVisible();
   await expect(preview.locator("li")).toHaveCount(1);
   await expect(preview).toContainText("0 subscribers · 0 emails sent");

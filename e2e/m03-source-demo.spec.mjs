@@ -46,6 +46,20 @@ test("M03 synthetic sources are accessible, filter locally and never ingest", as
   await expect(page.locator("[data-m03-comparison]")).toContainText("DENIED_RIGHTS");
   await expect(page.locator("[data-m03-comparison]")).toContainText("UNAVAILABLE");
   await expect(page.locator("[data-m03-comparison]")).toContainText("BOTH BLOCKED · NO INGESTION · NO PUBLICATION");
+  const details = page.locator("[data-m03-compare-details]");
+  await expect(details).toBeVisible();
+  await expect(details).toContainText("Matching fictional checks: URL: SYNTHETIC_ONLY, RIGHTS: NOT_CLEARED, CAPTURE: NOT_CAPTURED, DIGEST: NO_DIGEST");
+  await expect(details).toContainText("Different fictional checks: none");
+  await expect(details).toContainText("Inspection outcomes: different (DENIED_RIGHTS / UNAVAILABLE)");
+  await expect(details).toContainText("Neither record proves rights");
+  await page.locator("[data-m03-right]").selectOption("demo-source-beta");
+  await expect(details).toBeHidden();
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(details).toContainText("License labels: different (NOT_CLEARED / UNKNOWN)");
+  await page.locator("[data-m03-right]").selectOption("demo-source-alpha");
+  await expect(details).toBeHidden();
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(details).toBeHidden();
   for (const width of [390, 768, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     const bounds = await page.locator(".m03-comparison").boundingBox();

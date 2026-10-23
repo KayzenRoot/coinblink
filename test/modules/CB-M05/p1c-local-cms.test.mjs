@@ -837,6 +837,15 @@ async function openWorkerHostedBootstrapD1(options = {}) {
     if (options.applySchema !== false) {
       for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
     }
+    const seedHandler = createLocalCmsHandler(Number.isFinite(options.nowMs) && options.nowMs > 0
+      ? { now: () => options.nowMs } : {});
+    const seedEnv = {
+      CB_M05_LOCAL_TEST_ONLY: 'true', CMS_D1_LOCAL: db, CMS_TEST_HMAC_KEY: secret,
+    };
+    // Seed requests use the same local D1 and unchanged handler without adding
+    // one TCP dispatch per fixture; the measured claim burst still runs in workerd.
+    const seedRequest = (route, method = 'GET', body = undefined) =>
+      seedHandler(makeRequest(route, method, body), seedEnv);
     const dispatch = (route, method = 'GET', body = undefined, extraHeaders = {}) => mf.dispatchFetch(CMS_TEST_ORIGIN + route, {
       method,
       headers: {
@@ -854,7 +863,7 @@ async function openWorkerHostedBootstrapD1(options = {}) {
       return (await response.json()).statuses;
     };
     const ticket = () => issueBootstrapTicket(db, secret, Math.floor(options.nowMs / 1000 || Date.now() / 1000));
-    return { mf, db, dispatch, ticket, race, secret, persistencePath };
+    return { mf, db, dispatch, seedRequest, ticket, race, secret, persistencePath };
   } catch (error) {
     await mf.dispose();
     throw error;
@@ -894,7 +903,7 @@ async function runWorkerBootstrapRace(contenders, trial) {
     for (let i = 0; i < contenders; i++) {
       const ticket = await ctx.ticket();
       const authenticator = makeSyntheticAuthenticator('worker-' + trial + '-' + i);
-      const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+      const challengeResponse = await ctx.seedRequest('/local/bootstrap/challenge', 'POST', { ticket });
       assert.equal(challengeResponse.status, 200);
       contenderSet.push({ ticket, authenticator, challenge: (await challengeResponse.json()).challenge });
     }
@@ -948,7 +957,7 @@ async function runWorkerInTickRace(contenders, trial) {
     for (let i = 0; i < contenders; i++) {
       const ticket = await ctx.ticket();
       const authenticator = makeSyntheticAuthenticator('tick-' + trial + '-' + i);
-      const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+      const challengeResponse = await ctx.seedRequest('/local/bootstrap/challenge', 'POST', { ticket });
       assert.equal(challengeResponse.status, 200);
       const { challenge } = await challengeResponse.json();
       contenderSet.push({ authenticator, challenge });

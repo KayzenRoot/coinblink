@@ -38,3 +38,6 @@ On diagnostic HEAD `18635a07bb03537d1867a35983b0946ff6f77aa4`, hosted [Actions j
 - [M05 local Chromium job](https://github.com/KayzenRoot/coinblink/actions/runs/40034752800/job/120691374700) on initial HEAD: **40/40 guards** and **11/11 browser tests** passed, including the new M03→M05 explicit-Apply/zero-D1-write scenario.
 - The exact replacement HEAD introduced by this correction MUST have its own CI/Sonar/Socket readback; old-HEAD evidence is not a substitute. `NOT_RUN` until confirmed.
 - **Veredito:** `CORRECTION REQUIRED / PR DRAFT` while awaiting zero SonarCloud new issues and all required hosted checks. No fake APPROVED, no merge/deploy/gastos/LIVE.
+
+## Vertical browser continuation · explicit Save and existing M05→M02 Markdown
+Extended the same LOCAL WebAuthn/D1 browser scenario to assert a **zero-row D1 state after Apply**, then a distinct explicit **Save** creates exactly one persisted synthetic draft, followed by the original confirmed revision-export flow. The browser download is parsed with `parseLocalDraftMarkdown` used by M02, with original fictional source and draft-only safety flags intact. The browser test continues to scrub the inspected source on new draft and logout. **No code or new endpoint modified by this test-only delta**. New-HEAD CI / Chromium status remains `NOT_RUN` until verified; no merge authorized.

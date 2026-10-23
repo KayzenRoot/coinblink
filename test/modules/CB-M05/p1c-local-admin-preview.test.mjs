@@ -2,7 +2,8 @@
 // mapped only through the isolated synthetic HTTPS Origin. No public admin deploy.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { parseLocalDraftMarkdown } from '../../../src/modules/CB-M05/local-draft-markdown.mjs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { listSyntheticSources } from '../../../src/modules/CB-M03/source-lab.mjs';
@@ -342,6 +343,29 @@ test('M03 to M05 local Owner source report is inspected, applied only on explici
     assert.equal(await source.inputValue(), canonical.originUrl);
     assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0,
       'explicit Apply must not issue a D1 write');
+    // Full local continuation: Owner chooses to save after the safe Apply, then
+    // downloads the already-existing canonical M05 Markdown for M02.
+    await page.locator('[name="title"]').fill('Offline M03 to M05 to M02 demonstration');
+    await page.locator('[name="summary"]').fill('Unverified synthetic source report, saved only after explicit action.');
+    await page.locator('[name="body"]').fill('No rights or verified evidence. Local only.');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1,
+      'only the explicit Save action persists one synthetic draft');
+    const [exported] = await Promise.all([
+      page.waitForEvent('download'),
+      (async () => {
+        page.once('dialog', dialog => dialog.accept());
+        await page.locator('#export-draft').click();
+      })(),
+    ]);
+    const markdown = readFileSync(await exported.path(), 'utf8');
+    const parsed = parseLocalDraftMarkdown(markdown);
+    assert.equal(parsed.source, canonical.originUrl);
+    assert.equal(parsed.title, 'Offline M03 to M05 to M02 demonstration');
+    assert.equal(parsed.ready, true);
+    assert.match(markdown, /WORKING DRAFT ONLY.*Not checked, approved, or published/u);
     await upload(payload);
     await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
     page.once('dialog', dialog => dialog.accept());
@@ -358,7 +382,7 @@ test('M03 to M05 local Owner source report is inspected, applied only on explici
     assert.equal(await file.inputValue(), '');
     assert.equal(await page.locator('#source-transfer-review').textContent(), '');
     assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
-    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
     assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0);
   } finally { await preview.close(); }
 });

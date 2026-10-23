@@ -194,6 +194,8 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
       ctx.login)).status, 400, 'no publishing transition exists');
     assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, note: 'short' },
       ctx.login)).status, 400, 'invalid note is refused');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, note: 'Control newline\nattempt is invalid.' },
+      ctx.login)).status, 400, 'embedded ASCII control is refused');
     assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, extra: true },
       ctx.login)).status, 400, 'forged extra properties are refused');
     assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 201);
@@ -226,6 +228,56 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.equal((await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).status, 401);
     assert.equal((await ctx.run(route + '?revision=2', 'GET', undefined, ctx.login)).status, 401,
       'revoked session cannot export');
+  } finally {
+    await ctx.mf.dispose();
+    rmSync(ctx.state, { recursive: true, force: true });
+  }
+});
+
+test('M05 Owner review additive schema upgrade retains an existing LOCAL D1 draft', { timeout: 90_000 }, async () => {
+  const ctx = await setup();
+  try {
+    // Simulate the original v1 database inside an isolated disposable D1 only.
+    await ctx.db.prepare('DROP TABLE cms_owner_reviews').run();
+    const legacy = await ctx.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='cms_owner_reviews'",
+    ).first();
+    assert.equal(legacy, null, 'original D1 v1 has no Owner review extension');
+    const created = await ctx.run('/local/articles', 'POST', {
+      ...example, idempotencyKey: idempotency(),
+    }, ctx.login);
+    assert.equal(created.status, 201);
+    const { id } = await created.json();
+    const saved = await ctx.db.prepare(
+      'SELECT id,title,summary,body,status,revision,source_url,author_label FROM cms_drafts WHERE id=?',
+    ).bind(id).first();
+    const history = await ctx.db.prepare(
+      'SELECT draft_id,revision,body,title FROM cms_draft_revisions WHERE draft_id=?',
+    ).bind(id).all();
+
+    await installLocalOwnerReviewSchema(ctx.db);
+    await installLocalOwnerReviewSchema(ctx.db);
+    const retained = await ctx.db.prepare(
+      'SELECT id,title,summary,body,status,revision,source_url,author_label FROM cms_drafts WHERE id=?',
+    ).bind(id).first();
+    const retainedHistory = await ctx.db.prepare(
+      'SELECT draft_id,revision,body,title FROM cms_draft_revisions WHERE draft_id=?',
+    ).bind(id).all();
+    assert.deepEqual(retained, saved, 'add-only review upgrade preserves existing D1 draft');
+    assert.deepEqual(retainedHistory.results, history.results, 'revision history is identical');
+    const triggers = await ctx.db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'cms_owner_review_%' ORDER BY name",
+    ).all();
+    assert.deepEqual(triggers.results.map(row => row.name),
+      ['cms_owner_review_no_delete', 'cms_owner_review_no_update'],
+      'idempotent upgrade creates exactly the two review immutability guards');
+    const review = await ctx.run('/local/articles/' + id + '/review', 'POST', {
+      expectedRevision: 1, decision: 'CHANGES_REQUESTED',
+      note: 'LOCAL process feedback, not publication clearance.',
+    }, ctx.login);
+    assert.equal(review.status, 201, 'upgraded v1 D1 accepts current Owner review');
+    assert.equal((await ctx.db.prepare('SELECT status FROM cms_drafts WHERE id=?').bind(id).first()).status,
+      'draft', 'migration and review cannot publish a draft');
   } finally {
     await ctx.mf.dispose();
     rmSync(ctx.state, { recursive: true, force: true });

@@ -94,7 +94,7 @@
     "assets/ecc-icon.svg": "0a8b73b131c1e9862b8c7022ca1a63d846864ac2",
     "assets/hero.png": "4264c7db7f8124c825a4f9f01a36e3a39b5f7d88",
     "scripts/hooks/run-with-flags.js": "00c6663089615248711a1d60a919895d78eb473f",
-    "scripts/hooks/session-start.js": "486c52963761994c9f947503194f54f379e6cca7d",
+    "scripts/hooks/session-start.js": "486c5296376194c9f947503194f54f379e6cca7d",
     "scripts/lib/resolve-ecc-root.js": "b6f6eaf2599003edbd5c3b81b744bf0b3760a39b"
   }
 }

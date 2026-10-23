@@ -49,6 +49,23 @@ class PackageContracts(unittest.TestCase):
             self.assertEqual(row["cost_usd"], "")
             self.assertEqual(row["judge_pass"], "")
 
+    def test_pilot_is_explicitly_blocked_until_codex_is_verified(self):
+        pilot = PACK / "pilot"
+        data = json.loads((pilot / "PILOT_STATUS.json").read_text(encoding="utf-8"))
+        self.assertEqual(data["runs_completed"], 0)
+        self.assertEqual(data["status"], "BLOCKED_ACCESS_OR_COST_UNVERIFIED")
+        self.assertFalse(data["codex_session_connected"])
+        self.assertFalse(data["allow_paid_credits"])
+        self.assertFalse(data["allow_benchmark_ab"])
+        self.assertFalse(data["private_judges_accessible"])
+        self.assertEqual({item["skill"] for item in data["skills"]}, set(SKILLS))
+        for item in data["skills"]:
+            self.assertEqual(item["status"], "NOT_RUN")
+            self.assertEqual(item["discovery"], "UNVERIFIED")
+            self.assertIsNone(item["cost_usd"])
+        self.assertTrue((pilot / "PILOT_README.md").is_file())
+        self.assertTrue((pilot / "SYNTHETIC_FIXTURE.md").is_file())
+
     def test_descriptors_are_nonmaterialized(self):
         for task, sha in TASK_SHAS.items():
             record = json.loads((PACK / "snapshot-descriptors" / f"{task}.json").read_text(encoding="utf-8"))

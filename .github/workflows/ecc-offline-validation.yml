@@ -99,8 +99,14 @@ jobs:
           node --test test/modules/CB-M07/local-calendar.test.mjs
       - name: Build public site for public-admin denial checks
         run: npm run build
-      - name: Reuse Chromium setup from existing M05/M07 CI workflows
-        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Reuse locked Playwright Chromium browser
+        shell: bash
+        run: |
+          if [[ "$SUITE" == "m05" ]]; then
+            ./node_modules/.bin/playwright install --with-deps chromium
+          else
+            ./node_modules/.bin/playwright install chromium
+          fi
       - name: M05 synthetic owner login/logout
         if: matrix.suite == 'm05'
         run: npm run cms:smoke

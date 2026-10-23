@@ -58,10 +58,30 @@ jobs:
           for file in files:
               data = json.loads(file.read_text(encoding="utf-8"))
               for run in data.get("runs", []):
+                  results = run.get("results", [])
                   summary.append({
                       "tool": run.get("tool", {}).get("driver", {}).get("name"),
-                      "results": len(run.get("results", [])),
-                      "rules": len(run.get("tool", {}).get("driver", {}).get("rules", [])),
+                      "results": len(results),
+                      "findings": [
+                          {
+                              "rule": result.get("ruleId"),
+                              "level": result.get("level"),
+                              "path": (
+                                  result.get("locations", [{}])[0]
+                                  .get("physicalLocation", {})
+                                  .get("artifactLocation", {})
+                                  .get("uri")
+                              ),
+                              "line": (
+                                  result.get("locations", [{}])[0]
+                                  .get("physicalLocation", {})
+                                  .get("region", {})
+                                  .get("startLine")
+                              ),
+                              "message": result.get("message", {}).get("text", "")[:180],
+                          }
+                          for result in results[:30]
+                      ],
                   })
           print("ECC_CODEQL_READ_ONLY_SARIF=" + json.dumps(summary, sort_keys=True))
           PY

@@ -1,7 +1,7 @@
 ---
 interface Props {
   locale?: "en" | "pt-br";
-  current: "home" | "news" | "sources" | "markets" | "newsletter" | "editorial";
+  current: "home" | "news" | "sources" | "markets" | "research" | "newsletter" | "editorial";
 }
 const { locale = "en", current } = Astro.props;
 const pt = locale === "pt-br";
@@ -10,6 +10,7 @@ const entries = [
   { key: "news", href: pt ? "/pt-br/news" : "/en/news", label: pt ? "Notícias fictícias" : "Fictional news" },
   { key: "sources", href: "/demo/sources", label: pt ? "Fontes demonstrativas (EN)" : "Source lab" },
   { key: "markets", href: "/demo/markets", label: pt ? "Mercados demonstrativos (EN)" : "Market lab" },
+  { key: "research", href: "/demo/research", label: pt ? "Pesquisa demonstrativa (EN)" : "Research lab" },
   { key: "newsletter", href: "/demo/newsletter", label: pt ? "Boletim demonstrativo (EN)" : "Newsletter lab" },
   { key: "editorial", href: "/demo/editorial/articles", label: pt ? "Editor demonstrativo (EN)" : "Editorial demo" },
 ];

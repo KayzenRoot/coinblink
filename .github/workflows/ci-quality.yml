@@ -71,6 +71,7 @@ jobs:
             'test/modules/CB-M02/*.test.mjs' \
             'test/modules/CB-M03/*.test.mjs' \
             'test/modules/CB-M04/*.test.mjs' \
+            'test/modules/CB-M08/*.test.mjs' \
             'test/modules/CB-M10/*.test.mjs'
       - name: Upload coverage artifact for audit (no vendor token)
         if: always()

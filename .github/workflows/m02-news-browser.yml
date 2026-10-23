@@ -6,6 +6,10 @@ on:
     paths:
       - ".github/workflows/m02-news-browser.yml"
       - "src/modules/CB-M02/**"
+      - "src/modules/CB-M09/**"
+      - "src/pages/es/news.astro"
+      - "src/pages/es/news/**"
+      - "e2e/m09-spanish-news.spec.mjs"
       - "src/modules/CB-M01/GoldenHome.astro"
       - "src/pages/en/news/**"
       - "src/pages/pt-br/news/**"
@@ -47,4 +51,4 @@ jobs:
       - name: Chromium
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: Browser acceptance
-        run: ./node_modules/.bin/playwright test e2e/m02-news-demo.spec.mjs
+        run: ./node_modules/.bin/playwright test e2e/m02-news-demo.spec.mjs e2e/m09-spanish-news.spec.mjs

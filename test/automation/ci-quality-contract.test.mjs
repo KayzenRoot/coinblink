@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createLocalEditorialVariant } from "../../src/modules/CB-M07/local-editorial-variants.mjs";
+import { LOCAL_CMS_UI_SCRIPT } from "../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs";
 
 const workflow = readFileSync(".github/workflows/ci-quality.yml", "utf8");
 
@@ -40,8 +41,12 @@ test("M07 LOCAL control-character safety contract stays active under strict ESLi
     status: "draft",
     updated_at: 1760870000,
   });
-  assert.match(createLocalEditorialVariant.toString(), /function containsUnsafeAsciiControl/u,
-    "browser-inlined LOCAL validator must include its safety guard");
+  assert.doesNotMatch(createLocalEditorialVariant.toString(), /function containsUnsafeAsciiControl/u,
+    "LOCAL validator should not redeclare its module-scoped control guard");
+  assert.match(createLocalEditorialVariant.toString(), /containsUnsafeAsciiControl\(editableText\)/u,
+    "LOCAL validator must invoke its control guard");
+  assert.match(LOCAL_CMS_UI_SCRIPT, /const containsUnsafeAsciiControl = \(/u,
+    "browser script must serialize the control guard before the validator");
   const forbidden = [
     ...Array.from({ length: 9 }, (_, code) => code),
     11, 12, ...Array.from({ length: 18 }, (_, n) => n + 14), 127,

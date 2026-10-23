@@ -36,7 +36,11 @@ REQUIRED_TRUE = (
     "owner_authorized_this_pilot",
 )
 GATE_SCHEMA = "ecc-coinblink-pilot-human-approval-v2"
-TOKEN_LIKE_ENV = ("OPENAI_API_KEY", "CODEX_API_KEY", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT")
+TOKEN_LIKE_ENV = (
+    "OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN",
+    "OPENAI_FEDERATION_RULE_ID", "OPENAI_IDENTITY_TOKEN_FILE",
+    "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT",
+)
 BLOCKED = "BLOCKED_ACCESS_OR_COST_UNVERIFIED"
 SKILLS_DIRECTORY = ".agents"
 SKILL_FILENAME = "SKILL.md"
@@ -206,11 +210,27 @@ def prepare_synthetic_workspace(fixture):
         raise
 
 
-def execute_one(skill, fixture, src_head):
+def runtime_environment():
+    """Use the same constrained auth environment for login status AND execution."""
     if os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"):
         stop("Codex execution is categorically forbidden in CI")
-    if any(os.environ.get(k) for k in TOKEN_LIKE_ENV):
-        stop("Billable API key or API endpoint detected in environment")
+    if any(k in os.environ for k in TOKEN_LIKE_ENV):
+        stop("API key, access token, federation or alternate endpoint detected")
+    allowed = (
+        "PATH", "HOME", "USERPROFILE", "SYSTEMROOT", "WINDIR",
+        "TMP", "TEMP", "APPDATA", "LOCALAPPDATA", "LANG",
+        "LC_ALL", "PATHEXT",
+    )
+    return {k: v for k, v in os.environ.items() if k in allowed}
+
+
+def codex_exit_status(returncode):
+    """A failed CLI invocation is never evidence of agent effectiveness."""
+    return "EXECUTED_NEEDS_INDEPENDENT_REVIEW" if returncode == 0 else "CODEX_FAILED_UNVERIFIED"
+
+
+def execute_one(skill, fixture, src_head):
+    environment = runtime_environment()
     private_gate(skill, src_head, datetime.now(timezone.utc))
     codex = shutil.which("codex")
     if not codex:
@@ -220,7 +240,7 @@ def execute_one(skill, fixture, src_head):
     status = subprocess.run(
         [codex, "login", "status"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-        timeout=15, check=False,
+        timeout=15, check=False, env=environment,
     )
     if status.returncode != 0 or "chatgpt" not in status.stdout.lower():
         stop("Existing Codex session is not confirmed as ChatGPT login")
@@ -241,10 +261,7 @@ def execute_one(skill, fixture, src_head):
         "--skip-git-repo-check", "--sandbox", "read-only",
         "--ask-for-approval", "never", "-C", str(directory), "-",
     ]
-    # Remove billable key variables and inherited tool-integration settings.
-    allowed = ("PATH", "HOME", "USERPROFILE", "SYSTEMROOT", "WINDIR", "TMP", "TEMP",
-               "APPDATA", "LOCALAPPDATA", "LANG", "LC_ALL", "PATHEXT")
-    environment = {k: v for k, v in os.environ.items() if k in allowed}
+    # This is the exact same environment used by codex login status.
     evidence = session_dir / "trace-private.jsonl"
     errors = session_dir / "stderr-private.txt"
     manifest = {
@@ -260,14 +277,17 @@ def execute_one(skill, fixture, src_head):
     # promise zero charge based on an unsigned operator receipt.
     try:
         with evidence.open("xb") as out, errors.open("xb") as err:
-            subprocess.run(
+            outcome = subprocess.run(
                 command, input=prompt.encode("utf-8"), stdout=out, stderr=err,
                 cwd=directory, env=environment, check=False, timeout=120,
             )
     except subprocess.TimeoutExpired:
         manifest["status"] = "TIMEOUT_UNVERIFIED"
+    except OSError:
+        manifest["status"] = "CODEX_PROCESS_ERROR_UNVERIFIED"
     else:
-        manifest["status"] = "EXECUTED_NEEDS_INDEPENDENT_REVIEW"
+        manifest["status"] = codex_exit_status(outcome.returncode)
+        manifest["exit_code"] = outcome.returncode
     (session_dir / "manifest-private.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(json.dumps({"status": manifest["status"], "skill": skill,
                       "private_evidence_dir": str(session_dir)}))

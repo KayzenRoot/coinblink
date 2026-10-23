@@ -148,6 +148,36 @@ class GateContracts(unittest.TestCase):
         self.assertIsNone(data["authorized_execution_head"])
         self.assertEqual(data["runs_completed"], 0)
 
+    def test_api_token_and_federation_environment_fail_closed(self):
+        import os
+        for key in self.module.TOKEN_LIKE_ENV:
+            with self.subTest(variable=key):
+                with mock.patch.dict(os.environ, {key: "synthetic-token"}, clear=True):
+                    with self.assertRaises(SystemExit):
+                        self.module.runtime_environment()
+
+    def test_login_and_exec_share_sanitized_environment(self):
+        import os
+        with mock.patch.dict(os.environ, {
+            "HOME": "/synthetic-home", "PATH": "/synthetic-bin",
+            "CODEX_HOME": "/other-credential-home",
+            "UNTRUSTED_SERVICE_TOKEN": "synthetic",
+        }, clear=True):
+            environment = self.module.runtime_environment()
+        self.assertEqual(environment["HOME"], "/synthetic-home")
+        self.assertNotIn("CODEX_HOME", environment)
+        self.assertNotIn("UNTRUSTED_SERVICE_TOKEN", environment)
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('check=False, env=environment,', source)
+        self.assertIn('cwd=directory, env=environment, check=False,', source)
+
+    def test_failed_codex_exit_cannot_claim_success(self):
+        self.assertEqual(self.module.codex_exit_status(0), "EXECUTED_NEEDS_INDEPENDENT_REVIEW")
+        self.assertEqual(self.module.codex_exit_status(1), "CODEX_FAILED_UNVERIFIED")
+        self.assertEqual(self.module.codex_exit_status(127), "CODEX_FAILED_UNVERIFIED")
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('codex_exit_status(outcome.returncode)', source)
+
     def test_no_paid_or_ci_execution_precondition(self):
         code = SCRIPT.read_text(encoding="utf-8")
         self.assertIn('os.environ.get("GITHUB_ACTIONS")', code)

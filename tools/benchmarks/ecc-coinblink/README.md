@@ -11,7 +11,7 @@ Integração em branch isolada, draft PR, originada na main `729fe0910abdb350528
 
 ## Operação
 
-O commit não instala pacotes npm, não baixa ECC inteiro, não habilita hooks, MCPs ou multiagentes, não altera código de produto, não cria CI, não roda Codex e não gasta. A existência de skills na branch permite sua descoberta pelo Codex se estiver usando **essa branch**. Não é autorização para ativação em produção ou merge.
+O commit não instala pacotes npm, não baixa ECC inteiro, não habilita hooks, MCPs ou multiagentes, não altera código de produto, não cria execução automática do benchmark, não roda Codex e não gasta. A existência de skills na branch permite sua descoberta pelo Codex se estiver usando **essa branch**. Não é autorização para ativação em produção ou merge.
 
 **Não há checkouts históricos completos, dependências, navegadores ou oráculos no GitHub.** Para o piloto futuro, materializar snapshots fora do clone, via `git archive` de um clone que já contenha as três bases; exigir um ambiente com dependências existentes; separar juízes em ambiente de avaliação restrito; validar baseline negativo e positivo antes de medir. Não iniciar nenhuma execução sem autorização específica.
 
@@ -26,8 +26,12 @@ Na auditoria de 22/10/2026, o check SonarCloud da PR no HEAD inicial 4cf2ca8de74
 
 ### Correction Delta sobre o coletor (PR #209)
 
-O SonarCloud identificou três achados High de **Path Traversal via faulty LLM-supplied CLI arguments** em `operator/03-CaptureMetrics.py`, evidenciados pelo proprietário com captura de tela em 22/10/2026. A interface do coletor foi reduzida ao seletor `--run-id` de 18 valores enumerados; caminhos de leitura e escrita são agora gerados exclusivamente pelo layout conhecido do pacote externo, com bloqueio de checkout Git, verificação de `RUN_ORIGIN.json`, links simbólicos/junctions, limite de arquivo e escrita exclusiva. O novo código **não foi executado**; o sucesso definitivo requer nova análise SonarCloud no HEAD e evidência de validação autorizada posteriormente.
+O SonarCloud identificou três achados High de **Path Traversal via faulty LLM-supplied CLI arguments** em `operator/03-CaptureMetrics.py`, evidenciados pelo proprietário com captura de tela em 22/10/2026. A interface do coletor foi reduzida ao seletor `--run-id` de 18 valores enumerados; caminhos de leitura e escrita são agora gerados exclusivamente pelo layout conhecido do pacote externo, com bloqueio de checkout Git, verificação de `RUN_ORIGIN.json`, links simbólicos/junctions, limite de arquivo e escrita exclusiva. O coletor e o pacote ECC foram testados **somente com dados sintéticos** no Ubuntu/Windows; o SonarCloud passou no HEAD `1679521d30c8de5d2acf0302d4440d927f589f95` com zero novos issues. Os quatro pilotos Codex e os 18 ensaios A/B permanecem **NOT_RUN**.
 
 ## Automated synthetic validation, not the A/B benchmark
 
 The separate `.github/workflows/ecc-offline-validation.yml` performs offline, standard-library-only contract checks on Ubuntu and isolated synthetic PowerShell operator smoke checks on Windows. It never launches Codex, accesses sealed judges, downloads dependencies, pulls historical snapshot commits, publishes artifacts, or writes to main. It uses ephemeral GitHub-hosted public-repo runners and may execute automatically on PR updates. Unit checks **do not establish** agent efficacy, Windows workstation compatibility, code coverage percentage for production, or calibrated judge status. The 18 comparative rows remain `NOT_RUN` and the private oracles remain outside the public repository. Do not claim "ECC fully working" solely from synthetic CI.
+
+### Revisão de segurança final do executor v2
+
+A autenticação `codex login status` e o processo futuro `codex exec` agora recebem o **mesmo ambiente filtrado**, evitando verificar um login e executar com outra origem de credenciais. O executor recusa variáveis de chaves API, `CODEX_ACCESS_TOKEN`, credenciais federadas e endpoints Azure; o status final diferencia exit code 0 de falha, timeout e erro de processo. Testes sintéticos verificam estes bloqueios, sem iniciar Codex. O isolamento de filesystem/rede deve ser imposto e auditado pelo operador **fora do Python**, e não pode ser inferido das opções `read-only` ou `--ignore-user-config`. O status público permanece bloqueado até verificação externa de franquia sem créditos pagos e de sessão autenticada. Links oficiais: https://learn.chatgpt.com/docs/developer-commands?surface=cli e https://learn.chatgpt.com/docs/auth.

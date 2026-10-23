@@ -41,3 +41,11 @@ Cada recibo manual é **consumido uma única vez antes da chamada ao modelo**, r
 - `authorized_execution_head = null` no status público: somente o `source_head` do recibo **privado** `approval.json`, com `schema=v2`, `protocol_origin_head`, skill, horário e os gates usuais, pode coincidir com o HEAD real. Esse recibo é validado antes e **depois** de ser renomeado atomicamente para `approval.consumed-*.json`, deixando a autorização de uso único. A autorização **não é armazenada** no GitHub.
 
 **Gate permanece bloqueado**, mesmo com todos os campos preenchidos, se a franquia incluída, ausência de créditos pagos, autenticação ou isolamento externo não tiverem sido comprovados independentemente. Testes de recibo usam somente arquivos sintéticos descartáveis; não chamam CLI Codex e não validam cobrança real.
+
+## Segurança de autenticação e interpretação de resultados (auditoria final)
+
+O comando `codex login status` e qualquer `codex exec` futuro usam **o mesmo conjunto filtrado de variáveis de ambiente**. São rejeitados em vez de repassados: `OPENAI_API_KEY`, `CODEX_API_KEY`, `CODEX_ACCESS_TOKEN`, `OPENAI_FEDERATION_RULE_ID`, `OPENAI_IDENTITY_TOKEN_FILE` e as variáveis Azure detectadas. `CODEX_HOME` personalizado não é herdado, impedindo troca silenciosa entre contas durante o pré-flight. A fonte de login e a modalidade de cobrança ainda dependem de inspeção externa antes de conceder autorização.
+
+Um exit code **não zero** da CLI resulta em `CODEX_FAILED_UNVERIFIED`, não em sucesso. Timeout permanece `TIMEOUT_UNVERIFIED`. Um exit code zero resulta apenas em `EXECUTED_NEEDS_INDEPENDENT_REVIEW`, nunca em `VALIDATED` automático.
+
+Estas alterações são verificadas somente por testes sintéticos e **não garantem sandbox de rede/arquivos, autenticação real ou saldo disponível**. O operador deverá validar isoladamente a política de rede, o caminho das credenciais, versão da CLI e origem da conta em ambiente previamente existente, sem instalar componentes. Consulta oficial: https://learn.chatgpt.com/docs/auth e https://learn.chatgpt.com/docs/developer-commands?surface=cli.

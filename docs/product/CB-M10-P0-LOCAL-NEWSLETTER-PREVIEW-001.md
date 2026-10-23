@@ -13,3 +13,7 @@ Exact main base: ad00d6a671f8af71c6e729d15347b261997ec75b. M10 depends on existi
 M02 is the single canonical source for sample content. Invalid categories fail closed and samples must have demo:true / published:false and synthetic rights flags. Inputs/outputs bounded to max 3, validated internal slug paths and inert textContent. Check on exact HEAD: Node focused tests including M10; integrated Chromium (M01-M05 + M10), mobile/tablet/desktop, axe 2A/AA, no outbound traffic, no browser writes, noindex; Build, SonarCloud zero PR-new issues/hotspots, Socket, Gitleaks, lint/typecheck and PR Assurance/Reviewdog. Changes to existing GitHub Actions append M10 coverage only.
 
 **STOP:** no merge, deploy, cloud tokens, mailing provider, external links, personal data, real email addresses, consent collection, paid tool, rule changes or ECC #209 writes. Prior functional PR #210/#212/#213 unaffected. Integration may require a small LocalJourneyNav rebase when other module PRs are eventually merged into main.
+
+## CSP regression resolution
+
+The M10 browser acceptance found that Astro inlined a small component script (and stylesheet) on production builds; the existing strict CSP `script-src 'self'` blocked it. The UI now imports Vite-emitted external JS/CSS assets (`?url&no-inline`) with same-origin URLs, preserving strict CSP without unsafe-inline, nonces or policy changes. Browser diagnostic retained so failures show CSP errors in GitHub CI. Regression condition includes zero browser CSP console errors.

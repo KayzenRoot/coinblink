@@ -54,6 +54,7 @@ test("M10 composes and clears an unsent mock digest without collecting data or c
   }
   const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(scan.violations).toEqual([]);
+  expect(browserErrors.filter(message => message.includes("Content Security Policy"))).toEqual([]);
   expect(external).toEqual([]);
   expect(writes).toEqual([]);
 });

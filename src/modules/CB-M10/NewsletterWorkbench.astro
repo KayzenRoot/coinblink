@@ -1,6 +1,8 @@
 ---
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import { listMockNewsletterTopics, NEWSLETTER_DEMO_POLICY } from "./newsletter-preview.mjs";
+import newsletterJsUrl from "./newsletter-preview.client.js?url&no-inline";
+import newsletterCssUrl from "./newsletter-preview.css?url&no-inline";
 const topics = listMockNewsletterTopics();
 const labels: Record<string, string> = {
   all: "All fictional learning topics", security: "Security practice",
@@ -38,74 +40,5 @@ const labels: Record<string, string> = {
   </section>
   <p class="m10-footer">Read the same <a href="/en/news">offline fictional news examples (M02)</a>. Production subscription and email delivery are unavailable.</p>
 </main>
-<script>
-  import { buildMockNewsletterPreview } from "./newsletter-preview.mjs";
-  const root = document.querySelector("[data-m10-root]");
-  const topic = root?.querySelector("[data-m10-topic]");
-  const build = root?.querySelector("[data-m10-build]");
-  const clear = root?.querySelector("[data-m10-clear]");
-  const status = root?.querySelector("[data-m10-status]");
-  const preview = root?.querySelector("[data-m10-preview]");
-  const title = root?.querySelector("[data-m10-title]");
-  const count = root?.querySelector("[data-m10-count]");
-  const stories = root?.querySelector("[data-m10-stories]");
-  if (topic instanceof HTMLSelectElement && build instanceof HTMLButtonElement
-      && clear instanceof HTMLButtonElement && status instanceof HTMLElement
-      && preview instanceof HTMLElement && title instanceof HTMLElement
-      && count instanceof HTMLElement && stories instanceof HTMLElement) {
-    const reset = () => {
-      preview.hidden = true;
-      stories.replaceChildren();
-      title.textContent = "";
-      count.textContent = "";
-      status.textContent = "Choose a theme, then preview fictional content. No message can be sent.";
-    };
-    topic.addEventListener("change", reset);
-    clear.addEventListener("click", () => {
-      topic.value = "all";
-      reset();
-      topic.focus();
-    });
-    build.addEventListener("click", () => {
-      reset();
-      const result = buildMockNewsletterPreview(topic.value);
-      if (!result.preview) {
-        status.textContent = "Invalid theme. Nothing was generated or transmitted.";
-        return;
-      }
-      title.textContent = result.preview.title;
-      count.textContent = String(result.preview.storyCount)
-        + " invented examples · 0 subscribers · 0 emails sent";
-      for (const story of result.preview.stories) {
-        const li = document.createElement("li");
-        const link = document.createElement("a");
-        link.href = story.path;
-        link.textContent = story.title;
-        const detail = document.createElement("p");
-        detail.textContent = story.summary;
-        li.append(link, detail);
-        stories.append(li);
-      }
-      preview.hidden = false;
-      status.textContent = "Unsent mock preview assembled locally. No delivery took place.";
-      title.focus();
-    });
-  }
-</script>
-<style>
-  .m10{max-width:74rem;min-height:70vh;margin:auto;padding:clamp(1.25rem,4vw,3.5rem)}
-  .m10 header{max-width:70ch;margin:2rem 0}.m10 h1{font-size:clamp(2rem,4.5vw,3.8rem);line-height:1.1}
-  .m10 header p,.m10-footer{line-height:1.7;color:#cce1d1}
-  .m10 small,.m10-policy{color:#f5c981;font-weight:750}
-  .m10-card{background:#101e17;border:1px solid #456e4e;border-radius:.75rem;padding:clamp(1rem,3vw,2rem);margin:1.5rem 0}
-  .m10 label{display:grid;gap:.5rem;max-width:30rem}
-  .m10 select,.m10 button{min-height:2.8rem;padding:.7rem;border-radius:.5rem}
-  .m10 select{background:#14251b;color:#fff;border:1px solid #799c83}
-  .m10-buttons{display:flex;gap:.75rem;flex-wrap:wrap;margin:1rem 0}
-  .m10 button{border:1px solid #b8f34b;background:#b8f34b;color:#102015;font-weight:750;cursor:pointer}
-  .m10 button[data-m10-clear]{background:transparent;color:#b8f34b}
-  .m10 :is(a,select,button):focus-visible,.m10 [tabindex="-1"]:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
-  .m10-preview[hidden]{display:none}.m10-preview li{overflow-wrap:anywhere;margin:1rem 0}
-  .m10 a{color:#b8f34b;text-underline-offset:4px}
-  .m10-preview li p{color:#c8dacc}
-</style>
+<script is:inline src={newsletterJsUrl}></script>
+<link rel="stylesheet" href={newsletterCssUrl} />

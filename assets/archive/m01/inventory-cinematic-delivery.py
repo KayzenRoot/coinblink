@@ -81,7 +81,7 @@ changed: dict[str, str] = {}
 for line in status_lines:
     if not line:
         continue
-    status = "UNTRACKED" if line[:2] == "??" else "MODIFIED_OR_STAGED"
+    status = "UNTRACKED" if line.startswith("??") else "MODIFIED_OR_STAGED"
     relative = line[3:]
     if relative == WITHHELD_BLEND or relative.endswith((".blend1", ".pyc")) or "/__pycache__/" in relative:
         continue

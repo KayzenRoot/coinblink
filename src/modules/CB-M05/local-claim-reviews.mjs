@@ -179,11 +179,14 @@ if (typeof document !== "undefined") {
         for (const item of items) {
           const li = document.createElement("li");
           const description = document.createElement("span");
+          let sourceLabel = "No source attached";
+          if (item.sourceId !== null) {
+            sourceLabel = item.sourceAvailable
+              ? "Linked to [^cb" + item.sourceId + "] (not checked)"
+              : "MISSING linked reference [^cb" + item.sourceId + "]";
+          }
           description.textContent = "#" + item.id + " · " + item.state
-            + " · " + (item.sourceId === null ? "No source attached"
-              : item.sourceAvailable ? "Linked to [^cb" + item.sourceId + "] (not checked)"
-                : "MISSING linked reference [^cb" + item.sourceId + "]")
-            + " · " + item.claim;
+            + " · " + sourceLabel + " · " + item.claim;
           li.append(description);
           const toggle = document.createElement("button");
           toggle.type = "button";

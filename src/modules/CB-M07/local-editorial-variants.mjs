@@ -5,6 +5,7 @@ import { createLocalSocialPreview } from './social-preview.mjs';
 export function createLocalEditorialVariant(draft, channel, editableText) {
   // Preserve the original ASCII control blacklist without no-control-regex exceptions.
   // TAB, LF and CR remain permitted inside a non-edge-trimmed LOCAL variant.
+  // Nested on purpose: local-cms-ui.mjs inlines this function via toString().
   function containsUnsafeAsciiControl(text) {
     for (let i = 0; i < text.length; i++) {
       const code = text.codePointAt(i);
@@ -13,7 +14,6 @@ export function createLocalEditorialVariant(draft, channel, editableText) {
     }
     return false;
   }
-
   const concept = createLocalSocialPreview(draft, channel);
   if (typeof editableText !== 'string' || editableText !== editableText.trim() ||
       editableText.length < 8 || editableText.length > 1600 ||

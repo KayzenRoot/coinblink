@@ -46,7 +46,7 @@ function stripTerminalEscapes(output) {
     if (output.codePointAt(index) === 0x1b && output[index + 1] === "[") {
       index += 2;
       while (index < output.length) {
-        const code = output.charCodeAt(index);
+        const code = output.codePointAt(index);
         if (code >= 0x40 && code <= 0x7e) break;
         index += 1;
       }
@@ -62,7 +62,7 @@ export function childAnnouncedOrigin(output, expectedOrigin) {
   const expected = new URL(expectedOrigin).origin;
 
   return normalizedOutput.split(/\r?\n/u).some((line) => {
-    const localUrl = line.match(/\bLocal\s+(https?:\/\/\S+)/iu)?.[1];
+    const localUrl = /\bLocal\s+(https?:\/\/\S+)/iu.exec(line)?.[1];
     if (!localUrl) return false;
     try {
       return new URL(localUrl).origin === expected;
@@ -126,13 +126,18 @@ export async function waitForAstroServer({
   const deadline = now() + timeoutMs;
   let lastError;
 
-  while (now() < deadline) {
+  // Each attempt runs only after the previous retry sleep has resolved, so polling
+  // keeps the same interval, deadline check, and last-error reporting as a loop.
+  async function attempt() {
+    if (now() >= deadline) {
+      throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+    }
     const childError = getChildError();
     if (childError) throw new Error(`Astro fixture could not start: ${childError.message}`);
     assertAstroChildRunning(child);
     if (!childAnnouncedOrigin(getChildOutput(), expectedOrigin)) {
       await waitForReadinessRetry({ deadline, intervalMs, now, sleep });
-      continue;
+      return attempt();
     }
 
     const result = await runBoundedReadinessProbe({ probe, expectedOrigin, remainingMs: deadline - now() });
@@ -141,7 +146,8 @@ export async function waitForAstroServer({
     if (result.error) lastError = result.error;
     else if (result.response) lastError = new Error(`Fixture returned HTTP ${result.response.status}`);
     await waitForReadinessRetry({ deadline, intervalMs, now, sleep });
+    return attempt();
   }
 
-  throw new Error(`Astro fixture did not become ready: ${lastError?.message ?? "no response"}`);
+  return attempt();
 }

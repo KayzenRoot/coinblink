@@ -211,6 +211,9 @@ for (const locale of ["en", "pt-br"]) {
     await expect(panel).toBeVisible();
     await expect(root.locator("[data-m02-evidence-summary]")).toContainText("3");
     await expect(root.locator("[data-m02-evidence-signals] li")).toHaveCount(3);
+    const actions = root.locator("[data-m02-evidence-actions]");
+    await expect(actions.locator("li")).toHaveCount(3);
+    await expect(actions).toContainText(locale === "pt-br" ? "Defina a fonte" : "Define the source");
     await expect(panel).toContainText("[^cb9]");
     await expect(panel).toContainText("[^cb1]");
     await expect(panel).toContainText(locale === "pt-br" ? "NÃO VERIFICA" : "DOES NOT VERIFY");
@@ -218,6 +221,7 @@ for (const locale of ["en", "pt-br"]) {
     await input.setInputFiles({ name: "invalid.md", mimeType: "text/markdown", buffer: Buffer.from("# invalid") });
     await expect(panel).toBeHidden();
     await expect(root.locator("[data-m02-evidence-signals] li")).toHaveCount(0);
+    await expect(actions.locator("li")).toHaveCount(0);
     const clean = prepareLocalDraft({
       title: "Another fictional story", author: "Synthetic editor",
       summary: "A fictional clean looking article with no cited sources.",
@@ -228,8 +232,11 @@ for (const locale of ["en", "pt-br"]) {
     await expect(panel).toBeVisible();
     await expect(root.locator("[data-m02-evidence-summary]")).toContainText("0");
     await expect(panel).toContainText(locale === "pt-br" ? "Não é verificação" : "Not verification");
+    await expect(actions.locator("li")).toHaveCount(1);
+    await expect(actions).toContainText(locale === "pt-br" ? "Verifique fatos" : "Check facts");
     await root.locator("[data-m02-draft-clear]").click();
     await expect(panel).toBeHidden();
+    await expect(actions.locator("li")).toHaveCount(0);
     await page.reload();
     await expect(page.locator("[data-m02-evidence-review]")).toBeHidden();
     const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

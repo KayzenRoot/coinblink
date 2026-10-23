@@ -30,6 +30,9 @@ const pt = locale === "pt-br";
     <p class="m02-evidence-disclaimer">{pt ? "HEURÍSTICA LOCAL · NÃO VERIFICA FATOS, LINKS, DIREITOS OU PUBLICAÇÃO" : "LOCAL HEURISTIC · DOES NOT VERIFY FACTS, LINKS, RIGHTS OR PUBLICATION"}</p>
     <p data-m02-evidence-summary></p>
     <ul data-m02-evidence-signals></ul>
+    <h5>{pt ? "Próximas ações editoriais sugeridas" : "Suggested next editorial steps"}</h5>
+    <ol data-m02-evidence-actions aria-label={pt ? "Ações editoriais sugeridas" : "Suggested editorial actions"}></ol>
+    <p>{pt ? "Orientações locais não aprovam fontes, fatos, direitos ou publicação." : "Local suggestions do not approve sources, facts, rights or publication."}</p>
     <p>{pt ? "Referências e marcações de revisão são apenas texto declarado no arquivo importado." : "Citations and review markers are only text declared in the imported file."}</p>
   </section>
   </article>
@@ -55,14 +58,15 @@ const pt = locale === "pt-br";
   .m02-evidence[hidden]{display:none}
   .m02-evidence h4{font-size:1.2rem;margin:.25rem 0}
   .m02-evidence .m02-evidence-disclaimer{color:#f5c981;font-weight:700}
-  .m02-evidence ul{padding-left:1.4rem;overflow-wrap:anywhere}
+  .m02-evidence ul,.m02-evidence ol{padding-left:1.4rem;overflow-wrap:anywhere}
+  .m02-evidence h5{font-size:1rem;margin:1.1rem 0 .25rem}
   .m02-evidence li{margin:.5rem 0;white-space:pre-wrap}
 
   .m02-local-body{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 
 <script>
-  import { buildLocalEvidenceReport } from "./local-evidence-report.mjs";
+  import { buildLocalEvidenceReport, buildLocalEvidenceActions } from "./local-evidence-report.mjs";
 
   const root = document.querySelector("[data-m02-local-preview]");
   const article = root?.querySelector("[data-m02-draft-article]");
@@ -70,12 +74,14 @@ const pt = locale === "pt-br";
   const panel = root?.querySelector("[data-m02-evidence-review]");
   const summary = root?.querySelector("[data-m02-evidence-summary]");
   const list = root?.querySelector("[data-m02-evidence-signals]");
+  const actionList = root?.querySelector("[data-m02-evidence-actions]");
   if (root instanceof HTMLElement && article instanceof HTMLElement
       && draftBody instanceof HTMLElement && panel instanceof HTMLElement
-      && summary instanceof HTMLElement && list instanceof HTMLElement) {
+      && summary instanceof HTMLElement && list instanceof HTMLElement
+      && actionList instanceof HTMLElement) {
     // Capture narrowed DOM types in an immutable object so the render callback
     // cannot lose TypeScript's null/HTMLElement refinement across closure boundaries.
-    const view = { article, draftBody, panel, summary, list };
+    const view = { article, draftBody, panel, summary, list, actionList };
     const pt = root.dataset.locale === "pt-br";
     const labels = pt
       ? { repair: "Corrigir notas estruturadas", missing: "Citação sem fonte definida",
@@ -85,8 +91,38 @@ const pt = locale === "pt-br";
         unused: "Source not cited", explicit_review_marker: "Review pending",
         numeric_claim_without_local_citation: "Number without local citation" };
 
+    const actionLabels = pt
+      ? { repair: "Repare as notas estruturadas antes de revisar o rascunho.",
+        missing: "Defina a fonte da citação", unused: "Cite ou remova a fonte não utilizada",
+        explicit_review_marker: "Resolva a marcação de revisão no texto",
+        numeric_claim_without_local_citation: "Revise o número e adicione uma citação local, sem presumir veracidade",
+        manual: "Sem alertas estruturais detectados. Verifique fatos, direitos e aprovação manualmente." }
+      : { repair: "Repair structured notes before reviewing the draft.",
+        missing: "Define the source for citation", unused: "Cite or remove the unused source",
+        explicit_review_marker: "Resolve the editorial review marker in the text",
+        numeric_claim_without_local_citation: "Review the number and add a local citation without assuming it is true",
+        manual: "No structural signals detected. Check facts, rights and approvals manually." };
+
+    function renderActions(report: ReturnType<typeof buildLocalEvidenceReport>) {
+      view.actionList.replaceChildren();
+      const checklist = buildLocalEvidenceActions(report);
+      for (const action of checklist.items) {
+        const item = document.createElement("li");
+        item.textContent = (actionLabels[action.kind as keyof typeof actionLabels] || actionLabels.manual)
+          + (action.value ? ": " + action.value : "");
+        view.actionList.append(item);
+      }
+      if (checklist.hiddenCount) {
+        const more = document.createElement("li");
+        more.textContent = (pt ? "Alertas adicionais não listados: " : "Additional signals not listed: ")
+          + String(checklist.hiddenCount);
+        view.actionList.append(more);
+      }
+    }
+
     function render() {
       view.list.replaceChildren();
+      view.actionList.replaceChildren();
       if (view.article.hidden || !view.draftBody.textContent) {
         view.panel.hidden = true;
         view.summary.textContent = "";
@@ -114,6 +150,7 @@ const pt = locale === "pt-br";
           + String(report.hiddenHints);
         view.list.append(extra);
       }
+      renderActions(report);
       view.panel.hidden = false;
     }
 

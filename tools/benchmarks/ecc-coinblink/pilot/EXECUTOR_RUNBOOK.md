@@ -24,8 +24,10 @@ Para execução futura, há ainda confirmação expressa `--execute --confirm IN
 
 ### Segurança operacional
 
-O executor usa `codex exec --json --ephemeral --skip-git-repo-check --ignore-user-config --ignore-rules --sandbox read-only --ask-for-approval never`, sem chaves de API e passando o prompt por stdin. Essas opções existem na documentação da [CLI](https://learn.chatgpt.com/docs/cli/reference), mas seu comportamento depende da versão efetivamente instalada. Mesmo assim, **não garantem isolamento completo do filesystem ou custo zero**: é indispensável uma VM/contêiner isolado e prova externa de franquia. O script estabelece timeout de 120 s, mas isso não substitui um limite de tokens/cobrança garantido pelo provedor.
+O executor usa `codex exec --json --ephemeral --skip-git-repo-check --ignore-user-config --sandbox read-only --ask-for-approval never`, sem chaves de API e passando o prompt por stdin. Essas opções existem na documentação da [CLI](https://learn.chatgpt.com/docs/cli/reference), mas seu comportamento depende da versão efetivamente instalada. Mesmo assim, **não garantem isolamento completo do filesystem ou custo zero**: é indispensável uma VM/contêiner isolado e prova externa de franquia. O script estabelece timeout de 120 s, mas isso não substitui um limite de tokens/cobrança garantido pelo provedor.
 
 ### Estado do experimento
 
 `PILOT_STATUS.json` permanece 4/4 `NOT_RUN` e `BLOCKED_ACCESS_OR_COST_UNVERIFIED`; a matriz T1/T2/T3 mantém 18/18 `NOT_RUN`; todos os oráculos sigilosos ficam fora do GitHub. A prova de instalação não é evidência de descoberta real pelo modelo. Nenhum merge ou deploy é autorizado.
+
+Cada recibo manual é **consumido uma única vez antes da chamada ao modelo**, renomeado para `approval.consumed-<id>.json` na pasta privada. Outra execução exige nova verificação dos limites e nova autorização do proprietário. Esse consumo atômico reduz reuso acidental, mas não comprova saldo nem cobrança. Nunca inserir recibos preenchidos no GitHub.

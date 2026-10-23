@@ -88,7 +88,7 @@ def private_gate(skill, source_head, current_time):
         stop("Approval receipt too large")
     try:
         record = json.loads(raw)
-    except (UnicodeError, ValueError) as exc:
+    except ValueError as exc:
         stop(f"Malformed approval receipt ({type(exc).__name__})")
     if not isinstance(record, dict) or record.get("schema") != GATE_SCHEMA:
         stop("Approval schema mismatch")
@@ -175,6 +175,13 @@ def execute_one(skill, fixture, src_head):
     )
     if status.returncode != 0 or "chatgpt" not in status.stdout.lower():
         stop("Existing Codex session is not confirmed as ChatGPT login")
+    # Consume the short-lived manual receipt exactly once before any model call.
+    # os.replace is atomic on the same filesystem: concurrent reuse cannot launch twice.
+    consumed = GATE.with_name("approval.consumed-" + os.urandom(8).hex() + ".json")
+    try:
+        os.replace(GATE, consumed)
+    except OSError as exc:
+        stop(f"Approval receipt could not be consumed exactly once ({type(exc).__name__})")
     directory, inventory = prepare_synthetic_workspace(fixture)
     session_dir = Path(tempfile.mkdtemp(prefix="ecc-coinblink-evidence-")).resolve()
     session_dir.chmod(0o700)
@@ -187,7 +194,7 @@ def execute_one(skill, fixture, src_head):
     )
     command = [
         codex, "exec", "--json", "--ephemeral", "--ignore-user-config",
-        "--ignore-rules", "--skip-git-repo-check", "--sandbox", "read-only",
+        "--skip-git-repo-check", "--sandbox", "read-only",
         "--ask-for-approval", "never", "-C", str(directory), "-",
     ]
     # Remove billable key variables and inherited tool-integration settings.

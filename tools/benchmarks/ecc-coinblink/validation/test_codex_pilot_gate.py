@@ -83,6 +83,8 @@ class GateContracts(unittest.TestCase):
         self.assertIn('"never"', code)
         self.assertIn("private_gate(skill", code)
         self.assertNotIn("shell=True", code)
+        self.assertIn("os.replace(GATE, consumed)", code)
+        self.assertNotIn('"--ignore-rules"', code)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,42 @@
+name: CoinBlink M07-C hypothetical calendar acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m07c-local-calendar.yml"
+      - "src/modules/CB-M07/**"
+      - "src/modules/CB-M05/p1c-local/local-cms-ui.mjs"
+      - "test/modules/CB-M07/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m07c-local-calendar-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  local-calendar:
+    name: M07-C in-memory calendar + WebAuthn D1 Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Pure calendar contract + CSP
+        run: node --test test/modules/CB-M07/local-calendar.test.mjs
+      - name: Public build
+        run: npm run build
+      - name: Install browser
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: LOCAL D1 virtual passkeys, axe & all ephemeral controls
+        run: node --test test/modules/CB-M07/local-calendar-browser.test.mjs
+      - name: Public /admin denial
+        run: ./node_modules/.bin/playwright test e2e/m05-admin-prod-guard.spec.mjs

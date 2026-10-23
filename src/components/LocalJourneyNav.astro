@@ -1,0 +1,23 @@
+---
+interface Props {
+  locale?: "en" | "pt-br";
+  current: "home" | "news" | "sources" | "markets" | "editorial";
+}
+const { locale = "en", current } = Astro.props;
+const pt = locale === "pt-br";
+const entries = [
+  { key: "home", href: pt ? "/pt-br" : "/en", label: pt ? "Início" : "Home" },
+  { key: "news", href: pt ? "/pt-br/news" : "/en/news", label: pt ? "Notícias fictícias" : "Fictional news" },
+  { key: "sources", href: "/demo/sources", label: pt ? "Fontes demonstrativas (EN)" : "Source lab" },
+  { key: "markets", href: "/demo/markets", label: pt ? "Mercados demonstrativos (EN)" : "Market lab" },
+  { key: "editorial", href: "/demo/editorial/articles", label: pt ? "Editor demonstrativo (EN)" : "Editorial demo" },
+];
+---
+<nav class="cb-local-journey" aria-label={pt ? "Jornada demonstrativa CoinBlink" : "CoinBlink demo journey"} data-journey-nav data-journey-locale={locale}>
+  <p class="cb-local-journey__disclaimer">{pt ? "SOMENTE DEMO · Notícias inventadas · Fontes sem licença · Preços indisponíveis · Sem publicação" : "DEMO ONLY · Invented stories · Unlicensed sources · No market quotes · No publishing"}</p>
+  <ul>
+    {entries.map(item => (
+      <li><a href={item.href} aria-current={current === item.key ? "page" : undefined}>{item.label}</a></li>
+    ))}
+  </ul>
+</nav>

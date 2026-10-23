@@ -1,0 +1,124 @@
+---
+interface Props { locale?: "en" | "pt-br"; }
+const { locale = "en" } = Astro.props;
+const pt = locale === "pt-br";
+---
+<section class="m02-local-preview" data-m02-local-preview data-locale={locale} aria-labelledby="m02-local-preview-heading">
+  <div class="m02-local-head">
+    <div>
+      <small>{pt ? "M02 + M05 · SOMENTE NO NAVEGADOR" : "M02 + M05 · BROWSER ONLY"}</small>
+      <h2 id="m02-local-preview-heading">{pt ? "Visualizar rascunho como artigo" : "Preview a draft as an article"}</h2>
+      <p>{pt ? "Exporte um Markdown no editor M05 demonstrativo e selecione o arquivo aqui. Nada é enviado, salvo ou publicado." : "Export a Markdown file in the M05 demo editor, then choose it here. Nothing is uploaded, stored or published."}</p>
+    </div>
+    <strong>{pt ? "NÃO PUBLICADO" : "NOT PUBLISHED"}</strong>
+  </div>
+  <label for="m02-local-file">{pt ? "Selecionar rascunho CoinBlink (.md)" : "Choose CoinBlink draft (.md)"}</label>
+  <input id="m02-local-file" type="file" accept=".md,text/markdown" data-m02-draft-file aria-describedby="m02-local-file-help" />
+  <button type="button" data-m02-draft-clear hidden>{pt ? "Limpar prévia" : "Clear preview"}</button>
+  <p id="m02-local-file-help">{pt ? "Máximo 64 KB; autoria e direitos de fonte não verificados. Não insira segredos." : "Max 64 KB; author and source rights unverified. Do not include secrets."}</p>
+  <p role="status" aria-live="polite" data-m02-draft-status>{pt ? "Nenhum rascunho carregado." : "No draft loaded."}</p>
+  <article class="m02-local-article" aria-label={pt ? "Prévia local do artigo" : "Local article preview"} data-m02-draft-article hidden>
+    <p class="m02-local-warning">{pt ? "PRÉVIA PRIVADA · NÃO VERIFICADA · NÃO PUBLICADA" : "PRIVATE PREVIEW · UNVERIFIED · NOT PUBLISHED"}</p>
+    <h3 tabindex="-1" data-m02-draft-title></h3>
+    <p data-m02-draft-author></p>
+    <p class="m02-local-summary" data-m02-draft-summary></p>
+    <p class="m02-local-body" data-m02-draft-body></p>
+    <p>{pt ? "Fonte informada, não verificada:" : "Provided source, not verified:"} <span data-m02-draft-source></span></p>
+
+  <section class="m02-evidence" data-m02-evidence-review aria-labelledby="m02-evidence-title" hidden>
+    <h4 id="m02-evidence-title">{pt ? "Revisão estrutural das fontes" : "Structural source review"}</h4>
+    <p class="m02-evidence-disclaimer">{pt ? "HEURÍSTICA LOCAL · NÃO VERIFICA FATOS, LINKS, DIREITOS OU PUBLICAÇÃO" : "LOCAL HEURISTIC · DOES NOT VERIFY FACTS, LINKS, RIGHTS OR PUBLICATION"}</p>
+    <p data-m02-evidence-summary></p>
+    <ul data-m02-evidence-signals></ul>
+    <p>{pt ? "Referências e marcações de revisão são apenas texto declarado no arquivo importado." : "Citations and review markers are only text declared in the imported file."}</p>
+  </section>
+  </article>
+</section>
+<script is:inline type="module" src="/m02-local-article-preview.js"></script>
+<style>
+  .m02-local-preview{margin-top:2.5rem;padding:clamp(1rem,4vw,2rem);background:#101e17;border:1px solid #597b64;border-radius:.8rem;overflow-wrap:anywhere}
+  .m02-local-head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+  .m02-local-head small,.m02-local-warning{color:#f5c981;font-weight:700}
+  .m02-local-head h2{font-size:clamp(1.5rem,4vw,2.2rem)}
+  .m02-local-head strong{align-self:flex-start;color:#f5c981;border:1px solid #f5c981;padding:.5rem;border-radius:.5rem}
+  .m02-local-preview label{display:block;margin:1rem 0 .5rem;font-weight:700}
+  .m02-local-preview input{max-width:100%;padding:.75rem;color:white;border:1px solid #809c81;border-radius:.5rem}
+  .m02-local-preview button{margin:.5rem;padding:.8rem;background:#b8f34b;border:0;border-radius:.5rem;color:#111c17;font-weight:700;cursor:pointer}
+  .m02-local-preview :is(input,button):focus-visible,.m02-local-article h3:focus{outline:3px solid #cbfa58;outline-offset:3px}
+  .m02-local-preview p{line-height:1.7}
+  .m02-local-article{margin-top:1.25rem;padding:clamp(1rem,4vw,2rem);background:#111c17;border:1px solid #456e4e;border-radius:.8rem;max-width:55rem}
+  .m02-local-article[hidden],.m02-local-preview button[hidden]{display:none}
+  .m02-local-article h3{font-size:clamp(1.8rem,5vw,3rem);line-height:1.12}
+  .m02-local-summary{font-size:1.2rem;color:#e9f6eb}
+
+  .m02-evidence{margin-top:1.25rem;padding:1rem;border:1px solid #718668;border-radius:.6rem;background:#18291f}
+  .m02-evidence[hidden]{display:none}
+  .m02-evidence h4{font-size:1.2rem;margin:.25rem 0}
+  .m02-evidence .m02-evidence-disclaimer{color:#f5c981;font-weight:700}
+  .m02-evidence ul{padding-left:1.4rem;overflow-wrap:anywhere}
+  .m02-evidence li{margin:.5rem 0;white-space:pre-wrap}
+
+  .m02-local-body{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+
+<script>
+  import { buildLocalEvidenceReport } from "./local-evidence-report.mjs";
+
+  const root = document.querySelector("[data-m02-local-preview]");
+  const article = root?.querySelector("[data-m02-draft-article]");
+  const draftBody = root?.querySelector("[data-m02-draft-body]");
+  const panel = root?.querySelector("[data-m02-evidence-review]");
+  const summary = root?.querySelector("[data-m02-evidence-summary]");
+  const list = root?.querySelector("[data-m02-evidence-signals]");
+  if (root instanceof HTMLElement && article instanceof HTMLElement
+      && draftBody instanceof HTMLElement && panel instanceof HTMLElement
+      && summary instanceof HTMLElement && list instanceof HTMLElement) {
+    // Capture narrowed DOM types in an immutable object so the render callback
+    // cannot lose TypeScript's null/HTMLElement refinement across closure boundaries.
+    const view = { article, draftBody, panel, summary, list };
+    const pt = root.dataset.locale === "pt-br";
+    const labels = pt
+      ? { repair: "Corrigir notas estruturadas", missing: "Citação sem fonte definida",
+        unused: "Fonte não citada", explicit_review_marker: "Revisão pendente",
+        numeric_claim_without_local_citation: "Número sem citação local" }
+      : { repair: "Repair structured notes", missing: "Citation without source definition",
+        unused: "Source not cited", explicit_review_marker: "Review pending",
+        numeric_claim_without_local_citation: "Number without local citation" };
+
+    function render() {
+      view.list.replaceChildren();
+      if (view.article.hidden || !view.draftBody.textContent) {
+        view.panel.hidden = true;
+        view.summary.textContent = "";
+        return;
+      }
+      const report = buildLocalEvidenceReport(view.draftBody.textContent);
+      if (report.requiresRepair) {
+        view.summary.textContent = pt ? "Notas inválidas. Revisão manual necessária; sem aprovação."
+          : "Invalid notes. Manual repair required; no approval.";
+      } else {
+        view.summary.textContent = pt
+          ? String(report.signalCount) + " alerta(s) estruturais. "
+            + String(report.citedSources) + "/" + String(report.sourceCount) + " fontes citadas. Não é verificação."
+          : String(report.signalCount) + " structural signal(s). "
+            + String(report.citedSources) + "/" + String(report.sourceCount) + " sources cited. Not verification.";
+      }
+      for (const signal of report.signals) {
+        const entry = document.createElement("li");
+        entry.textContent = labels[signal.kind] + ": " + signal.value;
+        view.list.append(entry);
+      }
+      if (report.hiddenHints > 0) {
+        const extra = document.createElement("li");
+        extra.textContent = (pt ? "Outros alertas não exibidos: " : "Additional signals not displayed: ")
+          + String(report.hiddenHints);
+        view.list.append(extra);
+      }
+      view.panel.hidden = false;
+    }
+
+    new MutationObserver(render).observe(view.draftBody, { childList: true, characterData: true, subtree: true });
+    render();
+  }
+</script>
+

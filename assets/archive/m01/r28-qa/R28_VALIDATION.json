@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "runId": "final-clean-aggregate-node22-20261014-173806",
+  "classification": "CORRECTION REQUIRED",
+  "authorizedToMerge": false,
+  "pullRequest": "https://github.com/KayzenRoot/coinblink/pull/58",
+  "testedHead": "0235517ed43e0794d7e0d9e3fd4bc88ea054cd48",
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "branch": "codex/cb-m01-wo-001-impl-20261011",
+  "environment": {
+    "os": "Windows 11 Home Single Language 10.0.26200",
+    "processor": "AMD Ryzen 5 2500U with Radeon Vega Mobile Gfx",
+    "logicalProcessors": 8,
+    "totalMemoryBytes": 24591810560,
+    "node": "v22.23.3",
+    "npm": "10.9.9",
+    "nodeOptions": null
+  },
+  "command": {
+    "requested": "npm test",
+    "effective": "Node 22 executing npm-cli.js test",
+    "instrumented": false,
+    "startedAtUtc": "2026-10-14T20:38:06.4421254Z",
+    "endedAtUtc": "2026-10-14T20:41:30.4746173Z",
+    "durationSeconds": 204.03,
+    "exitCode": 1
+  },
+  "testResults": {
+    "total": 192,
+    "passed": 190,
+    "failed": 2,
+    "skipped": 0,
+    "cancelled": 0,
+    "nodeTestDurationMs": 199819.451,
+    "buildRan": false,
+    "e2eRan": false
+  },
+  "failures": [
+    {
+      "test": "test/modules/CB-M01/visual-check.mjs",
+      "testNumber": 27,
+      "durationMs": 58329.942,
+      "error": "Astro fixture did not become ready: readiness request exceeded the remaining deadline",
+      "serverAnnouncedReadyAfterMs": 16445,
+      "announcedUrl": "http://127.0.0.1:51648/",
+      "http200Observed": false,
+      "targetListenerSeenInResourceSamples": false,
+      "interpretation": "readiness/startup/process cause unresolved; no port collision established"
+    },
+    {
+      "test": "test/cloudflare-preview-workflow.test.mjs:91",
+      "testNumber": 39,
+      "durationMs": 15904.2897,
+      "error": "spawnSync Node22 ETIMEDOUT while running pinned Wrangler 4.149.0 help",
+      "scope": "outside CB-M01-owned files"
+    }
+  ],
+  "resourceSamples": {
+    "sampleCount": 47,
+    "peakDescendantWorkingSetBytes": 1688457216,
+    "peakDescendantProcessCount": 25,
+    "peakEstimatedDescendantCpuPercentOfLogicalProcessors": 24,
+    "freeMemoryAtStartBytes": 5292154880,
+    "minimumFreeMemoryBytes": 4055818240,
+    "interpretationLimit": "descendant CPU estimate; not whole-machine utilization"
+  },
+  "comparison": [
+    {
+      "run": "baseline-aggregate-node22-20261014-171142",
+      "instrumentation": "diagnostic preloader",
+      "result": "189/192; three timeout failures including M01 readiness"
+    },
+    {
+      "run": "baseline-unit-serial-node22-20261014-172636",
+      "instrumentation": "diagnostic preloader",
+      "result": "191/192; Wrangler spawnSync ETIMEDOUT; M01 visual tests passed"
+    },
+    {
+      "run": "isolated-visual-check-20261014-171821",
+      "instrumentation": "diagnostic preloader",
+      "result": "passed; first HTTP 200 about 9.17 seconds"
+    },
+    {
+      "run": "isolated-integrated-visual-check-20261014-171954",
+      "instrumentation": "diagnostic preloader",
+      "result": "passed; first HTTP 200 about 2.62 seconds"
+    }
+  ],
+  "browserAvailability": {
+    "chromium": "available",
+    "edge": "available; Blink engine shared with Chromium",
+    "firefox": "BROWSER_ENGINE_NOT_AVAILABLE",
+    "webkit": "BROWSER_ENGINE_NOT_AVAILABLE",
+    "installationAttempted": false
+  },
+  "hostedChecks": {
+    "verifiedHead": "bc69b9b80b5661eab1a865c2b37fa167ff2a8728",
+    "runId": "38635371919",
+    "requiredChecks": {
+      "M00 and GEF (ubuntu-24.04)": "SUCCESS",
+      "M00 and GEF (windows-2022)": "SUCCESS",
+      "Docker Compose smoke (Ubuntu)": "SUCCESS",
+      "SonarCloud Code Analysis": "SUCCESS",
+      "Socket Security: Project Report": "SUCCESS",
+      "Socket Security: Pull Request Alerts": "SUCCESS"
+    },
+    "codeRabbit": "SUCCESS_WITH_REVIEW_SKIPPED_AUTOMATIC_REVIEWS_DISABLED",
+    "reviewApproval": false
+  },
+  "notRunAfterStop": [
+    "build",
+    "E2E",
+    "lint",
+    "typecheck",
+    "audit",
+    "R28 browser screenshots and accessibility matrix",
+    "three cold performance profiles",
+    "two-cycle animation CPU and long-task measurement"
+  ],
+  "evidenceHashes": {
+    "rawStdoutSha256": "63D7BF359896C6050F2D2F0A62E54AAB0B4F6E7B5A31E6FFE6CFFD117258398C",
+    "rawEmptyStderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "rawResourceSamplesSha256": "1873A9D03A4BD3A615D88FC80E10389DF5838C29DEC676A6B5943D644C4E8537",
+    "sanitizedStdoutSha256": "B53436815C0ADB83CFD587F75091B098059E99082227870573D6656DF5A20F19"
+  },
+  "governance": {
+    "checkpointChanged": false,
+    "rulesetChanged": false,
+    "mergeAuthorized": false,
+    "m01Status": "ADMITTED / NOT DONE"
+  },
+  "nextMinimalStep": "Instrument only CB-M01 fixture lifecycle and readiness request; route the Wrangler timeout separately to the Integration Steward."
+}

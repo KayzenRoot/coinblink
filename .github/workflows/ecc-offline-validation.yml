@@ -41,3 +41,84 @@ jobs:
       - name: Validate synthetic A/B workspace isolation and quarantine
         shell: pwsh
         run: ./tools/benchmarks/ecc-coinblink/validation/Invoke-OfflineSelfTest.ps1
+
+  integrated_m05_m07:
+    name: ECC integrated HEAD / ${{ matrix.suite }}
+    if: github.event.pull_request.number == 209
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [m05, m07-social, m07-calendar, m07-week]
+    env:
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+      SUITE: ${{ matrix.suite }}
+    steps:
+      - name: Checkout exact PR HEAD, never implicit synthetic merge
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify pinned PR HEAD and avoid credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -f package-lock.json
+          echo "ECC_M05_M07_VERIFIED_HEAD=$EXPECTED_HEAD SUITE=$SUITE"
+      - name: Node.js 22.19.0 with existing npm cache
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Reuse locked project dependencies, no new package versions
+        run: npm ci --ignore-scripts
+      - name: M05 authentication, request, local D1 and session guards
+        if: matrix.suite == 'm05'
+        run: |
+          node --test \
+            test/modules/CB-M05/p1b-webauthn.test.mjs \
+            test/modules/CB-M05/p1b-request-model.test.mjs \
+            test/modules/CB-M05/p1b-guards.test.mjs \
+            test/modules/CB-M05/p1c-local-admin-router.test.mjs
+      - name: M07 social concept, editorial controls and CSP
+        if: matrix.suite == 'm07-social'
+        run: |
+          node --test \
+            test/modules/CB-M07/social-preview.test.mjs \
+            test/modules/CB-M07/local-editorial-variants.test.mjs \
+            test/modules/CB-M07/local-editorial-approvals.test.mjs
+      - name: M07 calendar in-memory contract and CSP
+        if: matrix.suite == 'm07-calendar'
+        run: node --test test/modules/CB-M07/local-calendar.test.mjs
+      - name: M07 week-board and upstream calendar regression
+        if: matrix.suite == 'm07-week'
+        run: |
+          node --test test/modules/CB-M07/local-week-board.test.mjs
+          node --test test/modules/CB-M07/local-calendar.test.mjs
+      - name: Build public site for M07 guards
+        if: matrix.suite != 'm05'
+        run: npm run build
+      - name: Reuse Chromium setup from existing M05/M07 CI workflows
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M05 synthetic owner login/logout
+        if: matrix.suite == 'm05'
+        run: npm run cms:smoke
+      - name: M05 local D1, sessions and unsaved drafts in browser
+        if: matrix.suite == 'm05'
+        run: |
+          node --test \
+            test/modules/CB-M05/p1c-local-admin-preview.test.mjs \
+            test/modules/CB-M05/p1c-local-unsaved-changes.test.mjs
+      - name: M07 social local D1, WebAuthn and revocation browser
+        if: matrix.suite == 'm07-social'
+        run: node --test test/modules/CB-M07/local-social-preview.test.mjs
+      - name: M07 calendar local D1, passkeys, axe and ephemeral browser
+        if: matrix.suite == 'm07-calendar'
+        run: node --test test/modules/CB-M07/local-calendar-browser.test.mjs
+      - name: M07 week-board private lifecycle, WCAG and no egress
+        if: matrix.suite == 'm07-week'
+        run: node --test test/modules/CB-M07/local-week-browser.test.mjs
+      - name: Public admin access remains denied
+        run: ./node_modules/.bin/playwright test e2e/m05-admin-prod-guard.spec.mjs

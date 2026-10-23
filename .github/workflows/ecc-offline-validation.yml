@@ -97,8 +97,7 @@ jobs:
         run: |
           node --test test/modules/CB-M07/local-week-board.test.mjs
           node --test test/modules/CB-M07/local-calendar.test.mjs
-      - name: Build public site for M07 guards
-        if: matrix.suite != 'm05'
+      - name: Build public site for public-admin denial checks
         run: npm run build
       - name: Reuse Chromium setup from existing M05/M07 CI workflows
         run: ./node_modules/.bin/playwright install --with-deps chromium

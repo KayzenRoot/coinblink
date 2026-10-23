@@ -35,7 +35,7 @@ test("M09 Spanish route and switcher preserve noindex and validate slugs", () =>
   assert.match(listing, /locale="es"/u);
   assert.match(detail, /locale="es"/u);
   const page = readFileSync("src/modules/CB-M09/LocalizedNewsPage.astro", "utf8");
-  assert.match(page, /lang={copy.lang}/u);
+  assert.ok(page.includes("lang={copy.lang}"));
   assert.match(page, /lang: "es"/u);
   assert.match(detail, /Astro\.response\.status = 404/u);
   assert.match(component, /resolveMockNews\(slug\)\.item/u);

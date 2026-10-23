@@ -1,0 +1,42 @@
+name: CoinBlink ECC CodeQL experimental (public repo)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '.agents/skills/ecc-*/**'
+      - 'tools/benchmarks/ecc-coinblink/**'
+      - '.github/workflows/ecc-codeql-experimental.yml'
+
+# This is scoped to PR #209 and uses free standard runners for a public repo.
+# Does not install project dependencies, run Codex, benchmark or deploy.
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    if: github.event.pull_request.number == 209
+    name: ECC CodeQL / ${{ matrix.language }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - name: Read-only checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Initialize pinned official CodeQL v4.39.0
+        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+          build-mode: none
+      - name: Analyze ECC pull request without product build
+        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee
+        with:
+          category: /language:${{ matrix.language }}

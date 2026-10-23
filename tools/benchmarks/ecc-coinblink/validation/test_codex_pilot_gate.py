@@ -178,6 +178,28 @@ class GateContracts(unittest.TestCase):
         source = SCRIPT.read_text(encoding="utf-8")
         self.assertIn('codex_exit_status(outcome.returncode)', source)
 
+    def test_workspace_is_disposable_and_contains_only_synthetic_files(self):
+        import shutil
+        fixture = self.module.package_contract("ecc-change-impact")
+        temporary, inventory = self.module.prepare_synthetic_workspace(fixture)
+        try:
+            files = {str(path.relative_to(temporary)).replace("\\", "/")
+                     for path in temporary.rglob("*") if path.is_file()}
+            expected = {
+                "AGENTS.md",
+                "tools/benchmarks/ecc-coinblink/pilot/SYNTHETIC_FIXTURE.md",
+                *(f".agents/skills/{name}/SKILL.md" for name in self.module.SKILLS),
+            }
+            self.assertEqual(files, expected)
+            self.assertNotIn(".git", files)
+            self.assertEqual(
+                inventory["fixture_sha256"],
+                self.module.sha256(fixture),
+            )
+            self.assertEqual(set(inventory["skills"]), set(self.module.SKILLS))
+        finally:
+            shutil.rmtree(temporary)
+
     def test_no_paid_or_ci_execution_precondition(self):
         code = SCRIPT.read_text(encoding="utf-8")
         self.assertIn('os.environ.get("GITHUB_ACTIONS")', code)

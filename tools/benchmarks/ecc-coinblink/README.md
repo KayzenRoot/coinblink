@@ -43,3 +43,7 @@ A autenticação `codex login status` e o processo futuro `codex exec` agora rec
 ## CodeQL experimental no GitHub Actions público
 
 A PR #209 executa `.github/workflows/ecc-codeql-experimental.yml` **somente quando `pull_request.number == 209`**, com CodeQL oficial v4.39.0 fixado no commit `6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee`, linguagens Python e JavaScript/TypeScript, consulta `security-and-quality` e sem novo `npm ci` ou instalação no projeto. O CodeQL baixa seu bundle de análise somente no runner público efêmero, gratuitamente para este repositório público; requer `security-events: write` para enviar resultados ao code scanning do GitHub. Isto **não** ativa por si o CodeQL em todas as branches ou substitui a configuração padrão da `main`. Se o upload for bloqueado por configuração do GitHub, marcar CodeQL como não comprovado e não mexer nas configurações de segurança sem autorização. Não há execução de Codex ou de benchmarks.
+
+### CodeQL sem token de escrita (scope obrigatório do CoinBlink)
+
+A primeira tentativa de `github/codeql-action` exigia `security-events: write` e foi **bloqueada corretamente pelo PR Assurance / scope**, que não pode ser enfraquecido. O workflow experimental passou a usar token `contents: read`, `upload: never` e `upload-database: false`, gerando apenas SARIF no runner efêmero para relatório resumido, sem enviar achados ao Code Scanning. Se o motor não conseguir produzir o SARIF nesse modo, tratar a análise como **não comprovada**, preservando o gate de escopo e as demais validações.

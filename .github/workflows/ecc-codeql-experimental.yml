@@ -13,7 +13,6 @@ on:
 # Does not install project dependencies, run Codex, benchmark or deploy.
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   codeql:
@@ -36,7 +35,33 @@ jobs:
           languages: ${{ matrix.language }}
           queries: security-and-quality
           build-mode: none
-      - name: Analyze ECC pull request without product build
+      - name: Analyze ECC locally without uploading security events
         uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee
         with:
           category: /language:${{ matrix.language }}
+          upload: never
+          upload-database: 'false'
+          output: ${{ runner.temp }}/ecc-codeql-${{ matrix.language }}
+      - name: Report local SARIF findings without any upload
+        shell: bash
+        env:
+          ECC_CODEQL_SARIF: ${{ runner.temp }}/ecc-codeql-${{ matrix.language }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          files = sorted(Path(os.environ["ECC_CODEQL_SARIF"]).rglob("*.sarif"))
+          if not files:
+              raise SystemExit("BLOCKED: CodeQL returned no local SARIF evidence")
+          summary = []
+          for file in files:
+              data = json.loads(file.read_text(encoding="utf-8"))
+              for run in data.get("runs", []):
+                  summary.append({
+                      "tool": run.get("tool", {}).get("driver", {}).get("name"),
+                      "results": len(run.get("results", [])),
+                      "rules": len(run.get("tool", {}).get("driver", {}).get("rules", [])),
+                  })
+          print("ECC_CODEQL_READ_ONLY_SARIF=" + json.dumps(summary, sort_keys=True))
+          PY

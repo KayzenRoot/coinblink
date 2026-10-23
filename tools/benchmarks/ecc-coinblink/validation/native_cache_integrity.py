@@ -1,6 +1,5 @@
 """Read-only ECC cache fingerprint preflight. No Codex, installs, hooks, MCP or network."""
 import hashlib
-import os
 from pathlib import Path
 import re
 import stat

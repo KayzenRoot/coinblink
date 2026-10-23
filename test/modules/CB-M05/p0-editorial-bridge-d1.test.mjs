@@ -174,7 +174,54 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.deepEqual(await tableSnapshot(ctx.db), beforeCurrentRevisionReads,
       'stale and current revision exports do not mutate local D1');
 
+
+    // Review is exact-revision, private and does not authorize publication.
+    const reviewRoute = '/local/articles/' + id + '/review';
+    const validReview = { expectedRevision: 2, decision: 'PREVIEW_REVIEWED',
+      note: 'Local editorial note. Source facts and rights remain unverified.' };
+    assert.equal((await ctx.run(reviewRoute)).status, 401, 'no Owner session, no private review read');
+    assert.equal((await ctx.run(reviewRoute, 'GET', undefined, { ...ctx.login, fetchSite: 'cross-site' })).status, 403);
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview)).status, 403, 'no session, no private review');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, { cookie: ctx.login.cookie })).status, 403,
+      'missing CSRF is denied');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview,
+      { ...ctx.login, fetchSite: 'cross-site' })).status, 403);
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, expectedRevision: 1 },
+      ctx.login)).status, 409, 'old revision cannot receive a current review');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, decision: 'PUBLISH_APPROVED' },
+      ctx.login)).status, 400, 'no publishing transition exists');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, note: 'short' },
+      ctx.login)).status, 400, 'invalid note is refused');
+    assert.equal((await ctx.run(reviewRoute, 'POST', { ...validReview, extra: true },
+      ctx.login)).status, 400, 'forged extra properties are refused');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 201);
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 409,
+      'only one immutable review per saved revision');
+    const reviewResponse = await ctx.run(reviewRoute, 'GET', undefined, ctx.login);
+    assert.equal(reviewResponse.status, 200);
+    const reviewDetails = await reviewResponse.json();
+    assert.equal(reviewDetails.review.decision, 'PREVIEW_REVIEWED');
+    assert.equal(reviewDetails.publication, 'DISABLED');
+    assert.equal(reviewDetails.rights, 'NOT_CLEARED');
+    await assert.rejects(ctx.db.prepare('DELETE FROM cms_owner_reviews WHERE draft_id=?')
+      .bind(id).run(), /immutable/u, 'stored Owner review cannot be deleted');
+    await assert.rejects(ctx.db.prepare('UPDATE cms_owner_reviews SET note=? WHERE draft_id=?')
+      .bind('An unauthorized overwrite.',id).run(), /immutable/u);
+    assert.equal((await ctx.db.prepare('SELECT status FROM cms_drafts WHERE id=?').bind(id).first()).status,
+      'draft', 'no review publishes the article');
+    const third = await ctx.run('/local/articles/' + id, 'PATCH', {
+      ...example, title: 'A fresh local draft revision requires another Owner review',
+      expectedRevision: 2, idempotencyKey: idempotency(),
+    }, ctx.login);
+    assert.equal(third.status, 200);
+    assert.equal((await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json()).review,
+      null, 'review of superseded content is not attached to a new revision');
+    assert.equal((await ctx.run(reviewRoute, 'POST', validReview, ctx.login)).status, 409,
+      'stale review replay cannot attach to the newer revision');
+    assert.equal((await ctx.db.prepare('SELECT COUNT(*) AS n FROM cms_owner_reviews WHERE draft_id=?')
+      .bind(id).first()).n, 1, 'old review preserved as immutable evidence');
     assert.equal((await ctx.run('/local/logout', 'POST', {}, ctx.login)).status, 200);
+    assert.equal((await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).status, 401);
     assert.equal((await ctx.run(route + '?revision=2', 'GET', undefined, ctx.login)).status, 401,
       'revoked session cannot export');
   } finally {

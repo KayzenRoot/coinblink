@@ -96,5 +96,47 @@
     "scripts/hooks/run-with-flags.js": "00c6663089615248711a1d60a919895d78eb473f",
     "scripts/hooks/session-start.js": "486c5296376194c9f947503194f54f379e6cca7d",
     "scripts/lib/resolve-ecc-root.js": "b6f6eaf2599003edbd5c3b81b744bf0b3760a39b"
+  },
+  "surface_inventory": "pinned-surface-inventory.json",
+  "cache_audit": {
+    "source": "scripts/codex/check-plugin-cache.js",
+    "git_blob": "6839b413cc78d6755cc56f61be0d57f4754b5fa6",
+    "inspected_refs": [
+      "skills",
+      "mcpServers",
+      "interface.composerIcon",
+      "interface.logo"
+    ],
+    "excluded_refs": [
+      "hooks",
+      "scripts/hooks/plugin-hook-bootstrap.js",
+      "scripts/hooks/session-start-bootstrap.js",
+      "scripts/hooks/session-start.js"
+    ],
+    "uses_stat_sync_follows_symlinks": true,
+    "validates_file_hashes": false,
+    "installed_cache_observed": false,
+    "can_prove_skill_discovery": false
+  },
+  "session_start_audit": {
+    "root_hook": "hooks/codex-hooks.json",
+    "entrypoint": "scripts/hooks/plugin-hook-bootstrap.js",
+    "next_bootstrap": "scripts/hooks/session-start-bootstrap.js",
+    "downstream": "scripts/hooks/session-start.js",
+    "effect_directories_created": true,
+    "effect_expired_session_files_removed": true,
+    "effect_observer_session_lease_written": true,
+    "effect_prior_context_injected": true,
+    "user_data_inspection_possible": true,
+    "hook_trust_observed": false
+  },
+  "legacy_sync_audit": {
+    "script": "scripts/sync-ecc-to-codex.sh",
+    "changes_global_hooks_path": true,
+    "changes_codex_user_config": true,
+    "adds_prompts_and_agents": true,
+    "may_alter_mcp_config": true,
+    "managed_state_separate_from_native": true,
+    "performed": false
   }
 }

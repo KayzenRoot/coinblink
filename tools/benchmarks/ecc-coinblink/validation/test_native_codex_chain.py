@@ -46,6 +46,48 @@ def check_root_manifest(snapshot):
     return True
 
 
+
+SURFACE_RECORD = ROOT / "native-codex" / "pinned-surface-inventory.json"
+SURFACE_PATTERNS = {
+    "skills": re.compile(r"^skills/[^/]+/SKILL[.]md$"),
+    "agents": re.compile(r"^agents/[^/]+[.]md$"),
+    "commands": re.compile(r"^commands/[^/]+[.]md$"),
+}
+
+
+def verify_surface_inventory(surface, summary):
+    if surface["source"]["commit"] != PIN or surface["source"]["tree"] != TREE:
+        raise ValueError("wrong upstream source")
+    if surface["source"]["tree_truncated"]:
+        raise ValueError("partial upstream tree")
+    for name, pattern in SURFACE_PATTERNS.items():
+        paths = surface["paths"][name]
+        if len(paths) != summary["upstream"][name] or len(paths) != surface["counts"][name]:
+            raise ValueError("inventory count mismatch")
+        if len(paths) != len(set(paths)) or paths != sorted(paths):
+            raise ValueError("duplicate or unsorted inventory")
+        if not all(pattern.fullmatch(path) for path in paths):
+            raise ValueError("invalid inventory path")
+    return True
+
+
+def verify_runtime_coverage(snapshot):
+    cache = snapshot["cache_audit"]
+    if "hooks" in cache["inspected_refs"] or "hooks" not in cache["excluded_refs"]:
+        raise ValueError("upstream cache-checker gap misrepresented")
+    if cache["validates_file_hashes"] or cache["can_prove_skill_discovery"]:
+        raise ValueError("cache checker must not imply runtime attestation")
+    effects = snapshot["session_start_audit"]
+    if not all(effects[key] for key in (
+        "effect_directories_created", "effect_expired_session_files_removed",
+        "effect_observer_session_lease_written", "effect_prior_context_injected",
+    )):
+        raise ValueError("SessionStart side effect missing")
+    if effects["hook_trust_observed"]:
+        raise ValueError("hook trust not verified")
+    return True
+
+
 class NativeCodexChainTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -144,6 +186,58 @@ class NativeCodexChainTests(unittest.TestCase):
                 a = ROOT.parents[2] / ".agents" / "skills" / name / "SKILL.md"
                 b = ROOT / "agent-materials" / "adapted-skills" / name / "SKILL.md"
                 self.assertEqual(a.read_bytes(), b.read_bytes())
+
+    def test_full_surface_path_inventory_is_pinned_and_unique(self):
+        inventory = json.loads(SURFACE_RECORD.read_text(encoding="utf-8"))
+        self.assertTrue(verify_surface_inventory(inventory, self.data))
+        self.assertEqual(sum(inventory["counts"].values()), 479)
+
+    def test_inventory_tampering_and_path_traversal_fail(self):
+        valid = json.loads(SURFACE_RECORD.read_text(encoding="utf-8"))
+        for group, bad_path in (
+            ("skills", "skills/../SKILL.md"),
+            ("agents", "agents//untrusted.md"),
+            ("commands", "commands/../../secret.md"),
+        ):
+            modified = copy.deepcopy(valid)
+            modified["paths"][group][0] = bad_path
+            with self.subTest(group=group):
+                with self.assertRaises(ValueError):
+                    verify_surface_inventory(modified, self.data)
+        partial = copy.deepcopy(valid)
+        partial["source"]["tree_truncated"] = True
+        with self.assertRaises(ValueError):
+            verify_surface_inventory(partial, self.data)
+
+    def test_cache_checker_cannot_attest_hooks_or_skill_execution(self):
+        self.assertTrue(verify_runtime_coverage(self.data))
+        cache = self.data["cache_audit"]
+        self.assertEqual(cache["inspected_refs"],
+                         ["skills", "mcpServers", "interface.composerIcon", "interface.logo"])
+        self.assertIn("hooks", cache["excluded_refs"])
+        self.assertTrue(cache["uses_stat_sync_follows_symlinks"])
+        self.assertFalse(cache["installed_cache_observed"])
+        self.assertEqual(cache["git_blob"],
+                         self.data["blobs"]["scripts/codex/check-plugin-cache.js"])
+        broken = copy.deepcopy(self.data)
+        broken["cache_audit"]["validates_file_hashes"] = True
+        with self.assertRaises(ValueError):
+            verify_runtime_coverage(broken)
+
+    def test_session_start_side_effects_and_legacy_global_writes_are_blocked(self):
+        self.assertTrue(verify_runtime_coverage(self.data))
+        session = self.data["session_start_audit"]
+        self.assertEqual(session["entrypoint"], "scripts/hooks/plugin-hook-bootstrap.js")
+        self.assertEqual(session["downstream"], "scripts/hooks/session-start.js")
+        legacy = self.data["legacy_sync_audit"]
+        self.assertTrue(legacy["changes_global_hooks_path"])
+        self.assertTrue(legacy["changes_codex_user_config"])
+        self.assertTrue(legacy["may_alter_mcp_config"])
+        self.assertFalse(legacy["performed"])
+        broken = copy.deepcopy(self.data)
+        broken["session_start_audit"]["effect_expired_session_files_removed"] = False
+        with self.assertRaises(ValueError):
+            verify_runtime_coverage(broken)
 
     def test_readonly_snapshot_is_not_activation(self):
         self.assertEqual(self.data["gates"]["status"],

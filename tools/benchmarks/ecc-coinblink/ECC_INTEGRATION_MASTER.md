@@ -57,3 +57,7 @@ Este documento **não** é um gate para o desenvolvimento de outros módulos e n
 ## Auditoria da cadeia nativa Codex (23/10/2026)
 
 Snapshot upstream versionado em `native-codex/pinned-manifest.json`, análise detalhada em `native-codex/INSTALL_CHAIN_AUDIT.md`, testes estáticos em `validation/test_native_codex_chain.py`. O marketplace aponta à raiz; o manifesto thin legado escapa do cache; hooks SessionStart, MCP npx, sync legado e git hooks globais estão bloqueados. Instalação e desinstalação não foram executadas.
+
+## Verificação aprofundada da cadeia Codex
+
+O complemento em `native-codex/INSTALL_CHAIN_AUDIT.md` documenta a insuficiência do verificador upstream de cache (não checa hooks, scripts nem fingerprints dos alvos), os efeitos reais de `SessionStart` (criação de diretórios, remoção de sessões expiradas e lease) e o inventário integral imutável em `native-codex/pinned-surface-inventory.json`. Foram adicionados testes negativos de caminhos, adulteração de inventário e falso positivo de segurança. **Nenhuma instalação, execução ou acesso ao cache do usuário foi realizada.**

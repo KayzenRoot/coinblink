@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { parseMockResearchTransfer, canonicalMockResearchTransfers } from "../src/modules/CB-M08/research-transfer.mjs";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -63,4 +65,37 @@ test("M08 demo is discoverable from existing M03 and M04 journeys, never the pro
     await expect(page).toHaveURL(/\/demo\/research$/u);
     await expect(page.getByText("NO AI EXECUTION", { exact: false }).first()).toBeVisible();
   }
+});
+
+test("M08 downloads an exact canonical MOCK file with no network or publish side effects", async ({ page }) => {
+  const external = [], writes = [];
+  page.on("request", request => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") &&
+        !request.url().startsWith("data:")) external.push(request.url());
+    if (!["GET","HEAD"].includes(request.method())) writes.push(request.url());
+  });
+  await page.goto("/demo/research");
+  const button = page.locator('[data-m08-export]');
+  await expect(button).toBeHidden();
+  await page.locator('[data-m08-source]').selectOption('demo-source-beta');
+  await page.locator('[data-m08-market]').selectOption('ETH');
+  await page.locator('[data-m08-run]').click();
+  await expect(button).toBeVisible();
+  const [download] = await Promise.all([page.waitForEvent('download'), button.click()]);
+  expect(download.suggestedFilename()).toBe('coinblink-m08-demo-source-beta-eth.json');
+  const body = readFileSync(await download.path(), 'utf8');
+  const restored = parseMockResearchTransfer(body, canonicalMockResearchTransfers());
+  expect(restored).not.toBeNull();
+  expect(restored.sourceId).toBe('demo-source-beta');
+  expect(restored.asset).toBe('ETH');
+  expect(restored.blockerCount).toBe(8);
+  expect(restored.rights).toBe('NOT_CLEARED');
+  expect(restored.quote).toBeNull();
+  expect(restored.published).toBe(false);
+  await page.locator('[data-m08-market]').selectOption('BTC');
+  await expect(button).toBeHidden();
+  await button.evaluate(node => node.click());
+  await expect(page.locator('[data-m08-export-status]')).toContainText('No valid current offline brief');
+  expect(external).toEqual([]);
+  expect(writes).toEqual([]);
 });

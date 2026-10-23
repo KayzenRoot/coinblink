@@ -66,4 +66,29 @@ if (root) {
       "\nNeither record proves rights, capture, authenticity or permission to publish.";
     details.hidden = false;
   });
+  // The payload is computed by Astro from the three canonical specimens only.
+  // A browser download never fetches evidence, contacts M05 or stores source data.
+  const transferStatus = root.querySelector('[data-m03-export-status]');
+  for (const button of root.querySelectorAll('[data-m03-export]')) {
+    button.addEventListener('click', () => {
+      const row = button.closest('[data-m03-entry]');
+      const serialized = button.dataset.m03Packet;
+      if (!row || !/^demo-source-(?:alpha|beta|gamma)$/.test(row.dataset.m03Id) ||
+          !serialized || new TextEncoder().encode(serialized).byteLength > 2048) {
+        transferStatus.textContent = 'Invalid offline report. No file was created.';
+        return;
+      }
+      const file = new Blob([serialized], { type: 'application/json' });
+      const objectUrl = URL.createObjectURL(file);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = 'coinblink-m03-' + row.dataset.m03Id + '.json';
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      transferStatus.textContent = 'Fictional report downloaded. Rights NOT_CLEARED; no source was contacted or published.';
+    });
+  }
+
 }

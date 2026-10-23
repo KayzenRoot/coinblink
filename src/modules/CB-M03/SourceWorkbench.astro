@@ -2,6 +2,7 @@
 import { SOURCE_DEMO_POLICY, inspectSyntheticSource, listSyntheticSources } from "./source-lab.mjs";
 import uiUrl from "./source-lab.client.js?url&no-inline";
 import { inspectSyntheticProvenance, summarizeSyntheticProvenance } from "./source-investigation.mjs";
+import { createMockSourceTransfer } from "./source-transfer.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 const rows = listSyntheticSources().items;
 const overview = summarizeSyntheticProvenance();
@@ -49,6 +50,10 @@ const entries = rows.map(row => ({ row, report: inspectSyntheticProvenance(row.i
         <dt>Capture time</dt><dd>None. No capture occurred.</dd>
         <dt>Public reuse</dt><dd>DENIED</dd>
       </dl>
+      <button type="button" data-m03-export
+        data-m03-packet={JSON.stringify(createMockSourceTransfer(row))}>
+        Download fictional source report · JSON
+      </button>
       {report ? <details class="m03-report">
         <summary>Inspect fictional evidence for {row.label}</summary>
         <p>Safety outcome: {report.inspection}. Reuse remains BLOCKED.</p>
@@ -60,6 +65,9 @@ const entries = rows.map(row => ({ row, report: inspectSyntheticProvenance(row.i
     </article>)}
   </div>
   <p data-m03-empty hidden>No synthetic sources match. No external search was made.</p>
+  <p data-m03-export-status role="status" aria-live="polite">
+    Source reports are MOCK, NOT_CLEARED and for manual transfer only. No evidence was captured.
+  </p>
   <section class="m03-comparison" aria-labelledby="m03-compare-title">
     <h2 id="m03-compare-title">Compare fictional evidence gaps</h2>
     <p>Compare two invented records only. This never proves rights or retrieves evidence.</p>

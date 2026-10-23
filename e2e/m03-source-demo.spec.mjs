@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { readFileSync } from "node:fs";
+import { listSyntheticSources } from "../src/modules/CB-M03/source-lab.mjs";
+import { parseMockSourceTransfer } from "../src/modules/CB-M03/source-transfer.mjs";
 test("M03 synthetic sources are accessible, filter locally and never ingest", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const network = [];
@@ -73,4 +76,26 @@ test("M03 synthetic sources are accessible, filter locally and never ingest", as
   expect(network).toEqual([]);
   const audit = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
   expect(audit.violations).toEqual([]);
+});
+
+test("M03 browser exports only a fictional unlicensed source report without network calls", async ({ page }) => {
+  const outside = [], writes = [];
+  page.on("request", req => {
+    if (!req.url().startsWith("http://127.0.0.1:4321/") && !req.url().startsWith("data:")) outside.push(req.url());
+    if (!["GET", "HEAD"].includes(req.method())) writes.push(req.url());
+  });
+  await page.goto("/demo/sources");
+  const first = page.locator('[data-m03-entry][data-m03-id="demo-source-alpha"]');
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    first.locator('[data-m03-export]').click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("coinblink-m03-demo-source-alpha.json");
+  const payload = readFileSync(await download.path(), "utf8");
+  const verified = parseMockSourceTransfer(payload, listSyntheticSources().items);
+  expect(verified?.id).toBe("demo-source-alpha");
+  expect(verified?.rights).toBe("NOT_CLEARED");
+  await expect(page.locator("[data-m03-export-status]")).toContainText("NOT_CLEARED");
+  expect(outside).toEqual([]);
+  expect(writes).toEqual([]);
 });

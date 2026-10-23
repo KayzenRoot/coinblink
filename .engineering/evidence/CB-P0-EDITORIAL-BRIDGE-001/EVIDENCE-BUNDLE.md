@@ -103,7 +103,7 @@ Status: **CORRECTION REQUIRED / BLOCKED FOR APPROVAL**, not a merged or complete
 
 ## Additional actionable Sonar security issue found in diagnostic workflow — 2026-10-23
 
-**Source:** [GitHub Actions hosted Node 22.19.0 bridge/BOOT/Sonar diagnostic job](https://github.com/KayzenRoot/coinblink/actions/runs/40030733804) and [PR SonarCloud issue feed](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&pullRequest=217). Exact-HEAD job ID `120678769685` on source HEAD `68532df53994a8f100619eb790232925cf3081c0`.
+**Source:** [GitHub Actions hosted Node 22.19.0 bridge/BOOT/Sonar diagnostic job](https://github.com/KayzenRoot/coinblink/actions/runs/40030950346/job/120678769685) and [PR SonarCloud issue feed](https://sonarcloud.io/project/issues?id=KayzenRoot_coinblink&pullRequest=217). Exact-HEAD job ID `120678769685` on source HEAD `68532df53994a8f100619eb790232925cf3081c0`.
 
 - **Hosted bridge regression:** `12/12 PASS` under Node 22.19.0, covering persisted M05->M02 roundtrip, UTF-8 and D1 exports plus router unit contracts.
 - **Hosted BOOT-10:** 3/3 independent `{"201":1,"409":9}`; **workerd controls** `{"201":1,"403":1}` for two contenders and `{"201":1,"403":9}` for 10, both with empty `d1Failures {}`. No HTTP 500 in these trials. Historical intermittent failure is not falsely declared impossible.

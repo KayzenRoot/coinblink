@@ -439,7 +439,7 @@ async function recordSavedOwnerReview(request, db, secret, currentTime, id) {
   if (Object.keys(input).length !== 3 || !Number.isSafeInteger(input.expectedRevision) ||
       input.expectedRevision < 1 || !['PREVIEW_REVIEWED', 'CHANGES_REQUESTED'].includes(input.decision) ||
       typeof input.note !== 'string' || input.note !== input.note.trim() ||
-      input.note.length < 10 || input.note.length > 500 || /[\u0000-\u001f\u007f]/u.test(input.note)) return denied(400);
+      input.note.length < 10 || input.note.length > 500 || Array.from(input.note).some(char => char.codePointAt(0) < 32 || char.codePointAt(0) === 127).test(input.note)) return denied(400);
   // A conditional insert is atomic with its revision check; no publish/rights state changes.
   const sql = 'INSERT INTO cms_owner_reviews(draft_id,revision,actor_owner_id,decision,note,created_at) ' +
     'SELECT d.id,d.revision,1,?,?,? FROM cms_drafts d ' +

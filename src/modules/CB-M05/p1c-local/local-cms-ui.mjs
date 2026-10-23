@@ -1,6 +1,8 @@
 // Dedicated LOCAL D1 fixture UI. Never imported by public Astro routes.
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
+import { listSyntheticSources } from '../../CB-M03/source-lab.mjs';
+import { parseMockSourceTransfer } from '../../CB-M03/source-transfer.mjs';
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalEditorialInsights } from '../../CB-M06/local-editorial-insights.mjs';
 import { createLocalEditorialTriage } from '../../CB-M06/local-editorial-triage.mjs';
@@ -11,6 +13,8 @@ import { requireCanonicalLocalApprovalEvent, inspectLocalApprovalHistory, latest
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
+  const parseMockSourceTransfer = (${parseMockSourceTransfer.toString()});
+  const canonicalSourceCatalog = ${JSON.stringify(listSyntheticSources().items)};
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
@@ -116,6 +120,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     save: document.getElementById('save'),
     exportDraft: document.getElementById('export-draft'),
     exportStatus: document.getElementById('export-status'),
+    sourceTransferFile: document.getElementById('source-transfer-file'),
+    sourceTransferReview: document.getElementById('source-transfer-review'),
+    sourceTransferApply: document.getElementById('source-transfer-apply'),
+    sourceTransferStatus: document.getElementById('source-transfer-status'),
+    sourceTransferClear: document.getElementById('source-transfer-clear'),
     history: document.getElementById('history'),
     historyList: document.getElementById('history-list'),
     bootstrap: document.getElementById('bootstrap'),
@@ -151,6 +160,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let lastDrafts = [];
   let savedSnapshot = null;
   let exportAbortController = null;
+  let pendingSourceTransfer = null;
+  let sourceTransferGeneration = 0;
+  function clearMockSourceTransfer(status = 'No inspected fictional source report. No changes saved.') {
+    sourceTransferGeneration += 1;
+    pendingSourceTransfer = null;
+    ui.sourceTransferFile.value = '';
+    ui.sourceTransferReview.hidden = true;
+    ui.sourceTransferReview.textContent = '';
+    ui.sourceTransferApply.disabled = true;
+    ui.sourceTransferStatus.textContent = status;
+  }
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
   function draftSnapshot() {
     return JSON.stringify(draftFields.map(name => ui.form.elements.namedItem(name).value));
@@ -838,6 +858,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     hideLocalDashboard();
     ui.reviewFilter.value = 'all';
     csrf = null;
+    clearMockSourceTransfer();
     savedSnapshot = null;
     ui.form.reset();
     ui.draftId.value = '';
@@ -949,6 +970,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   }
   function editDraft(draft) {
+    clearMockSourceTransfer();
     ui.form.elements.namedItem('title').value = draft.title;
     ui.form.elements.namedItem('summary').value = draft.summary;
     ui.form.elements.namedItem('body').value = draft.body;
@@ -1437,6 +1459,56 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       if (epoch === sessionEpoch && generation === draftOpenGeneration) showUnsavedChanges();
     }
   });
+
+  // A file from the PUBLIC M03 demo is never authority. No CMS API is called
+  // during inspection or application; the Owner still saves the form manually.
+  ui.sourceTransferFile.addEventListener('change', async () => {
+    const file = ui.sourceTransferFile.files?.[0];
+    clearMockSourceTransfer();
+    if (!file) return;
+    if (!csrf || ui.form.hidden || !/\.json$/iu.test(file.name) ||
+        file.size < 1 || file.size > 2048) {
+      clearMockSourceTransfer('Rejected: invalid or oversized MOCK source report.');
+      return;
+    }
+    const epoch = sessionEpoch;
+    const editorGeneration = draftOpenGeneration;
+    const readGeneration = sourceTransferGeneration;
+    try {
+      const raw = await file.text();
+      if (epoch !== sessionEpoch || editorGeneration !== draftOpenGeneration ||
+          readGeneration !== sourceTransferGeneration || !csrf || ui.form.hidden) return;
+      const result = parseMockSourceTransfer(raw, canonicalSourceCatalog);
+      if (!result) {
+        clearMockSourceTransfer('Rejected: report differs from the three known fictional sources.');
+        return;
+      }
+      pendingSourceTransfer = result;
+      ui.sourceTransferReview.textContent = result.label + ' · ' + result.sourceUrl +
+        ' · ' + result.status + ' · ' + result.licensing +
+        ' · NOT_CLEARED · NOT_CAPTURED · NO_DIGEST · MOCK / NOT PUBLISHED.';
+      ui.sourceTransferReview.hidden = false;
+      ui.sourceTransferApply.disabled = false;
+      ui.sourceTransferStatus.textContent = 'Inspected only. Click Apply to change the unsaved source field.';
+    } catch {
+      if (epoch === sessionEpoch && readGeneration === sourceTransferGeneration) {
+        clearMockSourceTransfer('Rejected: could not read source report.');
+      }
+    }
+  });
+  ui.sourceTransferApply.addEventListener('click', () => {
+    if (!csrf || ui.form.hidden || !pendingSourceTransfer ||
+        ui.sourceTransferApply.disabled) return;
+    if (!window.confirm('Apply this fictional NOT_CLEARED source address to the unsaved editor? No save, approval or publication will occur.')) {
+      ui.sourceTransferStatus.textContent = 'Application canceled; no form field changed.';
+      return;
+    }
+    const sourceField = ui.form.elements.namedItem('sourceUrl');
+    sourceField.value = pendingSourceTransfer.sourceUrl;
+    sourceField.dispatchEvent(new Event('input', { bubbles: true }));
+    clearMockSourceTransfer('MOCK source inserted in the form only. Rights NOT_CLEARED. Save separately if desired; nothing published.');
+  });
+  ui.sourceTransferClear.addEventListener('click', () => clearMockSourceTransfer());
   ui.form.addEventListener('submit', async (event) => {
     event.preventDefault();
     ui.save.disabled = true;
@@ -1462,6 +1534,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
   document.getElementById('new-draft').addEventListener('click', () => {
     if (!confirmDraftDiscard()) return;
+    clearMockSourceTransfer();
     draftOpenGeneration += 1;
     if (exportAbortController) exportAbortController.abort();
     exportAbortController = null;
@@ -1860,6 +1933,16 @@ footer{padding:24px 0;color:#b9c8bd}
 <label>Summary<textarea name="summary" minlength="20" maxlength="400" required></textarea></label>
 <label>Article body<textarea name="body" maxlength="40000" required></textarea></label>
 <label>HTTPS original source<input name="sourceUrl" type="url" maxlength="500" required></label>
+<section id="source-transfer" aria-labelledby="source-transfer-title">
+<h3 id="source-transfer-title">M03 fictional source report · inspect before applying</h3>
+<p>Only files from the three offline M03 examples. No rights cleared, evidence captured, network request, save or publication.</p>
+<label>Local JSON source report (max 2048 bytes)
+<input id="source-transfer-file" type="file" accept=".json,application/json"></label>
+<p id="source-transfer-status" role="status" aria-live="polite">No inspected fictional source report. No changes saved.</p>
+<p id="source-transfer-review" role="status" aria-live="polite" hidden></p>
+<button id="source-transfer-apply" type="button" disabled>Apply MOCK source to unsaved form</button>
+<button id="source-transfer-clear" type="button">Clear inspected report</button>
+</section>
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>
 <button id="new-draft" type="button">New draft</button>

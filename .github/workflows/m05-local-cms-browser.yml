@@ -90,7 +90,7 @@ jobs:
         if: always()
         run: |
           if curl --fail --silent --show-error --max-time 20 \
-            'https://sonarcloud.io/api/issues/search?componentKeys=KayzenRoot_coinblink&pullRequest=217&ps=100' \
+            'https://sonarcloud.io/api/issues/search?componentKeys=KayzenRoot_coinblink&pullRequest=${{ github.event.pull_request.number }}&ps=100' \
             --output /tmp/coinblink-sonar-217.json; then
             jq -r '"Sonar API total=" + ((.total // 0) | tostring), (.issues[]? | [.key, .rule, .component, (.line // "n/a" | tostring), (.severity // "n/a"), (.message // "")] | @tsv)' /tmp/coinblink-sonar-217.json
           else

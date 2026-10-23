@@ -421,14 +421,27 @@ async function getSavedOwnerReview(request, db, secret, currentTime, id) {
   if ([...new URL(request.url).searchParams.keys()].length) return denied(400);
   const who = await session(request, db, secret, currentTime);
   if (!who) return denied(401);
-  const sql = 'SELECT d.revision,r.decision,r.note,r.created_at FROM cms_drafts d ' +
-    'LEFT JOIN cms_owner_reviews r ON r.draft_id=d.id AND r.revision=d.revision AND r.actor_owner_id=1 ' +
-    "WHERE d.id=? AND d.owner_id=1 AND d.status='draft'";
-  const row = await db.prepare(sql).bind(id).first();
-  if (!row) return denied(404);
-  return json({ revision: row.revision,
-    review: row.decision === null ? null : { decision: row.decision, note: row.note, createdAt: row.created_at },
-    publication: 'DISABLED', rights: 'NOT_CLEARED' });
+  // One bounded, read-only D1 snapshot contains the latest draft revision and
+  // at most 100 immutable Owner process decisions. Old reviews are historical
+  // evidence, never approval for the current revision or publication.
+  const sql = 'SELECT d.revision AS current_revision, r.revision AS reviewed_revision, ' +
+    'r.decision, r.note, r.created_at FROM cms_drafts d ' +
+    'LEFT JOIN cms_owner_reviews r ON r.draft_id=d.id AND r.actor_owner_id=1 ' +
+    "WHERE d.id=? AND d.owner_id=1 AND d.status='draft' " +
+    'ORDER BY r.revision DESC LIMIT 100';
+  const result = await db.prepare(sql).bind(id).all();
+  const first = result.results[0];
+  if (!first) return denied(404);
+  const history = result.results.filter(row => row.reviewed_revision !== null).map(row => ({
+    revision: row.reviewed_revision, decision: row.decision,
+    note: row.note, createdAt: row.created_at,
+  }));
+  const current = history.find(row => row.revision === first.current_revision);
+  return json({
+    revision: first.current_revision,
+    review: current ? { decision: current.decision, note: current.note, createdAt: current.createdAt } : null,
+    history, historyLimit: 100, publication: 'DISABLED', rights: 'NOT_CLEARED',
+  });
 }
 
 async function recordSavedOwnerReview(request, db, secret, currentTime, id) {

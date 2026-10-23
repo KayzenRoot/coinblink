@@ -32,7 +32,9 @@ const pt = locale === "pt-br";
     <p>{pt ? "Comparação estrutural, não auditoria de fatos, licenças ou histórico editorial. Nada foi publicado." : "Structural comparison, not fact-checking, licensing or editorial history. Nothing was published."}</p>
   </section>
 </section>
-<script is:inline type="module" src="/m02-local-draft-compare.js"></script>
+<script>
+  import "./local-draft-compare.client.mjs";
+</script>
 <style>
   .m02-revision{margin-top:2rem;padding:clamp(1rem,3vw,2rem);border:1px solid #597b64;border-radius:1rem;background:#101e17;overflow-wrap:anywhere}
   .m02-revision-head{display:flex;gap:1rem;justify-content:space-between;flex-wrap:wrap}

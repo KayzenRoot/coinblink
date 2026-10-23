@@ -46,7 +46,9 @@ test("original editor inputs and same-origin modules survive progressive disclos
     "sourcesScriptUrl", "auditScriptUrl", "claimScriptUrl"]) {
     assert.ok(component.includes("src={" + url + "}"));
   }
-  assert.doesNotMatch(component, /<script>\s*import /u);
+  assert.match(component, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared browser entry is processed by Astro into an external bundle");
+  assert.doesNotMatch(component, /<script\s+is:inline[^>]*>\s*import /u);
   assert.doesNotMatch(component, /\b(?:fetch\s*\(|localStorage|sessionStorage|document\.cookie)\b/u);
 });
 

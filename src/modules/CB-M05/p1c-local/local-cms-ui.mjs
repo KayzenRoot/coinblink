@@ -114,6 +114,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
+    exportDraft: document.getElementById('export-draft'),
+    exportStatus: document.getElementById('export-status'),
     history: document.getElementById('history'),
     historyList: document.getElementById('history-list'),
     bootstrap: document.getElementById('bootstrap'),
@@ -148,6 +150,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let localApprovalEvents = [];
   let lastDrafts = [];
   let savedSnapshot = null;
+  let exportAbortController = null;
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
   function draftSnapshot() {
     return JSON.stringify(draftFields.map(name => ui.form.elements.namedItem(name).value));
@@ -157,6 +160,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   function showUnsavedChanges() {
     ui.unsaved.hidden = !hasUnsavedChanges();
+    ui.exportDraft.disabled = !(csrf && !ui.form.hidden && ui.draftId.value &&
+      !hasUnsavedChanges() && !ui.save.disabled);
   }
   function acceptSavedDraft() {
     savedSnapshot = draftSnapshot();
@@ -822,6 +827,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = null;
     if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
     sessionExpiryTimer = null;
     sessionExpiresAt = 0;
@@ -843,6 +850,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.refresh.hidden = true;
     ui.history.hidden = true;
     ui.historyList.replaceChildren();
+    ui.exportDraft.hidden = true;
+    ui.exportDraft.disabled = true;
+    ui.exportStatus.textContent = '';
     ui.items.replaceChildren();
     lastDrafts = [];
     ui.search.value = '';
@@ -874,6 +884,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         // was already cleared. After sign-in, deny from any protected route
         // also revokes this browser editor's local authenticated state.
         clearLocalSession();
+        if (/^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url)) {
+          message('Local session expired or was revoked; sign in again.');
+        }
       }
       const error = new Error('Local request rejected (' + response.status + ')');
       error.status = response.status;
@@ -945,12 +958,16 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.revision.value = String(draft.revision);
     ui.save.textContent = 'Save new revision';
     ui.history.hidden = false;
+    ui.exportDraft.hidden = false;
+    ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
     ui.historyList.replaceChildren();
     renderDraftPreview();
     acceptSavedDraft();
   }
   async function openLocalDraft(draft) {
     if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = null;
     const epoch = sessionEpoch;
     const generation = readGeneration;
     const openGeneration = ++draftOpenGeneration;
@@ -1284,6 +1301,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
     renderDraftPreview();
+    if (exportAbortController && hasUnsavedChanges()) exportAbortController.abort();
     showUnsavedChanges();
   });
   ui.login.addEventListener('click', async () => {
@@ -1346,9 +1364,83 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       message('Read-only revision history loaded: ' + revisions.length + ' versions');
     } catch { message('Could not load revision history'); }
   });
+  ui.exportDraft.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || !ui.draftId.value || ui.save.disabled || hasUnsavedChanges()) {
+      ui.exportStatus.textContent = 'Save or discard pending form changes before exporting a persisted revision.';
+      return;
+    }
+    const id = ui.draftId.value;
+    const revision = Number(ui.revision.value);
+    if (!Number.isSafeInteger(revision) || revision < 1) {
+      ui.exportStatus.textContent = 'Reload a saved LOCAL draft before exporting.';
+      return;
+    }
+    if (!window.confirm('Export saved revision ' + revision + ' for manual import into M02? Facts and rights remain unverified; nothing will be published.')) {
+      ui.exportStatus.textContent = 'Export canceled.';
+      ui.exportDraft.focus();
+      return;
+    }
+    const epoch = sessionEpoch;
+    const generation = draftOpenGeneration;
+    const snapshot = draftSnapshot();
+    const controller = new AbortController();
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = controller;
+    ui.exportDraft.disabled = true;
+    ui.exportStatus.textContent = 'Checking the saved revision…';
+    try {
+      const response = await fetch('/local/articles/' + encodeURIComponent(id) +
+        '/export?revision=' + encodeURIComponent(String(revision)), {
+        method: 'GET', credentials: 'same-origin', cache: 'no-store',
+        headers: { Accept: 'text/markdown' }, signal: controller.signal,
+      });
+      if (response.status === 401) {
+        if (epoch === sessionEpoch) clearLocalSession();
+        return;
+      }
+      if (!response.ok) {
+        ui.exportStatus.textContent = response.status === 409
+          ? 'The saved revision changed. Refresh the list and reopen the latest draft before exporting.'
+          : response.status === 422
+            ? 'This saved content does not fit the canonical Markdown format; no content was changed.'
+            : 'The saved revision could not be exported (' + response.status + ').';
+        return;
+      }
+      const disposition = response.headers.get('content-disposition') || '';
+      const filenameMatch = /^attachment;\s*filename="([a-z0-9]+(?:-[a-z0-9]+)*\.md)"$/iu.exec(disposition);
+      if (!/^text\/markdown(?:\s*;|$)/iu.test(response.headers.get('content-type') || '') ||
+          !/\bno-store\b/iu.test(response.headers.get('cache-control') || '') || !filenameMatch) {
+        throw new Error('Invalid local export response');
+      }
+      const file = await response.blob();
+      if (epoch !== sessionEpoch || generation !== draftOpenGeneration || !csrf || ui.form.hidden ||
+          ui.draftId.value !== id || Number(ui.revision.value) !== revision ||
+          draftSnapshot() !== snapshot || hasUnsavedChanges()) return;
+      if (file.size <= 0 || file.size > 64000) throw new Error('Invalid local export size');
+      const url = URL.createObjectURL(file);
+      const download = document.createElement('a');
+      download.href = url;
+      download.download = filenameMatch[1];
+      document.body.append(download);
+      download.click();
+      download.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      ui.exportStatus.textContent = 'Saved revision ' + revision + ' downloaded for manual M02 import. Facts and rights remain unverified; nothing was published.';
+      message('Exported saved LOCAL revision ' + revision + '; not published');
+      ui.exportDraft.focus();
+    } catch (error) {
+      if (error?.name !== 'AbortError' && epoch === sessionEpoch && generation === draftOpenGeneration) {
+        ui.exportStatus.textContent = 'Export failed. The editor was not changed.';
+      }
+    } finally {
+      if (exportAbortController === controller) exportAbortController = null;
+      if (epoch === sessionEpoch && generation === draftOpenGeneration) showUnsavedChanges();
+    }
+  });
   ui.form.addEventListener('submit', async (event) => {
     event.preventDefault();
     ui.save.disabled = true;
+    showUnsavedChanges();
     try {
       const data = Object.fromEntries(new FormData(ui.form));
       const id = ui.draftId.value;
@@ -1360,17 +1452,23 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.draftId.value = result.id;
       ui.revision.value = String(result.revision);
       ui.save.textContent = 'Save new revision';
+      ui.exportDraft.hidden = false;
+      ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
       acceptSavedDraft();
       await refresh();
       message('Saved LOCAL draft revision ' + result.revision + '; not published');
     } catch { message('Save rejected; reload draft to resolve possible revision conflict'); }
-    finally { ui.save.disabled = false; }
+    finally { ui.save.disabled = false; showUnsavedChanges(); }
   });
   document.getElementById('new-draft').addEventListener('click', () => {
     if (!confirmDraftDiscard()) return;
     draftOpenGeneration += 1;
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = null;
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
     ui.history.hidden = true;
+    ui.exportDraft.hidden = true;
+    ui.exportStatus.textContent = '';
     ui.historyList.replaceChildren();
     ui.save.textContent = 'Create draft'; renderDraftPreview(); acceptSavedDraft(); message('New unsaved local draft');
   });
@@ -1765,6 +1863,8 @@ footer{padding:24px 0;color:#b9c8bd}
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>
 <button id="new-draft" type="button">New draft</button>
+<button id="export-draft" type="button" hidden disabled>Export saved revision to Markdown for M02</button>
+<p id="export-status" role="status" aria-live="polite"></p>
 <p id="unsaved-draft-status" role="status" aria-live="polite" hidden>Unsaved changes in this LOCAL draft.</p>
 <button id="history" type="button" hidden>View revision history</button>
 <ul id="history-list" aria-label="Read-only draft revision history"></ul>

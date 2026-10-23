@@ -37,7 +37,6 @@ const pt = locale === "pt-br";
   </section>
   </article>
 </section>
-<script is:inline type="module" src="/m02-local-article-preview.js"></script>
 <style>
   .m02-local-preview{margin-top:2.5rem;padding:clamp(1rem,4vw,2rem);background:#101e17;border:1px solid #597b64;border-radius:.8rem;overflow-wrap:anywhere}
   .m02-local-head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
@@ -66,6 +65,7 @@ const pt = locale === "pt-br";
 </style>
 
 <script>
+  import "./local-article-preview.client.mjs";
   import { buildLocalEvidenceReport, buildLocalEvidenceActions } from "./local-evidence-report.mjs";
 
   const root = document.querySelector("[data-m02-local-preview]");

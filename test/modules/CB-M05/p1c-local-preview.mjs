@@ -71,6 +71,14 @@ async function applySchema(db, persistent) {
     presentTables.forEach((present, index) => {
       assert.equal(present?.name, requiredTables[index], 'local database has missing table ' + requiredTables[index]);
     });
+    // Preserve persistent v1 LOCAL Owner, drafts and history. Append review-only DDL.
+    const extension = splitLocalSchemaStatements(readFileSync(SCHEMA_URL, 'utf8'))
+      .filter(statement => /^CREATE TABLE IF NOT EXISTS cms_owner_reviews\b/u.test(statement) ||
+        /^CREATE TRIGGER IF NOT EXISTS cms_owner_review_no_(?:update|delete)\b/u.test(statement));
+    assert.equal(extension.length, 3, 'incomplete LOCAL review extension');
+    await db.batch(extension.map(statement => db.prepare(statement)));
+    const ready = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cms_owner_reviews'").first();
+    assert.equal(ready?.name, 'cms_owner_reviews', 'LOCAL review table missing');
     return false;
   }
   assert.equal(existing, null, 'database must start empty unless explicit persistent preview');

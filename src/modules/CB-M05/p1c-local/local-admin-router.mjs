@@ -22,7 +22,7 @@ const fixed = new Map([
   ['POST /admin/credentials/revoke', '/local/credentials/revoke'],
   ['POST /admin/emergency/claim', '/local/emergency/claim'],
 ]);
-const article = /^\/admin\/articles\/([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})(\/(?:revisions|export))?$/i;
+const article = /^\/admin\/articles\/([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})(\/(?:revisions|export|review))?$/i;
 const PROTECTED_HEADERS = Object.freeze({
   'Cache-Control': 'no-store',
   'X-Content-Type-Options': 'nosniff',
@@ -38,6 +38,7 @@ function localRoute(method, pathname) {
   if (exact) return exact;
   const match = pathname.match(article);
   if (!match) return null;
+  if (match[2] === '/review') return ['GET','POST'].includes(method) ? '/local/articles/' + match[1] + match[2] : null;
   if (match[2]) return method === 'GET' ? '/local/articles/' + match[1] + match[2] : null;
   return ['GET', 'PATCH'].includes(method) ? '/local/articles/' + match[1] : null;
 }

@@ -50,6 +50,19 @@ test("M04 market radar is offline, accessible and has no quotes", async ({ page 
   await compare.click();
   await expect(page.locator("[data-m04-comparison]")).toContainText("BTC (STALE) and ETH (UNAVAILABLE)");
   await expect(page.locator("[data-m04-comparison]")).toContainText("BOTH NOT LIVE · NO QUOTES · NO TRADING");
+  const gaps = page.locator("[data-m04-comparison-gaps]");
+  await expect(gaps).toBeVisible();
+  await expect(gaps).toContainText("Shared blockers: RIGHTS_NOT_CLEARED, NO_CAPTURED_OBSERVATION, NO_LIVE_FEED");
+  await expect(gaps).toContainText("BTC only: OUTDATED_ILLUSTRATION");
+  await expect(gaps).toContainText("ETH only: NO_ILLUSTRATION_TIMESTAMP");
+  await expect(gaps).toContainText("no prices, permission or trading advice");
+  await page.locator("[data-m04-second]").selectOption("BTC");
+  await expect(gaps).toBeHidden();
+  await compare.click();
+  await expect(gaps).toBeHidden();
+  await page.locator("[data-m04-second]").selectOption("ETH");
+  await compare.click();
+  await expect(gaps).toBeVisible();
   for (const width of [390, 768, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     const bounds = await page.locator(".m04-compare").boundingBox();

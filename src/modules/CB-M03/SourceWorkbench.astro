@@ -53,7 +53,7 @@ const entries = rows.map(row => ({ row, report: inspectSyntheticProvenance(row.i
         <summary>Inspect fictional evidence for {row.label}</summary>
         <p>Safety outcome: {report.inspection}. Reuse remains BLOCKED.</p>
         <dl>
-          {report.checks.map(check => <><dt>{check.label}</dt><dd>{check.state}</dd></>)}
+          {report.checks.map(check => <><dt data-m03-check-code={check.code} data-m03-check-state={check.state}>{check.label}</dt><dd>{check.state}</dd></>)}
           <dt>Required next step</dt><dd>{report.action}</dd>
         </dl>
       </details> : <p>Fictional evidence report unavailable · REUSE BLOCKED</p>}
@@ -79,6 +79,7 @@ const entries = rows.map(row => ({ row, report: inspectSyntheticProvenance(row.i
       <button type="button" data-m03-compare>Compare evidence gaps</button>
     </div>
     <p data-m03-comparison role="status" aria-live="polite">Select two different fictional sources. Public reuse remains denied.</p>
+    <p data-m03-compare-details aria-live="polite" class="m03-check-differences" hidden></p>
   </section>
 </main>
 <script is:inline src={uiUrl}></script>
@@ -96,6 +97,8 @@ const entries = rows.map(row => ({ row, report: inspectSyntheticProvenance(row.i
   .m03-report summary{color:#b8f34b;cursor:pointer;font-weight:650}
   .m03-compare-controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:end}
   .m03-compare-controls label{display:grid;flex:1 1 13rem;gap:.4rem}
+  .m03-check-differences{white-space:pre-line;overflow-wrap:anywhere;border-left:3px solid #b8f34b;padding:.8rem;background:#192b20}
+  .m03-check-differences[hidden]{display:none}
   .m03-compare-controls button{min-height:2.75rem;padding:.7rem 1rem;border-radius:.5rem;background:#b8f34b;color:#102015;font-weight:700;border:0;cursor:pointer}
   .m03-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:1rem}
   .m03 article{border:1px solid #456e4e;border-radius:.75rem;padding:1.25rem;background:#101e17}

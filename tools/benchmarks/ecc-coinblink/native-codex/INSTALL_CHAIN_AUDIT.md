@@ -67,3 +67,7 @@ O inventário estático `pinned-surface-inventory.json` contém agora **479 hash
 `validation/native_cache_integrity.py` implementa um **comparador somente leitura**, sem operação de instalação ou rede: verifica raiz real, componentes sem `..`, rejeita symlinks e arquivos não regulares, exige presença de todos os arquivos selecionados e calcula **hash de conteúdo do objeto Git**. A validação positiva e as recusas por adulteração, arquivo ausente, link e traversal usam exclusivamente diretórios temporários sintéticos durante os testes.
 
 Importante: o scanner **não foi executado sobre o cache real de nenhum usuário**. Seu sucesso hipotético só provaria integridade dos arquivos **pinned**, não ausência de arquivos extras, configuração privilegiada, política de cobrança, discovery do Codex ou segurança de SessionStart/MCP. Não executar os scripts originais para tentar corrigir cache divergente.
+
+### Revisão do Sonar: identificador Git SHA-1 não é assinatura de segurança
+
+A falha Sonar no HEAD `8a7fc071e4ee2ea14c88f0880391a88e0a392ce3` era a única anotação S4790 na função `git_blob_sha()`. A implementação declara `usedforsecurity=False`, pois SHA-1 é exigido pelo **formato do objeto Git** para comparar SHA de blob, e não é usado para autenticação, senha ou assinatura. Esse hash, por si, não comprova ausência de colisões intencionais, integridade de arquivos não inventariados ou confiança de hook. Para uma adoção de risco alto, exigir também atestação externa e revisão das fontes, sem confiar somente neste comparador.

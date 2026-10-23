@@ -51,7 +51,12 @@ def _safe_node(root, relative, kind):
 def git_blob_sha(path):
     """Calculate Git's actual blob-object SHA1, not a SHA of filename metadata."""
     data = Path(path).read_bytes()
-    return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
+    # Git object identity is fixed by the SHA-1 object format, NOT used as
+    # a cryptographic security primitive. This alone cannot attest cache trust.
+    return hashlib.sha1(
+        b"blob " + str(len(data)).encode("ascii") + b"\0" + data,
+        usedforsecurity=False,
+    ).hexdigest()
 
 
 def pinned_file_inventory(manifest, surface):

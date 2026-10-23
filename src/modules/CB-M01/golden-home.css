@@ -114,7 +114,7 @@
   .cb-home .cb-footer { align-items:flex-start; flex-direction:column; justify-content:center; gap:4px; padding-block:11px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .cb-home *,.cb-home *::before,.cb-home *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; }
+  .cb-home *,.cb-home *::before,.cb-home *::after { scroll-behavior:auto; animation-duration:.01ms; transition-duration:.01ms; }
 }
 
 

@@ -2,13 +2,13 @@
   const topic = root?.querySelector("[data-m10-topic]");
   const build = root?.querySelector("[data-m10-build]");
   const clear = root?.querySelector("[data-m10-clear]");
-  const status = root?.querySelector("[data-m10-status]");
+  const statusMessage = root?.querySelector("[data-m10-status]");
   const preview = root?.querySelector("[data-m10-preview]");
   const title = root?.querySelector("[data-m10-title]");
   const count = root?.querySelector("[data-m10-count]");
   const stories = root?.querySelector("[data-m10-stories]");
   if (topic instanceof HTMLSelectElement && build instanceof HTMLButtonElement
-      && clear instanceof HTMLButtonElement && status instanceof HTMLElement
+      && clear instanceof HTMLButtonElement && statusMessage instanceof HTMLElement
       && preview instanceof HTMLElement && title instanceof HTMLElement
       && count instanceof HTMLElement && stories instanceof HTMLElement) {
     const reset = () => {
@@ -16,7 +16,7 @@
       stories.replaceChildren();
       title.textContent = "";
       count.textContent = "";
-      status.textContent = "Choose a theme, then preview fictional content. No message can be sent.";
+      statusMessage.textContent = "Choose a theme, then preview fictional content. No message can be sent.";
     };
     topic.addEventListener("change", reset);
     clear.addEventListener("click", () => {
@@ -47,7 +47,7 @@
           && story.path.startsWith("/en/news/")
           && /^demo-[a-z0-9-]{1,42}$/u.test(story.path.slice("/en/news/".length)));
       if (!valid) {
-        status.textContent = "Invalid theme. Nothing was generated or transmitted.";
+        statusMessage.textContent = "Invalid theme. Nothing was generated or transmitted.";
         return;
       }
       title.textContent = result.preview.title;
@@ -64,7 +64,7 @@
         stories.append(li);
       }
       preview.hidden = false;
-      status.textContent = "Unsent mock preview assembled locally. No delivery took place.";
+      statusMessage.textContent = "Unsent mock preview assembled locally. No delivery took place.";
       title.focus();
     });
   }

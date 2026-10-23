@@ -57,7 +57,9 @@ async function main() {
   }
 }
 
-main().catch(error => {
+try {
+  await main();
+} catch (error) {
   process.stderr.write("LOCAL Studio could not start: " + (error?.message || "unknown error") + "\n");
   process.exitCode = 1;
-});
+}

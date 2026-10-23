@@ -25,7 +25,6 @@ MODE = os.environ.get("CB_HERO_ANIMATION_MODE", "frames").lower()
 
 SECONDARY_RIGHT_SPRITE = "lightning-05-secondary-right.png"
 SECONDARY_LEFT_SPRITE = "lightning-06-secondary-left.png"
-
 SPRITE_OPACITY = {
     "lightning-01-charge.png": 0.28,
     "lightning-02-descent.png": 0.45,
@@ -103,145 +102,7 @@ def create_sprite_material(name: str, image: bpy.types.Image, opacity: float):
     return material
 
 
-
-def create_image_plate():
-    # One image-mapped card with a small safety bleed for the camera's slow drift.
-    half_width = 1.015
-    half_height = 0.5075
-    mesh = bpy.data.meshes.new("Generated hero image card")
-    mesh.from_pydata(((-half_width, -half_height, 0.0),
-                      (half_width, -half_height, 0.0),
-                      (half_width, half_height, 0.0),
-                      (-half_width, half_height, 0.0)), [], ((0, 1, 2, 3),))
-    mesh.update()
-    uv_layer = mesh.uv_layers.new(name="Image UV")
-    for loop_index, uv in zip(mesh.polygons[0].loop_indices,
-                              ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0))):
-        uv_layer.data[loop_index].uv = uv
-    card = bpy.data.objects.new("Generated OpenAI hero plate", mesh)
-    bpy.context.collection.objects.link(card)
-
-    image = bpy.data.images.load(str(IMAGE), check_existing=True)
-    image.colorspace_settings.name = "sRGB"
-    image.pack()
-    image.filepath = "//" + Path(os.path.relpath(IMAGE, EVIDENCE)).as_posix()
-    material = bpy.data.materials.new("Unmodified generated hero pixels")
-    material.use_nodes = True
-    nodes = material.node_tree.nodes
-    links = material.node_tree.links
-    nodes.clear()
-    texture = nodes.new("ShaderNodeTexImage")
-    texture.image = image
-    texture.interpolation = "Cubic"
-    texture.extension = "CLIP"
-    output = nodes.new("ShaderNodeOutputMaterial")
-    emission = nodes.new("ShaderNodeEmission")
-    emission.inputs["Strength"].default_value = 1.0
-    links.new(texture.outputs["Color"], emission.inputs["Color"])
-    links.new(emission.outputs["Emission"], output.inputs["Surface"])
-    card.data.materials.append(material)
-
-    return mesh, image, material, emission
-
-
-def set_constant_sprite_interpolation(sprite):
-    if sprite.animation_data and sprite.animation_data.action:
-        for curve in getattr(sprite.animation_data.action, "fcurves", ()):
-            for point in curve.keyframe_points:
-                point.interpolation = "CONSTANT"
-
-
-def animate_sprite_overlays(mesh, image):
-    for index, (filename, opacity) in enumerate(SPRITE_OPACITY.items()):
-        sprite_path = SPRITE_DIR / filename
-        if not sprite_path.is_file():
-            raise FileNotFoundError(f"Lightning sprite missing: {sprite_path}")
-        sprite_image = bpy.data.images.load(str(sprite_path), check_existing=True)
-        if tuple(sprite_image.size) != tuple(image.size):
-            raise ValueError(f"Lightning sprite canvas does not match base image: {sprite_path}")
-        sprite_image.colorspace_settings.name = "sRGB"
-        sprite_image.pack()
-        sprite_image.filepath = "//" + Path(os.path.relpath(sprite_path, EVIDENCE)).as_posix()
-
-        sprite_mesh = mesh.copy()
-        sprite = bpy.data.objects.new(f"Generated lightning sprite {index + 1:02d}", sprite_mesh)
-        bpy.context.collection.objects.link(sprite)
-        sprite.location = (SPRITE_X_OFFSETS.get(filename, 0.0), 0.0,
-                           0.01 + index * 0.0001)
-        sprite_material = create_sprite_material(
-            f"ImageGen lightning overlay {index + 1:02d}", sprite_image, opacity)
-        sprite.data.materials.clear()
-        sprite.data.materials.append(sprite_material)
-
-        sprite.hide_render = True
-        sprite.keyframe_insert(data_path="hide_render", frame=1)
-        for start_frame, end_frame in SPRITE_SCHEDULE[filename]:
-            sprite.hide_render = False
-            sprite.keyframe_insert(data_path="hide_render", frame=start_frame)
-            sprite.hide_render = True
-            sprite.keyframe_insert(data_path="hide_render", frame=end_frame + 1)
-        set_constant_sprite_interpolation(sprite)
-
-
-
-def animate_exposure_flashes(material, emission):
-    for frame, strength in FLASH_STRENGTH_KEYS:
-        emission.inputs["Strength"].default_value = strength
-        emission.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
-    if material.node_tree.animation_data and material.node_tree.animation_data.action:
-        for curve in getattr(material.node_tree.animation_data.action, "fcurves", ()):
-            for point in curve.keyframe_points:
-                point.interpolation = "LINEAR"
-
-
-
-def configure_camera_interpolation(camera, camera_data):
-    for animation in (camera.animation_data, camera_data.animation_data):
-        if animation and animation.action:
-            for curve in getattr(animation.action, "fcurves", ()):
-                for point in curve.keyframe_points:
-                    if curve.data_path == "location":
-                        point.interpolation = "LINEAR"
-                    else:
-                        point.interpolation = "BEZIER"
-                        point.handle_left_type = "AUTO_CLAMPED"
-                        point.handle_right_type = "AUTO_CLAMPED"
-
-
-def configure_cinematic_camera(scene):
-    camera_data = bpy.data.cameras.new("Slow cinematic camera")
-    camera_data.type = "ORTHO"
-    camera_data.ortho_scale = 2.0
-    camera = bpy.data.objects.new("Slow cinematic camera", camera_data)
-    bpy.context.collection.objects.link(camera)
-    camera.location = (0.0, 0.0, 8.0)
-    scene.camera = camera
-
-    # Four-second seamless breathing push: under 1.3% zoom and 1.6% lateral drift.
-    # The final key is frame 97 so frames 1-96 cover exactly four seconds without
-    # duplicating the loop's first image at its last frame.
-    scale_keys = ((1, 2.0), (25, 1.9875), (49, 1.975),
-                  (73, 1.9875), (97, 2.0))
-    x_keys = ((1, 0.0), (25, 0.016), (49, 0.0),
-              (73, -0.016), (97, 0.0))
-    for frame, scale in scale_keys:
-        camera_data.ortho_scale = scale
-        camera_data.keyframe_insert(data_path="ortho_scale", frame=frame)
-    for frame, offset_x in x_keys:
-        camera.location.x = offset_x
-        camera.keyframe_insert(data_path="location", index=0, frame=frame)
-    configure_camera_interpolation(camera, camera_data)
-
-
-
-def build_animation():
-    if not IMAGE.is_file():
-        raise FileNotFoundError(f"Generated image source missing: {IMAGE}")
-
-    bpy.ops.object.select_all(action="SELECT")
-    bpy.ops.object.delete(use_global=False)
-
-    scene = bpy.context.scene
+def _configure_scene(scene):
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
     scene.cycles.samples = 1
@@ -260,10 +121,169 @@ def build_animation():
     scene.view_settings.gamma = 1.0
     scene.world.color = (0.0, 0.0, 0.0)
 
-    mesh, image, material, emission = create_image_plate()
-    animate_sprite_overlays(mesh, image)
-    animate_exposure_flashes(material, emission)
-    configure_cinematic_camera(scene)
+
+def _build_card_mesh():
+    # One image-mapped card with a small safety bleed for the camera's slow drift.
+    half_width = 1.015
+    half_height = 0.5075
+    mesh = bpy.data.meshes.new("Generated hero image card")
+    mesh.from_pydata(((-half_width, -half_height, 0.0),
+                      (half_width, -half_height, 0.0),
+                      (half_width, half_height, 0.0),
+                      (-half_width, half_height, 0.0)), [], ((0, 1, 2, 3),))
+    mesh.update()
+    uv_layer = mesh.uv_layers.new(name="Image UV")
+    for loop_index, uv in zip(mesh.polygons[0].loop_indices,
+                              ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0))):
+        uv_layer.data[loop_index].uv = uv
+    return mesh
+
+
+def _load_packed_image(path):
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "sRGB"
+    image.pack()
+    image.filepath = "//" + Path(os.path.relpath(path, EVIDENCE)).as_posix()
+    return image
+
+
+def _set_interpolation(owner, interpolation):
+    animation = owner.animation_data
+    if animation and animation.action:
+        for curve in getattr(animation.action, "fcurves", ()):
+            for point in curve.keyframe_points:
+                point.interpolation = interpolation
+
+
+def _build_hero_material(image):
+    material = bpy.data.materials.new("Unmodified generated hero pixels")
+    material.use_nodes = True
+    nodes = material.node_tree.nodes
+    links = material.node_tree.links
+    nodes.clear()
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.interpolation = "Cubic"
+    texture.extension = "CLIP"
+    output = nodes.new("ShaderNodeOutputMaterial")
+    emission = nodes.new("ShaderNodeEmission")
+    emission.inputs["Strength"].default_value = 1.0
+    links.new(texture.outputs["Color"], emission.inputs["Color"])
+    links.new(emission.outputs["Emission"], output.inputs["Surface"])
+    return material, emission
+
+
+def _key_sprite_visibility(sprite, filename):
+    sprite.hide_render = True
+    sprite.keyframe_insert(data_path="hide_render", frame=1)
+    for start_frame, end_frame in SPRITE_SCHEDULE[filename]:
+        sprite.hide_render = False
+        sprite.keyframe_insert(data_path="hide_render", frame=start_frame)
+        sprite.hide_render = True
+        sprite.keyframe_insert(data_path="hide_render", frame=end_frame + 1)
+
+
+def _add_lightning_sprites(card_mesh, base_image):
+    for index, (filename, opacity) in enumerate(SPRITE_OPACITY.items()):
+        sprite_path = SPRITE_DIR / filename
+        if not sprite_path.is_file():
+            raise FileNotFoundError(f"Lightning sprite missing: {sprite_path}")
+        sprite_image = bpy.data.images.load(str(sprite_path), check_existing=True)
+        if tuple(sprite_image.size) != tuple(base_image.size):
+            raise ValueError(f"Lightning sprite canvas does not match base image: {sprite_path}")
+        sprite_image.colorspace_settings.name = "sRGB"
+        sprite_image.pack()
+        sprite_image.filepath = "//" + Path(os.path.relpath(sprite_path, EVIDENCE)).as_posix()
+
+        sprite_mesh = card_mesh.copy()
+        sprite = bpy.data.objects.new(f"Generated lightning sprite {index + 1:02d}", sprite_mesh)
+        bpy.context.collection.objects.link(sprite)
+        sprite.location = (SPRITE_X_OFFSETS.get(filename, 0.0), 0.0,
+                           0.01 + index * 0.0001)
+        sprite_material = create_sprite_material(
+            f"ImageGen lightning overlay {index + 1:02d}", sprite_image, opacity)
+        sprite.data.materials.clear()
+        sprite.data.materials.append(sprite_material)
+        _key_sprite_visibility(sprite, filename)
+        _set_interpolation(sprite, "CONSTANT")
+
+
+def _keyframe_flash_strength(emission, material):
+    for frame, strength in FLASH_STRENGTH_KEYS:
+        emission.inputs["Strength"].default_value = strength
+        emission.inputs["Strength"].keyframe_insert(data_path="default_value", frame=frame)
+    _set_interpolation(material.node_tree, "LINEAR")
+
+
+def _build_camera(scene):
+    camera_data = bpy.data.cameras.new("Slow cinematic camera")
+    camera_data.type = "ORTHO"
+    camera_data.ortho_scale = 2.0
+    camera = bpy.data.objects.new("Slow cinematic camera", camera_data)
+    bpy.context.collection.objects.link(camera)
+    camera.location = (0.0, 0.0, 8.0)
+    scene.camera = camera
+    return camera, camera_data
+
+
+def _set_camera_curve_interpolation(animation):
+    if not (animation and animation.action):
+        return
+    for curve in getattr(animation.action, "fcurves", ()):
+        for point in curve.keyframe_points:
+            _set_camera_point_interpolation(curve, point)
+
+
+def _set_camera_point_interpolation(curve, point):
+    if curve.data_path == "location":
+        point.interpolation = "LINEAR"
+        return
+    point.interpolation = "BEZIER"
+    point.handle_left_type = "AUTO_CLAMPED"
+    point.handle_right_type = "AUTO_CLAMPED"
+
+
+def _keyframe_camera(camera, camera_data):
+    # Four-second seamless breathing push: under 1.3% zoom and 1.6% lateral drift.
+    # The final key is frame 97 so frames 1-96 cover exactly four seconds without
+    # duplicating the loop's first image at its last frame.
+    scale_keys = ((1, 2.0), (25, 1.9875), (49, 1.975),
+                  (73, 1.9875), (97, 2.0))
+    x_keys = ((1, 0.0), (25, 0.016), (49, 0.0),
+              (73, -0.016), (97, 0.0))
+    for frame, scale in scale_keys:
+        camera_data.ortho_scale = scale
+        camera_data.keyframe_insert(data_path="ortho_scale", frame=frame)
+    for frame, offset_x in x_keys:
+        camera.location.x = offset_x
+        camera.keyframe_insert(data_path="location", index=0, frame=frame)
+    for animation in (camera.animation_data, camera_data.animation_data):
+        _set_camera_curve_interpolation(animation)
+
+
+def build_animation():
+    if not IMAGE.is_file():
+        raise FileNotFoundError(f"Generated image source missing: {IMAGE}")
+
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.delete(use_global=False)
+
+    scene = bpy.context.scene
+    _configure_scene(scene)
+
+    mesh = _build_card_mesh()
+    card = bpy.data.objects.new("Generated OpenAI hero plate", mesh)
+    bpy.context.collection.objects.link(card)
+
+    image = _load_packed_image(IMAGE)
+    material, emission = _build_hero_material(image)
+    card.data.materials.append(material)
+
+    _add_lightning_sprites(mesh, image)
+    _keyframe_flash_strength(emission, material)
+
+    camera, camera_data = _build_camera(scene)
+    _keyframe_camera(camera, camera_data)
 
     scene["workOrder"] = "CB-M01-WO-001"
     scene["sourceImage"] = IMAGE.relative_to(ROOT).as_posix()

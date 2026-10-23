@@ -2,18 +2,18 @@
 // No storage, API, schedule, publishing, media upload or provider authentication.
 import { createLocalSocialPreview } from './social-preview.mjs';
 
-export function createLocalEditorialVariant(draft, channel, editableText) {
-  // Preserve the original ASCII control blacklist without no-control-regex exceptions.
-  // TAB, LF and CR remain permitted inside a non-edge-trimmed LOCAL variant.
-  function containsUnsafeAsciiControl(text) {
-    for (let i = 0; i < text.length; i++) {
-      const code = text.charCodeAt(i);
-      if (code <= 0x08 || code === 0x0b || code === 0x0c ||
-          (code >= 0x0e && code <= 0x1f) || code === 0x7f) return true;
-    }
-    return false;
+// Preserve the original ASCII control blacklist without no-control-regex exceptions.
+// TAB, LF and CR remain permitted inside a non-edge-trimmed LOCAL variant.
+export function containsUnsafeAsciiControl(text) {
+  for (let i = 0; i < text.length; i++) {
+    const code = text.codePointAt(i);
+    if (code <= 0x08 || code === 0x0b || code === 0x0c ||
+        (code >= 0x0e && code <= 0x1f) || code === 0x7f) return true;
   }
+  return false;
+}
 
+export function createLocalEditorialVariant(draft, channel, editableText) {
   const concept = createLocalSocialPreview(draft, channel);
   if (typeof editableText !== 'string' || editableText !== editableText.trim() ||
       editableText.length < 8 || editableText.length > 1600 ||

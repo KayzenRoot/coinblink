@@ -39,10 +39,10 @@ export const visualInputPaths = Object.freeze([
 export function resolveGitExecutable({ platform = process.platform, fileExists = existsSync } = {}) {
   const candidates = platform === "win32"
     ? [
-      "C:\\Program Files\\Git\\cmd\\git.exe",
-      "C:\\Program Files\\Git\\bin\\git.exe",
-      "C:\\Program Files (x86)\\Git\\cmd\\git.exe",
-      "C:\\Program Files (x86)\\Git\\bin\\git.exe",
+      String.raw`C:\Program Files\Git\cmd\git.exe`,
+      String.raw`C:\Program Files\Git\bin\git.exe`,
+      String.raw`C:\Program Files (x86)\Git\cmd\git.exe`,
+      String.raw`C:\Program Files (x86)\Git\bin\git.exe`,
     ]
     : ["/usr/bin/git", "/bin/git", "/usr/local/bin/git"];
   const resolved = candidates.find((candidate) => fileExists(candidate));

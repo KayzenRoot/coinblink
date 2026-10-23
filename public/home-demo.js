@@ -14,7 +14,7 @@ if (cinematicImage?.complete) revealCinematicPreview();
 else cinematicImage?.addEventListener("load", revealCinematicPreview, { once: true });
 
 function closeMenu({ returnFocus = false } = {}) {
-  if (!menu || menu.getAttribute("aria-expanded") !== "true") return;
+  if (menu?.getAttribute("aria-expanded") !== "true") return;
   menu.setAttribute("aria-expanded", "false");
   nav?.classList.remove("is-open");
   if (returnFocus) menu.focus();
@@ -32,18 +32,19 @@ document.addEventListener("pointerdown", (event) => {
   closeMenu();
 });
 
-const isPortuguese = document.querySelector(".cb-home")?.getAttribute("data-locale") === "pt-br";
-const placeholderCount = (n) => isPortuguese
-  ? String(n) + (n === 1 ? " exemplo" : " exemplos")
-  : String(n) + (n === 1 ? " placeholder" : " placeholders");
+const isPortuguese = document.querySelector(".cb-home")?.dataset.locale === "pt-br";
+const placeholderCount = (n) => {
+  if (isPortuguese) return String(n) + (n === 1 ? " exemplo" : " exemplos");
+  return String(n) + (n === 1 ? " placeholder" : " placeholders");
+};
 
 let selected = "All";
 let searchText = "";
 const buttons = [...document.querySelectorAll("[data-category]")];
 // Read the translation once from the server-rendered chip; URL IDs remain canonical.
 const localizedCategories = new Map(buttons.map((button) => [
-  button.getAttribute("data-category"),
-  button.getAttribute("data-category-label") ?? button.getAttribute("data-category"),
+  button.dataset.category,
+  button.dataset.categoryLabel ?? button.dataset.category,
 ]));
 const displayCategory = (id) => isPortuguese ? (localizedCategories.get(id) ?? id) : id;
 const cards = [...document.querySelectorAll("[data-news-card]")];
@@ -55,7 +56,7 @@ const count = document.querySelector("[data-result-count]");
 const summary = document.querySelector("[data-news-filter-summary]");
 const empty = document.querySelector("[data-news-empty]");
 const clearButton = document.querySelector("[data-clear-filters]");
-const allowedCategories = new Set(buttons.map((button) => button.getAttribute("data-category")));
+const allowedCategories = new Set(buttons.map((button) => button.dataset.category));
 const MAX_QUERY_LENGTH = 80;
 const languageSwitch = document.querySelector("[data-language-switch]");
 const shareButton = document.querySelector("[data-copy-filter-link]");
@@ -140,13 +141,26 @@ function restoreFilterURL() {
   searchText = next.query;
   searches.forEach((input) => { input.value = searchText; });
   buttons.forEach((button) => {
-    const active = button.getAttribute("data-category") === selected;
+    const active = button.dataset.category === selected;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
   filterStories();
 }
 
+
+function buildFilterSummary(visible, filtered, query) {
+  if (!filtered) return isPortuguese ? "Exibindo todos os exemplos." : "Showing all demo placeholders.";
+  if (isPortuguese) {
+    const category = selected === "All" ? "" : " em " + displayCategory(selected);
+    return "Exibindo " + placeholderCount(visible) + category
+      + (query ? " correspondentes à busca." : ".");
+  }
+  const category = selected === "All" ? "" : " in " + selected;
+  const noun = visible === 1 ? " demo placeholder" : " demo placeholders";
+  return "Showing " + visible + noun + category
+    + (query ? " matching your search." : ".");
+}
 
 function filterStories() {
   updateLanguageSwitch();
@@ -155,8 +169,8 @@ function filterStories() {
   const query = searchText.trim().toLocaleLowerCase("en");
   let visible = 0;
   cards.forEach((card) => {
-    const matchesCategory = selected === "All" || card.getAttribute("data-category-value") === selected;
-    const category = card.getAttribute("data-category-value") ?? "";
+    const matchesCategory = selected === "All" || card.dataset.categoryValue === selected;
+    const category = card.dataset.categoryValue ?? "";
     const searchableText = category + " " + displayCategory(category) + " " + card.textContent;
     const matchesQuery = !query || searchableText.toLocaleLowerCase("en").includes(query);
     card.hidden = !(matchesCategory && matchesQuery);
@@ -166,25 +180,13 @@ function filterStories() {
   if (empty) empty.hidden = visible !== 0;
   const filtered = selected !== "All" || query !== "";
   if (clearButton) clearButton.hidden = !filtered;
-  if (summary) {
-    summary.textContent = isPortuguese
-      ? (filtered
-        ? "Exibindo " + placeholderCount(visible) +
-          (selected === "All" ? "" : " em " + displayCategory(selected)) +
-          (query ? " correspondentes à busca." : ".")
-        : "Exibindo todos os exemplos.")
-      : (filtered
-        ? "Showing " + visible + " demo placeholder" + (visible === 1 ? "" : "s") +
-          (selected === "All" ? "" : " in " + selected) +
-          (query ? " matching your search." : ".")
-        : "Showing all demo placeholders.");
-  }
+  if (summary) summary.textContent = buildFilterSummary(visible, filtered, query);
 }
 
 function selectCategory(value) {
   selected = value;
   buttons.forEach((button) => {
-    const active = button.getAttribute("data-category") === selected;
+    const active = button.dataset.category === selected;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
@@ -199,7 +201,7 @@ function resetFilters() {
 }
 
 buttons.forEach((button) => button.addEventListener("click", () => {
-  selectCategory(button.getAttribute("data-category") ?? "All");
+  selectCategory(button.dataset.category ?? "All");
   writeFilterURL();
   document.getElementById("latest-news")?.scrollIntoView({ block: "start" });
 }));

@@ -8,11 +8,11 @@ const MAX_BODY = 12000;
 const MAX_SOURCE = 500;
 const clean = (value, max) => String(value ?? "").trim().slice(0, max).replace(/\r\n?/gu, "\n");
 const escapeMarkdown = (value) => value
-  .replace(/&/gu, "&amp;")
-  .replace(/</gu, "&lt;")
-  .replace(/>/gu, "&gt;")
-  .replace(/^#/gmu, "&#35;");
-const escapeLegacyMarkdown = (value) => value.replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll(/^#/gmu, "&#35;");
+const escapeLegacyMarkdown = (value) => value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 // A heading's '#' must be encoded even when it is not the first character.
 // Use a single pass so literal "&#35;" remains distinguishable from a real '#'.
 const escapeTitleV2 = (value) => value.replace(/[&<>#]/gu, (character) => ({
@@ -168,11 +168,14 @@ export function parseLocalDraftMarkdown(raw) {
   const [title, author, originalSource, brief, article] = values;
   // Legacy exports encoded angle brackets, and the text is never assigned to innerHTML.
   const restore = (value, isTitle = false) => {
-    const angles = value.replace(/&lt;/gu, "<").replace(/&gt;/gu, ">");
+    const angles = value.replaceAll("&lt;", "<").replaceAll("&gt;", ">");
     // Decode the v2 heading escape before ampersands: literal &#35;
     // must not be mistaken for an originally encoded leading '#'.
-    const restored = isVersion2 ? angles.replace(isTitle ? /&#35;/gu : /^&#35;/gmu, "#") : angles;
-    return isVersion2 ? restored.replace(/&amp;/gu, "&") : restored;
+    if (!isVersion2) return angles;
+    const restored = isTitle
+      ? angles.replaceAll("&#35;", "#")
+      : angles.replaceAll(/^&#35;/gmu, "#");
+    return restored.replaceAll("&amp;", "&");
   };
   const result = prepareLocalDraft({
     title: restore(title, true),
@@ -189,9 +192,14 @@ export function parseLocalDraftMarkdown(raw) {
 }
 
 export function safeDraftFilename(title) {
-  const slug = clean(title, MAX_TITLE)
+  const kebab = clean(title, MAX_TITLE)
     .normalize("NFKD").replace(/[\u0300-\u036f]/gu, "")
-    .toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-+|-+$/gu, "").slice(0, 60);
+    .toLowerCase().replace(/[^a-z0-9]+/gu, "-");
+  // The non-alphanumeric runs above produce at most one hyphen at each edge.
+  // Explicit slicing avoids the unanchored /-+$/ suffix scan (Sonar S5852).
+  const start = kebab.startsWith("-") ? 1 : 0;
+  const end = kebab.endsWith("-") ? kebab.length - 1 : kebab.length;
+  const slug = kebab.slice(start, end).slice(0, 60);
   return (slug || "coinblink-draft") + ".md";
 }
 
@@ -252,7 +260,6 @@ if (typeof document !== "undefined") {
     window.addEventListener("beforeunload", event => {
       if (!hasUnexportedEdits()) return;
       event.preventDefault();
-      event.returnValue = "";
     });
     newDraftButton.addEventListener("click", () => {
       if (hasUnexportedEdits() && !window.confirm("Discard unexported changes and start a new local draft?")) return;

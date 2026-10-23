@@ -14,6 +14,18 @@ const ETHEREUM_ADDRESS = /^0x[a-fA-F0-9]{40}$/u;
 const ETHEREUM_TRANSACTION = /^0x[a-fA-F0-9]{64}$/u;
 const BITCOIN_TRANSACTION = /^[a-fA-F0-9]{64}$/u;
 
+function matchesExplorerFormat(network, kind, value) {
+  if (network === "bitcoin") {
+    return kind === "address"
+      ? BITCOIN_BASE58_ADDRESS.test(value) || BITCOIN_BECH32_ADDRESS.test(value)
+      : BITCOIN_TRANSACTION.test(value);
+  }
+  if (network === "ethereum") {
+    return kind === "address" ? ETHEREUM_ADDRESS.test(value) : ETHEREUM_TRANSACTION.test(value);
+  }
+  return kind === "address" ? SOLANA_ADDRESS.test(value) : SOLANA_SIGNATURE.test(value);
+}
+
 export function createExplorerLookup(network, kind, rawValue) {
   if (!Object.hasOwn(EXPLORERS, network) || !["address", "transaction"].includes(kind)) {
     return Object.freeze({ ok: false, error: "selection" });
@@ -23,13 +35,7 @@ export function createExplorerLookup(network, kind, rawValue) {
   }
   const value = rawValue.trim();
   if (!value || value.length > 110) return Object.freeze({ ok: false, error: "format" });
-  const matches = network === "bitcoin"
-    ? kind === "address"
-      ? BITCOIN_BASE58_ADDRESS.test(value) || BITCOIN_BECH32_ADDRESS.test(value)
-      : BITCOIN_TRANSACTION.test(value)
-    : network === "ethereum"
-      ? kind === "address" ? ETHEREUM_ADDRESS.test(value) : ETHEREUM_TRANSACTION.test(value)
-      : kind === "address" ? SOLANA_ADDRESS.test(value) : SOLANA_SIGNATURE.test(value);
+  const matches = matchesExplorerFormat(network, kind, value);
   if (!matches) return Object.freeze({ ok: false, error: "format" });
   const provider = EXPLORERS[network];
   const prefix = kind === "address" ? provider.addressPath : provider.transactionPath;

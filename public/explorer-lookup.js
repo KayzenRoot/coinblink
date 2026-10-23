@@ -12,7 +12,7 @@ if (form) {
   const result = form.querySelector("[data-explorer-result]");
   const link = form.querySelector("[data-explorer-link]");
   const provider = form.querySelector("[data-explorer-provider]");
-  const isPt = form.getAttribute("data-locale") === "pt-br";
+  const isPt = form.dataset.locale === "pt-br";
 
   const reset = () => {
     link.removeAttribute("href");

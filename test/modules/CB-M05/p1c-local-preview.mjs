@@ -26,14 +26,14 @@ const ALLOWED_STATIC = new Set([
   '/local/recovery/challenge', '/local/recovery/complete',
   '/local/credentials', '/local/credentials/revoke', '/local/emergency/claim',
 ]);
-const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export))?$/i;
+const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export|review))?$/i;
 // The alternate /admin interface is an explicit opt-in LOCAL-only test adapter.
 // It remains restricted to the synthetic HTTPS origin and disposable authenticators.
 const ADMIN_ALLOWED_STATIC = new Set([
   '/admin', '/admin/',
   ...[...ALLOWED_STATIC].map(route => route.replace('/local/', '/admin/')),
 ]);
-const ADMIN_ARTICLE_ROUTE = /^\/admin\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export))?$/i;
+const ADMIN_ARTICLE_ROUTE = /^\/admin\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export|review))?$/i;
 
 // The checked-in SQLite fixture has two BEGIN/END triggers. Split only
 // at statement boundaries, not at the semicolons inside trigger bodies.

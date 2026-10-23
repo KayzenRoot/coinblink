@@ -1,5 +1,6 @@
 ---
 import { resolveMockNews } from "../CB-M02/news-workbench.mjs";
+import { getNewsLocaleMeta } from "./news-locale-meta.mjs";
 interface Props {
   locale: "en" | "pt-br" | "es";
   slug?: string;
@@ -11,8 +12,7 @@ const languages = [
   { key: "pt-br", name: "Português (Brasil)" },
   { key: "es", name: "Español" },
 ] as const;
-const title = locale === "es" ? "Idioma de esta demostración" : locale === "pt-br"
-  ? "Idioma desta demonstração" : "Demo language";
+const title = getNewsLocaleMeta(locale).chooser;
 ---
 <nav data-m09-language-nav class="m09-language-nav" aria-label={title}>
   <p>{title}</p>

@@ -114,11 +114,12 @@ const copies = Object.freeze({
     detailDisclaimer: "EXEMPLO INVENTADO · NUNCA PUBLICADO COMO NOTÍCIA",
   }),
 });
+const localeTranslations = Object.freeze({ "pt-br": pt, es });
 export function newsCopy(locale = "en") {
   return copies[locale] ?? copies.en;
 }
 export function localizeMockNews(item, locale = "en") {
   if (!item) return null;
-  const translated = locale === "pt-br" ? pt[item.slug] : locale === "es" ? es[item.slug] : null;
+  const translated = localeTranslations[locale]?.[item.slug];
   return translated ? { ...item, ...translated } : item;
 }

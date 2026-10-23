@@ -17,3 +17,7 @@ M02 is the single canonical source for sample content. Invalid categories fail c
 ## CSP regression resolution
 
 The M10 browser acceptance found that Astro inlined a small component script (and stylesheet) on production builds; the existing strict CSP `script-src 'self'` blocked it. The UI now imports Vite-emitted external JS/CSS assets (`?url&no-inline`) with same-origin URLs, preserving strict CSP without unsafe-inline, nonces or policy changes. Browser diagnostic retained so failures show CSP errors in GitHub CI. Regression condition includes zero browser CSP console errors.
+
+## Static asset import boundary
+
+Vite's `?url&no-inline` loads a copied static JS asset rather than a fully bundled import graph. To avoid runtime import resolution under `/_astro/`, the server now renders topic snapshots with `buildMockNewsletterPreview()` using canonical M02 news, serialized only as bounded `data-m10-snapshot` option attributes. The external controller has **no import statements**, validates every record and internal link, renders with `textContent`, and never accepts remote URLs or subscriber data. The production Content Security Policy remains unchanged.

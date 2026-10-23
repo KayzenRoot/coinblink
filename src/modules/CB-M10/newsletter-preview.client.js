@@ -1,4 +1,3 @@
-  import { buildMockNewsletterPreview } from "./newsletter-preview.mjs";
   const root = document.querySelector("[data-m10-root]");
   const topic = root?.querySelector("[data-m10-topic]");
   const build = root?.querySelector("[data-m10-build]");
@@ -27,8 +26,26 @@
     });
     build.addEventListener("click", () => {
       reset();
-      const result = buildMockNewsletterPreview(topic.value);
-      if (!result.preview) {
+      // The server builds bounded fictional snapshots from the canonical M02/M10 model.
+      // The external client uses no imports, data store, fetch, cookies or APIs.
+      const encoded = topic.selectedOptions.item(0)?.getAttribute("data-m10-snapshot");
+      let result;
+      try {
+        result = JSON.parse(encoded || "null");
+      } catch {
+        result = null;
+      }
+      const incoming = result?.preview;
+      const valid = result?.status === "LOCAL_PREVIEW_NOT_SENT"
+        && incoming?.topic === topic.value && incoming?.sent === false
+        && incoming?.published === false && incoming?.recipients === 0
+        && incoming?.deliveryEnabled === false && Array.isArray(incoming?.stories)
+        && incoming.stories.length > 0 && incoming.stories.length <= 3
+        && incoming.storyCount === incoming.stories.length
+        && incoming.stories.every(story => typeof story.title === "string"
+          && typeof story.summary === "string" && typeof story.path === "string"
+          && /^\\/en\\/news\\/demo-[a-z0-9-]{1,42}$/u.test(story.path));
+      if (!valid) {
         status.textContent = "Invalid theme. Nothing was generated or transmitted.";
         return;
       }

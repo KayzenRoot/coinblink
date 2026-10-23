@@ -46,6 +46,8 @@ test("M10 DOM contracts do not contain email form, storage, network or privilege
   const client = readFileSync("src/modules/CB-M10/newsletter-preview.client.js", "utf8");
   assert.match(astro, /data-m10-preview/u);
   assert.match(astro, /newsletter-preview\.client\.js\?url&no-inline/u);
+  assert.match(astro, /data-m10-snapshot/u);
+  assert.doesNotMatch(client, /^\s*import\s/mu);
   assert.match(astro, /newsletter-preview\.css\?url&no-inline/u);
   assert.doesNotMatch(astro, /<script>(?!\s*<\/script>)/u);
   assert.doesNotMatch(astro, /<style>/u);

@@ -1,6 +1,6 @@
 ---
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
-import { listMockNewsletterTopics, NEWSLETTER_DEMO_POLICY } from "./newsletter-preview.mjs";
+import { listMockNewsletterTopics, NEWSLETTER_DEMO_POLICY, buildMockNewsletterPreview } from "./newsletter-preview.mjs";
 import newsletterJsUrl from "./newsletter-preview.client.js?url&no-inline";
 import newsletterCssUrl from "./newsletter-preview.css?url&no-inline";
 const topics = listMockNewsletterTopics();
@@ -22,7 +22,7 @@ const labels: Record<string, string> = {
     <h2 id="m10-editor-title">Build a fictional digest</h2>
     <label for="m10-topic">Learning theme
       <select id="m10-topic" data-m10-topic>
-        {topics.map(topic => <option value={topic}>{labels[topic]}</option>)}
+        {topics.map(topic => <option value={topic} data-m10-snapshot={JSON.stringify(buildMockNewsletterPreview(topic))}>{labels[topic]}</option>)}
       </select>
     </label>
     <div class="m10-buttons">

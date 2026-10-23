@@ -13,6 +13,9 @@ on:
       - "src/modules/CB-M08/**"
       - "src/pages/demo/research.astro"
       - "e2e/m08-research-demo.spec.mjs"
+      - "src/modules/CB-M10/**"
+      - "src/pages/demo/newsletter.astro"
+      - "e2e/m10-newsletter-demo.spec.mjs"
       - "e2e/local-journey.spec.mjs"
       - "src/layouts/BaseLayout.astro"
       - "package.json"
@@ -55,4 +58,5 @@ jobs:
             e2e/m03-source-demo.spec.mjs \
             e2e/m04-market-demo.spec.mjs \
             e2e/m08-research-demo.spec.mjs \
+            e2e/m10-newsletter-demo.spec.mjs \
             e2e/m05-admin-prod-guard.spec.mjs

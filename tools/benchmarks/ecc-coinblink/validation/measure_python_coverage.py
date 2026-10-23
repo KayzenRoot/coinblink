@@ -16,11 +16,13 @@ from types import CodeType
 
 VALIDATION = Path(__file__).resolve().parent
 PACK = VALIDATION.parent
+COLLECTOR_FILE = "03-CaptureMetrics.py"
+PILOT_FILE = "PrepareCodexPilot.py"
 TARGETS = {
-    "03-CaptureMetrics.py": PACK / "operator" / "03-CaptureMetrics.py",
-    "PrepareCodexPilot.py": PACK / "pilot" / "PrepareCodexPilot.py",
+    COLLECTOR_FILE: PACK / "operator" / COLLECTOR_FILE,
+    PILOT_FILE: PACK / "pilot" / PILOT_FILE,
 }
-MINIMUM_COVERAGE = {"03-CaptureMetrics.py": 50, "PrepareCodexPilot.py": 30}
+MINIMUM_COVERAGE = {COLLECTOR_FILE: 50, PILOT_FILE: 30}
 
 
 def executable_lines(path):

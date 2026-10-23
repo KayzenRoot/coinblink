@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { listSyntheticSources } from '../../../src/modules/CB-M03/source-lab.mjs';
+import { createMockSourceTransfer } from '../../../src/modules/CB-M03/source-transfer.mjs';
 import { startLocalCmsPreview } from './p1c-local-preview.mjs';
 
 test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and revoke session', { timeout: 120_000 }, async () => {
@@ -303,5 +305,59 @@ test('M06-C private review queue filters listed drafts and preserves protected e
     assert.equal(await page.locator('#m06-triage-credit').textContent(),'Unavailable');
     assert.equal(await page.locator('#m06-triage-filter').inputValue(),'all');
     assert.equal(preview.networkAttempts.filter(x=>!x.allowed).length,0);
+  } finally { await preview.close(); }
+});
+
+test('M03 to M05 local Owner source report is inspected, applied only on explicit click and never auto-saved', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = preview.page;
+    const file = page.locator('#source-transfer-file');
+    assert.equal(await file.isVisible(), false, 'unsigned visitor cannot access protected editor');
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    const source = page.locator('[name="sourceUrl"]');
+    const canonical = createMockSourceTransfer(listSyntheticSources().items[0]);
+    const payload = JSON.stringify(canonical);
+    const upload = async (content, name = 'coinblink-m03-demo-source-alpha.json') => {
+      await file.setInputFiles({ name, mimeType: 'application/json', buffer: Buffer.from(content) });
+    };
+    await upload(JSON.stringify({ ...canonical, rights: 'APPROVED' }));
+    await page.getByText('Rejected: report differs from the three known fictional sources.').waitFor();
+    assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
+    await upload(payload);
+    await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    assert.match(await page.locator('#source-transfer-review').innerText(), /NOT_CLEARED.*NOT_CAPTURED.*NO_DIGEST/u);
+    assert.equal(await source.inputValue(), '', 'inspecting must not modify editor fields');
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0,
+      'no D1 write occurs on read');
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.locator('#source-transfer-apply').click();
+    await page.getByText('Application canceled; no form field changed.').waitFor();
+    assert.equal(await source.inputValue(), '');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#source-transfer-apply').click();
+    await page.getByText(/MOCK source inserted in the form only/).waitFor();
+    assert.equal(await source.inputValue(), canonical.originUrl);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0,
+      'explicit Apply must not issue a D1 write');
+    await upload(payload);
+    await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    await page.locator('#new-draft').click();
+    assert.equal(await page.locator('#source-transfer-review').isVisible(), false,
+      'new draft must scrub previously inspected report');
+    assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
+    assert.equal(await source.inputValue(), '');
+    await upload(payload);
+    await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor();
+    assert.equal(await file.isVisible(), false);
+    assert.equal(await file.inputValue(), '');
+    assert.equal(await page.locator('#source-transfer-review').textContent(), '');
+    assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0);
+    assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0);
   } finally { await preview.close(); }
 });

@@ -423,7 +423,7 @@ async function exportPersistedDraft(request, db, secret, currentTime, id) {
   const url = new URL(request.url);
   const revisions = url.searchParams.getAll('revision');
   if ([...url.searchParams.keys()].length !== 1 || revisions.length !== 1 ||
-      !/^[1-9][0-9]*$/.test(revisions[0])) return denied(400);
+      !/^[1-9]\d*$/.test(revisions[0])) return denied(400);
   const requestedRevision = Number(revisions[0]);
   if (!Number.isSafeInteger(requestedRevision)) return denied(400);
 

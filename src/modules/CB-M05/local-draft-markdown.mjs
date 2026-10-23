@@ -180,7 +180,7 @@ function samePersistedFields(parsed, record) {
 }
 
 export function createPersistedDraftMarkdown(record) {
-  if (!record || record.status !== 'draft') throw new Error('Draft cannot be exported to canonical Markdown');
+  if (record?.status !== 'draft') throw new Error('Draft cannot be exported to canonical Markdown');
   const prepared = prepareLocalDraft({
     title: record.title, author: record.author_label, summary: record.summary,
     body: record.body, source: record.source_url,

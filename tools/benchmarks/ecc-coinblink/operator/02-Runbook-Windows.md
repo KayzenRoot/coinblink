@@ -12,3 +12,16 @@ Este guia não foi executado no Windows. O GitHub contém o código e a matriz, 
 8. Para rollback seguro, quarentena de uma cópia descartável por operador 04 e aprovação explícita. Nunca resetar/alterar main ou qualquer branch.
 
 Medidas de sucesso e 18 linhas NOT_RUN em matrix/. Publicar juiz no repositório público, usar patches históricos nos agentes ou dar acesso à rede invalida a comparação.
+
+
+## Captura de métricas com caminhos fixos (Correction Delta SonarCloud PR #209)
+
+O coletor não aceita mais `--jsonl` nem `--out` fornecidos por IA. Após preparar e, futuramente, executar um run **autorizado**, o operador coloca seu log pré-existente em `local-artifacts/runs/T1-A-r1/codex.jsonl` dentro do pacote offline exportado **fora de qualquer checkout Git**, e chama somente:
+
+```powershell
+python .\operator\03-CaptureMetrics.py --run-id T1-A-r1
+```
+
+Os 18 run IDs válidos vão de `T1-A-r1` até `T3-B-r3`, conforme a matriz. O arquivo de saída é sempre `local-artifacts/runs/<run-id>/metrics/codex-usage.json`, criado exclusivamente se ainda não existir. A origem `RUN_ORIGIN.json` deve coincidir, caminhos com links simbólicos/junctions são recusados, e o JSONL fica limitado a 32 MiB. Nunca informe nomes de arquivos livres ao coletor. Este trecho é **instrução futura**, não registro de execução.
+
+**Estado:** o benchmark permanece NOT_RUN; o script não foi executado aqui. A validação funcional Windows continua pendente.

@@ -22,3 +22,8 @@ Pacote operacional offline completo e selado foi produzido na conversa em 22/10/
 ## Revisão de segurança da PR #209
 
 Na auditoria de 22/10/2026, o check SonarCloud da PR no HEAD inicial 4cf2ca8de747c1ad89c0de8f32967c807e1264b8 falhou por **nota C de segurança no código novo**, segundo comentário do bot (critério mínimo A). As regras/linhas específicas não foram disponibilizadas pela consulta, portanto a causa individual está **UNVERIFIED**, não atribuída a uma ferramenta por suposição. Foram endurecidas verificações operacionais: diretório-raiz Windows, bloqueio de execução do pacote sob Git, rejeição pré-extração de symlinks/submodules e caminhos perigosos no TAR, inventário fechado de skills do braço B. Isso não comprova que o Sonar foi corrigido. O benchmark e os juízes seguem NOT_RUN/UNVALIDATED. Aguardar análise em novo HEAD e fazer triagem dos findings efetivos antes de afirmar READY.
+
+
+### Correction Delta sobre o coletor (PR #209)
+
+O SonarCloud identificou três achados High de **Path Traversal via faulty LLM-supplied CLI arguments** em `operator/03-CaptureMetrics.py`, evidenciados pelo proprietário com captura de tela em 22/10/2026. A interface do coletor foi reduzida ao seletor `--run-id` de 18 valores enumerados; caminhos de leitura e escrita são agora gerados exclusivamente pelo layout conhecido do pacote externo, com bloqueio de checkout Git, verificação de `RUN_ORIGIN.json`, links simbólicos/junctions, limite de arquivo e escrita exclusiva. O novo código **não foi executado**; o sucesso definitivo requer nova análise SonarCloud no HEAD e evidência de validação autorizada posteriormente.

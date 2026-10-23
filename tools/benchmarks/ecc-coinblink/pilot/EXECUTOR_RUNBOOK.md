@@ -31,3 +31,13 @@ O executor usa `codex exec --json --ephemeral --skip-git-repo-check --ignore-use
 `PILOT_STATUS.json` permanece 4/4 `NOT_RUN` e `BLOCKED_ACCESS_OR_COST_UNVERIFIED`; a matriz T1/T2/T3 mantém 18/18 `NOT_RUN`; todos os oráculos sigilosos ficam fora do GitHub. A prova de instalação não é evidência de descoberta real pelo modelo. Nenhum merge ou deploy é autorizado.
 
 Cada recibo manual é **consumido uma única vez antes da chamada ao modelo**, renomeado para `approval.consumed-<id>.json` na pasta privada. Outra execução exige nova verificação dos limites e nova autorização do proprietário. Esse consumo atômico reduz reuso acidental, mas não comprova saldo nem cobrança. Nunca inserir recibos preenchidos no GitHub.
+
+## Correção do contrato SHA (PR #209, 23/10/2026)
+
+`PILOT_STATUS.json` **não contém mais** `head_pinned`, que misturava a origem histórica do piloto com a versão autorizada para execução. Os três conceitos agora são independentes:
+
+- `protocol_origin_head = 09d80eb8c83a064c310832dcf05d17cef1528005`: SHA histórico **imutável**, usado para rastrear a origem do protocolo. **Não** autoriza, por si, uma execução.
+- `checkout_head = null` no status público: o HEAD efetivo é obtido apenas em execução futura por `git rev-parse --verify HEAD^{commit}`, verificando o toplevel e rejeitando working tree ou untracked files sujos. O HEAD é dinâmico e não deve ser regravado no arquivo público a cada commit.
+- `authorized_execution_head = null` no status público: somente o `source_head` do recibo **privado** `approval.json`, com `schema=v2`, `protocol_origin_head`, skill, horário e os gates usuais, pode coincidir com o HEAD real. Esse recibo é validado antes e **depois** de ser renomeado atomicamente para `approval.consumed-*.json`, deixando a autorização de uso único. A autorização **não é armazenada** no GitHub.
+
+**Gate permanece bloqueado**, mesmo com todos os campos preenchidos, se a franquia incluída, ausência de créditos pagos, autenticação ou isolamento externo não tiverem sido comprovados independentemente. Testes de recibo usam somente arquivos sintéticos descartáveis; não chamam CLI Codex e não validam cobrança real.

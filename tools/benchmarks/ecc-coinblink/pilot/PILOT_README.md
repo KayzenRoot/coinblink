@@ -40,3 +40,5 @@ Execute apenas após comprovar que existe sessão Codex autenticada, com permiss
 5. **Métricas:** registro por skill de versão/modelo, ID do run, log protegido, tokens e custo apenas se realmente observados; caso contrário null. Nunca converter ausência em 0.
 
 **Veredito:** 4/4 `VALIDATED` só após todas as cinco condições em cada tarefa com trace auditável. Qualquer condição desconhecida = `INCONCLUSIVE`; falta de conta/franquia = `BLOCKED_ACCESS_OR_COST`. Um resultado do Codex sob franquia incluída não implica custo de R$0 por inferência. O piloto mede descoberta e uso, **não** ganhos de tempo da matriz A/B.
+
+**Contrato de versão do piloto:** o SHA histórico mencionado em versões antigas deste runbook não representa autorização futura. O contrato corrigido guarda `protocol_origin_head=09d80eb8c83a064c310832dcf05d17cef1528005` e `checkout_head=null` no status público. Uma execução autorizada exige HEAD limpo verificado localmente e `source_head` igual no recibo privado v2 de uso único. Ver `EXECUTOR_RUNBOOK.md`. Os quatro pilotos continuam `NOT_RUN`.

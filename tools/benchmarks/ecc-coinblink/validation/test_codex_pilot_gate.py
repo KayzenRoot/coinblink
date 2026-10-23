@@ -59,6 +59,7 @@ class GateContracts(unittest.TestCase):
             now = datetime.now(timezone.utc)
             record = {
                 "schema": self.module.GATE_SCHEMA,
+                "protocol_origin_head": self.module.PROTOCOL_ORIGIN_HEAD,
                 "skill": "ecc-change-impact",
                 "source_head": "a" * 40,
                 "execution_mode": "included_allowance_only",
@@ -77,6 +78,76 @@ class GateContracts(unittest.TestCase):
                 with self.assertRaises(SystemExit):
                     self.module.private_gate("ecc-change-impact", "a" * 40, now)
 
+    def test_private_gate_rejects_wrong_checkout_sha_and_protocol_origin(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "approval.json"
+            now = datetime.now(timezone.utc)
+            rec = {
+                "schema": self.module.GATE_SCHEMA,
+                "protocol_origin_head": self.module.PROTOCOL_ORIGIN_HEAD,
+                "skill": "ecc-change-impact",
+                "source_head": "a" * 40,
+                "execution_mode": "included_allowance_only",
+                "confirmed_at_utc": now.isoformat(),
+                "ui_evidence_reference": "synthetic-test-no-paid-account",
+            }
+            rec.update({k: True for k in self.module.REQUIRED_TRUE})
+            path.write_text(json.dumps(rec), encoding="utf-8")
+            with mock.patch.object(self.module, "GATE", path):
+                with self.assertRaises(SystemExit):
+                    self.module.private_gate("ecc-change-impact", "b" * 40, now)
+                rec["protocol_origin_head"] = "c" * 40
+                path.write_text(json.dumps(rec), encoding="utf-8")
+                with self.assertRaises(SystemExit):
+                    self.module.private_gate("ecc-change-impact", "a" * 40, now)
+
+    def test_checkout_rejects_wrong_root_and_dirty_tree(self):
+        root = str(self.module.ROOT.resolve())
+        with mock.patch.object(self.module.shutil, "which", return_value="/usr/bin/git"):
+            with mock.patch.object(self.module, "git_output", side_effect=["/tmp/wrong-repository"]):
+                with self.assertRaises(SystemExit):
+                    self.module.source_commit()
+            with mock.patch.object(self.module, "git_output", side_effect=[root, "a" * 40, " M pilot/fixture.md"]):
+                with self.assertRaises(SystemExit):
+                    self.module.source_commit()
+            with mock.patch.object(self.module, "git_output", side_effect=[root, "not-a-sha"]):
+                with self.assertRaises(SystemExit):
+                    self.module.source_commit()
+            with mock.patch.object(self.module, "git_output", side_effect=[root, "a" * 40, ""]):
+                self.assertEqual(self.module.source_commit(), "a" * 40)
+
+    def test_authorization_is_single_use_even_when_receipt_is_valid(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "approval.json"
+            now = datetime.now(timezone.utc)
+            rec = {
+                "schema": self.module.GATE_SCHEMA,
+                "protocol_origin_head": self.module.PROTOCOL_ORIGIN_HEAD,
+                "skill": "ecc-change-impact",
+                "source_head": "a" * 40,
+                "execution_mode": "included_allowance_only",
+                "confirmed_at_utc": now.isoformat(),
+                "ui_evidence_reference": "synthetic-one-time-receipt",
+            }
+            rec.update({k: True for k in self.module.REQUIRED_TRUE})
+            path.write_text(json.dumps(rec), encoding="utf-8")
+            with mock.patch.object(self.module, "GATE", path):
+                consumed = self.module.consume_private_approval("ecc-change-impact", "a" * 40, now)
+                self.assertFalse(path.exists())
+                self.assertTrue(consumed.is_file())
+                with self.assertRaises(SystemExit):
+                    self.module.consume_private_approval("ecc-change-impact", "a" * 40, now)
+
+    def test_public_status_cannot_authorize_checkout(self):
+        data = json.loads((SCRIPT.parent / "PILOT_STATUS.json").read_text(encoding="utf-8"))
+        self.assertNotIn("head_pinned", data)
+        self.assertEqual(data["protocol_origin_head"], self.module.PROTOCOL_ORIGIN_HEAD)
+        self.assertIsNone(data["checkout_head"])
+        self.assertIsNone(data["authorized_execution_head"])
+        self.assertEqual(data["runs_completed"], 0)
+
     def test_no_paid_or_ci_execution_precondition(self):
         code = SCRIPT.read_text(encoding="utf-8")
         self.assertIn('os.environ.get("GITHUB_ACTIONS")', code)
@@ -86,6 +157,8 @@ class GateContracts(unittest.TestCase):
         self.assertIn("private_gate(skill", code)
         self.assertNotIn("shell=True", code)
         self.assertIn("os.replace(GATE, consumed)", code)
+        self.assertIn("consume_private_approval(skill, src_head", code)
+        self.assertIn('"--untracked-files=all"', code)
         self.assertNotIn('"--ignore-rules"', code)
 
 

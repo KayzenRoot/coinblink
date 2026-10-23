@@ -10,6 +10,7 @@ from datetime import datetime, timezone, timedelta
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -34,11 +35,13 @@ REQUIRED_TRUE = (
     "no_external_mcp_or_hooks",
     "owner_authorized_this_pilot",
 )
-GATE_SCHEMA = "ecc-coinblink-pilot-human-approval-v1"
+GATE_SCHEMA = "ecc-coinblink-pilot-human-approval-v2"
 TOKEN_LIKE_ENV = ("OPENAI_API_KEY", "CODEX_API_KEY", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT")
 BLOCKED = "BLOCKED_ACCESS_OR_COST_UNVERIFIED"
 SKILLS_DIRECTORY = ".agents"
 SKILL_FILENAME = "SKILL.md"
+PROTOCOL_ORIGIN_HEAD = "09d80eb8c83a064c310832dcf05d17cef1528005"
+PILOT_SCHEMA = "ecc-coinblink-codex-skill-pilot-v2"
 
 
 def stop(reason):
@@ -65,6 +68,10 @@ def package_contract(skill):
     if not (ROOT / "AGENTS.md").is_file():
         stop("Original CoinBlink AGENTS.md missing")
     status = json.loads((PACK / "pilot" / "PILOT_STATUS.json").read_text(encoding="utf-8"))
+    if status.get("schema") != PILOT_SCHEMA or status.get("protocol_origin_head") != PROTOCOL_ORIGIN_HEAD:
+        stop("Protocol origin metadata mismatch")
+    if "head_pinned" in status or status.get("checkout_head") is not None or status.get("authorized_execution_head") is not None:
+        stop("Public metadata must never pin an execution checkout or authorization")
     if status.get("runs_completed") != 0 or status.get("allow_benchmark_ab") is not False:
         stop("Unexpected pilot status; stop without executing")
     if any(item.get("status") != "NOT_RUN" for item in status.get("skills", [])):
@@ -96,11 +103,12 @@ def require_recent_approval_time(record, current_time):
         stop("Receipt expired; obtain fresh manual approval")
 
 
-def private_gate(skill, source_head, current_time):
-    """Private receipt is a human assertion, not proof of the provider's billing state."""
-    if not GATE.is_file() or is_reparse(GATE) or is_reparse(GATE.parent):
+def private_gate(skill, source_head, current_time, receipt_path=None):
+    """Private receipt is an assertion, not evidence of provider billing state."""
+    path = GATE if receipt_path is None else receipt_path
+    if path.parent != GATE.parent or not path.is_file() or is_reparse(path) or is_reparse(path.parent):
         stop("Private operator approval missing, linked or invalid")
-    raw = GATE.read_bytes()
+    raw = path.read_bytes()
     if len(raw) > 16384:
         stop("Approval receipt too large")
     try:
@@ -109,6 +117,8 @@ def private_gate(skill, source_head, current_time):
         stop(f"Malformed approval receipt ({type(exc).__name__})")
     if not isinstance(record, dict) or record.get("schema") != GATE_SCHEMA:
         stop("Approval schema mismatch")
+    if record.get("protocol_origin_head") != PROTOCOL_ORIGIN_HEAD:
+        stop("Approval protocol origin mismatch")
     if record.get("skill") != skill or record.get("source_head") != source_head:
         stop("Approval does not bind selected skill and exact source HEAD")
     if any(record.get(k) is not True for k in REQUIRED_TRUE):
@@ -123,18 +133,45 @@ def private_gate(skill, source_head, current_time):
     return record
 
 
-def source_commit():
-    """Confirm current source snapshot; no writes, fetch, or network."""
-    if not shutil.which("git"):
-        stop("Git executable not available to verify source HEAD")
-    p = subprocess.run(
-        ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+def git_output(*args):
+    """Only read Git metadata; never fetch, checkout, or run model processes."""
+    result = subprocess.run(
+        ["git", "-C", str(ROOT), *args],
         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=8,
         check=False,
     )
-    if p.returncode != 0 or len(p.stdout.strip()) != 40:
-        stop("Source must be a local pinned Git checkout; no fetch")
-    return p.stdout.strip().lower()
+    if result.returncode != 0:
+        stop("Git checkout verification command failed")
+    return result.stdout.strip()
+
+
+def source_commit():
+    """Confirm the exact clean checkout HEAD, not the historical protocol origin."""
+    if not shutil.which("git"):
+        stop("Git executable not available to verify source HEAD")
+    top = git_output("rev-parse", "--show-toplevel")
+    if not top or Path(top).resolve() != ROOT.resolve():
+        stop("Git checkout top-level is not the trusted repository root")
+    head = git_output("rev-parse", "--verify", "HEAD^{commit}")
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        stop("Invalid Git checkout commit SHA")
+    if git_output("status", "--porcelain", "--untracked-files=all"):
+        stop("Checkout has uncommitted or untracked files; execution forbidden")
+    return head
+
+
+def consume_private_approval(skill, checkout_head, current_time):
+    """Consume one exact HEAD-bound receipt; a second attempt cannot reuse it."""
+    before = private_gate(skill, checkout_head, current_time)
+    consumed = GATE.with_name("approval.consumed-" + os.urandom(8).hex() + ".json")
+    try:
+        os.replace(GATE, consumed)
+    except OSError as exc:
+        stop(f"Approval receipt could not be consumed exactly once ({type(exc).__name__})")
+    after = private_gate(skill, checkout_head, current_time, receipt_path=consumed)
+    if before != after:
+        stop("Consumed approval differs from the receipt validated before rename")
+    return consumed
 
 
 def prepare_synthetic_workspace(fixture):
@@ -187,13 +224,8 @@ def execute_one(skill, fixture, src_head):
     )
     if status.returncode != 0 or "chatgpt" not in status.stdout.lower():
         stop("Existing Codex session is not confirmed as ChatGPT login")
-    # Consume the short-lived manual receipt exactly once before any model call.
-    # os.replace is atomic on the same filesystem: concurrent reuse cannot launch twice.
-    consumed = GATE.with_name("approval.consumed-" + os.urandom(8).hex() + ".json")
-    try:
-        os.replace(GATE, consumed)
-    except OSError as exc:
-        stop(f"Approval receipt could not be consumed exactly once ({type(exc).__name__})")
+    # Recheck the same approval after atomic consumption to prevent receipt swaps.
+    consume_private_approval(skill, src_head, datetime.now(timezone.utc))
     directory, inventory = prepare_synthetic_workspace(fixture)
     session_dir = Path(tempfile.mkdtemp(prefix="ecc-coinblink-evidence-")).resolve()
     session_dir.chmod(0o700)
@@ -218,6 +250,7 @@ def execute_one(skill, fixture, src_head):
     manifest = {
         "schema": "ecc-coinblink-pilot-execution-v1",
         "skill": skill, "task": code, "source_head": src_head,
+        "protocol_origin_head": PROTOCOL_ORIGIN_HEAD,
         "workspace": str(directory), "status": "STARTING", "inventory": inventory,
         "evidence_log": str(evidence), "cost_usd": None,
         "agent_discovery": "UNVERIFIED", "agent_invocation": "UNVERIFIED",
@@ -251,6 +284,9 @@ def main():
         print(json.dumps({
             "status": "PLAN_ONLY_NO_AGENT",
             "skill": args.skill, "task": SKILLS[args.skill][0],
+            "protocol_origin_head": PROTOCOL_ORIGIN_HEAD,
+            "checkout_head": None,
+            "authorized_execution_head": None,
             "private_gate_path": str(GATE),
             "required_checks": list(REQUIRED_TRUE),
             "runs_completed": 0,

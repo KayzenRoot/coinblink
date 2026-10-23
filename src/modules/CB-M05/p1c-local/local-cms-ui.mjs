@@ -1843,7 +1843,7 @@ footer{padding:24px 0;color:#b9c8bd}
 </select></label>
 </div>
 <p id="m07-week-status" role="status" aria-live="polite">0 shown · 0 conflicts · NOT SCHEDULED</p>
-<div id="m07-week-board" aria-label="Private weekly hypothetical editorial board"></div>
+<div id="m07-week-board" role="region" aria-label="Private weekly hypothetical editorial board"></div>
 </section>
 </section>
 </section>

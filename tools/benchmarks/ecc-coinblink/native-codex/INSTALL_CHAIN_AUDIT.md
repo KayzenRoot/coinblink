@@ -57,3 +57,13 @@ O arquivo `pinned-surface-inventory.json` guarda caminhos exatos dos **311 `SKIL
 ## Rollback e instalação sem efeitos globais
 
 O `sync-ecc-to-codex.sh` não é caminho nativo e pode editar `~/.codex/config.toml`, `AGENTS.md`, prompts, MCP e `core.hooksPath` global. O instalador global de hooks fornece dry-run, mas aplicar pode afetar **todos os repositórios**, inclusive módulos CoinBlink. O uninstall por estado legado possui manifesto de propriedade e não equivale a `codex plugin remove ecc@ecc`; **não executar nenhum**. Reverter plugin, marketplace, perfis e hooks exige inspeção de propriedade e consentimento antes de qualquer ação no host.
+
+## Complemento: auditoria de integridade de cache com hashes reais (somente offline)
+
+A documentação oficial de plugins da OpenAI esclarece que o cliente carrega uma **cópia cacheada do plugin**, em geral sob `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>`. Para entradas locais, `<version>` pode ser `local`; não presumir o diretório exato de uma sessão real sem observá-lo. Além disso, habilitar um plugin não implica **confiar seus hooks**, que exigem revisão específica. Fonte oficial: https://developers.openai.com/plugins/build/plugins
+
+O inventário estático `pinned-surface-inventory.json` contém agora **479 hashes Git de blobs upstream** das 311 skills, 71 agentes e 97 comandos. São combináveis com os hashes de manifestos, hooks, MCP e scripts em `pinned-manifest.json`.
+
+`validation/native_cache_integrity.py` implementa um **comparador somente leitura**, sem operação de instalação ou rede: verifica raiz real, componentes sem `..`, rejeita symlinks e arquivos não regulares, exige presença de todos os arquivos selecionados e calcula **hash de conteúdo do objeto Git**. A validação positiva e as recusas por adulteração, arquivo ausente, link e traversal usam exclusivamente diretórios temporários sintéticos durante os testes.
+
+Importante: o scanner **não foi executado sobre o cache real de nenhum usuário**. Seu sucesso hipotético só provaria integridade dos arquivos **pinned**, não ausência de arquivos extras, configuração privilegiada, política de cobrança, discovery do Codex ou segurança de SessionStart/MCP. Não executar os scripts originais para tentar corrigir cache divergente.

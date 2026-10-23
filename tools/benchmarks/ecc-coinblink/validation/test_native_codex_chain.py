@@ -3,7 +3,9 @@ import copy
 import json
 from pathlib import Path
 import re
+import tempfile
 import unittest
+from native_cache_integrity import CacheIntegrityError, git_blob_sha, inspect_pinned_cache, pinned_file_inventory
 
 ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "native-codex" / "pinned-manifest.json"
@@ -70,6 +72,14 @@ def verify_surface_inventory(surface, summary):
                    not any(segment in (".", "..") for segment in path.split("/"))
                    for path in paths):
             raise ValueError("invalid inventory path")
+    digests = surface.get("git_blob_shas")
+    if not isinstance(digests, dict) or set(digests) != set(
+        path for paths in surface["paths"].values() for path in paths
+    ):
+        raise ValueError("missing or extra git blob fingerprints")
+    if not all(isinstance(sha, str) and re.fullmatch("[0-9a-f]{40}", sha)
+               for sha in digests.values()):
+        raise ValueError("malformed source blob SHA")
     return True
 
 
@@ -240,6 +250,78 @@ class NativeCodexChainTests(unittest.TestCase):
         broken["session_start_audit"]["effect_expired_session_files_removed"] = False
         with self.assertRaises(ValueError):
             verify_runtime_coverage(broken)
+
+    def test_every_upstream_surface_is_git_blob_pinned(self):
+        inv = json.loads(SURFACE_RECORD.read_text(encoding="utf-8"))
+        mapping = pinned_file_inventory(self.data, inv)
+        self.assertGreaterEqual(len(mapping), 479)
+        self.assertEqual(len(inv["git_blob_shas"]), 479)
+        self.assertEqual(mapping["skills/change-impact/SKILL.md"],
+                         inv["git_blob_shas"]["skills/change-impact/SKILL.md"])
+
+    def test_synthetic_cache_accepts_exact_pinned_contents_without_executing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "plugin"
+            skill = root / "skills" / "example" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Synthetic only\n", encoding="utf-8")
+            result = inspect_pinned_cache(
+                root, {"skills/example/SKILL.md": git_blob_sha(skill)}
+            )
+            self.assertEqual(result["result"], "PINNED_FILES_INTEGRITY_ONLY")
+            self.assertEqual(result["checked_files"], 1)
+            self.assertFalse(result["discovery_verified"])
+            self.assertFalse(result["hooks_trusted"])
+
+    def test_cache_preflight_rejects_mutated_contents_and_missing_hooks(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "plugin"
+            leaf = root / "skills" / "example" / "SKILL.md"
+            leaf.parent.mkdir(parents=True)
+            leaf.write_bytes(b"Original synthetic skill")
+            expected = {"skills/example/SKILL.md": git_blob_sha(leaf)}
+            leaf.write_bytes(b"Tampered synthetic skill")
+            with self.assertRaises(CacheIntegrityError):
+                inspect_pinned_cache(root, expected)
+            with self.assertRaises(CacheIntegrityError):
+                inspect_pinned_cache(root, {"hooks/codex-hooks.json": "a" * 40})
+
+    def test_cache_preflight_rejects_traversal_and_unpinned_paths(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "plugin"
+            root.mkdir()
+            for name in ("../secret", "skills/../secret", "skills//SKILL.md",
+                         "/etc/passwd", r"skills\bad", "C:/bad"):
+                with self.subTest(name=name):
+                    with self.assertRaises(CacheIntegrityError):
+                        inspect_pinned_cache(root, {name: "a" * 40}, directories=())
+            with self.assertRaises(CacheIntegrityError):
+                inspect_pinned_cache(root, {"skills/test/SKILL.md": "untrusted"}, directories=())
+
+    def test_cache_preflight_rejects_symlinked_skill_root(self):
+        with tempfile.TemporaryDirectory() as temp:
+            container = Path(temp)
+            root = container / "plugin"
+            root.mkdir()
+            external = container / "other"
+            external.mkdir()
+            try:
+                (root / "skills").symlink_to(external, target_is_directory=True)
+            except OSError:
+                self.skipTest("Host does not permit creating test-only symlinks")
+            with self.assertRaises(CacheIntegrityError):
+                inspect_pinned_cache(root, {"skills/test/SKILL.md": "a" * 40})
+
+    def test_surface_pinset_rejects_missing_hash_or_wrong_origin(self):
+        inv = json.loads(SURFACE_RECORD.read_text(encoding="utf-8"))
+        bad = copy.deepcopy(inv)
+        del bad["git_blob_shas"]["skills/change-impact/SKILL.md"]
+        with self.assertRaises(CacheIntegrityError):
+            pinned_file_inventory(self.data, bad)
+        bad2 = copy.deepcopy(inv)
+        bad2["source"]["commit"] = "0" * 40
+        with self.assertRaises(CacheIntegrityError):
+            pinned_file_inventory(self.data, bad2)
 
     def test_readonly_snapshot_is_not_activation(self):
         self.assertEqual(self.data["gates"]["status"],

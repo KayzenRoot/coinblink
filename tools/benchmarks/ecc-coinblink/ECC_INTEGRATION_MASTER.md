@@ -61,3 +61,7 @@ Snapshot upstream versionado em `native-codex/pinned-manifest.json`, análise de
 ## Verificação aprofundada da cadeia Codex
 
 O complemento em `native-codex/INSTALL_CHAIN_AUDIT.md` documenta a insuficiência do verificador upstream de cache (não checa hooks, scripts nem fingerprints dos alvos), os efeitos reais de `SessionStart` (criação de diretórios, remoção de sessões expiradas e lease) e o inventário integral imutável em `native-codex/pinned-surface-inventory.json`. Foram adicionados testes negativos de caminhos, adulteração de inventário e falso positivo de segurança. **Nenhuma instalação, execução ou acesso ao cache do usuário foi realizada.**
+
+## Integridade de cache sem execução
+
+A auditoria estática foi expandida com fingerprints Git de 479 recursos upstream e comparador read-only em `validation/native_cache_integrity.py`, exercitado só em diretórios temporários. Cache do usuário permanece não observado; `Codex plugin list`, descoberta, hooks e MCP não foram acionados. A documentação oficial indica cache versionado e revisão de trust separada para hooks. A evidência exata está em `native-codex/INSTALL_CHAIN_AUDIT.md`.

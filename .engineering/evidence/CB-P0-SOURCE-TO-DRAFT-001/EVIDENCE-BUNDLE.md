@@ -26,3 +26,15 @@ Historical SonarCloud LCOV new-code coverage mismatch remains known (0.0% report
 
 ## STOP
 No LIVE provenance, licensed content, source crawling, network fetch, scheduling, D1 remote, production Owner login, external publication or costs.
+
+## Correction Delta · verified Sonar individual issue (2026-10-23)
+The original PR HEAD `0104b0afe193e441894a561e76412f0255192302` had SonarCloud Quality Gate SUCCESS but **1 New issue**. The M05 diagnostic workflow had a stale PR #217 query. The only workflow delta in this work order changes the read-only SonarCloud PR query to `${{ github.event.pull_request.number }}`; no runner permission, dependency, production configuration, or gate was changed.
+
+On diagnostic HEAD `18635a07bb03537d1867a35983b0946ff6f77aa4`, hosted [Actions job #120691977293](https://github.com/KayzenRoot/coinblink/actions/runs/40034939421/job/120691977293) queried the official public SonarCloud API for **PR #218** and returned:
+- Key `AaFq6d6x15H_r3sx6u2V`, **`javascript:S6582`**, **MINOR**, `src/modules/CB-M03/source-transfer.mjs:47`: prefer optional chaining.
+- **One-line exact correction**: `if (!specimen || specimen.mode !== 'MOCK' ||` → `if (specimen?.mode !== 'MOCK' ||`. Absent records still fail closed because `undefined !== 'MOCK'` is true.
+- Same hosted Node 22.19.0 diagnostic: **12/12** bridge contracts PASS, **3/3** isolated BOOT-10 PASS with histogram `201=1,409=9`, workerd 2/10 PASS with `d1Failures {}`. Historical unrelated intermittent BOOT-10 under other load remains unproven to be impossible.
+- [M03 hosted job](https://github.com/KayzenRoot/coinblink/actions/runs/40034752727/job/120691372672) on initial HEAD: **16/16 Node** and **2/2 Chromium** passed, including an actual browser JSON download with no foreign network.
+- [M05 local Chromium job](https://github.com/KayzenRoot/coinblink/actions/runs/40034752800/job/120691374700) on initial HEAD: **40/40 guards** and **11/11 browser tests** passed, including the new M03→M05 explicit-Apply/zero-D1-write scenario.
+- The exact replacement HEAD introduced by this correction MUST have its own CI/Sonar/Socket readback; old-HEAD evidence is not a substitute. `NOT_RUN` until confirmed.
+- **Veredito:** `CORRECTION REQUIRED / PR DRAFT` while awaiting zero SonarCloud new issues and all required hosted checks. No fake APPROVED, no merge/deploy/gastos/LIVE.

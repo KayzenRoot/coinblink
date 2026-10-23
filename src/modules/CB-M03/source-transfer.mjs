@@ -44,7 +44,7 @@ export function parseMockSourceTransfer(raw, catalog) {
       value.publiclyUsable !== false ||
       !/^demo-source-(?:alpha|beta|gamma)$/.test(value.id)) return null;
   const specimen = catalog.find(row => row.id === value.id);
-  if (!specimen || specimen.mode !== 'MOCK' ||
+  if (specimen?.mode !== 'MOCK' ||
       !['NOT_CLEARED','UNKNOWN'].includes(specimen.licensing) ||
       !['DENIED_RIGHTS','UNAVAILABLE'].includes(specimen.status) ||
       specimen.fetchedAt !== null || specimen.evidenceDigest !== null) return null;

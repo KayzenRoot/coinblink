@@ -28,7 +28,7 @@
       reset();
       // The server builds bounded fictional snapshots from the canonical M02/M10 model.
       // The external client uses no imports, data store, fetch, cookies or APIs.
-      const encoded = topic.selectedOptions.item(0)?.getAttribute("data-m10-snapshot");
+      const encoded = topic.selectedOptions.item(0)?.dataset.m10Snapshot;
       let result;
       try {
         result = JSON.parse(encoded || "null");

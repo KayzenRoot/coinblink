@@ -44,7 +44,8 @@
         && incoming.storyCount === incoming.stories.length
         && incoming.stories.every(story => typeof story.title === "string"
           && typeof story.summary === "string" && typeof story.path === "string"
-          && /^\\/en\\/news\\/demo-[a-z0-9-]{1,42}$/u.test(story.path));
+          && story.path.startsWith("/en/news/")
+          && /^demo-[a-z0-9-]{1,42}$/u.test(story.path.slice("/en/news/".length)));
       if (!valid) {
         status.textContent = "Invalid theme. Nothing was generated or transmitted.";
         return;

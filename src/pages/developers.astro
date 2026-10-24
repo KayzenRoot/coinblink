@@ -1,0 +1,47 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Developer sandbox · CoinBlink DEMO"
+  description="Offline synthetic developer API demonstration only. No real articles, accounts, licensing, billing or live market data."
+>
+  <main id="main" class="not-found">
+    <p class="eyebrow">M11 · DEMO ONLY · NOT PUBLISHED</p>
+    <h1>Developer sandbox</h1>
+    <p class="body-copy">
+      Explore a deliberately limited JSON response made from three invented educational
+      examples. These records are not news, are not published, and are not licensed
+      for commercial redistribution.
+    </p>
+    <p class="body-copy">
+      No signup, API keys, external providers, market prices, private drafts, payments,
+      live data, or rate-limit guarantees are connected.
+    </p>
+    <nav aria-label="Developer demonstration">
+      <a class="button button--primary" href="/v1/demo/articles">Open synthetic JSON</a>
+      <a href="/en/news">Read fictional news examples (EN)</a>
+      <a href="/en">Return to demo home</a>
+    </nav>
+    <section aria-labelledby="m11-example">
+      <h2 id="m11-example">Local request example</h2>
+      <pre><code>GET /v1/demo/articles
+
+200 OK
+Content-Type: application/json
+mode: SYNTHETIC
+status: DEMO_ONLY
+redistributable: false
+published: false (every record)
+max items: 3
+
+Query parameters: unsupported
+Write methods: unsupported
+Not the commercial /v1/articles
+API.</code></pre>
+    </section>
+  </main>
+</BaseLayout>
+

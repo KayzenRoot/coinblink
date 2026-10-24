@@ -42,13 +42,13 @@ No estimate of module completion has changed. **Behavioral GREEN confirmed** at 
 
 ## Audit closeout delta · 2026-10-24 · revalidation on 9c0f871e50d9c84582de7af54bbdb3576c6b7f85
 
-This supplement supersedes historical \`PENDING\` and \`NOT_VERIFIED\` labels **for the specific audited HEAD only**. Earlier observations remain intact for reproducible historical provenance. Appending this supplement creates a new documentation-only SHA; the exact new HEAD must be rechecked before any owner decision.
+This supplement supersedes historical `PENDING` and `NOT_VERIFIED` labels **for the specific audited HEAD only**. Earlier observations remain intact for reproducible historical provenance. Appending this supplement creates a new documentation-only SHA; the exact new HEAD must be rechecked before any owner decision.
 
 ### Git identity, scope, and review
 
-- Audited PR: [#228](https://github.com/KayzenRoot/coinblink/pull/228), open and DRAFT, not merged. BASE main: \`579ac8b20a283210b4de935f36f9f9cbfd5ab7a9\`, verified live from the protected branch endpoint; audited HEAD: \`9c0f871e50d9c84582de7af54bbdb3576c6b7f85\`.
+- Audited PR: [#228](https://github.com/KayzenRoot/coinblink/pull/228), open and DRAFT, not merged. BASE main: `579ac8b20a283210b4de935f36f9f9cbfd5ab7a9`, verified live from the protected branch endpoint; audited HEAD: `9c0f871e50d9c84582de7af54bbdb3576c6b7f85`.
 - Git comparison: 9 commits ahead / 0 behind, exactly 8 files: 2 M03/M04 JS scripts, 2 Node tests, 2 Playwright specs, Work Order and this Evidence Bundle; +187/-4 lines before this append. No app auth, database, infrastructure or dependencies changed.
-- GitHub PR mergeable \`true\`, mergeable_state \`clean\`. Review threads \`0\` and submitted reviews \`0\`: automated PR Assurance/read-only Reviewdog are not equivalent to an independent reviewer. No claim of an independent human review.
+- GitHub PR mergeable `true`, mergeable_state `clean`. Review threads `0` and submitted reviews `0`: automated PR Assurance/read-only Reviewdog are not equivalent to an independent reviewer. No claim of an independent human review.
 - Review of the full 8-file patch showed the bounded required control: clear detail when either selected fixture becomes hidden; refuse comparisons on invalid, same, or hidden items; explicit user retry after filter recovery. No newly identified product defect, no correction to functional source during this audit.
 
 ### Verified hosted test matrix on audited HEAD
@@ -67,11 +67,11 @@ All 7 hosted workflows above were completed SUCCESS at the audited SHA. The GitH
 
 ### Third-party security/quality evidence on audited HEAD
 
-- **SonarCloud Code Analysis** check \`120775034340\`: SUCCESS and PR [Quality Gate passed](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=228). Official check output: **0 new issues, 0 accepted issues, 0 security hotspots, 0.0% new-code duplication**.
+- **SonarCloud Code Analysis** check `120775034340`: SUCCESS and PR [Quality Gate passed](https://sonarcloud.io/dashboard?id=KayzenRoot_coinblink&pullRequest=228). Official check output: **0 new issues, 0 accepted issues, 0 security hotspots, 0.0% new-code duplication**.
 - **Measured new-code coverage: 0.0%** in SonarCloud check output. This is an unresolved numerical coverage limitation. Neither test pass counts nor LCOV generation justify changing or interpreting this figure as improved instrumented coverage.
-- **Socket Security: Pull Request Alerts** check \`120774855303\`: SUCCESS; PR contains **no net changes to dependencies**. This result is a diff alert scan, not a blanket security certification.
-- **Socket Security: Project Report** check \`120774845634\`: SUCCESS; full report linked by check details. Passing Socket scans do not prove no pre-existing vulnerable dependencies.
-- Branch combined-status API reported \`pending\` with **zero legacy commit statuses**; this is *not* a failed check-run, and does not override the 14 individual SUCCESS check runs.
+- **Socket Security: Pull Request Alerts** check `120774855303`: SUCCESS; PR contains **no net changes to dependencies**. This result is a diff alert scan, not a blanket security certification.
+- **Socket Security: Project Report** check `120774845634`: SUCCESS; full report linked by check details. Passing Socket scans do not prove no pre-existing vulnerable dependencies.
+- Branch combined-status API reported `pending` with **zero legacy commit statuses**; this is *not* a failed check-run, and does not override the 14 individual SUCCESS check runs.
 
 ### Risk, audit verdict and limits
 

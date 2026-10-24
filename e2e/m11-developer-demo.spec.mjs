@@ -73,3 +73,20 @@ test("M11 API rejects expanded queries and unsafe methods without modifying data
   expect(after.status()).toBe(200);
   expect((await after.json()).items).toHaveLength(3);
 });
+
+test("M11 /developers has no document-wide horizontal scrolling at 320 and 390 px", async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 850 });
+    const response = await page.goto("/developers");
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("main pre")).toBeVisible();
+    const measures = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+      codeBlock: Math.round(document.querySelector("main pre").getBoundingClientRect().width),
+    }));
+    console.log("M11 reflow " + JSON.stringify({ width, ...measures }));
+    expect(measures.viewport).toBe(width);
+    expect(measures.document, "Horizontal overflow in /developers at " + width + " px").toBeLessThanOrEqual(measures.viewport);
+  }
+});

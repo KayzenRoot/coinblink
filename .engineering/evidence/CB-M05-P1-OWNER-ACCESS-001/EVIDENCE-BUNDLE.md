@@ -31,3 +31,45 @@
 **Strictly local**: no D1 remote, cloud token, secret, real passkey, deployment, payment, Ready or merge. 10 new paths only; other three documents remain unmodified.
 
 **STOP** if main moves before authorized new work, HEAD/diff leaves scope, security fail-open, unplanned file needs adjustment or any outside production resource is required.
+
+## Hosted RED evidence (genuine test-first, not an environmental failure)
+
+- **RED SHA:** `999044c49f7227021caf68150d63695f1fa8bd07` (tests + D1 fixture + workflow + Evidence Bundle only, no production module files).
+- **Run:** [HIGH_ASSURANCE LOCAL](https://github.com/KayzenRoot/coinblink/actions/runs/40097750285) · job `120883455200`, **FAILURE as expected**.
+- `node --test test/modules/CB-M05/p1-owner-policy.test.mjs test/modules/CB-M05/p1-owner-race.test.mjs`: `2 tests / 0 pass / 2 fail`, `ERR_MODULE_NOT_FOUND` for the intentionally absent `src/modules/CB-M05/p1-owner/access-policy.mjs` and `claim-guard.mjs`.
+- Separate early CI Quality job `40097750256` reported two **real lint findings** in new policy test (unused imports/rest binding). Both were corrected within that test file before GREEN. These lint failures are not presented as the desired RED.
+- Existing browser job correctly skipped when the new Node gate was RED.
+
+## Hosted GREEN evidence (implementation candidate, before final evidence-only commit)
+
+- **GREEN implementation SHA:** `ec2b50257f3c8a6e919843705dfde02629a952f9`.
+- New [HIGH_ASSURANCE LOCAL run](https://github.com/KayzenRoot/coinblink/actions/runs/40098437723):
+  - Job `120885519739`, Node + Miniflare/D1: **8 tests / 8 PASS / 0 FAIL**, including real persisted D1 claim concurrency 2/10, invalid/expired ticket and wrong origin, D1-registered public key versus deliberately substituted key, genuine WebAuthn signature, one-use challenge and session, session replay rejection, idle timeout, absolute timeout and revocation.
+  - Pinned cryptographic regression: **19/19 PASS**, `@simplewebauthn/server` 14.0.3 with disposable ES256 keys and negative RP ID/origin/UP/UV/signature cases.
+  - Existing workerd-hosted **100 simultaneous Owner claims**, three fresh trials: `201:1,409:99` for each, `d1Failures {}` (1/1 selected test PASS).
+  - Job `120885691059`, Chromium: new **production-preview 404** guard **1/1 PASS**; existing isolated LOCAL Chromium + virtual passkeys/D1 **10/10 PASS**.
+- Existing M05 LOCAL CMS Chromium and D1 regression: [run 40098437798](https://github.com/KayzenRoot/coinblink/actions/runs/40098437798) **SUCCESS**.
+- Existing M01–M05 Chromium regression: [run 40098437816](https://github.com/KayzenRoot/coinblink/actions/runs/40098437816) **SUCCESS**.
+- CI Quality: [run 40098437739](https://github.com/KayzenRoot/coinblink/actions/runs/40098437739), **SUCCESS**, including lint/typecheck, Node/LCOV baseline, Gitleaks.
+- Build: [run 40098437734](https://github.com/KayzenRoot/coinblink/actions/runs/40098437734) **SUCCESS**.
+- PR Assurance: [run 40098437720](https://github.com/KayzenRoot/coinblink/actions/runs/40098437720) **SUCCESS**.
+- Reviewdog: [run 40098437725](https://github.com/KayzenRoot/coinblink/actions/runs/40098437725) **SUCCESS**.
+- **7/7 workflows completed SUCCESS, 16/16 check runs completed SUCCESS at implementation SHA.** SonarCloud: 0 new issues, 0 accepted, 0 Security Hotspots, 0.0% new-code duplication; Socket PR Alerts + Project Report SUCCESS. SonarCloud measured coverage on new code remains **0.0%**. Passing Node and Chromium tests do **not** prove measured statement coverage.
+
+## Final Evidence-only commit and required revalidation
+
+The commit adding this section changes **only** this Evidence Bundle; its new HEAD needs independent revalidation of **all applicable checks, workflow events, diff, main SHA, reviews, and threads** before the PR is eligible for technical sign-off. Never copy earlier results as evidence of final-HEAD checks.
+
+## Explicit remaining limits / NOT_RUN
+
+- **Real human Owner, hardware passkeys and physical independence of two devices:** NOT_RUN.
+- **Lost-both-factor offline recovery in the new P1 boundary:** NOT_IMPLEMENTED / DENIED; the old P1-C synthetic emergency fixture is not real authorization.
+- **New P1 read-only public HTTP route / production /admin**: NOT_IMPLEMENTED by design. Only isolated modules and synthetic tests exist, with the actual production route remaining closed.
+- **D1 remote, migration, secret provision, Worker deploy, live publishing, provider API and recovery of real data:** NOT_RUN / NOT_AUTHORIZED.
+- **Chromium axe/reflow for a future Owner P1 HTML UI:** NOT_APPLICABLE_TO_JSON_ONLY candidate, no new HTML UI. Existing M05 Chromium regressions are independently SUCCESS and cannot be relabeled as new P1 UI proof.
+- Coverage measured by SonarCloud remains **0.0%**, even when all new tests are green.
+- **Main frozen:** `e6620609ab95fdf75e20c3bf3132a829bf43af9c`. No edit to the 3 canonical documents, 9 critical blobs, other PRs, ECC #209, rulesets or checkpoints. 10 new paths only.
+
+**Current policy:** `LOCAL_ONLY_IMPLEMENTED_IN_DRAFT / PRODUCTION_NOT_ADMITTED / READY_NOT_AUTHORIZED / MERGE_NOT_AUTHORIZED`.
+
+**STOP CONDITION:** any changed base SHA or 9 critical blobs, unplanned path, failed or skipped required gate, missing security evidence, external cloud or real credentials, or attempted Ready/merge triggers immediate stop.

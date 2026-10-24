@@ -70,6 +70,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     reviewList: document.getElementById('m06-review-list'),
     reviewCount: document.getElementById('m06-review-count'),
     reviewScope: document.getElementById('m06-review-scope'),
+    reviewUnreviewed: document.getElementById('m06-review-unreviewed'),
+    reviewPreviewed: document.getElementById('m06-review-previewed'),
+    reviewChanges: document.getElementById('m06-review-changes'),
     insightsStatus: document.getElementById('m06-insights-status'),
     insightsScope: document.getElementById('m06-insights-scope'),
     insightsMissing: document.getElementById('m06-insights-missing'),
@@ -773,6 +776,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.reviewList.replaceChildren();
     ui.reviewCount.textContent = 'UNAVAILABLE';
     ui.reviewScope.textContent = 'UNAVAILABLE';
+    ui.reviewUnreviewed.textContent = 'UNAVAILABLE';
+    ui.reviewPreviewed.textContent = 'UNAVAILABLE';
+    ui.reviewChanges.textContent = 'UNAVAILABLE';
   }
   function renderLocalReviewQueue() {
     ui.reviewList.replaceChildren();
@@ -781,6 +787,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     let shown = 0;
     for (const row of lastReviewQueue.rows) {
       if (filter === 'missing-credit' && row.creditStatus !== 'CREDIT_MISSING') continue;
+      if (filter === 'current-unreviewed' && row.ownerProcessStatus !== 'CURRENT_REVISION_UNREVIEWED') continue;
+      if (filter === 'private-preview-reviewed' && row.ownerProcessStatus !== 'PRIVATE_PREVIEW_REVIEWED') continue;
+      if (filter === 'private-changes-requested' && row.ownerProcessStatus !== 'PRIVATE_CHANGES_REQUESTED') continue;
       if (filter === 'revised' && row.revision <= 1) continue;
       if (filter === 'older-seven-days' &&
           (!lastEditorialInsights || row.updatedAtSeconds >
@@ -791,7 +800,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       button.textContent = row.title + ' · rev ' + row.revision;
       button.addEventListener('click', () => openLocalDraft(row));
       const labels = document.createElement('span');
-      labels.textContent = ' · ' + row.creditStatus + ' · ' + row.sourceStatus + ' · ' + row.publishingStatus;
+      labels.textContent = ' · ' + row.creditStatus + ' · ' + row.sourceStatus +
+        ' · ' + row.ownerProcessStatus + ' · ' + row.publishingStatus +
+        ' · NO_RIGHTS_OR_PUBLISHING_APPROVAL';
       li.append(button, labels);
       ui.reviewList.append(li);
       shown++;
@@ -849,6 +860,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.recentActivity.append(li);
     }
     lastReviewQueue = reviewQueue;
+    ui.reviewUnreviewed.textContent = String(reviewQueue.currentUnreviewedListed);
+    ui.reviewPreviewed.textContent = String(reviewQueue.privatePreviewReviewedListed);
+    ui.reviewChanges.textContent = String(reviewQueue.privateChangesRequestedListed);
     lastEditorialInsights = insights;
     lastEditorialTriage = triage;
     ui.triageStatus.textContent = triage.status;
@@ -1075,6 +1089,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.ownerReviewStatus.textContent = 'Review saved for LOCAL revision ' + revision +
         '. Private M02 import only; NOT PUBLISHED; source rights NOT CLEARED.';
       await loadOwnerReview();
+      // Refresh the authenticated M06 queue only after an immutable Owner note
+      // has been recorded for the exact current saved revision.
+      if (epoch === sessionEpoch && generation === draftOpenGeneration && csrf &&
+          ui.draftId.value === id && Number(ui.revision.value) === revision) {
+        await refresh();
+      }
     } catch {
       if (epoch === sessionEpoch && generation === draftOpenGeneration && csrf) {
         ui.ownerReviewStatus.textContent = 'Review rejected or stale. Reopen the saved revision.';
@@ -1980,11 +2000,20 @@ footer{padding:24px 0;color:#b9c8bd}
 <section id="m06-review" aria-labelledby="m06-review-title">
 <h3 id="m06-review-title">LOCAL editorial review queue · read-only</h3>
 <p>Only listed test drafts. An HTTPS source URL does not verify the publisher, licence or reuse rights. All sources require independent verification; nothing is approved for publication.</p>
+<p>Owner process decisions apply ONLY to the current saved revision. Historical reviews never grant fact verification, source rights, scheduling or publication.</p>
+<div class="m06-grid" aria-label="Current saved revision private process decisions">
+<div class="m06-card"><h4>Unreviewed current revisions (listed)</h4><strong id="m06-review-unreviewed">UNAVAILABLE</strong></div>
+<div class="m06-card"><h4>Private preview process reviewed (listed)</h4><strong id="m06-review-previewed">UNAVAILABLE</strong></div>
+<div class="m06-card"><h4>Changes requested (listed)</h4><strong id="m06-review-changes">UNAVAILABLE</strong></div>
+</div>
 <label for="m06-review-filter">Filter listed LOCAL drafts</label>
 <select id="m06-review-filter">
 <option value="all">All listed drafts</option>
 <option value="missing-credit">Missing author credit</option>
 <option value="revised">Revised drafts (revision above 1)</option>
+<option value="current-unreviewed">Current revision not yet reviewed</option>
+<option value="private-preview-reviewed">Private preview process reviewed</option>
+<option value="private-changes-requested">Owner requested changes</option>
 <option value="older-seven-days">No edit for 7+ days</option>
 </select>
 <p role="status" aria-live="polite">Visible: <strong id="m06-review-count">UNAVAILABLE</strong> · scope: <strong id="m06-review-scope">UNAVAILABLE</strong></p>

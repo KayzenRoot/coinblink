@@ -23,7 +23,7 @@ const { title, description, lang = "en" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <a class="skip-link" href="#main">{lang === "pt-BR" ? "Pular para o conteúdo" : "Skip to content"}</a>
+    <a class="skip-link" href="#main">{lang === "es" ? "Saltar al contenido" : lang === "pt-BR" ? "Pular para o conteúdo" : "Skip to content"}</a>
     <slot />
   </body>
 </html>

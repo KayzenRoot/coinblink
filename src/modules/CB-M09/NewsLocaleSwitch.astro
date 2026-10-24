@@ -20,6 +20,7 @@ const title = getNewsLocaleMeta(locale).chooser;
     <a lang={language.key === "pt-br" ? "pt-BR" : language.key} href={"/" + language.key + "/news" + safeSlug}
       aria-current={language.key === locale ? "page" : undefined}>{language.name}</a>
   </li>)}</ul>
+  {locale === "es" && <a href="/es" lang="es">Volver al inicio</a>}
 </nav>
 {locale === "es" && <nav class="m09-other-demos" aria-label="Otras demostraciones disponibles en inglés">
   <p>Las demás secciones todavía están en inglés (DEMO).</p>

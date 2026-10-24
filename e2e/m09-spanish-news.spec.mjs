@@ -60,3 +60,41 @@ test("M09 language navigation stays visible in EN and PT without exposing the CM
       .toHaveAttribute("aria-current", "page");
   }
 });
+
+
+// CB-M09-ES-ENTRY-A11Y-001: genuine Chromium RED for the missing Spanish entry.
+test("M09 Spanish DEMO entry is safe, accessible and returns from the existing newsroom", async ({ page }) => {
+  const external = [], mutations = [], consoleErrors = [];
+  page.on("request", req => {
+    if (!req.url().startsWith("http://127.0.0.1:4321/") && !req.url().startsWith("data:")) external.push(req.url());
+    if (!["GET", "HEAD"].includes(req.method())) mutations.push(req.url());
+  });
+  page.on("console", msg => { if (msg.type() === "error") consoleErrors.push(msg.text()); });
+  page.on("pageerror", err => consoleErrors.push(err.message));
+  for (const width of [390, 768, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    const response = await page.goto("/es");
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("lang", "es");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
+    await expect(page.getByRole("heading", { level: 1, name: "CoinBlink en español" })).toBeVisible();
+    const skip = page.getByRole("link", { name: "Saltar al contenido" });
+    await page.keyboard.press("Tab");
+    await expect(skip).toBeFocused();
+    await expect(skip).toHaveAttribute("href", "#main");
+    await expect(page.getByRole("main")).toHaveAttribute("id", "main");
+    await expect(page.getByText("DEMO", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explorar noticias ficticias" })).toHaveAttribute("href", "/es/news");
+    await expect(page.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en");
+    await expect(page.getByRole("link", { name: "Português (Brasil)" })).toHaveAttribute("href", "/pt-br");
+    const axe = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+    expect(axe.violations).toEqual([]);
+  }
+  await page.getByRole("link", { name: "Explorar noticias ficticias" }).click();
+  await expect(page).toHaveURL(/\/es\/news$/u);
+  await page.getByRole("link", { name: "Volver al inicio" }).click();
+  await expect(page).toHaveURL(/\/es$/u);
+  expect(external).toEqual([]);
+  expect(mutations).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});

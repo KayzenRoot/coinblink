@@ -47,3 +47,32 @@ test("M09 Spanish route and switcher preserve noindex and validate slugs", () =>
     assert.doesNotMatch(text, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon|indexedDB|\/admin\/api|innerHTML/u);
   }
 });
+
+
+// CB-M09-ES-ENTRY-A11Y-001: contract-first RED against the unmodified product.
+test("M09 ES entry: a first-class Spanish DEMO page exists and is never LIVE", () => {
+  const entry = readFileSync("src/pages/es.astro", "utf8");
+  assert.match(entry, /<BaseLayout/u);
+  assert.match(entry, /lang="es"/u);
+  assert.match(entry, /href="\/es\/news"/u);
+  assert.match(entry, /href="\/en"/u);
+  assert.match(entry, /href="\/pt-br"/u);
+  assert.match(entry, /DEMO/u);
+  assert.match(entry, /<main[^>]+id="main"/u);
+  assert.doesNotMatch(entry, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon|indexedDB|\/admin\/api|innerHTML|https?:\/\//u);
+});
+
+test("M09 ES a11y: Spanish skip label keeps EN and PT-BR unchanged", () => {
+  const layout = readFileSync("src/layouts/BaseLayout.astro", "utf8");
+  assert.match(layout, /lang === "es"\s*\?\s*"Saltar al contenido"/u);
+  assert.match(layout, /lang === "pt-BR"\s*\?\s*"Pular para o conteúdo"/u);
+  assert.match(layout, /"Skip to content"/u);
+  assert.match(layout, /noindex, nofollow, noarchive/u);
+});
+
+test("M09 ES navigation: Spanish demo articles offer a return to the ES entry", () => {
+  const nav = readFileSync("src/modules/CB-M09/NewsLocaleSwitch.astro", "utf8");
+  assert.match(nav, /locale === "es"[\s\S]*?href="\/es"/u);
+  assert.match(nav, /Volver al inicio/u);
+  assert.match(nav, /resolveMockNews\(slug\)\.item/u);
+});

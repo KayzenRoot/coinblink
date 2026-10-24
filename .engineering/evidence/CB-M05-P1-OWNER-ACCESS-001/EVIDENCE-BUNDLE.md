@@ -73,3 +73,14 @@ The commit adding this section changes **only** this Evidence Bundle; its new HE
 **Current policy:** `LOCAL_ONLY_IMPLEMENTED_IN_DRAFT / PRODUCTION_NOT_ADMITTED / READY_NOT_AUTHORIZED / MERGE_NOT_AUTHORIZED`.
 
 **STOP CONDITION:** any changed base SHA or 9 critical blobs, unplanned path, failed or skipped required gate, missing security evidence, external cloud or real credentials, or attempted Ready/merge triggers immediate stop.
+
+## Supplemental independently reproduced RED→GREEN: concurrent session revocation (2026-10-24)
+
+**Discovery:** `src/modules/CB-M05/p1-owner/access-policy.mjs` previously authorized a read when the SQL `UPDATE` returned `success:true`, without checking that a row was actually renewed. A concurrent logout/revocation after the first `SELECT` could make the update affect **zero rows** yet still allow the read. The test faithfully injects that race without remote services.
+
+- **Dedicated RED SHA:** `78ccf84f3d813fc6bec12e242dddd7e51bf3a936`. Hosted [run 40100498421](https://github.com/KayzenRoot/coinblink/actions/runs/40100498421), Node job `120891488798`: **9 tests, 8 pass, 1 fail**. Exact failure: `P1 OWNER POLICY SECURITY: revoke between SELECT and session activity UPDATE must deny when zero rows changed`; `zero affected rows cannot authorize already revoked session`. The Chromium dependent job was **SKIPPED** on RED, not misreported as PASS.
+- **Minimal fix in 1 already authorized module:** `if(written?.success!==true||written?.meta?.changes!==1)return deny;`. Denies a stale session when a concurrent revocation defeats renewal.
+- **GREEN SHA:** `52f8e6244dfda2814eaf9a02c5ba7f0459a2026f`. Hosted [run 40100607157](https://github.com/KayzenRoot/coinblink/actions/runs/40100607157), Node job `120891800989`: **9/9 new tests PASS**, including revoked-session race; WebAuthn **19/19 PASS**; three Worker-hosted 100-claim trials **each 1 accepted/99 rejected**, no D1 failures. Chromium LOCAL and production 404, existing M05 browser, M01–M05 browser, Build, lint, typecheck, Gitleaks, Reviewdog and PR Assurance all finished **SUCCESS** at GREEN SHA.
+- At `52f8e6244dfda2814eaf9a02c5ba7f0459a2026f`, **7/7 workflows SUCCESS, 16/16 checks SUCCESS**, SonarCloud **zero new issues, zero hotspots, coverage measured 0.0%**, Socket PR Alerts and Project Report SUCCESS. The tests of real identity, recovery, D1 remote, production and independent physical devices remain **NOT_RUN / NOT_AUTHORIZED**.
+
+**Final evidence-only HEAD MUST be checked independently after this append**; earlier GREEN does not automatically certify later commits. PR remains DRAFT. No Ready, merge, deploy, paid operations, real secrets or credential changes were authorized.

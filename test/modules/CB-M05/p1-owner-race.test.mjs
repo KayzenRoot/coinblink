@@ -112,6 +112,9 @@ test('P1 BOOT SECURITY: consumed ticket and identical marker cannot claim twice 
     const claim={db,token,nowSeconds,origin:SYNTHETIC_ORIGIN,expectedOrigin:SYNTHETIC_ORIGIN,marker:'exact-replay'};
     assert.equal(await claimOwnerOnce(claim),true,'first legitimate claim succeeds');
     assert.equal(await claimOwnerOnce(claim),false,'same-second replay must be denied, even with identical marker');
+    const freshToken=randomBytes(32).toString('hex');
+    await mintLocalTicket({db,token:freshToken,nowSeconds});
+    assert.equal(await claimOwnerOnce({...claim,token:freshToken}),false,'an existing Owner marker cannot consume a fresh ticket');
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM p1_owner').first()).n,1);
     assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM p1_ticket WHERE consumed_at IS NOT NULL').first()).n,1);
   }finally{await mf.dispose();}

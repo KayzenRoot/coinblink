@@ -63,6 +63,19 @@ test("M03 synthetic sources are accessible, filter locally and never ingest", as
   await expect(details).toBeHidden();
   await page.getByRole("button", { name: "Compare evidence gaps" }).click();
   await expect(details).toBeHidden();
+  // CB-P0-FILTER-COMPARISON-VISIBILITY-001: filtered-out rows must not retain claims.
+  await page.locator("[data-m03-right]").selectOption("demo-source-gamma");
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(details).toBeVisible();
+  await outcome.selectOption("DENIED_RIGHTS");
+  await expect(details).toBeHidden();
+  await expect(details).toHaveText("");
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(details).toBeHidden();
+  await expect(page.locator("[data-m03-comparison]")).toContainText("visible under current filters");
+  await outcome.selectOption("all");
+  await page.getByRole("button", { name: "Compare evidence gaps" }).click();
+  await expect(details).toBeVisible();
   for (const width of [390, 768, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     const bounds = await page.locator(".m03-comparison").boundingBox();

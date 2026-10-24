@@ -36,6 +36,11 @@ if (root) {
     }
     status.textContent = visible + " unavailable example assets";
     empty.hidden = visible !== 0;
+    // Do not retain a mock comparison outside the filtered visible asset set.
+    if (!gaps.hidden && (assets.get(first.value)?.hidden || assets.get(second.value)?.hidden)) {
+      resetGaps();
+      result.textContent = "A selected offline asset is hidden by current filters. Compare again.";
+    }
   };
   search.addEventListener("input", filter);
   freshness.addEventListener("change", filter);
@@ -43,8 +48,8 @@ if (root) {
     resetGaps();
     const left = assets.get(first.value);
     const right = assets.get(second.value);
-    if (!left || !right || left === right) {
-      result.textContent = "Choose two different offline examples. No market data was fetched.";
+    if (!left || !right || left === right || left.hidden || right.hidden) {
+      result.textContent = "Choose two different offline examples visible under current filters. No market data was fetched.";
       return;
     }
     result.textContent = left.dataset.m04Asset + " (" + left.dataset.m04Freshness +

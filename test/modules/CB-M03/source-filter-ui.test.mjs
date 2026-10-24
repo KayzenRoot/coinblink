@@ -123,3 +123,29 @@ test("M03 comparison is derived only from current known synthetic elements", () 
   assert.match(ui.comparison.textContent,/No evidence was retrieved/u);
   assert.equal(ui.details.hidden, true);
 });
+// CB-P0-FILTER-COMPARISON-VISIBILITY-001 · regression-first; baseline is expected to fail.
+
+
+test("M03: a hidden selection cannot retain or recreate a previous mock evidence comparison", () => {
+  const ui = makeWorkbench();
+  ui.left.value = "demo-source-alpha";
+  ui.right.value = "demo-source-gamma";
+  ui.onCompare();
+  assert.equal(ui.details.hidden, false);
+  ui.query.value = "protocol";
+  ui.onInput();
+  assert.equal(ui.rows[2].hidden, true);
+  assert.equal(ui.details.hidden, true, "Filtered-out evidence must be cleared");
+  assert.equal(ui.details.textContent, "");
+  ui.onCompare();
+  assert.equal(ui.details.hidden, true, "Cannot compare a hidden synthetic source");
+  ui.query.value = "";
+  ui.onInput();
+  ui.onCompare();
+  assert.equal(ui.details.hidden, false, "Visible rows can be compared again");
+  ui.outcome.value = "DENIED_RIGHTS";
+  ui.onChange();
+  assert.equal(ui.details.hidden, true);
+  ui.onCompare();
+  assert.equal(ui.details.hidden, true);
+});

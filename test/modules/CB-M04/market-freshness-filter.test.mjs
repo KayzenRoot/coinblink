@@ -121,3 +121,30 @@ test("M04 DOM-only comparison rejects invalid and same-symbol inputs", () => {
   assert.match(ui.comparison.textContent,/No market data was fetched/u);
   assert.equal(ui.gaps.hidden,true);
 });
+// CB-P0-FILTER-COMPARISON-VISIBILITY-001 · regression-first; baseline is expected to fail.
+
+
+test("M04: a hidden asset cannot retain or recreate an outdated mock readiness comparison", () => {
+  const ui = makeWorkbench();
+  ui.first.value = "BTC";
+  ui.second.value = "ETH";
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, false);
+  ui.freshness.value = "STALE";
+  ui.change();
+  assert.equal(ui.rows[1].hidden, true);
+  assert.equal(ui.gaps.hidden, true, "Filtered-out asset details must be cleared");
+  assert.equal(ui.gaps.textContent, "");
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, true, "Cannot compare hidden assets");
+  ui.freshness.value = "all";
+  ui.change();
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, false, "Visible assets can be compared again");
+  ui.search.value = "eth";
+  ui.input();
+  assert.equal(ui.rows[0].hidden, true);
+  assert.equal(ui.gaps.hidden, true);
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, true);
+});

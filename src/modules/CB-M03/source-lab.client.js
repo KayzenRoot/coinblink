@@ -35,6 +35,11 @@ if (root) {
     }
     count.textContent = visible + " synthetic source examples";
     empty.hidden = visible !== 0;
+    // A previously compared record is no longer part of this filtered view.
+    if (!details.hidden && (byId.get(left.value)?.hidden || byId.get(right.value)?.hidden)) {
+      clearComparison();
+      comparison.textContent = "A selected fictional source is hidden by current filters. Compare again.";
+    }
   };
   query.addEventListener("input", filter);
   outcome.addEventListener("change", filter);
@@ -42,8 +47,8 @@ if (root) {
     clearComparison();
     const first = byId.get(left.value);
     const second = byId.get(right.value);
-    if (!first || !second || first === second) {
-      comparison.textContent = "Select two different fictional sources. No evidence was retrieved.";
+    if (!first || !second || first === second || first.hidden || second.hidden) {
+      comparison.textContent = "Select two different fictional sources visible under current filters. No evidence was retrieved.";
       return;
     }
     const describe = item => item.querySelector("h2").textContent +

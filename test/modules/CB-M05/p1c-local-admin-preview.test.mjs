@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { listSyntheticSources } from '../../../src/modules/CB-M03/source-lab.mjs';
 import { createMockSourceTransfer } from '../../../src/modules/CB-M03/source-transfer.mjs';
+import { createMockResearchTransfer } from '../../../src/modules/CB-M08/research-transfer.mjs';
 import { startLocalCmsPreview } from './p1c-local-preview.mjs';
 
 test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and revoke session', { timeout: 120_000 }, async () => {
@@ -432,6 +433,70 @@ test('M05 LOCAL Owner can inspect immutable per-revision review history; logout 
     assert.equal(await page.locator('#owner-review-note').inputValue(), '');
     assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
     assert.deepEqual(preview.networkAttempts.filter(q => !q.allowed), []);
+  } finally {
+    await preview.close();
+  }
+});
+
+test('M08 to M05 LOCAL Owner explicitly appends offline blockers to an unsaved body only', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const page = preview.page;
+    const input = page.locator('#research-transfer-file');
+    const apply = page.locator('#research-transfer-apply');
+    assert.equal(await input.isVisible(), false, 'protected M08 handoff hidden before synthetic login');
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    const body = page.locator('[name="body"]');
+    await body.fill('PRIVATE_OWNER_ORIGINAL_COPY');
+    const packet = createMockResearchTransfer('demo-source-alpha','BTC');
+    const upload = content => input.setInputFiles({
+      name:'coinblink-m08-demo-source-alpha-btc.json',
+      mimeType:'application/json',
+      buffer:Buffer.from(content,'utf8'),
+    });
+    await upload(JSON.stringify({...packet,rights:'CLEARED'}));
+    await page.getByText('Rejected: report is not an exact canonical M08 offline brief.').waitFor();
+    assert.equal(await apply.isDisabled(),true);
+    assert.equal(await body.inputValue(),'PRIVATE_OWNER_ORIGINAL_COPY');
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    assert.match(await page.locator('#research-transfer-review').innerText(),/8 blocked checks.*NOT_CLEARED/u);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,0);
+    page.once('dialog', dialog => dialog.dismiss());
+    await apply.click();
+    await page.getByText('Application canceled; no draft field changed.').waitFor();
+    assert.equal(await body.inputValue(),'PRIVATE_OWNER_ORIGINAL_COPY');
+    page.once('dialog', dialog => dialog.accept());
+    await apply.click();
+    await page.getByText(/M08 MOCK blockers appended to the unsaved article body only/).waitFor();
+    const text = await body.inputValue();
+    assert.match(text,/^PRIVATE_OWNER_ORIGINAL_COPY\n\n\[COINBLINK M08 OFFLINE MOCK RESEARCH/u);
+    assert.match(text,/SOURCE\/URL=/u);
+    assert.match(text,/MARKET\/RIGHTS_NOT_CLEARED=/u);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,0,
+      'Only the separate pre-existing Save action can write local D1');
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    await apply.click();
+    await page.getByText(/M08 note is duplicated, exceeds body limit or is invalid/).waitFor();
+    assert.equal((await body.inputValue()).split('[COINBLINK M08 OFFLINE MOCK RESEARCH').length,2);
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor();
+    await apply.click();
+    await page.getByText(/Stale M08 brief selection/).waitFor();
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', {exact:true}).waitFor();
+    assert.equal(await input.isVisible(),false);
+    assert.equal(await input.inputValue(),'');
+    assert.equal(await apply.isDisabled(),true);
+    assert.equal(await page.locator('#research-transfer-review').textContent(),'');
+    assert.equal(await body.inputValue(),'');
+    assert.deepEqual(preview.networkAttempts.filter(x=>!x.allowed),[]);
   } finally {
     await preview.close();
   }

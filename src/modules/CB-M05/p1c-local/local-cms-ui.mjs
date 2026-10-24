@@ -3,6 +3,7 @@
 // No real Owner provisioning or production secrets are supported here.
 import { listSyntheticSources } from '../../CB-M03/source-lab.mjs';
 import { parseMockSourceTransfer } from '../../CB-M03/source-transfer.mjs';
+import { canonicalMockResearchTransfers, parseMockResearchTransfer, formatMockResearchNote } from '../../CB-M08/research-transfer.mjs';
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalEditorialInsights } from '../../CB-M06/local-editorial-insights.mjs';
 import { createLocalEditorialTriage } from '../../CB-M06/local-editorial-triage.mjs';
@@ -15,6 +16,9 @@ import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
   const parseMockSourceTransfer = (${parseMockSourceTransfer.toString()});
   const canonicalSourceCatalog = ${JSON.stringify(listSyntheticSources().items)};
+  const parseMockResearchTransfer = (${parseMockResearchTransfer.toString()});
+  const formatMockResearchNote = (${formatMockResearchNote.toString()});
+  const canonicalResearchCatalog = ${JSON.stringify(canonicalMockResearchTransfers())};
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
@@ -131,6 +135,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     sourceTransferApply: document.getElementById('source-transfer-apply'),
     sourceTransferStatus: document.getElementById('source-transfer-status'),
     sourceTransferClear: document.getElementById('source-transfer-clear'),
+    researchTransferFile: document.getElementById('research-transfer-file'),
+    researchTransferStatus: document.getElementById('research-transfer-status'),
+    researchTransferReview: document.getElementById('research-transfer-review'),
+    researchTransferApply: document.getElementById('research-transfer-apply'),
+    researchTransferClear: document.getElementById('research-transfer-clear'),
     history: document.getElementById('history'),
     historyList: document.getElementById('history-list'),
     bootstrap: document.getElementById('bootstrap'),
@@ -176,6 +185,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.sourceTransferReview.textContent = '';
     ui.sourceTransferApply.disabled = true;
     ui.sourceTransferStatus.textContent = status;
+  }
+  let pendingResearchTransfer = null;
+  let researchTransferGeneration = 0;
+  function clearMockResearchTransfer(status = 'No inspected fictional M08 brief. No changes saved.') {
+    researchTransferGeneration += 1;
+    pendingResearchTransfer = null;
+    ui.researchTransferFile.value = '';
+    ui.researchTransferReview.hidden = true;
+    ui.researchTransferReview.textContent = '';
+    ui.researchTransferApply.disabled = true;
+    ui.researchTransferStatus.textContent = status;
   }
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
   function draftSnapshot() {
@@ -866,6 +886,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     csrf = null;
     resetOwnerReview();
     clearMockSourceTransfer();
+    clearMockResearchTransfer();
     savedSnapshot = null;
     ui.form.reset();
     ui.draftId.value = '';
@@ -1062,6 +1083,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
   function editDraft(draft) {
     clearMockSourceTransfer();
+    clearMockResearchTransfer();
     ui.form.elements.namedItem('title').value = draft.title;
     ui.form.elements.namedItem('summary').value = draft.summary;
     ui.form.elements.namedItem('body').value = draft.body;
@@ -1602,6 +1624,72 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     clearMockSourceTransfer('MOCK source inserted in the form only. Rights NOT_CLEARED. Save separately if desired; nothing published.');
   });
   ui.sourceTransferClear.addEventListener('click', () => clearMockSourceTransfer());
+  // An M08 public demo file never grants authority. Only the nine exact
+  // canonical offline packets are inspectable; the Owner must opt in to
+  // inserting a labelled note in the UNSAVED local editor body.
+  ui.researchTransferFile.addEventListener('change', async () => {
+    const file = ui.researchTransferFile.files?.[0];
+    clearMockResearchTransfer();
+    if (!file) return;
+    if (!csrf || ui.form.hidden || !/\.json$/iu.test(file.name) ||
+        file.size < 1 || file.size > 4096) {
+      clearMockResearchTransfer('Rejected: invalid or oversized M08 MOCK brief.');
+      return;
+    }
+    const epoch = sessionEpoch, open = draftOpenGeneration;
+    const generation = researchTransferGeneration, listing = readGeneration;
+    const snapshot = draftSnapshot();
+    const draftId = ui.draftId.value, revision = ui.revision.value;
+    try {
+      const raw = await file.text();
+      if (epoch !== sessionEpoch || open !== draftOpenGeneration ||
+          generation !== researchTransferGeneration || listing !== readGeneration ||
+          !csrf || ui.form.hidden || draftSnapshot() !== snapshot ||
+          ui.draftId.value !== draftId || ui.revision.value !== revision) return;
+      const parsed = parseMockResearchTransfer(raw, canonicalResearchCatalog);
+      if (!parsed) {
+        clearMockResearchTransfer('Rejected: report is not an exact canonical M08 offline brief.');
+        return;
+      }
+      pendingResearchTransfer = {packet:parsed, epoch, open, listing, snapshot, draftId, revision};
+      ui.researchTransferReview.textContent = parsed.sourceLabel + ' (' + parsed.sourceId + ')' +
+        ' / ' + parsed.pair + ' · ' + parsed.blockerCount +
+        ' blocked checks · MOCK · NOT VERIFIED · NOT_CLEARED · NO LIVE QUOTE · NOT PUBLISHED.';
+      ui.researchTransferReview.hidden = false;
+      ui.researchTransferApply.disabled = false;
+      ui.researchTransferStatus.textContent = 'Inspected M08 MOCK brief only. Explicit Apply appends an UNSAVED warning to the article body.';
+    } catch {
+      if (epoch === sessionEpoch && generation === researchTransferGeneration) {
+        clearMockResearchTransfer('Rejected: unable to inspect M08 offline brief.');
+      }
+    }
+  });
+  ui.researchTransferApply.addEventListener('click', () => {
+    const pending = pendingResearchTransfer;
+    if (!csrf || ui.form.hidden || !pending || ui.researchTransferApply.disabled) return;
+    if (pending.epoch !== sessionEpoch || pending.open !== draftOpenGeneration ||
+        pending.listing !== readGeneration || pending.snapshot !== draftSnapshot() ||
+        pending.draftId !== ui.draftId.value || pending.revision !== ui.revision.value) {
+      clearMockResearchTransfer('Stale M08 brief selection. Reinspect the file before applying.');
+      return;
+    }
+    const field = ui.form.elements.namedItem('body');
+    const next = formatMockResearchNote(pending.packet, field.value);
+    if (next === null) {
+      clearMockResearchTransfer('M08 note is duplicated, exceeds body limit or is invalid. No changes applied.');
+      return;
+    }
+    if (!window.confirm('Append this M08 OFFLINE MOCK research note to the UNSAVED draft? No rights, fact verification, save or publication will occur.')) {
+      ui.researchTransferStatus.textContent = 'Application canceled; no draft field changed.';
+      ui.researchTransferApply.focus();
+      return;
+    }
+    field.value = next;
+    field.dispatchEvent(new Event('input', {bubbles:true}));
+    clearMockResearchTransfer('M08 MOCK blockers appended to the unsaved article body only. Review and Save separately. NOT VERIFIED; NOT PUBLISHED.');
+    field.focus();
+  });
+  ui.researchTransferClear.addEventListener('click', () => clearMockResearchTransfer());
   ui.form.addEventListener('submit', async (event) => {
     event.preventDefault();
     ui.save.disabled = true;
@@ -1629,6 +1717,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   document.getElementById('new-draft').addEventListener('click', () => {
     if (!confirmDraftDiscard()) return;
     clearMockSourceTransfer();
+    clearMockResearchTransfer();
     draftOpenGeneration += 1;
     if (exportAbortController) exportAbortController.abort();
     exportAbortController = null;
@@ -2037,6 +2126,16 @@ footer{padding:24px 0;color:#b9c8bd}
 <p id="source-transfer-review" role="status" aria-live="polite" hidden></p>
 <button id="source-transfer-apply" type="button" disabled>Apply MOCK source to unsaved form</button>
 <button id="source-transfer-clear" type="button">Clear inspected report</button>
+</section>
+<section id="research-transfer" aria-labelledby="research-transfer-title">
+<h3 id="research-transfer-title">M08 fictional research brief · inspect before adding to UNSAVED body</h3>
+<p>Offline source-plus-market blockers only. Never fact-checked, licensed, AI-generated or published.</p>
+<label for="research-transfer-file">M08 canonical offline JSON (max 4096 bytes)</label>
+<input id="research-transfer-file" type="file" accept=".json,application/json">
+<p id="research-transfer-status" role="status" aria-live="polite">No inspected fictional M08 brief. No changes saved.</p>
+<p id="research-transfer-review" role="status" aria-live="polite" hidden></p>
+<button id="research-transfer-apply" type="button" disabled>Append M08 MOCK blockers to unsaved body</button>
+<button id="research-transfer-clear" type="button">Clear M08 inspected brief</button>
 </section>
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>

@@ -40,6 +40,8 @@ const options = listMockResearchOptions();
     <ol data-m08-blockers></ol>
     <p data-m08-next></p>
     <p>No prices, predictions, authorizations, articles or model-generated research are produced.</p>
+    <button type="button" data-m08-export>Download M08 canonical MOCK brief · JSON</button>
+    <p data-m08-export-status role="status" aria-live="polite">Manual handoff only. The LOCAL Owner must inspect before applying to an unsaved draft.</p>
   </section>
   <footer>
     <p>Review the original modules: <a href="/demo/sources">Source provenance (M03)</a> and <a href="/demo/markets">Market readiness (M04)</a>.</p>
@@ -47,6 +49,7 @@ const options = listMockResearchOptions();
 </main>
 <script>
   import { buildMockResearchBrief } from "./research-desk.mjs";
+  import { createMockResearchTransfer, MAX_MOCK_RESEARCH_BYTES } from "./research-transfer.mjs";
   const root = document.querySelector("[data-m08-root]");
   const source = root?.querySelector("[data-m08-source]");
   const market = root?.querySelector("[data-m08-market]");
@@ -57,14 +60,20 @@ const options = listMockResearchOptions();
   const total = root?.querySelector("[data-m08-total]");
   const blockers = root?.querySelector("[data-m08-blockers]");
   const next = root?.querySelector("[data-m08-next]");
+  const exportButton = root?.querySelector("[data-m08-export]");
+  const exportStatus = root?.querySelector("[data-m08-export-status]");
   if (source instanceof HTMLSelectElement && market instanceof HTMLSelectElement
       && button instanceof HTMLButtonElement && report instanceof HTMLElement
       && status instanceof HTMLElement && context instanceof HTMLElement
       && total instanceof HTMLElement && blockers instanceof HTMLElement
-      && next instanceof HTMLElement) {
+      && next instanceof HTMLElement && exportButton instanceof HTMLButtonElement
+      && exportStatus instanceof HTMLElement) {
     const view = { source, market, button, report, status, context, total, blockers, next };
+    let pendingPacket: ReturnType<typeof createMockResearchTransfer> | null = null;
     const clear = () => {
       view.report.hidden = true;
+      pendingPacket = null;
+      exportStatus.textContent = "No current offline research brief.";
       view.blockers.replaceChildren();
       view.context.textContent = "";
       view.total.textContent = "";
@@ -81,6 +90,7 @@ const options = listMockResearchOptions();
         return;
       }
       const brief = result.brief;
+      pendingPacket = createMockResearchTransfer(view.source.value, view.market.value);
       view.context.textContent = brief.sourceLabel + " · " + brief.sourceStatus
         + " | " + brief.pair + " · " + brief.freshness;
       view.total.textContent = String(brief.blockerCount) + " review gates · 0 verified sources · 0 live quotes";
@@ -93,6 +103,29 @@ const options = listMockResearchOptions();
       view.report.hidden = false;
       view.status.textContent = "Local mock review checklist generated. Human investigation remains necessary.";
       view.report.querySelector("h2")?.focus();
+    });
+    exportButton.addEventListener("click", () => {
+      const packet = pendingPacket;
+      if (!packet || packet.sourceId !== view.source.value ||
+          packet.asset !== view.market.value || view.report.hidden) {
+        exportStatus.textContent = "No valid current offline brief to export.";
+        return;
+      }
+      const serialized = JSON.stringify(packet);
+      if (new TextEncoder().encode(serialized).byteLength > MAX_MOCK_RESEARCH_BYTES) {
+        exportStatus.textContent = "No valid current offline brief to export.";
+        return;
+      }
+      const objectUrl = URL.createObjectURL(new Blob([serialized], { type: "application/json" }));
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = "coinblink-m08-" + packet.sourceId + "-" +
+        packet.asset.toLowerCase() + ".json";
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      exportStatus.textContent = "OFFLINE MOCK JSON downloaded. No live data, rights or publication.";
     });
   }
 </script>

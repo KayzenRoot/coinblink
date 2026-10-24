@@ -43,7 +43,9 @@ async function addConcept(page, draftChoice, localMinute = '2026-11-16T00:30') {
   await page.locator('#m07-channel').selectOption('x');
   await page.locator('#m07-calendar-zone').selectOption('UTC');
   await page.locator('#m07-calendar-date').fill(localMinute);
+  const before = await page.locator('#m07-calendar-list li').count();
   await page.locator('#m07-calendar-add').click();
+  await page.locator('#m07-calendar-list li').nth(before).waitFor();
 }
 /** Assert the weekly DOM and underlying list are erased after session changes. */
 async function expectEmptyPrivateBoard(page) {

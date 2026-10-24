@@ -165,24 +165,45 @@ test('cross-session Owner review must clear stale M07 calendar on focus', {timeo
  * local D1 read while exercising browser interaction. No fixture shortcuts,
  * remote endpoints, real identities or fabricated server responses.
  */
-async function holdNextCalendarD1Read(page) {
+async function holdNextCalendarD1Read(page, options = {}) {
   let signalRequest;
   let releaseRead;
+  let completeRead;
+  let failRead;
   const started = new Promise(resolve => { signalRequest = resolve; });
   const released = new Promise(resolve => { releaseRead = resolve; });
+  const completed = new Promise((resolve,reject) => {
+    completeRead = resolve; failRead = reject;
+  });
   let first = true;
   const handler = async route => {
     if (first && route.request().method() === 'GET' &&
         new URL(route.request().url()).pathname === '/admin/articles') {
       first = false;
-      signalRequest();
-      await released;
+      try {
+        // Read the genuine disposable LOCAL D1 response, not mocked data.
+        // Hold only the delivery to the client, unless testing a revoked 401.
+        const actual = options.afterRelease
+          ? (signalRequest(), await released, await route.fetch())
+          : await route.fetch();
+        if (!options.afterRelease) {
+          signalRequest();
+          await released;
+        }
+        await route.fulfill({response:actual});
+        completeRead(actual.status());
+      } catch (error) {
+        failRead(error);
+        throw error;
+      }
+      return;
     }
     await route.continue();
   };
   await page.route('**/admin/articles', handler);
   return {
     started,
+    completed,
     release: () => releaseRead(),
     dispose: () => page.unroute('**/admin/articles', handler),
   };
@@ -212,12 +233,11 @@ async function makeInflightCalendarFixture() {
 }
 
 async function flushCalendarResponse(page, held) {
-  const response = page.waitForResponse(r => r.request().method() === 'GET' &&
-    new URL(r.url()).pathname === '/admin/articles');
   held.release();
-  await response;
-  // Only browser event-loop completion; requests have already hit actual LOCAL D1.
+  const status = await held.completed;
+  // Delivery was fulfilled with the authentic LOCAL D1 response.
   await page.waitForTimeout(250);
+  return status;
 }
 
 test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calendar', {timeout:120_000}, async () => {
@@ -308,7 +328,7 @@ test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calenda
     const {app,page} = await makeInflightCalendarFixture();
     let held;
     try {
-      held = await holdNextCalendarD1Read(page);
+      held = await holdNextCalendarD1Read(page,{afterRelease:mode === '401'});
       await page.locator('#m07-calendar-add').click();
       await held.started;
       if (mode === 'logout') {

@@ -63,6 +63,23 @@ test("M04 market radar is offline, accessible and has no quotes", async ({ page 
   await page.locator("[data-m04-second]").selectOption("ETH");
   await compare.click();
   await expect(gaps).toBeVisible();
+  // CB-P0-FILTER-COMPARISON-VISIBILITY-001: hidden mock assets cannot be compared.
+  await availability.selectOption("STALE");
+  await expect(gaps).toBeHidden();
+  await expect(gaps).toHaveText("");
+  await compare.click();
+  await expect(gaps).toBeHidden();
+  await expect(page.locator("[data-m04-comparison]")).toContainText("visible under current filters");
+  await availability.selectOption("all");
+  await compare.click();
+  await expect(gaps).toBeVisible();
+  await page.locator("[data-m04-query]").fill("eth");
+  await expect(gaps).toBeHidden();
+  await compare.click();
+  await expect(gaps).toBeHidden();
+  await page.locator("[data-m04-query]").fill("");
+  await compare.click();
+  await expect(gaps).toBeVisible();
   for (const width of [390, 768, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     const bounds = await page.locator(".m04-compare").boundingBox();

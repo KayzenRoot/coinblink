@@ -10,7 +10,7 @@ const article = Object.freeze({
   sourceUrl: 'https://publisher.example.test/articles/fictional-briefing',
   mode: 'LOCAL_SYNTHETIC', status: 'draft', rights: 'NOT_CLEARED',
 });
-const compose = (row = article) => createSyntheticXPostDraft(row);
+const compose = (...args) => createSyntheticXPostDraft(args.length ? args[0] : article);
 
 test('creates a text-only, frozen X preview with immutable private reference and no publishing capability', () => {
   const post = compose();
@@ -56,7 +56,7 @@ test('rejects publication or rights grants injected into the supposedly syntheti
 test('rejects incomplete or forged article identity, revision and presentation fields', () => {
   for (const row of [null, undefined, [], 'x', 1, {}, Object.create(null),
     { ...article, id: '' }, { ...article, id: '../unsafe' },
-    { ...article, id: article.id.toUpperCase() },
+    { ...article, id: 'ABCDEF00-0000-0000-0000-000000000001' },
     { ...article, revision: 0 }, { ...article, revision: -1 },
     { ...article, revision: 1.5 }, { ...article, revision: Number.MAX_SAFE_INTEGER + 1 },
     { ...article, title: null }, { ...article, summary: null },

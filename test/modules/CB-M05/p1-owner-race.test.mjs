@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { createLocalSession, revokeLocalSession } from '../../../src/modules/CB-M05/p1-owner/passkey-session.mjs';
-import { authorizeLocalRead } from '../../../src/modules/CB-M05/p1-owner/access-policy.mjs';
+import { authorizeLocalRead, digestLocalSession } from '../../../src/modules/CB-M05/p1-owner/access-policy.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, SYNTHETIC_ORIGIN, SYNTHETIC_RP_ID } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { Miniflare, convertV4MiniflareOptions, NoOpLog } from 'miniflare';
@@ -100,5 +100,54 @@ test('P1 SESSION: D1-registered public key, signed challenge, cookie, idle/absol
     await db.prepare('UPDATE p1_session SET last_seen_at=?,issued_at=?').bind(nowSeconds+20,nowSeconds).run();
     assert.equal(await revokeLocalSession({db,secret,rawToken:issued.token,nowSeconds:nowSeconds+30}),true);
     assert.equal((await authorizeLocalRead({request:req,db,secret,nowSeconds:nowSeconds+30})).allowed,false);
+  }finally{await mf.dispose();}
+});
+
+
+test('P1 BOOT SECURITY: consumed ticket and identical marker cannot claim twice in same second', {timeout:120000},async()=>{
+  const {mf,db}=await isolated();
+  try{
+    const token=randomBytes(32).toString('hex'),nowSeconds=20000;
+    await mintLocalTicket({db,token,nowSeconds});
+    const claim={db,token,nowSeconds,origin:SYNTHETIC_ORIGIN,expectedOrigin:SYNTHETIC_ORIGIN,marker:'exact-replay'};
+    assert.equal(await claimOwnerOnce(claim),true,'first legitimate claim succeeds');
+    assert.equal(await claimOwnerOnce(claim),false,'same-second replay must be denied, even with identical marker');
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM p1_owner').first()).n,1);
+    assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM p1_ticket WHERE consumed_at IS NOT NULL').first()).n,1);
+  }finally{await mf.dispose();}
+});
+
+test('P1 SESSION SECURITY: credential revocation between SELECT and UPDATE must deny', {timeout:120000},async()=>{
+  const {mf,db}=await isolated();
+  const secret='11'.repeat(32),rawToken='ab'.repeat(32),nowSeconds=20000;
+  const credentialId='synthetic-revocation-race';
+  try{
+    const digest=await digestLocalSession(secret,rawToken);
+    await db.prepare('INSERT INTO p1_owner (owner_id,claim_marker,created_at) VALUES (1,?,?)').bind('race-owner',19000).run();
+    await db.prepare('INSERT INTO p1_credentials (credential_id,owner_id,public_key,sign_count) VALUES (?,1,?,0)').bind(credentialId,new Uint8Array([1,2,3])).run();
+    await db.prepare('INSERT INTO p1_session (digest,owner_id,credential_id,challenge_digest,issued_at,last_seen_at,expires_at,revoked_at) VALUES (?,1,?,?,?,?,?,NULL)')
+      .bind(digest,credentialId,'cd'.repeat(32),19000,19990,30000).run();
+    let revoked=0;
+    const racedDb={prepare(sql){
+      if(!sql.startsWith('SELECT s.owner_id'))return db.prepare(sql);
+      return {bind(...params){return {async first(){
+        const row=await db.prepare(sql).bind(...params).first();
+        assert.equal(row?.owner_id,1,'session initially valid; inject revocation after SELECT');
+        const changed=await db.prepare('UPDATE p1_credentials SET revoked_at=? WHERE credential_id=? AND revoked_at IS NULL')
+          .bind(nowSeconds-1,credentialId).run();
+        assert.equal(changed.meta.changes,1);
+        revoked++;
+        return row;
+      }};}};
+    }};
+    const request=new Request(SYNTHETIC_ORIGIN+'/local/owner-readonly',{
+      headers:{'sec-fetch-site':'same-origin',cookie:'__Host-cb_p1_owner='+rawToken},
+    });
+    const result=await authorizeLocalRead({request,db:racedDb,secret,nowSeconds});
+    assert.equal(revoked,1);
+    assert.equal(result.allowed,false,'a revoked credential cannot renew and authorize an Owner read');
+    assert.equal(result.status,401);
+    assert.equal((await db.prepare('SELECT last_seen_at FROM p1_session WHERE digest=?').bind(digest).first()).last_seen_at,19990,
+      'revocation must also prevent renewal of session activity');
   }finally{await mf.dispose();}
 });

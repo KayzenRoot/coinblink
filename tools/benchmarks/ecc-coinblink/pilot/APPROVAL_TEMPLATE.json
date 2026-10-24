@@ -1,0 +1,16 @@
+{
+  "schema": "ecc-coinblink-pilot-human-approval-v2",
+  "skill": "ecc-change-impact",
+  "source_head": "REPLACE_WITH_VERIFIED_FULL_LOCAL_CHECKOUT_SHA",
+  "execution_mode": "blocked",
+  "confirmed_at_utc": "REPLACE_WITH_REAL_UTC_ISO_TIMESTAMP",
+  "ui_evidence_reference": "",
+  "chatgpt_codex_authenticated": false,
+  "included_quota_available_verified_in_ui": false,
+  "paid_credit_fallback_disabled_verified_in_ui": false,
+  "no_billable_api_key": false,
+  "isolated_ephemeral_os_verified": false,
+  "no_external_mcp_or_hooks": false,
+  "owner_authorized_this_pilot": false,
+  "protocol_origin_head": "09d80eb8c83a064c310832dcf05d17cef1528005"
+}

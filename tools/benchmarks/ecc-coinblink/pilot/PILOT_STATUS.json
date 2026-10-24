@@ -1,0 +1,72 @@
+{
+  "schema": "ecc-coinblink-codex-skill-pilot-v2",
+  "branch": "experiment/ecc-coinblink-benchmark-v1",
+  "public_synthetic_only": true,
+  "codex_session_connected": false,
+  "allow_paid_credits": false,
+  "allow_installations": false,
+  "allow_benchmark_ab": false,
+  "private_judges_accessible": false,
+  "runs_completed": 0,
+  "status": "BLOCKED_ACCESS_OR_COST_UNVERIFIED",
+  "gate_reason": "No executable authenticated Codex session with verified allowance and zero additional billing in current chat. Do not start an agent.",
+  "skills": [
+    {
+      "skill": "ecc-change-impact",
+      "task": "PILOT-IMPACT",
+      "status": "NOT_RUN",
+      "discovery": "UNVERIFIED",
+      "invocation": "UNVERIFIED",
+      "application": "UNVERIFIED",
+      "run_id": null,
+      "evidence_uri": null,
+      "tokens_input": null,
+      "tokens_output": null,
+      "cost_usd": null
+    },
+    {
+      "skill": "ecc-ai-regression",
+      "task": "PILOT-REGRESSION",
+      "status": "NOT_RUN",
+      "discovery": "UNVERIFIED",
+      "invocation": "UNVERIFIED",
+      "application": "UNVERIFIED",
+      "run_id": null,
+      "evidence_uri": null,
+      "tokens_input": null,
+      "tokens_output": null,
+      "cost_usd": null
+    },
+    {
+      "skill": "ecc-module-regression",
+      "task": "PILOT-MODULE",
+      "status": "NOT_RUN",
+      "discovery": "UNVERIFIED",
+      "invocation": "UNVERIFIED",
+      "application": "UNVERIFIED",
+      "run_id": null,
+      "evidence_uri": null,
+      "tokens_input": null,
+      "tokens_output": null,
+      "cost_usd": null
+    },
+    {
+      "skill": "ecc-pr-test-analyzer",
+      "task": "PILOT-PR",
+      "status": "NOT_RUN",
+      "discovery": "UNVERIFIED",
+      "invocation": "UNVERIFIED",
+      "application": "UNVERIFIED",
+      "run_id": null,
+      "evidence_uri": null,
+      "tokens_input": null,
+      "tokens_output": null,
+      "cost_usd": null
+    }
+  ],
+  "protocol_origin_head": "09d80eb8c83a064c310832dcf05d17cef1528005",
+  "checkout_head": null,
+  "checkout_head_source": "git rev-parse HEAD at invocation, clean checkout and correct source root",
+  "authorized_execution_head": null,
+  "execution_authorization_source": "private single-use receipt source_head bound to actual checkout HEAD; never stored in public status"
+}

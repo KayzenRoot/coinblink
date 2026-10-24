@@ -1,0 +1,45 @@
+name: CoinBlink ECC offline validation (synthetic)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '.agents/skills/ecc-*/**'
+      - 'tools/benchmarks/ecc-coinblink/**'
+      - '.github/workflows/ecc-offline-validation.yml'
+
+# Public-repository runners, no installs, secrets, agents, judges, deploys or external services.
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: ECC offline / Python contracts (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Validate four skills, 18 NOT_RUN entries and synthetic Python telemetry
+        run: python3 -m unittest discover -s tools/benchmarks/ecc-coinblink/validation -p 'test_*.py' -v
+      - name: Measure stdlib Python executable-line coverage in synthetic subprocesses
+        run: python3 tools/benchmarks/ecc-coinblink/validation/measure_python_coverage.py
+
+  windows:
+    name: ECC offline / PowerShell isolation (Windows)
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Validate Python collector on Windows with synthetic fixtures
+        shell: pwsh
+        run: python -m unittest discover -s tools/benchmarks/ecc-coinblink/validation -p 'test_*.py' -v
+      - name: Validate synthetic A/B workspace isolation and quarantine
+        shell: pwsh
+        run: ./tools/benchmarks/ecc-coinblink/validation/Invoke-OfflineSelfTest.ps1

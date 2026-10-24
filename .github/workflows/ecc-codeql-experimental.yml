@@ -1,0 +1,100 @@
+name: CoinBlink ECC CodeQL experimental (public repo)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '.agents/skills/ecc-*/**'
+      - 'tools/benchmarks/ecc-coinblink/**'
+      - '.github/workflows/ecc-codeql-experimental.yml'
+
+# This is scoped to PR #209 and uses free standard runners for a public repo.
+# Does not install project dependencies, run Codex, benchmark or deploy.
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    if: github.event.pull_request.number == 209
+    name: ECC CodeQL / ${{ matrix.language }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - name: Read-only checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Initialize pinned official CodeQL v4.39.0
+        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+          build-mode: none
+      - name: Analyze ECC locally without uploading security events
+        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee
+        with:
+          category: /language:${{ matrix.language }}
+          upload: never
+          upload-database: 'false'
+          output: ${{ runner.temp }}/ecc-codeql-${{ matrix.language }}
+      - name: Report local SARIF findings without any upload
+        shell: bash
+        env:
+          ECC_CODEQL_SARIF: ${{ runner.temp }}/ecc-codeql-${{ matrix.language }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          files = sorted(Path(os.environ["ECC_CODEQL_SARIF"]).rglob("*.sarif"))
+          if not files:
+              raise SystemExit("BLOCKED: CodeQL returned no local SARIF evidence")
+          summary = []
+          ecc_findings = []
+          for file in files:
+              data = json.loads(file.read_text(encoding="utf-8"))
+              for run in data.get("runs", []):
+                  results = run.get("results", [])
+                  findings = [
+                          {
+                              "rule": result.get("ruleId"),
+                              "level": result.get("level"),
+                              "path": (
+                                  result.get("locations", [{}])[0]
+                                  .get("physicalLocation", {})
+                                  .get("artifactLocation", {})
+                                  .get("uri")
+                              ),
+                              "line": (
+                                  result.get("locations", [{}])[0]
+                                  .get("physicalLocation", {})
+                                  .get("region", {})
+                                  .get("startLine")
+                              ),
+                              "message": result.get("message", {}).get("text", "")[:180],
+                          }
+                          for result in results[:30]
+                      ]
+                  summary.append({
+                      "tool": run.get("tool", {}).get("driver", {}).get("name"),
+                      "results": len(results),
+                      "findings": findings,
+                  })
+                  ecc_findings.extend(
+                      item for item in findings
+                      if (item["path"] or "").startswith((
+                          "tools/benchmarks/ecc-coinblink/",
+                          ".agents/skills/ecc-",
+                          ".github/workflows/ecc-",
+                      ))
+                  )
+          print("ECC_CODEQL_READ_ONLY_SARIF=" + json.dumps(summary, sort_keys=True))
+          print("ECC_CODEQL_ECC_FINDINGS=" + json.dumps(ecc_findings, sort_keys=True))
+          if ecc_findings:
+              raise SystemExit("BLOCKED: CodeQL issues inside the ECC experiment")
+          PY

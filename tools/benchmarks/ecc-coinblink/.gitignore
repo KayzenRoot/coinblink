@@ -1,0 +1,9 @@
+local-artifacts/
+*.jsonl
+!AB_18_executions.json
+*.tar
+*.zip
+**/node_modules/
+**/.wrangler/
+**/playwright-report/
+**/test-results/

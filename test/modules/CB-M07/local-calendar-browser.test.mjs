@@ -158,3 +158,188 @@ test('cross-session Owner review must clear stale M07 calendar on focus', {timeo
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
   } finally { await app.close(); }
 });
+
+
+/**
+ * CB-P0-SOCIAL-CALENDAR-INFLIGHT-INTENT-001: hold the real authenticated
+ * local D1 read while exercising browser interaction. No fixture shortcuts,
+ * remote endpoints, real identities or fabricated server responses.
+ */
+async function holdNextCalendarD1Read(page, options = {}) {
+  // Intercept only the first authenticated UI fetch inside the synthetic
+  // Chromium page. The original fetch reaches disposable D1 unchanged.
+  // Gate the response seen by the UI, never synthesize any server payload.
+  await page.evaluate(({afterRelease}) => {
+    const nativeFetch = globalThis.fetch.bind(globalThis);
+    const gate = {held:false,delivered:false,status:null,release:null};
+    globalThis.__cbIntentTestGate = gate;
+    let armed = true;
+    globalThis.fetch = async (resource, init) => {
+      if (armed && resource === '/admin/articles' &&
+          (!init?.method || init.method === 'GET')) {
+        armed = false;
+        if (afterRelease) {
+          gate.held = true;
+          await new Promise(resolve => { gate.release = resolve; });
+        }
+        const actual = await nativeFetch(resource,init);
+        gate.status = actual.status;
+        if (!afterRelease) {
+          gate.held = true;
+          await new Promise(resolve => { gate.release = resolve; });
+        }
+        gate.delivered = true;
+        return actual;
+      }
+      return nativeFetch(resource,init);
+    };
+  },options);
+  return {
+    started: () => page.waitForFunction(() => globalThis.__cbIntentTestGate?.held,
+      null, {timeout:15_000}),
+    completed: () => page.waitForFunction(() => globalThis.__cbIntentTestGate?.delivered,
+      null, {timeout:15_000}).then(() => page.evaluate(() => globalThis.__cbIntentTestGate.status)),
+    release: () => page.evaluate(() => globalThis.__cbIntentTestGate?.release?.()),
+  };
+}
+
+async function makeInflightCalendarFixture() {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  const page = app.page;
+  await page.locator('#login').click();
+  await page.getByText('Local test session active').waitFor({timeout:20_000});
+  for (const [name, value] of Object.entries({
+    title:'Synthetic in-flight intent draft',
+    summary:'Fictional draft used only in disposable D1.',
+    body:'PRIVATE_SYNTHETIC_NEVER_EXPORT',
+    sourceUrl:'https://example.org/inflight-case',
+    authorLabel:'Virtual Owner',
+  })) {
+    await page.locator('[name="' + name + '"]').fill(value);
+  }
+  await page.locator('#save').click();
+  await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+  await page.locator('#m07-draft').selectOption({index:1});
+  await page.locator('#m07-channel').selectOption('x');
+  await page.locator('#m07-calendar-zone').selectOption('UTC');
+  await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
+  return {app,page};
+}
+
+async function flushCalendarResponse(page, held) {
+  await held.release();
+  const status = await held.completed();
+  // Resume browser promise continuations after authentic D1 delivery.
+  await page.waitForTimeout(150);
+  return status;
+}
+
+async function withInflightFixture(run) {
+  const {app,page} = await makeInflightCalendarFixture();
+  let held;
+  try {
+    await run({
+      app,page,
+      hold: async options => {
+        held = await holdNextCalendarD1Read(page, options);
+        return held;
+      },
+    });
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed),[]);
+  } finally {
+    if (held) await held.release();
+    await app.close();
+  }
+}
+
+async function openInflightEditor(page) {
+  await page.locator('#m07-calendar-add').click();
+  await page.locator('#m07-calendar-list li').first().waitFor();
+  const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
+  await row.locator('.m07-calendar-edit').click();
+  return row.locator('.m07-calendar-editor');
+}
+
+test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calendar', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const pending = await hold();
+    await page.locator('#m07-calendar-add').click();
+    await pending.started();
+    await page.locator('#m07-calendar-clear').click();
+    assert.equal(await page.locator('#m07-calendar-list li').count(),0);
+    await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
+    await flushCalendarResponse(page,pending);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),0,
+      'Clear is final: a pending ADD cannot reappear after fields are restored');
+    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
+  });
+});
+
+test('INFLIGHT RED: EDIT changed inputs during authorized GET restores Save', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const editor = await openInflightEditor(page);
+    await editor.locator('.m07-edit-channel').selectOption('instagram');
+    const pending = await hold();
+    const save = editor.locator('.m07-calendar-save');
+    await save.click();
+    await pending.started();
+    assert.equal(await save.isDisabled(),true);
+    await editor.locator('.m07-edit-time').fill('2026-11-20T14:00');
+    await flushCalendarResponse(page,pending);
+    assert.equal(await save.isEnabled(),true,
+      'A stale edit must restore the current Save button');
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+  });
+});
+
+test('INFLIGHT RED: Cancel before late EDIT response prevents any edit commit', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const editor = await openInflightEditor(page);
+    const pending = await hold();
+    await editor.locator('.m07-calendar-save').click();
+    await pending.started();
+    await editor.locator('.m07-calendar-cancel').click();
+    assert.equal(await editor.isVisible(),false);
+    await flushCalendarResponse(page,pending);
+    assert.doesNotMatch(await page.locator('#m07-calendar-status').innerText(),
+      /Edited LOCAL hypothetical concept/, 'Cancelled edits cannot commit after a late response');
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+  });
+});
+
+test('INFLIGHT: out-of-order ADD responses reject obsolete channel selection', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const pending = await hold();
+    await page.locator('#m07-calendar-add').click();
+    await pending.started();
+    await page.locator('#m07-channel').selectOption('instagram');
+    await page.locator('#m07-calendar-add').click();
+    await page.locator('#m07-calendar-list li').first().waitFor({timeout:20_000});
+    await flushCalendarResponse(page,pending);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+    assert.match(await page.locator('#m07-calendar-list').innerText(),/INSTAGRAM/);
+    assert.doesNotMatch(await page.locator('#m07-calendar-list').innerText(),/ · X · /);
+  });
+});
+
+test('INFLIGHT: pending ADD after logout or 401 leaves no private calendar', {timeout:120_000}, async () => {
+  for (const mode of ['logout','401']) {
+    await withInflightFixture(async ({app,page,hold}) => {
+      const pending = await hold({afterRelease:mode === '401'});
+      await page.locator('#m07-calendar-add').click();
+      await pending.started();
+      if (mode === 'logout') {
+        await page.locator('#logout').click();
+      } else {
+        const result = await app.db.prepare(
+          'UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL'
+        ).bind(Math.floor(Date.now()/1000)).run();
+        assert.equal(result.meta?.changes,1);
+      }
+      await flushCalendarResponse(page,pending);
+      await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+      assert.equal(await page.locator('#m07-calendar-list li').count(),0);
+      assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
+    });
+  }
+});

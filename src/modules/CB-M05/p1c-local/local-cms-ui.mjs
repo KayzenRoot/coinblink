@@ -741,7 +741,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     for (const draft of lastDrafts) {
       const option = document.createElement('option');
       option.value = draft.id;
-      option.textContent = draft.title + ' · rev ' + draft.revision;
+      const processLabel = draft.current_review_decision === 'CHANGES_REQUESTED'
+        ? ' · OWNER CHANGES REQUESTED (SOCIAL PREVIEW BLOCKED)'
+        : draft.current_review_decision === 'PREVIEW_REVIEWED'
+          ? ' · REVIEWED FOR PRIVATE PREVIEW ONLY' : ' · CURRENT REVISION UNREVIEWED';
+      option.textContent = draft.title + ' · rev ' + draft.revision + processLabel;
       ui.socialDraft.append(option);
     }
     ui.socialDraft.value = '';
@@ -1246,7 +1250,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   // A same-revision source, author, status or content change is NOT authorization.
   function sameLocalSocialDraftMetadata(a, b) {
     const fields = ['id', 'revision', 'title', 'summary', 'source_url',
-      'author_label', 'status', 'updated_at'];
+      'author_label', 'status', 'updated_at', 'current_review_decision'];
     return !!a && !!b && fields.every(key => a[key] === b[key]);
   }
   async function verifyLocalSocialSession(epoch, selectedDraft) {
@@ -1358,7 +1362,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
     } catch {
       clearLocalSocialPreview();
-      ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
+      ui.socialStatus.textContent = draft.current_review_decision === 'CHANGES_REQUESTED'
+        ? 'OWNER CHANGES REQUESTED for current saved revision · social preview blocked · NOT POSTED'
+        : 'Invalid or unverified LOCAL draft; no preview created';
     }
   });
   ui.variantSave.addEventListener('click', async () => {

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createLocalSocialPreview, SOCIAL_LOCAL_CHANNELS } from '../../../src/modules/CB-M07/social-preview.mjs';
 import { createLocalSocialCard } from '../../../src/modules/CB-M07/social-card.mjs';
+import { createLocalEditorialVariant } from '../../../src/modules/CB-M07/local-editorial-variants.mjs';
+import { createLocalCalendarIdea } from '../../../src/modules/CB-M07/local-calendar.mjs';
 import { renderLocalCmsUi, LOCAL_CMS_UI_SCRIPT } from '../../../src/modules/CB-M05/p1c-local/local-cms-ui.mjs';
 
 const draft = Object.freeze({
@@ -124,4 +126,28 @@ test('M07-B accessible mockup markup remains private and DOM-only', () => {
   assert.match(LOCAL_CMS_UI_SCRIPT, /ui\.socialCardCopy\.textContent = ''/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,
     /\/local\/social|\/admin\/social|\.innerHTML|localStorage|sessionStorage|window\.open/u);
+});
+
+
+test('M05 current CHANGES_REQUESTED review blocks all M07 mock social creation, not old revisions', () => {
+  const blocked = { ...draft, current_review_decision:'CHANGES_REQUESTED' };
+  for (const channel of SOCIAL_LOCAL_CHANNELS) {
+    assert.throws(() => createLocalSocialPreview(blocked,channel), /Owner review requires draft changes/u);
+    assert.throws(() => createLocalEditorialVariant(blocked,channel,'Fictional private social copy'), TypeError);
+    assert.throws(() => createLocalCalendarIdea(blocked,channel,'2026-11-20T12:30','UTC'), TypeError);
+  }
+  for (const decision of [null,'PREVIEW_REVIEWED',undefined]) {
+    const current = {...draft,current_review_decision:decision};
+    assert.equal(createLocalSocialPreview(current,'x').publishingStatus,'DRAFT_ONLY');
+    assert.equal(createLocalSocialPreview(current,'x').rights,'NOT_CLEARED');
+  }
+  for (const invalid of ['PUBLISH_APPROVED','LICENSE_CLEARED',true,2,{},[]]) {
+    assert.throws(() => createLocalSocialPreview({...draft,current_review_decision:invalid},'x'),TypeError);
+  }
+  // Review is revision-bound on the private D1 listing. After a new save,
+  // an old CHANGES_REQUESTED note may remain in history, not in the current row.
+  const revised = {...draft,revision:3,current_review_decision:null};
+  assert.equal(createLocalSocialPreview(revised,'instagram').status,'DEMO_ONLY');
+  const privateStr = JSON.stringify(createLocalSocialPreview(revised,'instagram'));
+  assert.doesNotMatch(privateStr,/SENSITIVE_PRIVATE_BODY|SENSITIVE_PRIVATE_SECRET|PUBLISH_APPROVED/u);
 });

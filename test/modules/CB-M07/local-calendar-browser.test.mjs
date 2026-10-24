@@ -158,3 +158,172 @@ test('cross-session Owner review must clear stale M07 calendar on focus', {timeo
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
   } finally { await app.close(); }
 });
+
+
+/**
+ * CB-P0-SOCIAL-CALENDAR-INFLIGHT-INTENT-001: hold the real authenticated
+ * local D1 read while exercising browser interaction. No fixture shortcuts,
+ * remote endpoints, real identities or fabricated server responses.
+ */
+async function holdNextCalendarD1Read(page) {
+  let signalRequest;
+  let releaseRead;
+  const started = new Promise(resolve => { signalRequest = resolve; });
+  const released = new Promise(resolve => { releaseRead = resolve; });
+  let first = true;
+  const handler = async route => {
+    if (first && route.request().method() === 'GET' &&
+        new URL(route.request().url()).pathname === '/admin/articles') {
+      first = false;
+      signalRequest();
+      await released;
+    }
+    await route.continue();
+  };
+  await page.route('**/admin/articles', handler);
+  return {
+    started,
+    release: () => releaseRead(),
+    dispose: () => page.unroute('**/admin/articles', handler),
+  };
+}
+
+async function makeInflightCalendarFixture() {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  const page = app.page;
+  await page.locator('#login').click();
+  await page.getByText('Local test session active').waitFor({timeout:20_000});
+  for (const [name, value] of Object.entries({
+    title:'Synthetic in-flight intent draft',
+    summary:'Fictional draft used only in disposable D1.',
+    body:'PRIVATE_SYNTHETIC_NEVER_EXPORT',
+    sourceUrl:'https://example.org/inflight-case',
+    authorLabel:'Virtual Owner',
+  })) {
+    await page.locator('[name="' + name + '"]').fill(value);
+  }
+  await page.locator('#save').click();
+  await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+  await page.locator('#m07-draft').selectOption({index:1});
+  await page.locator('#m07-channel').selectOption('x');
+  await page.locator('#m07-calendar-zone').selectOption('UTC');
+  await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
+  return {app,page};
+}
+
+async function flushCalendarResponse(page, held) {
+  const response = page.waitForResponse(r => r.request().method() === 'GET' &&
+    new URL(r.url()).pathname === '/admin/articles');
+  held.release();
+  await response;
+  // Only browser event-loop completion; requests have already hit actual LOCAL D1.
+  await page.waitForTimeout(250);
+}
+
+test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calendar', {timeout:120_000}, async () => {
+  const {app,page} = await makeInflightCalendarFixture();
+  let held;
+  try {
+    held = await holdNextCalendarD1Read(page);
+    await page.locator('#m07-calendar-add').click();
+    await held.started;
+    await page.locator('#m07-calendar-clear').click();
+    assert.equal(await page.locator('#m07-calendar-list li').count(),0);
+    await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
+    await flushCalendarResponse(page,held);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),0,
+      'Clear is final: a previously pending ADD may not reappear after fields are restored');
+    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally { held?.release(); await app.close(); }
+});
+
+test('INFLIGHT RED: EDIT changed inputs during authorized GET restores Save', {timeout:120_000}, async () => {
+  const {app,page} = await makeInflightCalendarFixture();
+  let held;
+  try {
+    await page.locator('#m07-calendar-add').click();
+    await page.locator('#m07-calendar-list li').first().waitFor();
+    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
+    await row.locator('.m07-calendar-edit').click();
+    const editor = row.locator('.m07-calendar-editor');
+    await editor.locator('.m07-edit-channel').selectOption('instagram');
+    held = await holdNextCalendarD1Read(page);
+    const save = editor.locator('.m07-calendar-save');
+    await save.click();
+    await held.started;
+    assert.equal(await save.isDisabled(),true);
+    await editor.locator('.m07-edit-time').fill('2026-11-20T14:00');
+    await flushCalendarResponse(page,held);
+    assert.equal(await save.isEnabled(),true,
+      'A stale save must never leave the current editor permanently disabled');
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally { held?.release(); await app.close(); }
+});
+
+test('INFLIGHT RED: Cancel before a late EDIT response prevents any edit commit', {timeout:120_000}, async () => {
+  const {app,page} = await makeInflightCalendarFixture();
+  let held;
+  try {
+    await page.locator('#m07-calendar-add').click();
+    await page.locator('#m07-calendar-list li').first().waitFor();
+    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
+    await row.locator('.m07-calendar-edit').click();
+    const editor = row.locator('.m07-calendar-editor');
+    held = await holdNextCalendarD1Read(page);
+    await editor.locator('.m07-calendar-save').click();
+    await held.started;
+    await editor.locator('.m07-calendar-cancel').click();
+    assert.equal(await editor.isVisible(),false);
+    await flushCalendarResponse(page,held);
+    assert.doesNotMatch(await page.locator('#m07-calendar-status').innerText(),
+      /Edited LOCAL hypothetical concept/,
+      'A cancelled edit must not commit even when fields return to original values');
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally { held?.release(); await app.close(); }
+});
+
+test('INFLIGHT: out-of-order ADD responses cannot commit obsolete channel selections', {timeout:120_000}, async () => {
+  const {app,page} = await makeInflightCalendarFixture();
+  let held;
+  try {
+    held = await holdNextCalendarD1Read(page);
+    await page.locator('#m07-calendar-add').click();
+    await held.started;
+    await page.locator('#m07-channel').selectOption('instagram');
+    await page.locator('#m07-calendar-add').click();
+    await page.locator('#m07-calendar-list li').first().waitFor({timeout:20_000});
+    await flushCalendarResponse(page,held);
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+    assert.match(await page.locator('#m07-calendar-list').innerText(),/INSTAGRAM/);
+    assert.doesNotMatch(await page.locator('#m07-calendar-list').innerText(),/ · X · /);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally { held?.release(); await app.close(); }
+});
+
+test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calendar', {timeout:120_000}, async () => {
+  for (const mode of ['logout','401']) {
+    const {app,page} = await makeInflightCalendarFixture();
+    let held;
+    try {
+      held = await holdNextCalendarD1Read(page);
+      await page.locator('#m07-calendar-add').click();
+      await held.started;
+      if (mode === 'logout') {
+        await page.locator('#logout').click();
+      } else {
+        const result = await app.db.prepare(
+          'UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL'
+        ).bind(Math.floor(Date.now()/1000)).run();
+        assert.equal(result.meta?.changes,1);
+      }
+      await flushCalendarResponse(page,held);
+      await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+      assert.equal(await page.locator('#m07-calendar-list li').count(),0);
+      assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
+      assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+    } finally { held?.release(); await app.close(); }
+  }
+});

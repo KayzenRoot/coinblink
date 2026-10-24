@@ -166,46 +166,40 @@ test('cross-session Owner review must clear stale M07 calendar on focus', {timeo
  * remote endpoints, real identities or fabricated server responses.
  */
 async function holdNextCalendarD1Read(page, options = {}) {
-  let signalRequest;
-  let releaseRead;
-  let completeRead;
-  let failRead;
-  const started = new Promise(resolve => { signalRequest = resolve; });
-  const released = new Promise(resolve => { releaseRead = resolve; });
-  const completed = new Promise((resolve,reject) => {
-    completeRead = resolve; failRead = reject;
-  });
-  let first = true;
-  const handler = async route => {
-    if (first && route.request().method() === 'GET' &&
-        new URL(route.request().url()).pathname === '/admin/articles') {
-      first = false;
-      try {
-        // Read the genuine disposable LOCAL D1 response, not mocked data.
-        // Hold only the delivery to the client, unless testing a revoked 401.
-        const actual = options.afterRelease
-          ? (signalRequest(), await released, await route.fetch())
-          : await route.fetch();
-        if (!options.afterRelease) {
-          signalRequest();
-          await released;
+  // Intercept only the first authenticated UI fetch inside the synthetic
+  // Chromium page. The original fetch reaches disposable D1 unchanged.
+  // Gate the response seen by the UI, never synthesize any server payload.
+  await page.evaluate(({afterRelease}) => {
+    const nativeFetch = globalThis.fetch.bind(globalThis);
+    const gate = {held:false,delivered:false,status:null,release:null};
+    globalThis.__cbIntentTestGate = gate;
+    let armed = true;
+    globalThis.fetch = async (resource, init) => {
+      if (armed && resource === '/admin/articles' &&
+          (!init?.method || init.method === 'GET')) {
+        armed = false;
+        if (afterRelease) {
+          gate.held = true;
+          await new Promise(resolve => { gate.release = resolve; });
         }
-        await route.fulfill({response:actual});
-        completeRead(actual.status());
-      } catch (error) {
-        failRead(error);
-        throw error;
+        const actual = await nativeFetch(resource,init);
+        gate.status = actual.status;
+        if (!afterRelease) {
+          gate.held = true;
+          await new Promise(resolve => { gate.release = resolve; });
+        }
+        gate.delivered = true;
+        return actual;
       }
-      return;
-    }
-    await route.continue();
-  };
-  await page.route('**/admin/articles', handler);
+      return nativeFetch(resource,init);
+    };
+  },options);
   return {
-    started,
-    completed,
-    release: () => releaseRead(),
-    dispose: () => page.unroute('**/admin/articles', handler),
+    started: () => page.waitForFunction(() => globalThis.__cbIntentTestGate?.held,
+      null, {timeout:15_000}),
+    completed: () => page.waitForFunction(() => globalThis.__cbIntentTestGate?.delivered,
+      null, {timeout:15_000}).then(() => page.evaluate(() => globalThis.__cbIntentTestGate.status)),
+    release: () => page.evaluate(() => globalThis.__cbIntentTestGate?.release?.()),
   };
 }
 
@@ -233,10 +227,10 @@ async function makeInflightCalendarFixture() {
 }
 
 async function flushCalendarResponse(page, held) {
-  held.release();
-  const status = await held.completed;
-  // Delivery was fulfilled with the authentic LOCAL D1 response.
-  await page.waitForTimeout(250);
+  await held.release();
+  const status = await held.completed();
+  // Resume browser promise continuations after authentic D1 delivery.
+  await page.waitForTimeout(150);
   return status;
 }
 
@@ -246,7 +240,7 @@ test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calen
   try {
     held = await holdNextCalendarD1Read(page);
     await page.locator('#m07-calendar-add').click();
-    await held.started;
+    await held.started();
     await page.locator('#m07-calendar-clear').click();
     assert.equal(await page.locator('#m07-calendar-list li').count(),0);
     await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
@@ -255,7 +249,7 @@ test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calen
       'Clear is final: a previously pending ADD may not reappear after fields are restored');
     assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { held?.release(); await app.close(); }
+  } finally { if (held) await held.release(); await app.close(); }
 });
 
 test('INFLIGHT RED: EDIT changed inputs during authorized GET restores Save', {timeout:120_000}, async () => {
@@ -271,7 +265,7 @@ test('INFLIGHT RED: EDIT changed inputs during authorized GET restores Save', {t
     held = await holdNextCalendarD1Read(page);
     const save = editor.locator('.m07-calendar-save');
     await save.click();
-    await held.started;
+    await held.started();
     assert.equal(await save.isDisabled(),true);
     await editor.locator('.m07-edit-time').fill('2026-11-20T14:00');
     await flushCalendarResponse(page,held);
@@ -279,7 +273,7 @@ test('INFLIGHT RED: EDIT changed inputs during authorized GET restores Save', {t
       'A stale save must never leave the current editor permanently disabled');
     assert.equal(await page.locator('#m07-calendar-list li').count(),1);
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { held?.release(); await app.close(); }
+  } finally { if (held) await held.release(); await app.close(); }
 });
 
 test('INFLIGHT RED: Cancel before a late EDIT response prevents any edit commit', {timeout:120_000}, async () => {
@@ -293,7 +287,7 @@ test('INFLIGHT RED: Cancel before a late EDIT response prevents any edit commit'
     const editor = row.locator('.m07-calendar-editor');
     held = await holdNextCalendarD1Read(page);
     await editor.locator('.m07-calendar-save').click();
-    await held.started;
+    await held.started();
     await editor.locator('.m07-calendar-cancel').click();
     assert.equal(await editor.isVisible(),false);
     await flushCalendarResponse(page,held);
@@ -302,7 +296,7 @@ test('INFLIGHT RED: Cancel before a late EDIT response prevents any edit commit'
       'A cancelled edit must not commit even when fields return to original values');
     assert.equal(await page.locator('#m07-calendar-list li').count(),1);
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { held?.release(); await app.close(); }
+  } finally { if (held) await held.release(); await app.close(); }
 });
 
 test('INFLIGHT: out-of-order ADD responses cannot commit obsolete channel selections', {timeout:120_000}, async () => {
@@ -311,7 +305,7 @@ test('INFLIGHT: out-of-order ADD responses cannot commit obsolete channel select
   try {
     held = await holdNextCalendarD1Read(page);
     await page.locator('#m07-calendar-add').click();
-    await held.started;
+    await held.started();
     await page.locator('#m07-channel').selectOption('instagram');
     await page.locator('#m07-calendar-add').click();
     await page.locator('#m07-calendar-list li').first().waitFor({timeout:20_000});
@@ -320,7 +314,7 @@ test('INFLIGHT: out-of-order ADD responses cannot commit obsolete channel select
     assert.match(await page.locator('#m07-calendar-list').innerText(),/INSTAGRAM/);
     assert.doesNotMatch(await page.locator('#m07-calendar-list').innerText(),/ · X · /);
     assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { held?.release(); await app.close(); }
+  } finally { if (held) await held.release(); await app.close(); }
 });
 
 test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calendar', {timeout:120_000}, async () => {
@@ -330,7 +324,7 @@ test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calenda
     try {
       held = await holdNextCalendarD1Read(page,{afterRelease:mode === '401'});
       await page.locator('#m07-calendar-add').click();
-      await held.started;
+      await held.started();
       if (mode === 'logout') {
         await page.locator('#logout').click();
       } else {
@@ -344,6 +338,6 @@ test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calenda
       assert.equal(await page.locator('#m07-calendar-list li').count(),0);
       assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
       assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-    } finally { held?.release(); await app.close(); }
+    } finally { if (held) await held.release(); await app.close(); }
   }
 });

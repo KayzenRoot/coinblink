@@ -173,6 +173,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let lastEditorialInsights = null;
   let lastEditorialTriage = null;
   let localCalendarIdeas = [];
+  // Bounded LOCAL intent epoch; later Clear/input/commit invalidates delayed ADD.
+  let calendarIntentGeneration = 0;
   let localEditorialVariants = [];
   let localApprovalEvents = [];
   let lastDrafts = [];
@@ -274,6 +276,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialCard.removeAttribute('data-viewport');
   }
   function clearLocalCalendar() {
+    calendarIntentGeneration += 1;
     localCalendarIdeas = [];
     ui.calendarList.replaceChildren();
     ui.calendarStatus.textContent = '0 hypothetical concepts · memory only · NOT SCHEDULED';
@@ -361,6 +364,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ' conflict slots · ' + board.timeZone + ' · NOT SCHEDULED · NOT POSTED';
   }
   function renderLocalCalendar() {
+    // Any newer list render supersedes an outstanding pre-render ADD intention.
+    calendarIntentGeneration += 1;
     ui.calendarList.replaceChildren();
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     for (const item of localCalendarIdeas) {
@@ -454,7 +459,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       pickLabel.append(selection);
       const confirmSuggestion = action('m07-suggestion-confirm', 'Confirm hypothetical time change');
       panel.append(suggestStatus, pickLabel, confirmSuggestion);
+      let editIntentGeneration = 0;
+      const invalidateEditIntent = () => {
+        editIntentGeneration += 1;
+        // A changed/cancelled attempt must not strand the current Save button.
+        save.disabled = false;
+      };
+      channel.addEventListener('change', invalidateEditIntent);
+      time.addEventListener('input', invalidateEditIntent);
+      zone.addEventListener('change', invalidateEditIntent);
       const resetEditor = () => {
+        invalidateEditIntent();
         panel.hidden = true;
         selection.replaceChildren();
         selection.value = '';
@@ -480,12 +495,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         const draft = lastDrafts.find(row => row.id === item.draftId);
         if (!draft) return;
         const selected = [channel.value, time.value, zone.value];
+        const intent = ++editIntentGeneration;
         save.disabled = true;
-        const authorized = await verifyLocalSocialSession(epoch, draft);
-        if (!authorized || !current() || !activeLocalSocialSession(epoch) ||
-            selected.some((value, index) =>
-              value !== [channel.value, time.value, zone.value][index])) return;
         try {
+          const authorized = await verifyLocalSocialSession(epoch, draft);
+          if (!authorized || !current() || !activeLocalSocialSession(epoch) ||
+              intent !== editIntentGeneration || editor.hidden ||
+              selected.some((value, index) =>
+                value !== [channel.value, time.value, zone.value][index])) return;
           const fresh = authorized.find(row => sameLocalSocialDraftMetadata(draft, row));
           if (!fresh) throw new TypeError('Stale LOCAL Owner decision');
           const replacement = createLocalCalendarIdea(fresh, ...selected);
@@ -494,9 +511,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
           renderLocalCalendar();
           ui.calendarStatus.textContent = 'Edited LOCAL hypothetical concept · memory only · NOT SCHEDULED · NOT POSTED';
         } catch {
-          editStatus.textContent = 'Invalid or stale LOCAL idea; NOTHING SCHEDULED';
+          if (current() && intent === editIntentGeneration) {
+            editStatus.textContent = 'Invalid or stale LOCAL idea; NOTHING SCHEDULED';
+          }
         } finally {
-          if (current()) save.disabled = false;
+          if (current() && intent === editIntentGeneration) save.disabled = false;
         }
       });
       article.append(description, labels, remove, edit);
@@ -1228,10 +1247,12 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
     const epoch = sessionEpoch;
     const generation = readGeneration;
+    const intent = ++calendarIntentGeneration;
     const selected = [ui.socialDraft.value, ui.socialChannel.value,
       ui.calendarDate.value, ui.calendarZone.value];
     const authorized = await verifyLocalSocialSession(epoch, draft);
     if (!authorized || !activeLocalSocialSession(epoch) ||
+        intent !== calendarIntentGeneration ||
         generation !== readGeneration || lastDrafts.find(row => row.id === draft.id) !== draft ||
         selected.some((value, index) => value !== [
           ui.socialDraft.value, ui.socialChannel.value,
@@ -1250,6 +1271,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     clearLocalCalendar();
   });
+  // Detect ABA field changes, even if values are restored before D1 responds.
+  for (const control of [ui.socialDraft, ui.socialChannel, ui.calendarDate, ui.calendarZone]) {
+    control.addEventListener('change', () => { calendarIntentGeneration += 1; });
+    control.addEventListener('input', () => { calendarIntentGeneration += 1; });
+  }
   ui.socialDraft.addEventListener('change', clearLocalSocialPreview);
   ui.socialChannel.addEventListener('change', clearLocalSocialPreview);
   ui.socialViewport.addEventListener('change', () => {

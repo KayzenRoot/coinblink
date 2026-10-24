@@ -35,8 +35,8 @@ test('M07-C LOCAL add/remove/clear, UTC ordering, responsive & axe, no external 
     assert.match(content,/NOT_CLEARED/);
     assert.doesNotMatch(content,/BODY_SHOULD_NEVER_BE_CALENDAR_TEXT/);
     await page.locator('#m07-calendar-add').click();
+    await page.locator('#m07-calendar-status').filter({hasText:/NOTHING SCHEDULED/}).waitFor();
     assert.equal(await page.locator('#m07-calendar-list li').count(),3);
-    assert.match(await page.locator('#m07-calendar-status').innerText(),/NOTHING SCHEDULED/);
     for(const width of [390,768,1366]){
       await page.setViewportSize({width,height:900});
       const box=await page.locator('#m07-calendar').boundingBox();
@@ -126,11 +126,14 @@ test('cross-session Owner review must clear stale M07 calendar on focus', {timeo
 
     // The second tab signs in with a virtual test passkey and records an
     // immutable review in the same disposable D1. Test cookies are shared.
+    const previousSessions = await app.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first();
     const reviewer = await app.context.newPage();
     await reviewer.goto(app.origin + '/admin/login', {waitUntil:'domcontentloaded'});
     await reviewer.locator('#credential').fill(app.primaryId);
     await reviewer.locator('#login').click();
     await reviewer.getByText('Local test session active').waitFor({timeout:20_000});
+    const newSessions = await app.db.prepare('SELECT COUNT(*) AS n FROM cms_sessions').first();
+    assert.ok(newSessions.n > previousSessions.n, 'A fresh synthetic Owner session must be recorded');
     await reviewer.locator('#items button').first().click();
     await reviewer.locator('#owner-review').waitFor({state:'visible'});
     await reviewer.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');

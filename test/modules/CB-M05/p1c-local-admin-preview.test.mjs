@@ -323,7 +323,7 @@ test('M06 Owner queue shows only current revision process decisions and scrubs a
     await page.locator('[name="sourceUrl"]').fill('https://example.org/private-queue');
     await page.locator('#save').click();
     await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20000});
-    await page.waitForFunction(() => document.querySelector('#m06-review-unreviewed')?.textContent === '1');
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-unreviewed')?.textContent === '1');
     await page.locator('#m06-review-filter').selectOption('current-unreviewed');
     assert.equal(await page.locator('#m06-review-list li').count(),1);
     await page.locator('#m06-review-filter').selectOption('private-preview-reviewed');
@@ -331,7 +331,7 @@ test('M06 Owner queue shows only current revision process decisions and scrubs a
     await page.locator('#owner-review-note').fill('Local review only; no verified sources, licences or publication.');
     page.once('dialog', dialog=>dialog.accept());
     await page.locator('#owner-review-submit').click();
-    await page.waitForFunction(() => document.querySelector('#m06-review-previewed')?.textContent === '1');
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-previewed')?.textContent === '1');
     assert.equal(await page.locator('#m06-review-unreviewed').textContent(),'0');
     assert.equal(await page.locator('#m06-review-list li').count(),1);
     assert.match(await page.locator('#m06-review-list').innerText(),/PRIVATE_PREVIEW_REVIEWED/u);
@@ -339,14 +339,14 @@ test('M06 Owner queue shows only current revision process decisions and scrubs a
     await page.locator('[name="title"]').fill('Synthetic Owner queue revised title');
     await page.locator('#save').click();
     await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({timeout:20000});
-    await page.waitForFunction(() => document.querySelector('#m06-review-unreviewed')?.textContent === '1');
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-unreviewed')?.textContent === '1');
     assert.equal(await page.locator('#m06-review-previewed').textContent(),'0');
     assert.equal(await page.locator('#m06-review-list li').count(),0);
     await page.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
     await page.locator('#owner-review-note').fill('New revision requires changes and remains strictly private.');
     page.once('dialog', dialog=>dialog.accept());
     await page.locator('#owner-review-submit').click();
-    await page.waitForFunction(() => document.querySelector('#m06-review-changes')?.textContent === '1');
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-changes')?.textContent === '1');
     await page.locator('#m06-review-filter').selectOption('private-changes-requested');
     assert.equal(await page.locator('#m06-review-list li').count(),1);
     const listing = await page.evaluate(() => fetch('/admin/articles').then(r=>r.json()));

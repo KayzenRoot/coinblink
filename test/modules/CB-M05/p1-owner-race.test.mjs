@@ -1,7 +1,11 @@
 // CB-M05-P1-OWNER-ACCESS-001: Workerd/D1 singleton proof, no remote bindings.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID, randomBytes } from 'node:crypto';
+import { randomUUID, randomBytes, createHash } from 'node:crypto';
+import { createLocalSession, revokeLocalSession } from '../../../src/modules/CB-M05/p1-owner/passkey-session.mjs';
+import { authorizeLocalRead } from '../../../src/modules/CB-M05/p1-owner/access-policy.mjs';
+import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, SYNTHETIC_ORIGIN, SYNTHETIC_RP_ID } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
+import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { Miniflare, convertV4MiniflareOptions, NoOpLog } from 'miniflare';
 import { readFileSync } from 'node:fs';
 import { claimOwnerOnce, mintLocalTicket } from '../../../src/modules/CB-M05/p1-owner/claim-guard.mjs';
@@ -43,5 +47,58 @@ test('P1 SINGLETON: forged ticket, wrong origin, expired ticket and D1 errors al
     assert.equal(await claimOwnerOnce({db,token,nowSeconds:20002,origin:'https://owner.example.test',expectedOrigin:'https://owner.example.test',marker:'late'}),false);
     assert.equal((await db.prepare('SELECT count(*) n FROM p1_owner').first()).n,0);
     assert.equal(await claimOwnerOnce({db:null,token,nowSeconds:20000,origin:'https://owner.example.test',expectedOrigin:'https://owner.example.test',marker:'none'}),false);
+  }finally{await mf.dispose();}
+});
+
+test('P1 SESSION: D1-registered public key, signed challenge, cookie, idle/absolute TTL, replay and logout', {timeout:120000},async()=>{
+  const {mf,db}=await isolated();
+  const secret='11'.repeat(32),nowSeconds=20000;
+  try{
+    const ticket=randomBytes(32).toString('hex');
+    await mintLocalTicket({db,token:ticket,nowSeconds,ttlSeconds:900});
+    assert.equal(await claimOwnerOnce({db,token:ticket,nowSeconds,origin:SYNTHETIC_ORIGIN,expectedOrigin:SYNTHETIC_ORIGIN,marker:'session-claim'}),true);
+    const auth=makeSyntheticAuthenticator('session-primary');
+    const regChallenge='TEST-P1-REGISTRATION-LOCAL-001';
+    const registered=await verifyRegistrationResponse({
+      response:makeRegistrationResponse(auth,{challenge:regChallenge}),
+      expectedChallenge:regChallenge,expectedOrigin:SYNTHETIC_ORIGIN,expectedRPID:SYNTHETIC_RP_ID,
+      requireUserPresence:true,requireUserVerification:true,
+    });
+    assert.equal(registered.verified,true);
+    const publicKey=registered.registrationInfo.credential.publicKey;
+    await db.prepare('INSERT INTO p1_credentials(credential_id,owner_id,public_key,sign_count) VALUES (?,1,?,0)')
+      .bind(auth.id,publicKey).run();
+    const challenge='TEST-P1-LOGIN-CHALLENGE-LOCAL-001';
+    const challengeDigest=createHash('sha256').update(challenge).digest('hex');
+    await db.prepare('INSERT INTO p1_challenge(digest,credential_id,purpose,origin,rp_id,expires_at) VALUES (?,?,?,?,?,?)')
+      .bind(challengeDigest,auth.id,'login',SYNTHETIC_ORIGIN,SYNTHETIC_RP_ID,nowSeconds+90).run();
+    const response=makeAuthenticationResponse(auth,{challenge});
+    const intruder=makeSyntheticAuthenticator('different-credential');
+    const intruderReg=await verifyRegistrationResponse({
+      response:makeRegistrationResponse(intruder,{challenge:regChallenge}),
+      expectedChallenge:regChallenge,expectedOrigin:SYNTHETIC_ORIGIN,expectedRPID:SYNTHETIC_RP_ID,
+      requireUserPresence:true,requireUserVerification:true,
+    });
+    await db.prepare('UPDATE p1_credentials SET public_key=? WHERE credential_id=?')
+      .bind(intruderReg.registrationInfo.credential.publicKey,auth.id).run();
+    await assert.rejects(createLocalSession({db,secret,nowSeconds,credentialId:auth.id,expectedChallenge:challenge,response}),
+      /rejected/,'the caller cannot authenticate against an unregistered/supplied key');
+    assert.equal((await db.prepare('SELECT consumed_at FROM p1_challenge WHERE digest=?').bind(challengeDigest).first()).consumed_at,null);
+    await db.prepare('UPDATE p1_credentials SET public_key=? WHERE credential_id=?').bind(publicKey,auth.id).run();
+    const issued=await createLocalSession({db,secret,nowSeconds,credentialId:auth.id,expectedChallenge:challenge,response});
+    assert.match(issued.cookie,/__Host-cb_p1_owner=[a-f0-9]{64}; Path=\/; Secure; HttpOnly; SameSite=Strict/);
+    const req=new Request(SYNTHETIC_ORIGIN+'/local/owner-readonly',{
+      headers:{'sec-fetch-site':'same-origin',cookie:issued.cookie.split(';')[0]},
+    });
+    assert.equal((await authorizeLocalRead({request:req,db,secret,nowSeconds:nowSeconds+10})).allowed,true);
+    assert.equal((await db.prepare('SELECT COUNT(*) n FROM p1_session').first()).n,1);
+    await assert.rejects(createLocalSession({db,secret,nowSeconds:nowSeconds+20,credentialId:auth.id,expectedChallenge:challenge,response}));
+    assert.equal((await db.prepare('SELECT COUNT(*) n FROM p1_session').first()).n,1);
+    assert.equal((await authorizeLocalRead({request:req,db,secret,nowSeconds:nowSeconds+1811})).allowed,false,'idle >30min denies');
+    await db.prepare('UPDATE p1_session SET last_seen_at=?,issued_at=?').bind(nowSeconds+1820,nowSeconds-43200).run();
+    assert.equal((await authorizeLocalRead({request:req,db,secret,nowSeconds:nowSeconds+1821})).allowed,false,'absolute >12h denies');
+    await db.prepare('UPDATE p1_session SET last_seen_at=?,issued_at=?').bind(nowSeconds+20,nowSeconds).run();
+    assert.equal(await revokeLocalSession({db,secret,rawToken:issued.token,nowSeconds:nowSeconds+30}),true);
+    assert.equal((await authorizeLocalRead({request:req,db,secret,nowSeconds:nowSeconds+30})).allowed,false);
   }finally{await mf.dispose();}
 });

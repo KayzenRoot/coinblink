@@ -475,18 +475,28 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         editor.hidden = true;
         edit.focus();
       });
-      save.addEventListener('click', () => {
-        if (!current()) return;
+      save.addEventListener('click', async () => {
+        if (!current() || !activeLocalSocialSession(epoch) || save.disabled) return;
         const draft = lastDrafts.find(row => row.id === item.draftId);
         if (!draft) return;
+        const selected = [channel.value, time.value, zone.value];
+        save.disabled = true;
+        const authorized = await verifyLocalSocialSession(epoch, draft);
+        if (!authorized || !current() || !activeLocalSocialSession(epoch) ||
+            selected.some((value, index) =>
+              value !== [channel.value, time.value, zone.value][index])) return;
         try {
-          const replacement = createLocalCalendarIdea(draft, channel.value, time.value, zone.value);
+          const fresh = authorized.find(row => sameLocalSocialDraftMetadata(draft, row));
+          if (!fresh) throw new TypeError('Stale LOCAL Owner decision');
+          const replacement = createLocalCalendarIdea(fresh, ...selected);
           // Editing may change channel/minute, never the authorized draft ID.
           localCalendarIdeas = replaceLocalCalendarIdea(localCalendarIdeas, item, replacement);
           renderLocalCalendar();
           ui.calendarStatus.textContent = 'Edited LOCAL hypothetical concept · memory only · NOT SCHEDULED · NOT POSTED';
         } catch {
-          editStatus.textContent = 'Invalid or duplicate LOCAL idea; NOTHING SCHEDULED';
+          editStatus.textContent = 'Invalid or stale LOCAL idea; NOTHING SCHEDULED';
+        } finally {
+          if (current()) save.disabled = false;
         }
       });
       article.append(description, labels, remove, edit);
@@ -1209,20 +1219,31 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.triageFilter.addEventListener('change', renderLocalEditorialTriage);
   ui.weekFilter.addEventListener('change', renderLocalWeekBoard);
   ui.weekZone.addEventListener('change', renderLocalWeekBoard);
-  ui.calendarAdd.addEventListener('click', () => {
+  ui.calendarAdd.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
     if (!draft) {
       ui.calendarStatus.textContent = 'Select an authorized LOCAL draft first';
       return;
     }
+    const epoch = sessionEpoch;
+    const generation = readGeneration;
+    const selected = [ui.socialDraft.value, ui.socialChannel.value,
+      ui.calendarDate.value, ui.calendarZone.value];
+    const authorized = await verifyLocalSocialSession(epoch, draft);
+    if (!authorized || !activeLocalSocialSession(epoch) ||
+        generation !== readGeneration || lastDrafts.find(row => row.id === draft.id) !== draft ||
+        selected.some((value, index) => value !== [
+          ui.socialDraft.value, ui.socialChannel.value,
+          ui.calendarDate.value, ui.calendarZone.value][index])) return;
     try {
-      const idea = createLocalCalendarIdea(draft, ui.socialChannel.value,
-        ui.calendarDate.value, ui.calendarZone.value);
+      const fresh = authorized.find(row => sameLocalSocialDraftMetadata(draft, row));
+      if (!fresh) throw new TypeError('Stale LOCAL Owner decision');
+      const idea = createLocalCalendarIdea(fresh, selected[1], selected[2], selected[3]);
       localCalendarIdeas = addLocalCalendarIdea(localCalendarIdeas, idea);
       renderLocalCalendar();
     } catch {
-      ui.calendarStatus.textContent = 'Invalid/duplicate time or limit reached; NOTHING SCHEDULED';
+      ui.calendarStatus.textContent = 'Invalid/stale LOCAL idea or limit reached; NOTHING SCHEDULED';
     }
   });
   ui.calendarClear.addEventListener('click', () => {
@@ -1308,12 +1329,31 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       try { requireCanonicalLocalVariant(event.variant,current); return true; }
       catch { return false; }
     }));
-    if (!selectedStale) { renderLocalApproval(); return; }
-    clearLocalSocialPreview();
+    // A current-revision Owner decision or draft edit also invalidates
+    // previously created hypothetical calendar/weekly ideas, even when
+    // the Social Studio selector points to a different (or no) draft.
+    const validIdeas = localCalendarIdeas.filter(idea => {
+      const previous = lastDrafts.find(row => row.id === idea.draftId);
+      const current = authorizedDrafts.find(row => row.id === idea.draftId);
+      return sameDraft(previous, current) &&
+        current.current_review_decision !== 'CHANGES_REQUESTED';
+    });
+    const removedIdeas = validIdeas.length !== localCalendarIdeas.length;
+    if (!selectedStale && !removedIdeas) { renderLocalApproval(); return; }
+    if (selectedStale) clearLocalSocialPreview();
     lastDrafts = authorizedDrafts;
-    renderDraftList();
-    renderLocalSocialChoices();
-    ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
+    if (removedIdeas) {
+      localCalendarIdeas = Object.freeze(validIdeas);
+      renderLocalCalendar();
+      ui.calendarStatus.textContent = 'Stale LOCAL ideas cleared · NOT SCHEDULED · NOT POSTED';
+    }
+    if (selectedStale) {
+      renderDraftList();
+      renderLocalSocialChoices();
+      ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
+    } else {
+      renderLocalApproval();
+    }
   };
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) recheckLocalSocialOnFocus();

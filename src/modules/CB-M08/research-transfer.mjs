@@ -50,7 +50,7 @@ export function parseMockResearchTransfer(raw, catalog) {
 
 // Self-contained: only updates an UNSAVED editor field after human confirmation.
 export function formatMockResearchNote(packet, body) {
-  if (!packet || packet.kind !== 'CB-M08-MOCK-RESEARCH-BRIEF' ||
+  if (packet?.kind !== 'CB-M08-MOCK-RESEARCH-BRIEF' ||
       packet.mode !== 'MOCK' || packet.rights !== 'NOT_CLEARED' ||
       packet.marketLive !== false || packet.publiclyUsable !== false ||
       packet.verified !== false || packet.published !== false ||

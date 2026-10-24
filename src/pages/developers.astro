@@ -41,3 +41,10 @@ This is not the future commercial /v1/articles API.</code></pre>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  /* M11: preserve the 320 px document width while scrolling code locally. */
+  .not-found { grid-template-columns: minmax(0, 1fr); }
+  .not-found > section { min-width: 0; width: 100%; }
+  .not-found pre { max-width: 100%; overflow-x: auto; }
+</style>

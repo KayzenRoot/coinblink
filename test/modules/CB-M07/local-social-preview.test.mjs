@@ -651,3 +651,58 @@ test('M07-I LOCAL actions reject same-revision stale source, credit or summary m
     });
   }
 });
+
+
+test('M05 Owner CHANGES_REQUESTED blocks M07 cards, resets after new revision and keeps D1 private', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page = app.page;
+    assert.equal(await page.locator('#m07-social').isVisible(),false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    await page.locator('[name="title"]').fill('Current editorial revision needs corrections');
+    await page.locator('[name="summary"]').fill('Synthetic Owner changes-requested gate prevents social previews.');
+    await page.locator('[name="body"]').fill('PRIVATE_OWNER_BODY_NOT_FOR_SOCIAL_VIEW');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/synthetic');
+    await page.locator('[name="authorLabel"]').fill('Local Test Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    await page.locator('#m07-draft').selectOption({index:1});
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-card').waitFor({state:'visible'});
+    await page.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await page.locator('#owner-review-note').fill('Improve the editorial evidence before preparing another social concept.');
+    page.once('dialog',dialog=>dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-changes')?.textContent === '1');
+    assert.equal(await page.locator('#m07-card').isVisible(),false,
+      'review change invalidates existing in-memory social card');
+    await page.locator('#m07-draft').selectOption({index:1});
+    assert.match(await page.locator('#m07-draft option:checked').innerText(), /OWNER CHANGES REQUESTED/u);
+    await page.locator('#m07-generate').click();
+    assert.match(await page.locator('#m07-status').innerText(),/OWNER CHANGES REQUESTED.*blocked/u);
+    assert.equal(await page.locator('#m07-card').isVisible(),false);
+    assert.equal(await page.locator('#m07-variant-composer').isVisible(),false);
+    assert.equal(await page.locator('#m07-preview-text').textContent(),'');
+    assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+    await page.locator('[name="title"]').fill('Corrected editorial draft in new saved revision');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({timeout:20_000});
+    const current = await page.evaluate(() => fetch('/admin/articles').then(r=>r.json()));
+    assert.equal(current.drafts[0].current_review_decision,null,
+      'historical CHANGES_REQUESTED cannot block a newly saved revision');
+    assert.equal(current.drafts[0].status,'draft');
+    assert.ok(!JSON.stringify(current).includes('Improve the editorial evidence'));
+    await page.locator('#m07-draft').selectOption({index:1});
+    await page.locator('#m07-generate').click();
+    await page.locator('#m07-preview').waitFor({state:'visible'});
+    assert.match(await page.locator('#m07-card-labels').innerText(),/NOT_CLEARED/u);
+    assert.doesNotMatch(await page.locator('#m07-card-copy').innerText(),/PRIVATE_OWNER_BODY_NOT_FOR_SOCIAL_VIEW/u);
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
+    assert.equal(await page.locator('#m07-card-copy').textContent(),'');
+    assert.equal(await page.locator('#m07-draft option').count(),0);
+    assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r=>r.status)),401);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally {await app.close();}
+});

@@ -55,6 +55,10 @@ test('M08 private unsaved warning cannot repeat or exceed CMS text bounds', () =
   const row = canonicalMockResearchTransfers()[0];
   assert.equal(formatMockResearchNote(row,'x'.repeat(39999)),null);
   assert.equal(formatMockResearchNote({...row,verified:true},'hello'),null);
+  // Sonar optional-chain correction must preserve safe rejection of missing input.
+  for (const value of [null, undefined, false, 0, '', {}]) {
+    assert.equal(formatMockResearchNote(value, 'Owner text'), null);
+  }
   const raw = JSON.stringify(row);
   assert.match(formatMockResearchNote(row,''),/^\[COINBLINK M08 OFFLINE MOCK/u);
   assert.equal(JSON.stringify(row),raw,'formatting never modifies original packet');

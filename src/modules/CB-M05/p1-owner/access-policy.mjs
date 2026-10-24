@@ -31,7 +31,7 @@ export async function authorizeLocalRead({request,db,secret,nowSeconds}={}) {
     if(row?.owner_id!==1)return deny;
     // If persistence refuses activity renewal, reject instead of extending an untracked session.
     const written=await db.prepare('UPDATE p1_session SET last_seen_at=? WHERE digest=? AND revoked_at IS NULL AND last_seen_at>? AND expires_at>?').bind(nowSeconds,digest,nowSeconds-1800,nowSeconds).run();
-    if(written?.success!==true)return deny;
+    if(written?.success!==true||written?.meta?.changes!==1)return deny;
     return Object.freeze({allowed:true,status:200,ownerId:1});
   }catch{return deny;}
 }

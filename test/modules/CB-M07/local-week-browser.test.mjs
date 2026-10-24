@@ -471,13 +471,14 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     await editor.locator('.m07-edit-zone').selectOption('America/New_York');
     await editor.locator('.m07-edit-time').fill('2026-11-01T01:30');
     await editor.locator('.m07-calendar-save').click();
-    assert.match(await editor.locator('[role="status"]').innerText(), /Invalid or duplicate/);
+    await editor.locator('[role="status"]').filter({hasText:/Invalid or stale/}).waitFor();
     assert.equal(await page.locator('.m07-week-conflict').count(), 2);
     await editor.locator('.m07-edit-zone').selectOption('UTC');
     await editor.locator('.m07-edit-time').fill('2026-11-16T01:30');
     await editor.locator('.m07-calendar-save').click();
+    await page.locator('#m07-calendar-status')
+      .filter({hasText:/Edited LOCAL hypothetical concept/}).waitFor();
     assert.equal(await page.locator('.m07-week-conflict').count(), 0);
-    assert.match(await page.locator('#m07-calendar-status').innerText(), /Edited LOCAL hypothetical concept/);
     assert.match(await page.locator('#m07-calendar-list').innerText(), /INSTAGRAM/);
     assert.match(await page.locator('#m07-week-status').innerText(), /NOT SCHEDULED · NOT POSTED/);
 
@@ -490,7 +491,7 @@ test('M07-F: inline edit, cancel, duplicate/DST rejection, keyboard, WCAG and st
     await first.locator('.m07-edit-channel').selectOption('x');
     await first.locator('.m07-edit-time').fill('2026-11-16T02:30');
     await first.locator('.m07-calendar-save').click();
-    assert.match(await first.locator('[role="status"]').innerText(), /Invalid or duplicate/);
+    await first.locator('[role="status"]').filter({hasText:/Invalid or stale/}).waitFor();
     assert.equal(await page.locator('#m07-calendar-list li').count(), 3);
 
     await assertAccessibleAtViewports(page, '#m07-calendar', '#m07-calendar-list .m07-calendar-editor:not([hidden])');
@@ -540,6 +541,8 @@ test('M07-G: conflict choices are synthetic, require explicit confirmation, rema
     await chooser.selectOption(candidate);
     const staleConfirm = await panel.locator('.m07-suggestion-confirm').elementHandle();
     await panel.locator('.m07-suggestion-confirm').click();
+    await page.locator('#m07-calendar-status')
+      .filter({hasText:/Edited LOCAL hypothetical concept/}).waitFor();
     assert.equal(await page.locator('.m07-week-conflict').count(),0);
     assert.equal(await page.locator('#m07-calendar-list li').count(),2);
     assert.match(await page.locator('#m07-calendar-status').innerText(),

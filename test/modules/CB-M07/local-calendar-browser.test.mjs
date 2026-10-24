@@ -343,3 +343,79 @@ test('INFLIGHT: pending ADD after logout or 401 leaves no private calendar', {ti
     });
   }
 });
+
+
+/**
+ * CB-M07-FOCUS-SELECTION-INTENT-001
+ * Focus revalidation must prune revoked/revised memory-only ideas even when
+ * a user switches the Social Studio selector during the genuine D1 response.
+ * All requests remain authenticated against disposable LOCAL D1 + virtual WebAuthn.
+ */
+async function prepareFocusSelectionOwnerUpdate(app, page, kind) {
+  await page.locator('#m07-calendar-add').click();
+  await page.locator('#m07-calendar-list li').first().waitFor({timeout:20_000});
+  assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),1);
+  const reviewer=await app.context.newPage();
+  await reviewer.goto(app.origin+'/admin/login',{waitUntil:'domcontentloaded'});
+  await reviewer.locator('#credential').fill(app.primaryId);
+  await reviewer.locator('#login').click();
+  await reviewer.getByText('Local test session active').waitFor({timeout:20_000});
+  await reviewer.locator('#items button').first().click();
+  if(kind==='CHANGES_REQUESTED'){
+    await reviewer.locator('#owner-review').waitFor({state:'visible'});
+    await reviewer.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await reviewer.locator('#owner-review-note').fill('Synthetic Owner revoked this revision for private preview.');
+    reviewer.once('dialog',dialog=>dialog.accept());
+    await reviewer.locator('#owner-review-submit').click();
+    await reviewer.waitForFunction(()=>
+      globalThis.document.querySelector('#m06-review-changes')?.textContent==='1',null,{timeout:20_000});
+  }else{
+    await reviewer.locator('[name="body"]').fill('SYNTHETIC_REVISION_2_NOT_PUBLISHED');
+    await reviewer.locator('#save').click();
+    await reviewer.getByText('Saved LOCAL draft revision 2; not published').waitFor({timeout:20_000});
+  }
+  const auth=await reviewer.evaluate(()=>fetch('/admin/articles').then(r=>r.json()));
+  if(kind==='CHANGES_REQUESTED') assert.equal(auth.drafts[0].current_review_decision,'CHANGES_REQUESTED');
+  else assert.equal(auth.drafts[0].revision,2);
+}
+
+async function assertFocusSelectionScrubbed(page,label) {
+  assert.equal(await page.locator('#m07-calendar-list li').count(),0,
+    label+': stale idea must not survive authenticated focus and selector change');
+  assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0,
+    label+': stale weekly projection must be scrubbed');
+}
+
+for(const kind of ['CHANGES_REQUESTED','REVISION_CHANGED']){
+  test('FOCUS RED: '+kind+' with concurrent selector change scrubs stale calendar',
+    {timeout:120_000},async()=>{
+      await withInflightFixture(async({app,page,hold})=>{
+        await prepareFocusSelectionOwnerUpdate(app,page,kind);
+        const pending=await hold();
+        await page.evaluate(()=>globalThis.window.dispatchEvent(new Event('focus')));
+        await pending.started();
+        await page.locator('#m07-draft').selectOption('');
+        assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+        await flushCalendarResponse(page,pending);
+        await assertFocusSelectionScrubbed(page,kind);
+      });
+    });
+}
+
+test('FOCUS: two out-of-order authorized responses never restore revoked ideas',
+  {timeout:120_000},async()=>{
+    await withInflightFixture(async({app,page,hold})=>{
+      await prepareFocusSelectionOwnerUpdate(app,page,'CHANGES_REQUESTED');
+      const pending=await hold();
+      await page.evaluate(()=>globalThis.window.dispatchEvent(new Event('focus')));
+      await pending.started();
+      await page.locator('#m07-draft').selectOption('');
+      await page.evaluate(()=>globalThis.window.dispatchEvent(new Event('focus')));
+      await page.waitForFunction(()=>
+        globalThis.document.querySelectorAll('#m07-calendar-list li').length===0 &&
+        globalThis.document.querySelectorAll('#m07-week-board .m07-week-idea').length===0,
+        null,{timeout:12_000});
+      await flushCalendarResponse(page,pending);
+      await assertFocusSelectionScrubbed(page,'out-of-order focus');
+    });
+  });

@@ -1327,14 +1327,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     const selectedDraft = lastDrafts.find(row => row.id === selectedId);
     const authorizedDrafts = await verifyLocalSocialSession(epoch);
     if (!authorizedDrafts || validation !== focusValidationGeneration ||
-        previewGeneration !== socialPreviewGeneration || !activeLocalSocialSession(epoch) ||
-        selectedId !== ui.socialDraft.value) return;
+        !activeLocalSocialSession(epoch)) return;
+    // A changed selection invalidates preview-side rendering, not the safe
+    // pruning of stale/revoked calendar ideas from this authenticated D1 read.
+    const viewUnchanged = previewGeneration === socialPreviewGeneration &&
+      selectedId === ui.socialDraft.value;
 
     // Keep the already-visible LOCAL preview only while its exact metadata
     // still matches the latest authenticated Owner/D1 listing.
     const sameDraft = sameLocalSocialDraftMetadata;
     const authorizedSelected = authorizedDrafts.find(row => row.id === selectedId);
-    const selectedStale = !!selectedDraft &&
+    const selectedStale = viewUnchanged && !!selectedDraft &&
       !sameDraft(selectedDraft, authorizedSelected);
 
     localEditorialVariants = Object.freeze(localEditorialVariants.filter(row => {
@@ -1365,7 +1368,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         current.current_review_decision !== 'CHANGES_REQUESTED';
     });
     const removedIdeas = validIdeas.length !== localCalendarIdeas.length;
-    if (!selectedStale && !removedIdeas) { renderLocalApproval(); return; }
+    if (!selectedStale && !removedIdeas && viewUnchanged) {
+      renderLocalApproval();
+      return;
+    }
     if (selectedStale) clearLocalSocialPreview();
     lastDrafts = authorizedDrafts;
     if (removedIdeas) {
@@ -1377,7 +1383,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       renderDraftList();
       renderLocalSocialChoices();
       ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
-    } else {
+    } else if (viewUnchanged) {
       renderLocalApproval();
     }
   };

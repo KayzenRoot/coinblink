@@ -3,36 +3,35 @@ import { buildDemoMarketReadiness } from "../../../modules/CB-M11/demo-market-re
 
 export const prerender = false;
 
-const headers = {
-  "content-type": "application/json; charset=utf-8",
-  "cache-control": "no-store",
-  "x-content-type-options": "nosniff",
-  "x-robots-tag": "noindex, nofollow, noarchive",
-};
+// No shared mutable transport state, CORS opt-in, credential or user identity.
+function jsonResponse(payload: unknown, status: number, denyMethod = false) {
+  const safeHeaders = new Headers();
+  safeHeaders.set("Content-Type", "application/json; charset=utf-8");
+  safeHeaders.set("Cache-Control", "no-store");
+  safeHeaders.set("X-Content-Type-Options", "nosniff");
+  safeHeaders.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  if (denyMethod) safeHeaders.set("Allow", "GET");
+  return new Response(JSON.stringify(payload), { status, headers: safeHeaders });
+}
 
-const errorPayload = (status: string) => ({
-  mode: "SYNTHETIC", status, live: false, redistributable: false, items: [],
-});
+function emptyMarketResponse(code: "BAD_REQUEST" | "METHOD_NOT_ALLOWED" | "UNAVAILABLE") {
+  return { status: code, mode: "SYNTHETIC", live: false,
+    redistributable: false, items: [] };
+}
 
 export const GET: APIRoute = ({ request }) => {
-  let url: URL;
   try {
-    url = new URL(request.url);
+    // No asset selection, price filters, pagination or other query extensions.
+    const incoming = new URL(request.url);
+    if (incoming.searchParams.size !== 0) {
+      return jsonResponse(emptyMarketResponse("BAD_REQUEST"), 400);
+    }
   } catch {
-    return new Response(JSON.stringify(errorPayload("BAD_REQUEST")), { status: 400, headers });
+    return jsonResponse(emptyMarketResponse("BAD_REQUEST"), 400);
   }
-  // No symbols, quote parameters, pagination, body or customer overrides in P0.
-  if (url.searchParams.size !== 0) {
-    return new Response(JSON.stringify(errorPayload("BAD_REQUEST")), { status: 400, headers });
-  }
-  const data = buildDemoMarketReadiness();
-  return new Response(JSON.stringify(data), {
-    status: data.status === "BLOCKED_DEMO" ? 200 : 503,
-    headers,
-  });
+  const payload = buildDemoMarketReadiness();
+  return jsonResponse(payload, payload.status === "BLOCKED_DEMO" ? 200 : 503);
 };
 
-export const ALL: APIRoute = () => new Response(
-  JSON.stringify(errorPayload("METHOD_NOT_ALLOWED")),
-  { status: 405, headers: { ...headers, allow: "GET" } },
-);
+export const ALL: APIRoute = () =>
+  jsonResponse(emptyMarketResponse("METHOD_NOT_ALLOWED"), 405, true);

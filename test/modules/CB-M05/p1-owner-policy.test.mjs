@@ -56,3 +56,33 @@ test('P1 SESSIONS: no verified assertion, DB or valid secret never creates a ses
   }
   assert.equal(typeof revokeLocalSession,'function');
 });
+
+test('P1 OWNER POLICY SECURITY: revoke between SELECT and session activity UPDATE must deny when zero rows changed', async()=>{
+  let lookups=0,renewals=0;
+  const db={
+    prepare(sql){
+      return {bind(){
+        return {
+          async first(){
+            assert.match(sql,/SELECT s\.owner_id/);
+            lookups++;
+            return {owner_id:1};
+          },
+          async run(){
+            assert.match(sql,/UPDATE p1_session/);
+            renewals++;
+            // A concurrent logout revoked this session after initial read.
+            return {success:true,meta:{changes:0}};
+          }
+        };
+      }};
+    }
+  };
+  const token='ab'.repeat(32);
+  const request=req('__Host-cb_p1_owner='+token);
+  const result=await authorizeLocalRead({request,db,secret,nowSeconds:20000});
+  assert.equal(lookups,1);
+  assert.equal(renewals,1);
+  assert.equal(result.allowed,false,'zero affected rows cannot authorize already revoked session');
+  assert.equal(result.status,401);
+});

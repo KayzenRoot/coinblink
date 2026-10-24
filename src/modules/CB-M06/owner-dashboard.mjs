@@ -82,18 +82,19 @@ export function createLocalEditorialActivity(drafts) {
  * and bounded LOCAL D1 draft listing. The presence of a source URL never
  * proves verification, rights, licensing or publication readiness.
  */
-// PRIVATE process notes are intentionally not included in queue rows.
-const OWNER_PROCESS_STATUS = new Map([
-  ['PREVIEW_REVIEWED', 'PRIVATE_PREVIEW_REVIEWED'],
-  ['CHANGES_REQUESTED', 'PRIVATE_CHANGES_REQUESTED'],
-]);
-function currentOwnerProcessStatus(decision) {
-  if (decision === undefined) return 'NOT_OBSERVED';
-  if (decision === null) return 'CURRENT_REVISION_UNREVIEWED';
-  return OWNER_PROCESS_STATUS.get(decision) ?? null;
-}
-
 export function createLocalReviewQueue(drafts) {
+  // This function is also embedded into the protected LOCAL UI via toString().
+  // All helpers must therefore remain self-contained inside its function body.
+  // PRIVATE Owner notes never belong in M06 queue rows.
+  const ownerProcessStatus = new Map([
+    ['PREVIEW_REVIEWED', 'PRIVATE_PREVIEW_REVIEWED'],
+    ['CHANGES_REQUESTED', 'PRIVATE_CHANGES_REQUESTED'],
+  ]);
+  function currentOwnerProcessStatus(decision) {
+    if (decision === undefined) return 'NOT_OBSERVED';
+    if (decision === null) return 'CURRENT_REVISION_UNREVIEWED';
+    return ownerProcessStatus.get(decision) ?? null;
+  }
   // Also validates duplicate IDs, draft status, revisions and Unix seconds.
   createLocalEditorialActivity(drafts);
   const rows = drafts.map(draft => {

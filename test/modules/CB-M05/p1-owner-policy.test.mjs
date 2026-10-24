@@ -1,7 +1,6 @@
 // CB-M05-P1-OWNER-ACCESS-001: contract-first RED. LOCAL synthetic proof only.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomBytes } from 'node:crypto';
 import { authorizeLocalRead } from '../../../src/modules/CB-M05/p1-owner/access-policy.mjs';
 import { renderOwnerReadOnly } from '../../../src/modules/CB-M05/p1-owner/readonly-view.mjs';
 import { createLocalSession, verifyLocalPasskey, revokeLocalSession } from '../../../src/modules/CB-M05/p1-owner/passkey-session.mjs';
@@ -15,7 +14,7 @@ function req(cookie = '', extras = {}) {
   });
 }
 function fakeDb(record=null, onRead=()=>{}) {
-  return {prepare(sql) { onRead(sql);return {bind(...args) { return {async first() {return record}, async run(){return {success:true}}};}};}};
+  return {prepare(sql) { onRead(sql);return {bind() { return {async first() {return record}, async run(){return {success:true}}};}};}};
 }
 test('P1 OWNER POLICY: anonymous, forged role, wrong origin and missing D1 fail closed without private DB reads', async()=>{
   let reads=0; const db=fakeDb(null,()=>{reads++});

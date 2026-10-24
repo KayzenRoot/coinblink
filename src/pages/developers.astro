@@ -29,22 +29,19 @@ export const prerender = false;
       <h2 id="m11-example">Local request example</h2>
       <pre><code>GET /v1/demo/articles
 
-200 OK · application/json
+200 OK
+Content-Type: application/json
 mode: SYNTHETIC
 status: DEMO_ONLY
 redistributable: false
 published: false (every record)
 max items: 3
 
-Query parameters and write methods are not supported.
-This is not the future commercial /v1/articles API.</code></pre>
+Query parameters: unsupported
+Write methods: unsupported
+Not the commercial /v1/articles
+API.</code></pre>
     </section>
   </main>
 </BaseLayout>
 
-<style>
-  /* M11: preserve the 320 px document width while scrolling code locally. */
-  .not-found { grid-template-columns: minmax(0, 1fr); }
-  .not-found > section { min-width: 0; width: 100%; }
-  .not-found pre { max-width: 100%; overflow-x: auto; }
-</style>

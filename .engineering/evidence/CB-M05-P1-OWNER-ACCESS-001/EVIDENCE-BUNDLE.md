@@ -1,7 +1,7 @@
 # CB-M05-P1-OWNER-ACCESS-001 — HIGH_ASSURANCE LOCAL Evidence Bundle
 
-**State:** IMPLEMENTATION_DRAFT / RED_PENDING / GREEN_NOT_RUN / NOT_ADMITTED_TO_PRODUCTION / NO_READY_OR_MERGE.  
-**Context Lock (implementation)**: `KayzenRoot/coinblink/main@e6620609ab95fdf75e20c3bf3132a829bf43af9c`, exact SHA revalidated on 2026-10-24.  
+**State (current correction):** LOCAL_HIGH_ASSURANCE_CORRECTION_GREEN_AT_IMPLEMENTATION_SHA / FINAL_EVIDENCE_HEAD_RECHECK_REQUIRED / DRAFT / PRODUCTION_NOT_ADMITTED / NO_READY_OR_MERGE.  
+**Context Lock (original implementation, historical)**: `KayzenRoot/coinblink/main@e6620609ab95fdf75e20c3bf3132a829bf43af9c`, exact SHA revalidated on 2026-10-24.  
 **Docs canonical on locked main:** `docs/architecture/ADR-CB-M05-P1-OWNER-ACCESS-001.md`, `docs/security/CB-M05-P1-OWNER-ACCESS-THREAT-MODEL.md`, `docs/product/CB-M05-P1-OWNER-ACCESS-001.md`.
 
 ## Immutable critical-blob attestation on locked main
@@ -84,3 +84,49 @@ The commit adding this section changes **only** this Evidence Bundle; its new HE
 - At `52f8e6244dfda2814eaf9a02c5ba7f0459a2026f`, **7/7 workflows SUCCESS, 16/16 checks SUCCESS**, SonarCloud **zero new issues, zero hotspots, coverage measured 0.0%**, Socket PR Alerts and Project Report SUCCESS. The tests of real identity, recovery, D1 remote, production and independent physical devices remain **NOT_RUN / NOT_AUTHORIZED**.
 
 **Final evidence-only HEAD MUST be checked independently after this append**; earlier GREEN does not automatically certify later commits. PR remains DRAFT. No Ready, merge, deploy, paid operations, real secrets or credential changes were authorized.
+
+## Correction Delta 2026-10-24 — CB-M05-P1-OWNER-ACCESS-001 (same PR #233)
+
+**Owner authorization:** repair strictly within the existing ten paths of PR #233, LOCAL HIGH_ASSURANCE only, no other PR/main/ruleset/checkpoint/cloud change. The prior evidence above is historical and must not override this newest state.
+
+### New context lock and scope audit (before any new write)
+- `main`: `524a93a970af9cf8cfb411f8ba7aa9f57ca79603`, verified exactly (compare to `main`: ahead=0/behind=0).
+- Original PR #233 HEAD: `fe3bb5efc9edc7e35c76eddb51eda2fb7b073ebf`, open/Draft.
+- Original nine critical blobs listed above: **9/9 exact MATCH** on new main.
+- Ten changed paths: **10/10 within the already approved set**; compare old base `e6620609ab95fdf75e20c3bf3132a829bf43af9c` → new main: 7 paths from M03/M07, **zero collisions** with this PR. Other 13 open PR path manifests checked, **zero direct overlap** with the ten paths.
+- Canonical ADR, threat model, Work Order read on locked main; **no change** to their source blobs, no added file, no D1 remote or production route.
+
+### Hosted RED, test-first (real Workerd/D1, not an environment failure)
+- Test-only commit: `4b97ec012603553a63e40a2417b010322166c488`, touching **only** `test/modules/CB-M05/p1-owner-race.test.mjs`.
+- Workflow: [HIGH_ASSURANCE RED run 40131969770](https://github.com/KayzenRoot/coinblink/actions/runs/40131969770), failing Node job **120985395707** with `node --test test/modules/CB-M05/p1-owner-policy.test.mjs test/modules/CB-M05/p1-owner-race.test.mjs`.
+- Exact TAP result: **11 total / 9 PASS / 2 FAIL / 0 skipped**; both failures were **assertions of fail-open security behavior** and not an install/module/CI fault:
+  1. `P1 BOOT SECURITY: consumed ticket and identical marker cannot claim twice in same second`: second claim returned `true` instead of `false`.
+  2. `P1 SESSION SECURITY: credential revocation between SELECT and UPDATE must deny`: after a real persisted D1 credential revocation, authorization returned `true` instead of `false`.
+- Dependent Chromium job **SKIPPED** on RED, correctly not counted as PASS.
+
+### Minimal correction and hosted GREEN
+- First code fix: `ea65c6d2518b358d464382098da4e045ff8aed6a`, one-line SQL **EXISTS non-revoked credential** guard inside the conditional `p1_session` activity UPDATE; keeps the previously repaired `meta.changes===1` requirement. Revoke-between-read-and-update now fails closed without refreshing the session.
+- Second code fix: `41687a6295071f8c34e89f7c6471fde1a2414399`, `claimOwnerOnce` requires successful **new INSERT and ticket UPDATE** (`meta.changes===1` on both), and `changes()=1` inside the transactional ticket UPDATE; prevents replay or consuming fresh tickets when the singleton Owner already exists.
+- Enhanced regression: `184af889b25fdef32bc8747f01d49549a5eb5982` tests a **new** ticket using the same pre-existing marker; must fail without consuming the ticket. No other files touched.
+- **GREEN implementation SHA:** `184af889b25fdef32bc8747f01d49549a5eb5982`.
+- [HIGH_ASSURANCE GREEN run 40132132398](https://github.com/KayzenRoot/coinblink/actions/runs/40132132398), Node job **120985906683**: new Node/Miniflare-D1 tests **11/11 PASS**, cryptographic WebAuthn **19/19 PASS**, existing 100-way workerd Owner claims: **three trials**, each `201:1,409:99`, `d1Failures {}` and 1/1 selected regression PASS. The 2 and 10 contender D1 cases are included in the 11/11 tests.
+- Same run, Chromium job **120986077676**: production `/admin` denial **1/1 PASS**; existing isolated LOCAL browser/D1/passkey fixture **10/10 PASS**. No live route enabled.
+- Full applicable GitHub Actions workflows on exact GREEN implementation SHA: **7/7 SUCCESS**:
+  - [Build 40132132488](https://github.com/KayzenRoot/coinblink/actions/runs/40132132488)
+  - [CI Quality 40132132418](https://github.com/KayzenRoot/coinblink/actions/runs/40132132418): lint, typecheck, Node/LCOV, Gitleaks success
+  - [PR Assurance 40132132417](https://github.com/KayzenRoot/coinblink/actions/runs/40132132417)
+  - [Reviewdog 40132132478](https://github.com/KayzenRoot/coinblink/actions/runs/40132132478)
+  - [M05 LOCAL Chromium 40132132470](https://github.com/KayzenRoot/coinblink/actions/runs/40132132470)
+  - [M01-M05 Chromium 40132132460](https://github.com/KayzenRoot/coinblink/actions/runs/40132132460)
+  - [M05 Owner HIGH_ASSURANCE 40132132398](https://github.com/KayzenRoot/coinblink/actions/runs/40132132398)
+- **SonarCloud PR bot** (2026-10-24T20:58:49Z, [comment 6389458112](https://github.com/KayzenRoot/coinblink/pull/233#issuecomment-6389458112)): `Quality Gate passed`, **zero new issues, zero accepted issues, zero Security Hotspots, 0.0% duplication, 0.0% measured new-code coverage**. CI passing is **not** measured Sonar coverage.
+- **Socket external PR Alerts and Project Report check-runs:** `NOT_INDEPENDENTLY_VERIFIED` by the accessible GitHub read-only connector (commit combined-status API returns no check-run inventory). Do not relabel the absence of check-run API access as PASS. Confirm in PR's Checks tab before technical APPROVED/Ready decision.
+- Formal submitted reviews: **0**; inline review threads: **0** at GREEN implementation audit.
+
+### Limits, rollback, audit and STOP
+- Affects **only** test-only LOCAL M05 Owner, no new external API, service binding, credential, secret, persistent remote migration, Worker deploy or public `/admin`.
+- No real human Owner, two physically independent hardware passkeys, recovery ceremony, remote D1, production rollback, publishing, or real funds: **NOT_RUN / NOT_AUTHORIZED**. Coverage: SonarCloud **0.0% measured**.
+- Roll-forward: retain both guards, rerun hosted positive and negative contracts. Rollback is revert of only correction commits within this Draft branch after separately passing safety regression; do not revert the main or bypass gates. No rollback executed.
+- **Checkpoint Delta PROPOSED ONLY**: `CB-M05-P1-OWNER-ACCESS-001 LOCAL_SECURITY_CORRECTION_GREEN`, for audit review; **not promoted to canonical checkpoint**.
+- This evidence-only commit will create another HEAD; **all applicable checks, 9 blobs, 10 paths, reviews, threads, Sonar/Socket need a fresh exact-HEAD check after it**. Prior GREEN evidence proves the implementation SHA, not an untested future HEAD.
+- **Verdict before final-HEAD audit:** `CORRECTION_GREEN / FINAL_HEAD_GATES_PENDING / SOCKET_NOT_INDEPENDENTLY_VERIFIED / PR_DRAFT / NO_READY / NO_MERGE / NO_DEPLOY / NO_PRODUCTION_AUTHORITY`.

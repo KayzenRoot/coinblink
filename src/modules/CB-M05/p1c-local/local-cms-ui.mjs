@@ -784,16 +784,25 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.reviewList.replaceChildren();
     if (!lastReviewQueue || !csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const filter = ui.reviewFilter.value;
+    const filters = {
+      all: () => true,
+      'missing-credit': row => row.creditStatus === 'CREDIT_MISSING',
+      'current-unreviewed': row => row.ownerProcessStatus === 'CURRENT_REVISION_UNREVIEWED',
+      'private-preview-reviewed': row => row.ownerProcessStatus === 'PRIVATE_PREVIEW_REVIEWED',
+      'private-changes-requested': row => row.ownerProcessStatus === 'PRIVATE_CHANGES_REQUESTED',
+      revised: row => row.revision > 1,
+      'older-seven-days': row => Boolean(lastEditorialInsights) &&
+        row.updatedAtSeconds <= Date.parse(lastEditorialInsights.asOfUTC) / 1000 - 7 * 86400,
+    };
+    const matches = Object.hasOwn(filters, filter) ? filters[filter] : null;
+    if (!matches) {
+      ui.reviewCount.textContent = 'INVALID_FILTER';
+      ui.reviewScope.textContent = 'UNAVAILABLE';
+      return;
+    }
     let shown = 0;
     for (const row of lastReviewQueue.rows) {
-      if (filter === 'missing-credit' && row.creditStatus !== 'CREDIT_MISSING') continue;
-      if (filter === 'current-unreviewed' && row.ownerProcessStatus !== 'CURRENT_REVISION_UNREVIEWED') continue;
-      if (filter === 'private-preview-reviewed' && row.ownerProcessStatus !== 'PRIVATE_PREVIEW_REVIEWED') continue;
-      if (filter === 'private-changes-requested' && row.ownerProcessStatus !== 'PRIVATE_CHANGES_REQUESTED') continue;
-      if (filter === 'revised' && row.revision <= 1) continue;
-      if (filter === 'older-seven-days' &&
-          (!lastEditorialInsights || row.updatedAtSeconds >
-            Date.parse(lastEditorialInsights.asOfUTC) / 1000 - 7 * 86400)) continue;
+      if (!matches(row)) continue;
       const li = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';

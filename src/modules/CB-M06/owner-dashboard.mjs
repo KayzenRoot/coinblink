@@ -82,23 +82,29 @@ export function createLocalEditorialActivity(drafts) {
  * and bounded LOCAL D1 draft listing. The presence of a source URL never
  * proves verification, rights, licensing or publication readiness.
  */
+// PRIVATE process notes are intentionally not included in queue rows.
+const OWNER_PROCESS_STATUS = new Map([
+  ['PREVIEW_REVIEWED', 'PRIVATE_PREVIEW_REVIEWED'],
+  ['CHANGES_REQUESTED', 'PRIVATE_CHANGES_REQUESTED'],
+]);
+function currentOwnerProcessStatus(decision) {
+  if (decision === undefined) return 'NOT_OBSERVED';
+  if (decision === null) return 'CURRENT_REVISION_UNREVIEWED';
+  return OWNER_PROCESS_STATUS.get(decision) ?? null;
+}
+
 export function createLocalReviewQueue(drafts) {
   // Also validates duplicate IDs, draft status, revisions and Unix seconds.
   createLocalEditorialActivity(drafts);
   const rows = drafts.map(draft => {
+    const ownerProcessStatus = currentOwnerProcessStatus(draft.current_review_decision);
     if (typeof draft.author_label !== 'string' || draft.author_label.length > 80 ||
         typeof draft.source_url !== 'string' || draft.source_url.length > 500 ||
-        (draft.current_review_decision !== undefined &&
-         draft.current_review_decision !== null &&
-         !['PREVIEW_REVIEWED', 'CHANGES_REQUESTED'].includes(draft.current_review_decision))) {
+        ownerProcessStatus === null) {
       throw new TypeError('Invalid LOCAL review metadata');
     }
-    // Unknown legacy model fixture is NOT_OBSERVED, never a false review status.
-    // The authenticated D1 listing always returns current decision or null.
-    const ownerProcessStatus = draft.current_review_decision === undefined ? 'NOT_OBSERVED' :
-      draft.current_review_decision === null ? 'CURRENT_REVISION_UNREVIEWED' :
-      draft.current_review_decision === 'PREVIEW_REVIEWED' ? 'PRIVATE_PREVIEW_REVIEWED' :
-      'PRIVATE_CHANGES_REQUESTED';
+    // Missing field in legacy model-only fixtures is NOT_OBSERVED.
+    // Real authenticated D1 returns an exact-revision decision or null.
     return Object.freeze({
       id: draft.id,
       title: draft.title,

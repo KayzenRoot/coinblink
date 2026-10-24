@@ -95,3 +95,57 @@ test('M07-C LOCAL calendar is scrubbed on refresh/logout and server-side 401 rev
     assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
   }finally{await app.close();}
 });
+
+
+test('cross-session Owner review must clear stale M07 calendar on focus', {timeout:120_000}, async () => {
+  const app = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page = app.page;
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20_000});
+    await page.locator('[name="title"]').fill('Synthetic cross-session calendar Owner review');
+    await page.locator('[name="summary"]').fill('The current exact revision can be rejected after a hypothetical idea was created.');
+    await page.locator('[name="body"]').fill('NEVER_PUBLISH_PRIVATE_SYNTHETIC_BODY');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/local-review');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    await page.locator('#m07-draft').selectOption({index:1});
+    await page.locator('#m07-calendar-zone').selectOption('UTC');
+    await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
+    await page.locator('#m07-calendar-add').click();
+    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
+    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),1);
+
+    // A second tab performs a fresh synthetic WebAuthn sign-in and records an
+    // immutable decision in the same disposable LOCAL D1, without refreshing
+    // the original tab. The browser shares the test Owner's cookie jar.
+    const reviewer = await app.context.newPage();
+    await reviewer.goto(app.origin + '/admin/login', {waitUntil:'domcontentloaded'});
+    await reviewer.locator('#credential').fill(app.primaryId);
+    await reviewer.locator('#login').click();
+    await reviewer.getByText('Local test session active').waitFor({timeout:20_000});
+    await reviewer.locator('#items button').first().click();
+    await reviewer.locator('#owner-review').waitFor({state:'visible'});
+    await reviewer.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await reviewer.locator('#owner-review-note').fill('Review changed after the other tab built a hypothetical calendar concept.');
+    reviewer.once('dialog', dialog => dialog.accept());
+    await reviewer.locator('#owner-review-submit').click();
+    await reviewer.waitForFunction(() => document.querySelector('#m06-review-changes')?.textContent === '1');
+    const latest = await reviewer.evaluate(() => fetch('/admin/articles').then(r => r.json()));
+    assert.equal(latest.drafts[0].current_review_decision,'CHANGES_REQUESTED');
+
+    const verified = page.waitForResponse(r => r.url().endsWith('/admin/articles') &&
+      r.request().method() === 'GET' && r.status() === 200);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await verified;
+    // The old hypothetical entry cannot survive authenticated reconciliation.
+    await page.waitForFunction(() =>
+      document.querySelectorAll('#m07-calendar-list li').length === 0 &&
+      document.querySelectorAll('#m07-week-board .m07-week-idea').length === 0,
+    null,{timeout:6_000});
+    assert.equal(await page.locator('#m07-calendar-list li').count(),0);
+    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
+    assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
+  } finally {await app.close();}
+});

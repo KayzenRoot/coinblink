@@ -1,7 +1,7 @@
 # CB-NEWS-P0-SOURCE-GATE-001 | Evidence Bundle
 
 **Work Order:** CB-NEWS-P0-SOURCE-GATE-001  
-**Risk:** STANDARD | **Stage:** IMPLEMENTATION_GREEN_ON_HOSTED_CI / FINAL_EVIDENCE_COMMIT_PENDING_REVALIDATION | **Authority:** LOCAL, pure deterministic source eligibility only  
+**Risk:** STANDARD | **Stage:** IMPLEMENTATION_GREEN / EXACT_PREVIOUS_HEAD_VERIFIED / DOCUMENTARY_CORRECTION | **Authority:** LOCAL, pure deterministic source eligibility only  
 **Repository:** KayzenRoot/coinblink  
 **Locked main/base:** `e6620609ab95fdf75e20c3bf3132a829bf43af9c`  
 **Proposed branch:** `feat/cb-news-p0-source-gate-001`  
@@ -66,12 +66,23 @@ Expected result: pure and deterministic candidate review admission, from server-
 4. No standalone local `npm run lint`/`npm run build` environment was claimed; these checks actually ran on hosted Ubuntu CI using locked dependencies. Exact branch-head evidence must be rerun after updating this file.
 5. This PR remains **Draft**. SonarCloud/Socket status success and green automation do **not** waive PR reviews, branch rulesets, newly introduced findings or Owner's specific merge authorization.
 
-### Final evidence-only update
+### Previous final HEAD verification (2026-10-24; readback completed)
 
-This evidence update itself creates a **new branch HEAD** with unchanged runtime module/test bytes. **All applicable checks, diff, reviews, base SHA and branch rules must be reconfirmed on that final HEAD** before a terminal verdict or merge recommendation. Until then: `GREEN_IMPLEMENTATION_PROVEN / FINAL_HEAD_RECHECK_PENDING / NO_READY / NO_MERGE`.
+**Verified PR #234 HEAD:** `260b8a43b204dc12c9fbc4e4189ae3dbe17bcab0`, against unmodified `main@e6620609ab95fdf75e20c3bf3132a829bf43af9c`. The previous evidence-only commit was independently rechecked **after** it landed, not merely assumed from the earlier GREEN implementation commit.
+
+- **13/13 exact-HEAD checks SUCCESS**, verified via GitHub Check Runs: SonarCloud Code Analysis, Socket Security PR Alerts, Socket Security Project Report, Build (Ubuntu), PR Assurance scope/review/quality, CB Quality Node+LCOV/lint+typecheck/Gitleaks, Reviewdog, M03 synthetic provenance Node+Chromium, integrated multi-module Chromium.
+- **6/6 exact-HEAD GitHub Actions workflows SUCCESS:** [Build #40105336042](https://github.com/KayzenRoot/coinblink/actions/runs/40105336042), [CI Quality #40105336060](https://github.com/KayzenRoot/coinblink/actions/runs/40105336060), [PR Assurance #40105336064](https://github.com/KayzenRoot/coinblink/actions/runs/40105336064), [Reviewdog #40105336025](https://github.com/KayzenRoot/coinblink/actions/runs/40105336025), [M03 Chromium #40105336031](https://github.com/KayzenRoot/coinblink/actions/runs/40105336031), [integrated Chromium #40105336062](https://github.com/KayzenRoot/coinblink/actions/runs/40105336062).
+- Final-head CI Quality Node logs: **87/87 PASS**, 0 FAIL; **10/10** new gate tests included. New module Node LCOV **95.42% statements / 96.77% branches / 100% functions**, while **SonarCloud still measured 0.0% new-code coverage**. Do not conflate the metrics.
+- SonarCloud PR quality gate reported **0 new issues / 0 accepted / 0 Security Hotspots / 0.0% new-code duplication**. Both Socket status checks reported **SUCCESS**; no claim of external account or publishing validation.
+- **Scope check:** exactly 3 new permitted paths, 336 additions, 0 deletions at verified HEAD; old code and tests unchanged by evidence-only update, 9/9 locked main blobs match and 0 path collisions with the 14 other open PRs. PR #233 remains separate Draft.
+- **Review state:** 0 unresolved threads; 0 formal review approvals. `PR assurance / review (read-only)` is automated diagnostics, **not** a human review.
+- **Protection visibility:** `main.protected=true` and PR `mergeable=true` / `mergeable_state=clean`, but `GET /branches/main/protection` returned **403 Resource not accessible by integration**. `GET /rulesets?includes_parents=true` returned `[]`; this does **not** establish that legacy branch-protection requirements are absent. Effective required reviews/checks are **NOT_VERIFIED**. Browser read access was unavailable in this session. No rule was bypassed.
+- **Merge status:** `PROTECTION_NOT_VERIFIED / MERGE_BLOCKED` regardless of all passing technical checks. Draft remains; no Ready, merge, deploy, network, license assertion, source, D1, API secrets, spending or external publication authorized.
+
+**Correction-commit caveat:** this documentary edit itself will produce another PR HEAD. The evidence above is an observation on `260b8a43b204dc12c9fbc4e4189ae3dbe17bcab0`, **not** a preemptive success claim for the as-yet-unknown correction HEAD. Reconfirm its exact checks, branch, diff and threads after this edit. GitHub status on that SHA remains the live source of truth.
 
 ## Mandatory review, errors and STOP
 
 No secret, remote call, RSS/API invocation, D1, X provider, cloud or production. Do not change PR #233, any other PR, main, ruleset or checkpoint. If base SHA or critical blobs change, or a new target collides, mark STALE and stop. RED must show expected missing-module failure on hosted Node suite before adding module; GREEN must demonstrate this exact test path included in `ci-quality.yml` glob `test/modules/CB-M03/*.test.mjs`. If required gates fail: CORRECTION REQUIRED or BLOCKED. No claims of production readiness.
 
-**Final verdict (before evidence-only final HEAD checks):** GREEN_IMPLEMENTATION_PROVEN / RECHECK_REQUIRED / DRAFT / NO_MERGE.
+**Correction Delta verdict:** TECHNICAL_GREEN_ON_VERIFIED_PREVIOUS_HEAD / PROTECTION_NOT_VERIFIED / NEW_DOCUMENTARY_HEAD_RECHECK_REQUIRED / DRAFT / MERGE_BLOCKED / PROD_NOT_AUTHORIZED.

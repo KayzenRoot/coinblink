@@ -27,3 +27,20 @@
 ## STOP
 - No Ready, squash/merge, production deploy, spend, API price/quote feed, ECC #209, other PRs, GitHub rulesets, checkpoints or main changes.
 - Do not proceed to Ready while Sonar has a new issue, even with a formally successful quality check.
+
+## Screenshot-grounded Sonar maintainability correction | 2026-10-24
+
+### Root-cause evidence, exact original source location
+- The Owner supplied a SonarQube Cloud **PR #231 issue screenshot**, reporting a single `Maintainability / Low` finding with the exact message: `Replace this if-then-else flow by a single return statement.` The screenshot did **not** visibly expose the file path or line number; do not represent it as if it did.
+- Inspection of the **locked original PR HEAD** `e305c26f84de57019428653cbc2c9379c789d161` identified a matching boolean guard pattern in `src/modules/CB-M11/demo-market-readiness.mjs`, `safeReport()`, **lines 35–50**: multi-clause invalid-input test returned `false`, otherwise `true`. The described smell matches JavaScript/Sonar rule S1126's boolean-return recommendation.
+- No configuration, rule-acceptance, ignores, suppression or provider code was changed. Single in-scope edit to that one `safeReport()` function makes the predicates positive and directly returns the boolean conjunction while retaining the same short-circuit guards and fail-closed semantics.
+- The subsequent hosted SonarCloud check moving from **1 New issue to 0 New issues** on precisely that one-code-file correction provides direct empirical confirmation that the diagnosed code pattern was the remaining finding.
+
+### Actual SHA-locked GREEN after repair
+- **Implementation-correction HEAD**: `3fa745fc443da87a6d48a1bf0b40a5e2deb3c507`.
+- Hosted dedicated M11 [GitHub Actions run #40090870401](https://github.com/KayzenRoot/coinblink/actions/runs/40090870401), job `120863077290`: **23/23 Node PASS** and **20/20 Chromium PASS**. The Chromium run includes old M02, M04, M11 regressions, M11 market rights/deny methods, axe, and documents reflow **320/320, 390/390, 768/768, 1366/1366**.
+- Five relevant workflows ALL SUCCESS, **12/12 exact-implementation-HEAD checks SUCCESS**. SonarCloud Code Analysis SUCCESS: **0 New issues, 0 Accepted issues, 0 Security Hotspots, 0.0% Duplication on New Code**. Instrumentally measured Coverage on New Code remains **0.0%**, with no inferred improvement. Both Socket Security reports, Build, CI Quality (Node/LCOV, lint/typecheck, Gitleaks), PR Assurance and Reviewdog SUCCESS.
+- This Evidence Bundle addition creates a **new documentation HEAD**; the preceding validations are correctly attributed only to the implementation-correction HEAD. Fresh exact-final-HEAD checks are required; metadata PR body may later contain the final HEAD attestation without another source commit.
+
+### Original immutable STOP boundary
+- PR #231 remains **DRAFT**. Exactly eight pre-approved paths, unchanged main `0d8a11b0d7c2f17b9797eb9b3545ec15954974c2`, no Ready, merge, deploy, spending, API providers or external data, ECC #209, other PRs, rulesets or checkpoints.

@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "runId": "CB-EXEC-20261014-12H-R35",
+  "repository": "KayzenRoot/coinblink",
+  "branch": "codex/cb-vis-wo-002-phase-a-r35-20261014",
+  "baseSha": "5a4e8c6872a48f3ce4095ecb7c111fcec92d3ac8",
+  "headSha": null,
+  "headShaNote": "Read the exact published head from the PR API; this inventory hashes staged Git blobs and excludes itself to avoid self-reference.",
+  "scopeAllowlist": [
+    "public/brand/**",
+    "test/brand/**",
+    ".engineering/evidence/CB-VIS-WO-002/**"
+  ],
+  "fileCount": 34,
+  "files": [
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/EVIDENCE_BUNDLE.md",
+      "bytes": 1940,
+      "sha256": "ec2451096e13ab5c6310d698835c82629a990fa6e5d50459ca638b53539a71f4"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json",
+      "bytes": 2310,
+      "sha256": "81c183d2a98860059e3ffedd5e203e1b2892980d4cd6eec789c1fd4faae617df"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.log",
+      "bytes": 2310,
+      "sha256": "81c183d2a98860059e3ffedd5e203e1b2892980d4cd6eec789c1fd4faae617df"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/build.log",
+      "bytes": 847,
+      "sha256": "a8067242cc7d6f7571dd84cb48ffb24d3d2d7a1904d321211f4d490ac8fed606"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/checkpoint-delta-PROPOSED.md",
+      "bytes": 600,
+      "sha256": "90d113f49386770b0d31a3fccdc28b73f5d681064288fe75a7d37f65340f0ef8"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/e2e-tests.log",
+      "bytes": 1018,
+      "sha256": "27dd8f7dc6598063e44c7ab88f992d42c664163b9303c705d80c041a81485e43"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/execution-journal.md",
+      "bytes": 4052,
+      "sha256": "9f1a51243268a830daf5b83773aa74f3b515ad8e6bdc308031ee706681282394"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-doctor.log",
+      "bytes": 3826,
+      "sha256": "aaaafcf7dcc6039f44206c84b3d3287e76a6723c2987da32c237ba730a309794"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-status.log",
+      "bytes": 3974,
+      "sha256": "488f0bfafb2c19c82db7954d9dd9b3cab77aabdfc3c7d0a070a6182930a09a24"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/lint.log",
+      "bytes": 51,
+      "sha256": "9e4ab8823086319a197a00a5dcf33fe95d7b9aecce554dfb28ad5f2c5bd54499"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/review-and-blockers.md",
+      "bytes": 2277,
+      "sha256": "df293770010051adee19f89407663b4f2b6b449de80f2c7d08196cdc78663a70"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/run-browser-qa.mjs",
+      "bytes": 7370,
+      "sha256": "5ecff518a2376481e8e93b0fc5a4e097a376af6ab5a6d123c873ecd3ce5222a4"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864-full.png",
+      "bytes": 1027903,
+      "sha256": "028c84752a44c5579c52db38de0c932dd73675f41ae1935478a6309af3550b1e"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/desktop-1536x864.png",
+      "bytes": 288312,
+      "sha256": "686950c0fa5252b5c11079f7bca600e867cc5005c2d2e80d72cadf957114bced"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844-full.png",
+      "bytes": 887876,
+      "sha256": "d057a70e88e903196ee6656e745c22a195a72ce05d25dce7d1b1d4d3132f193b"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/mobile-390x844.png",
+      "bytes": 109318,
+      "sha256": "ca030ab0269d1a261776064c85fcac8e56398327d470aa852d7b6e91de685113"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024-full.png",
+      "bytes": 807982,
+      "sha256": "76365ccf22f063c7861c367a5391d5149390b7fdc903cf29d96ac4c6d0a3f38b"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/screenshots/tablet-768x1024.png",
+      "bytes": 255881,
+      "sha256": "25b38677b826a6f97485cfd963f4d3209075e8bd83a0816b453e92382e5218cf"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/security-a11y-qa.md",
+      "bytes": 2346,
+      "sha256": "2dc99f299580dd296f3e0d63b3670dcb3731bf648b6872291cb4917468d5568f"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/source-lock.json",
+      "bytes": 2701,
+      "sha256": "57597920de1d4e88528623169cd886427af25abb6fc15dc69eb5186e2c63ef4d"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/tests-and-ci.json",
+      "bytes": 4149,
+      "sha256": "fb4d0f67bd97925cbd68bf2f78a05b31aad30d4e77c45c63a32de3c2ac88b108"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/typecheck.log",
+      "bytes": 199,
+      "sha256": "55d62228aa90ff892621ba6d158a37521a4a00346395ba4fe435cc23971802d5"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/unit-tests.log",
+      "bytes": 28544,
+      "sha256": "71ddecb1d237cd4cff52a40430f060efbd9dd64b67bf6cc052335540c3955f87"
+    },
+    {
+      "path": ".engineering/evidence/CB-VIS-WO-002/R35/visual-proof-index.md",
+      "bytes": 2532,
+      "sha256": "e75ade18fd6eca9fe32ed5da3072b71e80397d17f0258944d7a3388ea3516597"
+    },
+    {
+      "path": "public/brand/.gitattributes",
+      "bytes": 12,
+      "sha256": "3369a3581c57be1493bf784cb80bd185a64b90675070f201b913d218f9ceb2e6"
+    },
+    {
+      "path": "public/brand/brand-manifest.json",
+      "bytes": 3952,
+      "sha256": "b3c28bcac89f15bfd57c6aa8c0abc0ee54ec67b7b62ff253d6a7417e283d76ff"
+    },
+    {
+      "path": "public/brand/coinblink-horizontal-dark.svg",
+      "bytes": 18085,
+      "sha256": "9da72437b4df9d896b85d8fc313e6734dd21db6905d7a5cf7419f0e353b3ab8c"
+    },
+    {
+      "path": "public/brand/coinblink-horizontal-light.svg",
+      "bytes": 18087,
+      "sha256": "f054553a21372a5ca44837e6c75cf96450e461afbb49ed4629ffb5c2ee032825"
+    },
+    {
+      "path": "public/brand/coinblink-stacked.svg",
+      "bytes": 18040,
+      "sha256": "707ac8a765cf99aa1dcd2b74364fac7b650238f78aaebfc392b6cec281adcfdd"
+    },
+    {
+      "path": "public/brand/coinblink-symbol.svg",
+      "bytes": 4042,
+      "sha256": "240d6e4c7e929920f0b7cbef37278aea09b6e55ac405e2d34ed7e55368a01de2"
+    },
+    {
+      "path": "public/brand/favicon.svg",
+      "bytes": 3718,
+      "sha256": "0f446faef5fc69f4bdc76fffa03cf0b0e6feb6e4ddb4aceefce8e97e4d1e6e16"
+    },
+    {
+      "path": "test/brand/brand-assets.test.mjs",
+      "bytes": 6305,
+      "sha256": "259de496883525b7007bf33eef31c9128f4ff5e1d0e52ad8af2efbe16cdc65f5"
+    },
+    {
+      "path": "test/brand/render-harness.html",
+      "bytes": 4425,
+      "sha256": "7219e6301a0fa5be33943e6f7bba730ffa5d7f8cfcef09f4ce456342d3b80843"
+    },
+    {
+      "path": "test/brand/svg-security.mjs",
+      "bytes": 2559,
+      "sha256": "99a005b67b9cd370b54692bda40a3a30f5e68a58ea8fb486e146cdc1cb882edb"
+    }
+  ],
+  "selfHashExcluded": true,
+  "forbiddenScopeTouched": false,
+  "goldenReferenceModified": false,
+  "checkpointModified": false,
+  "rulesetModified": false,
+  "mergeOrDeploymentPerformed": false
+}

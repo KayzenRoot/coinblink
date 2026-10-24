@@ -87,9 +87,18 @@ export function createLocalReviewQueue(drafts) {
   createLocalEditorialActivity(drafts);
   const rows = drafts.map(draft => {
     if (typeof draft.author_label !== 'string' || draft.author_label.length > 80 ||
-        typeof draft.source_url !== 'string' || draft.source_url.length > 500) {
+        typeof draft.source_url !== 'string' || draft.source_url.length > 500 ||
+        (draft.current_review_decision !== undefined &&
+         draft.current_review_decision !== null &&
+         !['PREVIEW_REVIEWED', 'CHANGES_REQUESTED'].includes(draft.current_review_decision))) {
       throw new TypeError('Invalid LOCAL review metadata');
     }
+    // Unknown legacy model fixture is NOT_OBSERVED, never a false review status.
+    // The authenticated D1 listing always returns current decision or null.
+    const ownerProcessStatus = draft.current_review_decision === undefined ? 'NOT_OBSERVED' :
+      draft.current_review_decision === null ? 'CURRENT_REVISION_UNREVIEWED' :
+      draft.current_review_decision === 'PREVIEW_REVIEWED' ? 'PRIVATE_PREVIEW_REVIEWED' :
+      'PRIVATE_CHANGES_REQUESTED';
     return Object.freeze({
       id: draft.id,
       title: draft.title,
@@ -97,7 +106,7 @@ export function createLocalReviewQueue(drafts) {
       updatedAtSeconds: draft.updated_at,
       creditStatus: draft.author_label.trim() ? 'CREDIT_PRESENT_UNVERIFIED' : 'CREDIT_MISSING',
       sourceStatus: 'SOURCE_VERIFICATION_PENDING',
-      publishingStatus: 'DRAFT_ONLY',
+      publishingStatus: 'DRAFT_ONLY', ownerProcessStatus,
     });
   });
   rows.sort((a,b) => b.updatedAtSeconds - a.updatedAtSeconds || a.id.localeCompare(b.id));
@@ -107,6 +116,9 @@ export function createLocalReviewQueue(drafts) {
     listingScope: rows.length === 100 ? 'UP_TO_100_LISTED' : 'MEASURED_LOCAL',
     totalListed: rows.length,
     missingCreditListed: rows.filter(row => row.creditStatus === 'CREDIT_MISSING').length,
+    currentUnreviewedListed: rows.filter(row => row.ownerProcessStatus === 'CURRENT_REVISION_UNREVIEWED').length,
+    privatePreviewReviewedListed: rows.filter(row => row.ownerProcessStatus === 'PRIVATE_PREVIEW_REVIEWED').length,
+    privateChangesRequestedListed: rows.filter(row => row.ownerProcessStatus === 'PRIVATE_CHANGES_REQUESTED').length,
     rows: Object.freeze(rows),
   });
 }

@@ -1,0 +1,38 @@
+name: CB M07 inflight RED test-only (LOCAL)
+on:
+  push:
+    branches:
+      - test/cb-p0-social-calendar-inflight-intent-001
+    paths:
+      - test/modules/CB-M07/local-calendar-browser.test.mjs
+      - src/modules/CB-M05/p1c-local/local-cms-ui.mjs
+      - .github/workflows/cb-m07-inflight-test-only.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cb-m07-inflight-test-only-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    name: Inflight intent Chromium + D1 LOCAL + synthetic WebAuthn
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked install without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Public build safety
+        run: npm run build
+      - name: Install Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Synthetic WebAuthn and disposable D1 RED regression
+        run: node --test test/modules/CB-M07/local-calendar-browser.test.mjs

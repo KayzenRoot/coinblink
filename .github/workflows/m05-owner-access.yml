@@ -1,0 +1,56 @@
+name: CB-M05-P1-OWNER-ACCESS-001 HIGH_ASSURANCE LOCAL-only
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "src/modules/CB-M05/p1-owner/**"
+      - "test/modules/CB-M05/p1-owner-**"
+      - "e2e/m05-owner-access.spec.mjs"
+      - ".github/workflows/m05-owner-access.yml"
+      - ".engineering/evidence/CB-M05-P1-OWNER-ACCESS-001/**"
+permissions:
+  contents: read
+concurrency:
+  group: cb-m05-p1-owner-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  owner-node-d1:
+    name: M05 P1 Owner Node and D1 LOCAL (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: NEW Owner policy and singleton D1
+        run: node --test test/modules/CB-M05/p1-owner-policy.test.mjs test/modules/CB-M05/p1-owner-race.test.mjs
+      - name: EXISTING real cryptographic proof
+        run: node --test test/modules/CB-M05/p1b-webauthn.test.mjs
+      - name: EXISTING workerd 100-way Owner claim proof
+        run: node --test --test-name-pattern='^M05 LOCAL CMS BOOT-RACE-BATCH:' test/modules/CB-M05/p1c-local-cms.test.mjs
+  owner-browser:
+    name: M05 P1 Owner Chromium negative and LOCAL fixture (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    needs: owner-node-d1
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: ./node_modules/.bin/playwright install --with-deps chromium
+      - run: npm run build
+      - name: Production denial stays 404 in real browser
+        run: ./node_modules/.bin/playwright test e2e/m05-owner-access.spec.mjs
+      - name: Existing isolated synthetic browser passkey/D1
+        run: node --test test/modules/CB-M05/p1c-local-admin-preview.test.mjs

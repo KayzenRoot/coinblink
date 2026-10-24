@@ -105,18 +105,22 @@ const options = listMockResearchOptions();
       view.report.querySelector("h2")?.focus();
     });
     exportButton.addEventListener("click", () => {
-      const serialized = pendingPacket && JSON.stringify(pendingPacket);
-      if (!serialized || new TextEncoder().encode(serialized).byteLength > MAX_MOCK_RESEARCH_BYTES ||
-          pendingPacket.sourceId !== view.source.value || pendingPacket.asset !== view.market.value ||
-          view.report.hidden) {
+      const packet = pendingPacket;
+      if (!packet || packet.sourceId !== view.source.value ||
+          packet.asset !== view.market.value || view.report.hidden) {
+        exportStatus.textContent = "No valid current offline brief to export.";
+        return;
+      }
+      const serialized = JSON.stringify(packet);
+      if (new TextEncoder().encode(serialized).byteLength > MAX_MOCK_RESEARCH_BYTES) {
         exportStatus.textContent = "No valid current offline brief to export.";
         return;
       }
       const objectUrl = URL.createObjectURL(new Blob([serialized], { type: "application/json" }));
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
-      anchor.download = "coinblink-m08-" + pendingPacket.sourceId + "-" +
-        pendingPacket.asset.toLowerCase() + ".json";
+      anchor.download = "coinblink-m08-" + packet.sourceId + "-" +
+        packet.asset.toLowerCase() + ".json";
       document.body.append(anchor);
       anchor.click();
       anchor.remove();

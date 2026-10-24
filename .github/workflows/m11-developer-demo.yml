@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/m11-developer-demo.yml"
       - "src/modules/CB-M11/**"
+      - "src/modules/CB-M02/news-workbench.mjs"
       - "src/pages/developers.astro"
       - "src/pages/v1/demo/articles.ts"
       - "test/modules/CB-M11/**"

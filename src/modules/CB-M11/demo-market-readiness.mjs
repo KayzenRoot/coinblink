@@ -33,21 +33,20 @@ function canonicalRow(row, expected, asset, freshness) {
 }
 
 function safeReport(report, asset, row) {
-  if (!report || typeof report !== "object" || Array.isArray(report) ||
-      report.asset !== asset || report.pair !== asset + "/USD" ||
-      report.freshness !== row.freshness ||
-      report.inspection !== "DENIED_RIGHTS" ||
-      report.live !== false || report.publiclyUsable !== false ||
-      report.numericQuote !== null ||
-      report.nextStep !== "REQUIRES_VERIFIED_LICENSE_AND_REAL_PROVIDER_CONTRACT" ||
-      !Array.isArray(report.blockers) || report.blockers.length !== 4 ||
-      !report.blockers.every(value => SAFE_BLOCKERS.has(value)) ||
-      report.blockers[0] !== "RIGHTS_NOT_CLEARED" ||
-      report.blockers[1] !== "NO_CAPTURED_OBSERVATION" ||
-      report.blockers[2] !== (row.freshness === "STALE"
-        ? "OUTDATED_ILLUSTRATION" : "NO_ILLUSTRATION_TIMESTAMP") ||
-      report.blockers[3] !== "NO_LIVE_FEED") return false;
-  return true;
+  return report !== null && typeof report === "object" && !Array.isArray(report) &&
+    report.asset === asset && report.pair === asset + "/USD" &&
+    report.freshness === row.freshness &&
+    report.inspection === "DENIED_RIGHTS" &&
+    report.live === false && report.publiclyUsable === false &&
+    report.numericQuote === null &&
+    report.nextStep === "REQUIRES_VERIFIED_LICENSE_AND_REAL_PROVIDER_CONTRACT" &&
+    Array.isArray(report.blockers) && report.blockers.length === 4 &&
+    report.blockers.every(value => SAFE_BLOCKERS.has(value)) &&
+    report.blockers[0] === "RIGHTS_NOT_CLEARED" &&
+    report.blockers[1] === "NO_CAPTURED_OBSERVATION" &&
+    report.blockers[2] === (row.freshness === "STALE"
+      ? "OUTDATED_ILLUSTRATION" : "NO_ILLUSTRATION_TIMESTAMP") &&
+    report.blockers[3] === "NO_LIVE_FEED";
 }
 
 /** 

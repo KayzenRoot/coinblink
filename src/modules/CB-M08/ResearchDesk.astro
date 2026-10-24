@@ -69,6 +69,7 @@ const options = listMockResearchOptions();
       && next instanceof HTMLElement && exportButton instanceof HTMLButtonElement
       && exportStatus instanceof HTMLElement) {
     const view = { source, market, button, report, status, context, total, blockers, next };
+    /** @type {ReturnType<typeof createMockResearchTransfer> | null} */
     let pendingPacket = null;
     const clear = () => {
       view.report.hidden = true;

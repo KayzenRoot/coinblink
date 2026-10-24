@@ -94,7 +94,7 @@ test("M08 downloads an exact canonical MOCK file with no network or publish side
   expect(restored.published).toBe(false);
   await page.locator('[data-m08-market]').selectOption('BTC');
   await expect(button).toBeHidden();
-  await button.evaluate(node => node.click());
+  await button.evaluate(node => { if (node instanceof HTMLButtonElement) node.click(); });
   await expect(page.locator('[data-m08-export-status]')).toContainText('No valid current offline brief');
   expect(external).toEqual([]);
   expect(writes).toEqual([]);

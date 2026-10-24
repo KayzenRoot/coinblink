@@ -368,7 +368,7 @@ async function prepareFocusSelectionOwnerUpdate(app, page, kind) {
     reviewer.once('dialog',dialog=>dialog.accept());
     await reviewer.locator('#owner-review-submit').click();
     await reviewer.waitForFunction(()=>
-      document.querySelector('#m06-review-changes')?.textContent==='1',null,{timeout:20_000});
+      globalThis.document.querySelector('#m06-review-changes')?.textContent==='1',null,{timeout:20_000});
   }else{
     await reviewer.locator('[name="body"]').fill('SYNTHETIC_REVISION_2_NOT_PUBLISHED');
     await reviewer.locator('#save').click();
@@ -392,7 +392,7 @@ for(const kind of ['CHANGES_REQUESTED','REVISION_CHANGED']){
       await withInflightFixture(async({app,page,hold})=>{
         await prepareFocusSelectionOwnerUpdate(app,page,kind);
         const pending=await hold();
-        await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+        await page.evaluate(()=>globalThis.window.dispatchEvent(new Event('focus')));
         await pending.started();
         await page.locator('#m07-draft').selectOption('');
         assert.equal(await page.locator('#m07-calendar-list li').count(),1);
@@ -407,13 +407,13 @@ test('FOCUS: two out-of-order authorized responses never restore revoked ideas',
     await withInflightFixture(async({app,page,hold})=>{
       await prepareFocusSelectionOwnerUpdate(app,page,'CHANGES_REQUESTED');
       const pending=await hold();
-      await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+      await page.evaluate(()=>globalThis.window.dispatchEvent(new Event('focus')));
       await pending.started();
       await page.locator('#m07-draft').selectOption('');
-      await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+      await page.evaluate(()=>globalThis.window.dispatchEvent(new Event('focus')));
       await page.waitForFunction(()=>
-        document.querySelectorAll('#m07-calendar-list li').length===0 &&
-        document.querySelectorAll('#m07-week-board .m07-week-idea').length===0,
+        globalThis.document.querySelectorAll('#m07-calendar-list li').length===0 &&
+        globalThis.document.querySelectorAll('#m07-week-board .m07-week-idea').length===0,
         null,{timeout:12_000});
       await flushCalendarResponse(page,pending);
       await assertFocusSelectionScrubbed(page,'out-of-order focus');

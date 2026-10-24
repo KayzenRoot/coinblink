@@ -23,10 +23,13 @@ export async function claimOwnerOnce({db,token,nowSeconds,origin,expectedOrigin,
     const digest=await sha256(token);
     // D1.batch executes as a single transaction. The unique owner_id=1 constraint
     // and claim_marker together prevent a losing claim from consuming its ticket.
-    await db.batch([
+    const changes=await db.batch([
       db.prepare('INSERT OR IGNORE INTO p1_owner(owner_id,claim_marker,created_at) SELECT 1,?,? WHERE EXISTS (SELECT 1 FROM p1_ticket WHERE digest=? AND consumed_at IS NULL AND expires_at>?)').bind(marker,nowSeconds,digest,nowSeconds),
-      db.prepare('UPDATE p1_ticket SET consumed_at=?,claim_marker=? WHERE digest=? AND consumed_at IS NULL AND expires_at>? AND (SELECT claim_marker FROM p1_owner WHERE owner_id=1)=?').bind(nowSeconds,marker,digest,nowSeconds,marker),
+      db.prepare('UPDATE p1_ticket SET consumed_at=?,claim_marker=? WHERE digest=? AND consumed_at IS NULL AND expires_at>? AND (SELECT claim_marker FROM p1_owner WHERE owner_id=1)=? AND changes()=1').bind(nowSeconds,marker,digest,nowSeconds,marker),
     ]);
+    // An ignored INSERT must never consume another ticket or authorize a replay.
+    if(changes?.[0]?.success!==true||changes?.[0]?.meta?.changes!==1||
+      changes?.[1]?.success!==true||changes?.[1]?.meta?.changes!==1)return false;
     const winner=await db.prepare('SELECT o.claim_marker AS owner_marker,t.claim_marker AS ticket_marker,t.consumed_at AS consumed FROM p1_owner o JOIN p1_ticket t ON t.digest=? WHERE o.owner_id=1').bind(digest).first();
     return winner?.owner_marker===marker&&winner.ticket_marker===marker&&winner.consumed===nowSeconds;
   }catch{return false;}

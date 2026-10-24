@@ -674,6 +674,7 @@ test('M05 current Owner CHANGES_REQUESTED blocks M07 mock cards and superseded r
     await page.locator('#m07-draft').selectOption({index:1});
     assert.match(await page.locator('#m07-draft option:checked').innerText(),/OWNER CHANGES REQUESTED/u);
     await page.locator('#m07-generate').click();
+    await page.getByText(/OWNER CHANGES REQUESTED.*blocked/u).waitFor({timeout:20_000});
     assert.match(await page.locator('#m07-status').innerText(),/OWNER CHANGES REQUESTED.*blocked/u);
     assert.equal(await page.locator('#m07-preview-text').textContent(),'');
     assert.equal(await page.locator('#m07-card-copy').textContent(),'');

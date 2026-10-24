@@ -20,10 +20,11 @@ test('M07-C LOCAL add/remove/clear, UTC ordering, responsive & axe, no external 
     await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20000});
     await page.locator('#m07-draft').selectOption({index:1});
     await page.locator('#m07-calendar-zone').selectOption('America/Sao_Paulo');
-    for(const [channel,time] of [['x','2026-11-20T16:00'],['instagram','2026-11-20T11:00'],['tiktok','2026-11-20T13:00']]){
+    for(const [index,[channel,time]] of [['x','2026-11-20T16:00'],['instagram','2026-11-20T11:00'],['tiktok','2026-11-20T13:00']].entries()){
       await page.locator('#m07-channel').selectOption(channel);
       await page.locator('#m07-calendar-date').fill(time);
       await page.locator('#m07-calendar-add').click();
+      await page.locator('#m07-calendar-list li').nth(index).waitFor();
     }
     assert.equal(await page.locator('#m07-calendar-list li').count(),3);
     assert.match(await page.locator('#m07-calendar-status').innerText(),/3 hypothetical concepts/);
@@ -71,6 +72,7 @@ test('M07-C LOCAL calendar is scrubbed on refresh/logout and server-side 401 rev
       await page.locator('#m07-calendar-zone').selectOption('UTC');
       await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
       await page.locator('#m07-calendar-add').click();
+      await page.locator('#m07-calendar-list li').first().waitFor();
       assert.equal(await page.locator('#m07-calendar-list li').count(),1);
     }
     await add();
@@ -100,26 +102,30 @@ test('M07-C LOCAL calendar is scrubbed on refresh/logout and server-side 401 rev
 test('cross-session Owner review must clear stale M07 calendar on focus', {timeout:120_000}, async () => {
   const app = await startLocalCmsPreview({headless:true,admin:true});
   try {
-    const page = app.page;
-    await page.locator('#login').click();
-    await page.getByText('Local test session active').waitFor({timeout:20_000});
-    await page.locator('[name="title"]').fill('Synthetic cross-session calendar Owner review');
-    await page.locator('[name="summary"]').fill('The current exact revision can be rejected after a hypothetical idea was created.');
-    await page.locator('[name="body"]').fill('NEVER_PUBLISH_PRIVATE_SYNTHETIC_BODY');
-    await page.locator('[name="sourceUrl"]').fill('https://example.org/local-review');
-    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
-    await page.locator('#save').click();
-    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
-    await page.locator('#m07-draft').selectOption({index:1});
-    await page.locator('#m07-calendar-zone').selectOption('UTC');
-    await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
-    await page.locator('#m07-calendar-add').click();
-    assert.equal(await page.locator('#m07-calendar-list li').count(),1);
-    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),1);
+    const primary = app.page;
+    await primary.locator('#login').click();
+    await primary.getByText('Local test session active').waitFor({timeout:20_000});
+    const fields = {
+      title:'Synthetic cross-session calendar Owner review',
+      summary:'The current saved revision receives an Owner decision after a hypothetical idea was created.',
+      body:'NEVER_PUBLISH_PRIVATE_SYNTHETIC_BODY',
+      sourceUrl:'https://example.org/local-review',
+      authorLabel:'Synthetic Owner',
+    };
+    for (const [name,value] of Object.entries(fields)) {
+      await primary.locator('[name="' + name + '"]').fill(value);
+    }
+    await primary.locator('#save').click();
+    await primary.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20_000});
+    await primary.locator('#m07-draft').selectOption({index:1});
+    await primary.locator('#m07-calendar-zone').selectOption('UTC');
+    await primary.locator('#m07-calendar-date').fill('2026-11-20T12:00');
+    await primary.locator('#m07-calendar-add').click();
+    await primary.locator('#m07-calendar-list li').first().waitFor();
+    assert.equal(await primary.locator('#m07-week-board .m07-week-idea').count(),1);
 
-    // A second tab performs a fresh synthetic WebAuthn sign-in and records an
-    // immutable decision in the same disposable LOCAL D1, without refreshing
-    // the original tab. The browser shares the test Owner's cookie jar.
+    // The second tab signs in with a virtual test passkey and records an
+    // immutable review in the same disposable D1. Test cookies are shared.
     const reviewer = await app.context.newPage();
     await reviewer.goto(app.origin + '/admin/login', {waitUntil:'domcontentloaded'});
     await reviewer.locator('#credential').fill(app.primaryId);
@@ -128,24 +134,24 @@ test('cross-session Owner review must clear stale M07 calendar on focus', {timeo
     await reviewer.locator('#items button').first().click();
     await reviewer.locator('#owner-review').waitFor({state:'visible'});
     await reviewer.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
-    await reviewer.locator('#owner-review-note').fill('Review changed after the other tab built a hypothetical calendar concept.');
+    await reviewer.locator('#owner-review-note').fill('Current revision needs changes; preexisting local ideas are no longer current.');
     reviewer.once('dialog', dialog => dialog.accept());
     await reviewer.locator('#owner-review-submit').click();
-    await reviewer.waitForFunction(() => document.querySelector('#m06-review-changes')?.textContent === '1');
-    const latest = await reviewer.evaluate(() => fetch('/admin/articles').then(r => r.json()));
-    assert.equal(latest.drafts[0].current_review_decision,'CHANGES_REQUESTED');
+    await reviewer.waitForFunction(() =>
+      globalThis.document.querySelector('#m06-review-changes')?.textContent === '1');
+    const {drafts} = await reviewer.evaluate(() => fetch('/admin/articles').then(r => r.json()));
+    assert.equal(drafts[0].current_review_decision,'CHANGES_REQUESTED');
 
-    const verified = page.waitForResponse(r => r.url().endsWith('/admin/articles') &&
+    const authorizedListing = primary.waitForResponse(r => r.url().endsWith('/admin/articles') &&
       r.request().method() === 'GET' && r.status() === 200);
-    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await verified;
-    // The old hypothetical entry cannot survive authenticated reconciliation.
-    await page.waitForFunction(() =>
-      document.querySelectorAll('#m07-calendar-list li').length === 0 &&
-      document.querySelectorAll('#m07-week-board .m07-week-idea').length === 0,
+    await primary.evaluate(() => globalThis.window.dispatchEvent(new Event('focus')));
+    await authorizedListing;
+    await primary.waitForFunction(() =>
+      globalThis.document.querySelectorAll('#m07-calendar-list li').length === 0 &&
+      globalThis.document.querySelectorAll('#m07-week-board .m07-week-idea').length === 0,
     null,{timeout:6_000});
-    assert.equal(await page.locator('#m07-calendar-list li').count(),0);
-    assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
-    assert.equal(app.networkAttempts.filter(x=>!x.allowed).length,0);
-  } finally {await app.close();}
+    assert.equal(await primary.locator('#m07-calendar-list li').count(),0);
+    assert.equal(await primary.locator('#m07-week-board .m07-week-idea').count(),0);
+    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally { await app.close(); }
 });

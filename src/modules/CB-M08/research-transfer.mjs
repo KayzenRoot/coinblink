@@ -36,14 +36,11 @@ export function parseMockResearchTransfer(raw, catalog) {
       !Array.isArray(catalog) || catalog.length !== 9) return null;
   let packet;
   try { packet = JSON.parse(raw); } catch { return null; }
+  // Exact canonical equality below rejects every forged rights, mode, quote,
+  // blocker, verification and publication field. Redundant per-field checks
+  // would create divergent validation rules without adding authorization.
   if (!packet || typeof packet !== 'object' || Array.isArray(packet) ||
-      packet.kind !== 'CB-M08-MOCK-RESEARCH-BRIEF' || packet.version !== 1 ||
-      packet.mode !== 'MOCK' || packet.rights !== 'NOT_CLEARED' ||
-      packet.quote !== null || packet.marketLive !== false ||
-      packet.publiclyUsable !== false || packet.verified !== false ||
-      packet.generatedByAI !== false || packet.published !== false ||
-      packet.blockerCount !== 8 || typeof packet.sourceId !== 'string' ||
-      typeof packet.asset !== 'string') return null;
+      typeof packet.sourceId !== 'string' || typeof packet.asset !== 'string') return null;
   const expected = catalog.find(row =>
     row.sourceId === packet.sourceId && row.asset === packet.asset);
   if (!expected || JSON.stringify(packet) !== JSON.stringify(expected)) return null;

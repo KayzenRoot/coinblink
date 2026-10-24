@@ -310,6 +310,59 @@ test('M06-C private review queue filters listed drafts and preserves protected e
   } finally { await preview.close(); }
 });
 
+test('M06 Owner queue shows only current revision process decisions and scrubs after logout', {timeout:120000}, async () => {
+  const preview = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page = preview.page;
+    assert.equal(await page.locator('#m06-review-unreviewed').isVisible(),false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    await page.locator('[name="title"]').fill('Synthetic Owner queue handoff title');
+    await page.locator('[name="summary"]').fill('Private synthetic process review queue never authorizes publishing');
+    await page.locator('[name="body"]').fill('PRIVATE_OWNER_BODY_NEVER_IN_QUEUE');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/private-queue');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20000});
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-unreviewed')?.textContent === '1');
+    await page.locator('#m06-review-filter').selectOption('current-unreviewed');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    await page.locator('#m06-review-filter').selectOption('private-preview-reviewed');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    await page.locator('#owner-review-note').fill('Local review only; no verified sources, licences or publication.');
+    page.once('dialog', dialog=>dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-previewed')?.textContent === '1');
+    assert.equal(await page.locator('#m06-review-unreviewed').textContent(),'0');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    assert.match(await page.locator('#m06-review-list').innerText(),/PRIVATE_PREVIEW_REVIEWED/u);
+    assert.doesNotMatch(await page.locator('#m06-review-list').innerText(),/Local review only|PRIVATE_OWNER_BODY_NEVER_IN_QUEUE/u);
+    await page.locator('[name="title"]').fill('Synthetic Owner queue revised title');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({timeout:20000});
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-unreviewed')?.textContent === '1');
+    assert.equal(await page.locator('#m06-review-previewed').textContent(),'0');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    await page.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await page.locator('#owner-review-note').fill('New revision requires changes and remains strictly private.');
+    page.once('dialog', dialog=>dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-changes')?.textContent === '1');
+    await page.locator('#m06-review-filter').selectOption('private-changes-requested');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    const listing = await page.evaluate(() => fetch('/admin/articles').then(r=>r.json()));
+    assert.equal(listing.drafts[0].current_review_decision,'CHANGES_REQUESTED');
+    assert.equal(listing.drafts[0].status,'draft');
+    assert.ok(!JSON.stringify(listing).includes('New revision requires changes'));
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20000});
+    assert.equal(await page.locator('#m06-review-unreviewed').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-previewed').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-changes').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r=>r.status)),401);
+    assert.equal(preview.networkAttempts.filter(x=>!x.allowed).length,0);
+  } finally { await preview.close(); }
+});
 test('M03 to M05 local Owner source report is inspected, applied only on explicit click and never auto-saved', { timeout: 120_000 }, async () => {
   const preview = await startLocalCmsPreview({ headless: true, admin: true });
   try {

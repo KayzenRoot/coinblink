@@ -371,7 +371,10 @@ async function listDrafts(request, db, secret, currentTime) {
   const who = await session(request, db, secret, currentTime);
   if (!who) return denied(401);
   const rows = await db.prepare(
-    'SELECT id,title,summary,source_url,author_label,status,revision,updated_at FROM cms_drafts WHERE owner_id=1 ORDER BY updated_at DESC LIMIT 100'
+    'SELECT d.id,d.title,d.summary,d.source_url,d.author_label,d.status,d.revision,d.updated_at, ' +
+    '(SELECT r.decision FROM cms_owner_reviews r WHERE r.draft_id=d.id ' +
+    'AND r.revision=d.revision AND r.actor_owner_id=1) AS current_review_decision ' +
+    'FROM cms_drafts d WHERE d.owner_id=1 ORDER BY d.updated_at DESC LIMIT 100'
   ).all();
   return json({ drafts: rows.results });
 }

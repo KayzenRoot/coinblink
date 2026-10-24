@@ -179,6 +179,9 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
 
     // Review is exact-revision, private and does not authorize publication.
     const reviewRoute = '/local/articles/' + id + '/review';
+    const beforeDecisionList = await (await ctx.run('/local/articles', 'GET', undefined, ctx.login)).json();
+    assert.equal(beforeDecisionList.drafts.find(row => row.id === id).current_review_decision, null,
+      'current saved revision without a decision is explicitly unreviewed');
     const validReview = { expectedRevision: 2, decision: 'PREVIEW_REVIEWED',
       note: 'Local editorial note. Source facts and rights remain unverified.' };
     assert.equal((await ctx.run(reviewRoute)).status, 401, 'no Owner session, no private review read');
@@ -205,6 +208,10 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.equal(reviewResponse.status, 200);
     const reviewDetails = await reviewResponse.json();
     assert.equal(reviewDetails.review.decision, 'PREVIEW_REVIEWED');
+    const currentOnlyList = await (await ctx.run('/local/articles', 'GET', undefined, ctx.login)).json();
+    assert.equal(currentOnlyList.drafts.find(row => row.id === id).current_review_decision, 'PREVIEW_REVIEWED');
+    assert.doesNotMatch(JSON.stringify(currentOnlyList), /Local editorial note\. Source facts and rights remain unverified/u,
+      'private review notes never appear in the bounded Owner listing');
     assert.equal(reviewDetails.publication, 'DISABLED');
     assert.equal(reviewDetails.rights, 'NOT_CLEARED');
     assert.equal(reviewDetails.historyLimit, 100);
@@ -234,6 +241,9 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.equal(third.status, 200);
     const superseded = await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json();
     assert.equal(superseded.review, null, 'old process approval never applies to a new revision');
+    const revisedList = await (await ctx.run('/local/articles', 'GET', undefined, ctx.login)).json();
+    assert.equal(revisedList.drafts.find(row => row.id === id).current_review_decision, null,
+      'prior revision decision is not inherited by the new saved revision');
     assert.deepEqual(superseded.history.map(row => row.revision), [2]);
     assert.equal(superseded.publication, 'DISABLED');
     assert.equal(superseded.rights, 'NOT_CLEARED');
@@ -248,6 +258,13 @@ test('M05 P0 local D1 export is Owner-session-bound, exact-revision, canonical a
     assert.equal(newDecision.status, 201);
     const twoDecisions = await (await ctx.run(reviewRoute, 'GET', undefined, ctx.login)).json();
     assert.equal(twoDecisions.review.decision, 'CHANGES_REQUESTED');
+    const updatedList = await (await ctx.run('/local/articles', 'GET', undefined, ctx.login)).json();
+    assert.equal(updatedList.drafts.find(row => row.id === id).current_review_decision, 'CHANGES_REQUESTED');
+    assert.equal((await ctx.run('/local/articles', 'GET')).status, 401,
+      'unauthenticated visitor cannot enumerate private Owner process states');
+    assert.equal((await ctx.run('/local/articles', 'GET', undefined,
+      {...ctx.login,fetchSite:'cross-site'})).status, 403,
+      'cross-site requests cannot read private Owner process states');
     assert.deepEqual(twoDecisions.history.map(row => row.revision), [3, 2],
       'both current and immutable superseded decisions remain available only to Owner');
     assert.equal(twoDecisions.history[1].note, validReview.note);

@@ -234,97 +234,100 @@ async function flushCalendarResponse(page, held) {
   return status;
 }
 
-test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calendar', {timeout:120_000}, async () => {
+async function withInflightFixture(run) {
   const {app,page} = await makeInflightCalendarFixture();
   let held;
   try {
-    held = await holdNextCalendarD1Read(page);
+    await run({
+      app,page,
+      hold: async options => {
+        held = await holdNextCalendarD1Read(page, options);
+        return held;
+      },
+    });
+    assert.deepEqual(app.networkAttempts.filter(entry => !entry.allowed),[]);
+  } finally {
+    if (held) await held.release();
+    await app.close();
+  }
+}
+
+async function openInflightEditor(page) {
+  await page.locator('#m07-calendar-add').click();
+  await page.locator('#m07-calendar-list li').first().waitFor();
+  const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
+  await row.locator('.m07-calendar-edit').click();
+  return row.locator('.m07-calendar-editor');
+}
+
+test('INFLIGHT RED: ADD after Clear and restored fields must not resurrect calendar', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const pending = await hold();
     await page.locator('#m07-calendar-add').click();
-    await held.started();
+    await pending.started();
     await page.locator('#m07-calendar-clear').click();
     assert.equal(await page.locator('#m07-calendar-list li').count(),0);
     await page.locator('#m07-calendar-date').fill('2026-11-20T12:00');
-    await flushCalendarResponse(page,held);
+    await flushCalendarResponse(page,pending);
     assert.equal(await page.locator('#m07-calendar-list li').count(),0,
-      'Clear is final: a previously pending ADD may not reappear after fields are restored');
+      'Clear is final: a pending ADD cannot reappear after fields are restored');
     assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
-    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { if (held) await held.release(); await app.close(); }
+  });
 });
 
 test('INFLIGHT RED: EDIT changed inputs during authorized GET restores Save', {timeout:120_000}, async () => {
-  const {app,page} = await makeInflightCalendarFixture();
-  let held;
-  try {
-    await page.locator('#m07-calendar-add').click();
-    await page.locator('#m07-calendar-list li').first().waitFor();
-    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
-    await row.locator('.m07-calendar-edit').click();
-    const editor = row.locator('.m07-calendar-editor');
+  await withInflightFixture(async ({page,hold}) => {
+    const editor = await openInflightEditor(page);
     await editor.locator('.m07-edit-channel').selectOption('instagram');
-    held = await holdNextCalendarD1Read(page);
+    const pending = await hold();
     const save = editor.locator('.m07-calendar-save');
     await save.click();
-    await held.started();
+    await pending.started();
     assert.equal(await save.isDisabled(),true);
     await editor.locator('.m07-edit-time').fill('2026-11-20T14:00');
-    await flushCalendarResponse(page,held);
+    await flushCalendarResponse(page,pending);
     assert.equal(await save.isEnabled(),true,
-      'A stale save must never leave the current editor permanently disabled');
+      'A stale edit must restore the current Save button');
     assert.equal(await page.locator('#m07-calendar-list li').count(),1);
-    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { if (held) await held.release(); await app.close(); }
+  });
 });
 
-test('INFLIGHT RED: Cancel before a late EDIT response prevents any edit commit', {timeout:120_000}, async () => {
-  const {app,page} = await makeInflightCalendarFixture();
-  let held;
-  try {
-    await page.locator('#m07-calendar-add').click();
-    await page.locator('#m07-calendar-list li').first().waitFor();
-    const row = page.locator('#m07-calendar-list .m07-calendar-item').first();
-    await row.locator('.m07-calendar-edit').click();
-    const editor = row.locator('.m07-calendar-editor');
-    held = await holdNextCalendarD1Read(page);
+test('INFLIGHT RED: Cancel before late EDIT response prevents any edit commit', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const editor = await openInflightEditor(page);
+    const pending = await hold();
     await editor.locator('.m07-calendar-save').click();
-    await held.started();
+    await pending.started();
     await editor.locator('.m07-calendar-cancel').click();
     assert.equal(await editor.isVisible(),false);
-    await flushCalendarResponse(page,held);
+    await flushCalendarResponse(page,pending);
     assert.doesNotMatch(await page.locator('#m07-calendar-status').innerText(),
-      /Edited LOCAL hypothetical concept/,
-      'A cancelled edit must not commit even when fields return to original values');
+      /Edited LOCAL hypothetical concept/, 'Cancelled edits cannot commit after a late response');
     assert.equal(await page.locator('#m07-calendar-list li').count(),1);
-    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { if (held) await held.release(); await app.close(); }
+  });
 });
 
-test('INFLIGHT: out-of-order ADD responses cannot commit obsolete channel selections', {timeout:120_000}, async () => {
-  const {app,page} = await makeInflightCalendarFixture();
-  let held;
-  try {
-    held = await holdNextCalendarD1Read(page);
+test('INFLIGHT: out-of-order ADD responses reject obsolete channel selection', {timeout:120_000}, async () => {
+  await withInflightFixture(async ({page,hold}) => {
+    const pending = await hold();
     await page.locator('#m07-calendar-add').click();
-    await held.started();
+    await pending.started();
     await page.locator('#m07-channel').selectOption('instagram');
     await page.locator('#m07-calendar-add').click();
     await page.locator('#m07-calendar-list li').first().waitFor({timeout:20_000});
-    await flushCalendarResponse(page,held);
+    await flushCalendarResponse(page,pending);
     assert.equal(await page.locator('#m07-calendar-list li').count(),1);
     assert.match(await page.locator('#m07-calendar-list').innerText(),/INSTAGRAM/);
     assert.doesNotMatch(await page.locator('#m07-calendar-list').innerText(),/ · X · /);
-    assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-  } finally { if (held) await held.release(); await app.close(); }
+  });
 });
 
-test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calendar', {timeout:120_000}, async () => {
+test('INFLIGHT: pending ADD after logout or 401 leaves no private calendar', {timeout:120_000}, async () => {
   for (const mode of ['logout','401']) {
-    const {app,page} = await makeInflightCalendarFixture();
-    let held;
-    try {
-      held = await holdNextCalendarD1Read(page,{afterRelease:mode === '401'});
+    await withInflightFixture(async ({app,page,hold}) => {
+      const pending = await hold({afterRelease:mode === '401'});
       await page.locator('#m07-calendar-add').click();
-      await held.started();
+      await pending.started();
       if (mode === 'logout') {
         await page.locator('#logout').click();
       } else {
@@ -333,11 +336,10 @@ test('INFLIGHT: pending ADD followed by logout or 401 must scrub private calenda
         ).bind(Math.floor(Date.now()/1000)).run();
         assert.equal(result.meta?.changes,1);
       }
-      await flushCalendarResponse(page,held);
+      await flushCalendarResponse(page,pending);
       await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20_000});
       assert.equal(await page.locator('#m07-calendar-list li').count(),0);
       assert.equal(await page.locator('#m07-week-board .m07-week-idea').count(),0);
-      assert.deepEqual(app.networkAttempts.filter(x=>!x.allowed),[]);
-    } finally { if (held) await held.release(); await app.close(); }
+    });
   }
 });

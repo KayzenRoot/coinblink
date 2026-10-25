@@ -57,6 +57,7 @@ jobs:
             e2e/m00-shell.spec.mjs \
             e2e/m01-editorial-handoff.spec.mjs \
             e2e/m01-official-sources-filter.spec.mjs \
+            e2e/m01-learning-search.spec.mjs \
             e2e/m01-m05-local-draft-preview.spec.mjs \
             e2e/m05-editorial-demo.spec.mjs \
             e2e/m05-admin-prod-guard.spec.mjs

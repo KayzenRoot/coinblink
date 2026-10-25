@@ -4,7 +4,7 @@ import { listMockTopics } from "./news-reader-guide.mjs";
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import NewsLocaleSwitch from "../CB-M09/NewsLocaleSwitch.astro";
-import { getNewsLocaleMeta } from "../CB-M09/news-locale-meta.mjs";
+import { getNewsLocaleMeta, getNewsHomeHref } from "../CB-M09/news-locale-meta.mjs";
 import LocalArticlePreview from "./LocalArticlePreview.astro";
 import LocalDraftCompare from "./LocalDraftCompare.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
@@ -19,7 +19,7 @@ const base = "/" + locale + "/news";
 ---
 <main id="main" class="cb-m02" data-m02-root aria-labelledby="m02-title">
   <nav aria-label={localeMeta.navigation}>
-    <a href={locale === "pt-br" ? "/pt-br" : "/en"}>{copy.home}</a>
+    <a href={getNewsHomeHref(locale)}>{copy.home}</a>
   </nav>
   {locale !== "es" && <LocalJourneyNav locale={locale} current="news" />}
   <NewsLocaleSwitch locale={locale} />

@@ -170,8 +170,8 @@
     },
     {
       "path": "test/brand/svg-security.mjs",
-      "bytes": 2559,
-      "sha256": "99a005b67b9cd370b54692bda40a3a30f5e68a58ea8fb486e146cdc1cb882edb"
+      "bytes": 3351,
+      "sha256": "595d7944a8e86f498fc45f4e84279843ace820ec5b42a05fcb6f61f18782c9a5"
     }
   ],
   "selfHashExcluded": true,

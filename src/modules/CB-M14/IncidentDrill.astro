@@ -1,0 +1,30 @@
+---
+import {listLocalIncidentScenarios,buildLocalIncidentDrill} from "./drill-model.mjs";
+import jsUrl from "./incident-drill.client.js?url&no-inline";
+import cssUrl from "./incident-drill.css?url&no-inline";
+const scenarios=listLocalIncidentScenarios();
+---
+<main id="main" class="m14-drill" data-m14-root>
+  <header class="m14-panel">
+    <p class="m14-flag">M14 · SIMULATION ONLY · NO LIVE MONITORING · NO ALERTS SENT · NO ACTIONS EXECUTED</p>
+    <h1>Local incident response rehearsal</h1>
+    <p>Walk through fictional platform conditions using a safe educational checklist.
+      These are not actual health metrics, security incidents, operator approvals or emergency instructions.</p>
+    <p>No cloud access, monitoring providers, audit events, notifications, recovery commands, credentials or customer information are used.</p>
+  </header>
+  <section class="m14-panel" aria-labelledby="m14-exercise-title">
+    <h2 id="m14-exercise-title">Choose a fictional exercise</h2>
+    <label for="m14-scenario">Practice scenario</label>
+    <select id="m14-scenario" data-m14-scenario>
+      {scenarios.map(s=><option value={s.id} data-m14-example={JSON.stringify(buildLocalIncidentDrill(s.id))}>{s.label}</option>)}
+    </select>
+    <button type="button" data-m14-reset>Reset rehearsal</button>
+    <p data-m14-status aria-live="polite" role="status">PRACTICE ONLY · No real platform state was inspected.</p>
+    <h3>Example discussion steps, not executable commands</h3>
+    <ol data-m14-steps class="m14-steps"></ol>
+  </section>
+  <p class="m14-disclaimer">Any operational decision requires authorized human assessment, current evidence, and a separate approved Work Order.
+    This demonstration never performs incident declaration, recovery, rollback, or monitoring.</p>
+</main>
+<script is:inline type="module" src={jsUrl}></script>
+<link rel="stylesheet" href={cssUrl} />

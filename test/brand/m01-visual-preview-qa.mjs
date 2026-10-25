@@ -121,7 +121,7 @@ try {
   const report = {
     source: "CB-M01-VIS-PREVIEW-001",
     data: "DEMO_ONLY",
-    head: process.env.GITHUB_SHA || (process.env.EXPECTED_COMMIT || "LOCAL"),
+    head: process.env.EXPECTED_COMMIT || process.env.GITHUB_SHA || "LOCAL",
     assets: Object.fromEntries(expected),
     golden: Object.fromEntries(golden),
     viewports: results,

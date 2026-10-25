@@ -1,3 +1,4 @@
+/* global document, window */
 // CB-M01-VIS-PREVIEW-001: run a sealed, offline Chromium-only brand laboratory.
 // Never route this file through src/pages, public website headers or deployed infrastructure.
 import assert from "node:assert/strict";

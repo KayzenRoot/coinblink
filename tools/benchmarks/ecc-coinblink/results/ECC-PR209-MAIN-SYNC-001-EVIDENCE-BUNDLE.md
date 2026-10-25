@@ -25,6 +25,7 @@ The PR remains OPEN/DRAFT. The merge was a normal non-fast-forward, two-parent m
 - PR files are confined to the authorized ECC package and its opt-in skill/workflow paths. No symlinks were found in the merged tree.
 - GitHub listed 22 open PRs with complete file lists (no pagination gaps). Case-insensitive path and file/directory-prefix comparison found zero collisions with PR #209. The new Evidence Bundle path also had zero collisions and was absent from main and the original PR head.
 - PR #233 remained OPEN/DRAFT at head `aefcc610b623b00c5fcf005d91295467c05cf82e`; its base remained `e6620609ab95fdf75e20c3bf3132a829bf43af9c`.
+- `git diff --check main@524a93a..original-PR-head@26bf8e8` reports four pre-existing, non-functional Markdown whitespace diagnostics: extra EOF blank lines in T1/T2/T3 and one trailing space in `matrix/measurement_contract.md`. They are present in the original PR delta and were left unchanged to preserve the 55 ECC paths byte/mode-identically. The Evidence Bundle diff itself passes `git diff --check`.
 - The added file is this Evidence Bundle only; it does not modify existing product modules or alter the ECC package's execution behavior.
 
 ## Local validation on the source merge tree

@@ -41,7 +41,7 @@
     .status { display:block; font-size:11px; margin-top:12px; color:#aab8ae; }
     @media(max-width:820px) { .showcase { grid-template-columns:minmax(0,1fr); } }
     @media(max-width:390px) { .mock-nav { display:none; } .wordmark { width:min(230px,100%); } }
-    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none; transition:none; } }
   </style>
 </head>
 <body>
@@ -80,8 +80,8 @@
         <h2 id="icon-title">Approved symbol and favicon as images only</h2>
         <div class="stacks">
           <img class="symbol" src="/brand/coinblink-symbol.svg" width="96" height="96" alt="CoinBlink standalone eye-coin-lightning symbol">
-          <img class="icon-demo" src="/brand/favicon.svg" width="32" height="32" alt="R32 favicon artwork shown as a 32 pixel preview image">
-          <img class="icon-demo large" src="/brand/favicon.svg" width="48" height="48" alt="R32 favicon artwork shown as a 48 pixel preview image">
+          <img class="icon-demo" src="/brand/favicon.svg" width="32" height="32" alt="R32 favicon artwork at 32 pixels, preview only">
+          <img class="icon-demo large" src="/brand/favicon.svg" width="48" height="48" alt="R32 favicon artwork at 48 pixels, preview only">
         </div>
         <span class="status">The favicon is displayed in this test page as an image, not installed in HTML head or any site route.</span>
       </section>

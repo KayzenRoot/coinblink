@@ -25,14 +25,14 @@ const golden = [
 ];
 const screenshotDirectory = resolve(process.env.RUNNER_TEMP || tmpdir(), "cb-m01-vis-preview");
 const files = new Map();
-for (const [url, digest] of expected) {
+await Promise.all([...expected].map(async ([url, digest]) => {
   const buf = await readFile(join(root, "public", url.slice(1)));
   assert.equal(sha(buf), digest, url + " immutable SHA-256");
   files.set(url, buf);
-}
-for (const [path, digest] of golden) {
+}));
+await Promise.all(golden.map(async ([path, digest]) => {
   assert.equal(sha(await readFile(join(root, path))), digest, path + " immutable Golden SHA-256");
-}
+}));
 const html = await readFile(join(root, "test/brand/m01-visual-preview.html"));
 assert.ok(!html.toString("utf8").includes('<link rel="icon"'), "favicon must not be installed");
 files.set("/", html);
@@ -75,16 +75,14 @@ const viewports = [
 ];
 let browser;
 const results = [];
-try {
-  await mkdir(screenshotDirectory, { recursive: true });
-  browser = await chromium.launch({ headless: true });
-  for (const [name, width, height] of viewports) {
-    const context = await browser.newContext({
-      viewport: { width, height },
-      colorScheme: "dark",
-      reducedMotion: "reduce",
-      deviceScaleFactor: 1,
-    });
+async function inspectViewport([name, width, height]) {
+  const context = await browser.newContext({
+    viewport: { width, height },
+    colorScheme: "dark",
+    reducedMotion: "reduce",
+    deviceScaleFactor: 1,
+  });
+  try {
     const page = await context.newPage();
     const external = [], writes = [], errors = [];
     page.on("request", request => {
@@ -116,8 +114,18 @@ try {
     });
     results.push({ name, width, height, screenshotSha256: sha(data), screenshotBytes: data.length,
       validImages: 6, a11yViolations: 0, externalRequests: 0, writes: 0, overflow: false });
+  } finally {
     await context.close();
   }
+}
+try {
+  await mkdir(screenshotDirectory, { recursive: true });
+  browser = await chromium.launch({ headless: true });
+  let sequence = Promise.resolve();
+  for (const viewport of viewports) {
+    sequence = sequence.then(() => inspectViewport(viewport));
+  }
+  await sequence;
   const report = {
     source: "CB-M01-VIS-PREVIEW-001",
     data: "DEMO_ONLY",

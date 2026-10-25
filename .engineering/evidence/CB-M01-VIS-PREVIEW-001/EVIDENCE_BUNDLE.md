@@ -43,3 +43,14 @@ Runtime SHA, GitHub Actions run ID, screenshots, axe report, actual all-check st
 
 ## STOP CONDITION
 `DRAFT_NO_MERGE` until exact-head CI and visual evidence verified and the Owner separately authorizes integration. Any SHA drift, active external request, unexpected app route/asset edit, security regression or failure must stop as `BLOCKED_NO_MERGE`. No deploy or spending.
+
+## Correction Delta · Sonar findings from Owner screenshots (2026-10-25)
+
+- Base drift reconciled: original PR branch HEAD `8c4aca12581f0dc4547721aaad45d2c08b54aca0`; protected main advanced to `0f23494081259bbf70d953dd3edc581b67506606` from the independent #245 search squash. No rebase/force-push performed; PR visual lab remains isolated and mergeable pending fresh checks.
+- Screenshots identify repeated Sonar LOW Maintainability `Unexpected await inside a loop` in `test/brand/m01-visual-preview-qa.mjs`, MEDIUM Maintainability `Remove this !important` in `test/brand/m01-visual-preview.html`, and two LOW Reliability/MEDIUM Maintainability `Remove redundant word image` from the 32px and 48px favicon preview alt attributes. Remaining issues must be reconciled against next exact-HEAD Sonar run, not assumed fixed solely from partial screenshots.
+- Corrected `qa.mjs` to hash/read the five SVGs and two original Golden rasters via Promise.all; preserve the original strict assertions/allowlist. The five Chromium viewports are **still evaluated sequentially and in original order** through a promise chain, with per-context finally cleanup, to avoid memory-concurrent regressions and remove unnecessary await-in-loop warnings.
+- HTML corrections only remove two redundant `image` words and two `!important` qualifiers from already-static reduced-motion style. Maintain semantic alt, keyboard skip link, dark/light restrictions, fixed raster/SVG hashes and favicon-as-image-only policy.
+- Added no new files or dependencies; no changes to production routes, source pages, Golden JPEGs, vectors, header, installed favicon, legal rights, LIVE content, CMS or production deployment. `DEMO_ONLY` invariant retained.
+- Prior HEAD local brand CI was PASS but had Sonar 21 new issues. No claim of corrected HEAD CI/Sonar until GitHub readback. Required before any possible squash: full refreshed checks against current main, Sonar zero blocking findings, browser five-viewport no-network/axe proof, no blocking review threads, PR HEAD/main unchanged, no bypass and Owner conditional authorization.
+
+**STOP CONDITION:** `CORRECTION_REQUIRED` for new HIGH/CRITICAL or failed tests, `BLOCKED_NO_MERGE` if important evidence cannot be verified; `READY_FOR_CONDITIONAL_SQUASH` only after every check and review gate passes. Rights restrictions remain `DEMO_ONLY / PENDING_OWNER_OR_LEGAL` even after a test-only merge.

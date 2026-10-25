@@ -1,0 +1,9 @@
+> coinblink@0.1.0 typecheck
+> astro check
+
+02:22:16 [types] Generated 784ms
+02:22:16 [check] Getting diagnostics for Astro files in /workspace...
+Result (49 files):
+- 0 errors
+- 0 warnings
+- 0 hints

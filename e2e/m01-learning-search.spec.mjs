@@ -47,6 +47,40 @@ for (const [locale, label, query, clearText, emptyText] of [
     expect(writes).toEqual([]);
   });
 
+  test("M01 deep links reveal a guide and safely clear filters: " + locale, async ({ page }) => {
+    const remote = [];
+    const writes = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).origin !== "http://127.0.0.1:4321") remote.push(request.url());
+      if (!["GET", "HEAD"].includes(request.method())) writes.push(request.url());
+    });
+    const response = await page.goto(locale + "#learn-recovery");
+    expect(response?.status()).toBe(200);
+    const recovery = page.locator("#learn-recovery");
+    const networks = page.locator("#learn-networks");
+    await expect(recovery).toHaveAttribute("open", "");
+    await expect(recovery).toBeInViewport();
+    const permalink = recovery.locator(".learn-card__permalink");
+    await expect(permalink).toHaveAttribute("href", "#learn-recovery");
+    await expect(permalink).toHaveAttribute("aria-label", locale === "/en"
+      ? "Link to guide: Protect your recovery phrase"
+      : "Link para o guia: Proteja sua frase de recuperação");
+    const search = page.getByRole("searchbox", { name: label });
+    await search.fill(locale === "/en" ? "recovery phrase" : "frase de recuperação");
+    await expect(networks).toBeHidden();
+    await page.evaluate(() => { window.location.hash = "#learn-networks"; });
+    await expect(networks).toHaveAttribute("open", "");
+    await expect(networks).toBeInViewport();
+    await expect(search).toHaveValue("");
+    await expect(page.locator("#learn [data-learning-topic]:visible")).toHaveCount(6);
+    await search.fill("not-a-real-learning-topic-xyz");
+    await expect(page.locator("#learn [data-learning-topic]:visible")).toHaveCount(0);
+    await page.evaluate(() => { window.location.hash = "#learn-does-not-exist"; });
+    await expect(search).toHaveValue("not-a-real-learning-topic-xyz");
+    await expect(page.locator("#learn [data-learning-topic]:visible")).toHaveCount(0);
+    expect(remote).toEqual([]);
+    expect(writes).toEqual([]);
+  });
   test("M01 Crypto 101 guides work without JavaScript: " + locale, async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     try {

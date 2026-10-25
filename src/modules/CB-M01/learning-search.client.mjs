@@ -48,5 +48,6 @@ if (section) {
     update();
     search.focus();
   });
+  section.hidden = false;
   update();
 }

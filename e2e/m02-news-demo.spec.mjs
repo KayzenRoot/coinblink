@@ -1,6 +1,87 @@
-import { prepareLocalDraft, draftToMarkdown } from "../public/m05-draft-preview.js";
+import { prepareLocalDraft, draftToMarkdown } from "../src/modules/CB-M05/local-draft-markdown.mjs";
+import { readFile } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { startLocalCmsPreview } from "../test/modules/CB-M05/p1c-local-preview.mjs";
+
+test("M05 saved Owner D1 revision exports locally and is manually imported by the M02 browser preview", async ({ page }) => {
+  const cms = await startLocalCmsPreview({ headless: true, admin: true });
+  const external = [];
+  const writes = [];
+  page.on("request", request => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/")) external.push(request.url());
+    if (!["GET", "HEAD"].includes(request.method())) writes.push(request.url());
+  });
+
+  try {
+    const ownerPage = cms.page;
+    await ownerPage.locator("#login").click();
+    await ownerPage.getByText("Local test session active").waitFor({ timeout: 20_000 });
+    await ownerPage.locator('[name="title"]').fill("Persisted synthetic editorial bridge");
+    await ownerPage.locator('[name="summary"]').fill("A local-only saved summary with no factual or rights clearance.");
+    const savedBody = "This synthetic article is stored in local D1 and is only used to verify a manual editorial preview handoff.";
+    await ownerPage.locator('[name="body"]').fill(savedBody);
+    await ownerPage.locator('[name="sourceUrl"]').fill("https://example.test/synthetic-source");
+    await ownerPage.locator('[name="authorLabel"]').fill("Synthetic Owner");
+    await ownerPage.locator("#save").click();
+    await ownerPage.getByText("Saved LOCAL draft revision 1; not published").waitFor({ timeout: 20_000 });
+
+    const saved = await cms.db.prepare(
+      "SELECT id,revision,status,body FROM cms_drafts WHERE owner_id=1 LIMIT 1"
+    ).first();
+    expect(saved).toMatchObject({ revision: 1, status: "draft", body: savedBody });
+    const exportButton = ownerPage.getByRole("button", { name: "Export saved revision to Markdown for M02" });
+    await expect(exportButton).toBeEnabled();
+    await ownerPage.locator('[name="body"]').fill(savedBody + " Unsaved edit.");
+    await expect(exportButton).toBeDisabled();
+    await expect(ownerPage.locator("#unsaved-draft-status")).toBeVisible();
+    await ownerPage.locator('[name="body"]').fill(savedBody);
+    await expect(exportButton).toBeEnabled();
+
+    ownerPage.once("dialog", dialog => dialog.accept());
+    const [download] = await Promise.all([
+      ownerPage.waitForEvent("download"),
+      exportButton.click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^[a-z0-9-]+\.md$/u);
+    const markdown = await readFile(await download.path(), "utf8");
+    expect(Buffer.byteLength(markdown, "utf8")).toBeLessThanOrEqual(64_000);
+    expect(markdown).not.toMatch(/session|csrf|credential|token|privateKey/iu);
+    await expect(ownerPage.locator("#export-status")).toContainText("Facts and rights remain unverified");
+    expect(await cms.db.prepare("SELECT revision,body FROM cms_drafts WHERE id=?").bind(saved.id).first())
+      .toEqual({ revision: 1, body: savedBody });
+
+    await page.goto("/en/news");
+    const root = page.locator("[data-m02-local-preview]");
+    const input = root.locator("[data-m02-draft-file]");
+    const article = root.locator("[data-m02-draft-article]");
+    await input.setInputFiles({
+      name: download.suggestedFilename(),
+      mimeType: "text/markdown",
+      buffer: Buffer.from(markdown, "utf8"),
+    });
+    await expect(article).toBeVisible();
+    await expect(article.locator("[data-m02-draft-title]")).toHaveText("Persisted synthetic editorial bridge");
+    await expect(article.locator("[data-m02-draft-summary]")).toHaveText("A local-only saved summary with no factual or rights clearance.");
+    await expect(article.locator("[data-m02-draft-body]")).toHaveText(savedBody);
+    await expect(article.locator("[data-m02-draft-author]")).toHaveText("Synthetic Owner");
+    await expect(article.locator("[data-m02-draft-source]")).toHaveText("https://example.test/synthetic-source");
+    await expect(root.locator("[data-m02-draft-status]")).toHaveText("LOCAL PREVIEW · UNVERIFIED · NOT PUBLISHED");
+    await expect(article.locator("img, iframe, script")).toHaveCount(0);
+    expect(external).toEqual([]);
+    expect(writes).toEqual([]);
+
+    await ownerPage.locator("#logout").click();
+    await ownerPage.getByText("Not authenticated", { exact: true }).waitFor({ timeout: 20_000 });
+    await expect(ownerPage.locator("#export-draft")).toBeHidden();
+    expect(await ownerPage.evaluate(async id => (await fetch('/admin/articles/' + id + '/export?revision=1')).status, saved.id))
+      .toBe(401);
+    expect(await cms.db.prepare("SELECT revision,body FROM cms_drafts WHERE id=?").bind(saved.id).first())
+      .toEqual({ revision: 1, body: savedBody });
+  } finally {
+    await cms.close();
+  }
+});
 for (const [locale, title, sample, query] of [
   ["en", "Fictional news discovery", "Fictional wallet safety workshop", "wallet"],
   ["pt-br", "Explorar notícias fictícias", "Oficina fictícia de segurança de carteiras", "carteiras"],
@@ -211,6 +292,9 @@ for (const locale of ["en", "pt-br"]) {
     await expect(panel).toBeVisible();
     await expect(root.locator("[data-m02-evidence-summary]")).toContainText("3");
     await expect(root.locator("[data-m02-evidence-signals] li")).toHaveCount(3);
+    const actions = root.locator("[data-m02-evidence-actions]");
+    await expect(actions.locator("li")).toHaveCount(3);
+    await expect(actions).toContainText(locale === "pt-br" ? "Defina a fonte" : "Define the source");
     await expect(panel).toContainText("[^cb9]");
     await expect(panel).toContainText("[^cb1]");
     await expect(panel).toContainText(locale === "pt-br" ? "NÃO VERIFICA" : "DOES NOT VERIFY");
@@ -218,6 +302,7 @@ for (const locale of ["en", "pt-br"]) {
     await input.setInputFiles({ name: "invalid.md", mimeType: "text/markdown", buffer: Buffer.from("# invalid") });
     await expect(panel).toBeHidden();
     await expect(root.locator("[data-m02-evidence-signals] li")).toHaveCount(0);
+    await expect(actions.locator("li")).toHaveCount(0);
     const clean = prepareLocalDraft({
       title: "Another fictional story", author: "Synthetic editor",
       summary: "A fictional clean looking article with no cited sources.",
@@ -228,8 +313,11 @@ for (const locale of ["en", "pt-br"]) {
     await expect(panel).toBeVisible();
     await expect(root.locator("[data-m02-evidence-summary]")).toContainText("0");
     await expect(panel).toContainText(locale === "pt-br" ? "Não é verificação" : "Not verification");
+    await expect(actions.locator("li")).toHaveCount(1);
+    await expect(actions).toContainText(locale === "pt-br" ? "Verifique fatos" : "Check facts");
     await root.locator("[data-m02-draft-clear]").click();
     await expect(panel).toBeHidden();
+    await expect(actions.locator("li")).toHaveCount(0);
     await page.reload();
     await expect(page.locator("[data-m02-evidence-review]")).toBeHidden();
     const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

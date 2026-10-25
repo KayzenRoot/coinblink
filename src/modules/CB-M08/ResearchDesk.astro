@@ -1,0 +1,147 @@
+---
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+import { listMockResearchOptions, RESEARCH_DEMO_POLICY } from "./research-desk.mjs";
+const options = listMockResearchOptions();
+---
+<main id="main" class="m08" data-m08-root>
+  <LocalJourneyNav current="research" />
+  <header>
+    <small>M08 · OFFLINE MOCK · NO AI EXECUTION · NOT FACT-CHECKED</small>
+    <h1>Research & evidence desk</h1>
+    <p>Explore an invented source alongside an offline market example. CoinBlink assembles a review checklist from the existing M03 and M04 safety reports. It does not fetch news, query markets or run an AI model.</p>
+    <p class="m08-policy">{RESEARCH_DEMO_POLICY}</p>
+  </header>
+  <section class="m08-panel" aria-labelledby="m08-form-heading">
+    <h2 id="m08-form-heading">Build a fictional evidence brief</h2>
+    <p>Both inputs are synthetic demonstrations. No source has reuse permission and no quote is live.</p>
+    <div class="m08-controls">
+      <label for="m08-source">Fictional source
+        <select id="m08-source" data-m08-source>
+          <option value="">Choose a fictional source</option>
+          {options.sources.map(item => <option value={item.id}>{item.label}</option>)}
+        </select>
+      </label>
+      <label for="m08-market">Unavailable market example
+        <select id="m08-market" data-m08-market>
+          <option value="">Choose an example asset</option>
+          {options.markets.map(item => <option value={item.asset}>{item.label}</option>)}
+        </select>
+      </label>
+      <button type="button" data-m08-run>Generate local review checklist</button>
+    </div>
+    <p data-m08-status role="status" aria-live="polite">Choose both examples to inspect their review blockers.</p>
+  </section>
+  <section data-m08-report class="m08-report" aria-labelledby="m08-report-title" hidden>
+    <h2 id="m08-report-title" tabindex="-1">Research brief · HUMAN REVIEW REQUIRED</h2>
+    <p class="m08-warning">MOCK ONLY · NOT VERIFIED · NOT PUBLISHED · NO AI EXECUTED</p>
+    <p data-m08-context></p>
+    <p data-m08-total></p>
+    <h3>Outstanding evidence and data gates</h3>
+    <ol data-m08-blockers></ol>
+    <p data-m08-next></p>
+    <p>No prices, predictions, authorizations, articles or model-generated research are produced.</p>
+    <button type="button" data-m08-export>Download M08 canonical MOCK brief · JSON</button>
+    <p data-m08-export-status role="status" aria-live="polite">Manual handoff only. The LOCAL Owner must inspect before applying to an unsaved draft.</p>
+  </section>
+  <footer>
+    <p>Review the original modules: <a href="/demo/sources">Source provenance (M03)</a> and <a href="/demo/markets">Market readiness (M04)</a>.</p>
+  </footer>
+</main>
+<script>
+  import { buildMockResearchBrief } from "./research-desk.mjs";
+  import { createMockResearchTransfer, MAX_MOCK_RESEARCH_BYTES } from "./research-transfer.mjs";
+  const root = document.querySelector("[data-m08-root]");
+  const source = root?.querySelector("[data-m08-source]");
+  const market = root?.querySelector("[data-m08-market]");
+  const button = root?.querySelector("[data-m08-run]");
+  const report = root?.querySelector("[data-m08-report]");
+  const status = root?.querySelector("[data-m08-status]");
+  const context = root?.querySelector("[data-m08-context]");
+  const total = root?.querySelector("[data-m08-total]");
+  const blockers = root?.querySelector("[data-m08-blockers]");
+  const next = root?.querySelector("[data-m08-next]");
+  const exportButton = root?.querySelector("[data-m08-export]");
+  const exportStatus = root?.querySelector("[data-m08-export-status]");
+  if (source instanceof HTMLSelectElement && market instanceof HTMLSelectElement
+      && button instanceof HTMLButtonElement && report instanceof HTMLElement
+      && status instanceof HTMLElement && context instanceof HTMLElement
+      && total instanceof HTMLElement && blockers instanceof HTMLElement
+      && next instanceof HTMLElement && exportButton instanceof HTMLButtonElement
+      && exportStatus instanceof HTMLElement) {
+    const view = { source, market, button, report, status, context, total, blockers, next };
+    let pendingPacket: ReturnType<typeof createMockResearchTransfer> | null = null;
+    const clear = () => {
+      view.report.hidden = true;
+      pendingPacket = null;
+      exportStatus.textContent = "No current offline research brief.";
+      view.blockers.replaceChildren();
+      view.context.textContent = "";
+      view.total.textContent = "";
+      view.next.textContent = "";
+      view.status.textContent = "Choose both examples to inspect their review blockers.";
+    };
+    view.source.addEventListener("change", clear);
+    view.market.addEventListener("change", clear);
+    view.button.addEventListener("click", () => {
+      clear();
+      const result = buildMockResearchBrief(view.source.value, view.market.value);
+      if (!result.brief) {
+        view.status.textContent = "Choose a valid fictional source and a distinct market example. No data was fetched.";
+        return;
+      }
+      const brief = result.brief;
+      pendingPacket = createMockResearchTransfer(view.source.value, view.market.value);
+      view.context.textContent = brief.sourceLabel + " · " + brief.sourceStatus
+        + " | " + brief.pair + " · " + brief.freshness;
+      view.total.textContent = String(brief.blockerCount) + " review gates · 0 verified sources · 0 live quotes";
+      for (const check of brief.blockers) {
+        const item = document.createElement("li");
+        item.textContent = check.domain + " / " + check.code + ": " + check.state + " · " + check.label;
+        view.blockers.append(item);
+      }
+      view.next.textContent = brief.nextStep;
+      view.report.hidden = false;
+      view.status.textContent = "Local mock review checklist generated. Human investigation remains necessary.";
+      view.report.querySelector("h2")?.focus();
+    });
+    exportButton.addEventListener("click", () => {
+      const packet = pendingPacket;
+      if (!packet || packet.sourceId !== view.source.value ||
+          packet.asset !== view.market.value || view.report.hidden) {
+        exportStatus.textContent = "No valid current offline brief to export.";
+        return;
+      }
+      const serialized = JSON.stringify(packet);
+      if (new TextEncoder().encode(serialized).byteLength > MAX_MOCK_RESEARCH_BYTES) {
+        exportStatus.textContent = "No valid current offline brief to export.";
+        return;
+      }
+      const objectUrl = URL.createObjectURL(new Blob([serialized], { type: "application/json" }));
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = "coinblink-m08-" + packet.sourceId + "-" +
+        packet.asset.toLowerCase() + ".json";
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      exportStatus.textContent = "OFFLINE MOCK JSON downloaded. No live data, rights or publication.";
+    });
+  }
+</script>
+<style>
+  .m08{max-width:76rem;margin:0 auto;padding:clamp(1.25rem,4vw,3.5rem);min-height:70vh}
+  .m08 header{max-width:76ch;margin:2rem 0}.m08 h1{font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.08}
+  .m08 small,.m08-policy,.m08-warning{color:#f5c981;font-weight:750}
+  .m08 p{color:#d3e4d5;line-height:1.7}
+  .m08-panel,.m08-report{border:1px solid #456e4e;background:#101e17;border-radius:.85rem;padding:clamp(1rem,3vw,2rem);margin:1.4rem 0}
+  .m08-controls{display:flex;flex-wrap:wrap;align-items:end;gap:1rem}
+  .m08-controls label{display:grid;gap:.45rem;flex:1 1 15rem;font-weight:650}
+  .m08 select,.m08 button{min-height:3rem;border-radius:.55rem;padding:.7rem;border:1px solid #809c81}
+  .m08 select{background:#14251b;color:#fff;max-width:100%}
+  .m08 button{background:#b8f34b;color:#102015;font-weight:750;cursor:pointer}
+  .m08 :is(button,select,a):focus-visible,.m08 h2:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .m08-report[hidden]{display:none}.m08-report h2{font-size:1.55rem}
+  .m08-report li{margin:.7rem 0;overflow-wrap:anywhere}
+  .m08 footer a{color:#b8f34b;text-underline-offset:4px}
+</style>

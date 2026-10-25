@@ -14,7 +14,7 @@ import { measureLocalDraft } from "../../../src/modules/CB-M05/local-draft-metri
 import { findInLocalDraft, replaceAllInLocalDraft } from "../../../src/modules/CB-M05/local-draft-search.mjs";
 import {
   prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown,
-} from "../../../public/m05-draft-preview.js";
+} from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 
 const statement = "The briefing mentions a 23% change, which needs independent review.";
 const primary = "https://example.org/primary?year=2026&edition=2";

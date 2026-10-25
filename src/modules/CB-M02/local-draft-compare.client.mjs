@@ -1,6 +1,6 @@
 /* global document, window */
 // Two locally chosen M05 exports: comparison only, not an authoritative corrections ledger.
-import { parseLocalArticlePreview } from "./m02-local-article-preview.js";
+import { parseLocalArticlePreview } from "./local-article-preview.client.mjs";
 
 const FIELDS = Object.freeze(["title", "author", "summary", "body", "source"]);
 const LIMITS = Object.freeze({ title: 140, author: 80, summary: 400, body: 12000, source: 500 });

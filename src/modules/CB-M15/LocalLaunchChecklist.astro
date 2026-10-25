@@ -1,0 +1,39 @@
+---
+import {listLocalLaunchChecks,buildLocalLaunchChecklist} from "./local-launch-checklist.mjs";
+import cssUrl from "./local-launch-checklist.css?url&no-inline";
+import jsUrl from "./local-launch-checklist.client.js?url&no-inline";
+const checks=listLocalLaunchChecks();
+const initial=buildLocalLaunchChecklist([]);
+---
+<main id="main" class="m15-lab" data-m15-root>
+  <header class="m15-panel">
+    <p class="m15-label">M15 · LOCAL SYNTHETIC · NOT ADMITTED · NO DEPLOY · NO REAL APPROVAL</p>
+    <h1>Local launch readiness exercise</h1>
+    <p>Mark fictional practice items to learn what a future launch review could cover.
+      No content rights, production security, consent or owner approval is verified here.</p>
+    <p class="m15-block">RELEASE BLOCKED · This exercise can never authorize publication or production.</p>
+  </header>
+  <section class="m15-panel" aria-labelledby="m15-list-title">
+    <h2 id="m15-list-title">Practice checklist only</h2>
+    <p class="m15-help">Selections are illustrative and disappear on reset or reload.
+      Completing all four practice boxes does not make CoinBlink launch-ready.</p>
+    <ul class="m15-items" aria-label="Four fictional release review topics">
+      {checks.map(check=>
+        <li>
+          <label>
+            <input type="checkbox" value={check.id} data-m15-check />
+            <span>{check.label}</span>
+          </label>
+        </li>
+      )}
+    </ul>
+    <p data-m15-progress>0 of 4 practice topics checked.</p>
+    <p data-m15-status aria-live="polite" role="status">RELEASE BLOCKED · {initial.releaseDecision} · Real verification is NOT performed.</p>
+    <button type="button" data-m15-reset>Reset practice checklist</button>
+  </section>
+  <p class="m15-footnote">There is no launch button, approval, account, deploy, publishing, growth campaign,
+    telemetry, live API, payment or user data. A real release needs separate documented owner decisions,
+    verified dependencies, security review, provider licensing, legal approvals and change controls.</p>
+</main>
+<script is:inline type="module" src={jsUrl}></script>
+<link rel="stylesheet" href={cssUrl} />

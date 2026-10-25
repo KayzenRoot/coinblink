@@ -154,3 +154,102 @@ test('P1 SESSION SECURITY: credential revocation between SELECT and UPDATE must 
       'revocation must also prevent renewal of session activity');
   }finally{await mf.dispose();}
 });
+
+
+/** New correction-delta tests: all WebAuthn credentials and D1 data are disposable. */
+async function seededLoginFixture(db,{nowSeconds=20000}={}){
+  const authenticator=makeSyntheticAuthenticator('owner-counter-cas-local');
+  const registrationChallenge='TEST-P1-COUNTER-REG-LOCAL-002';
+  const verified=await verifyRegistrationResponse({
+    response:makeRegistrationResponse(authenticator,{challenge:registrationChallenge}),
+    expectedChallenge:registrationChallenge,expectedOrigin:SYNTHETIC_ORIGIN,expectedRPID:SYNTHETIC_RP_ID,
+    requireUserPresence:true,requireUserVerification:true,
+  });
+  assert.equal(verified.verified,true);
+  await db.prepare('INSERT INTO p1_owner(owner_id,claim_marker,created_at) VALUES (1,?,?)').bind('cas-fixture',nowSeconds-10).run();
+  await db.prepare('INSERT INTO p1_credentials(credential_id,owner_id,public_key,sign_count) VALUES (?,1,?,1)')
+    .bind(authenticator.id,verified.registrationInfo.credential.publicKey).run();
+  const challenge=async(tag)=>{
+    const value='TEST-P1-COUNTER-'+tag+'-002';
+    const hash=createHash('sha256').update(value).digest('hex');
+    await db.prepare('INSERT INTO p1_challenge(digest,credential_id,purpose,origin,rp_id,expires_at) VALUES (?,?,?,?,?,?)')
+      .bind(hash,authenticator.id,'login',SYNTHETIC_ORIGIN,SYNTHETIC_RP_ID,nowSeconds+90).run();
+    return {value,hash,response:makeAuthenticationResponse(authenticator,{challenge:value,counter:2})};
+  };
+  return {authenticator,challenge,nowSeconds,secret:'11'.repeat(32)};
+}
+
+test('P1 COUNTER CAS SECURITY: two valid signed distinct challenges with same positive count admit only one session', {timeout:120000},async()=>{
+  const {mf,db}=await isolated();
+  try{
+    const fx=await seededLoginFixture(db);
+    const [first,second]=await Promise.all([fx.challenge('RACE-ONE'),fx.challenge('RACE-TWO')]);
+    let selected=0,release;
+    const barrier=new Promise(resolve=>{release=resolve;});
+    const coordinated={batch:(statements)=>db.batch(statements),prepare(sql){
+      if(!sql.startsWith('SELECT credential_id,public_key,sign_count FROM p1_credentials'))return db.prepare(sql);
+      return {bind(...values){return {async first(){
+        const row=await db.prepare(sql).bind(...values).first();
+        selected++;
+        if(selected===2)release();
+        await barrier;
+        return row;
+      }};}};
+    }};
+    const calls=[first,second].map(item=>createLocalSession({
+      db:coordinated,secret:fx.secret,nowSeconds:fx.nowSeconds,credentialId:fx.authenticator.id,
+      expectedChallenge:item.value,response:item.response,
+    }).then(()=>true,()=>false));
+    const outcomes=await Promise.all(calls);
+    assert.equal(selected,2,'both assertions read the original sign_count=1 before either batch');
+    assert.equal(outcomes.filter(Boolean).length,1,'duplicate positive sign counter cannot authorize two sessions');
+    assert.equal((await db.prepare('SELECT COUNT(*) n FROM p1_session').first()).n,1,'only one durable session');
+    assert.equal((await db.prepare('SELECT sign_count FROM p1_credentials WHERE credential_id=?').bind(fx.authenticator.id).first()).sign_count,2);
+  }finally{await mf.dispose();}
+});
+
+test('P1 D1 ATOMIC ROLLBACK: failing ticket update and session insert leave no partial authority', {timeout:120000},async()=>{
+  const {mf,db}=await isolated();
+  try{
+    const nowSeconds=20000,token=randomBytes(32).toString('hex');
+    await mintLocalTicket({db,token,nowSeconds});
+    await db.prepare("CREATE TRIGGER synthetic_abort_owner BEFORE UPDATE ON p1_ticket BEGIN SELECT RAISE(ABORT,'synthetic-ticket-error'); END").run();
+    assert.equal(await claimOwnerOnce({db,token,nowSeconds,origin:SYNTHETIC_ORIGIN,expectedOrigin:SYNTHETIC_ORIGIN,marker:'atomic-rollback'}),false);
+    assert.equal((await db.prepare('SELECT count(*) n FROM p1_owner').first()).n,0,'failed transactional ticket must roll back owner INSERT');
+    assert.equal((await db.prepare('SELECT count(*) n FROM p1_ticket WHERE consumed_at IS NOT NULL').first()).n,0);
+    await db.prepare('DROP TRIGGER synthetic_abort_owner').run();
+    const fx=await seededLoginFixture(db);
+    const item=await fx.challenge('ROLLBACK');
+    await db.prepare("CREATE TRIGGER synthetic_abort_session BEFORE INSERT ON p1_session BEGIN SELECT RAISE(ABORT,'synthetic-session-error'); END").run();
+    await assert.rejects(createLocalSession({db,secret:fx.secret,nowSeconds,credentialId:fx.authenticator.id,
+      expectedChallenge:item.value,response:item.response}),/rejected/);
+    assert.equal((await db.prepare('SELECT count(*) n FROM p1_session').first()).n,0);
+    assert.equal((await db.prepare('SELECT consumed_at FROM p1_challenge WHERE digest=?').bind(item.hash).first()).consumed_at,null,'failed batch must roll back challenge consumption');
+    assert.equal((await db.prepare('SELECT sign_count FROM p1_credentials WHERE credential_id=?').bind(fx.authenticator.id).first()).sign_count,1,'failed batch must roll back counter write');
+  }finally{await mf.dispose();}
+});
+
+test('P1 SESSION ROTATION: second successful signed login invalidates old opaque Owner cookie', {timeout:120000},async()=>{
+  const {mf,db}=await isolated();
+  try{
+    const fx=await seededLoginFixture(db);
+    const first=await fx.challenge('ROTATE-ONE');
+    const issued=await createLocalSession({db,secret:fx.secret,nowSeconds:fx.nowSeconds,credentialId:fx.authenticator.id,
+      expectedChallenge:first.value,response:first.response});
+    const oldRequest=new Request(SYNTHETIC_ORIGIN+'/local/owner-readonly',{
+      headers:{'sec-fetch-site':'same-origin',cookie:issued.cookie.split(';')[0]},
+    });
+    assert.equal((await authorizeLocalRead({request:oldRequest,db,secret:fx.secret,nowSeconds:fx.nowSeconds+1})).allowed,true);
+    const second=await fx.challenge('ROTATE-TWO');
+    const refreshed=await createLocalSession({db,secret:fx.secret,nowSeconds:fx.nowSeconds+2,credentialId:fx.authenticator.id,
+      expectedChallenge:second.value,response:makeAuthenticationResponse(fx.authenticator,{challenge:second.value,counter:3})});
+    const newRequest=new Request(SYNTHETIC_ORIGIN+'/local/owner-readonly',{
+      headers:{'sec-fetch-site':'same-origin',cookie:refreshed.cookie.split(';')[0]},
+    });
+    assert.notEqual(refreshed.token,issued.token);
+    assert.equal((await authorizeLocalRead({request:oldRequest,db,secret:fx.secret,nowSeconds:fx.nowSeconds+3})).allowed,false,
+      'rotation must revoke old Owner session on second signed login');
+    assert.equal((await authorizeLocalRead({request:newRequest,db,secret:fx.secret,nowSeconds:fx.nowSeconds+3})).allowed,true);
+    assert.equal((await db.prepare('SELECT count(*) n FROM p1_session WHERE revoked_at IS NULL').first()).n,1);
+  }finally{await mf.dispose();}
+});

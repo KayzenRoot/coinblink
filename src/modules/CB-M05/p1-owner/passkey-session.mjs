@@ -60,17 +60,25 @@ export async function createLocalSession({
   }
   const raw=token(),sessionDigest=await digestLocalSession(secret,raw),challengeDigest=await digest(expectedChallenge);
   try{
-    await db.batch([
+    const transaction=await db.batch([
       db.prepare(
         'UPDATE p1_challenge SET consumed_at=? WHERE digest=? AND credential_id=? AND origin=? AND rp_id=? AND purpose=? AND consumed_at IS NULL AND expires_at>?'
       ).bind(nowSeconds,challengeDigest,credentialId,ORIGIN,RPID,'login',nowSeconds),
       db.prepare(
-        'UPDATE p1_credentials SET sign_count=? WHERE credential_id=? AND sign_count=? AND revoked_at IS NULL'
+        'UPDATE p1_credentials SET sign_count=? WHERE credential_id=? AND sign_count=? AND revoked_at IS NULL AND changes()=1'
       ).bind(newCounter,credentialId,stored.sign_count),
       db.prepare(
-        'INSERT INTO p1_session(digest,owner_id,credential_id,challenge_digest,issued_at,last_seen_at,expires_at,revoked_at) SELECT ?,1,c.credential_id,ch.digest,?,?,?,NULL FROM p1_challenge ch JOIN p1_credentials c ON c.credential_id=ch.credential_id JOIN p1_owner o ON o.owner_id=1 WHERE ch.digest=? AND ch.credential_id=? AND ch.consumed_at=? AND ch.expires_at>? AND c.sign_count=? AND c.revoked_at IS NULL'
+        'INSERT INTO p1_session(digest,owner_id,credential_id,challenge_digest,issued_at,last_seen_at,expires_at,revoked_at) SELECT ?,1,c.credential_id,ch.digest,?,?,?,NULL FROM p1_challenge ch JOIN p1_credentials c ON c.credential_id=ch.credential_id JOIN p1_owner o ON o.owner_id=1 WHERE ch.digest=? AND ch.credential_id=? AND ch.consumed_at=? AND ch.expires_at>? AND c.sign_count=? AND c.revoked_at IS NULL AND changes()=1'
       ).bind(sessionDigest,nowSeconds,nowSeconds,nowSeconds+43200,challengeDigest,credentialId,nowSeconds,nowSeconds,newCounter),
+      // Rotate all earlier LOCAL Owner sessions only after this signed login inserts its session.
+      // A failed CAS or challenge consumption cannot revoke an unrelated valid session.
+      db.prepare(
+        'UPDATE p1_session SET revoked_at=? WHERE owner_id=1 AND digest<>? AND revoked_at IS NULL AND EXISTS (SELECT 1 FROM p1_session active WHERE active.digest=? AND active.owner_id=1 AND active.revoked_at IS NULL)'
+      ).bind(nowSeconds,sessionDigest,sessionDigest),
     ]);
+    // D1.batch is transactional; zero-row conditional steps must never grant a session.
+    if(transaction?.slice(0,3).length!==3||transaction.slice(0,3).some(x=>x?.success!==true||x?.meta?.changes!==1)||
+      transaction[3]?.success!==true)throw new Error('Counter or challenge CAS rejected');
     const found=await db.prepare('SELECT digest FROM p1_session WHERE digest=? AND challenge_digest=? AND revoked_at IS NULL').bind(sessionDigest,challengeDigest).first();
     if(!found)throw new Error('No consumed valid synthetic challenge');
     return Object.freeze({

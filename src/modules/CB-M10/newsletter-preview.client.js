@@ -98,7 +98,11 @@
           orderStatus.textContent = "Moved " + story.title
             + (direction < 0 ? " up" : " down")
             + " in the local preview. Nothing was saved or sent.";
-          (direction < 0 ? up : down).focus();
+          // Never focus a button disabled by moving to the first or last edge.
+          // Preserve keyboard continuity on the other enabled movement.
+          const preferred = direction < 0 ? up : down;
+          const alternate = direction < 0 ? down : up;
+          (preferred.disabled ? alternate : preferred).focus();
         };
         up.addEventListener("click", () => shift(-1));
         down.addEventListener("click", () => shift(1));

@@ -11,7 +11,7 @@ if(choice instanceof HTMLSelectElement && listing instanceof HTMLElement &&
     listing.replaceChildren();
     const key=choice.value;
     const raw=choice.selectedOptions.item(0)?.dataset.m13Snapshot;
-    let envelope=null;
+    let envelope;
     try{envelope=JSON.parse(raw||"null");}catch{envelope=null;}
     const preview=envelope?.preview;
     const valid=Object.hasOwn(known,key) && envelope?.status==="EMPTY_LAYOUT_ONLY" &&

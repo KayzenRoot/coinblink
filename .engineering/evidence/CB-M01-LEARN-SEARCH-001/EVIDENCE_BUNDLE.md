@@ -47,3 +47,14 @@ Source: owner-provided SonarCloud screenshots for PR #245 showing 3 OPEN MEDIUM 
 - Gate: revalidate all applicable checks and Sonar findings on corrected HEAD, zero HIGH/CRITICAL or other blocking issues, effective GitHub protection and mergeability before any conditional merge. No bypass.
 
 STOP: Await corrected HEAD evidence and issue classification; no deploy, publication, production brand integration, paid APIs or checkpoint promotion.
+
+## Correction Delta 2 - 2026-10-25 - HIGH maintainability cognitive complexity
+
+- User-provided SonarCloud screenshot identified the remaining issue on `src/modules/CB-M01/learning-search.client.mjs`: `Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed`, impact **HIGH Maintainability**. In the corrected previous HEAD `fd2c68b7f28ba2d67d7b0c52fa4aa82d13e1264e`, SonarCloud reported one new issue (Quality Gate PASS, but HIGH finding still blocks approval).
+- Context lock: protected `main` `502ecd3bea687dac97826bdcf21d9300c69a4331`, PR #245 parent `fd2c68b7f28ba2d67d7b0c52fa4aa82d13e1264e`; preserve six SSR guide entries, local search, no-JS, English/PT-BR, `DEMO_ONLY`, Golden/SVG, header, favicon, rights, security and release restrictions.
+- Necessary targeted refactor: extract localized singular/plural match count formatting to `formatMatchCount(visible)` outside `update`, reducing conditional nesting within `update` while maintaining identical string output. No new API/network, side effects or telemetry.
+- Extend the existing M01 E2E to assert the six-guide plural result on queries `GUIDE`/`GUIA` as well as the pre-existing singular, empty, Escape, clear and no-JS coverage.
+- At commit time source SHA guards/diff and exact string substitution are proven. This document does **not** claim new HEAD CI, SonarCloud or runtime PASS until read back from GitHub.
+- Acceptance gate: all exact new HEAD applicable checks success (Build, SonarCloud, Socket, lint/typecheck, regression), no remaining new HIGH/CRITICAL Sonar finding, no unclassified blocker, zero unresolved review threads, unchanged main and effective branch protection. Squash merge NORMAL only under the user's previously stated conditional PR-specific authorization, if every gate is positively verified and no SHA drift.
+
+STOP: `CORRECTION REQUIRED` if Sonar new HIGH remains, a required check fails, or unverified; otherwise `READY_ELIGIBLE` for conditional squash only. Absolutely no bypass/deploy/gastos/rights approval/checkpoint promotion.

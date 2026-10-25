@@ -20,6 +20,10 @@ for (const [locale, label, query, clearText, emptyText] of [
     await expect(search).toBeVisible();
     await expect(guides.filter({ visible: true })).toHaveCount(6);
 
+    await search.fill(locale === "/en" ? "GUIDE" : "GUIA");
+    await expect(guides.filter({ visible: true })).toHaveCount(6);
+    await expect(page.locator("[data-learning-status]")).toContainText(locale === "/en" ? "6 guides found" : "6 guias encontrados");
+
     await search.fill(query);
     await expect(guides.filter({ visible: true })).toHaveCount(1);
     await expect(page.locator("[data-learning-status]")).toContainText(locale === "/en" ? "1 guide found" : "1 guia encontrado");

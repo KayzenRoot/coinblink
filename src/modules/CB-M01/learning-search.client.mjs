@@ -12,6 +12,13 @@ if (section) {
     .replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase(pt ? "pt-BR" : "en");
   const indexes = cards.map((card) => normalize(card.textContent ?? ""));
 
+  function formatMatchCount(visible) {
+    if (pt) {
+      return visible + (visible === 1 ? " guia encontrado." : " guias encontrados.");
+    }
+    return visible + (visible === 1 ? " guide found." : " guides found.");
+  }
+
   function update() {
     const query = normalize(search.value.trim().slice(0, 80));
     let visible = 0;
@@ -30,13 +37,7 @@ if (section) {
         ? "Nenhum guia corresponde à busca. Tente outro termo."
         : "No guides match your search. Try another term.";
     } else {
-      let suffix;
-      if (pt) {
-        suffix = visible === 1 ? " guia encontrado." : " guias encontrados.";
-      } else {
-        suffix = visible === 1 ? " guide found." : " guides found.";
-      }
-      status.textContent = visible + suffix;
+      status.textContent = formatMatchCount(visible);
     }
   }
 

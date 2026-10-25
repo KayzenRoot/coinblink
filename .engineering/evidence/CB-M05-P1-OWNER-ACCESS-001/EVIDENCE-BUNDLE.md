@@ -1,6 +1,6 @@
 # CB-M05-P1-OWNER-ACCESS-001 — HIGH_ASSURANCE LOCAL Evidence Bundle
 
-**State (current correction):** LOCAL_HIGH_ASSURANCE_CORRECTION_GREEN_AT_IMPLEMENTATION_SHA / FINAL_EVIDENCE_HEAD_RECHECK_REQUIRED / DRAFT / PRODUCTION_NOT_ADMITTED / NO_READY_OR_MERGE.  
+**State (current correction):** CB-M05-P1-OWNER-ACCESS-001 LOCAL_DELTA_2_GREEN_ON_IMPLEMENTATION_SHA / EVIDENCE_HEAD_RECHECK_REQUIRED / HUMAN_REVIEW_PENDING / DRAFT / NO_READY_NO_MERGE_NO_DEPLOY.
 **Context Lock (original implementation, historical)**: `KayzenRoot/coinblink/main@e6620609ab95fdf75e20c3bf3132a829bf43af9c`, exact SHA revalidated on 2026-10-24.  
 **Docs canonical on locked main:** `docs/architecture/ADR-CB-M05-P1-OWNER-ACCESS-001.md`, `docs/security/CB-M05-P1-OWNER-ACCESS-THREAT-MODEL.md`, `docs/product/CB-M05-P1-OWNER-ACCESS-001.md`.
 
@@ -130,3 +130,47 @@ The commit adding this section changes **only** this Evidence Bundle; its new HE
 - **Checkpoint Delta PROPOSED ONLY**: `CB-M05-P1-OWNER-ACCESS-001 LOCAL_SECURITY_CORRECTION_GREEN`, for audit review; **not promoted to canonical checkpoint**.
 - This evidence-only commit will create another HEAD; **all applicable checks, 9 blobs, 10 paths, reviews, threads, Sonar/Socket need a fresh exact-HEAD check after it**. Prior GREEN evidence proves the implementation SHA, not an untested future HEAD.
 - **Verdict before final-HEAD audit:** `CORRECTION_GREEN / FINAL_HEAD_GATES_PENDING / SOCKET_NOT_INDEPENDENTLY_VERIFIED / PR_DRAFT / NO_READY / NO_MERGE / NO_DEPLOY / NO_PRODUCTION_AUTHORITY`.
+
+## HIGH_ASSURANCE Correction Delta 2 — 2026-10-24 (UTC Actions 2026-10-25), LOCAL_ONLY
+
+**Authorization:** narrowly scoped to PR #233, 10 existing allowed paths, RED test-first for positive WebAuthn sign counter CAS, D1 rollback, session rotation, followed by minimal GREEN implementation, P1 LCOV only in `.github/workflows/m05-owner-access.yml`, no other changes.
+
+### Pre-write Context Lock / collision attestation
+- `main` locked at `524a93a970af9cf8cfb411f8ba7aa9f57ca79603` and PR initial HEAD at `eb51fa3d1363d3076f8de321343168cfba32c244`; 9 critical main blobs **9/9 exactly matched**.
+- The PR modified **10/10 pre-existing approved paths**, no added path, and no direct collisions with the 7 changed paths of main since `e6620609ab95fdf75e20c3bf3132a829bf43af9c`, or the 13 other open PRs.
+- No branch/ruleset/checkpoint changes, real identity, remote D1, secret, cost, production wiring, Ready, merge or deploy.
+
+### Hosted test-first RED: `9455b0d31be5af0291e709f2c71fe480d3447413`
+- Only `test/modules/CB-M05/p1-owner-race.test.mjs` changed in RED.
+- [M05 Owner hosted RED 40146093064](https://github.com/KayzenRoot/coinblink/actions/runs/40146093064), Node/D1 job 121027630700: **14 tests, 12 PASS, 2 FAIL, 0 skipped**.
+- Genuine behavior failure **P1 COUNTER CAS SECURITY**: two valid ES256 assertions with distinct D1 challenges and the same positive counter 2, coordinated to read stored count 1 before either transaction: **two sessions granted instead of at most one**.
+- Genuine behavior failure **P1 SESSION ROTATION**: second signed login leaves earlier opaque session cookie authorized.
+- **P1 D1 ATOMIC ROLLBACK** test **PASS without correction**: injected transaction-aborting SQL triggers in ticket and session persistence roll back partial Owner, challenge and sign-counter state. This passing case was not relabeled RED.
+- Dependent M05 Chromium SKIPPED during RED; older unrelated check results do not prove these new cases.
+
+### Minimal code correction and tested GREEN
+- Implementation-only commit `446e0518828b3ef454ee16b5407ff3da63934ebc`, path **only** `src/modules/CB-M05/p1-owner/passkey-session.mjs`:
+  1. Guard credential count CAS on actual successful challenge consumption via `changes()=1`.
+  2. Guard new session INSERT on the immediately preceding successful counter CAS via `changes()=1`.
+  3. Check the first three batch steps each affected exactly one row, and fourth step succeeded; non-success denies signed session.
+  4. Atomically revoke previous active Owner sessions only if the newly authenticated session exists, keeping a new session active. Failed counter CAS does not revoke someone else's session.
+- Do **not** claim this production-ready: the proof is D1 LOCAL with disposable authenticators and `owner.example.test`.
+- Workflow-only commit `adec665681f3216ab6a29dbcbae7b0b02fd612c8`, path **only** `.github/workflows/m05-owner-access.yml`: repeat the P1 Node tests with Node 22.19.0 experimental native LCOV for `src/modules/CB-M05/p1-owner/**`, fail if no instrumented covered lines, log exact numerator/denominator, upload `cb-m05-p1-owner-lcov` (retention 7 days). The global quality workflow / Sonar configuration is **unchanged**.
+- [Exact GREEN and LCOV run 40146265521](https://github.com/KayzenRoot/coinblink/actions/runs/40146265521), Node/D1 job 121028211521:
+  - **14/14 P1 Owner tests PASS**, including counter CAS, rotation, injected D1 rollback; **19/19 WebAuthn cryptographic tests PASS**.
+  - Existing Worker bootstrap 100-way claims: **three 1-of-100 accepted / 99 denied trials, zero D1 errors**.
+  - Native **focused P1 LCOV**: **189/196 lines, 96.43%; 79/94 branches, 84.04%**. This is **NOT** global repository coverage and **NOT** the SonarCloud measured new-code coverage.
+  - LCOV artifact: `cb-m05-p1-owner-lcov`, ID `12580642511`, size 1610 bytes, expires **2026-11-01 00:20 UTC**.
+  - Chromium job 121028392221: **production /admin 404 denial PASS** and **legacy LOCAL D1/Chromium passkey negative regression PASS**.
+  - All seven GitHub Actions workflows on `adec665681f3216ab6a29dbcbae7b0b02fd612c8`: **7/7 SUCCESS** (M05 Owner, CI quality, Build, PR Assurance, Reviewdog, M05 local CMS browser, M01-M05 browser).
+  - Native GitHub Check Runs: **16/16 SUCCESS**, including **3/3 branch-required checks** (`Build (Ubuntu)`, `SonarCloud Code Analysis`, `Socket Security: Pull Request Alerts`); source GitHub SHA matches `adec665681f3216ab6a29dbcbae7b0b02fd612c8`.
+  - SonarCloud `Quality Gate passed` and 0 new issues/0 hotspots; its coverage percentage must be reported **separately** from Node focused LCOV.
+  - Socket PR Alerts SUCCESS with result **Skipped: no net dependency changes**; Socket Project Report **SUCCESS**, [versioned report](https://socket.dev/dashboard/org/nexlabs/sbom/a018882f-f2b3-4f8e-9683-ebbb63a150be).
+
+### REVIEW / remaining independent gates and STOP
+- The prior formal GitHub review [#5640709597](https://github.com/KayzenRoot/coinblink/pull/233) by `kayzenweb3` is `COMMENTED` and anchored to the **older** HEAD `eb51fa3d1363d3076f8de321343168cfba32c244`; it is **not** an exact-HEAD APPROVED or demonstrably independent human review.
+- Technical LOCAL correction has GREEN test evidence; **independent human approval remains NOT_PROVEN**, and production identity/recovery/physical passkey independence/IAM/remote D1/migrations remain NOT_RUN.
+- No merge, Ready, cloud resources, publishing, spends, external credentials, real passkeys, checkpoint promotion or deployment authorized or executed.
+- **Historical supersession:** earlier Evidence Bundle text mentioning Socket NOT_VERIFIED / ZERO submitted reviews / final HEAD pending reflects earlier historical commits. The 2026-10-24 16/16 external check-run attestation on `adec665` supersedes those statuses for that implementation; no implication of HUMAN APPROVAL.
+- **Last evidence-only write creates a NEW PR HEAD**; independently revalidate its exact SHA against main, changed paths, all applicable check runs, SonarCloud and Socket, review state and threads. Do not label a pending run as PASS.
+- **Pre-final-HEAD verdict:** `CORRECTION_DELTA_2_LOCAL_GREEN / P1_LCOV_INSTRUMENTED / EVIDENCE_HEAD_RECHECK_REQUIRED / HUMAN_REVIEW_PENDING / DRAFT / NO_READY_NO_MERGE_NO_DEPLOY`.

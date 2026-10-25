@@ -375,6 +375,8 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
           id, value: '', hidden: false, disabled: false, textContent: '', children: [],
           handlers: {},
           addEventListener(type, fn) { this.handlers[type] = fn; },
+          setAttribute() {},
+          removeAttribute() {},
           append(child) { this.children.push(child); },
           replaceChildren() { this.children = []; },
           reset() {
@@ -394,6 +396,7 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     element('draft').elements = { namedItem(name) { return formFields[name]; } };
     const browserDocument = {
       getElementById: element,
+      addEventListener() {},
       createElement: () => ({
         textContent: '', children: [], handlers: {},
         addEventListener(name, handler) { this.handlers[name] = handler; },
@@ -445,11 +448,12 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     }
     runInNewContext(LOCAL_CMS_UI_SCRIPT, {
       document: browserDocument,
-      window: { PublicKeyCredential: function PublicKeyCredential() {} },
+      window: { PublicKeyCredential: function PublicKeyCredential() {}, addEventListener() {} },
       navigator: { credentials: credentialApi },
       fetch: fetcher,
       FormData: FakeFormData,
       Uint8Array, crypto: globalThis.crypto,
+      setTimeout: () => 1, clearTimeout() {},
       atob: value => Buffer.from(value, 'base64').toString('binary'),
       btoa: value => Buffer.from(value, 'binary').toString('base64'),
     });
@@ -527,7 +531,7 @@ test('M05 LOCAL CMS 08: browser UI controller logs in, creates, revises and logs
     assert.equal(element('revision').value, '0');
     assert.equal(element('items').children.length, 0, 'HTTP 401 removes stale list');
     assert.equal(element('session-status').textContent, 'Not authenticated');
-    assert.match(element('message').textContent, /Could not refresh local drafts/);
+    assert.match(element('message').textContent, /session expired or was revoked/);
   } finally { await ctx.mf.dispose(); }
 });
 
@@ -616,6 +620,7 @@ test('M05 LOCAL CMS 09: Chromium real page, browser virtual passkey, D1 draft an
     const button = page.locator('#items button').first();
     assert.equal(await button.count(), 1);
     await button.click();
+    await page.getByText('Loaded draft revision 1').waitFor({ timeout: 10_000 });
     await page.locator('[name="title"]').fill('New verified browser passkey draft revision');
     await page.locator('#save').click();
     await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout: 10_000 });
@@ -832,6 +837,15 @@ async function openWorkerHostedBootstrapD1(options = {}) {
     if (options.applySchema !== false) {
       for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
     }
+    const seedHandler = createLocalCmsHandler(Number.isFinite(options.nowMs) && options.nowMs > 0
+      ? { now: () => options.nowMs } : {});
+    const seedEnv = {
+      CB_M05_LOCAL_TEST_ONLY: 'true', CMS_D1_LOCAL: db, CMS_TEST_HMAC_KEY: secret,
+    };
+    // Seed requests use the same local D1 and unchanged handler without adding
+    // one TCP dispatch per fixture; the measured claim burst still runs in workerd.
+    const seedRequest = (route, method = 'GET', body = undefined) =>
+      seedHandler(makeRequest(route, method, body), seedEnv);
     const dispatch = (route, method = 'GET', body = undefined, extraHeaders = {}) => mf.dispatchFetch(CMS_TEST_ORIGIN + route, {
       method,
       headers: {
@@ -849,7 +863,7 @@ async function openWorkerHostedBootstrapD1(options = {}) {
       return (await response.json()).statuses;
     };
     const ticket = () => issueBootstrapTicket(db, secret, Math.floor(options.nowMs / 1000 || Date.now() / 1000));
-    return { mf, db, dispatch, ticket, race, secret, persistencePath };
+    return { mf, db, dispatch, seedRequest, ticket, race, secret, persistencePath };
   } catch (error) {
     await mf.dispose();
     throw error;
@@ -889,7 +903,7 @@ async function runWorkerBootstrapRace(contenders, trial) {
     for (let i = 0; i < contenders; i++) {
       const ticket = await ctx.ticket();
       const authenticator = makeSyntheticAuthenticator('worker-' + trial + '-' + i);
-      const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+      const challengeResponse = await ctx.seedRequest('/local/bootstrap/challenge', 'POST', { ticket });
       assert.equal(challengeResponse.status, 200);
       contenderSet.push({ ticket, authenticator, challenge: (await challengeResponse.json()).challenge });
     }
@@ -943,7 +957,7 @@ async function runWorkerInTickRace(contenders, trial) {
     for (let i = 0; i < contenders; i++) {
       const ticket = await ctx.ticket();
       const authenticator = makeSyntheticAuthenticator('tick-' + trial + '-' + i);
-      const challengeResponse = await ctx.dispatch('/local/bootstrap/challenge', 'POST', { ticket });
+      const challengeResponse = await ctx.seedRequest('/local/bootstrap/challenge', 'POST', { ticket });
       assert.equal(challengeResponse.status, 200);
       const { challenge } = await challengeResponse.json();
       contenderSet.push({ authenticator, challenge });

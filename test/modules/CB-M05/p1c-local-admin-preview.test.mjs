@@ -2,9 +2,13 @@
 // mapped only through the isolated synthetic HTTPS Origin. No public admin deploy.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { parseLocalDraftMarkdown } from '../../../src/modules/CB-M05/local-draft-markdown.mjs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { listSyntheticSources } from '../../../src/modules/CB-M03/source-lab.mjs';
+import { createMockSourceTransfer } from '../../../src/modules/CB-M03/source-transfer.mjs';
+import { createMockResearchTransfer } from '../../../src/modules/CB-M08/research-transfer.mjs';
 import { startLocalCmsPreview } from './p1c-local-preview.mjs';
 
 test('M05 local /admin lets the synthetic Owner log in, create a D1 draft and revoke session', { timeout: 120_000 }, async () => {
@@ -304,4 +308,249 @@ test('M06-C private review queue filters listed drafts and preserves protected e
     assert.equal(await page.locator('#m06-triage-filter').inputValue(),'all');
     assert.equal(preview.networkAttempts.filter(x=>!x.allowed).length,0);
   } finally { await preview.close(); }
+});
+
+test('M06 Owner queue shows only current revision process decisions and scrubs after logout', {timeout:120000}, async () => {
+  const preview = await startLocalCmsPreview({headless:true,admin:true});
+  try {
+    const page = preview.page;
+    assert.equal(await page.locator('#m06-review-unreviewed').isVisible(),false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    await page.locator('[name="title"]').fill('Synthetic Owner queue handoff title');
+    await page.locator('[name="summary"]').fill('Private synthetic process review queue never authorizes publishing');
+    await page.locator('[name="body"]').fill('PRIVATE_OWNER_BODY_NEVER_IN_QUEUE');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/private-queue');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({timeout:20000});
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-unreviewed')?.textContent === '1');
+    await page.locator('#m06-review-filter').selectOption('current-unreviewed');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    await page.locator('#m06-review-filter').selectOption('private-preview-reviewed');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    await page.locator('#owner-review-note').fill('Local review only; no verified sources, licences or publication.');
+    page.once('dialog', dialog=>dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-previewed')?.textContent === '1');
+    assert.equal(await page.locator('#m06-review-unreviewed').textContent(),'0');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    assert.match(await page.locator('#m06-review-list').innerText(),/PRIVATE_PREVIEW_REVIEWED/u);
+    assert.doesNotMatch(await page.locator('#m06-review-list').innerText(),/Local review only|PRIVATE_OWNER_BODY_NEVER_IN_QUEUE/u);
+    await page.locator('[name="title"]').fill('Synthetic Owner queue revised title');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({timeout:20000});
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-unreviewed')?.textContent === '1');
+    assert.equal(await page.locator('#m06-review-previewed').textContent(),'0');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    await page.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await page.locator('#owner-review-note').fill('New revision requires changes and remains strictly private.');
+    page.once('dialog', dialog=>dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.waitForFunction(() => globalThis.document.querySelector('#m06-review-changes')?.textContent === '1');
+    await page.locator('#m06-review-filter').selectOption('private-changes-requested');
+    assert.equal(await page.locator('#m06-review-list li').count(),1);
+    const listing = await page.evaluate(() => fetch('/admin/articles').then(r=>r.json()));
+    assert.equal(listing.drafts[0].current_review_decision,'CHANGES_REQUESTED');
+    assert.equal(listing.drafts[0].status,'draft');
+    assert.ok(!JSON.stringify(listing).includes('New revision requires changes'));
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated',{exact:true}).waitFor({timeout:20000});
+    assert.equal(await page.locator('#m06-review-unreviewed').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-previewed').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-changes').textContent(),'UNAVAILABLE');
+    assert.equal(await page.locator('#m06-review-list li').count(),0);
+    assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r=>r.status)),401);
+    assert.equal(preview.networkAttempts.filter(x=>!x.allowed).length,0);
+  } finally { await preview.close(); }
+});
+test('M03 to M05 local Owner source report is inspected, applied only on explicit click and never auto-saved', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = preview.page;
+    const file = page.locator('#source-transfer-file');
+    assert.equal(await file.isVisible(), false, 'unsigned visitor cannot access protected editor');
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    const source = page.locator('[name="sourceUrl"]');
+    const canonical = createMockSourceTransfer(listSyntheticSources().items[0]);
+    const payload = JSON.stringify(canonical);
+    const upload = async (content, name = 'coinblink-m03-demo-source-alpha.json') => {
+      await file.setInputFiles({ name, mimeType: 'application/json', buffer: Buffer.from(content) });
+    };
+    await upload(JSON.stringify({ ...canonical, rights: 'APPROVED' }));
+    await page.getByText('Rejected: report differs from the three known fictional sources.').waitFor();
+    assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
+    await upload(payload);
+    await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    assert.match(await page.locator('#source-transfer-review').innerText(), /NOT_CLEARED.*NOT_CAPTURED.*NO_DIGEST/u);
+    assert.equal(await source.inputValue(), '', 'inspecting must not modify editor fields');
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0,
+      'no D1 write occurs on read');
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.locator('#source-transfer-apply').click();
+    await page.getByText('Application canceled; no form field changed.').waitFor();
+    assert.equal(await source.inputValue(), '');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#source-transfer-apply').click();
+    await page.getByText(/MOCK source inserted in the form only/).waitFor();
+    assert.equal(await source.inputValue(), canonical.originUrl);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 0,
+      'explicit Apply must not issue a D1 write');
+    // Full local continuation: Owner chooses to save after the safe Apply, then
+    // downloads the already-existing canonical M05 Markdown for M02.
+    await page.locator('[name="title"]').fill('Offline M03 to M05 to M02 demonstration');
+    await page.locator('[name="summary"]').fill('Unverified synthetic source report, saved only after explicit action.');
+    await page.locator('[name="body"]').fill('No rights or verified evidence. Local only.');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1,
+      'only the explicit Save action persists one synthetic draft');
+    const [exported] = await Promise.all([
+      page.waitForEvent('download'),
+      (async () => {
+        page.once('dialog', dialog => dialog.accept());
+        await page.locator('#export-draft').click();
+      })(),
+    ]);
+    const markdown = readFileSync(await exported.path(), 'utf8');
+    const parsed = parseLocalDraftMarkdown(markdown);
+    assert.equal(parsed.source, canonical.originUrl);
+    assert.equal(parsed.title, 'Offline M03 to M05 to M02 demonstration');
+    assert.equal(parsed.ready, true);
+    assert.match(markdown, /WORKING DRAFT ONLY.*Not checked, approved, or published/u);
+    await upload(payload);
+    await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#new-draft').click();
+    assert.equal(await page.locator('#source-transfer-review').isVisible(), false,
+      'new draft must scrub previously inspected report');
+    assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
+    assert.equal(await source.inputValue(), '');
+    await upload(payload);
+    await page.getByText('Inspected only. Click Apply to change the unsaved source field.').waitFor();
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor();
+    assert.equal(await file.isVisible(), false);
+    assert.equal(await file.inputValue(), '');
+    assert.equal(await page.locator('#source-transfer-review').textContent(), '');
+    assert.equal(await page.locator('#source-transfer-apply').isDisabled(), true);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n, 1);
+    assert.equal(preview.networkAttempts.filter(event => !event.allowed).length, 0);
+  } finally { await preview.close(); }
+});
+
+test('M05 LOCAL Owner can inspect immutable per-revision review history; logout scrubs notes', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = preview.page;
+    assert.equal(await page.locator('#owner-review').isVisible(), false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('Synthetic first review history title');
+    await page.locator('[name="summary"]').fill('Fictional local editorial note history summary');
+    await page.locator('[name="body"]').fill('PRIVATE_LOCAL_ARTICLE_BODY');
+    await page.locator('[name="sourceUrl"]').fill('https://example.org/history');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    await page.locator('#owner-review').waitFor({ state:'visible', timeout:20_000 });
+    await page.locator('#owner-review-note').fill('FIRST_PRIVATE_LOCAL_NOTE <img src=x onerror=alert(1)>');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.getByText('Saved Owner review of LOCAL revision 1').waitFor({ timeout:20_000 });
+    await page.locator('#owner-review-history-panel').evaluate(node => { node.open = true; });
+    assert.equal(await page.locator('#owner-review-history li').count(), 1);
+    assert.match(await page.locator('#owner-review-history').innerText(), /Revision 1 \(current\).*FIRST_PRIVATE_LOCAL_NOTE/u);
+    assert.equal(await page.locator('#owner-review-history img').count(), 0, 'private review text is never HTML');
+
+    await page.locator('[name="title"]').fill('Synthetic second review history title');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 2; not published').waitFor({ timeout:20_000 });
+    await page.locator('#owner-review-status').getByText('No review for LOCAL revision 2', { exact:false }).waitFor({ timeout:20_000 });
+    assert.equal(await page.locator('#owner-review-history li').count(), 1);
+    assert.match(await page.locator('#owner-review-history').innerText(), /Revision 1 \(superseded\)/u);
+    await page.locator('#owner-review-decision').selectOption('CHANGES_REQUESTED');
+    await page.locator('#owner-review-note').fill('SECOND_PRIVATE_LOCAL_NOTE requires edits.');
+    page.once('dialog', dialog => dialog.accept());
+    await page.locator('#owner-review-submit').click();
+    await page.getByText('Saved Owner review of LOCAL revision 2').waitFor({ timeout:20_000 });
+    assert.equal(await page.locator('#owner-review-history li').count(), 2);
+    assert.match(await page.locator('#owner-review-history li').first().innerText(), /Revision 2 \(current\).*CHANGES_REQUESTED/u);
+    assert.match(await page.locator('#owner-review-history li').last().innerText(), /Revision 1 \(superseded\)/u);
+    assert.equal((await preview.db.prepare('SELECT status FROM cms_drafts').first()).status, 'draft');
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor({ timeout:20_000 });
+    assert.equal(await page.locator('#owner-review-history li').count(), 0);
+    assert.equal(await page.locator('#owner-review').isVisible(), false);
+    assert.equal(await page.locator('#owner-review-note').inputValue(), '');
+    assert.equal(await page.evaluate(() => fetch('/admin/articles').then(r => r.status)), 401);
+    assert.deepEqual(preview.networkAttempts.filter(q => !q.allowed), []);
+  } finally {
+    await preview.close();
+  }
+});
+
+test('M08 to M05 LOCAL Owner explicitly appends offline blockers to an unsaved body only', { timeout: 120_000 }, async () => {
+  const preview = await startLocalCmsPreview({ headless:true, admin:true });
+  try {
+    const page = preview.page;
+    const input = page.locator('#research-transfer-file');
+    const apply = page.locator('#research-transfer-apply');
+    assert.equal(await input.isVisible(), false, 'protected M08 handoff hidden before synthetic login');
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({timeout:20000});
+    const body = page.locator('[name="body"]');
+    await body.fill('PRIVATE_OWNER_ORIGINAL_COPY');
+    const packet = createMockResearchTransfer('demo-source-alpha','BTC');
+    const upload = content => input.setInputFiles({
+      name:'coinblink-m08-demo-source-alpha-btc.json',
+      mimeType:'application/json',
+      buffer:Buffer.from(content,'utf8'),
+    });
+    await upload(JSON.stringify({...packet,rights:'CLEARED'}));
+    await page.getByText('Rejected: report is not an exact canonical M08 offline brief.').waitFor();
+    assert.equal(await apply.isDisabled(),true);
+    assert.equal(await body.inputValue(),'PRIVATE_OWNER_ORIGINAL_COPY');
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    assert.match(await page.locator('#research-transfer-review').innerText(),/8 blocked checks.*NOT_CLEARED/u);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,0);
+    page.once('dialog', dialog => dialog.dismiss());
+    await apply.click();
+    await page.getByText('Application canceled; no draft field changed.').waitFor();
+    assert.equal(await body.inputValue(),'PRIVATE_OWNER_ORIGINAL_COPY');
+    page.once('dialog', dialog => dialog.accept());
+    await apply.click();
+    await page.getByText(/M08 MOCK blockers appended to the unsaved article body only/).waitFor();
+    const text = await body.inputValue();
+    assert.match(text,/^PRIVATE_OWNER_ORIGINAL_COPY\n\n\[COINBLINK M08 OFFLINE MOCK RESEARCH/u);
+    assert.match(text,/SOURCE\/URL=/u);
+    assert.match(text,/MARKET\/RIGHTS_NOT_CLEARED=/u);
+    assert.equal((await preview.db.prepare('SELECT COUNT(*) AS n FROM cms_drafts').first()).n,0,
+      'Only the separate pre-existing Save action can write local D1');
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    await apply.click();
+    await page.getByText(/M08 note is duplicated, exceeds body limit or is invalid/).waitFor();
+    assert.equal((await body.inputValue()).split('[COINBLINK M08 OFFLINE MOCK RESEARCH').length,2);
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    await page.locator('#refresh').click();
+    await page.getByText('Local test session active').waitFor();
+    await apply.click();
+    await page.getByText(/Stale M08 brief selection/).waitFor();
+    await upload(JSON.stringify(packet));
+    await page.getByText(/Inspected M08 MOCK brief only/).waitFor();
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', {exact:true}).waitFor();
+    assert.equal(await input.isVisible(),false);
+    assert.equal(await input.inputValue(),'');
+    assert.equal(await apply.isDisabled(),true);
+    assert.equal(await page.locator('#research-transfer-review').textContent(),'');
+    assert.equal(await body.inputValue(),'');
+    assert.deepEqual(preview.networkAttempts.filter(x=>!x.allowed),[]);
+  } finally {
+    await preview.close();
+  }
 });

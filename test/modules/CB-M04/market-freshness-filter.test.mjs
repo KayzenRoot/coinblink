@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import { listMockMarkets } from "../../../src/modules/CB-M04/market-lab.mjs";
+import { inspectMockReadiness } from "../../../src/modules/CB-M04/market-readiness.mjs";
 
 const clientSource = readFileSync(new URL("../../../src/modules/CB-M04/market-lab.client.js", import.meta.url), "utf8");
 
@@ -12,9 +13,10 @@ function makeWorkbench() {
   const freshness = { value: "all", addEventListener: (event, callback) => listeners.set("freshness:" + event, callback) };
   const count = { textContent: "3 unavailable example assets" };
   const empty = { hidden: true };
-  const first = { value: "" };
-  const second = { value: "" };
+  const first = { value: "", addEventListener: (event, callback) => listeners.set("first:" + event, callback) };
+  const second = { value: "", addEventListener: (event, callback) => listeners.set("second:" + event, callback) };
   const comparison = { textContent: "" };
+  const gaps = { hidden: true, textContent: "" };
   const compare = { addEventListener: (event, callback) => listeners.set("compare:" + event, callback) };
   const rows = listMockMarkets().items.map(item => ({
     dataset: {
@@ -23,6 +25,9 @@ function makeWorkbench() {
       m04Asset: item.asset,
     },
     hidden: false,
+    querySelectorAll: selector => selector === ".m04-readiness-detail li"
+      ? inspectMockReadiness(item.asset).report.blockers.map(name => ({ textContent: name }))
+      : [],
   }));
   const elements = new Map([
     ["[data-m04-query]", search],
@@ -33,6 +38,7 @@ function makeWorkbench() {
     ["[data-m04-second]", second],
     ["[data-m04-compare]", compare],
     ["[data-m04-comparison]", comparison],
+    ["[data-m04-comparison-gaps]", gaps],
   ]);
   const root = {
     querySelector: selector => elements.get(selector),
@@ -41,7 +47,9 @@ function makeWorkbench() {
   const document = { querySelector: selector => selector === "[data-m04-root]" ? root : null };
   runInNewContext(clientSource, { document }, { filename: "market-lab.client.js" });
   return {
-    search, freshness, count, empty, rows, first, second, comparison,
+    search, freshness, count, empty, rows, first, second, comparison, gaps,
+    changeFirst: () => listeners.get("first:change")(),
+    changeSecond: () => listeners.get("second:change")(),
     onCompare: () => listeners.get("compare:click")(),
     input: () => listeners.get("search:input")(),
     change: () => listeners.get("freshness:change")(),
@@ -95,7 +103,48 @@ test("M04 DOM-only comparison rejects invalid and same-symbol inputs", () => {
   ui.onCompare();
   assert.match(ui.comparison.textContent,/BTC \(STALE\) and ETH \(UNAVAILABLE\)/u);
   assert.match(ui.comparison.textContent,/BOTH NOT LIVE · NO QUOTES · NO TRADING/u);
+  assert.equal(ui.gaps.hidden,false);
+  assert.match(ui.gaps.textContent,/Shared blockers: RIGHTS_NOT_CLEARED, NO_CAPTURED_OBSERVATION, NO_LIVE_FEED/u);
+  assert.match(ui.gaps.textContent,/BTC only: OUTDATED_ILLUSTRATION/u);
+  assert.match(ui.gaps.textContent,/ETH only: NO_ILLUSTRATION_TIMESTAMP/u);
+  ui.second.value="BTC";
+  ui.changeSecond();
+  assert.equal(ui.gaps.hidden,true);
+  assert.equal(ui.gaps.textContent,"");
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden,true);
+  ui.second.value="ETH";
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden,false);
   ui.second.value="UNKNOWN";
   ui.onCompare();
   assert.match(ui.comparison.textContent,/No market data was fetched/u);
+  assert.equal(ui.gaps.hidden,true);
+});
+// CB-P0-FILTER-COMPARISON-VISIBILITY-001 · regression-first; baseline is expected to fail.
+
+
+test("M04: a hidden asset cannot retain or recreate an outdated mock readiness comparison", () => {
+  const ui = makeWorkbench();
+  ui.first.value = "BTC";
+  ui.second.value = "ETH";
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, false);
+  ui.freshness.value = "STALE";
+  ui.change();
+  assert.equal(ui.rows[1].hidden, true);
+  assert.equal(ui.gaps.hidden, true, "Filtered-out asset details must be cleared");
+  assert.equal(ui.gaps.textContent, "");
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, true, "Cannot compare hidden assets");
+  ui.freshness.value = "all";
+  ui.change();
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, false, "Visible assets can be compared again");
+  ui.search.value = "eth";
+  ui.input();
+  assert.equal(ui.rows[0].hidden, true);
+  assert.equal(ui.gaps.hidden, true);
+  ui.onCompare();
+  assert.equal(ui.gaps.hidden, true);
 });

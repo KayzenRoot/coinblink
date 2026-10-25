@@ -12,6 +12,12 @@ export function createLocalSocialPreview(draft, channel) {
   // An existing Owner-guarded M05 D1 listing is the sole permitted source.
   // The M06 validator checks ID, title, status, revision, author and source types.
   const review = createLocalReviewQueue([draft]).rows[0];
+  // A CURRENT saved revision with explicit changes requested must not seed
+  // new social previews, variants, approval events, or calendar ideas.
+  // Prior-revision decisions are absent from the authenticated D1 list.
+  if (review.ownerProcessStatus === 'PRIVATE_CHANGES_REQUESTED') {
+    throw new TypeError('Current LOCAL Owner review requires draft changes');
+  }
   if (typeof draft.summary !== 'string' ||
       draft.summary.trim().length < 20 || draft.summary.length > 400) {
     throw new TypeError('A bounded, nonempty LOCAL summary is required');

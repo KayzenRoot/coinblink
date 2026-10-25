@@ -1,6 +1,8 @@
 ---
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+import NewsLocaleSwitch from "../CB-M09/NewsLocaleSwitch.astro";
+import { getNewsLocaleMeta } from "../CB-M09/news-locale-meta.mjs";
 import { NEWS_MOCK_POLICY } from "./news-workbench.mjs";
 import { createMockReadingPath } from "./news-reader-guide.mjs";
 interface MockItem {
@@ -13,17 +15,19 @@ interface MockItem {
   published: boolean;
   rights: string;
 }
-interface Props { locale?: "en" | "pt-br"; item: MockItem | null; }
+interface Props { locale?: "en" | "pt-br" | "es"; item: MockItem | null; }
 const { locale = "en", item } = Astro.props;
 const copy = newsCopy(locale);
+const localeMeta = getNewsLocaleMeta(locale);
 const path = item ? createMockReadingPath(item.slug) : null;
 const shown = item && item.demo === true && item.published === false
   && item.rights === "SYNTHETIC_NOT_LICENSED_NEWS" ? localizeMockNews(item, locale) : null;
-const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
+const base = "/" + locale + "/news";
 ---
 <main id="main" class="m02-article">
-  <nav aria-label={locale === "pt-br" ? "Navegação" : "Navigation"}><a href={base}>← {copy.back}</a></nav>
-  <LocalJourneyNav locale={locale} current="news" />
+  <nav aria-label={localeMeta.navigation}><a href={base}>← {copy.back}</a></nav>
+  {locale !== "es" && <LocalJourneyNav locale={locale} current="news" />}
+  <NewsLocaleSwitch locale={locale} slug={shown?.slug} />
   {shown ? (
     <article>
       <p class="m02-status">{copy.detailDisclaimer} · {copy[shown.category] ?? shown.category}</p>

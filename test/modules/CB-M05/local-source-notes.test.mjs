@@ -8,7 +8,7 @@ import {
 } from "../../../src/modules/CB-M05/local-source-notes.mjs";
 import {
   prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown,
-} from "../../../public/m05-draft-preview.js";
+} from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 import { addLocalClaimReview, listLocalClaimReviews } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 import { analyzeLocalCitationHygiene } from "../../../src/modules/CB-M05/local-citation-audit.mjs";
 
@@ -160,5 +160,7 @@ test("the UI is scoped outside the original editor, CSP-safe, and makes no exter
   assert.match(module, /MutationObserver\(render\)/u);
   assert.match(module, /textContent/u);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML)\b/u);
-  assert.doesNotMatch(component, /<script>\s*import /u);
+  assert.match(component, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared browser entry is processed by Astro into an external bundle");
+  assert.doesNotMatch(component, /<script\s+is:inline[^>]*>\s*import /u);
 });

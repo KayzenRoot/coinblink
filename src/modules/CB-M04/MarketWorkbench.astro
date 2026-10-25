@@ -79,6 +79,7 @@ const inspected = entries.map(item => ({ item, report: inspectMockReadiness(item
       <button type="button" data-m04-compare>Compare offline readiness</button>
     </div>
     <p role="status" aria-live="polite" data-m04-comparison>Select two different mock assets. Trading remains unavailable.</p>
+    <p class="m04-comparison-gaps" data-m04-comparison-gaps aria-live="polite" hidden></p>
   </section>
   <section class="m04-radar" aria-labelledby="m04-radar-title">
     <small>DEMO ONLY · NO EVENT DATA</small>
@@ -101,6 +102,8 @@ const inspected = entries.map(item => ({ item, report: inspectMockReadiness(item
   .m04-readiness-detail{margin-top:1rem;border-top:1px solid #456e4e;padding-top:.8rem}
   .m04-readiness-detail summary{cursor:pointer;color:#b8f34b}
   .m04-readiness-detail li{overflow-wrap:anywhere;font-size:.9rem}
+  .m04-comparison-gaps{white-space:pre-line;overflow-wrap:anywhere;border-left:3px solid #b8f34b;padding:.75rem;margin-top:.75rem;background:#182920}
+  .m04-comparison-gaps[hidden]{display:none}
   .m04-compare-controls{display:flex;flex-wrap:wrap;align-items:end;gap:1rem}
   .m04-compare-controls label{display:grid;flex:1 1 13rem;gap:.4rem}
   .m04-compare-controls button{background:#b8f34b;color:#102015;font-weight:700;border:0;border-radius:.5rem;min-height:2.75rem;padding:.7rem 1rem;cursor:pointer}

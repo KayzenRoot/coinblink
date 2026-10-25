@@ -1,9 +1,8 @@
 ---
-import {listLocalLaunchChecks,buildLocalLaunchChecklist} from "./local-launch-checklist.mjs";
+import {listLocalLaunchChecks} from "./local-launch-checklist.mjs";
 import cssUrl from "./local-launch-checklist.css?url&no-inline";
 import jsUrl from "./local-launch-checklist.client.js?url&no-inline";
 const checks=listLocalLaunchChecks();
-const initial=buildLocalLaunchChecklist([]);
 ---
 <main id="main" class="m15-lab" data-m15-root>
   <header class="m15-panel">
@@ -28,7 +27,7 @@ const initial=buildLocalLaunchChecklist([]);
       )}
     </ul>
     <p data-m15-progress>0 of 4 practice topics checked.</p>
-    <p data-m15-status aria-live="polite" role="status">RELEASE BLOCKED · {initial.releaseDecision} · Real verification is NOT performed.</p>
+    <p data-m15-status aria-live="polite" role="status">RELEASE BLOCKED · BLOCKED_NOT_ADMITTED · Real verification is NOT performed.</p>
     <button type="button" data-m15-reset>Reset practice checklist</button>
   </section>
   <p class="m15-footnote">There is no launch button, approval, account, deploy, publishing, growth campaign,

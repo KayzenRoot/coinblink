@@ -30,9 +30,13 @@ if (section) {
         ? "Nenhum guia corresponde à busca. Tente outro termo."
         : "No guides match your search. Try another term.";
     } else {
-      status.textContent = pt
-        ? visible + (visible === 1 ? " guia encontrado." : " guias encontrados.")
-        : visible + (visible === 1 ? " guide found." : " guides found.");
+      let suffix;
+      if (pt) {
+        suffix = visible === 1 ? " guia encontrado." : " guias encontrados.";
+      } else {
+        suffix = visible === 1 ? " guide found." : " guides found.";
+      }
+      status.textContent = visible + suffix;
     }
   }
 

@@ -35,3 +35,15 @@ No changes to `public/brand/**`, Golden JPEGs, header JS, layout, `src/pages/**`
 
 ## STOP CONDITION
 `DRAFT_QA_PASS_WAITING_OWNER` if all verified; `BLOCKED_NO_MERGE` if a gate fails or cannot be read. This branch must not merge absent new explicit Owner permission. No deploy, commercial publish, rights update, costs or canonical checkpoint promotion.
+
+## Correction Delta - 2026-10-25 - targeted Sonar maintainability triage
+
+Source: owner-provided SonarCloud screenshots for PR #245 showing 3 OPEN MEDIUM Maintainability findings, two 'Extract this nested ternary operation into an independent statement' in learning-search.client.mjs and one 'Remove this !important and resolve the specificity conflict instead' in learning-search.css. The screenshots show the same nested-ternary message twice; no HIGH/CRITICAL issue is indicated in those screenshots.
+
+- Refactor only locale-dependent singular/plural suffix assignment to separate if (pt) branches with one non-nested ternary apiece, preserving Portuguese/English output exactly.
+- Remove only !important from the learning-section hidden rule. Existing .cb-home .learn-filter[hidden], .cb-home .learn-card[hidden] and .cb-home .learn-filter button[hidden] selectors are more specific than their display rules, including baseline golden-home.css.
+- No changes to guide content, search matching, keyboard controls, no-JS fallback, routes, Golden brand files, header, favicon, deployment or rights.
+- Pre-commit validation: deterministic source match and blob SHA guards PASS. Corrected HEAD CI lint, typecheck, build, Chromium E2E and Sonar triage PENDING. Previous 21/21 checks and 66 browser tests applied ONLY to old HEAD 6f36c1703dfa0da01ec6c87537b20c8e0b57bf0d.
+- Gate: revalidate all applicable checks and Sonar findings on corrected HEAD, zero HIGH/CRITICAL or other blocking issues, effective GitHub protection and mergeability before any conditional merge. No bypass.
+
+STOP: Await corrected HEAD evidence and issue classification; no deploy, publication, production brand integration, paid APIs or checkpoint promotion.

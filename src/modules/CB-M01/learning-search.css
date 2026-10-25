@@ -49,5 +49,5 @@
 .cb-home .learn-filter[hidden],
 .cb-home .learn-card[hidden],
 .cb-home .learn-filter button[hidden] {
-  display: none !important;
+  display: none;
 }

@@ -2,7 +2,7 @@
 // NO prices, credit cards, database, remote providers, API keys, payments or billable quotas.
 const EXAMPLES = Object.freeze([
   Object.freeze({ id: "sample", label: "Sample sandbox", limit: 5 }),
-  Object.freeze({ id: "prototype", label: "Prototype sandbox", limit: 10 }),
+  Object.freeze({ id: "prototype", label: "Builder sandbox", limit: 10 }),
   Object.freeze({ id: "lab", label: "Learning lab", limit: 20 }),
 ]);
 const LIMITS = Object.freeze(Object.fromEntries(EXAMPLES.map(x => [x.id, x.limit])));

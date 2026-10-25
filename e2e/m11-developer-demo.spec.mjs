@@ -90,3 +90,64 @@ test("M11 /developers has no document-wide horizontal scrolling at 320 and 390 p
     expect(measures.document, "Horizontal overflow in /developers at " + width + " px").toBeLessThanOrEqual(measures.viewport);
   }
 });
+
+
+test("M11 P1 inline API response inspectors show exact fictional GET JSON with keyboard and no egress", async ({ page, request }) => {
+  const outbound = [], mutations = [], errors = [];
+  page.on("request", req => {
+    if (!req.url().startsWith("http://127.0.0.1:4321/") && !req.url().startsWith("data:")) outbound.push(req.url());
+    if (!["GET", "HEAD"].includes(req.method())) mutations.push(req.url());
+  });
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/developers");
+  const articles = page.locator('details[data-m11-example="articles"]');
+  const markets = page.locator('details[data-m11-example="market-readiness"]');
+  await expect(articles).toHaveCount(1);
+  await expect(markets).toHaveCount(1);
+  await expect(articles.locator("pre")).toBeHidden();
+  await expect(markets.locator("pre")).toBeHidden();
+  await articles.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  await expect(articles).toHaveAttribute("open", "");
+  await expect(articles.locator("pre")).toBeVisible();
+  const demoArticles = JSON.parse(await articles.locator("code").textContent());
+  const articlesResponse = await request.get("/v1/demo/articles");
+  expect(articlesResponse.status()).toBe(200);
+  expect(demoArticles).toEqual(await articlesResponse.json());
+  expect(demoArticles).toMatchObject({mode:"SYNTHETIC", status:"DEMO_ONLY", live:false, redistributable:false});
+  expect(demoArticles.items).toHaveLength(3);
+  const articlesRaw=JSON.stringify(demoArticles);
+  for(const forbidden of ['"body"','"private_notes"','"api_key"','"access_token"']) expect(articlesRaw).not.toContain(forbidden);
+  await markets.locator("summary").focus();
+  await page.keyboard.press("Space");
+  await expect(markets.locator("pre")).toBeVisible();
+  const demoMarkets = JSON.parse(await markets.locator("code").textContent());
+  const marketResponse = await request.get("/v1/demo/market-readiness");
+  expect(marketResponse.status()).toBe(200);
+  expect(demoMarkets).toEqual(await marketResponse.json());
+  expect(demoMarkets).toMatchObject({mode:"SYNTHETIC", status:"BLOCKED_DEMO", live:false, redistributable:false});
+  expect(demoMarkets.items).toHaveLength(3);
+  for(const market of demoMarkets.items) {
+    expect(market.numericQuote).toBeNull();
+    expect(market.publiclyUsable).toBe(false);
+    expect(market.rights).toBe("NOT_CLEARED");
+  }
+  const marketRaw=JSON.stringify(demoMarkets);
+  for(const forbidden of ['"numericValue"','"provider"','"asOfUTC"','"apiKey"','"accessToken"']) expect(marketRaw).not.toContain(forbidden);
+  for(const width of [320,390,768,1366]) {
+    await page.setViewportSize({width,height:900});
+    const metrics=await page.evaluate(()=>({
+      viewport:document.documentElement.clientWidth,
+      scroll:document.documentElement.scrollWidth,
+    }));
+    expect(metrics.scroll).toBeLessThanOrEqual(metrics.viewport);
+  }
+  const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+  await markets.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  await expect(markets.locator("pre")).toBeHidden();
+  expect(outbound).toEqual([]);
+  expect(mutations).toEqual([]);
+  expect(errors).toEqual([]);
+});

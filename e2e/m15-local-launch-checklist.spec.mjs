@@ -23,7 +23,7 @@ test("M15 local launch checklist never unlocks even with all fictional practice 
     await expect(count).toContainText(String(index+1)+" of 4");
     await expect(verdict).toContainText("RELEASE BLOCKED");
   }
-  await expect(boxes).toBeChecked();
+  for(let index=0;index<4;index++)await expect(boxes.nth(index)).toBeChecked();
   await expect(page.locator("[data-m15-release-action]")).toHaveCount(0);
   await expect(page.getByRole("button",{name:/deploy|publish|approve|go live/i})).toHaveCount(0);
   await boxes.nth(1).uncheck();

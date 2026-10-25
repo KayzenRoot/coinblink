@@ -79,7 +79,7 @@ test("M11 /developers has no document-wide horizontal scrolling at 320 and 390 p
     await page.setViewportSize({ width, height: 850 });
     const response = await page.goto("/developers");
     expect(response?.status()).toBe(200);
-    await expect(page.locator("main pre")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Local request example" }).locator("pre")).toBeVisible();
     const measures = await page.evaluate(() => ({
       viewport: document.documentElement.clientWidth,
       document: document.documentElement.scrollWidth,

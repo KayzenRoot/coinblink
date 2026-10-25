@@ -174,3 +174,37 @@ The commit adding this section changes **only** this Evidence Bundle; its new HE
 - **Historical supersession:** earlier Evidence Bundle text mentioning Socket NOT_VERIFIED / ZERO submitted reviews / final HEAD pending reflects earlier historical commits. The 2026-10-24 16/16 external check-run attestation on `adec665` supersedes those statuses for that implementation; no implication of HUMAN APPROVAL.
 - **Last evidence-only write creates a NEW PR HEAD**; independently revalidate its exact SHA against main, changed paths, all applicable check runs, SonarCloud and Socket, review state and threads. Do not label a pending run as PASS.
 - **Pre-final-HEAD verdict:** `CORRECTION_DELTA_2_LOCAL_GREEN / P1_LCOV_INSTRUMENTED / EVIDENCE_HEAD_RECHECK_REQUIRED / HUMAN_REVIEW_PENDING / DRAFT / NO_READY_NO_MERGE_NO_DEPLOY`.
+
+## HIGH_ASSURANCE Correction Delta 03 - 2026-10-25 - main reconciliation (NO production authority)
+
+### Work Order and authority
+- **Objective:** incorporate new protected main history into existing PR #233 by non-destructive true two-parent Git merge and validate M05 Owner P1 LOCAL tests on the reconciled exact HEAD.
+- **Context:** PR Draft original HEAD `aefcc610b623b00c5fcf005d91295467c05cf82e`, existing historical base `e6620609ab95fdf75e20c3bf3132a829bf43af9c`, protected main locked to `23452177e5bf6734742fa4fbbce2cf2240ad5612`.
+- **Scope:** existing PR #233 10 allowed M05 LOCAL source, fixture, tests, workflow and Evidence Bundle paths only; no new code changes in this correction unless a concrete regression is proven. Exact existing blobs for the other 9 PR files are preserved.
+- **Out of scope:** /admin production enablement, real Owner identities/passkeys, backup factors, lost-device recovery, D1 remote, new migrations, credentials, deploy, spending, publishing, rulesets, canonical checkpoints, other PRs or main writes.
+- **Files/sources read:** ADR CB-M05-P1 OWNER, threat model, proposed Work Order, source modules, fixture schema, E2E, tests, workflow and prior evidence; main and PR Git trees, main protection, 9 critical frozen source paths.
+- **Architecture/security constraints:** immutable singleton owner_id=1; cryptographic WebAuthn with pinned library, immutable origin/RPID synthetic fixture only, UP+UV, challenge and positive sign-count CAS, secure opaque HMAC cookie, revoke/idle/absolute expiry and local D1 transactional rollback. Fail closed; do not widen any administrative or editorial route.
+- **Acceptance criteria:** exact 2-parent merge contains old PR HEAD + current main as parents, and diff to main equals only 10 previously authorized paths; 9/9 critical blobs unchanged, no cross-boundary collision; all exact final-HEAD applicable checks and negative/positive tests PASS, 0 untriaged blocking Sonar/Socket findings and 0 unresolved review threads; independent human review separately required before high-assurance final approval.
+- **Tests:** hosted Node Owner+D1 (14), native focused LCOV, pinned WebAuthn crypto (19), Workerd 2/10/100 claims and revocation/CAS/rollback, Chromium P1 production 404 and local passkey fixture, M01-M05 regression, build/lint/typecheck, Gitleaks, SonarCloud, Socket PR alerts + Project Report and all required check contexts.
+- **Deliverables/review:** same Draft PR, normal two-parent merge and this recorded Correction Delta, exact base/head SHAs, workflow run IDs and checks, future verdict plus proposed checkpoint delta only.
+- **STOP:** correction REQUIRED on any new failing test; BLOCKED for any HIGH/CRITICAL, missing required CI, lost hash lock, unsafe review, unexpected diff or Git ref drift; no Ready, squash to main, deploy or checkpoint promotion.
+
+### Source Check / Context Lock prior to merge
+- Branch path: `feat/cb-m05-p1-owner-access-001-local-only`; original HEAD SHA and main SHA verified through REST branch/PR/git commits. The PR had 26 commits unique to it; current main 7 commits newer than the historical base.
+- All 10 PR paths are **added** compared with main, with **zero** path intersection; both recursive Git trees are complete (truncated=false). Build a merge tree from exact main tree `0c091f0a8e5d67fa5ad7cac4eaa7e07a065a1972` + the 10 original PR blob entries, with parents ordered [PR original HEAD, protected main]. This preserves every original branch change and every main change.
+- Main's 9 critical frozen blob SHAs verified **9/9**:
+  - `src/pages/admin/[...route].js` `91a90f33c591616952d5b767cf7bed6c6cf57c91`;
+  - `src/modules/CB-M05/p1c-local/local-cms.mjs` `dbaa91335ef0191f26305c94d2021bb2c4f1fb7e`;
+  - `src/modules/CB-M05/p1c-local/local-admin-router.mjs` `64aac0708cd1bc088c6b9cb083ccc1419924cd44`;
+  - `test/modules/CB-M05/p1c-fixtures/schema.sql` `cc862472a81e3f50e25e761179da43f7811492da`;
+  - `wrangler.jsonc` `980a4af6a5c3cd40a37797ad53d27530a54bbbe2`;
+  - `package.json` `eed320228166097da9ab8839149350e2706f05fa`;
+  - `.github/workflows/m05-local-cms-browser.yml` `44aaa3f9fb0d8ece0328af8e68bb86744ff65ea5`;
+  - `docs/architecture/ADR-CB-M05-P1C-SINGLE-OWNER-ADMIN-BOUNDARY-001.md` `6a590ef487556ed62296f558296b6ad5a334d3dc`;
+  - `docs/architecture/ADR-CB-M05-P1-SECURE-OWNER-CMS-PROPOSAL.md` `e5a0054773fa8f6c669ab3861f8cc71bcea73886`.
+- **Existing exact old-HEAD results:** 16/16 SUCCESS, Sonar 0 new issues/hotspots but Sonar measured new-code coverage 0.0%; Node experimental focused 189/196 covered lines (96.43%), 79/94 branches (84.04%). These are HISTORICAL proof from old HEAD, not proof after reconciling main.
+- **Review:** prior kayzenweb3 COMMENTED events, not a verified independent human reviewer; no production security approval. The original proposed ADR/Work Order docs are planning-only and not silently promoted by merge.
+- **Post-merge status when this Delta was authored:** PENDING CI on new HEAD, never claim success before run IDs/outputs are observed. Final exact HEAD readback and results belong in a follow-up audit comment without rewriting tested HEAD again.
+
+### Checkpoint Delta proposal (NOT promoted)
+- Record local-only Owner P1 branch reconciled to 2026-10-25 main, only after exact merged-head checks pass and independent reviewer approves any required safety changes; production admission remains blocked.

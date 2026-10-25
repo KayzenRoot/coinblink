@@ -1,0 +1,52 @@
+/* Product enhancement: accessible local guide filtering, confined to M01. */
+.cb-home .learn-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px 14px;
+  margin: 13px 0 17px;
+}
+.cb-home .learn-filter label {
+  display: grid;
+  gap: 5px;
+  flex: 1 1 220px;
+  max-width: 440px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.cb-home .learn-filter input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border-bright);
+  border-radius: 7px;
+  background: #09120f;
+  color: var(--text);
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: 400;
+}
+.cb-home .learn-filter input:focus-visible,
+.cb-home .learn-filter button:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+.cb-home .learn-filter button {
+  min-height: 40px;
+  border: 1px solid var(--border-bright);
+  border-radius: 7px;
+  padding: 7px 12px;
+  color: var(--text);
+  background: #101e19;
+  cursor: pointer;
+}
+.cb-home .learn-filter__status {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cb-home .learn-card[hidden],
+.cb-home .learn-filter button[hidden] {
+  display: none !important;
+}

@@ -11,12 +11,12 @@
     "test/brand/**",
     ".engineering/evidence/CB-VIS-WO-002/**"
   ],
-  "fileCount": 34,
+  "fileCount": 32,
   "files": [
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/EVIDENCE_BUNDLE.md",
-      "bytes": 1940,
-      "sha256": "ec2451096e13ab5c6310d698835c82629a990fa6e5d50459ca638b53539a71f4"
+      "bytes": 4128,
+      "sha256": "bb278a286619c7a64143a99d6fe328bd7532597bfdb2f1c95a35294f87be0510"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json",
@@ -47,16 +47,6 @@
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/execution-journal.md",
       "bytes": 4052,
       "sha256": "9f1a51243268a830daf5b83773aa74f3b515ad8e6bdc308031ee706681282394"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-doctor.log",
-      "bytes": 3826,
-      "sha256": "aaaafcf7dcc6039f44206c84b3d3287e76a6723c2987da32c237ba730a309794"
-    },
-    {
-      "path": ".engineering/evidence/CB-VIS-WO-002/R35/gef-status.log",
-      "bytes": 3974,
-      "sha256": "488f0bfafb2c19c82db7954d9dd9b3cab77aabdfc3c7d0a070a6182930a09a24"
     },
     {
       "path": ".engineering/evidence/CB-VIS-WO-002/R35/lint.log",

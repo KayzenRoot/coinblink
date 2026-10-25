@@ -30,6 +30,31 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: NEW Owner policy and singleton D1
         run: node --test test/modules/CB-M05/p1-owner-policy.test.mjs test/modules/CB-M05/p1-owner-race.test.mjs
+      - name: P1 Owner focused LCOV instrumented Node D1 synthetic
+        run: |
+          mkdir -p coverage
+          node --experimental-test-coverage --test \
+            --test-coverage-include='src/modules/CB-M05/p1-owner/**' \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=lcov --test-reporter-destination=coverage/cb-m05-p1-owner-lcov.info \
+            test/modules/CB-M05/p1-owner-policy.test.mjs test/modules/CB-M05/p1-owner-race.test.mjs
+          test -s coverage/cb-m05-p1-owner-lcov.info
+          node --input-type=module -e '
+            import {readFileSync} from "node:fs";
+            const content=readFileSync("coverage/cb-m05-p1-owner-lcov.info","utf8");
+            const total=(key)=>[...content.matchAll(new RegExp("^"+key+":(\\d+)$","gm"))].reduce((sum,m)=>sum+Number(m[1]),0);
+            const lf=total("LF"),lh=total("LH"),bf=total("BRF"),bh=total("BRH");
+            if(lf<1||lh<1)process.exit(1);
+            console.log(JSON.stringify({contract:"CB-M05-P1-OWNER-ACCESS-001",source:"NODE_EXPERIMENTAL_LCOV",linesFound:lf,linesHit:lh,lineCoveragePct:Number((100*lh/lf).toFixed(2)),branchesFound:bf,branchesHit:bh,branchCoveragePct:bf>0?Number((100*bh/bf).toFixed(2)):null}));
+          '
+      - name: Upload P1 Owner LCOV for independent audit
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cb-m05-p1-owner-lcov
+          path: coverage/cb-m05-p1-owner-lcov.info
+          retention-days: 7
+          if-no-files-found: warn
       - name: EXISTING real cryptographic proof
         run: node --test test/modules/CB-M05/p1b-webauthn.test.mjs
       - name: EXISTING workerd 100-way Owner claim proof

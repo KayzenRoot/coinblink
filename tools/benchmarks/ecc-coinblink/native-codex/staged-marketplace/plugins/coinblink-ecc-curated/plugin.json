@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "coinblink-ecc-curated",
+  "version": "0.1.0",
+  "description": "Four curated, project-scoped ECC methodology skills for isolated CoinBlink evaluation. No hooks, MCP, or code execution.",
+  "license": "MIT",
+  "repository": "https://github.com/KayzenRoot/coinblink"
+}

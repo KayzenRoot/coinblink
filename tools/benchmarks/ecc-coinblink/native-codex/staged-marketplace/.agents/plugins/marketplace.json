@@ -1,0 +1,17 @@
+{
+  "name": "coinblink-ecc-staging",
+  "plugins": [
+    {
+      "name": "coinblink-ecc-curated",
+      "source": {
+        "source": "local",
+        "path": "./plugins/coinblink-ecc-curated"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

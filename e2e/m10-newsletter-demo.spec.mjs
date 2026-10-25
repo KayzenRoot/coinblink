@@ -94,7 +94,7 @@ test("M10 P1 editor reorders three fictional stories with keyboard, disables edg
   await expect(page.locator("[data-m10-order-status]")).toContainText("Moved");
   await expect(entries.nth(0).locator("[data-m10-move-up]")).toBeDisabled();
   await expect(entries.nth(2).locator("[data-m10-move-down]")).toBeDisabled();
-  await expect(entries.nth(0).locator("[data-m10-move-up]")).toBeFocused();
+  await expect(entries.nth(0).locator("[data-m10-move-down]")).toBeFocused();
   await entries.nth(0).locator("[data-m10-move-down]").focus();
   await page.keyboard.press("Space");
   await expect(entries.locator("a")).toHaveText(before);

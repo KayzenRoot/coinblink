@@ -383,7 +383,7 @@ const editorialR26Assets = {
         </div>
         <span class="learn-section__count">{learningTopics.length} {t("short guides")}</span>
       </div>
-      <div class="learn-filter" role="search" aria-label={t("Search educational guides")} data-m01-learning-search data-locale={locale}>
+      <div class="learn-filter" role="search" aria-label={t("Search educational guides")} data-m01-learning-search data-locale={locale} hidden>
         <label for="m01-learning-query">
           {t("Search guides")}
           <input id="m01-learning-query" type="search" maxlength="80" autocomplete="off" spellcheck="false" placeholder={t("Search topics or safety tips")} data-learning-query />

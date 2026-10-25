@@ -1,0 +1,62 @@
+name: CoinBlink M01 isolated visual lab [DEMO_ONLY]
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m01-visual-preview.yml"
+      - "test/brand/m01-visual-preview.html"
+      - "test/brand/m01-visual-preview-qa.mjs"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/m01-visual-preview.yml"
+      - "test/brand/m01-visual-preview.html"
+      - "test/brand/m01-visual-preview-qa.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cb-m01-vis-preview-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-brand-preview:
+    name: M01 brand lab / 5 viewports and two Goldens
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact HEAD with no stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Install Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Execute isolated visual lab and publish result
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          node test/brand/m01-visual-preview-qa.mjs | tee "$RUNNER_TEMP/cb-m01-visual-qa.log"
+          echo "M01 isolated visual lab PASS on $EXPECTED_COMMIT" >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve exact-head screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cb-m01-vis-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/cb-m01-vis-preview/
+            ${{ runner.temp }}/cb-m01-visual-qa.log
+          retention-days: 14
+          if-no-files-found: warn

@@ -68,6 +68,10 @@ test("M12 P0 page stays an independent offline simulation with CSP-safe assets a
   assert.match(astro, /NO BILLING|NO PAYMENTS/u);
   assert.match(client, /data-m12-reset/u);
   assert.match(client, /textContent/u);
+  // SonarCloud LOW Maintainability S1874-like warning: Window.status is deprecated.
+  // Keep the local DOM node explicitly scoped; do not shadow the legacy global identifier.
+  assert.match(client, /const statusMessage = root\?\.querySelector\("\[data-m12-status\]"\)/u);
+  assert.doesNotMatch(client, /\b(?:const|let|var)\s+status\b|\bstatus(?:\.textContent|\s+instanceof)\b/u);
   assert.match(css, /:focus-visible/u);
   for(const text of [page,astro,client]) assert.doesNotMatch(text,
     /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|sendBeacon|innerHTML|type="email"|<form|\/admin\/|process\.env/u);

@@ -1,0 +1,54 @@
+name: CoinBlink M11 developer sandbox safety (offline)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m11-developer-demo.yml"
+      - "src/modules/CB-M11/**"
+      - "src/modules/CB-M02/news-workbench.mjs"
+      - "src/modules/CB-M04/market-lab.mjs"
+      - "src/modules/CB-M04/market-readiness.mjs"
+      - "src/pages/developers.astro"
+      - "src/pages/v1/demo/articles.ts"
+      - "src/pages/v1/demo/market-readiness.ts"
+      - "test/modules/CB-M11/**"
+      - "e2e/m11-developer-demo.spec.mjs"
+      - "e2e/m11-developer-market-demo.spec.mjs"
+      - "docs/product/CB-M11-P0-DEVELOPER-SANDBOX-001.md"
+      - "docs/product/CB-M11-P0-MARKET-READINESS-API-001.md"
+      - ".engineering/evidence/CB-M11-P0-DEVELOPER-SANDBOX-001/**"
+      - ".engineering/evidence/CB-M11-P0-MARKET-READINESS-API-001/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m11-sandbox-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  safety:
+    name: M11 synthetic API Node + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked dependency install
+        run: npm ci --ignore-scripts
+      - name: M11 Node and existing M02 contracts
+        run: node --test test/modules/CB-M11/*.test.mjs test/modules/CB-M02/news-workbench.test.mjs test/modules/CB-M04/*.test.mjs
+      - name: Astro build
+        run: npm run build
+      - name: Chromium install
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Chromium M11 and M02 accessible functional journey
+        run: ./node_modules/.bin/playwright test e2e/m11-developer-demo.spec.mjs e2e/m11-developer-market-demo.spec.mjs e2e/m02-news-demo.spec.mjs e2e/m04-market-demo.spec.mjs

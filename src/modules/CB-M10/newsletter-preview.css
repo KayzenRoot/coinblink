@@ -1,0 +1,19 @@
+  .m10{max-width:74rem;min-height:70vh;margin:auto;padding:clamp(1.25rem,4vw,3.5rem)}
+  .m10 header{max-width:70ch;margin:2rem 0}.m10 h1{font-size:clamp(2rem,4.5vw,3.8rem);line-height:1.1}
+  .m10 header p,.m10-footer{line-height:1.7;color:#cce1d1}
+  .m10 small,.m10-policy{color:#f5c981;font-weight:750}
+  .m10-card{background:#101e17;border:1px solid #456e4e;border-radius:.75rem;padding:clamp(1rem,3vw,2rem);margin:1.5rem 0}
+  .m10 label{display:grid;gap:.5rem;max-width:30rem}
+  .m10 select,.m10 button{min-height:2.8rem;padding:.7rem;border-radius:.5rem}
+  .m10 select{background:#14251b;color:#fff;border:1px solid #799c83}
+  .m10-buttons{display:flex;gap:.75rem;flex-wrap:wrap;margin:1rem 0}
+  .m10 button{border:1px solid #b8f34b;background:#b8f34b;color:#102015;font-weight:750;cursor:pointer}
+  .m10 button[data-m10-clear]{background:transparent;color:#b8f34b}
+  .m10 :is(a,select,button):focus-visible,.m10 [tabindex="-1"]:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .m10-preview[hidden]{display:none}.m10-preview li{overflow-wrap:anywhere;margin:1rem 0}
+  .m10 a{color:#b8f34b;text-underline-offset:4px}
+  .m10-preview li p{color:#c8dacc}
+  .m10-order-controls{display:flex;flex-wrap:wrap;gap:.65rem;margin:.6rem 0 1rem}
+  .m10 .m10-order-controls button{background:#18291f;color:#e9f6eb;border-color:#799c83;min-height:2.75rem}
+  .m10 .m10-order-controls button:disabled{cursor:not-allowed;opacity:.52}
+  .m10 [data-m10-order-status]:not(:empty){color:#e4f2cf;line-height:1.6}

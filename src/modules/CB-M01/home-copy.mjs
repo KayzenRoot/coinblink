@@ -3,6 +3,10 @@
 export const HOME_LOCALES = Object.freeze(["en", "pt-br"]);
 const portuguese = Object.freeze({
   "CoinBlink home": "Início do CoinBlink",
+  "Search educational guides": "Pesquisar guias educativos",
+  "Search guides": "Pesquisar guias",
+  "Search topics or safety tips": "Busque temas ou dicas de segurança",
+  "Clear guide search": "Limpar pesquisa de guias",
   "Crypto news in a blink.": "Notícias cripto num piscar de olhos.",
   "ANALYSIS": "ANÁLISES",
   "DIGITAL ASSETS": "ATIVOS DIGITAIS",
@@ -95,6 +99,9 @@ const portuguese = Object.freeze({
   "Educational material only. Verify important details with primary sources before acting.": "Conteúdo educativo. Confira informações importantes em fontes primárias antes de agir.",
   "Prefer original announcements?": "Prefere anúncios originais?",
   "Browse official sources": "Consultar fontes oficiais",
+  "Want to try the article editor?": "Quer experimentar o editor de artigos?",
+  "Open editorial demo": "Abrir demonstração editorial",
+  "MOCK only. No account, storage or publication.": "Somente demonstração. Sem conta, armazenamento ou publicação.",
   "ORIGINAL PUBLISHERS · EXTERNAL LINKS": "PUBLICADORES ORIGINAIS · LINKS EXTERNOS",
   "Official source desk": "Central de fontes oficiais",
   "Visit original publishing pages directly. No headlines, dates or third-party articles are imported into CoinBlink.": "Consulte diretamente os sites originais. O CoinBlink não importa manchetes, datas ou artigos de terceiros.",

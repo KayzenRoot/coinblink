@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MarketWorkbench from "../../modules/CB-M04/MarketWorkbench.astro";
+export const prerender = false;
+---
+<BaseLayout
+  title="CoinBlink · Offline market demonstration"
+  description="Demo-only market symbols with unavailable quotes and radar; no external providers, trading, or live data."
+>
+  <MarketWorkbench />
+</BaseLayout>

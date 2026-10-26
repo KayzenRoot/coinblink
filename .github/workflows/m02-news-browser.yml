@@ -1,0 +1,54 @@
+name: CoinBlink M02 offline news acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m02-news-browser.yml"
+      - "src/modules/CB-M02/**"
+      - "src/modules/CB-M09/**"
+      - "src/pages/es/news.astro"
+      - "src/pages/es/news/**"
+      - "e2e/m09-spanish-news.spec.mjs"
+      - "src/modules/CB-M01/GoldenHome.astro"
+      - "src/pages/en/news/**"
+      - "src/pages/pt-br/news/**"
+      - "src/pages/en/news.astro"
+      - "src/pages/pt-br/news.astro"
+      - "e2e/m02-news-demo.spec.mjs"
+      - "test/modules/CB-M02/**"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m02-news-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  offline-news:
+    name: M02 offline news unit + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install
+        run: npm ci --ignore-scripts
+      - name: Unit and safety contracts
+        run: node --test test/modules/CB-M02/*.test.mjs
+      - name: Build
+        run: npm run build
+      - name: Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Browser acceptance
+        run: ./node_modules/.bin/playwright test e2e/m02-news-demo.spec.mjs e2e/m09-spanish-news.spec.mjs

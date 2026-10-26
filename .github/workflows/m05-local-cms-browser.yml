@@ -1,0 +1,98 @@
+name: CoinBlink M05 local CMS browser regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m05-local-cms-browser.yml"
+      - "src/modules/CB-M05/**"
+      - "test/modules/CB-M05/**"
+      - "scripts/dev-studio.mjs"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m05-local-cms-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  local-browser:
+    name: M05 synthetic CMS Chromium and D1 (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Authentication, request and local D1 guards
+        run: |
+          node --test \
+            test/modules/CB-M05/p1b-webauthn.test.mjs \
+            test/modules/CB-M05/p1b-request-model.test.mjs \
+            test/modules/CB-M05/p1b-guards.test.mjs \
+            test/modules/CB-M05/p1c-local-admin-router.test.mjs
+      - name: Install Chromium for local fixture
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Smoke synthetic Owner sign-in and logout
+        run: npm run cms:smoke
+      - name: Browser regression for local D1, session and unsaved drafts
+        run: node --test test/modules/CB-M05/p1c-local-admin-preview.test.mjs test/modules/CB-M05/p1c-local-unsaved-changes.test.mjs
+
+
+  # CB-P0-EDITORIAL-BRIDGE-001: evidence-only regression job, no production credentials.
+  # Keep the existing browser job unchanged. Do not mute HTTP 500 failures or relax invariants.
+  bootstrap-proof:
+    name: M05 BOOT-10 Node 22.19.0 concurrency audit (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: M05-to-M02 bridge contracts, D1 and router under Node 22.19.0
+        run: |
+          node --test \
+            test/modules/CB-M05/p0-editorial-bridge-contract.test.mjs \
+            test/modules/CB-M05/p0-editorial-bridge-d1.test.mjs \
+            test/modules/CB-M05/p1c-local-admin-router.test.mjs \
+            test/modules/CB-M02/local-article-preview.test.mjs
+      - name: Node-hosted BOOT-10, three independent proof runs
+        run: |
+          node --version
+          for trial in 1 2 3; do
+            echo "::group::BOOT-10 trial ${trial}"
+            node --test --test-name-pattern='^M05 LOCAL CMS BOOT-10:' test/modules/CB-M05/p1c-local-cms.test.mjs
+            echo "::endgroup::"
+          done
+      - name: workerd-hosted BOOT-WORKER-2-10 control
+        if: always()
+        run: node --test --test-name-pattern='^M05 LOCAL CMS BOOT-WORKER-2-10:' test/modules/CB-M05/p1c-local-cms.test.mjs
+      - name: Read public SonarCloud PR issues without credentials
+        if: always()
+        run: |
+          if curl --fail --silent --show-error --max-time 20 \
+            'https://sonarcloud.io/api/issues/search?componentKeys=KayzenRoot_coinblink&pullRequest=${{ github.event.pull_request.number }}&ps=100' \
+            --output /tmp/coinblink-sonar-217.json; then
+            jq -r '"Sonar API total=" + ((.total // 0) | tostring), (.issues[]? | [.key, .rule, .component, (.line // "n/a" | tostring), (.severity // "n/a"), (.message // "")] | @tsv)' /tmp/coinblink-sonar-217.json
+          else
+            echo "SONAR_API_DETAILS_NOT_AVAILABLE: public unauthenticated read denied or unavailable; no issue identities inferred"
+          fi

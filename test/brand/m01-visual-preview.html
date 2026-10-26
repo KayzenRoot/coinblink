@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="color-scheme" content="dark">
+  <title>CoinBlink | R32 isolated visual comparison (DEMO_ONLY)</title>
+  <!-- INTENTIONALLY NO favicon link, site integration, external font or script. -->
+  <style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color:#edf8ef; background:#070e0c; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-width:0; }
+    a { color:#b8f34b; }
+    a:focus-visible { outline:3px solid #b8f34b; outline-offset:4px; }
+    .skip { position:absolute; left:8px; top:-80px; padding:10px 16px; background:#101e19; z-index:9; }
+    .skip:focus { top:8px; }
+    .lab { max-width:1536px; margin:auto; padding:18px clamp(16px,2.85vw,44px) 48px; }
+    .notice { padding:9px 12px; border:1px solid #665534; border-radius:8px; color:#f9db9a; font-size:12px; background:#1c190e; }
+    h1 { font-size:clamp(20px,2.3vw,28px); margin:22px 0 8px; }
+    h2 { font-size:16px; margin:0 0 12px; }
+    p { line-height:1.55; color:#b6c5bb; }
+    .hint { max-width:840px; font-size:13px; }
+    .showcase { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:20px; }
+    .sample { min-width:0; padding:16px; border:1px solid #304b3a; border-radius:11px; background:#101e19; overflow:hidden; }
+    .sample[data-surface="light"] { background:#f5f7f5; color:#1b2c20; border-color:#d1d9d3; }
+    .sample[data-surface="light"] p { color:#455d4c; }
+    .sample[data-surface="light"] .status { color:#455d4c; }
+    .label { margin:0 0 11px; font-size:12px; color:#b9d7b7; letter-spacing:.05em; }
+    .sample[data-surface="light"] .label { color:#3e5f49; }
+    .mock-header { display:flex; min-height:61px; align-items:center; justify-content:space-between; gap:14px; border-top:1px solid #425a43; border-bottom:1px solid #425a43; }
+    .sample[data-surface="light"] .mock-header { border-color:#b2c7b6; }
+    .wordmark { width:min(270px,100%); max-height:46px; height:auto; object-fit:contain; object-position:left center; }
+    .mock-nav { color:#adbbb0; font-size:12px; white-space:nowrap; }
+    .sample[data-surface="light"] .mock-nav { color:#415b48; }
+    .stacks { display:flex; gap:22px; flex-wrap:wrap; align-items:center; }
+    .stacked { width:175px; max-width:100%; height:175px; object-fit:contain; }
+    .symbol { width:96px; height:96px; max-width:100%; object-fit:contain; }
+    .icon-demo { width:32px; height:32px; object-fit:contain; }
+    .icon-demo.large { width:48px; height:48px; }
+    .status { display:block; font-size:11px; margin-top:12px; color:#aab8ae; }
+    @media(max-width:820px) { .showcase { grid-template-columns:minmax(0,1fr); } }
+    @media(max-width:390px) { .mock-nav { display:none; } .wordmark { width:min(230px,100%); } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none; transition:none; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to visual samples</a>
+  <main id="main" class="lab">
+    <aside class="notice" data-lab-disclaimer><strong>DEMO_ONLY · ISOLATED TEST HARNESS</strong> · NOT INTEGRATED INTO THE WEBSITE · NOT FOR COMMERCIAL PUBLICATION</aside>
+    <h1>CoinBlink R32 visual review</h1>
+    <p class="hint">Separate offline design laboratory for approved R32 vector files. This page is not the live CoinBlink header, does not install a browser favicon and does not grant trademark or publication rights. The original Golden logo is preserved unchanged.</p>
+    <div class="showcase">
+      <section class="sample" data-surface="dark" aria-labelledby="dark-title">
+        <h2 id="dark-title">Dark header composition, reference height 61px</h2>
+        <p class="label">R32 horizontal dark · demo header geometry only</p>
+        <div class="mock-header" data-qa-header="dark">
+          <img class="wordmark" src="/brand/coinblink-horizontal-dark.svg" width="270" height="46" alt="CoinBlink eye-coin-lightning symbol and wordmark on dark background">
+          <span class="mock-nav" aria-hidden="true">News · Markets · Radar</span>
+        </div>
+        <span class="status">Original M01 header and Golden JPEG are not modified.</span>
+      </section>
+      <section class="sample" data-surface="light" aria-labelledby="light-title">
+        <h2 id="light-title">Light surface contrast comparison</h2>
+        <p class="label">R32 horizontal light · demo only</p>
+        <div class="mock-header" data-qa-header="light">
+          <img class="wordmark" src="/brand/coinblink-horizontal-light.svg" width="270" height="46" alt="CoinBlink eye-coin-lightning symbol and wordmark on light background">
+          <span class="mock-nav" aria-hidden="true">News · Markets · Radar</span>
+        </div>
+        <span class="status">Light brand application requires later owner acceptance.</span>
+      </section>
+      <section class="sample" data-surface="dark" aria-labelledby="stack-title">
+        <h2 id="stack-title">Stacked variant on dark surface only</h2>
+        <div class="stacks">
+          <img class="stacked" src="/brand/coinblink-stacked.svg" width="175" height="175" alt="Stacked CoinBlink wordmark for dark surfaces only">
+          <p class="hint">The approved stacked wordmark has insufficient contrast on light surfaces. Do not reuse it on light backgrounds without a separately approved new variant.</p>
+        </div>
+      </section>
+      <section class="sample" data-surface="dark" aria-labelledby="icon-title">
+        <h2 id="icon-title">Approved symbol and favicon as images only</h2>
+        <div class="stacks">
+          <img class="symbol" src="/brand/coinblink-symbol.svg" width="96" height="96" alt="CoinBlink standalone eye-coin-lightning symbol">
+          <img class="icon-demo" src="/brand/favicon.svg" width="32" height="32" alt="R32 favicon artwork at 32 pixels, preview only">
+          <img class="icon-demo large" src="/brand/favicon.svg" width="48" height="48" alt="R32 favicon artwork at 48 pixels, preview only">
+        </div>
+        <span class="status">The favicon is displayed in this test page as an image, not installed in HTML head or any site route.</span>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

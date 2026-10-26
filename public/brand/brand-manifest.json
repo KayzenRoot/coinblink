@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "project": "CoinBlink",
+  "workOrder": "CB-VIS-WO-002",
+  "collection": "R32 approved vector proposals",
+  "version": "R32",
+  "status": "DEMO_ONLY",
+  "approval": {
+    "ownerVectorApproval": "ACCEPTED_FOR_DEMO",
+    "authorizedTransport": {
+      "filename": "COINBLINK_R35_ANEXAR_NO_CODEX_ZIP_AUTORIZADO.zip",
+      "bytes": 1000129,
+      "sha256": "fe8f14a6837aee1a4bfc760461ff30e7b260a7ee89e902c254a357947ba5c0d8",
+      "authorization": "https://github.com/KayzenRoot/coinblink/issues/74#issuecomment-6181834792",
+      "authorizedBy": "KayzenRoot",
+      "authorizedAt": "2026-10-15T00:52:50Z",
+      "purpose": "Alternate transport envelope for the five previously approved R32 SVG byte streams only"
+    },
+    "historicalR32Archive": {
+      "filename": "COINBLINK_BRAND_VECTOR_R32.zip",
+      "bytes": 1004323,
+      "sha256": "145dd33b98812d445688150065199a7f3b6954e974fb2b1de6381c14e5e69b48",
+      "identityNote": "Preserved as a distinct historical envelope; it is not the R35 archive."
+    }
+  },
+  "provenance": {
+    "originalReference": {
+      "path": "assets/reference/coinblink-logo-approved-original-1179x1040.jpg",
+      "bytes": 121728,
+      "sha256": "126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0",
+      "origin": "Owner-reported AI-generated reference",
+      "immutability": "Do not modify"
+    },
+    "approvedContactSheet": {
+      "filename": "coinblink-brand-preview.png",
+      "bytes": 199303,
+      "sha256": "8bb05c36dead19d231ae4d87004904ed8aa7202f99fcaf6b099bec5a6817f6f9"
+    },
+    "relationship": "The approved vector proposals derive from the referenced identity but are not claimed to be pixel-identical to the raster.",
+    "licenseAndTrademarkReview": "PENDING_OWNER_OR_LEGAL"
+  },
+  "assets": [
+    {
+      "path": "public/brand/coinblink-symbol.svg",
+      "bytes": 4042,
+      "sha256": "240d6e4c7e929920f0b7cbef37278aea09b6e55ac405e2d34ed7e55368a01de2",
+      "viewBox": "0 0 512 512",
+      "variant": "Symbol only",
+      "recommendedSurface": "Dark or light; contrast should be visually reviewed in context",
+      "accessibility": "Use an accessible name when informative; use empty alt text and aria-hidden when decorative."
+    },
+    {
+      "path": "public/brand/coinblink-horizontal-dark.svg",
+      "bytes": 18085,
+      "sha256": "9da72437b4df9d896b85d8fc313e6734dd21db6905d7a5cf7419f0e353b3ab8c",
+      "viewBox": "0 0 1150 260",
+      "variant": "Horizontal wordmark for dark surfaces",
+      "recommendedSurface": "Dark"
+    },
+    {
+      "path": "public/brand/coinblink-horizontal-light.svg",
+      "bytes": 18087,
+      "sha256": "f054553a21372a5ca44837e6c75cf96450e461afbb49ed4629ffb5c2ee032825",
+      "viewBox": "0 0 1150 260",
+      "variant": "Horizontal wordmark for light surfaces",
+      "recommendedSurface": "Light"
+    },
+    {
+      "path": "public/brand/coinblink-stacked.svg",
+      "bytes": 18040,
+      "sha256": "707ac8a765cf99aa1dcd2b74364fac7b650238f78aaebfc392b6cec281adcfdd",
+      "viewBox": "0 0 780 680",
+      "variant": "Stacked symbol and wordmark",
+      "recommendedSurface": "Dark",
+      "surfaceLimitation": "The outlined wordmark has insufficient visible contrast on light surfaces in the R35 browser capture; keep this exact approved SVG on dark surfaces only pending a separately approved light variant."
+    },
+    {
+      "path": "public/brand/favicon.svg",
+      "bytes": 3718,
+      "sha256": "0f446faef5fc69f4bdc76fffa03cf0b0e6feb6e4ddb4aceefce8e97e4d1e6e16",
+      "viewBox": "0 0 512 512",
+      "variant": "Favicon asset library file",
+      "recommendedSurface": "Browser tab or PWA preview only after separate approval",
+      "installationStatus": "NOT_INSTALLED"
+    }
+  ],
+  "rightsReview": "PENDING_OWNER_OR_LEGAL",
+  "commercialPublicationAllowed": false,
+  "siteIntegrationAllowed": false,
+  "headerIntegrationAllowed": false,
+  "faviconInstalledGlobally": false,
+  "derivatives": []
+}

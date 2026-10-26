@@ -1,0 +1,44 @@
+name: CoinBlink M07-D LOCAL weekly board acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m07d-local-week-board.yml"
+      - "src/modules/CB-M07/**"
+      - "src/modules/CB-M05/p1c-local/local-cms-ui.mjs"
+      - "test/modules/CB-M07/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m07d-local-week-board-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  week-board:
+    name: M07-D LOCAL weekly board + WebAuthn D1 Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: M07-D pure week contracts and access isolation
+        run: node --test test/modules/CB-M07/local-week-board.test.mjs
+      - name: M07-C regression
+        run: node --test test/modules/CB-M07/local-calendar.test.mjs
+      - name: Build public site
+        run: npm run build
+      - name: Install browser
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M07-D private weekly board, WCAG, lifecycle and no egress
+        run: node --test test/modules/CB-M07/local-week-browser.test.mjs
+      - name: Public /admin route must remain unavailable
+        run: ./node_modules/.bin/playwright test e2e/m05-admin-prod-guard.spec.mjs

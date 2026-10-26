@@ -1,0 +1,68 @@
+---
+import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+import NewsLocaleSwitch from "../CB-M09/NewsLocaleSwitch.astro";
+import { getNewsLocaleMeta } from "../CB-M09/news-locale-meta.mjs";
+import { NEWS_MOCK_POLICY } from "./news-workbench.mjs";
+import { createMockReadingPath } from "./news-reader-guide.mjs";
+interface MockItem {
+  slug: string;
+  category: string;
+  title: string;
+  summary: string;
+  body: string;
+  demo: boolean;
+  published: boolean;
+  rights: string;
+}
+interface Props { locale?: "en" | "pt-br" | "es"; item: MockItem | null; }
+const { locale = "en", item } = Astro.props;
+const copy = newsCopy(locale);
+const localeMeta = getNewsLocaleMeta(locale);
+const path = item ? createMockReadingPath(item.slug) : null;
+const shown = item && item.demo === true && item.published === false
+  && item.rights === "SYNTHETIC_NOT_LICENSED_NEWS" ? localizeMockNews(item, locale) : null;
+const base = "/" + locale + "/news";
+---
+<main id="main" class="m02-article">
+  <nav aria-label={localeMeta.navigation}><a href={base}>← {copy.back}</a></nav>
+  {locale !== "es" && <LocalJourneyNav locale={locale} current="news" />}
+  <NewsLocaleSwitch locale={locale} slug={shown?.slug} />
+  {shown ? (
+    <article>
+      <p class="m02-status">{copy.detailDisclaimer} · {copy[shown.category] ?? shown.category}</p>
+      <h1>{shown.title}</h1>
+      <p class="lead">{shown.summary}</p>
+      <p>{shown.body}</p>
+      <p class="m02-status">{NEWS_MOCK_POLICY}</p>
+      {path?.status === "MOCK_PATH_NOT_PUBLISHED" && (
+        <nav class="m02-reading-path" aria-label={copy.readingPath}>
+          <p>{copy.step} {path.position} {copy.of} {path.total} · {copy.pathDisclaimer}</p>
+          <div class="m02-reading-links">
+            {path.previous ? <a href={base + "/" + path.previous.slug} rel="prev">← {copy.previousExample}: {localizeMockNews(path.previous, locale).title}</a> : <span>{copy.pathStart}</span>}
+            {path.next ? <a href={base + "/" + path.next.slug} rel="next">{copy.nextExample}: {localizeMockNews(path.next, locale).title} →</a> : <span>{copy.pathEnd}</span>}
+          </div>
+          <a href={base}>{copy.list}</a>
+        </nav>
+      )}
+    </article>
+  ) : (
+    <section role="status">
+      <h1>{copy.missingTitle}</h1>
+      <p>{copy.missing}</p>
+    </section>
+  )}
+</main>
+<style>
+  .m02-article{max-width:55rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh}
+  .m02-article nav{margin-bottom:2.5rem}.m02-article a{color:#b8f34b}
+  .m02-article h1{font-size:clamp(2rem,5vw,4rem);line-height:1.12}
+  .m02-article p{line-height:1.8;color:#c1d3c5;font-size:1.1rem}
+  .m02-article .lead{color:#e9f6eb;font-size:1.25rem}
+  .m02-article .m02-status{color:#f5c981;font-size:.85rem;font-weight:700;letter-spacing:.05em}
+  .m02-reading-path{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #456e4e}
+  .m02-reading-path p{font-size:.95rem}
+  .m02-reading-links{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:1rem 0}
+  .m02-reading-links a{display:inline-block;max-width:24rem}
+  .m02-reading-path a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

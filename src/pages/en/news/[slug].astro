@@ -1,0 +1,8 @@
+---
+import LocalizedNewsPage from "../../../modules/CB-M09/LocalizedNewsPage.astro";
+import { resolveMockNews } from "../../../modules/CB-M02/news-workbench.mjs";
+export const prerender = false;
+const result = resolveMockNews(Astro.params.slug);
+if (!result.item) Astro.response.status = 404;
+---
+<LocalizedNewsPage locale="en" slug={Astro.params.slug} />

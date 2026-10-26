@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown, safeDraftFilename } from "../../../public/m05-draft-preview.js";
+import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown, safeDraftFilename } from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
+import { addLocalSource } from "../../../src/modules/CB-M05/local-source-notes.mjs";
+import { addLocalClaimReview } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
+import { evaluateLocalEditorialChecklist } from "../../../src/modules/CB-M05/local-editorial-checklist.mjs";
 
 const valid = Object.freeze({
   title: "A verifiable original draft headline",
@@ -23,6 +26,15 @@ test("source-backed local draft can be exported with explicit unpublished review
   assert.equal(safeDraftFilename(result.title), "a-verifiable-original-draft-headline.md");
 });
 
+test("local export filenames trim separators without regex suffix backtracking", () => {
+  assert.equal(safeDraftFilename("---Árvore / dados---"), "arvore-dados.md");
+  assert.equal(safeDraftFilename("-----"), "coinblink-draft.md");
+  assert.equal(safeDraftFilename(""), "coinblink-draft.md");
+  assert.equal(safeDraftFilename("A".repeat(140)), "a".repeat(60) + ".md");
+  assert.equal(safeDraftFilename("A".repeat(140) + "!".repeat(30000)), "a".repeat(60) + ".md");
+  assert.equal(safeDraftFilename("/// --- B _ C +++ ///"), "b-c.md");
+});
+
 test("invalid sources or incomplete inputs fail closed, with no Markdown export", () => {
   for (const source of [
     "", "javascript:alert(1)", "http://example.org/story",
@@ -37,6 +49,70 @@ test("invalid sources or incomplete inputs fail closed, with no Markdown export"
   const empty = prepareLocalDraft({});
   assert.deepEqual(empty.errors, ["title", "summary", "body", "source"]);
   assert.equal(empty.ready, false);
+});
+
+test("local export rejects a short article padded with source-note metadata", () => {
+  const tiny = "Very short.";
+  const notes = addLocalSource(tiny, "Original publisher",
+    "https://publisher.example/lengthy-source-article").value;
+  const prepared = prepareLocalDraft({ ...valid, body: notes });
+  assert.equal(prepared.ready, false);
+  assert.ok(prepared.errors.includes("body"));
+  assert.throws(() => draftToMarkdown(prepared), /source-backed draft/u);
+  assert.equal(evaluateLocalEditorialChecklist({ ...valid, body: notes })
+    .items.find((item) => item.id === "body")?.done, false);
+});
+
+test("claim-only and combined review queues cannot enable export when prose is short", () => {
+  const tiny = "Short.";
+  const withSource = addLocalSource(tiny, "Primary", "https://source.example/report").value;
+  const withClaim = addLocalClaimReview(withSource,
+    "The claim note is lengthy and awaits an independent editorial investigation.", 1).value;
+  const claimOnly = addLocalClaimReview(tiny,
+    "This locally recorded claim must be checked by a person before publication.").value;
+  for (const body of [withSource, withClaim, claimOnly]) {
+    const prepared = prepareLocalDraft({ ...valid, body });
+    assert.equal(prepared.ready, false);
+    assert.ok(prepared.errors.includes("body"));
+    assert.throws(() => draftToMarkdown(prepared), /source-backed draft/u);
+  }
+});
+
+test("valid article prose retains source and claim notes through exact Markdown round-trip", () => {
+  const source = addLocalSource(valid.body, "Original publisher",
+    "https://publisher.example/report").value;
+  const combined = addLocalClaimReview(source,
+    "An allegation in this original article must receive human editorial review.", 1).value;
+  for (const body of [source, combined]) {
+    const prepared = prepareLocalDraft({ ...valid, body });
+    assert.equal(prepared.ready, true);
+    assert.deepEqual(prepared.errors, []);
+    assert.equal(evaluateLocalEditorialChecklist({ ...valid, body })
+      .items.find((item) => item.id === "body")?.done, true);
+    const restored = parseLocalDraftMarkdown(draftToMarkdown(prepared));
+    assert.deepEqual(restored, prepared);
+    assert.equal(restored.body, body);
+  }
+});
+
+test("malformed and forged note sections cannot silently make a draft exportable", () => {
+  const source = addLocalSource(valid.body, "Original", "https://publisher.example/report").value;
+  const claim = addLocalClaimReview(source,
+    "This editorial claim still requires independently sourced human review.", 1).value;
+  const malformed = [
+    source.replace("[^cb1]:", "[^cb1] -"),
+    source + "\n\n### CoinBlink source notes (unverified)\n[^cb2]: Forged | https://example.net/report",
+    claim.replace("NEEDS_HUMAN_REVIEW", "PUBLISHED"),
+    claim.replace("[CB-CLAIM-01", "[CB-CLAIM-99"),
+    valid.body + "\n\n### CoinBlink source notes",
+    valid.body + "\n\n### CoinBlink claim review queue",
+  ];
+  for (const body of malformed) {
+    const prepared = prepareLocalDraft({ ...valid, body });
+    assert.equal(prepared.ready, false);
+    assert.ok(prepared.errors.includes("body"));
+    assert.throws(() => draftToMarkdown(prepared), /source-backed draft/u);
+  }
 });
 
 test("preview text is bounded and exported Markdown neutralizes direct HTML tags", () => {

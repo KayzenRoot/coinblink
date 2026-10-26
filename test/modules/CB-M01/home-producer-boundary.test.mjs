@@ -136,3 +136,21 @@ test("integrated GoldenHome uses the source-boundary statuses without altering D
     "ORIGINAL PUBLISHERS · EXTERNAL LINKS"]) assert.ok(home.includes(label));
   assert.doesNotMatch(home, /fetch\s*\(|\bmode:\s*"LIVE"/u);
 });
+
+test("isolated Astro fixtures exercise mock and refused LIVE consumer states without a shared route", () => {
+  const mock = readFileSync(resolve("test/modules/CB-M01/fixture/src/pages/mock-producers.astro"), "utf8");
+  const denied = readFileSync(resolve("test/modules/CB-M01/fixture/src/pages/denied-producers.astro"), "utf8");
+  const visual = readFileSync(resolve("test/modules/CB-M01/visual-check.mjs"), "utf8");
+  for (const code of [mock, denied]) {
+    assert.match(code, /<GoldenHome producerFeeds=\{producerFeeds\}/u);
+    assert.match(code, /<BaseLayout /u);
+    assert.doesNotMatch(code, /\bfetch\s*\(|\bimport\s*\([^)]*https?:\/\//u);
+  }
+  assert.match(mock, /mode: "MOCK"/u);
+  assert.match(denied, /mode: "LIVE"/u);
+  assert.match(visual, /\/mock-producers/u);
+  assert.match(visual, /\/denied-producers/u);
+  assert.match(visual, /REJECTED_LIVE_UNAUTHORIZED/u);
+  assert.match(visual, /data-m01-news-source-state/u);
+  assert.match(visual, /externalRequests/u);
+});

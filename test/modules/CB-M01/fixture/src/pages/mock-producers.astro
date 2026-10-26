@@ -1,0 +1,20 @@
+---
+import BaseLayout from "../../../../../../src/layouts/BaseLayout.astro";
+import GoldenHome from "../../../../../../src/modules/CB-M01/GoldenHome.astro";
+// Synthetic-only. Real article/market/source contents must never reach the Home.
+const producerFeeds = {
+  news: { contractVersion: "0.1-draft", mode: "MOCK",
+    items: [{ id: "news-fiction-1", demo: true,
+      headline: "PRIVATE_FIXTURE_NEVER_RENDER_THIS" }] },
+  sources: { contractVersion: "0.1-draft", mode: "MOCK",
+    items: [{ id: "source-fiction-1", demo: true,
+      url: "https://fake-source.example.test/not-licensed" }] },
+  markets: { contractVersion: "0.1-draft", mode: "MOCK",
+    items: [{ id: "market-fiction-1", demo: true,
+      price: 987654321 }] },
+};
+---
+
+<BaseLayout title="CoinBlink offline producer handoff fixture" description="Only synthetic producer metadata, never news or prices.">
+  <GoldenHome producerFeeds={producerFeeds} />
+</BaseLayout>

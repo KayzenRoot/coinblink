@@ -15,7 +15,9 @@ import policyEditorialR26Webp from "./assets/r26/policy.webp";
 import ecosystemEditorialR26Png from "./assets/r26/ecosystem.png";
 import ecosystemEditorialR26Webp from "./assets/r26/ecosystem.webp";
 import EditorialArtwork from "./EditorialArtwork.astro";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import "./golden-home.css";
+import "./learning-search.css";
 import { translateHome } from "./home-copy.mjs";
 import { getLearningTopics } from "./learning-topics.mjs";
 import { getOfficialSources } from "./official-sources.mjs";
@@ -340,7 +342,17 @@ const editorialR26Assets = {
           <p>{t("Try another category or search term. No live news is connected.")}</p>
           <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
+        <p class="news-official-discovery" data-m02-news-link>
+          <a href={locale === "pt-br" ? "/pt-br/news" : "/en/news"}>{locale === "pt-br" ? "Explorar histórias fictícias" : "Explore fictional stories"} <span aria-hidden="true">→</span></a>
+          <small>{locale === "pt-br" ? "DEMO offline. Não são notícias publicadas." : "Offline demo. No published news."}</small>
+        </p>
+        <LocalJourneyNav locale={locale} current="home" />
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
+        <p class="news-official-discovery" data-editorial-workspace-handoff>
+          <span>{t("Want to try the article editor?")}</span>
+          <a href="/demo/editorial/articles" data-editorial-workspace-link>{t("Open editorial demo")} <span aria-hidden="true">→</span></a>
+          <small>{t("MOCK only. No account, storage or publication.")}</small>
+        </p>
         <div class="news-controls">
           <label class="news-mobile-search" for="news-mobile-query"><span class="sr-only">{t("Search demo stories")}</span><span aria-hidden="true">⌕</span><input id="news-mobile-query" type="search" placeholder={t("Search demo stories")} autocomplete="off" maxlength="80" data-news-search-mobile /></label>
           <p class="news-filter-summary" data-news-filter-summary aria-live="polite" aria-atomic="true">{t("Showing all demo placeholders.")}</p>
@@ -371,9 +383,17 @@ const editorialR26Assets = {
         </div>
         <span class="learn-section__count">{learningTopics.length} {t("short guides")}</span>
       </div>
+      <div class="learn-filter" role="search" aria-label={t("Search educational guides")} data-m01-learning-search data-locale={locale} hidden>
+        <label for="m01-learning-query">
+          {t("Search guides")}
+          <input id="m01-learning-query" type="search" maxlength="80" autocomplete="off" spellcheck="false" placeholder={t("Search topics or safety tips")} data-learning-query />
+        </label>
+        <button type="button" data-learning-clear hidden>{t("Clear guide search")}</button>
+        <p class="learn-filter__status" role="status" aria-live="polite" aria-atomic="true" data-learning-status></p>
+      </div>
       <div class="learn-grid">
         {learningTopics.map((topic, index) => (
-          <details class="learn-card" id={`learn-${topic.id}`}>
+          <details class="learn-card" id={`learn-${topic.id}`} data-learning-topic>
             <summary>
               <span class="learn-card__icon" aria-hidden="true">{topic.icon}</span>
               <span class="learn-card__header"><small>{t("GUIDE")} {String(index + 1).padStart(2, "0")}</small><strong>{topic.title}</strong></span>
@@ -412,6 +432,34 @@ const editorialR26Assets = {
         ))}
       </div>
       <p class="official-sources__disclaimer">{t("Source links are not an endorsement, a live feed or a license to republish. Check the date, context and original claims on each site.")}</p>
+    </section>
+
+
+    <section class="m01-local-draft-preview content-panel" id="local-draft-preview" aria-labelledby="m01-local-draft-title" data-m01-local-draft-preview data-locale={locale}>
+      <div class="m01-local-draft-preview__heading">
+        <div>
+          <small>{locale === "pt-br" ? "FLUXO M01 + M05 · SOMENTE LOCAL" : "M01 + M05 WORKFLOW · LOCAL ONLY"}</small>
+          <h2 id="m01-local-draft-title">{locale === "pt-br" ? "Visualize seu rascunho na Home" : "Preview your draft on the Home"}</h2>
+          <p>{locale === "pt-br" ? "Exporte um Markdown no editor M05 e escolha o arquivo aqui. A prévia permanece neste navegador, sem upload, aprovação nem publicação." : "Export a Markdown file from the M05 editor and choose it here. The preview stays in this browser: no upload, approval or publication."}</p>
+        </div>
+        <span class="m01-local-draft-preview__badge">{locale === "pt-br" ? "NÃO PUBLICADO" : "NOT PUBLISHED"}</span>
+      </div>
+      <div class="m01-local-draft-preview__controls">
+        <label for="m01-local-draft-file">{locale === "pt-br" ? "Selecionar rascunho CoinBlink (.md)" : "Choose CoinBlink draft (.md)"}</label>
+        <input id="m01-local-draft-file" type="file" accept=".md,text/markdown" data-m01-draft-file aria-describedby="m01-draft-import-note" />
+        <button type="button" data-m01-draft-clear hidden>{locale === "pt-br" ? "Limpar prévia" : "Clear preview"}</button>
+      </div>
+      <p id="m01-draft-import-note" class="m01-local-draft-preview__note">{locale === "pt-br" ? "Arquivo de até 64 KB, gerado pelo editor M05. Nunca insira chaves ou segredos. O conteúdo não é enviado." : "Up to 64 KB, exported from the M05 editor. Never include keys or secrets. The file is never uploaded."}</p>
+      <p class="m01-local-draft-preview__status" data-m01-draft-status role="status" aria-live="polite"></p>
+      <article class="m01-local-draft-preview__article" data-m01-draft-result hidden>
+        <small>{locale === "pt-br" ? "PRÉVIA LOCAL · NÃO VERIFICADA · NÃO PUBLICADA" : "LOCAL PREVIEW · UNVERIFIED · NOT PUBLISHED"}</small>
+        <h3 data-m01-draft-title tabindex="-1"></h3>
+        <p class="m01-local-draft-preview__author" data-m01-draft-author></p>
+        <p data-m01-draft-summary></p>
+        <div class="m01-local-draft-preview__body" data-m01-draft-body></div>
+        <p class="m01-local-draft-preview__source">{locale === "pt-br" ? "Fonte informada (não verificada):" : "Provided source (not verified):"} <span data-m01-draft-source></span></p>
+      </article>
+      <a class="m01-local-draft-preview__editor" href="/demo/editorial/articles/new">{locale === "pt-br" ? "Abrir editor de rascunhos M05 →" : "Open M05 draft editor →"}</a>
     </section>
 
     <section class="chain-lookup content-panel" id="chain-lookup" aria-labelledby="chain-lookup-title">
@@ -459,4 +507,8 @@ const editorialR26Assets = {
 </div>
 
 <script is:inline src="/home-demo.js"></script>
+<script>
+  import "./local-draft-preview.client.mjs";
+  import "./learning-search.client.mjs";
+</script>
 <script is:inline type="module" src="/explorer-lookup.js"></script>

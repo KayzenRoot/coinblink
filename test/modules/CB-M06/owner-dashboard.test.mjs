@@ -143,9 +143,30 @@ test('M06-C review queue is bounded, sorted, labels credits and never verifies s
   for(const row of q.rows) {
     assert.equal(row.sourceStatus,'SOURCE_VERIFICATION_PENDING');
     assert.equal(row.publishingStatus,'DRAFT_ONLY');
+    assert.equal(row.ownerProcessStatus,'NOT_OBSERVED');
   }
   assert.ok(Object.isFrozen(q) && Object.isFrozen(q.rows) && Object.isFrozen(q.rows[0]));
   assert.doesNotMatch(JSON.stringify(q), /PRIVATE_SUMMARY|NEVER_INCLUDE_IN_ACTIVITY|example\.org|Named tester/);
+});
+test('M06 process triage keeps exact current revision decisions and never grants publication', () => {
+  const rows = [
+    {...editorialRow(1,2,1760870000,'Private preview only'),author_label:'',source_url:'',current_review_decision:'PREVIEW_REVIEWED'},
+    {...editorialRow(2,3,1760870100,'Needs more work'),author_label:'',source_url:'',current_review_decision:'CHANGES_REQUESTED'},
+    {...editorialRow(3,1,1760870200,'Unreviewed current'),author_label:'',source_url:'',current_review_decision:null},
+    {...editorialRow(4,4,1760870300,'Legacy unknown'),author_label:'',source_url:''},
+  ];
+  const queue = createLocalReviewQueue(rows);
+  assert.deepEqual(queue.rows.map(row => row.ownerProcessStatus),
+    ['NOT_OBSERVED','CURRENT_REVISION_UNREVIEWED','PRIVATE_CHANGES_REQUESTED','PRIVATE_PREVIEW_REVIEWED']);
+  assert.equal(queue.currentUnreviewedListed,1);
+  assert.equal(queue.privatePreviewReviewedListed,1);
+  assert.equal(queue.privateChangesRequestedListed,1);
+  assert.equal(queue.rows.every(row => row.publishingStatus === 'DRAFT_ONLY'),true);
+  assert.doesNotMatch(JSON.stringify(queue),/reviewNote|private-body|PUBLISH_APPROVED/iu);
+  for(const invalid of ['PUBLISH_APPROVED','LICENSE_CLEARED','REVIEWED',0,true,{},[]]) {
+    assert.throws(() => createLocalReviewQueue([{...rows[0],current_review_decision:invalid}]),TypeError);
+  }
+  assert.ok(Object.isFrozen(queue) && Object.isFrozen(queue.rows));
 });
 test('M06-C rejects bad review metadata and marks 100-row view partial', () => {
   const good = {...editorialRow(1,1,1760870000),author_label:'',source_url:'https://example.org/a'};
@@ -174,6 +195,13 @@ test('M06-C review queue is protected DOM-only and clears on logout or denied re
   assert.match(html,/id="m06-review-filter"/u);
   assert.match(html,/id="m06-review-list"/u);
   assert.match(html,/id="m06-review-count"/u);
+  assert.match(html,/id="m06-review-unreviewed"/u);
+  assert.match(html,/id="m06-review-previewed"/u);
+  assert.match(html,/id="m06-review-changes"/u);
+  assert.match(html,/value="current-unreviewed"/u);
+  assert.match(html,/value="private-preview-reviewed"/u);
+  assert.match(html,/value="private-changes-requested"/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/NO_RIGHTS_OR_PUBLISHING_APPROVAL/u);
   assert.match(html,/SOURCE_VERIFICATION_PENDING|independent verification/u);
   assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalReviewQueue\(drafts\)/u);
   assert.match(LOCAL_CMS_UI_SCRIPT,/ui\.reviewList\.replaceChildren\(\)/u);

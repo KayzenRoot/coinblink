@@ -87,7 +87,9 @@ import claimScriptUrl from "./local-claim-reviews.mjs?url&no-inline";
   <p class="m05-local-search-status" data-m05-search-status role="status" aria-live="polite"></p>
 </section>
 </details>
-<script is:inline type="module" src="/m05-draft-preview.js"></script>
+<script>
+  import "./local-draft-preview.client.mjs";
+</script>
 <script is:inline type="module" src={metricsScriptUrl}></script>
 <details class="m05-tool-disclosure" data-m05-tool-disclosure="m05-editorial-panel">
   <summary><span class="m05-tool-label">Editorial preparation checklist</span><span class="m05-tool-description">Review completeness and human follow-ups.</span></summary>

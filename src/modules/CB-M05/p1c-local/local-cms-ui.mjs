@@ -1,6 +1,9 @@
 // Dedicated LOCAL D1 fixture UI. Never imported by public Astro routes.
 // A browser-side test passkey must be pre-enrolled for owner.example.test.
 // No real Owner provisioning or production secrets are supported here.
+import { listSyntheticSources } from '../../CB-M03/source-lab.mjs';
+import { parseMockSourceTransfer } from '../../CB-M03/source-transfer.mjs';
+import { canonicalMockResearchTransfers, parseMockResearchTransfer, formatMockResearchNote } from '../../CB-M08/research-transfer.mjs';
 import { createLocalOwnerDashboard, createLocalEditorialActivity, createLocalReviewQueue } from '../../CB-M06/owner-dashboard.mjs';
 import { createLocalEditorialInsights } from '../../CB-M06/local-editorial-insights.mjs';
 import { createLocalEditorialTriage } from '../../CB-M06/local-editorial-triage.mjs';
@@ -11,6 +14,11 @@ import { requireCanonicalLocalApprovalEvent, inspectLocalApprovalHistory, latest
 import { localCalendarMinuteFormatter, localCalendarMinuteParts, createLocalCalendarIdea, addLocalCalendarIdea, replaceLocalCalendarIdea, suggestLocalConflictAlternatives } from '../../CB-M07/local-calendar.mjs';
 import { createLocalWeeklyBoard } from '../../CB-M07/local-week-board.mjs';
 export const LOCAL_CMS_UI_SCRIPT = String.raw`
+  const parseMockSourceTransfer = (${parseMockSourceTransfer.toString()});
+  const canonicalSourceCatalog = ${JSON.stringify(listSyntheticSources().items)};
+  const parseMockResearchTransfer = (${parseMockResearchTransfer.toString()});
+  const formatMockResearchNote = (${formatMockResearchNote.toString()});
+  const canonicalResearchCatalog = ${JSON.stringify(canonicalMockResearchTransfers())};
   const createLocalOwnerDashboard = (${createLocalOwnerDashboard.toString()});
   const createLocalEditorialActivity = (${createLocalEditorialActivity.toString()});
   const createLocalReviewQueue = (${createLocalReviewQueue.toString()});
@@ -62,6 +70,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     reviewList: document.getElementById('m06-review-list'),
     reviewCount: document.getElementById('m06-review-count'),
     reviewScope: document.getElementById('m06-review-scope'),
+    reviewUnreviewed: document.getElementById('m06-review-unreviewed'),
+    reviewPreviewed: document.getElementById('m06-review-previewed'),
+    reviewChanges: document.getElementById('m06-review-changes'),
     insightsStatus: document.getElementById('m06-insights-status'),
     insightsScope: document.getElementById('m06-insights-scope'),
     insightsMissing: document.getElementById('m06-insights-missing'),
@@ -114,6 +125,24 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     revision: document.getElementById('revision'),
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
+    exportDraft: document.getElementById('export-draft'),
+    exportStatus: document.getElementById('export-status'),
+    ownerReview: document.getElementById('owner-review'),
+    ownerReviewDecision: document.getElementById('owner-review-decision'),
+    ownerReviewNote: document.getElementById('owner-review-note'),
+    ownerReviewSubmit: document.getElementById('owner-review-submit'),
+    ownerReviewStatus: document.getElementById('owner-review-status'),
+    ownerReviewHistory: document.getElementById('owner-review-history'),
+    sourceTransferFile: document.getElementById('source-transfer-file'),
+    sourceTransferReview: document.getElementById('source-transfer-review'),
+    sourceTransferApply: document.getElementById('source-transfer-apply'),
+    sourceTransferStatus: document.getElementById('source-transfer-status'),
+    sourceTransferClear: document.getElementById('source-transfer-clear'),
+    researchTransferFile: document.getElementById('research-transfer-file'),
+    researchTransferStatus: document.getElementById('research-transfer-status'),
+    researchTransferReview: document.getElementById('research-transfer-review'),
+    researchTransferApply: document.getElementById('research-transfer-apply'),
+    researchTransferClear: document.getElementById('research-transfer-clear'),
     history: document.getElementById('history'),
     historyList: document.getElementById('history-list'),
     bootstrap: document.getElementById('bootstrap'),
@@ -144,10 +173,35 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let lastEditorialInsights = null;
   let lastEditorialTriage = null;
   let localCalendarIdeas = [];
+  // Bounded LOCAL intent epoch; later Clear/input/commit invalidates delayed ADD.
+  let calendarIntentGeneration = 0;
   let localEditorialVariants = [];
   let localApprovalEvents = [];
   let lastDrafts = [];
   let savedSnapshot = null;
+  let exportAbortController = null;
+  let pendingSourceTransfer = null;
+  let sourceTransferGeneration = 0;
+  function clearMockSourceTransfer(status = 'No inspected fictional source report. No changes saved.') {
+    sourceTransferGeneration += 1;
+    pendingSourceTransfer = null;
+    ui.sourceTransferFile.value = '';
+    ui.sourceTransferReview.hidden = true;
+    ui.sourceTransferReview.textContent = '';
+    ui.sourceTransferApply.disabled = true;
+    ui.sourceTransferStatus.textContent = status;
+  }
+  let pendingResearchTransfer = null;
+  let researchTransferGeneration = 0;
+  function clearMockResearchTransfer(status = 'No inspected fictional M08 brief. No changes saved.') {
+    researchTransferGeneration += 1;
+    pendingResearchTransfer = null;
+    ui.researchTransferFile.value = '';
+    ui.researchTransferReview.hidden = true;
+    ui.researchTransferReview.textContent = '';
+    ui.researchTransferApply.disabled = true;
+    ui.researchTransferStatus.textContent = status;
+  }
   const draftFields = ['title', 'summary', 'body', 'sourceUrl', 'authorLabel'];
   function draftSnapshot() {
     return JSON.stringify(draftFields.map(name => ui.form.elements.namedItem(name).value));
@@ -157,6 +211,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   function showUnsavedChanges() {
     ui.unsaved.hidden = !hasUnsavedChanges();
+    ui.exportDraft.disabled = !(csrf && !ui.form.hidden && ui.draftId.value &&
+      !hasUnsavedChanges() && !ui.save.disabled);
   }
   function acceptSavedDraft() {
     savedSnapshot = draftSnapshot();
@@ -220,6 +276,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.socialCard.removeAttribute('data-viewport');
   }
   function clearLocalCalendar() {
+    calendarIntentGeneration += 1;
     localCalendarIdeas = [];
     ui.calendarList.replaceChildren();
     ui.calendarStatus.textContent = '0 hypothetical concepts · memory only · NOT SCHEDULED';
@@ -307,6 +364,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ' conflict slots · ' + board.timeZone + ' · NOT SCHEDULED · NOT POSTED';
   }
   function renderLocalCalendar() {
+    // Any newer list render supersedes an outstanding pre-render ADD intention.
+    calendarIntentGeneration += 1;
     ui.calendarList.replaceChildren();
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     for (const item of localCalendarIdeas) {
@@ -400,7 +459,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       pickLabel.append(selection);
       const confirmSuggestion = action('m07-suggestion-confirm', 'Confirm hypothetical time change');
       panel.append(suggestStatus, pickLabel, confirmSuggestion);
+      let editIntentGeneration = 0;
+      const invalidateEditIntent = () => {
+        editIntentGeneration += 1;
+        // A changed/cancelled attempt must not strand the current Save button.
+        save.disabled = false;
+      };
+      channel.addEventListener('change', invalidateEditIntent);
+      time.addEventListener('input', invalidateEditIntent);
+      zone.addEventListener('change', invalidateEditIntent);
       const resetEditor = () => {
+        invalidateEditIntent();
         panel.hidden = true;
         selection.replaceChildren();
         selection.value = '';
@@ -421,18 +490,32 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         editor.hidden = true;
         edit.focus();
       });
-      save.addEventListener('click', () => {
-        if (!current()) return;
+      save.addEventListener('click', async () => {
+        if (!current() || !activeLocalSocialSession(epoch) || save.disabled) return;
         const draft = lastDrafts.find(row => row.id === item.draftId);
         if (!draft) return;
+        const selected = [channel.value, time.value, zone.value];
+        const intent = ++editIntentGeneration;
+        save.disabled = true;
         try {
-          const replacement = createLocalCalendarIdea(draft, channel.value, time.value, zone.value);
+          const authorized = await verifyLocalSocialSession(epoch, draft);
+          if (!authorized || !current() || !activeLocalSocialSession(epoch) ||
+              intent !== editIntentGeneration || editor.hidden ||
+              selected.some((value, index) =>
+                value !== [channel.value, time.value, zone.value][index])) return;
+          const fresh = authorized.find(row => sameLocalSocialDraftMetadata(draft, row));
+          if (!fresh) throw new TypeError('Stale LOCAL Owner decision');
+          const replacement = createLocalCalendarIdea(fresh, ...selected);
           // Editing may change channel/minute, never the authorized draft ID.
           localCalendarIdeas = replaceLocalCalendarIdea(localCalendarIdeas, item, replacement);
           renderLocalCalendar();
           ui.calendarStatus.textContent = 'Edited LOCAL hypothetical concept · memory only · NOT SCHEDULED · NOT POSTED';
         } catch {
-          editStatus.textContent = 'Invalid or duplicate LOCAL idea; NOTHING SCHEDULED';
+          if (current() && intent === editIntentGeneration) {
+            editStatus.textContent = 'Invalid or stale LOCAL idea; NOTHING SCHEDULED';
+          }
+        } finally {
+          if (current() && intent === editIntentGeneration) save.disabled = false;
         }
       });
       article.append(description, labels, remove, edit);
@@ -687,7 +770,11 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     for (const draft of lastDrafts) {
       const option = document.createElement('option');
       option.value = draft.id;
-      option.textContent = draft.title + ' · rev ' + draft.revision;
+      const processLabel = draft.current_review_decision === 'CHANGES_REQUESTED'
+        ? ' · OWNER CHANGES REQUESTED (SOCIAL PREVIEW BLOCKED)'
+        : draft.current_review_decision === 'PREVIEW_REVIEWED'
+          ? ' · REVIEWED FOR PRIVATE PREVIEW ONLY' : ' · CURRENT REVISION UNREVIEWED';
+      option.textContent = draft.title + ' · rev ' + draft.revision + processLabel;
       ui.socialDraft.append(option);
     }
     ui.socialDraft.value = '';
@@ -722,25 +809,42 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.reviewList.replaceChildren();
     ui.reviewCount.textContent = 'UNAVAILABLE';
     ui.reviewScope.textContent = 'UNAVAILABLE';
+    ui.reviewUnreviewed.textContent = 'UNAVAILABLE';
+    ui.reviewPreviewed.textContent = 'UNAVAILABLE';
+    ui.reviewChanges.textContent = 'UNAVAILABLE';
   }
   function renderLocalReviewQueue() {
     ui.reviewList.replaceChildren();
     if (!lastReviewQueue || !csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const filter = ui.reviewFilter.value;
+    const filters = {
+      all: () => true,
+      'missing-credit': row => row.creditStatus === 'CREDIT_MISSING',
+      'current-unreviewed': row => row.ownerProcessStatus === 'CURRENT_REVISION_UNREVIEWED',
+      'private-preview-reviewed': row => row.ownerProcessStatus === 'PRIVATE_PREVIEW_REVIEWED',
+      'private-changes-requested': row => row.ownerProcessStatus === 'PRIVATE_CHANGES_REQUESTED',
+      revised: row => row.revision > 1,
+      'older-seven-days': row => Boolean(lastEditorialInsights) &&
+        row.updatedAtSeconds <= Date.parse(lastEditorialInsights.asOfUTC) / 1000 - 7 * 86400,
+    };
+    const matches = Object.hasOwn(filters, filter) ? filters[filter] : null;
+    if (!matches) {
+      ui.reviewCount.textContent = 'INVALID_FILTER';
+      ui.reviewScope.textContent = 'UNAVAILABLE';
+      return;
+    }
     let shown = 0;
     for (const row of lastReviewQueue.rows) {
-      if (filter === 'missing-credit' && row.creditStatus !== 'CREDIT_MISSING') continue;
-      if (filter === 'revised' && row.revision <= 1) continue;
-      if (filter === 'older-seven-days' &&
-          (!lastEditorialInsights || row.updatedAtSeconds >
-            Date.parse(lastEditorialInsights.asOfUTC) / 1000 - 7 * 86400)) continue;
+      if (!matches(row)) continue;
       const li = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = row.title + ' · rev ' + row.revision;
       button.addEventListener('click', () => openLocalDraft(row));
       const labels = document.createElement('span');
-      labels.textContent = ' · ' + row.creditStatus + ' · ' + row.sourceStatus + ' · ' + row.publishingStatus;
+      labels.textContent = ' · ' + row.creditStatus + ' · ' + row.sourceStatus +
+        ' · ' + row.ownerProcessStatus + ' · ' + row.publishingStatus +
+        ' · NO_RIGHTS_OR_PUBLISHING_APPROVAL';
       li.append(button, labels);
       ui.reviewList.append(li);
       shown++;
@@ -798,6 +902,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.recentActivity.append(li);
     }
     lastReviewQueue = reviewQueue;
+    ui.reviewUnreviewed.textContent = String(reviewQueue.currentUnreviewedListed);
+    ui.reviewPreviewed.textContent = String(reviewQueue.privatePreviewReviewedListed);
+    ui.reviewChanges.textContent = String(reviewQueue.privateChangesRequestedListed);
     lastEditorialInsights = insights;
     lastEditorialTriage = triage;
     ui.triageStatus.textContent = triage.status;
@@ -822,6 +929,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = null;
     if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
     sessionExpiryTimer = null;
     sessionExpiresAt = 0;
@@ -831,6 +940,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     hideLocalDashboard();
     ui.reviewFilter.value = 'all';
     csrf = null;
+    resetOwnerReview();
+    clearMockSourceTransfer();
+    clearMockResearchTransfer();
     savedSnapshot = null;
     ui.form.reset();
     ui.draftId.value = '';
@@ -843,6 +955,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.refresh.hidden = true;
     ui.history.hidden = true;
     ui.historyList.replaceChildren();
+    ui.exportDraft.hidden = true;
+    ui.exportDraft.disabled = true;
+    ui.exportStatus.textContent = '';
     ui.items.replaceChildren();
     lastDrafts = [];
     ui.search.value = '';
@@ -874,6 +989,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
         // was already cleared. After sign-in, deny from any protected route
         // also revokes this browser editor's local authenticated state.
         clearLocalSession();
+        if (/^\/(?:local|admin)\/articles(?:\/|\?|$)/.test(url)) {
+          message('Local session expired or was revoked; sign in again.');
+        }
       }
       const error = new Error('Local request rejected (' + response.status + ')');
       error.status = response.status;
@@ -935,7 +1053,99 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.deviceList.append(item);
     }
   }
+
+  function resetOwnerReview() {
+    ui.ownerReview.hidden = true;
+    ui.ownerReviewDecision.value = 'PREVIEW_REVIEWED';
+    ui.ownerReviewNote.value = '';
+    ui.ownerReviewSubmit.disabled = true;
+    ui.ownerReviewStatus.textContent = 'No Owner review of this saved revision. No publishing rights.';
+    ui.ownerReviewHistory.replaceChildren();
+  }
+  async function loadOwnerReview() {
+    resetOwnerReview();
+    const id = ui.draftId.value, revision = Number(ui.revision.value);
+    if (!csrf || !id || !Number.isSafeInteger(revision) || revision < 1) return;
+    const epoch = sessionEpoch, generation = draftOpenGeneration, snapshot = draftSnapshot();
+    try {
+      const state = await api('/local/articles/' + encodeURIComponent(id) + '/review');
+      if (epoch !== sessionEpoch || generation !== draftOpenGeneration || !csrf ||
+          ui.draftId.value !== id || Number(ui.revision.value) !== revision ||
+          snapshot !== draftSnapshot() || hasUnsavedChanges()) return;
+      if (state.revision !== revision || state.publication !== 'DISABLED' ||
+          state.rights !== 'NOT_CLEARED' || state.historyLimit !== 100 ||
+          !Array.isArray(state.history) || state.history.length > 100 ||
+          state.history.some(row => !Number.isSafeInteger(row.revision) ||
+            row.revision < 1 || row.revision > revision ||
+            !['PREVIEW_REVIEWED', 'CHANGES_REQUESTED'].includes(row.decision) ||
+            typeof row.note !== 'string' || row.note.length > 500 ||
+            !Number.isSafeInteger(row.createdAt))) {
+        throw new TypeError('Invalid review history contract');
+      }
+      let previousRevision = revision + 1;
+      for (const row of state.history) {
+        if (row.revision >= previousRevision) throw new TypeError('Unordered Owner review history');
+        previousRevision = row.revision;
+        const item = document.createElement('li');
+        item.textContent = 'Revision ' + row.revision +
+          (row.revision === revision ? ' (current)' : ' (superseded)') +
+          ' · ' + row.decision + ' · ' + row.note;
+        ui.ownerReviewHistory.append(item);
+      }
+      ui.ownerReview.hidden = false;
+      if (state.review) {
+        ui.ownerReviewStatus.textContent = 'Saved Owner review of LOCAL revision ' + revision +
+          ': ' + state.review.decision + '. Rights NOT CLEARED; NOT PUBLISHED.';
+        ui.ownerReviewNote.value = state.review.note;
+        ui.ownerReviewSubmit.disabled = true;
+      } else {
+        ui.ownerReviewStatus.textContent = 'No review for LOCAL revision ' + revision +
+          '. You may record a private process note.';
+        ui.ownerReviewSubmit.disabled = false;
+      }
+    } catch {
+      if (epoch === sessionEpoch && generation === draftOpenGeneration) {
+        ui.ownerReviewStatus.textContent = 'Review state unavailable. No decision permitted.';
+        ui.ownerReviewSubmit.disabled = true;
+      }
+    }
+  }
+  ui.ownerReviewSubmit.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || !ui.draftId.value || hasUnsavedChanges() || ui.ownerReviewSubmit.disabled) {
+      ui.ownerReviewStatus.textContent = 'Save the draft and reload the current review state first.';
+      return;
+    }
+    const id = ui.draftId.value, revision = Number(ui.revision.value);
+    const epoch = sessionEpoch, generation = draftOpenGeneration, snapshot = draftSnapshot();
+    const decision = ui.ownerReviewDecision.value, note = ui.ownerReviewNote.value.trim();
+    if (!window.confirm('Record immutable LOCAL Owner review of saved revision ' + revision +
+        '? This does not verify facts, grant source rights, or publish.')) return;
+    ui.ownerReviewSubmit.disabled = true;
+    try {
+      const record = await api('/local/articles/' + encodeURIComponent(id) + '/review', 'POST',
+        { expectedRevision: revision, decision, note });
+      if (epoch !== sessionEpoch || generation !== draftOpenGeneration || !csrf ||
+          ui.draftId.value !== id || snapshot !== draftSnapshot()) return;
+      if (record.revision !== revision || record.decision !== decision ||
+          record.publication !== 'DISABLED') throw new TypeError('Invalid review response');
+      ui.ownerReviewStatus.textContent = 'Review saved for LOCAL revision ' + revision +
+        '. Private M02 import only; NOT PUBLISHED; source rights NOT CLEARED.';
+      await loadOwnerReview();
+      // Refresh the authenticated M06 queue only after an immutable Owner note
+      // has been recorded for the exact current saved revision.
+      if (epoch === sessionEpoch && generation === draftOpenGeneration && csrf &&
+          ui.draftId.value === id && Number(ui.revision.value) === revision) {
+        await refresh();
+      }
+    } catch {
+      if (epoch === sessionEpoch && generation === draftOpenGeneration && csrf) {
+        ui.ownerReviewStatus.textContent = 'Review rejected or stale. Reopen the saved revision.';
+      }
+    }
+  });
   function editDraft(draft) {
+    clearMockSourceTransfer();
+    clearMockResearchTransfer();
     ui.form.elements.namedItem('title').value = draft.title;
     ui.form.elements.namedItem('summary').value = draft.summary;
     ui.form.elements.namedItem('body').value = draft.body;
@@ -945,12 +1155,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.revision.value = String(draft.revision);
     ui.save.textContent = 'Save new revision';
     ui.history.hidden = false;
+    ui.exportDraft.hidden = false;
+    ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
     ui.historyList.replaceChildren();
     renderDraftPreview();
     acceptSavedDraft();
+    void loadOwnerReview();
   }
   async function openLocalDraft(draft) {
     if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = null;
     const epoch = sessionEpoch;
     const generation = readGeneration;
     const openGeneration = ++draftOpenGeneration;
@@ -1023,26 +1238,44 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.triageFilter.addEventListener('change', renderLocalEditorialTriage);
   ui.weekFilter.addEventListener('change', renderLocalWeekBoard);
   ui.weekZone.addEventListener('change', renderLocalWeekBoard);
-  ui.calendarAdd.addEventListener('click', () => {
+  ui.calendarAdd.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     const draft = lastDrafts.find(row => row.id === ui.socialDraft.value);
     if (!draft) {
       ui.calendarStatus.textContent = 'Select an authorized LOCAL draft first';
       return;
     }
+    const epoch = sessionEpoch;
+    const generation = readGeneration;
+    const intent = ++calendarIntentGeneration;
+    const selected = [ui.socialDraft.value, ui.socialChannel.value,
+      ui.calendarDate.value, ui.calendarZone.value];
+    const authorized = await verifyLocalSocialSession(epoch, draft);
+    if (!authorized || !activeLocalSocialSession(epoch) ||
+        intent !== calendarIntentGeneration ||
+        generation !== readGeneration || lastDrafts.find(row => row.id === draft.id) !== draft ||
+        selected.some((value, index) => value !== [
+          ui.socialDraft.value, ui.socialChannel.value,
+          ui.calendarDate.value, ui.calendarZone.value][index])) return;
     try {
-      const idea = createLocalCalendarIdea(draft, ui.socialChannel.value,
-        ui.calendarDate.value, ui.calendarZone.value);
+      const fresh = authorized.find(row => sameLocalSocialDraftMetadata(draft, row));
+      if (!fresh) throw new TypeError('Stale LOCAL Owner decision');
+      const idea = createLocalCalendarIdea(fresh, selected[1], selected[2], selected[3]);
       localCalendarIdeas = addLocalCalendarIdea(localCalendarIdeas, idea);
       renderLocalCalendar();
     } catch {
-      ui.calendarStatus.textContent = 'Invalid/duplicate time or limit reached; NOTHING SCHEDULED';
+      ui.calendarStatus.textContent = 'Invalid/stale LOCAL idea or limit reached; NOTHING SCHEDULED';
     }
   });
   ui.calendarClear.addEventListener('click', () => {
     if (!csrf || ui.form.hidden || ui.dashboard.hidden) return;
     clearLocalCalendar();
   });
+  // Detect ABA field changes, even if values are restored before D1 responds.
+  for (const control of [ui.socialDraft, ui.socialChannel, ui.calendarDate, ui.calendarZone]) {
+    control.addEventListener('change', () => { calendarIntentGeneration += 1; });
+    control.addEventListener('input', () => { calendarIntentGeneration += 1; });
+  }
   ui.socialDraft.addEventListener('change', clearLocalSocialPreview);
   ui.socialChannel.addEventListener('change', clearLocalSocialPreview);
   ui.socialViewport.addEventListener('change', () => {
@@ -1064,7 +1297,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   // A same-revision source, author, status or content change is NOT authorization.
   function sameLocalSocialDraftMetadata(a, b) {
     const fields = ['id', 'revision', 'title', 'summary', 'source_url',
-      'author_label', 'status', 'updated_at'];
+      'author_label', 'status', 'updated_at', 'current_review_decision'];
     return !!a && !!b && fields.every(key => a[key] === b[key]);
   }
   async function verifyLocalSocialSession(epoch, selectedDraft) {
@@ -1094,14 +1327,17 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     const selectedDraft = lastDrafts.find(row => row.id === selectedId);
     const authorizedDrafts = await verifyLocalSocialSession(epoch);
     if (!authorizedDrafts || validation !== focusValidationGeneration ||
-        previewGeneration !== socialPreviewGeneration || !activeLocalSocialSession(epoch) ||
-        selectedId !== ui.socialDraft.value) return;
+        !activeLocalSocialSession(epoch)) return;
+    // A changed selection invalidates preview-side rendering, not the safe
+    // pruning of stale/revoked calendar ideas from this authenticated D1 read.
+    const viewUnchanged = previewGeneration === socialPreviewGeneration &&
+      selectedId === ui.socialDraft.value;
 
     // Keep the already-visible LOCAL preview only while its exact metadata
     // still matches the latest authenticated Owner/D1 listing.
     const sameDraft = sameLocalSocialDraftMetadata;
     const authorizedSelected = authorizedDrafts.find(row => row.id === selectedId);
-    const selectedStale = !!selectedDraft &&
+    const selectedStale = viewUnchanged && !!selectedDraft &&
       !sameDraft(selectedDraft, authorizedSelected);
 
     localEditorialVariants = Object.freeze(localEditorialVariants.filter(row => {
@@ -1122,12 +1358,34 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       try { requireCanonicalLocalVariant(event.variant,current); return true; }
       catch { return false; }
     }));
-    if (!selectedStale) { renderLocalApproval(); return; }
-    clearLocalSocialPreview();
+    // A current-revision Owner decision or draft edit also invalidates
+    // previously created hypothetical calendar/weekly ideas, even when
+    // the Social Studio selector points to a different (or no) draft.
+    const validIdeas = localCalendarIdeas.filter(idea => {
+      const previous = lastDrafts.find(row => row.id === idea.draftId);
+      const current = authorizedDrafts.find(row => row.id === idea.draftId);
+      return sameDraft(previous, current) &&
+        current.current_review_decision !== 'CHANGES_REQUESTED';
+    });
+    const removedIdeas = validIdeas.length !== localCalendarIdeas.length;
+    if (!selectedStale && !removedIdeas && viewUnchanged) {
+      renderLocalApproval();
+      return;
+    }
+    if (selectedStale) clearLocalSocialPreview();
     lastDrafts = authorizedDrafts;
-    renderDraftList();
-    renderLocalSocialChoices();
-    ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
+    if (removedIdeas) {
+      localCalendarIdeas = Object.freeze(validIdeas);
+      renderLocalCalendar();
+      ui.calendarStatus.textContent = 'Stale LOCAL ideas cleared · NOT SCHEDULED · NOT POSTED';
+    }
+    if (selectedStale) {
+      renderDraftList();
+      renderLocalSocialChoices();
+      ui.socialStatus.textContent = 'LOCAL draft changed or removed · preview cleared';
+    } else if (viewUnchanged) {
+      renderLocalApproval();
+    }
   };
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) recheckLocalSocialOnFocus();
@@ -1176,7 +1434,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.socialStatus.textContent = 'LOCAL synthetic concept · NOT POSTED';
     } catch {
       clearLocalSocialPreview();
-      ui.socialStatus.textContent = 'Invalid or unverified LOCAL draft; no preview created';
+      ui.socialStatus.textContent = draft.current_review_decision === 'CHANGES_REQUESTED'
+        ? 'OWNER CHANGES REQUESTED for current saved revision · social preview blocked · NOT POSTED'
+        : 'Invalid or unverified LOCAL draft; no preview created';
     }
   });
   ui.variantSave.addEventListener('click', async () => {
@@ -1283,7 +1543,9 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.approvalReason.addEventListener('input', () => { socialActionGeneration += 1; });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
+    if (hasUnsavedChanges()) ui.ownerReviewSubmit.disabled = true;
     renderDraftPreview();
+    if (exportAbortController && hasUnsavedChanges()) exportAbortController.abort();
     showUnsavedChanges();
   });
   ui.login.addEventListener('click', async () => {
@@ -1346,9 +1608,199 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       message('Read-only revision history loaded: ' + revisions.length + ' versions');
     } catch { message('Could not load revision history'); }
   });
+  ui.exportDraft.addEventListener('click', async () => {
+    if (!csrf || ui.form.hidden || !ui.draftId.value || ui.save.disabled || hasUnsavedChanges()) {
+      ui.exportStatus.textContent = 'Save or discard pending form changes before exporting a persisted revision.';
+      return;
+    }
+    const id = ui.draftId.value;
+    const revision = Number(ui.revision.value);
+    if (!Number.isSafeInteger(revision) || revision < 1) {
+      ui.exportStatus.textContent = 'Reload a saved LOCAL draft before exporting.';
+      return;
+    }
+    if (!window.confirm('Export saved revision ' + revision + ' for manual import into M02? Facts and rights remain unverified; nothing will be published.')) {
+      ui.exportStatus.textContent = 'Export canceled.';
+      ui.exportDraft.focus();
+      return;
+    }
+    const epoch = sessionEpoch;
+    const generation = draftOpenGeneration;
+    const snapshot = draftSnapshot();
+    const controller = new AbortController();
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = controller;
+    ui.exportDraft.disabled = true;
+    ui.exportStatus.textContent = 'Checking the saved revision…';
+    try {
+      const response = await fetch('/local/articles/' + encodeURIComponent(id) +
+        '/export?revision=' + encodeURIComponent(String(revision)), {
+        method: 'GET', credentials: 'same-origin', cache: 'no-store',
+        headers: { Accept: 'text/markdown' }, signal: controller.signal,
+      });
+      if (response.status === 401) {
+        if (epoch === sessionEpoch) clearLocalSession();
+        return;
+      }
+      if (!response.ok) {
+        ui.exportStatus.textContent = response.status === 409
+          ? 'The saved revision changed. Refresh the list and reopen the latest draft before exporting.'
+          : response.status === 422
+            ? 'This saved content does not fit the canonical Markdown format; no content was changed.'
+            : 'The saved revision could not be exported (' + response.status + ').';
+        return;
+      }
+      const disposition = response.headers.get('content-disposition') || '';
+      const filenameMatch = /^attachment;\s*filename="([a-z0-9]+(?:-[a-z0-9]+)*\.md)"$/iu.exec(disposition);
+      if (!/^text\/markdown(?:\s*;|$)/iu.test(response.headers.get('content-type') || '') ||
+          !/\bno-store\b/iu.test(response.headers.get('cache-control') || '') || !filenameMatch) {
+        throw new Error('Invalid local export response');
+      }
+      const file = await response.blob();
+      if (epoch !== sessionEpoch || generation !== draftOpenGeneration || !csrf || ui.form.hidden ||
+          ui.draftId.value !== id || Number(ui.revision.value) !== revision ||
+          draftSnapshot() !== snapshot || hasUnsavedChanges()) return;
+      if (file.size <= 0 || file.size > 64000) throw new Error('Invalid local export size');
+      const url = URL.createObjectURL(file);
+      const download = document.createElement('a');
+      download.href = url;
+      download.download = filenameMatch[1];
+      document.body.append(download);
+      download.click();
+      download.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      ui.exportStatus.textContent = 'Saved revision ' + revision + ' downloaded for manual M02 import. Facts and rights remain unverified; nothing was published.';
+      message('Exported saved LOCAL revision ' + revision + '; not published');
+      ui.exportDraft.focus();
+    } catch (error) {
+      if (error?.name !== 'AbortError' && epoch === sessionEpoch && generation === draftOpenGeneration) {
+        ui.exportStatus.textContent = 'Export failed. The editor was not changed.';
+      }
+    } finally {
+      if (exportAbortController === controller) exportAbortController = null;
+      if (epoch === sessionEpoch && generation === draftOpenGeneration) showUnsavedChanges();
+    }
+  });
+
+  // A file from the PUBLIC M03 demo is never authority. No CMS API is called
+  // during inspection or application; the Owner still saves the form manually.
+  ui.sourceTransferFile.addEventListener('change', async () => {
+    const file = ui.sourceTransferFile.files?.[0];
+    clearMockSourceTransfer();
+    if (!file) return;
+    if (!csrf || ui.form.hidden || !/\.json$/iu.test(file.name) ||
+        file.size < 1 || file.size > 2048) {
+      clearMockSourceTransfer('Rejected: invalid or oversized MOCK source report.');
+      return;
+    }
+    const epoch = sessionEpoch;
+    const editorGeneration = draftOpenGeneration;
+    const readGeneration = sourceTransferGeneration;
+    try {
+      const raw = await file.text();
+      if (epoch !== sessionEpoch || editorGeneration !== draftOpenGeneration ||
+          readGeneration !== sourceTransferGeneration || !csrf || ui.form.hidden) return;
+      const result = parseMockSourceTransfer(raw, canonicalSourceCatalog);
+      if (!result) {
+        clearMockSourceTransfer('Rejected: report differs from the three known fictional sources.');
+        return;
+      }
+      pendingSourceTransfer = result;
+      ui.sourceTransferReview.textContent = result.label + ' · ' + result.sourceUrl +
+        ' · ' + result.status + ' · ' + result.licensing +
+        ' · NOT_CLEARED · NOT_CAPTURED · NO_DIGEST · MOCK / NOT PUBLISHED.';
+      ui.sourceTransferReview.hidden = false;
+      ui.sourceTransferApply.disabled = false;
+      ui.sourceTransferStatus.textContent = 'Inspected only. Click Apply to change the unsaved source field.';
+    } catch {
+      if (epoch === sessionEpoch && readGeneration === sourceTransferGeneration) {
+        clearMockSourceTransfer('Rejected: could not read source report.');
+      }
+    }
+  });
+  ui.sourceTransferApply.addEventListener('click', () => {
+    if (!csrf || ui.form.hidden || !pendingSourceTransfer ||
+        ui.sourceTransferApply.disabled) return;
+    if (!window.confirm('Apply this fictional NOT_CLEARED source address to the unsaved editor? No save, approval or publication will occur.')) {
+      ui.sourceTransferStatus.textContent = 'Application canceled; no form field changed.';
+      return;
+    }
+    const sourceField = ui.form.elements.namedItem('sourceUrl');
+    sourceField.value = pendingSourceTransfer.sourceUrl;
+    sourceField.dispatchEvent(new Event('input', { bubbles: true }));
+    clearMockSourceTransfer('MOCK source inserted in the form only. Rights NOT_CLEARED. Save separately if desired; nothing published.');
+  });
+  ui.sourceTransferClear.addEventListener('click', () => clearMockSourceTransfer());
+  // An M08 public demo file never grants authority. Only the nine exact
+  // canonical offline packets are inspectable; the Owner must opt in to
+  // inserting a labelled note in the UNSAVED local editor body.
+  ui.researchTransferFile.addEventListener('change', async () => {
+    const file = ui.researchTransferFile.files?.[0];
+    clearMockResearchTransfer();
+    if (!file) return;
+    if (!csrf || ui.form.hidden || !/\.json$/iu.test(file.name) ||
+        file.size < 1 || file.size > 4096) {
+      clearMockResearchTransfer('Rejected: invalid or oversized M08 MOCK brief.');
+      return;
+    }
+    const epoch = sessionEpoch, open = draftOpenGeneration;
+    const generation = researchTransferGeneration, listing = readGeneration;
+    const snapshot = draftSnapshot();
+    const draftId = ui.draftId.value, revision = ui.revision.value;
+    try {
+      const raw = await file.text();
+      if (epoch !== sessionEpoch || open !== draftOpenGeneration ||
+          generation !== researchTransferGeneration || listing !== readGeneration ||
+          !csrf || ui.form.hidden || draftSnapshot() !== snapshot ||
+          ui.draftId.value !== draftId || ui.revision.value !== revision) return;
+      const parsed = parseMockResearchTransfer(raw, canonicalResearchCatalog);
+      if (!parsed) {
+        clearMockResearchTransfer('Rejected: report is not an exact canonical M08 offline brief.');
+        return;
+      }
+      pendingResearchTransfer = {packet:parsed, epoch, open, listing, snapshot, draftId, revision};
+      ui.researchTransferReview.textContent = parsed.sourceLabel + ' (' + parsed.sourceId + ')' +
+        ' / ' + parsed.pair + ' · ' + parsed.blockerCount +
+        ' blocked checks · MOCK · NOT VERIFIED · NOT_CLEARED · NO LIVE QUOTE · NOT PUBLISHED.';
+      ui.researchTransferReview.hidden = false;
+      ui.researchTransferApply.disabled = false;
+      ui.researchTransferStatus.textContent = 'Inspected M08 MOCK brief only. Explicit Apply appends an UNSAVED warning to the article body.';
+    } catch {
+      if (epoch === sessionEpoch && generation === researchTransferGeneration) {
+        clearMockResearchTransfer('Rejected: unable to inspect M08 offline brief.');
+      }
+    }
+  });
+  ui.researchTransferApply.addEventListener('click', () => {
+    const pending = pendingResearchTransfer;
+    if (!csrf || ui.form.hidden || !pending || ui.researchTransferApply.disabled) return;
+    if (pending.epoch !== sessionEpoch || pending.open !== draftOpenGeneration ||
+        pending.listing !== readGeneration || pending.snapshot !== draftSnapshot() ||
+        pending.draftId !== ui.draftId.value || pending.revision !== ui.revision.value) {
+      clearMockResearchTransfer('Stale M08 brief selection. Reinspect the file before applying.');
+      return;
+    }
+    const field = ui.form.elements.namedItem('body');
+    const next = formatMockResearchNote(pending.packet, field.value);
+    if (next === null) {
+      clearMockResearchTransfer('M08 note is duplicated, exceeds body limit or is invalid. No changes applied.');
+      return;
+    }
+    if (!window.confirm('Append this M08 OFFLINE MOCK research note to the UNSAVED draft? No rights, fact verification, save or publication will occur.')) {
+      ui.researchTransferStatus.textContent = 'Application canceled; no draft field changed.';
+      ui.researchTransferApply.focus();
+      return;
+    }
+    field.value = next;
+    field.dispatchEvent(new Event('input', {bubbles:true}));
+    clearMockResearchTransfer('M08 MOCK blockers appended to the unsaved article body only. Review and Save separately. NOT VERIFIED; NOT PUBLISHED.');
+    field.focus();
+  });
+  ui.researchTransferClear.addEventListener('click', () => clearMockResearchTransfer());
   ui.form.addEventListener('submit', async (event) => {
     event.preventDefault();
     ui.save.disabled = true;
+    showUnsavedChanges();
     try {
       const data = Object.fromEntries(new FormData(ui.form));
       const id = ui.draftId.value;
@@ -1360,17 +1812,27 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.draftId.value = result.id;
       ui.revision.value = String(result.revision);
       ui.save.textContent = 'Save new revision';
+      ui.exportDraft.hidden = false;
+      ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
       acceptSavedDraft();
       await refresh();
+      await loadOwnerReview();
       message('Saved LOCAL draft revision ' + result.revision + '; not published');
     } catch { message('Save rejected; reload draft to resolve possible revision conflict'); }
-    finally { ui.save.disabled = false; }
+    finally { ui.save.disabled = false; showUnsavedChanges(); }
   });
   document.getElementById('new-draft').addEventListener('click', () => {
     if (!confirmDraftDiscard()) return;
+    clearMockSourceTransfer();
+    clearMockResearchTransfer();
     draftOpenGeneration += 1;
+    if (exportAbortController) exportAbortController.abort();
+    exportAbortController = null;
     ui.form.reset(); ui.draftId.value = ''; ui.revision.value = '0';
+    resetOwnerReview();
     ui.history.hidden = true;
+    ui.exportDraft.hidden = true;
+    ui.exportStatus.textContent = '';
     ui.historyList.replaceChildren();
     ui.save.textContent = 'Create draft'; renderDraftPreview(); acceptSavedDraft(); message('New unsaved local draft');
   });
@@ -1625,11 +2087,20 @@ footer{padding:24px 0;color:#b9c8bd}
 <section id="m06-review" aria-labelledby="m06-review-title">
 <h3 id="m06-review-title">LOCAL editorial review queue · read-only</h3>
 <p>Only listed test drafts. An HTTPS source URL does not verify the publisher, licence or reuse rights. All sources require independent verification; nothing is approved for publication.</p>
+<p>Owner process decisions apply ONLY to the current saved revision. Historical reviews never grant fact verification, source rights, scheduling or publication.</p>
+<div class="m06-grid" aria-label="Current saved revision private process decisions">
+<div class="m06-card"><h4>Unreviewed current revisions (listed)</h4><strong id="m06-review-unreviewed">UNAVAILABLE</strong></div>
+<div class="m06-card"><h4>Private preview process reviewed (listed)</h4><strong id="m06-review-previewed">UNAVAILABLE</strong></div>
+<div class="m06-card"><h4>Changes requested (listed)</h4><strong id="m06-review-changes">UNAVAILABLE</strong></div>
+</div>
 <label for="m06-review-filter">Filter listed LOCAL drafts</label>
 <select id="m06-review-filter">
 <option value="all">All listed drafts</option>
 <option value="missing-credit">Missing author credit</option>
 <option value="revised">Revised drafts (revision above 1)</option>
+<option value="current-unreviewed">Current revision not yet reviewed</option>
+<option value="private-preview-reviewed">Private preview process reviewed</option>
+<option value="private-changes-requested">Owner requested changes</option>
 <option value="older-seven-days">No edit for 7+ days</option>
 </select>
 <p role="status" aria-live="polite">Visible: <strong id="m06-review-count">UNAVAILABLE</strong> · scope: <strong id="m06-review-scope">UNAVAILABLE</strong></p>
@@ -1745,7 +2216,7 @@ footer{padding:24px 0;color:#b9c8bd}
 </select></label>
 </div>
 <p id="m07-week-status" role="status" aria-live="polite">0 shown · 0 conflicts · NOT SCHEDULED</p>
-<div id="m07-week-board" aria-label="Private weekly hypothetical editorial board"></div>
+<div id="m07-week-board" role="region" aria-label="Private weekly hypothetical editorial board"></div>
 </section>
 </section>
 </section>
@@ -1762,9 +2233,44 @@ footer{padding:24px 0;color:#b9c8bd}
 <label>Summary<textarea name="summary" minlength="20" maxlength="400" required></textarea></label>
 <label>Article body<textarea name="body" maxlength="40000" required></textarea></label>
 <label>HTTPS original source<input name="sourceUrl" type="url" maxlength="500" required></label>
+<section id="source-transfer" aria-labelledby="source-transfer-title">
+<h3 id="source-transfer-title">M03 fictional source report · inspect before applying</h3>
+<p>Only files from the three offline M03 examples. No rights cleared, evidence captured, network request, save or publication.</p>
+<label>Local JSON source report (max 2048 bytes)
+<input id="source-transfer-file" type="file" accept=".json,application/json"></label>
+<p id="source-transfer-status" role="status" aria-live="polite">No inspected fictional source report. No changes saved.</p>
+<p id="source-transfer-review" role="status" aria-live="polite" hidden></p>
+<button id="source-transfer-apply" type="button" disabled>Apply MOCK source to unsaved form</button>
+<button id="source-transfer-clear" type="button">Clear inspected report</button>
+</section>
+<section id="research-transfer" aria-labelledby="research-transfer-title">
+<h3 id="research-transfer-title">M08 fictional research brief · inspect before adding to UNSAVED body</h3>
+<p>Offline source-plus-market blockers only. Never fact-checked, licensed, AI-generated or published.</p>
+<label for="research-transfer-file">M08 canonical offline JSON (max 4096 bytes)</label>
+<input id="research-transfer-file" type="file" accept=".json,application/json">
+<p id="research-transfer-status" role="status" aria-live="polite">No inspected fictional M08 brief. No changes saved.</p>
+<p id="research-transfer-review" role="status" aria-live="polite" hidden></p>
+<button id="research-transfer-apply" type="button" disabled>Append M08 MOCK blockers to unsaved body</button>
+<button id="research-transfer-clear" type="button">Clear M08 inspected brief</button>
+</section>
 <label>Author credit<input name="authorLabel" maxlength="80"></label>
 <button id="save" type="submit">Create draft</button>
 <button id="new-draft" type="button">New draft</button>
+<section id="owner-review" aria-labelledby="owner-review-title" hidden>
+<h3 id="owner-review-title">LOCAL Owner review of saved revision</h3>
+<p>An immutable process note, not a verification of facts, source rights, approval for publication or LIVE authentication. Export the Markdown manually to M02 for private browser preview.</p>
+<label for="owner-review-decision">Review decision</label>
+<select id="owner-review-decision"><option value="PREVIEW_REVIEWED">Reviewed for private preview only</option><option value="CHANGES_REQUESTED">Changes requested</option></select>
+<label for="owner-review-note">Reason or note (10 to 500 characters)</label>
+<textarea id="owner-review-note" minlength="10" maxlength="500" spellcheck="true"></textarea>
+<button id="owner-review-submit" type="button" disabled>Record LOCAL Owner review</button>
+<p id="owner-review-status" role="status" aria-live="polite">No Owner review of this saved revision. No publishing rights.</p>
+<details id="owner-review-history-panel"><summary>Private Owner review history (up to 100 decisions)</summary>
+<p>Older decisions refer only to superseded LOCAL revisions. They never grant publishing rights or source clearance.</p>
+<ol id="owner-review-history" aria-label="Private immutable Owner review decisions"></ol></details>
+</section>
+<button id="export-draft" type="button" hidden disabled>Export saved revision to Markdown for M02</button>
+<p id="export-status" role="status" aria-live="polite"></p>
 <p id="unsaved-draft-status" role="status" aria-live="polite" hidden>Unsaved changes in this LOCAL draft.</p>
 <button id="history" type="button" hidden>View revision history</button>
 <ul id="history-list" aria-label="Read-only draft revision history"></ul>

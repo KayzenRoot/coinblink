@@ -2,6 +2,7 @@
 // No cloud account, deployment binding, real Owner credentials or publishing.
 import { verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 import { renderLocalCmsUi } from './local-cms-ui.mjs';
+import { createPersistedDraftMarkdown } from '../local-draft-markdown.mjs';
 
 export const CMS_TEST_ORIGIN = 'https://owner.example.test';
 export const CMS_TEST_RP_ID = 'owner.example.test';
@@ -370,7 +371,10 @@ async function listDrafts(request, db, secret, currentTime) {
   const who = await session(request, db, secret, currentTime);
   if (!who) return denied(401);
   const rows = await db.prepare(
-    'SELECT id,title,summary,source_url,author_label,status,revision,updated_at FROM cms_drafts WHERE owner_id=1 ORDER BY updated_at DESC LIMIT 100'
+    'SELECT d.id,d.title,d.summary,d.source_url,d.author_label,d.status,d.revision,d.updated_at, ' +
+    '(SELECT r.decision FROM cms_owner_reviews r WHERE r.draft_id=d.id ' +
+    'AND r.revision=d.revision AND r.actor_owner_id=1) AS current_review_decision ' +
+    'FROM cms_drafts d WHERE d.owner_id=1 ORDER BY d.updated_at DESC LIMIT 100'
   ).all();
   return json({ drafts: rows.results });
 }
@@ -412,6 +416,103 @@ async function readDraft(request, db, secret, currentTime, id, revisionsOnly) {
     'SELECT id,title,summary,body,source_url,author_label,status,revision FROM cms_drafts WHERE id=? AND owner_id=1'
   ).bind(id).first();
   return article ? json({ draft: article }) : denied(404);
+}
+
+
+async function getSavedOwnerReview(request, db, secret, currentTime, id) {
+  if (!ownerReadOrigin(request)) return denied();
+  if ([...new URL(request.url).searchParams.keys()].length) return denied(400);
+  const who = await session(request, db, secret, currentTime);
+  if (!who) return denied(401);
+  // One bounded, read-only D1 snapshot contains the latest draft revision and
+  // at most 100 immutable Owner process decisions. Old reviews are historical
+  // evidence, never approval for the current revision or publication.
+  const sql = 'SELECT d.revision AS current_revision, r.revision AS reviewed_revision, ' +
+    'r.decision, r.note, r.created_at FROM cms_drafts d ' +
+    'LEFT JOIN cms_owner_reviews r ON r.draft_id=d.id AND r.actor_owner_id=1 ' +
+    "WHERE d.id=? AND d.owner_id=1 AND d.status='draft' " +
+    'ORDER BY r.revision DESC LIMIT 100';
+  const result = await db.prepare(sql).bind(id).all();
+  const first = result.results[0];
+  if (!first) return denied(404);
+  const history = result.results.filter(row => row.reviewed_revision !== null).map(row => ({
+    revision: row.reviewed_revision, decision: row.decision,
+    note: row.note, createdAt: row.created_at,
+  }));
+  const current = history.find(row => row.revision === first.current_revision);
+  return json({
+    revision: first.current_revision,
+    review: current ? { decision: current.decision, note: current.note, createdAt: current.createdAt } : null,
+    history, historyLimit: 100, publication: 'DISABLED', rights: 'NOT_CLEARED',
+  });
+}
+
+async function recordSavedOwnerReview(request, db, secret, currentTime, id) {
+  const who = await authorizeMutation(request, db, secret, currentTime);
+  if (!who) return denied();
+  if ([...new URL(request.url).searchParams.keys()].length) return denied(400);
+  const input = await payload(request, 2048);
+  if (Object.keys(input).length !== 3 || !Number.isSafeInteger(input.expectedRevision) ||
+      input.expectedRevision < 1 || !['PREVIEW_REVIEWED', 'CHANGES_REQUESTED'].includes(input.decision) ||
+      typeof input.note !== 'string' || input.note !== input.note.trim() ||
+      input.note.length < 10 || input.note.length > 500 || Array.from(input.note).some(char => char.codePointAt(0) < 32 || char.codePointAt(0) === 127)) return denied(400);
+  // A conditional insert is atomic with its revision check; no publish/rights state changes.
+  const sql = 'INSERT INTO cms_owner_reviews(draft_id,revision,actor_owner_id,decision,note,created_at) ' +
+    'SELECT d.id,d.revision,1,?,?,? FROM cms_drafts d ' +
+    'JOIN cms_draft_revisions r ON r.draft_id=d.id AND r.revision=d.revision AND r.actor_owner_id=1 ' +
+    "WHERE d.id=? AND d.owner_id=1 AND d.status='draft' AND d.revision=?";
+  const result = await db.prepare(sql).bind(input.decision, input.note, currentTime, id, input.expectedRevision).run();
+  if (result.meta?.changes !== 1) return denied(409);
+  return json({ revision: input.expectedRevision, decision: input.decision,
+    publication: 'DISABLED', rights: 'NOT_CLEARED' }, 201);
+}
+
+async function exportPersistedDraft(request, db, secret, currentTime, id) {
+  if (!ownerReadOrigin(request)) return denied();
+  const who = await session(request, db, secret, currentTime);
+  if (!who) return denied(401);
+
+  const url = new URL(request.url);
+  const revisions = url.searchParams.getAll('revision');
+  if ([...url.searchParams.keys()].length !== 1 || revisions.length !== 1 ||
+      !/^[1-9]\d*$/.test(revisions[0])) return denied(400);
+  const requestedRevision = Number(revisions[0]);
+  if (!Number.isSafeInteger(requestedRevision)) return denied(400);
+
+  // One read statement binds the current draft and immutable revision to the same D1 snapshot.
+  // A stale revision, non-draft state, or missing history row fails closed.
+  const record = await db.prepare(
+    `SELECT d.id,d.title,d.summary,d.body,d.source_url,d.author_label,d.status,d.revision,
+            r.revision AS stored_revision
+       FROM cms_drafts d
+       LEFT JOIN cms_draft_revisions r
+         ON r.draft_id=d.id AND r.revision=? AND r.actor_owner_id=1
+      WHERE d.id=? AND d.owner_id=1`
+  ).bind(requestedRevision, id).first();
+  if (!record) return denied(404);
+  if (record.status !== 'draft' || record.revision !== requestedRevision ||
+      record.stored_revision !== requestedRevision) return denied(409);
+
+  let exported;
+  try {
+    exported = createPersistedDraftMarkdown(record);
+  } catch {
+    return json({ error: 'Draft is not compatible with canonical Markdown export' }, 422);
+  }
+  return new Response(exported.markdown, {
+    status: 200,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'text/markdown; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="' + exported.filename + '"',
+      'Content-Length': String(exported.byteLength),
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+      'Referrer-Policy': 'no-referrer',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+    },
+  });
 }
 
 async function updateDraft(request, db, secret, currentTime, id) {
@@ -870,11 +971,14 @@ const LOCAL_FIXED_ROUTES = new Map([
 ]);
 
 async function dispatchArticleRequest(request, db, secret, currentTime, route, method) {
-  const match = /^\/local\/articles\/([0-9a-f-]{36})(?:\/(revisions))?$/i.exec(route);
+  const match = /^\/local\/articles\/([0-9a-f-]{36})(?:\/(revisions|export|review))?$/i.exec(route);
   if (!match || !validId(match[1])) return null;
   if (method === 'GET') {
+    if (match[2] === 'export') return exportPersistedDraft(request, db, secret, currentTime, match[1]);
+    if (match[2] === 'review') return getSavedOwnerReview(request, db, secret, currentTime, match[1]);
     return readDraft(request, db, secret, currentTime, match[1], match[2] === 'revisions');
   }
+  if (method === 'POST' && match[2] === 'review') return recordSavedOwnerReview(request, db, secret, currentTime, match[1]);
   if (method === 'PATCH' && !match[2]) {
     return updateDraft(request, db, secret, currentTime, match[1]);
   }
@@ -893,14 +997,17 @@ const LOCAL_ALLOWED_METHODS = (() => {
   }
   return allowed;
 })();
-const ARTICLE_ROUTE_PATTERN = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
+const ARTICLE_ROUTE_PATTERN = /^\/local\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export|review))?$/i;
 
 function methodNotAllowed(request) {
   const route = new URL(request.url).pathname;
   const allowed = LOCAL_ALLOWED_METHODS.get(route);
   if (allowed) return json({ error: 'Method not allowed' }, 405, { Allow: [...allowed].sort((left, right) => left.localeCompare(right)).join(', ') });
   if (ARTICLE_ROUTE_PATTERN.test(route)) {
-    return json({ error: 'Method not allowed' }, 405, { Allow: route.endsWith('/revisions') ? 'GET' : 'GET, PATCH' });
+    let allow = 'GET, PATCH';
+    if (route.endsWith('/review')) allow = 'GET, POST';
+    else if (route.endsWith('/revisions') || route.endsWith('/export')) allow = 'GET';
+    return json({ error: 'Method not allowed' }, 405, { Allow: allow });
   }
   return null;
 }

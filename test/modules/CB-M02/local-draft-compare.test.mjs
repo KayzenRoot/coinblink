@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { prepareLocalDraft, draftToMarkdown } from "../../../public/m05-draft-preview.js";
-import { parseLocalArticlePreview } from "../../../public/m02-local-article-preview.js";
-import { compareLocalDraftExports, LOCAL_REVISION_STATUS } from "../../../public/m02-local-draft-compare.js";
+import { prepareLocalDraft, draftToMarkdown } from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
+import { parseLocalArticlePreview } from "../../../src/modules/CB-M02/local-article-preview.client.mjs";
+import { compareLocalDraftExports, LOCAL_REVISION_STATUS } from "../../../src/modules/CB-M02/local-draft-compare.client.mjs";
 
 function imported(fields) {
   const value = prepareLocalDraft({
@@ -47,7 +47,7 @@ test("M02 bounds all excerpts and rejects noncanonical objects", () => {
   }
 });
 test("M02 comparison stays inert, private, and cancels stale reads", () => {
-  const js = readFileSync("public/m02-local-draft-compare.js", "utf8");
+  const js = readFileSync("src/modules/CB-M02/local-draft-compare.client.mjs", "utf8");
   const page = readFileSync("src/modules/CB-M02/LocalDraftCompare.astro", "utf8");
   assert.match(js, /parseLocalArticlePreview/u);
   assert.match(js, /ticket !== generations\[key\]/u);

@@ -72,7 +72,8 @@ test('M07-C calendar stays inside private dashboard with CSP, labeled accessible
   assert.match(html,/script nonce="[a-f0-9]{64}" type="module"/u);
   assert.match(LOCAL_CMS_UI_SCRIPT,/ui\.calendarList\.replaceChildren\(\)/u);
   assert.match(LOCAL_CMS_UI_SCRIPT,/description\.textContent = /u);
-  assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalCalendarIdea\(draft, ui\.socialChannel\.value/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/createLocalCalendarIdea\(fresh, selected\[1\], selected\[2\], selected\[3\]\)/u);
+  assert.match(LOCAL_CMS_UI_SCRIPT,/sameLocalSocialDraftMetadata\(draft, row\)/u);
   assert.doesNotMatch(LOCAL_CMS_UI_SCRIPT,/localStorage|sessionStorage|indexedDB|window\.open|\/local\/calendar|\/admin\/calendar|\.innerHTML/u);
   assert.match(readFileSync('src/pages/admin/[...route].js','utf8'),/!import\.meta\.env\.DEV/u);
 });

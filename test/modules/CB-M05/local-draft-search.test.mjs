@@ -161,7 +161,9 @@ test("local UI has keyboard-accessible controls, same-origin external JS, and no
   assert.match(component, /src=\{searchScriptUrl\}/u);
   assert.match(component, /\?url&no-inline/u);
   assert.match(component, /role="status"/u);
-  assert.doesNotMatch(component, /<script>\s*import /u);
+  assert.match(component, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared browser entry is processed by Astro into an external bundle");
+  assert.doesNotMatch(component, /<script\s+is:inline[^>]*>\s*import /u);
   assert.match(module, /textContent/u);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML|publish\s*\()\b/u);
 });

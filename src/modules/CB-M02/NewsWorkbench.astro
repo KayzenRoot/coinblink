@@ -3,22 +3,26 @@ import { listMockNews, NEWS_MOCK_POLICY } from "./news-workbench.mjs";
 import { listMockTopics } from "./news-reader-guide.mjs";
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+import NewsLocaleSwitch from "../CB-M09/NewsLocaleSwitch.astro";
+import { getNewsLocaleMeta, getNewsHomeHref } from "../CB-M09/news-locale-meta.mjs";
 import LocalArticlePreview from "./LocalArticlePreview.astro";
 import LocalDraftCompare from "./LocalDraftCompare.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
-interface Props { locale?: "en" | "pt-br"; }
+interface Props { locale?: "en" | "pt-br" | "es"; }
 const { locale = "en" } = Astro.props;
 const copy = newsCopy(locale);
+const localeMeta = getNewsLocaleMeta(locale);
 const news = listMockNews();
 const topics = listMockTopics();
 const categories = ["all", "security", "protocol", "education"] as const;
-const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
+const base = "/" + locale + "/news";
 ---
 <main id="main" class="cb-m02" data-m02-root aria-labelledby="m02-title">
-  <nav aria-label={locale === "pt-br" ? "Navegação" : "Navigation"}>
-    <a href={locale === "pt-br" ? "/pt-br" : "/en"}>{copy.home}</a>
+  <nav aria-label={localeMeta.navigation}>
+    <a href={getNewsHomeHref(locale)}>{copy.home}</a>
   </nav>
-  <LocalJourneyNav locale={locale} current="news" />
+  {locale !== "es" && <LocalJourneyNav locale={locale} current="news" />}
+  <NewsLocaleSwitch locale={locale} />
   <header>
     <small class="m02-warning">{copy.disclaimer}</small>
     <h1 id="m02-title">{copy.directoryTitle}</h1>
@@ -50,7 +54,7 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
   <div class="m02-results">
     {news.items.map(item => {
       const translated = localizeMockNews(item, locale);
-      return <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(locale === "pt-br" ? "pt-BR" : "en")}>
+      return <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(localeMeta.search)}>
         <small class="m02-warning">{copy.disclaimer} · {copy[item.category]}</small>
         <h2>{translated.title}</h2>
         <p>{translated.summary}</p>
@@ -59,8 +63,8 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
     })}
   </div>
   <p data-m02-empty role="status" hidden>{copy.empty}</p>
-  <LocalArticlePreview locale={locale} />
-  <LocalDraftCompare locale={locale} />
+  {locale !== "es" && <LocalArticlePreview locale={locale} />}
+  {locale !== "es" && <LocalDraftCompare locale={locale} />}
 </main>
 <script is:inline src={newsUiUrl}></script>
 <style>

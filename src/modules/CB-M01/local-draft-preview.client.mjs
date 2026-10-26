@@ -1,6 +1,7 @@
 // Strictly local M01 reader preview for a never-published M05 Markdown export.
 // No upload, fetch, persistence, live story ingestion, HTML insertion or URL navigation.
-import { parseLocalDraftMarkdown } from "./m05-draft-preview.js";
+/* global document */
+import { parseLocalDraftMarkdown } from "../CB-M05/local-draft-markdown.mjs";
 
 const root = document.querySelector("[data-m01-local-draft-preview]");
 if (root) {

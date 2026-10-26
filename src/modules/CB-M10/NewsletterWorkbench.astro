@@ -1,0 +1,46 @@
+---
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+import { listMockNewsletterTopics, NEWSLETTER_DEMO_POLICY, buildMockNewsletterPreview } from "./newsletter-preview.mjs";
+import newsletterJsUrl from "./newsletter-preview.client.js?url&no-inline";
+import newsletterCssUrl from "./newsletter-preview.css?url&no-inline";
+const topics = listMockNewsletterTopics();
+const labels: Record<string, string> = {
+  all: "All fictional learning topics", security: "Security practice",
+  protocol: "Protocol examples", education: "Educational examples",
+};
+---
+<main id="main" class="m10" data-m10-root>
+  <LocalJourneyNav current="newsletter" />
+  <header>
+    <small>M10 · OFFLINE PREVIEW · NOT SENT · NO SUBSCRIBERS</small>
+    <h1>Newsletter & reader retention lab</h1>
+    <p>Compose a harmless email-style preview from three invented educational articles.
+      There is no mailing list, email entry, consent collection, subscriber account, delivery or scheduling.</p>
+    <p class="m10-policy">{NEWSLETTER_DEMO_POLICY}</p>
+  </header>
+  <section class="m10-card" aria-labelledby="m10-editor-title">
+    <h2 id="m10-editor-title">Build a fictional digest</h2>
+    <label for="m10-topic">Learning theme
+      <select id="m10-topic" data-m10-topic>
+        {topics.map(topic => <option value={topic} data-m10-snapshot={JSON.stringify(buildMockNewsletterPreview(topic))}>{labels[topic]}</option>)}
+      </select>
+    </label>
+    <div class="m10-buttons">
+      <button type="button" data-m10-build>Preview locally</button>
+      <button type="button" data-m10-clear>Clear preview</button>
+    </div>
+    <p role="status" aria-live="polite" data-m10-status>Choose a theme, then preview fictional content. No message can be sent.</p>
+  </section>
+  <section class="m10-card m10-preview" data-m10-preview aria-label="Unsent fictional newsletter preview" hidden>
+    <small>LOCAL MOCK · UNSENT · UNPUBLISHED · NO SUBSCRIBERS</small>
+    <h2 data-m10-title tabindex="-1"></h2>
+    <p data-m10-count></p>
+    <p>Adjust the reading order locally. No changes are saved or emailed.</p>
+    <p data-m10-order-status aria-live="polite"></p>
+    <ul data-m10-stories></ul>
+    <p>No source has been licensed or independently fact-checked. Editorial approval and valid consent remain necessary before any real newsletter.</p>
+  </section>
+  <p class="m10-footer">Read the same <a href="/en/news">offline fictional news examples (M02)</a>. Production subscription and email delivery are unavailable.</p>
+</main>
+<script is:inline type="module" src={newsletterJsUrl}></script>
+<link rel="stylesheet" href={newsletterCssUrl} />

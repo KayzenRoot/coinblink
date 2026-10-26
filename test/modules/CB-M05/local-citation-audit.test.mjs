@@ -10,7 +10,7 @@ import {
 } from "../../../src/modules/CB-M05/local-source-notes.mjs";
 import {
   prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown,
-} from "../../../public/m05-draft-preview.js";
+} from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 import { addLocalClaimReview } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 
 const prose = "This independent CoinBlink article needs human review and attribution.";
@@ -150,5 +150,7 @@ test("review dashboard remains outside editor fields, local, CSP-safe and text-o
   assert.doesNotMatch(module, /^import /mu, "URL-served browser module must not use relative imports");
   assert.match(module, /parseSourceNotes/u);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML)\b/u);
-  assert.doesNotMatch(component, /<script>\s*import /u);
+  assert.match(component, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared browser entry is processed by Astro into an external bundle");
+  assert.doesNotMatch(component, /<script\s+is:inline[^>]*>\s*import /u);
 });

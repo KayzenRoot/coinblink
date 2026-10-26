@@ -57,3 +57,19 @@ test("M10 DOM contracts do not contain email form, storage, network or privilege
   assert.doesNotMatch(astro + code + client, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|navigator\.clipboard|innerHTML|type="email"|form action=|sendBeacon|\/admin\/api/u);
   assert.match(readFileSync("src/pages/demo/newsletter.astro", "utf8"), /NewsletterWorkbench/u);
 });
+
+
+test("M10 P1 reading order is a keyboard-friendly ephemeral editorial control, never a send action", () => {
+  const page = readFileSync("src/modules/CB-M10/NewsletterWorkbench.astro", "utf8");
+  const client = readFileSync("src/modules/CB-M10/newsletter-preview.client.js", "utf8");
+  assert.match(page, /data-m10-order-status[^>]*aria-live="polite"/u);
+  assert.match(client, /data-m10-move-up/u);
+  assert.match(client, /data-m10-move-down/u);
+  assert.match(client, /data-m10-story/u);
+  assert.match(client, /insertBefore\s*\(/u);
+  assert.match(client, /aria-label/u);
+  assert.match(client, /disabled/u);
+  assert.match(client, /replaceChildren\s*\(/u);
+  assert.doesNotMatch(page + client,
+    /\bfetch\s*\(|XMLHttpRequest|navigator\.clipboard|localStorage|sessionStorage|indexedDB|sendBeacon|type="email"|innerHTML|\/admin\/api/u);
+});

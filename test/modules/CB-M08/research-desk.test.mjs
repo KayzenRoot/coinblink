@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { listMockResearchOptions, buildMockResearchBrief, RESEARCH_DEMO_POLICY }
+import { listMockResearchOptions, buildMockResearchBrief, summarizeMockResearchGates, RESEARCH_DEMO_POLICY }
   from "../../../src/modules/CB-M08/research-desk.mjs";
 import { inspectSyntheticProvenance } from "../../../src/modules/CB-M03/source-investigation.mjs";
 import { inspectMockReadiness } from "../../../src/modules/CB-M04/market-readiness.mjs";
@@ -64,4 +64,36 @@ test("M08 page is a local human review interface without AI, remote calls or bro
   assert.match(page, /REVIEW REQUIRED/u);
   assert.doesNotMatch(page + model, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|eval\s*\(/u);
   assert.match(readFileSync("src/pages/demo/research.astro", "utf8"), /ResearchDesk/u);
+});
+
+
+test("M08 P1 triage maps all nine canonical source/market pairs into exactly 4+4 human-only gates", () => {
+  for (const source of listMockResearchOptions().sources) {
+    for (const market of listMockResearchOptions().markets) {
+      const { status, summary } = summarizeMockResearchGates(source.id, market.asset);
+      const canonical = buildMockResearchBrief(source.id, market.asset);
+      assert.equal(status, "MOCK_TRIAGE_REVIEW_REQUIRED");
+      assert.equal(summary.total, canonical.brief.blockerCount);
+      assert.equal(summary.sourceGates, canonical.brief.blockers.filter(row => row.domain === "SOURCE").length);
+      assert.equal(summary.marketGates, canonical.brief.blockers.filter(row => row.domain === "MARKET").length);
+      assert.deepEqual([summary.sourceGates, summary.marketGates], [4, 4]);
+      assert.equal(summary.humanReviewRequired, true);
+      assert.equal(summary.verified, 0);
+      assert.equal(summary.canPublish, false);
+      assert.equal(summary.live, false);
+      assert.ok(Object.isFrozen(summary));
+    }
+  }
+});
+
+test("M08 P1 triage denies invalid selections without false verified/publishable evidence", () => {
+  for (const [source, market] of [
+    [undefined, "BTC"], ["demo-source-alpha", undefined],
+    ["__proto__", "BTC"], ["demo-source-alpha", "DOGE"],
+    ["demo-source-alpha", "btc"], [null, null],
+  ]) {
+    const result = summarizeMockResearchGates(source, market);
+    assert.deepEqual(result, { status: "INVALID_SELECTION", summary: null });
+    assert.ok(Object.isFrozen(result));
+  }
 });

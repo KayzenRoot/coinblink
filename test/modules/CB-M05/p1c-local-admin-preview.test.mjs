@@ -618,7 +618,7 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
     await page.route('**/*', async route => {
       const requested = new URL(route.request().url());
       if (requested.origin === 'https://owner.example.test' &&
-          /^\/local\/articles\/[0-9a-f-]{36}\/export$/.test(requested.pathname) &&
+          /^\/(?:admin|local)\/articles\/[0-9a-f-]{36}\/export$/.test(requested.pathname) &&
           requested.searchParams.get('revision') === '1') {
         entered();
         await delayed;

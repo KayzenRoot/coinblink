@@ -17,6 +17,7 @@ import ecosystemEditorialR26Webp from "./assets/r26/ecosystem.webp";
 import EditorialArtwork from "./EditorialArtwork.astro";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 import "./golden-home.css";
+import "./learning-search.css";
 import { translateHome } from "./home-copy.mjs";
 import { getLearningTopics } from "./learning-topics.mjs";
 import { getOfficialSources } from "./official-sources.mjs";
@@ -382,9 +383,17 @@ const editorialR26Assets = {
         </div>
         <span class="learn-section__count">{learningTopics.length} {t("short guides")}</span>
       </div>
+      <div class="learn-filter" role="search" aria-label={t("Search educational guides")} data-m01-learning-search data-locale={locale} hidden>
+        <label for="m01-learning-query">
+          {t("Search guides")}
+          <input id="m01-learning-query" type="search" maxlength="80" autocomplete="off" spellcheck="false" placeholder={t("Search topics or safety tips")} data-learning-query />
+        </label>
+        <button type="button" data-learning-clear hidden>{t("Clear guide search")}</button>
+        <p class="learn-filter__status" role="status" aria-live="polite" aria-atomic="true" data-learning-status></p>
+      </div>
       <div class="learn-grid">
         {learningTopics.map((topic, index) => (
-          <details class="learn-card" id={`learn-${topic.id}`}>
+          <details class="learn-card" id={`learn-${topic.id}`} data-learning-topic>
             <summary>
               <span class="learn-card__icon" aria-hidden="true">{topic.icon}</span>
               <span class="learn-card__header"><small>{t("GUIDE")} {String(index + 1).padStart(2, "0")}</small><strong>{topic.title}</strong></span>
@@ -500,5 +509,6 @@ const editorialR26Assets = {
 <script is:inline src="/home-demo.js"></script>
 <script>
   import "./local-draft-preview.client.mjs";
+  import "./learning-search.client.mjs";
 </script>
 <script is:inline type="module" src="/explorer-lookup.js"></script>

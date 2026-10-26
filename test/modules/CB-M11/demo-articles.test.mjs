@@ -86,4 +86,5 @@ test("M11 P1 developer docs show only canonical synthetic API snapshots in nativ
   assert.match(css, /overflow-wrap:\s*anywhere/u);
   assert.match(css, /white-space:\s*pre-wrap/u);
   assert.match(css, /:focus-visible/u);
+  assert.doesNotMatch(css, /word-break\s*:\s*break-word/u);
 });

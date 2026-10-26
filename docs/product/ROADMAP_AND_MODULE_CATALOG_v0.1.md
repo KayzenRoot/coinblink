@@ -30,6 +30,10 @@ Each `CB-Mxx` contract is stored in `.engineering/planned-work-orders/CB-Mxx.md`
 
 **Visual delivery order:** M00 first even before app design, to prevent months of blind development. M05 may proceed while image upload CB-ASSETS-001 is still resolving, but M01 **cannot** claim visual fidelity without original images. If implementation order changes, revise this roadmap and dependent WOs under GEF admission. No undocumented parallel work on shared critical-path changes.
 
+## Evidence-backed local M11 increment (not full M11 admission)
+
+- **CB-M11-P1-LOCAL-RESPONSE-INSPECTOR-001:** the isolated **LOCAL_SYNTHETIC_ONLY** JSON inspector is integrated in protected `main` via [PR #239](https://github.com/KayzenRoot/coinblink/pull/239), squash `4b311da44a673f4f9a50002195da133778ba5e8a`. Its [increment-specific checkpoint and verified evidence](CB-M11-P1-LOCAL-RESPONSE-CHECKPOINT.md) document only this delivered slice. **The full CB-M11 (Issue #18) remains PLANNED / NOT_ADMITTED;** production API, rights clearance, live data, keys, subscriptions and billing are not authorized. The checkpoint link is a narrowly scoped delivery record, not a module admission or a restoration of the deprecated global governance process.
+
 ## Product surfaces / artifact organization
 
 - Reader site `/`, `/en`, `/pt-br`, `/es` -> M01/M02/M04/M08/M09/M10/M16.

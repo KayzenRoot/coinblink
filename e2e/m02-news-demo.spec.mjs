@@ -326,3 +326,37 @@ for (const locale of ["en", "pt-br"]) {
     expect(writes).toEqual([]);
   });
 }
+
+test('M02 P1 private article preview keeps existing M02 manual import separate', async ({ page }) => {
+  const cms = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const owner = cms.page;
+    await owner.locator('#login').click();
+    await owner.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await owner.locator('[name="title"]').fill('Owner-only article presentation');
+    await owner.locator('[name="summary"]').fill('An original fictitious article held only in the local Owner lab.');
+    await owner.locator('[name="body"]').fill('This synthetic editorial body remains private and has no licensed publication rights.');
+    await owner.locator('[name="sourceUrl"]').fill('https://example.test/rights-pending');
+    await owner.locator('[name="authorLabel"]').fill('Local author');
+    await owner.locator('#save').click();
+    await owner.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    await owner.locator('#m02-owner-article-trigger').click();
+    const privateView = owner.locator('#m02-owner-article');
+    await expect(privateView).toBeVisible();
+    await expect(privateView.locator('#m02-owner-title')).toHaveText('Owner-only article presentation');
+    await expect(privateView).toContainText('NOT PUBLISHED');
+    await page.goto('/en/news');
+    await expect(page.locator('[data-m02-local-preview]')).toBeVisible();
+    await expect(page.locator('[data-m02-draft-article]')).toBeHidden();
+    await expect(page.getByText('Owner-only article presentation')).toHaveCount(0);
+    const audit = await new AxeBuilder({ page: owner }).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+    expect(audit.violations).toEqual([]);
+    await owner.locator('#logout').click();
+    await owner.getByText('Not authenticated', { exact: true }).waitFor();
+    await expect(privateView).toBeHidden();
+    expect(await privateView.locator('#m02-owner-body').textContent()).toBe('');
+    expect(cms.networkAttempts.filter(q => !q.allowed)).toEqual([]);
+  } finally {
+    await cms.close();
+  }
+});

@@ -554,3 +554,44 @@ test('M08 to M05 LOCAL Owner explicitly appends offline blockers to an unsaved b
     await preview.close();
   }
 });
+
+test('M02 P1 Owner article presentation is private, inert, saved-revision-only and scrubbed', { timeout: 120_000 }, async () => {
+  const cms = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = cms.page;
+    const trigger = page.locator('#m02-owner-article-trigger');
+    const article = page.locator('#m02-owner-article');
+    assert.equal(await trigger.isVisible(), false, 'anonymous visitor has no preview action');
+    assert.equal(await article.isVisible(), false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('LOCAL article <script>alert(1)</script>');
+    await page.locator('[name="summary"]').fill('Synthetic summary about a never-published draft.');
+    await page.locator('[name="body"]').fill('Long synthetic body with <img src=x onerror=alert(1)> safely represented as text in the article.');
+    await page.locator('[name="sourceUrl"]').fill('https://example.test/fictional');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    assert.equal(await trigger.isVisible(), false, 'unsaved draft cannot be presented');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    assert.equal(await trigger.isEnabled(), true);
+    const dbBefore = await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all();
+    await trigger.click();
+    await article.waitFor({ state: 'visible', timeout: 15_000 });
+    assert.equal(await article.locator('#m02-owner-title').textContent(), 'LOCAL article <script>alert(1)</script>');
+    assert.match(await article.locator('#m02-owner-body').textContent(), /<img src=x onerror=alert\(1\)>/u);
+    assert.equal(await article.locator('script,img,iframe').count(), 0, 'draft markup never becomes DOM');
+    assert.match(await article.innerText(), /NOT VERIFIED.*NOT PUBLISHED/u);
+    assert.deepEqual((await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all()).results, dbBefore.results, 'preview never writes D1');
+    await page.locator('[name="body"]').fill('Unsaved change should remove prior preview at once');
+    assert.equal(await article.isVisible(), false, 'unsaved form invalidates private preview');
+    assert.equal(await trigger.isDisabled(), true);
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor();
+    assert.equal(await article.isVisible(), false);
+    assert.equal(await article.locator('#m02-owner-body').textContent(), '', 'logout scrubs private body');
+    assert.equal(await trigger.isVisible(), false);
+    assert.deepEqual(cms.networkAttempts.filter(event => !event.allowed), [], 'no off-origin egress');
+  } finally {
+    await cms.close();
+  }
+});

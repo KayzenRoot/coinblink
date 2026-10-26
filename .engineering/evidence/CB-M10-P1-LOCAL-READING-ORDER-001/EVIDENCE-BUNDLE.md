@@ -35,3 +35,28 @@ In the `/demo/newsletter` **never-sent** preview, an editor may reorder the thre
 - Submit technical `COMMENTED` review from the authorized connected `kayzenweb3` account at exact final SHA, not `APPROVED` or human independent attestation.
 - **STOP:** keep Draft. No Ready, merge, deploy, sending emails, subscriber collection, paid providers, subscriptions, live data, secrets, external API, main/other PR mutations, ruleset, checkpoint or credential changes.
 - **Implementation verdict:** `M10_P1_LOCAL_REORDER_GREEN / FINAL_EVIDENCE_HEAD_RECHECK_REQUIRED / DRAFT / NO_MERGE_NO_DEPLOY`.
+
+## HIGH_ASSURANCE Correction/Reconciliation Delta 01 · 2026-10-26
+
+**Authority:** Owner authorized execution of Work Order CB-M10-P1-LOCAL-READING-ORDER-001 on EXISTING PR #238 branch ONLY, not PR merge, Ready, deployment, paid requests or production functionality.
+
+### Confirmed immutable Context Lock
+- Protected main `ff86a254ac4415946b1be1d6a86a69dcc57ad52d`, original PR #238 HEAD `d2c4406afa8639e5e3a4b2ee30ccb8e608e487c1`, historical base `524a93a970af9cf8cfb411f8ba7aa9f57ca79603`, branch `feat/cb-m10-p1-local-reading-order-001`, OPEN/DRAFT, previous HEAD checks 12/12 SUCCESS, Sonar zero new issues and security hotspots, no unresolved reviews.
+- Both recursive trees untruncated, protected main Git tree `23374971c6dde494759b4707949a71c39a51267b`, old PR Git tree `7a4e6892525e11018c2890570ebf3add44c79872`. Old base → current protected main: 7 additional commits and 63 changed paths, **zero same-path overlaps** with the six allowlisted files. All 19 other open PRs had zero overlap when individually rechecked.
+- Current base tree will be protected main tree plus the **exact five unchanged original code/test blobs** and the new Evidence Bundle: `e2e/m10-newsletter-demo.spec.mjs=b2fc2da69760ce2ef5af762b2600866ab00f6d6c`, `NewsletterWorkbench.astro=6d4b92603799339f85b7f32d053191f0efa22d18`, `newsletter-preview.client.js=d19191e39fb63f7a6d31a28996ba25ad38c8e4ae`, `newsletter-preview.css=f05567588dc3f52ac88953fa0415d59994cce2f3`, `newsletter-preview.test.mjs=424f61228365a5672eb9b2b840d0453a326d931f`.
+- Merge reconstruction uses a **true two-parent commit** `[old #238 HEAD d2c4406afa8639e5e3a4b2ee30ccb8e608e487c1, current protected main ff86a254ac4415946b1be1d6a86a69dcc57ad52d]`, written only to `feat/cb-m10-p1-local-reading-order-001` via fast-forward `force=false` and `expected_sha` lease. No rebase, history rewrite, force push, new implementation PR or main branch mutation.
+
+### Functional scope and security STOP
+- `/demo/newsletter` remains **LOCAL_DEMO_ONLY** and **UNSENT**. Reorder only three canonical fictional M02 articles with native accessible Move up/down, Enter/Space, disabled edges, correct focus recovery and `aria-live` order status.
+- No persistence of reorder on theme change/reset/reload, no subscription, email collection, outbound send, email account, API, external egress, browser storage, remote services, user identity or publication. The five feature/test files are byte-for-byte unchanged by this reconciliation. No updates to M02 canonical fixtures, M05 synthetic Owner, D1, Golden/UI global styles, dependency lockfiles, rights, rulesets or checkpoints.
+
+### Mandatory exact reconciled HEAD evidence (PENDING)
+- Re-run M10 focused Node tests including fail-closed negative cases and existing M02/M03/M04/M08/M09/M10 contracts; run real Chromium on `/demo/newsletter` for reorder, focus/keyboard disabled edges, theme/reset/reload, zero email inputs, external requests, writes or storage, responsive 390/768/1366, axe WCAG 2A/AA/2.1 and no horizontal overflow.
+- Re-run integrated local browser journey, Build Ubuntu, lint/typecheck, Node/LCOV, Gitleaks, PR Assurance, Reviewdog, SonarCloud 0 blocking new issues/hotspots, Socket PR Alerts and Project Report; record actual run/job IDs. Historical 88/88 Node and 39/39 Chromium on previous implementation SHA **are not** fresh exact-new-HEAD evidence.
+- If any test fails, reproduce real behavioral issue and correct **only** one or more of the five original feature/test allowlisted files, with focused RED→GREEN and new exact-HEAD check run. Do not claim `PASS` until verified. Do not weaken tests to make a failure disappear.
+- For independent/technical code review, `kayzenweb3` historical `COMMENTED` is not `APPROVED`. Preserve Solo Owner GitHub policy and the real required checks. Never claim a second account is an independent human security reviewer.
+
+### Evidence fields and STOP CONDITION
+- Later final audit comment must record new parent SHAs, exact final HEAD, strict six paths, check names/conclusions, real Node/Chromium counts, WCAG + privacy assertions, Sonar delta, Socket skipped-vs-scanned, reviews/threads and any NOT_RUN. Checkpoint only proposed, not promoted.
+- **Until validated:** `RECONCILED_PENDING_NEW_HEAD_CI / DRAFT / NO_READY / NO_MERGE / NO_DEPLOY`. Any stale lock, colliding path, changed rights/production boundary, missing required check, regression or blocking security finding => `BLOCKED` or `CORRECTION_REQUIRED`.
+- No branch-Ready, squash merge into protected main, deploy, real emails/recipients/data, real Owner/passkeys, D1 remote, spend, LIVE, publishing, branding, rights, ruleset or canonical checkpoint changes.

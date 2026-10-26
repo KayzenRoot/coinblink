@@ -1,0 +1,130 @@
+name: CoinBlink brand demo QA (CB-VIS-QA-001)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/brand-demo-qa.yml"
+      - "public/brand/**"
+      - "test/brand/**"
+      - ".engineering/evidence/CB-VIS-QA-001/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/brand-demo-qa.yml"
+      - "public/brand/**"
+      - "test/brand/**"
+
+# Untrusted PR content receives no write credentials or deployment secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: brand-demo-qa-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  native-brand:
+    name: Brand / 8 native Node tests (Golden SHA-256)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact PR head without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+      - name: Run eight brand contracts on exact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          mkdir -p "$RUNNER_TEMP/brand-evidence"
+          git rev-parse HEAD | tee "$RUNNER_TEMP/brand-evidence/exact-head.txt"
+          node --test test/brand/brand-assets.test.mjs | tee "$RUNNER_TEMP/brand-evidence/native-node.tap"
+          grep -Eq '^# tests 8$' "$RUNNER_TEMP/brand-evidence/native-node.tap"
+          grep -Eq '^# pass 8$' "$RUNNER_TEMP/brand-evidence/native-node.tap"
+          grep -Eq '^# fail 0$' "$RUNNER_TEMP/brand-evidence/native-node.tap"
+          printf '%s\n' '126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0  assets/reference/coinblink-logo-approved-original-1179x1040.jpg' | sha256sum --check
+          sha256sum assets/reference/coinblink-logo-approved-original-1179x1040.jpg | tee "$RUNNER_TEMP/brand-evidence/golden-sha256.txt"
+          echo "Brand native 8/8 PASS on $EXPECTED_COMMIT" >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep exact-head native QA transcript
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cb-vis-qa-001-native-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/brand-evidence/
+          retention-days: 14
+          if-no-files-found: warn
+
+  chromium-brand:
+    name: Brand / offline Chromium 3 viewports
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact PR head without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked dependency installation
+        run: npm ci --ignore-scripts
+      - name: Install Playwright Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Run isolated test-only visual harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          mkdir -p "$RUNNER_TEMP/brand-evidence"
+          git rev-parse HEAD | tee "$RUNNER_TEMP/brand-evidence/exact-head.txt"
+          node .engineering/evidence/CB-VIS-WO-002/R35/run-browser-qa.mjs | tee "$RUNNER_TEMP/brand-evidence/chromium-run.json.log"
+      - name: Verify all six screenshot hashes and 38 samples per viewport
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFile } from 'node:fs/promises';
+          const qa = JSON.parse(await readFile('.engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json', 'utf8'));
+          assert.deepEqual(qa.externalRequests, []);
+          assert.deepEqual(qa.consoleErrors, []);
+          assert.deepEqual(qa.pageErrors, []);
+          assert.equal(qa.screenshots.length, 6);
+          assert.deepEqual([...new Set(qa.screenshots.map(s => s.viewport))].sort(), ['1536x864', '390x844', '768x1024']);
+          for (const shot of qa.screenshots) {
+            const bytes = await readFile(shot.path);
+            assert.equal(bytes.length, shot.bytes, shot.path + ' byte count');
+            assert.equal(createHash('sha256').update(bytes).digest('hex'), shot.sha256, shot.path + ' hash');
+            assert.equal(shot.imageCount, 38, shot.path + ' accessible images');
+            assert.equal(shot.sizeSamples, 38, shot.path + ' size samples');
+            assert.equal(shot.assetsXmlParsed, 5, shot.path + ' XML sources');
+          }
+          console.log('PASS: six SHA-256-verified captures; desktop/tablet/mobile; 38 samples; no external requests or errors');
+          NODE
+          echo "Brand Chromium QA PASS on $EXPECTED_COMMIT (6 captures, 3 viewports)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep Chromium report and screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cb-vis-qa-001-chromium-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .engineering/evidence/CB-VIS-WO-002/R35/browser-qa.json
+            .engineering/evidence/CB-VIS-WO-002/R35/screenshots/*.png
+            ${{ runner.temp }}/brand-evidence/
+          retention-days: 14
+          if-no-files-found: warn

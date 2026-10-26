@@ -36,6 +36,12 @@ const options = listMockResearchOptions();
     <p class="m08-warning">MOCK ONLY · NOT VERIFIED · NOT PUBLISHED · NO AI EXECUTED</p>
     <p data-m08-context></p>
     <p data-m08-total></p>
+    <p data-m08-triage aria-live="polite"></p>
+    <div class="m08-filters" role="group" aria-label="Filter evidence review gates">
+      <button type="button" data-m08-filter="ALL" aria-pressed="true">All gates (8)</button>
+      <button type="button" data-m08-filter="SOURCE" aria-pressed="false">Source gates (4)</button>
+      <button type="button" data-m08-filter="MARKET" aria-pressed="false">Market gates (4)</button>
+    </div>
     <h3>Outstanding evidence and data gates</h3>
     <ol data-m08-blockers></ol>
     <p data-m08-next></p>
@@ -48,7 +54,7 @@ const options = listMockResearchOptions();
   </footer>
 </main>
 <script>
-  import { buildMockResearchBrief } from "./research-desk.mjs";
+  import { buildMockResearchBrief, summarizeMockResearchGates } from "./research-desk.mjs";
   import { createMockResearchTransfer, MAX_MOCK_RESEARCH_BYTES } from "./research-transfer.mjs";
   const root = document.querySelector("[data-m08-root]");
   const source = root?.querySelector("[data-m08-source]");
@@ -58,6 +64,8 @@ const options = listMockResearchOptions();
   const status = root?.querySelector("[data-m08-status]");
   const context = root?.querySelector("[data-m08-context]");
   const total = root?.querySelector("[data-m08-total]");
+  const triage = root?.querySelector("[data-m08-triage]");
+  const filterButtons = [...(root?.querySelectorAll("[data-m08-filter]") ?? [])];
   const blockers = root?.querySelector("[data-m08-blockers]");
   const next = root?.querySelector("[data-m08-next]");
   const exportButton = root?.querySelector("[data-m08-export]");
@@ -65,14 +73,36 @@ const options = listMockResearchOptions();
   if (source instanceof HTMLSelectElement && market instanceof HTMLSelectElement
       && button instanceof HTMLButtonElement && report instanceof HTMLElement
       && status instanceof HTMLElement && context instanceof HTMLElement
-      && total instanceof HTMLElement && blockers instanceof HTMLElement
+      && total instanceof HTMLElement && triage instanceof HTMLElement
+      && filterButtons.length === 3 && filterButtons.every(item => item instanceof HTMLButtonElement)
+      && blockers instanceof HTMLElement
       && next instanceof HTMLElement && exportButton instanceof HTMLButtonElement
       && exportStatus instanceof HTMLElement) {
-    const view = { source, market, button, report, status, context, total, blockers, next };
+    const view = { source, market, button, report, status, context, total, triage, blockers, next };
+    let currentBrief: ReturnType<typeof buildMockResearchBrief>["brief"] = null;
+    let activeFilter: "ALL" | "SOURCE" | "MARKET" = "ALL";
+    const renderGates = () => {
+      view.blockers.replaceChildren();
+      if (!currentBrief || view.report.hidden) return;
+      const visible = currentBrief.blockers.filter(check =>
+        activeFilter === "ALL" || check.domain === activeFilter);
+      for (const check of visible) {
+        const item = document.createElement("li");
+        item.textContent = check.domain + " / " + check.code + ": " + check.state + " · " + check.label;
+        view.blockers.append(item);
+      }
+      view.status.textContent = activeFilter === "ALL"
+        ? "Local mock review checklist generated. Human investigation remains necessary."
+        : "Showing " + visible.length + " " + activeFilter + " gates. Human review remains necessary.";
+    };
     let pendingPacket: ReturnType<typeof createMockResearchTransfer> | null = null;
     const clear = () => {
       view.report.hidden = true;
       pendingPacket = null;
+      currentBrief = null;
+      activeFilter = "ALL";
+      filterButtons.forEach(item => item.setAttribute("aria-pressed", String(item.getAttribute("data-m08-filter") === "ALL")));
+      view.triage.textContent = "";
       exportStatus.textContent = "No current offline research brief.";
       view.blockers.replaceChildren();
       view.context.textContent = "";
@@ -90,20 +120,35 @@ const options = listMockResearchOptions();
         return;
       }
       const brief = result.brief;
+      const grouped = summarizeMockResearchGates(view.source.value, view.market.value).summary;
+      if (!grouped) {
+        view.status.textContent = "Unavailable synthetic evidence gates. No brief created.";
+        return;
+      }
       pendingPacket = createMockResearchTransfer(view.source.value, view.market.value);
+      currentBrief = brief;
+      view.triage.textContent = grouped.sourceGates + " source gates · "
+        + grouped.marketGates + " market gates · 0 verified · HUMAN REVIEW REQUIRED";
       view.context.textContent = brief.sourceLabel + " · " + brief.sourceStatus
         + " | " + brief.pair + " · " + brief.freshness;
       view.total.textContent = String(brief.blockerCount) + " review gates · 0 verified sources · 0 live quotes";
-      for (const check of brief.blockers) {
-        const item = document.createElement("li");
-        item.textContent = check.domain + " / " + check.code + ": " + check.state + " · " + check.label;
-        view.blockers.append(item);
-      }
+      // Source of truth remains the canonical M03/M04 checklist.
+      // Filter switches only affect visibility, never the exported MOCK packet.
       view.next.textContent = brief.nextStep;
       view.report.hidden = false;
-      view.status.textContent = "Local mock review checklist generated. Human investigation remains necessary.";
+      renderGates();
       view.report.querySelector("h2")?.focus();
     });
+    for (const filter of filterButtons) {
+      filter.addEventListener("click", () => {
+        if (!currentBrief || view.report.hidden) return;
+        const nextFilter = filter.getAttribute("data-m08-filter");
+        if (nextFilter !== "ALL" && nextFilter !== "SOURCE" && nextFilter !== "MARKET") return;
+        activeFilter = nextFilter;
+        filterButtons.forEach(item => item.setAttribute("aria-pressed", String(item === filter)));
+        renderGates();
+      });
+    }
     exportButton.addEventListener("click", () => {
       const packet = pendingPacket;
       if (!packet || packet.sourceId !== view.source.value ||
@@ -142,6 +187,9 @@ const options = listMockResearchOptions();
   .m08 button{background:#b8f34b;color:#102015;font-weight:750;cursor:pointer}
   .m08 :is(button,select,a):focus-visible,.m08 h2:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
   .m08-report[hidden]{display:none}.m08-report h2{font-size:1.55rem}
+  .m08-filters{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+  .m08-filters button{background:#1d3123;color:#e4f3dc}
+  .m08-filters button[aria-pressed="true"]{background:#b8f34b;color:#102015}
   .m08-report li{margin:.7rem 0;overflow-wrap:anywhere}
   .m08 footer a{color:#b8f34b;text-underline-offset:4px}
 </style>

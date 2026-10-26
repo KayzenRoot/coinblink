@@ -68,3 +68,23 @@ test("M11 RED: polluted, published, forged or denied input fails closed", async 
     assert.deepEqual(result.items, []);
   }
 });
+
+
+test("M11 P1 developer docs show only canonical synthetic API snapshots in native accessible disclosure controls", () => {
+  const docs = readFileSync("src/pages/developers.astro", "utf8");
+  assert.match(docs, /import \{ buildDemoArticles \} from/u);
+  assert.match(docs, /import \{ buildDemoMarketReadiness \} from/u);
+  assert.match(docs, /data-m11-example="articles"/u);
+  assert.match(docs, /data-m11-example="market-readiness"/u);
+  assert.match(docs, /<details[^>]*data-m11-example/u);
+  assert.match(docs, /<summary>Show (?:fictional|synthetic)/u);
+  assert.match(docs, /JSON\.stringify\(articleExample,\s*null,\s*2\)/u);
+  assert.match(docs, /JSON\.stringify\(marketExample,\s*null,\s*2\)/u);
+  assert.match(docs, /developers-inspector\.css\?url&no-inline/u);
+  assert.doesNotMatch(docs, /<script|window\.|document\.|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|innerHTML|type="email"|<form/u);
+  const css = readFileSync("src/pages/developers-inspector.css", "utf8");
+  assert.match(css, /overflow-wrap:\s*anywhere/u);
+  assert.match(css, /white-space:\s*pre-wrap/u);
+  assert.match(css, /:focus-visible/u);
+  assert.doesNotMatch(css, /word-break\s*:\s*break-word/u);
+});

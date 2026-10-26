@@ -1,0 +1,13 @@
+/* M12 fictional local usage simulator; external CSS maintains strict CSP. */
+.m12-sandbox{box-sizing:border-box;width:min(780px,calc(100% - 2rem));margin-inline:auto;padding:2.5rem 0 4rem;min-width:0;color:#eaf2e3}
+.m12-panel{box-sizing:border-box;min-width:0;width:100%;border:1px solid #496d54;background:#101c17;border-radius:1rem;padding:clamp(1rem,3vw,2rem);margin-block:1rem}
+.m12-panel h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.2}
+.m12-panel p{line-height:1.7;overflow-wrap:anywhere}
+.m12-flag{color:#c4f57e;font-weight:700;font-size:.75rem;letter-spacing:.03em}
+.m12-panel label{display:block;margin:1rem 0 .4rem;font-weight:650}
+.m12-panel select,.m12-panel input{box-sizing:border-box;display:block;min-width:0;width:100%;min-height:3rem;padding:.6rem .8rem;border:1px solid #81a582;border-radius:.5rem;background:#06130c;color:#eaf2e3;font:inherit}
+.m12-panel button{display:inline-block;margin-top:1rem;padding:.75rem 1rem;border:1px solid #8ab678;border-radius:.5rem;background:#bff26c;color:#101810;font:inherit;font-weight:700;cursor:pointer}
+.m12-panel button:focus-visible,.m12-panel select:focus-visible,.m12-panel input:focus-visible,.m12-footnote a:focus-visible{outline:3px solid #e2ff94;outline-offset:3px}
+.m12-result{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;align-items:center;padding:1rem;border:1px solid #49775c;border-radius:.6rem}
+.m12-result strong{font-size:2.3rem;color:#c4f57e}
+.m12-footnote{line-height:1.75;overflow-wrap:anywhere}

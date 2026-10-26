@@ -1,13 +1,19 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildDemoArticles } from "../modules/CB-M11/demo-articles.mjs";
+import { buildDemoMarketReadiness } from "../modules/CB-M11/demo-market-readiness.mjs";
+import inspectorCssUrl from "./developers-inspector.css?url&no-inline";
 
 export const prerender = false;
+const articleExample = buildDemoArticles();
+const marketExample = buildDemoMarketReadiness();
 ---
 
 <BaseLayout
   title="Developer sandbox · CoinBlink DEMO"
   description="Offline synthetic developer API demonstration only. No real articles, accounts, licensing, billing or live market data."
 >
+  <link rel="stylesheet" href={inspectorCssUrl} />
   <main id="main" class="not-found">
     <p class="eyebrow">M11 · DEMO ONLY · NOT PUBLISHED</p>
     <h1>Developer sandbox</h1>
@@ -46,6 +52,26 @@ Query parameters: unsupported
 Write methods: unsupported
 Not the commercial /v1/articles
 API.</code></pre>
+    </section>
+    <section class="m11-inspector-section" aria-labelledby="m11-inspector-title">
+      <h2 id="m11-inspector-title">Inspect synthetic API responses</h2>
+      <p class="body-copy">
+        Expand these bounded examples directly in the documentation. They use the
+        same fictional models as the GET-only demo endpoints. No request, account,
+        license, real market quote, or email is created by expanding a preview.
+      </p>
+      <details class="m11-inspector" data-m11-example="articles">
+        <summary>Show fictional articles JSON</summary>
+        <pre><code>{JSON.stringify(articleExample, null, 2)}</code></pre>
+      </details>
+      <details class="m11-inspector" data-m11-example="market-readiness">
+        <summary>Show synthetic blocked-market JSON</summary>
+        <pre><code>{JSON.stringify(marketExample, null, 2)}</code></pre>
+      </details>
+      <p class="body-copy">
+        Both examples are unlicensed, unpublished, not redistributable and never LIVE.
+        They are not an authorization to publish or redistribute any source.
+      </p>
     </section>
   </main>
 </BaseLayout>

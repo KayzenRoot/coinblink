@@ -595,3 +595,58 @@ test('M02 P1 Owner article presentation is private, inert, saved-revision-only a
     await cms.close();
   }
 });
+
+test('M02 P1 pending export is invalidated by edits and session revocation', { timeout: 150_000 }, async () => {
+  const cms = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = cms.page;
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('Private local editor race');
+    await page.locator('[name="summary"]').fill('A wholly synthetic editorial draft held by the local Owner.');
+    const body = 'This long fictional article remains private even when a read response arrives late.';
+    await page.locator('[name="body"]').fill(body);
+    await page.locator('[name="sourceUrl"]').fill('https://example.test/private-race');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    const before = await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all();
+    let release;
+    let entered;
+    const intercepted = new Promise(resolve => { entered = resolve; });
+    const delayed = new Promise(resolve => { release = resolve; });
+    await page.route('**/local/articles/*/export?revision=1', async route => {
+      entered();
+      await delayed;
+      try { await route.fallback(); } catch { /* aborted or disposed page */ }
+    });
+    const trigger = page.locator('#m02-owner-article-trigger');
+    const view = page.locator('#m02-owner-article');
+    await trigger.click();
+    await intercepted;
+    await page.locator('[name="body"]').fill(body + ' An unsaved concurrent change.');
+    assert.equal(await view.isVisible(), false);
+    assert.equal(await trigger.isDisabled(), true);
+    release();
+    await page.unrouteAll({ behavior: 'wait' });
+    assert.equal(await view.locator('#m02-owner-body').textContent(), '');
+    assert.equal(await view.isVisible(), false, 'aborted stale response cannot resurrect private text');
+    await page.locator('[name="body"]').fill(body);
+    assert.equal(await trigger.isEnabled(), true);
+    await trigger.click();
+    await view.waitFor({ state: 'visible', timeout: 15_000 });
+    assert.match(await view.locator('#m02-owner-body').textContent(), /long fictional article remains private/u);
+    assert.deepEqual((await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all()).results,
+      before.results, 'all preview reads are read-only');
+    await cms.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
+      .bind(Math.floor(Date.now() / 1000)).run();
+    await page.locator('#refresh').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor({ timeout: 15_000 });
+    assert.equal(await view.isVisible(), false);
+    assert.equal(await view.locator('#m02-owner-body').textContent(), '', 'revocation scrubs article');
+    assert.equal(await trigger.isVisible(), false);
+    assert.deepEqual(cms.networkAttempts.filter(q => !q.allowed), []);
+  } finally {
+    await cms.close();
+  }
+});

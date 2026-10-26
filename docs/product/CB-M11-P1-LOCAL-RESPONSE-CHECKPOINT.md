@@ -3,7 +3,7 @@
 **Stable increment ID:** `CB-M11-P1-LOCAL-RESPONSE-INSPECTOR-001`  
 **Work type:** NECESSARY documentation-only reconciliation of a previously delivered feature; no new behavior  
 **Owner authorization:** 2026-10-26, checkpoint planning and audited promotion via a separate documentation PR  
-**Checkpoint publishing status:** `PROPOSED_IN_DOCS_PR`; effective in `main` only after separately authorized, normally protected PR merge  
+**Checkpoint publishing status:** `PROMOTED_TO_MAIN_VERIFIED` via protected squash merge [PR #250](https://github.com/KayzenRoot/coinblink/pull/250), commit `95095a9842ba42bdd3e5e2a60adb4af1a07ccb69`  
 **Module admission status:** **CB-M11 FULL = PLANNED / NOT_ADMITTED**. This record does not change Issue #18 or admit a commercial API.
 
 ## Source check and context lock
@@ -44,6 +44,6 @@ The `/developers` page shows **two server-rendered native `details/summary` JSON
 - Three analysis warnings were visible in an owner's earlier Sonar screenshot but were **not itemized or proven resolved**. Original Sonar rule key was not available; the specific LOW finding was eliminated according to new-code counts.
 - Socket PR Alerts was successful **without a net dependency diff to scan**; it must not be represented as a fresh complete dependency vulnerability audit. The detailed GitHub branch protection settings returned HTTP 403 during review; GitHub's normal protected squash was performed without bypass, but absence of an accessible settings audit is not proof about every administrative rule.
 - Neither this checkpoint nor the M11 local demo grants rights/licensing, subscription/billing, production deployment, admin auth, customer keys, live news/market providers, D1 remote, real user data, or AI provider integrations. **Full M11 Issue #18 remains open PLANNED / NOT_ADMITTED**; no DoD claim for the full module. No external spend or post-merge deployment was performed.
-- **This documentation PR scope:** only this scoped checkpoint and a link/status in the existing roadmap; checks and review must pass on its exact HEAD. **No merge of this documentation PR without new specific Owner authorization.** Until that merge, treat the checkpoint text as **PROPOSED** in its feature branch and do not claim it has been promoted to `main`.
+- **Historical documentation PR #250:** the owner authorized its protected squash merge after exact-HEAD checks and review; GitHub confirmed the two-document scope and the resulting `main` commit `95095a9842ba42bdd3e5e2a60adb4af1a07ccb69`. This records a completed documentation transition, not authorization for subsequent merges, deploys or new functionality.
 
-**Conditional checkpoint delta (effective only after reviewed documentation merge):** `M11_P1_LOCAL_RESPONSE_INSPECTOR=DELIVERED_AND_POST_MERGE_VALIDATED`; `CB_M11_FULL=PLANNED_NOT_ADMITTED`; `LIVE_API=BLOCKED`; `DEPLOY=NOT_DONE`; `SONAR_NEW_CODE_COVERAGE=0.0%_REPORTED`. No next module/increment is admitted by this record.
+**Checkpoint Delta in protected `main` after PR #250:** `M11_P1_LOCAL_RESPONSE_INSPECTOR=DELIVERED_AND_POST_MERGE_VALIDATED`; `CB_M11_FULL=PLANNED_NOT_ADMITTED`; `LIVE_API=BLOCKED`; `DEPLOY=NOT_DONE`; `SONAR_NEW_CODE_COVERAGE=0.0%_REPORTED`. No next module/increment is admitted by this record.

@@ -17,6 +17,7 @@ import {
   CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization,
 } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { createLocalAdminRouter } from '../../../src/modules/CB-M05/p1c-local/local-admin-router.mjs';
+import { installLocalOwnerReviewSchema } from './p1c-fixtures/owner-review-schema.mjs';
 
 const SCHEMA_URL = new URL('./p1c-fixtures/schema.sql', import.meta.url);
 const ALLOWED_STATIC = new Set([
@@ -26,14 +27,14 @@ const ALLOWED_STATIC = new Set([
   '/local/recovery/challenge', '/local/recovery/complete',
   '/local/credentials', '/local/credentials/revoke', '/local/emergency/claim',
 ]);
-const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
+const ARTICLE_ROUTE = /^\/local\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export|review))?$/i;
 // The alternate /admin interface is an explicit opt-in LOCAL-only test adapter.
 // It remains restricted to the synthetic HTTPS origin and disposable authenticators.
 const ADMIN_ALLOWED_STATIC = new Set([
   '/admin', '/admin/',
   ...[...ALLOWED_STATIC].map(route => route.replace('/local/', '/admin/')),
 ]);
-const ADMIN_ARTICLE_ROUTE = /^\/admin\/articles\/[0-9a-f-]{36}(?:\/revisions)?$/i;
+const ADMIN_ARTICLE_ROUTE = /^\/admin\/articles\/[0-9a-f-]{36}(?:\/(?:revisions|export|review))?$/i;
 
 // The checked-in SQLite fixture has two BEGIN/END triggers. Split only
 // at statement boundaries, not at the semicolons inside trigger bodies.
@@ -71,6 +72,8 @@ async function applySchema(db, persistent) {
     presentTables.forEach((present, index) => {
       assert.equal(present?.name, requiredTables[index], 'local database has missing table ' + requiredTables[index]);
     });
+    // Do not touch existing Owner, credentials, drafts, immutable history or metadata.
+    await installLocalOwnerReviewSchema(db);
     return false;
   }
   assert.equal(existing, null, 'database must start empty unless explicit persistent preview');
@@ -79,6 +82,7 @@ async function applySchema(db, persistent) {
   assert.ok(statements.length >= 8);
   // D1 batch retains SQL statement order and applies this dependent DDL as one unit.
   await db.batch(statements.map(statement => db.prepare(statement)));
+  await installLocalOwnerReviewSchema(db);
   if (persistent) {
     await db.prepare(`CREATE TABLE cms_local_preview_metadata (
       id INTEGER PRIMARY KEY CHECK(id=1),

@@ -71,7 +71,9 @@ test("drafting indicators are explicitly local, non-published and accessible in 
   assert.match(source, /estimate.*not.*fact.check/u);
   assert.match(source, /\?url&no-inline/u);
   assert.match(source, /src=\{metricsScriptUrl\}/u);
-  assert.doesNotMatch(source, /<script>\s*import /u, "a bundled inline metrics script would violate CSP");
+  assert.match(source, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared editor module is processed by Astro into an external bundle");
+  assert.doesNotMatch(source, /<script\s+is:inline[^>]*>\s*import /u, "inline module imports are not allowed");
   const externalModule = readFileSync(resolve("src/modules/CB-M05/local-draft-metrics.mjs"), "utf8");
   assert.match(externalModule, /MutationObserver/u);
   assert.match(externalModule, /measureLocalDraft/u);

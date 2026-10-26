@@ -1,0 +1,42 @@
+name: CoinBlink M12 fictitious quota simulator (offline)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m12-local-quota-preview.yml"
+      - "src/modules/CB-M12/**"
+      - "src/pages/demo/api-usage.astro"
+      - "test/modules/CB-M12/**"
+      - "e2e/m12-local-quota-preview.spec.mjs"
+      - "docs/product/CB-M12-P0-LOCAL-QUOTA-PREVIEW-001.md"
+      - ".engineering/evidence/CB-M12-P0-LOCAL-QUOTA-PREVIEW-001/**"
+permissions:
+  contents: read
+concurrency:
+  group: m12-quota-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  safety:
+    name: M12 mock quota Node + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked install without postinstall scripts
+        run: npm ci --ignore-scripts
+      - name: M12 fake quota contracts and M11 API regressions
+        run: node --test test/modules/CB-M12/*.test.mjs test/modules/CB-M11/*.test.mjs
+      - name: Build Astro without remote providers
+        run: npm run build
+      - name: Chromium installation
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M12 keyboard, privacy, axe and M11 docs regressions
+        run: ./node_modules/.bin/playwright test e2e/m12-local-quota-preview.spec.mjs e2e/m11-developer-demo.spec.mjs

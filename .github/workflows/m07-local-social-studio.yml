@@ -36,7 +36,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
       - name: Node contract and CSP/public route guard
-        run: node --test test/modules/CB-M07/social-preview.test.mjs
+        run: node --test test/modules/CB-M07/social-preview.test.mjs test/modules/CB-M07/local-editorial-variants.test.mjs test/modules/CB-M07/local-editorial-approvals.test.mjs test/modules/CB-M07/x-post-draft.test.mjs
       - name: Build and no-session-binding guard
         run: npm run build
       - name: Install Chromium

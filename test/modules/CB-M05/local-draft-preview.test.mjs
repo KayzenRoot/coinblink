@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown, safeDraftFilename } from "../../../public/m05-draft-preview.js";
+import { prepareLocalDraft, draftToMarkdown, parseLocalDraftMarkdown, safeDraftFilename } from "../../../src/modules/CB-M05/local-draft-markdown.mjs";
 import { addLocalSource } from "../../../src/modules/CB-M05/local-source-notes.mjs";
 import { addLocalClaimReview } from "../../../src/modules/CB-M05/local-claim-reviews.mjs";
 import { evaluateLocalEditorialChecklist } from "../../../src/modules/CB-M05/local-editorial-checklist.mjs";
@@ -24,6 +24,15 @@ test("source-backed local draft can be exported with explicit unpublished review
   assert.match(text, /Original source:\*\* https:\/\/example.org\/original-report/u);
   assert.match(text, /Owner review before any publication/iu);
   assert.equal(safeDraftFilename(result.title), "a-verifiable-original-draft-headline.md");
+});
+
+test("local export filenames trim separators without regex suffix backtracking", () => {
+  assert.equal(safeDraftFilename("---Árvore / dados---"), "arvore-dados.md");
+  assert.equal(safeDraftFilename("-----"), "coinblink-draft.md");
+  assert.equal(safeDraftFilename(""), "coinblink-draft.md");
+  assert.equal(safeDraftFilename("A".repeat(140)), "a".repeat(60) + ".md");
+  assert.equal(safeDraftFilename("A".repeat(140) + "!".repeat(30000)), "a".repeat(60) + ".md");
+  assert.equal(safeDraftFilename("/// --- B _ C +++ ///"), "b-c.md");
 });
 
 test("invalid sources or incomplete inputs fail closed, with no Markdown export", () => {

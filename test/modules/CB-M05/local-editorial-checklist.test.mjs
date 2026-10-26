@@ -132,5 +132,7 @@ test("component is separate from the existing editor and uses a same-origin CSP-
   assert.match(module, /MutationObserver\(clearManual\)/u);
   assert.match(module, /textContent/u);
   assert.doesNotMatch(module, /\b(?:localStorage|sessionStorage|document\.cookie|fetch\s*\(|navigator\.sendBeacon|innerHTML)\b/u);
-  assert.doesNotMatch(component, /<script>\s*import /u);
+  assert.match(component, /<script>\s*import "\.\/local-draft-preview\.client\.mjs";\s*<\/script>/u,
+    "the shared browser entry is processed by Astro into an external bundle");
+  assert.doesNotMatch(component, /<script\s+is:inline[^>]*>\s*import /u);
 });

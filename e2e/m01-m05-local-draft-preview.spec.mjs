@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { draftToMarkdown, prepareLocalDraft } from "../public/m05-draft-preview.js";
+import { draftToMarkdown, prepareLocalDraft } from "../src/modules/CB-M05/local-draft-markdown.mjs";
 
 const original = prepareLocalDraft({
   title: 'Unverified local draft <img src=x onerror=alert(1)>',

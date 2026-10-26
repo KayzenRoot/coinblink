@@ -1,0 +1,133 @@
+{
+  "mission": "CB-SONAR-147-CODEX-READONLY-001",
+  "status": "COMPLETE",
+  "accessStatus": "COMPLETE",
+  "project": "KayzenRoot_coinblink",
+  "branch": "main",
+  "referenceSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+  "observedMainSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+  "checkedAtUTC": "2026-10-20T11:18:49Z",
+  "source": "SonarCloud public API /api/issues/search; GET only; no credentials used",
+  "queryParameters": {
+    "componentKeys": "KayzenRoot_coinblink",
+    "branch": "main",
+    "sinceLeakPeriod": true,
+    "ps": 100
+  },
+  "pageHttpStatuses": [
+    {
+      "page": 1,
+      "httpStatus": 200,
+      "reportedTotal": 262,
+      "retrievedCount": 100
+    },
+    {
+      "page": 2,
+      "httpStatus": 200,
+      "reportedTotal": 262,
+      "retrievedCount": 100
+    },
+    {
+      "page": 3,
+      "httpStatus": 200,
+      "reportedTotal": 262,
+      "retrievedCount": 62
+    }
+  ],
+  "reportedTotal": 262,
+  "pagesFetched": 3,
+  "retrievedCount": 262,
+  "uniqueIssueCount": 262,
+  "duplicateCount": 0,
+  "paginationComplete": true,
+  "issueStatusCounts": {
+    "OPEN": 226,
+    "RESOLVED": 2,
+    "CLOSED": 34
+  },
+  "issueTypeCounts": {
+    "CODE_SMELL": 260,
+    "VULNERABILITY": 2
+  },
+  "openVulnerabilitySummary": {
+    "count": 2,
+    "severityCounts": {
+      "CRITICAL": 1,
+      "MAJOR": 1
+    }
+  },
+  "openSecurityImpactSeverityCounts": {
+    "HIGH": 1,
+    "MEDIUM": 1
+  },
+  "publicDetails": {
+    "issueRecordsPublished": false,
+    "issueSpecificDetailsWithheld": true,
+    "privateStorageRequired": true,
+    "reason": "Unresolved potentially exploitable HIGH/CRITICAL findings are present; issue keys, rules, components, lines, and messages are withheld from this public repository."
+  },
+  "githubMainCheck": {
+    "name": "SonarCloud Code Analysis",
+    "checkRunId": 118552202578,
+    "headSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+    "status": "completed",
+    "conclusion": "success",
+    "annotations": 0,
+    "url": "https://github.com/KayzenRoot/coinblink/runs/118552202578",
+    "qualityGate": "passed"
+  },
+  "limitations": [
+    "No issue-specific rule, path, line, message, or key is included in this public evidence.",
+    "The dated API issue counts do not imply a failed Quality Gate on the same SHA. Historical run 118552202578 was SUCCESS; earlier D failures on other SHAs are distinct.",
+    "No remediation, issue mutation, Quality Gate change, merge, or deploy was performed.",
+    "relatedGitHubStateAtObservation is a historical 2026-10-20 snapshot; laterGitHubReadback reflects later GitHub state without re-running the SonarCloud issue query.",
+    "The issue status snapshot and the GitHub Quality Gate check have different semantics; the snapshot does not prove present-day remediation or non-remediation."
+  ],
+  "relatedGitHubStateAtObservation": {
+    "issue147": "OPEN",
+    "issue169": "OPEN",
+    "pr180": {
+      "state": "OPEN",
+      "headSha": "adc24255154c137daebebe2939a87103a6bc1a09",
+      "baseSha": "aae3533973518e1af846c321a9df89d03a0918f5",
+      "sonarCheck": "pass on PR head",
+      "copilotCreditStatusCommentSeparate": true,
+      "modified": false
+    },
+    "pr181": {
+      "state": "OPEN",
+      "branch": "docs/cb-sonar-147-codex-handoff-20261020",
+      "evidenceBaseSha": "e1e4242f432ae53e36cf48acd3ee7e553cc80b47",
+      "baseSha": "aae3533973518e1af846c321a9df89d03a0918f5"
+    }
+  },
+  "laterGitHubReadback": {
+    "asOfDate": "2026-10-21",
+    "mainSha": "c3001ccfb663ad0c84085e07783f8d4566b394a4",
+    "issue147": {
+      "state": "CLOSED",
+      "stateReason": "completed",
+      "closedAt": "2026-10-20T17:19:37Z"
+    },
+    "issue169": {
+      "state": "OPEN"
+    },
+    "pr180": {
+      "state": "MERGED",
+      "headSha": "dc4d45556d8a53303eddb0653518df5c5829b54a"
+    },
+    "pr182": {
+      "state": "OPEN",
+      "draft": true,
+      "headSha": "309e9f1b382216cc5fa5b8ee38b85cbcb39e72f9"
+    },
+    "mainSonarCloudCheck": {
+      "status": "completed",
+      "conclusion": "success",
+      "qualityGate": "passed",
+      "reportedNewIssues": 226,
+      "reportedSecurityHotspots": 0
+    },
+    "limitations": "GitHub states and SonarCloud check summary only; no fresh issue-specific SonarCloud extraction or confirmed remediation."
+  }
+}

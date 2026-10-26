@@ -25,9 +25,11 @@ const testTime = 1760486400;
 const expectedOrigin = 'https://owner.example.test';
 const expectedRpId = 'owner.example.test';
 
-assertSyntheticD1Config(config);
-assert.match(ignoreText, /^\.wrangler\/$/m, '.wrangler state must be ignored');
-assert.ok(existsSync(wranglerScript), 'Wrangler JS entry point must already be available; no install/network fallback is permitted');
+test("P1A D1 isolated fixture preflight", () => {
+  assertSyntheticD1Config(config);
+  assert.match(ignoreText, /^\.wrangler\/$/m, '.wrangler state must be ignored');
+  assert.ok(existsSync(wranglerScript), 'Wrangler JS entry point must already be available; no install/network fallback is permitted');
+});
 
 function safeEnvironment() {
   const env = { ...process.env, WRANGLER_SEND_METRICS: 'false', NO_UPDATE_NOTIFIER: '1', CI: '1' };

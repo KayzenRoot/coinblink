@@ -83,13 +83,29 @@ export function createLocalEditorialActivity(drafts) {
  * proves verification, rights, licensing or publication readiness.
  */
 export function createLocalReviewQueue(drafts) {
+  // This function is also embedded into the protected LOCAL UI via toString().
+  // All helpers must therefore remain self-contained inside its function body.
+  // PRIVATE Owner notes never belong in M06 queue rows.
+  const ownerProcessStatus = new Map([
+    ['PREVIEW_REVIEWED', 'PRIVATE_PREVIEW_REVIEWED'],
+    ['CHANGES_REQUESTED', 'PRIVATE_CHANGES_REQUESTED'],
+  ]);
+  function currentOwnerProcessStatus(decision) {
+    if (decision === undefined) return 'NOT_OBSERVED';
+    if (decision === null) return 'CURRENT_REVISION_UNREVIEWED';
+    return ownerProcessStatus.get(decision) ?? null;
+  }
   // Also validates duplicate IDs, draft status, revisions and Unix seconds.
   createLocalEditorialActivity(drafts);
   const rows = drafts.map(draft => {
+    const ownerProcessStatus = currentOwnerProcessStatus(draft.current_review_decision);
     if (typeof draft.author_label !== 'string' || draft.author_label.length > 80 ||
-        typeof draft.source_url !== 'string' || draft.source_url.length > 500) {
+        typeof draft.source_url !== 'string' || draft.source_url.length > 500 ||
+        ownerProcessStatus === null) {
       throw new TypeError('Invalid LOCAL review metadata');
     }
+    // Missing field in legacy model-only fixtures is NOT_OBSERVED.
+    // Real authenticated D1 returns an exact-revision decision or null.
     return Object.freeze({
       id: draft.id,
       title: draft.title,
@@ -97,7 +113,7 @@ export function createLocalReviewQueue(drafts) {
       updatedAtSeconds: draft.updated_at,
       creditStatus: draft.author_label.trim() ? 'CREDIT_PRESENT_UNVERIFIED' : 'CREDIT_MISSING',
       sourceStatus: 'SOURCE_VERIFICATION_PENDING',
-      publishingStatus: 'DRAFT_ONLY',
+      publishingStatus: 'DRAFT_ONLY', ownerProcessStatus,
     });
   });
   rows.sort((a,b) => b.updatedAtSeconds - a.updatedAtSeconds || a.id.localeCompare(b.id));
@@ -107,6 +123,9 @@ export function createLocalReviewQueue(drafts) {
     listingScope: rows.length === 100 ? 'UP_TO_100_LISTED' : 'MEASURED_LOCAL',
     totalListed: rows.length,
     missingCreditListed: rows.filter(row => row.creditStatus === 'CREDIT_MISSING').length,
+    currentUnreviewedListed: rows.filter(row => row.ownerProcessStatus === 'CURRENT_REVISION_UNREVIEWED').length,
+    privatePreviewReviewedListed: rows.filter(row => row.ownerProcessStatus === 'PRIVATE_PREVIEW_REVIEWED').length,
+    privateChangesRequestedListed: rows.filter(row => row.ownerProcessStatus === 'PRIVATE_CHANGES_REQUESTED').length,
     rows: Object.freeze(rows),
   });
 }

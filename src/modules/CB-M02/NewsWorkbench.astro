@@ -1,20 +1,28 @@
 ---
 import { listMockNews, NEWS_MOCK_POLICY } from "./news-workbench.mjs";
+import { listMockTopics } from "./news-reader-guide.mjs";
 import { newsCopy, localizeMockNews } from "./news-i18n.mjs";
 import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+import NewsLocaleSwitch from "../CB-M09/NewsLocaleSwitch.astro";
+import { getNewsLocaleMeta, getNewsHomeHref } from "../CB-M09/news-locale-meta.mjs";
+import LocalArticlePreview from "./LocalArticlePreview.astro";
+import LocalDraftCompare from "./LocalDraftCompare.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
-interface Props { locale?: "en" | "pt-br"; }
+interface Props { locale?: "en" | "pt-br" | "es"; }
 const { locale = "en" } = Astro.props;
 const copy = newsCopy(locale);
+const localeMeta = getNewsLocaleMeta(locale);
 const news = listMockNews();
+const topics = listMockTopics();
 const categories = ["all", "security", "protocol", "education"] as const;
-const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
+const base = "/" + locale + "/news";
 ---
 <main id="main" class="cb-m02" data-m02-root aria-labelledby="m02-title">
-  <nav aria-label={locale === "pt-br" ? "Navegação" : "Navigation"}>
-    <a href={locale === "pt-br" ? "/pt-br" : "/en"}>{copy.home}</a>
+  <nav aria-label={localeMeta.navigation}>
+    <a href={getNewsHomeHref(locale)}>{copy.home}</a>
   </nav>
-  <LocalJourneyNav locale={locale} current="news" />
+  {locale !== "es" && <LocalJourneyNav locale={locale} current="news" />}
+  <NewsLocaleSwitch locale={locale} />
   <header>
     <small class="m02-warning">{copy.disclaimer}</small>
     <h1 id="m02-title">{copy.directoryTitle}</h1>
@@ -22,6 +30,15 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
     <small>CB-M02 · {NEWS_MOCK_POLICY}</small>
     <span class="sr-only">MOCK / FICTIONAL / NOT PUBLISHED</span>
   </header>
+  <section class="m02-topics" aria-labelledby="m02-topics-title">
+    <h2 id="m02-topics-title">{copy.topicTitle}</h2>
+    <p>{copy.topicExplanation}</p>
+    <div class="m02-topic-actions">
+      {topics.map(topic => <button type="button" data-m02-topic={topic.category} aria-label={copy.exploreTopic + " " + copy[topic.category]}>
+        {copy[topic.category]} · {topic.count}
+      </button>)}
+    </div>
+  </section>
   <div class="m02-controls">
     <label>{copy.search}
       <input type="search" maxlength="80" data-m02-search placeholder={copy.searchHint} autocomplete="off" />
@@ -31,12 +48,13 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
         {categories.map(category => <option value={category}>{copy[category]}</option>)}
       </select>
     </label>
+    <button type="button" class="m02-clear" data-m02-reset>{copy.resetFilters}</button>
   </div>
   <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label={copy.results}>{news.items.length} {copy.results}</p>
   <div class="m02-results">
     {news.items.map(item => {
       const translated = localizeMockNews(item, locale);
-      return <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(locale === "pt-br" ? "pt-BR" : "en")}>
+      return <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(localeMeta.search)}>
         <small class="m02-warning">{copy.disclaimer} · {copy[item.category]}</small>
         <h2>{translated.title}</h2>
         <p>{translated.summary}</p>
@@ -45,6 +63,8 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
     })}
   </div>
   <p data-m02-empty role="status" hidden>{copy.empty}</p>
+  {locale !== "es" && <LocalArticlePreview locale={locale} />}
+  {locale !== "es" && <LocalDraftCompare locale={locale} />}
 </main>
 <script is:inline src={newsUiUrl}></script>
 <style>
@@ -54,11 +74,17 @@ const base = locale === "pt-br" ? "/pt-br/news" : "/en/news";
   .cb-m02 header h1{font-size:clamp(2rem,4vw,3.75rem);line-height:1.12}
   .cb-m02 header p,.cb-m02 article p{color:#b9cbbf}
   .m02-warning{color:#f5c981;font-weight:650;letter-spacing:.025em}
+  .m02-topics{margin:1.25rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .m02-topics h2{font-size:1.4rem;margin:.1rem 0}
+  .m02-topics p{color:#b9cbbf}
+  .m02-topic-actions{display:flex;flex-wrap:wrap;gap:.75rem}
+  .m02-topic-actions button{cursor:pointer;color:#e9f6eb;background:#18291f;border:1px solid #809c81;border-radius:999px;min-height:2.75rem;padding:.65rem 1rem}
   .m02-controls{display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0}
   .m02-controls label{display:grid;gap:.5rem;flex:1 1 15rem}
   .m02-controls input,.m02-controls select{width:100%;padding:.85rem;color:#fff;background:#18291f;border:1px solid #809c81;border-radius:.5rem}
+  .m02-controls .m02-clear{align-self:end;min-height:3rem;padding:.85rem 1.2rem;background:#b8f34b;color:#111c17;border:1px solid #b8f34b;border-radius:.5rem;font-weight:700;cursor:pointer}
   .m02-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}
   .m02-results article{border:1px solid #456e4e;border-radius:.8rem;padding:1.35rem;background:#111c17}
   .m02-results article[hidden]{display:none}
-  .cb-m02 a:focus-visible,.cb-m02 input:focus-visible,.cb-m02 select:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+  .cb-m02 a:focus-visible,.cb-m02 input:focus-visible,.cb-m02 select:focus-visible,.cb-m02 button:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

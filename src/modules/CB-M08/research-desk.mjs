@@ -50,3 +50,27 @@ export function buildMockResearchBrief(sourceId, asset) {
   });
   return Object.freeze({ status: "MOCK_RESEARCH_REVIEW_REQUIRED", brief });
 }
+
+
+// P1 local human triage groups canonical evidence gates without treating any
+// synthetic source, quote or check as verified, licensed or publishable.
+const INVALID_TRIAGE = Object.freeze({ status: "INVALID_SELECTION", summary: null });
+export function summarizeMockResearchGates(sourceId, asset) {
+  const result = buildMockResearchBrief(sourceId, asset);
+  const brief = result.brief;
+  if (!brief) return INVALID_TRIAGE;
+  const sourceGates = brief.blockers.filter(row => row.domain === "SOURCE").length;
+  const marketGates = brief.blockers.filter(row => row.domain === "MARKET").length;
+  // Schema changes in the dependent modules must fail closed, not silently
+  // misrepresent a partially checked evidence packet as complete.
+  if (sourceGates !== 4 || marketGates !== 4 || brief.blockerCount !== 8) {
+    return INVALID_TRIAGE;
+  }
+  return Object.freeze({
+    status: "MOCK_TRIAGE_REVIEW_REQUIRED",
+    summary: Object.freeze({
+      total: brief.blockerCount, sourceGates, marketGates,
+      humanReviewRequired: true, verified: 0, canPublish: false, live: false,
+    }),
+  });
+}

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { listMockNews, resolveMockNews } from "../../../src/modules/CB-M02/news-workbench.mjs";
 import { newsCopy, localizeMockNews } from "../../../src/modules/CB-M02/news-i18n.mjs";
+import { getNewsHomeHref } from "../../../src/modules/CB-M09/news-locale-meta.mjs";
 
 test("M09 Spanish localizes exactly the three canonical fictional news specimens", () => {
   const en = listMockNews().items;
@@ -75,4 +76,25 @@ test("M09 ES navigation: Spanish demo articles offer a return to the ES entry", 
   assert.match(nav, /locale === "es"[\s\S]*?href="\/es"/u);
   assert.match(nav, /Volver al inicio/u);
   assert.match(nav, /resolveMockNews\(slug\)\.item/u);
+});
+
+
+test("M09 P1 Spanish newsroom home returns to /es without changing EN/PT or generating external URLs", () => {
+  const contract = [
+    ["es", "/es", "Inicio"],
+    ["en", "/en", "Home"],
+    ["pt-br", "/pt-br", "Início"],
+  ];
+  for (const [locale, path, label] of contract) {
+    assert.equal(getNewsHomeHref(locale), path);
+    assert.equal(newsCopy(locale).home, label);
+    assert.match(path, /^\/(?:es|en|pt-br)$/u);
+  }
+  for (const locale of [null, undefined, "__proto__", "es/../../admin", "de", "https://evil.example"]) {
+    assert.equal(getNewsHomeHref(locale), "/en", "invalid locale must fail to safe English public entry");
+  }
+  const page = readFileSync("src/modules/CB-M02/NewsWorkbench.astro", "utf8");
+  assert.match(page, /getNewsHomeHref\(locale\)/u);
+  assert.doesNotMatch(page, /locale === "pt-br" \? "\/pt-br" : "\/en"/u);
+  assert.doesNotMatch(page, /fetch\s*\(|localStorage|sessionStorage|\/admin\/api/u);
 });

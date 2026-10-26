@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="CoinBlink favicon emblem">
+<title>CoinBlink brand candidate</title><desc>CoinBlink favicon emblem. Original editable SVG vector reinterpretation of the approved AI-generated logo, not a pixel-identical trace.</desc>
+<defs>
+  <radialGradient id="disc" cx="42%" cy="35%" r="73%"><stop stop-color="#173b2b"/><stop offset=".45" stop-color="#071c16"/><stop offset="1" stop-color="#03100c"/></radialGradient>
+  <linearGradient id="eyeUpper" x1=".13" y1=".82" x2=".85" y2=".12"><stop stop-color="#1d7960"/><stop offset=".28" stop-color="#b3eabc"/><stop offset=".52" stop-color="#143e35"/><stop offset=".78" stop-color="#c8fa50"/><stop offset="1" stop-color="#77ba0f"/></linearGradient>
+  <linearGradient id="eyeLower" x1=".09" y1=".25" x2=".85" y2=".82"><stop stop-color="#3b7656"/><stop offset=".35" stop-color="#c9fa51"/><stop offset=".63" stop-color="#143e37"/><stop offset="1" stop-color="#71bd1a"/></linearGradient>
+  <linearGradient id="rimGold" x1=".1" y1="0" x2=".84" y2="1"><stop stop-color="#fbfcb8"/><stop offset=".23" stop-color="#f6cc2a"/><stop offset=".50" stop-color="#98741b"/><stop offset=".71" stop-color="#fff58a"/><stop offset="1" stop-color="#89b81a"/></linearGradient>
+  <linearGradient id="bolt" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fffeba"/><stop offset=".34" stop-color="#dcfa36"/><stop offset=".67" stop-color="#88e52f"/><stop offset="1" stop-color="#f8d838"/></linearGradient>
+  <linearGradient id="greenRim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#345e1c"/><stop offset=".22" stop-color="#b8f34b"/><stop offset=".45" stop-color="#25451a"/><stop offset=".7" stop-color="#a6ea43"/><stop offset="1" stop-color="#22471b"/></linearGradient>
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
+ </defs>
+<circle cx="256" cy="256" r="236" fill="url(#disc)"/>
+  <circle cx="256" cy="256" r="232" fill="none" stroke="url(#greenRim)" stroke-width="4"/>
+  <circle cx="256" cy="256" r="222" fill="none" stroke="#70a63c" stroke-opacity=".18" stroke-width="2"/>
+  <path d="M58 260 C111 248 150 174 207 153 C262 127 321 162 369 197 C403 224 423 251 454 260 C411 257 369 236 333 215 C281 178 238 170 193 189 C149 208 122 257 58 260Z" fill="url(#eyeUpper)" stroke="#c4ff70" stroke-width="2.1"/>
+  <path d="M58 260 C118 263 143 313 204 331 C264 349 317 332 364 306 C402 284 430 266 454 260 C420 282 394 324 342 351 C271 386 203 376 151 343 C108 316 88 273 58 260Z" fill="url(#eyeLower)" stroke="#a8ef52" stroke-width="2"/>
+  <path d="M70 257 C150 225 182 146 263 147 C345 150 377 235 442 255" stroke="#efffb9" stroke-opacity=".72" stroke-width="3" fill="none"/>
+  <path d="M72 263 C153 296 177 363 258 365 C351 368 394 280 440 266" stroke="#d3fc6a" stroke-opacity=".55" stroke-width="2" fill="none"/>
+  
+  <circle cx="256" cy="256" r="98" fill="#0b1e16" stroke="#1f3015" stroke-width="8"/>
+  <circle cx="256" cy="256" r="93" fill="none" stroke="url(#rimGold)" stroke-width="12"/>
+  <circle cx="256" cy="256" r="77" fill="#0a2418" stroke="#94d735" stroke-width="3"/>
+  <circle cx="256" cy="256" r="69" fill="none" stroke="#487c29" stroke-opacity=".7" stroke-width="3"/>
+  <path d="M269 199 223 269H259L241 318 300 241H263Z" fill="url(#bolt)" stroke="#ffffc8" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="m275 209-42 54h28l-7 34 38-51h-29Z" fill="#f7ffab" opacity=".15"/>
+  <path d="M215 178A90 90 0 0 1 297 178" stroke="#fff6a0" stroke-width="4" stroke-linecap="round" opacity=".7" fill="none"/>
+  <path d="M203 327A89 89 0 0 0 308 326" stroke="#7adc45" stroke-width="3" opacity=".58" fill="none"/>
+</svg>

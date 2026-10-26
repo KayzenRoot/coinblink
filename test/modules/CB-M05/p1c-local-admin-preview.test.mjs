@@ -622,6 +622,10 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
           requested.searchParams.get('revision') === '1') {
         entered();
         await delayed;
+        // The browser canceled this stale GET when the saved form changed.
+        // Do not forward an already canceled request to the LOCAL D1 fixture.
+        try { await route.abort('aborted'); } catch { /* already canceled */ }
+        return;
       }
       try { await route.fallback(); } catch { /* canceled fetch or disposed page */ }
     });

@@ -98,3 +98,36 @@ test("M09 Spanish DEMO entry is safe, accessible and returns from the existing n
   expect(mutations).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
+
+
+test("M09 P1 home navigation remains localized, keyboard usable, private-data-free and demo-only", async ({ page }) => {
+  const external = [], mutations = [], errors = [];
+  page.on("request", request => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) external.push(request.url());
+    if (!["GET", "HEAD"].includes(request.method())) mutations.push(request.url());
+  });
+  page.on("pageerror", error => errors.push(error.message));
+  for (const [locale, region, label, destination] of [
+    ["es", "Navegación", "Inicio", "/es"],
+    ["pt-br", "Navegação", "Início", "/pt-br"],
+    ["en", "Navigation", "Home", "/en"],
+  ]) {
+    await page.goto("/" + locale + "/news");
+    const navigation = page.getByRole("navigation", { name: region, exact: true });
+    const home = navigation.getByRole("link", { name: label, exact: true });
+    await expect(home).toHaveAttribute("href", destination);
+    await home.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(new RegExp(destination.replaceAll("/", "\\/") + "$", "u"));
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/u);
+    if (locale === "es") {
+      await expect(page.locator("html")).toHaveAttribute("lang", "es");
+      await expect(page.getByRole("heading", { name: "CoinBlink en español" })).toBeVisible();
+      const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      expect(axe.violations).toEqual([]);
+    }
+  }
+  expect(external).toEqual([]);
+  expect(mutations).toEqual([]);
+  expect(errors).toEqual([]);
+});

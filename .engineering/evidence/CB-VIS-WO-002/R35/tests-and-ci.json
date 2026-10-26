@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "runId": "CB-EXEC-20261014-12H-R35",
+  "runtimeTarget": "Node.js >=22.19.0 <23",
+  "runtimeUsed": "Node.js 22.23.3 in Docker; npm 10.9.3",
+  "local": {
+    "npmCi": "PASS; lockfile install completed with npm 10.9.3; audit reported 0 vulnerabilities",
+    "brandUnitTests": "PASS 8/8; included in the full unit suite",
+    "unitSuite": "PASS 127/127, 0 failures, 0 skipped",
+    "lint": "PASS; ESLint across repository with --max-warnings=0",
+    "typecheck": "PASS; Astro check completed 49 files with 0 errors, warnings, or hints",
+    "build": "PASS; Astro server build and assert-no-session-binding check",
+    "e2e": "PASS 7/7; desktop 1536x864, tablet 768x1024, mobile 390x844, sanitized health, 404, security headers, and robots checks",
+    "browserVisualQa": "PASS; Chromium 156.0.8078.4; 3 viewport and 3 full-page captures; each viewport decoded and checked 38 accessible image samples from 5 local SVGs; no external requests, page errors, console errors, or horizontal overflow. A contrast limitation for stacked logo on light surfaces is documented.",
+    "gefDoctor": "SUCCEEDED read-only; Node/platform healthy. Git probe reported FINDING because Docker could not resolve the Windows worktree admin .git pointer as a directory; no remediation was applied.",
+    "gefStatus": "SUCCEEDED read-only; checkpoint parsed as M00_COMPLETE / 5%; repository dirtiness was UNKNOWN in Docker due the same .git mount limitation. Host Git status independently showed only the three allowlisted untracked directories.",
+    "windowsCheckoutBytePreservation": "PASS locally with core.autocrlf=true; staged Git attributes mark *.svg -text, and checkout-index restored all five vectors at the expected raw byte lengths.",
+    "diffCheck": "PASS for authored text and logs; the default staged diff check reports one trailing space in the byte-identical approved favicon.svg. That single source byte was retained to preserve its required SHA-256."
+  },
+  "hosted": {
+    "brandPullRequest": "DRAFT; see the PR metadata and Checks tab for the live exact-head state",
+    "exactHead": "Read from the PR API; not duplicated in this static local-test snapshot",
+    "requiredChecks": "Live status is authoritative in the PR Checks tab; do not infer a hosted PASS from local CI",
+    "codeRabbit": "Live status is in the PR Checks tab; no substantive review is claimed by this snapshot"
+  },
+  "existingPullRequestsReadOnly": {
+    "58": {
+      "state": "OPEN",
+      "head": "45b128e898a9daf880cda18ab44bcbe038c2e129",
+      "checks": "6 non-CodeRabbit contexts PASS; CodeRabbit status PASS but says automatic review is disabled"
+    },
+    "59": {
+      "state": "OPEN",
+      "head": "eac6e0bc675864fa2190b4b6d9b37cbec13ffd02",
+      "checks": "6 non-CodeRabbit contexts PASS; CodeRabbit status PASS but says review was rate limited"
+    }
+  },
+  "limitations": [
+    "No screen-reader certification was performed; automated accessible-name and image-role checks passed.",
+    "No legal, trademark, source-license, or commercial-rights clearance is asserted.",
+    "The stacked SVG is not recommended for light surfaces based on the captured contrast issue; SVG bytes remain unchanged."
+  ],
+  "supersededEnvironmentAttempts": [
+    "An initial Docker run using npm 10.9.9 with Windows-mounted node_modules lacked the Linux Rolldown binding and had no Git or Chromium; one unrelated subprocess timed out while lint ran concurrently. These were environment/setup failures. The final run used project-pinned npm 10.9.3, Linux Docker node_modules, Git, and Playwright Chromium.",
+    "An initial lint pass discovered the browser runner under test/brand and flagged a regex escape. The runner was moved into the evidence allowlist, the regex was corrected, and final repository lint passed.",
+    "The first hosted PR #77 head (5cc3f8ae77877b239d00d252ef710a91b0be1254) failed the Windows byte-length check: coinblink-symbol.svg was 4,071 bytes instead of 4,042 because core.autocrlf converted LF to CRLF. Added public/brand/.gitattributes with *.svg -text and a regression test; the corrected head's hosted result is pending."
+  ]
+}

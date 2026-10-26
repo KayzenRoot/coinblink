@@ -30,6 +30,22 @@ Each `CB-Mxx` contract is stored in `.engineering/planned-work-orders/CB-Mxx.md`
 
 **Visual delivery order:** M00 first even before app design, to prevent months of blind development. M05 may proceed while image upload CB-ASSETS-001 is still resolving, but M01 **cannot** claim visual fidelity without original images. If implementation order changes, revise this roadmap and dependent WOs under GEF admission. No undocumented parallel work on shared critical-path changes.
 
+## Evidence-backed local M11 increment (not full M11 admission)
+
+- **CB-M11-P1-LOCAL-RESPONSE-INSPECTOR-001:** the isolated **LOCAL_SYNTHETIC_ONLY** JSON inspector is integrated in protected `main` via [PR #239](https://github.com/KayzenRoot/coinblink/pull/239), squash `4b311da44a673f4f9a50002195da133778ba5e8a`. Its [increment-specific checkpoint and verified evidence](CB-M11-P1-LOCAL-RESPONSE-CHECKPOINT.md) document only this delivered slice. **The full CB-M11 (Issue #18) remains PLANNED / NOT_ADMITTED;** production API, rights clearance, live data, keys, subscriptions and billing are not authorized. The checkpoint link is a narrowly scoped delivery record, not a module admission or a restoration of the deprecated global governance process.
+
+## Evidence-backed local M12 increment (not full M12 admission)
+
+**CB-M12-P0-LOCAL-QUOTA-PREVIEW-001:** Integrated and post-merge verified through [PR #240](https://github.com/KayzenRoot/coinblink/pull/240), protected squash `8ac01453442938c4a3cccbeb5b40098979210345`.
+
+The `/demo/api-usage` page provides an offline, **LOCAL_SYNTHETIC_ONLY** quota simulation with three fictional allowances (5, 10 and 20 request units). It does not provide real customer accounts, billing, purchases, prices, API entitlements or production metering.
+
+**Verified evidence:** 19/19 pre-merge checks, 11/11 focused Node tests, 7/7 Chromium tests and 3/3 post-merge checks passed. SonarCloud reports 0 new issues, 0 accepted issues, 0 security hotspots and **0.0% coverage on new code**, which remains a documented limitation.
+
+See the [original Evidence Bundle](../../.engineering/evidence/CB-M12-P0-LOCAL-QUOTA-PREVIEW-001/EVIDENCE-BUNDLE.md) for historical corrections, tests and security boundaries.
+
+**Full CB-M12 (Issue #19) and CB-M11 (Issue #18) remain PLANNED / NOT_ADMITTED.** No production API, live provider, billing, deployment or commercial entitlement is authorized by this local increment. This record documents delivery only; it is not a new global checkpoint or module admission requirement.
+
 ## Product surfaces / artifact organization
 
 - Reader site `/`, `/en`, `/pt-br`, `/es` -> M01/M02/M04/M08/M09/M10/M16.

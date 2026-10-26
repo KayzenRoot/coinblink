@@ -46,7 +46,7 @@ const copies = Object.freeze({
     empty: "No hay ejemplos ficticios coincidentes. No se hicieron búsquedas externas.",
     explanation: "Explora escenarios educativos imaginarios. No hay noticias ni precios en vivo, borradores privados o solicitudes externas.",
     exploreTopic: "Explorar tema ficticio",
-    home: "Inicio (EN)",
+    home: "Inicio",
     list: "Todas las historias ficticias",
     missing: "Este ejemplo no existe. No se ha accedido a ninguna noticia real ni borrador privado.",
     missingTitle: "Ejemplo ficticio no encontrado",

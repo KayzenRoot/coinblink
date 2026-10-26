@@ -1,0 +1,35 @@
+---
+import { listLocalQuotaExamples } from "./local-quota-preview.mjs";
+import quotaJsUrl from "./local-quota-preview.client.js?url&no-inline";
+import quotaCssUrl from "./local-quota-preview.css?url&no-inline";
+const examples = listLocalQuotaExamples();
+---
+<main id="main" class="m12-sandbox" data-m12-root>
+  <header class="m12-panel">
+    <p class="m12-flag">M12 · LOCAL SYNTHETIC DEMO · NO BILLING · NO PAYMENTS · NO REAL ACCOUNTS</p>
+    <h1>Local API usage simulator</h1>
+    <p>Explore how an illustrative request allowance could behave. These are invented
+      examples, NOT AVAILABLE plans, real subscriptions, API access or paid entitlements.</p>
+    <p>Nothing is saved or transmitted. The billing and customer-console module remains
+      PLANNED and NOT ADMITTED for commercial operation.</p>
+  </header>
+  <section class="m12-panel" aria-labelledby="m12-controls-heading">
+    <h2 id="m12-controls-heading">ILLUSTRATIVE request allowance</h2>
+    <label for="m12-preset">Fictional sandbox example</label>
+    <select id="m12-preset" data-m12-preset>
+      {examples.map(example => <option value={example.id} data-m12-limit={example.limit}>{example.label} · {example.limit} example requests</option>)}
+    </select>
+    <label for="m12-used">Simulated requests used (0 to 20)</label>
+    <input id="m12-used" data-m12-used type="number" min="0" max="20" step="1" value="0" inputmode="numeric" />
+    <button type="button" data-m12-reset>Reset simulation</button>
+    <p role="status" aria-live="polite" data-m12-status>SIMULATION ONLY · illustrative request counters, no access granted.</p>
+    <div class="m12-result" aria-label="Fictional remaining request allowance">
+      <span>Simulated requests remaining</span>
+      <strong data-m12-remaining>5</strong>
+    </div>
+  </section>
+  <p class="m12-footnote">This LOCAL preview cannot subscribe, charge, authenticate, issue keys, enforce quotas,
+    or provide live API data. <a href="/developers">Inspect M11's fictitious API documentation</a>.</p>
+</main>
+<script is:inline type="module" src={quotaJsUrl}></script>
+<link rel="stylesheet" href={quotaCssUrl} />

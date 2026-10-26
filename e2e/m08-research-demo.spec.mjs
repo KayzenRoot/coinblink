@@ -99,3 +99,56 @@ test("M08 downloads an exact canonical MOCK file with no network or publish side
   expect(external).toEqual([]);
   expect(writes).toEqual([]);
 });
+
+
+test("M08 P1 triage switches all/source/market gates without changing the canonical MOCK export", async ({ page }) => {
+  const outside=[], mutations=[];
+  page.on("request", request => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) outside.push(request.url());
+    if (!["GET", "HEAD"].includes(request.method())) mutations.push(request.url());
+  });
+  await page.goto("/demo/research");
+  await page.locator("[data-m08-source]").selectOption("demo-source-alpha");
+  await page.locator("[data-m08-market]").selectOption("BTC");
+  await page.locator("[data-m08-run]").click();
+  const report=page.locator("[data-m08-report]");
+  const blockers=report.locator("[data-m08-blockers] li");
+  await expect(blockers).toHaveCount(8);
+  await expect(report.locator("[data-m08-triage]")).toContainText("4 source gates");
+  await expect(report.locator("[data-m08-triage]")).toContainText("4 market gates");
+  const all=report.getByRole("button", { name: "All gates (8)" });
+  const source=report.getByRole("button", { name: "Source gates (4)" });
+  const market=report.getByRole("button", { name: "Market gates (4)" });
+  await expect(all).toHaveAttribute("aria-pressed","true");
+  await market.click();
+  await expect(blockers).toHaveCount(4);
+  await expect(market).toHaveAttribute("aria-pressed","true");
+  await expect(report.locator("[data-m08-blockers]")).toContainText("NO_LIVE_FEED");
+  await expect(report.locator("[data-m08-blockers]")).not.toContainText("DIGEST");
+  await source.focus();
+  await page.keyboard.press("Enter");
+  await expect(blockers).toHaveCount(4);
+  await expect(source).toHaveAttribute("aria-pressed","true");
+  await expect(report.locator("[data-m08-blockers]")).toContainText("DIGEST");
+  await expect(report.locator("[data-m08-blockers]")).not.toContainText("NO_LIVE_FEED");
+  await all.focus();
+  await page.keyboard.press("Space");
+  await expect(blockers).toHaveCount(8);
+  await expect(all).toHaveAttribute("aria-pressed","true");
+  await page.locator("[data-m08-market]").selectOption("ETH");
+  await expect(report).toBeHidden();
+  await page.locator("[data-m08-run]").click();
+  await expect(blockers).toHaveCount(8);
+  await expect(all).toHaveAttribute("aria-pressed","true");
+  await expect(report.locator("[data-m08-triage]")).toContainText("4 market gates");
+  await expect(report).toContainText("NOT VERIFIED");
+  for(const width of [390,768,1366]){
+    await page.setViewportSize({width,height:900});
+    const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
+    expect(documentWidth).toBeLessThanOrEqual(width+1);
+  }
+  const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+  expect(outside).toEqual([]);
+  expect(mutations).toEqual([]);
+});

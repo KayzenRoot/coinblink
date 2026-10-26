@@ -615,19 +615,34 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
     let entered;
     const intercepted = new Promise(resolve => { entered = resolve; });
     const delayed = new Promise(resolve => { release = resolve; });
-    await page.route('**/local/articles/*/export?revision=1', async route => {
-      entered();
-      await delayed;
-      try { await route.fallback(); } catch { /* aborted or disposed page */ }
+    await page.route('**/*', async route => {
+      const requested = new URL(route.request().url());
+      if (requested.origin === 'https://owner.example.test' &&
+          /^\/local\/articles\/[0-9a-f-]{36}\/export$/.test(requested.pathname) &&
+          requested.searchParams.get('revision') === '1') {
+        entered();
+        await delayed;
+      }
+      try { await route.fallback(); } catch { /* canceled fetch or disposed page */ }
     });
     const trigger = page.locator('#m02-owner-article-trigger');
     const view = page.locator('#m02-owner-article');
-    await trigger.click();
-    await intercepted;
-    await page.locator('[name="body"]').fill(body + ' An unsaved concurrent change.');
-    assert.equal(await view.isVisible(), false);
-    assert.equal(await trigger.isDisabled(), true);
-    release();
+    let timeoutId;
+    try {
+      await trigger.click();
+      await Promise.race([
+        intercepted,
+        new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Expected LOCAL export request was not intercepted')), 8_000);
+        }),
+      ]);
+      await page.locator('[name="body"]').fill(body + ' An unsaved concurrent change.');
+      assert.equal(await view.isVisible(), false);
+      assert.equal(await trigger.isDisabled(), true);
+    } finally {
+      clearTimeout(timeoutId);
+      release();
+    }
     await page.unrouteAll({ behavior: 'wait' });
     assert.equal(await view.locator('#m02-owner-body').textContent(), '');
     assert.equal(await view.isVisible(), false, 'aborted stale response cannot resurrect private text');

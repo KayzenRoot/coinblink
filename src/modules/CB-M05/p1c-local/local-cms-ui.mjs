@@ -1923,6 +1923,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.revision.value = String(result.revision);
       ui.save.textContent = 'Save new revision';
       ui.exportDraft.hidden = false;
+      ui.ownerArticleTrigger.hidden = false;
       ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
       acceptSavedDraft();
       await refresh();

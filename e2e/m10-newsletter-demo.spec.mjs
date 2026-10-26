@@ -67,3 +67,60 @@ test("M10 is reachable via existing demo nav and is not a real mailing list", as
   await expect(page.getByText("NOT SENT", { exact: false }).first()).toBeVisible();
   await expect(page.locator("[data-journey-nav] a[aria-current=page]")).toHaveText("Newsletter lab");
 });
+
+
+test("M10 P1 editor reorders three fictional stories with keyboard, disables edges and clears unsaved state", async ({ page }) => {
+  const egress = [], mutations = [], errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  page.on("request", request => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) egress.push(request.url());
+    if (!["GET", "HEAD"].includes(request.method())) mutations.push(request.url());
+  });
+  await page.goto("/demo/newsletter");
+  const preview = page.locator("[data-m10-preview]");
+  await page.getByRole("button", { name: "Preview locally" }).click();
+  const entries = preview.locator("[data-m10-stories] > li[data-m10-story]");
+  await expect(entries).toHaveCount(3);
+  const before = await entries.locator("a").allTextContents();
+  const firstUp = entries.nth(0).locator("[data-m10-move-up]");
+  const lastDown = entries.nth(2).locator("[data-m10-move-down]");
+  await expect(firstUp).toBeDisabled();
+  await expect(lastDown).toBeDisabled();
+  const secondUp = entries.nth(1).locator("[data-m10-move-up]");
+  await expect(secondUp).toHaveAccessibleName(/Move .* up/u);
+  await secondUp.focus();
+  await page.keyboard.press("Enter");
+  await expect(entries.locator("a")).toHaveText([before[1],before[0],before[2]]);
+  await expect(page.locator("[data-m10-order-status]")).toContainText("Moved");
+  await expect(entries.nth(0).locator("[data-m10-move-up]")).toBeDisabled();
+  await expect(entries.nth(2).locator("[data-m10-move-down]")).toBeDisabled();
+  await expect(entries.nth(0).locator("[data-m10-move-down]")).toBeFocused();
+  await entries.nth(0).locator("[data-m10-move-down]").focus();
+  await page.keyboard.press("Space");
+  await expect(entries.locator("a")).toHaveText(before);
+  await page.locator("[data-m10-topic]").selectOption("security");
+  await expect(preview).toBeHidden();
+  await expect(entries).toHaveCount(0);
+  await expect(page.locator("[data-m10-order-status]")).toBeEmpty();
+  await page.getByRole("button", { name: "Preview locally" }).click();
+  await expect(entries).toHaveCount(1);
+  await expect(entries.nth(0).locator("[data-m10-move-up]")).toBeDisabled();
+  await expect(entries.nth(0).locator("[data-m10-move-down]")).toBeDisabled();
+  await page.getByRole("button", { name: "Clear preview" }).click();
+  await expect(preview).toBeHidden();
+  await expect(entries).toHaveCount(0);
+  await page.reload();
+  await expect(preview).toBeHidden();
+  await expect(entries).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: /email/u })).toHaveCount(0);
+  for (const width of [390,768,1366]) {
+    await page.setViewportSize({width,height:900});
+    const w=await page.evaluate(()=>document.documentElement.scrollWidth);
+    expect(w).toBeLessThanOrEqual(width+1);
+  }
+  const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+  expect(egress).toEqual([]);
+  expect(mutations).toEqual([]);
+  expect(errors).toEqual([]);
+});

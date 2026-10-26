@@ -655,9 +655,9 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
     // Challenge the generation/snapshot guard independently of browser cancellation:
     // replay a REAL authenticated D1 export after the editor has already changed.
     const savedExport = await page.evaluate(async () => {
-      const id = document.getElementById('draft-id').value;
-      const revision = document.getElementById('revision').value;
-      const response = await fetch('/local/articles/' + encodeURIComponent(id) +
+      const id = globalThis.document.getElementById('draft-id').value;
+      const revision = globalThis.document.getElementById('revision').value;
+      const response = await fetch('/admin/articles/' + encodeURIComponent(id) +
         '/export?revision=' + encodeURIComponent(revision), { credentials: 'same-origin' });
       return { status: response.status, headers: [...response.headers.entries()],
         body: await response.text() };
@@ -666,15 +666,15 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
     assert.ok(savedExport.headers.some(([name]) => name === 'content-length'),
       'captured export must retain the byte-length security contract');
     await page.evaluate(exported => {
-      const nativeFetch = window.fetch.bind(window);
-      window.__m02NativeFetch = nativeFetch;
-      window.fetch = (input, init) => {
-        const request = new URL(typeof input === 'string' ? input : input.url, location.href);
+      const nativeFetch = globalThis.fetch.bind(globalThis);
+      globalThis.__m02NativeFetch = nativeFetch;
+      globalThis.fetch = (input, init) => {
+        const request = new URL(typeof input === 'string' ? input : input.url, globalThis.location.href);
         if (/^\/(?:admin|local)\/articles\/[0-9a-f-]{36}\/export$/.test(request.pathname) &&
             request.searchParams.get('revision') === '1') {
           // Deliberately ignore AbortSignal to simulate a non-cooperative late transport.
           return new Promise(resolve => {
-            window.__m02ReleaseLateExport = () => resolve(new Response(exported.body, {
+            globalThis.__m02ReleaseLateExport = () => resolve(new Response(exported.body, {
               status: exported.status, headers: exported.headers,
             }));
           });
@@ -684,12 +684,12 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
     }, savedExport);
     try {
       await trigger.click();
-      await page.waitForFunction(() => typeof window.__m02ReleaseLateExport === 'function',
+      await page.waitForFunction(() => typeof globalThis.__m02ReleaseLateExport === 'function',
         null, { timeout: 8_000 });
       await page.locator('[name="body"]').fill(body + ' An unsaved late-response edit.');
       assert.equal(await view.isVisible(), false);
       await page.evaluate(async () => {
-        window.__m02ReleaseLateExport();
+        globalThis.__m02ReleaseLateExport();
         await new Promise(resolve => setTimeout(resolve, 0));
       });
       assert.equal(await view.locator('#m02-owner-body').textContent(), '',
@@ -698,9 +698,9 @@ test('M02 P1 pending export is invalidated by edits and session revocation', { t
       assert.equal(await trigger.isDisabled(), true, 'unsaved edits block a second preview');
     } finally {
       await page.evaluate(() => {
-        window.fetch = window.__m02NativeFetch;
-        delete window.__m02NativeFetch;
-        delete window.__m02ReleaseLateExport;
+        globalThis.fetch = globalThis.__m02NativeFetch;
+        delete globalThis.__m02NativeFetch;
+        delete globalThis.__m02ReleaseLateExport;
       });
     }
     await page.locator('[name="body"]').fill(body);

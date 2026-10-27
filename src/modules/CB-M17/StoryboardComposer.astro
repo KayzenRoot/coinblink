@@ -1,0 +1,68 @@
+---
+import {listLocalShotKinds,listLocalAspectRatios,listLocalStoryboardLimits} from "./storyboard-model.mjs";
+import modelUrl from "./storyboard-model.mjs?url&no-inline";
+import cssUrl from "./storyboard-composer.css?url&no-inline";
+import jsUrl from "./storyboard-composer.client.js?url&no-inline";
+const kinds=listLocalShotKinds();
+const ratios=listLocalAspectRatios();
+const limits=listLocalStoryboardLimits();
+---
+<main id="main" class="m17-lab" data-m17-root data-m17-model={modelUrl}>
+  <header class="m17-lab__intro">
+    <p class="m17-lab__tag">M17 · LOCAL SYNTHETIC · NOT ADMITTED · NO PROVIDER · NO MEDIA PRODUCED</p>
+    <h1>Local storyboard composer</h1>
+    <p>Plan a fictional sequence of shots for an invented story. CoinBlink renders nothing here:
+      there is no image model, no upload, no storage and no publication.</p>
+    <p class="m17-lab__halt" data-m17-halt>NOTHING PRODUCED · A generated plan is a private draft exercise, never authentic event imagery.</p>
+  </header>
+
+  <section class="m17-card" aria-labelledby="m17-brief-title">
+    <h2 id="m17-brief-title">Fictional brief</h2>
+    <p class="m17-card__hint">Title between {limits.minTitle} and {limits.maxTitle} characters. Claims of
+      authentic photography are refused.</p>
+    <div class="m17-field">
+      <label for="m17-title">Invented story title</label>
+      <input id="m17-title" type="text" data-m17-title maxlength={limits.maxTitle}
+        autocomplete="off" spellcheck="false" placeholder="A fictional explainer about custody" />
+    </div>
+    <div class="m17-field">
+      <label for="m17-ratio">Aspect ratio (illustrative only)</label>
+      <select id="m17-ratio" data-m17-ratio>
+        {ratios.map((ratio)=><option value={ratio}>{ratio}</option>)}
+      </select>
+    </div>
+  </section>
+
+  <section class="m17-card" aria-labelledby="m17-shots-title">
+    <h2 id="m17-shots-title">Fictional shots</h2>
+    <p class="m17-card__hint">Up to {limits.maxShots} shots. Caption between {limits.minCaption} and
+      {limits.maxCaption} characters. Allowed kinds: {kinds.join(", ")}.</p>
+    <div class="m17-compose">
+      <div class="m17-field">
+        <label for="m17-kind">Shot kind</label>
+        <select id="m17-kind" data-m17-kind>
+          {kinds.map((kind)=><option value={kind}>{kind}</option>)}
+        </select>
+      </div>
+      <div class="m17-field">
+        <label for="m17-caption">Shot caption</label>
+        <input id="m17-caption" type="text" data-m17-caption maxlength={limits.maxCaption}
+          autocomplete="off" spellcheck="false" placeholder="Illustrative diagram of fictional custody layers" />
+      </div>
+      <button type="button" data-m17-add>Add shot</button>
+    </div>
+    <ol class="m17-shots" data-m17-shots aria-label="Fictional storyboard shots"></ol>
+    <p class="m17-shots__empty" data-m17-shots-empty>No fictional shot added yet.</p>
+    <div class="m17-actions">
+      <button type="button" data-m17-plan>Plan storyboard</button>
+      <button type="button" data-m17-reset>Reset exercise</button>
+    </div>
+    <p class="m17-result" data-m17-result aria-live="polite" role="status">NOTHING PRODUCED · Add fictional shots, then plan them.</p>
+  </section>
+
+  <p class="m17-lab__note">Media prompt safety, person and brand rights, provider cost caps, render queues,
+    alt text, poster fallback and reduced motion remain unimplemented. A real M17 pipeline needs approved
+    providers, rights clearance, provenance, review and owner publication approval.</p>
+</main>
+<script is:inline type="module" src={jsUrl}></script>
+<link rel="stylesheet" href={cssUrl} />

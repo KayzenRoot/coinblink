@@ -59,6 +59,36 @@ for (const locale of ["en", "pt-br"]) {
     expect(scan.violations).toEqual([]);
   });
 }
+test("demo labs index reaches every laboratory from the shared journey", async ({ page }) => {
+  const foreign = [];
+  page.on("request", r => {
+    if (!r.url().startsWith("http://127.0.0.1:4321/") && !r.url().startsWith("data:")) foreign.push(r.url());
+  });
+  const response = await page.goto("/en");
+  expect(response?.status()).toBe(200);
+  const journey = page.getByRole("navigation", { name: "CoinBlink demo journey" });
+  const labsLink = journey.getByRole("link", { name: "Demo labs" });
+  await expect(labsLink).toBeVisible();
+  await labsLink.click();
+  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  await expect(page.getByRole("heading", { name: "CoinBlink demo labs" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "CoinBlink demo journey" })
+    .getByRole("link", { name: "Demo labs" })).toHaveAttribute("aria-current", "page");
+
+  const labLinks = page.locator(".labs__list a");
+  const listed = await labLinks.count();
+  expect(listed).toBeGreaterThanOrEqual(11);
+  const hrefs = await labLinks.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+  for (const href of hrefs) {
+    const lab = await page.goto(href);
+    expect(lab?.status(), `${href} must resolve`).toBe(200);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  }
+  expect(foreign).toEqual([]);
+  const scan = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+  expect(scan.violations).toEqual([]);
+});
 test("real Owner /admin remains blocked after local demo integration", async ({ page }) => {
   for (const route of ["/admin", "/admin/login", "/admin/articles"]) {
     const result = await page.goto(route);

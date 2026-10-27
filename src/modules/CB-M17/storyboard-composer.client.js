@@ -100,4 +100,9 @@ async function mount(){
   paintShots();
 }
 
-mount();
+mount().catch(()=>{
+  const result=grab("result");
+  if(result instanceof HTMLElement){
+    result.textContent="NOTHING PRODUCED · The local planner could not start.";
+  }
+});

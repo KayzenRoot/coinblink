@@ -126,6 +126,14 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     draftId: document.getElementById('draft-id'),
     save: document.getElementById('save'),
     exportDraft: document.getElementById('export-draft'),
+    ownerArticleTrigger: document.getElementById('m02-owner-article-trigger'),
+    ownerArticle: document.getElementById('m02-owner-article'),
+    ownerArticleTitle: document.getElementById('m02-owner-title'),
+    ownerArticleAuthor: document.getElementById('m02-owner-author'),
+    ownerArticleSummary: document.getElementById('m02-owner-summary'),
+    ownerArticleBody: document.getElementById('m02-owner-body'),
+    ownerArticleSource: document.getElementById('m02-owner-source'),
+    ownerArticleStatus: document.getElementById('m02-owner-status'),
     exportStatus: document.getElementById('export-status'),
     ownerReview: document.getElementById('owner-review'),
     ownerReviewDecision: document.getElementById('owner-review-decision'),
@@ -180,6 +188,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   let lastDrafts = [];
   let savedSnapshot = null;
   let exportAbortController = null;
+  let ownerArticleAbortController = null;
+  let ownerArticleGeneration = 0;
   let pendingSourceTransfer = null;
   let sourceTransferGeneration = 0;
   function clearMockSourceTransfer(status = 'No inspected fictional source report. No changes saved.') {
@@ -209,10 +219,28 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   function hasUnsavedChanges() {
     return !!csrf && !ui.form.hidden && savedSnapshot !== null && draftSnapshot() !== savedSnapshot;
   }
+  function clearOwnerArticle(status = '') {
+    // No persistence or cross-origin transfer of private saved article text.
+    ownerArticleGeneration += 1;
+    if (ownerArticleAbortController) ownerArticleAbortController.abort();
+    ownerArticleAbortController = null;
+    ui.ownerArticle.hidden = true;
+    for (const item of [ui.ownerArticleTitle, ui.ownerArticleAuthor,
+      ui.ownerArticleSummary, ui.ownerArticleBody, ui.ownerArticleSource]) {
+      item.textContent = '';
+    }
+    ui.ownerArticleStatus.textContent = status;
+  }
+  window.addEventListener('pagehide', () => clearOwnerArticle());
+  window.addEventListener('pageshow', () => clearOwnerArticle());
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) clearOwnerArticle();
+  });
   function showUnsavedChanges() {
     ui.unsaved.hidden = !hasUnsavedChanges();
     ui.exportDraft.disabled = !(csrf && !ui.form.hidden && ui.draftId.value &&
       !hasUnsavedChanges() && !ui.save.disabled);
+    ui.ownerArticleTrigger.disabled = ui.exportDraft.disabled;
   }
   function acceptSavedDraft() {
     savedSnapshot = draftSnapshot();
@@ -929,6 +957,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     renderLocalSocialChoices();
   }
   function clearLocalSession() {
+    clearOwnerArticle();
+    ui.ownerArticleTrigger.hidden = true;
     if (exportAbortController) exportAbortController.abort();
     exportAbortController = null;
     if (sessionExpiryTimer !== null) clearTimeout(sessionExpiryTimer);
@@ -1144,6 +1174,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     }
   });
   function editDraft(draft) {
+    clearOwnerArticle();
     clearMockSourceTransfer();
     clearMockResearchTransfer();
     ui.form.elements.namedItem('title').value = draft.title;
@@ -1156,6 +1187,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
     ui.save.textContent = 'Save new revision';
     ui.history.hidden = false;
     ui.exportDraft.hidden = false;
+    ui.ownerArticleTrigger.hidden = false;
     ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
     ui.historyList.replaceChildren();
     renderDraftPreview();
@@ -1164,6 +1196,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   }
   async function openLocalDraft(draft) {
     if (!csrf || ui.form.hidden || !confirmDraftDiscard()) return false;
+    clearOwnerArticle();
     if (exportAbortController) exportAbortController.abort();
     exportAbortController = null;
     const epoch = sessionEpoch;
@@ -1543,6 +1576,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   ui.approvalReason.addEventListener('input', () => { socialActionGeneration += 1; });
   ui.search.addEventListener('input', renderDraftList);
   ui.form.addEventListener('input', () => {
+    clearOwnerArticle();
     if (hasUnsavedChanges()) ui.ownerReviewSubmit.disabled = true;
     renderDraftPreview();
     if (exportAbortController && hasUnsavedChanges()) exportAbortController.abort();
@@ -1593,7 +1627,10 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       message(error instanceof Error ? error.message : 'Local test login failed');
     } finally { ui.login.disabled = false; }
   });
-  ui.refresh.addEventListener('click', () => refresh().catch(() => message('Could not refresh local drafts')));
+  ui.refresh.addEventListener('click', () => {
+    clearOwnerArticle();
+    return refresh().catch(() => message('Could not refresh local drafts'));
+  });
   ui.history.addEventListener('click', async () => {
     const id = ui.draftId.value;
     if (!id) return;
@@ -1608,6 +1645,79 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       message('Read-only revision history loaded: ' + revisions.length + ' versions');
     } catch { message('Could not load revision history'); }
   });
+  // The existing read-only export GET is the security and current-revision gate.
+  // The form's previously fetched saved fields render as inert text; no parser copy.
+  ui.ownerArticleTrigger.addEventListener('click', async () => {
+    clearOwnerArticle();
+    if (!csrf || ui.form.hidden || ui.ownerArticleTrigger.hidden ||
+        !ui.draftId.value || ui.save.disabled || hasUnsavedChanges()) {
+      ui.ownerArticleStatus.textContent = 'Save the current LOCAL revision before private preview.';
+      return;
+    }
+    const id = ui.draftId.value;
+    const revision = Number(ui.revision.value);
+    if (!Number.isSafeInteger(revision) || revision < 1) {
+      ui.ownerArticleStatus.textContent = 'Reload a saved LOCAL revision.';
+      return;
+    }
+    const epoch = sessionEpoch, generation = ownerArticleGeneration;
+    const openGeneration = draftOpenGeneration, snapshot = draftSnapshot();
+    const controller = new AbortController();
+    ownerArticleAbortController = controller;
+    ui.ownerArticleTrigger.disabled = true;
+    ui.ownerArticleStatus.textContent = 'Verifying saved LOCAL revision…';
+    try {
+      const response = await fetch('/local/articles/' + encodeURIComponent(id) +
+        '/export?revision=' + encodeURIComponent(String(revision)), {
+          method: 'GET', credentials: 'same-origin', cache: 'no-store',
+          headers: { Accept: 'text/markdown' }, signal: controller.signal,
+        });
+      if (response.status === 401) {
+        if (epoch === sessionEpoch && generation === ownerArticleGeneration) clearLocalSession();
+        return;
+      }
+      if (!response.ok) throw new Error('LOCAL saved revision unavailable');
+      const disposition = response.headers.get('content-disposition') || '';
+      const mime = response.headers.get('content-type') || '';
+      const cache = response.headers.get('cache-control') || '';
+      const length = Number(response.headers.get('content-length'));
+      if (!/^attachment;\s*filename="[a-z0-9]+(?:-[a-z0-9]+)*\.md"$/iu.test(disposition) ||
+          !/^text\/markdown;\s*charset=utf-8$/iu.test(mime) ||
+          !/\bno-store\b/iu.test(cache) ||
+          !Number.isSafeInteger(length) || length < 1 || length > 64000) {
+        throw new Error('Invalid canonical M05 export');
+      }
+      const markdown = await response.text();
+      if (new TextEncoder().encode(markdown).byteLength !== length) {
+        throw new Error('Invalid canonical export bytes');
+      }
+      // M05 server has already checked canonical format and exact D1 revision.
+      // Never duplicate its parser or send private text to a public M02 route.
+      if (controller.signal.aborted || epoch !== sessionEpoch ||
+          generation !== ownerArticleGeneration || openGeneration !== draftOpenGeneration ||
+          !csrf || ui.form.hidden || ui.ownerArticleTrigger.hidden ||
+          ui.draftId.value !== id || Number(ui.revision.value) !== revision ||
+          draftSnapshot() !== snapshot || hasUnsavedChanges()) return;
+      for (const [node, field] of [
+        [ui.ownerArticleTitle,'title'], [ui.ownerArticleAuthor,'authorLabel'],
+        [ui.ownerArticleSummary,'summary'], [ui.ownerArticleBody,'body'],
+        [ui.ownerArticleSource,'sourceUrl']]) {
+        node.textContent = ui.form.elements.namedItem(field).value.trim();
+      }
+      ui.ownerArticle.hidden = false;
+      ui.ownerArticleStatus.textContent = 'PRIVATE ARTICLE PREVIEW · NOT VERIFIED · NOT PUBLISHED';
+      ui.ownerArticleTitle.focus();
+    } catch (error) {
+      if (error?.name !== 'AbortError' && epoch === sessionEpoch &&
+          generation === ownerArticleGeneration) {
+        clearOwnerArticle('Private preview blocked. Reopen a saved LOCAL revision.');
+      }
+    } finally {
+      if (ownerArticleAbortController === controller) ownerArticleAbortController = null;
+      if (epoch === sessionEpoch && generation === ownerArticleGeneration) showUnsavedChanges();
+    }
+  });
+
   ui.exportDraft.addEventListener('click', async () => {
     if (!csrf || ui.form.hidden || !ui.draftId.value || ui.save.disabled || hasUnsavedChanges()) {
       ui.exportStatus.textContent = 'Save or discard pending form changes before exporting a persisted revision.';
@@ -1813,6 +1923,7 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
       ui.revision.value = String(result.revision);
       ui.save.textContent = 'Save new revision';
       ui.exportDraft.hidden = false;
+      ui.ownerArticleTrigger.hidden = false;
       ui.exportStatus.textContent = 'Export uses only the saved revision after your confirmation. Facts, rights and publication remain unverified.';
       acceptSavedDraft();
       await refresh();
@@ -1823,6 +1934,8 @@ export const LOCAL_CMS_UI_SCRIPT = String.raw`
   });
   document.getElementById('new-draft').addEventListener('click', () => {
     if (!confirmDraftDiscard()) return;
+    clearOwnerArticle();
+    ui.ownerArticleTrigger.hidden = true;
     clearMockSourceTransfer();
     clearMockResearchTransfer();
     draftOpenGeneration += 1;
@@ -2018,6 +2131,12 @@ ul{padding-left:20px}li{margin:6px 0}
 .m07-card-note{font-size:.85rem;font-weight:700}
 @media (max-width:430px){.m07-card{padding:14px}.m07-stage{padding:8px 0}}
 footer{padding:24px 0;color:#b9c8bd}
+.m02-owner-article{margin:16px 0;padding:clamp(16px,4vw,28px);background:#111c17;border:1px solid #597b64;border-radius:10px;max-width:55rem;overflow-wrap:anywhere}
+.m02-owner-article[hidden],#m02-owner-article-trigger[hidden]{display:none}
+.m02-owner-article h3{font-size:clamp(1.4rem,4vw,2.4rem);line-height:1.2;margin:10px 0}
+.m02-owner-article h3:focus{outline:3px solid #f7f6a5;outline-offset:3px}
+.m02-owner-article p{white-space:pre-wrap;overflow-wrap:anywhere}
+.m02-owner-warning{font-weight:700;color:#f5c981}
 </style>
 </head><body>
 <main>
@@ -2270,6 +2389,16 @@ footer{padding:24px 0;color:#b9c8bd}
 <ol id="owner-review-history" aria-label="Private immutable Owner review decisions"></ol></details>
 </section>
 <button id="export-draft" type="button" hidden disabled>Export saved revision to Markdown for M02</button>
+<button id="m02-owner-article-trigger" type="button" hidden disabled aria-describedby="m02-owner-status">Preview saved revision as article (LOCAL)</button>
+<p id="m02-owner-status" role="status" aria-live="polite"></p>
+<article id="m02-owner-article" class="m02-owner-article" aria-label="Private LOCAL M02-style editorial presentation" hidden>
+<p class="m02-owner-warning">PRIVATE ARTICLE PREVIEW · NOT VERIFIED · NOT PUBLISHED · RIGHTS NOT CLEARED</p>
+<h3 id="m02-owner-title" tabindex="-1"></h3>
+<p id="m02-owner-author"></p>
+<p id="m02-owner-summary"></p>
+<p id="m02-owner-body"></p>
+<p>Source provided, NOT VERIFIED: <span id="m02-owner-source"></span></p>
+</article>
 <p id="export-status" role="status" aria-live="polite"></p>
 <p id="unsaved-draft-status" role="status" aria-live="polite" hidden>Unsaved changes in this LOCAL draft.</p>
 <button id="history" type="button" hidden>View revision history</button>

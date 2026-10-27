@@ -554,3 +554,171 @@ test('M08 to M05 LOCAL Owner explicitly appends offline blockers to an unsaved b
     await preview.close();
   }
 });
+
+test('M02 P1 Owner article presentation is private, inert, saved-revision-only and scrubbed', { timeout: 120_000 }, async () => {
+  const cms = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = cms.page;
+    const trigger = page.locator('#m02-owner-article-trigger');
+    const article = page.locator('#m02-owner-article');
+    assert.equal(await trigger.isVisible(), false, 'anonymous visitor has no preview action');
+    assert.equal(await article.isVisible(), false);
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('LOCAL article <script>alert(1)</script>');
+    await page.locator('[name="summary"]').fill('Synthetic summary about a never-published draft.');
+    await page.locator('[name="body"]').fill('Long synthetic body with <img src=x onerror=alert(1)> safely represented as text in the article.');
+    await page.locator('[name="sourceUrl"]').fill('https://example.test/fictional');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    assert.equal(await trigger.isVisible(), false, 'unsaved draft cannot be presented');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    assert.equal(await trigger.isEnabled(), true);
+    const dbBefore = await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all();
+    await trigger.click();
+    await article.waitFor({ state: 'visible', timeout: 15_000 });
+    assert.equal(await article.locator('#m02-owner-title').textContent(), 'LOCAL article <script>alert(1)</script>');
+    assert.match(await article.locator('#m02-owner-body').textContent(), /<img src=x onerror=alert\(1\)>/u);
+    assert.equal(await article.locator('script,img,iframe').count(), 0, 'draft markup never becomes DOM');
+    assert.match(await article.innerText(), /NOT VERIFIED.*NOT PUBLISHED/u);
+    assert.deepEqual((await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all()).results, dbBefore.results, 'preview never writes D1');
+    await page.locator('[name="body"]').fill('Unsaved change should remove prior preview at once');
+    assert.equal(await article.isVisible(), false, 'unsaved form invalidates private preview');
+    assert.equal(await trigger.isDisabled(), true);
+    await page.locator('#logout').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor();
+    assert.equal(await article.isVisible(), false);
+    assert.equal(await article.locator('#m02-owner-body').textContent(), '', 'logout scrubs private body');
+    assert.equal(await trigger.isVisible(), false);
+    assert.deepEqual(cms.networkAttempts.filter(event => !event.allowed), [], 'no off-origin egress');
+  } finally {
+    await cms.close();
+  }
+});
+
+test('M02 P1 pending export is invalidated by edits and session revocation', { timeout: 150_000 }, async () => {
+  const cms = await startLocalCmsPreview({ headless: true, admin: true });
+  try {
+    const page = cms.page;
+    await page.locator('#login').click();
+    await page.getByText('Local test session active').waitFor({ timeout: 20_000 });
+    await page.locator('[name="title"]').fill('Private local editor race');
+    await page.locator('[name="summary"]').fill('A wholly synthetic editorial draft held by the local Owner.');
+    const body = 'This long fictional article remains private even when a read response arrives late.';
+    await page.locator('[name="body"]').fill(body);
+    await page.locator('[name="sourceUrl"]').fill('https://example.test/private-race');
+    await page.locator('[name="authorLabel"]').fill('Synthetic Owner');
+    await page.locator('#save').click();
+    await page.getByText('Saved LOCAL draft revision 1; not published').waitFor({ timeout: 20_000 });
+    const before = await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all();
+    let release;
+    let entered;
+    const intercepted = new Promise(resolve => { entered = resolve; });
+    const delayed = new Promise(resolve => { release = resolve; });
+    await page.route('**/*', async route => {
+      const requested = new URL(route.request().url());
+      if (requested.origin === 'https://owner.example.test' &&
+          /^\/(?:admin|local)\/articles\/[0-9a-f-]{36}\/export$/.test(requested.pathname) &&
+          requested.searchParams.get('revision') === '1') {
+        entered();
+        await delayed;
+        // The browser canceled this stale GET when the saved form changed.
+        // Do not forward an already canceled request to the LOCAL D1 fixture.
+        try { await route.abort('aborted'); } catch { /* already canceled */ }
+        return;
+      }
+      try { await route.fallback(); } catch { /* canceled fetch or disposed page */ }
+    });
+    const trigger = page.locator('#m02-owner-article-trigger');
+    const view = page.locator('#m02-owner-article');
+    let timeoutId;
+    try {
+      await trigger.click();
+      await Promise.race([
+        intercepted,
+        new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Expected LOCAL export request was not intercepted')), 8_000);
+        }),
+      ]);
+      await page.locator('[name="body"]').fill(body + ' An unsaved concurrent change.');
+      assert.equal(await view.isVisible(), false);
+      assert.equal(await trigger.isDisabled(), true);
+    } finally {
+      clearTimeout(timeoutId);
+      release();
+    }
+    await page.unrouteAll({ behavior: 'wait' });
+    assert.equal(await view.locator('#m02-owner-body').textContent(), '');
+    assert.equal(await view.isVisible(), false, 'aborted stale response cannot resurrect private text');
+    await page.locator('[name="body"]').fill(body);
+    assert.equal(await trigger.isEnabled(), true);
+    // Challenge the generation/snapshot guard independently of browser cancellation:
+    // replay a REAL authenticated D1 export after the editor has already changed.
+    const savedExport = await page.evaluate(async () => {
+      const id = globalThis.document.getElementById('draft-id').value;
+      const revision = globalThis.document.getElementById('revision').value;
+      const response = await fetch('/admin/articles/' + encodeURIComponent(id) +
+        '/export?revision=' + encodeURIComponent(revision), { credentials: 'same-origin' });
+      return { status: response.status, headers: [...response.headers.entries()],
+        body: await response.text() };
+    });
+    assert.equal(savedExport.status, 200, 'captured export must be a real authorized D1 read');
+    assert.ok(savedExport.headers.some(([name]) => name === 'content-length'),
+      'captured export must retain the byte-length security contract');
+    await page.evaluate(exported => {
+      const nativeFetch = globalThis.fetch.bind(globalThis);
+      globalThis.__m02NativeFetch = nativeFetch;
+      globalThis.fetch = (input, init) => {
+        const request = new URL(typeof input === 'string' ? input : input.url, globalThis.location.href);
+        if (/^\/(?:admin|local)\/articles\/[0-9a-f-]{36}\/export$/.test(request.pathname) &&
+            request.searchParams.get('revision') === '1') {
+          // Deliberately ignore AbortSignal to simulate a non-cooperative late transport.
+          return new Promise(resolve => {
+            globalThis.__m02ReleaseLateExport = () => resolve(new Response(exported.body, {
+              status: exported.status, headers: exported.headers,
+            }));
+          });
+        }
+        return nativeFetch(input, init);
+      };
+    }, savedExport);
+    try {
+      await trigger.click();
+      await page.waitForFunction(() => typeof globalThis.__m02ReleaseLateExport === 'function',
+        null, { timeout: 8_000 });
+      await page.locator('[name="body"]').fill(body + ' An unsaved late-response edit.');
+      assert.equal(await view.isVisible(), false);
+      await page.evaluate(async () => {
+        globalThis.__m02ReleaseLateExport();
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+      assert.equal(await view.locator('#m02-owner-body').textContent(), '',
+        'late valid D1 bytes must never resurrect the prior private article');
+      assert.equal(await view.isVisible(), false, 'stale response remains hidden');
+      assert.equal(await trigger.isDisabled(), true, 'unsaved edits block a second preview');
+    } finally {
+      await page.evaluate(() => {
+        globalThis.fetch = globalThis.__m02NativeFetch;
+        delete globalThis.__m02NativeFetch;
+        delete globalThis.__m02ReleaseLateExport;
+      });
+    }
+    await page.locator('[name="body"]').fill(body);
+    assert.equal(await trigger.isEnabled(), true);
+    await trigger.click();
+    await view.waitFor({ state: 'visible', timeout: 15_000 });
+    assert.match(await view.locator('#m02-owner-body').textContent(), /long fictional article remains private/u);
+    assert.deepEqual((await cms.db.prepare('SELECT id,revision,body FROM cms_drafts').all()).results,
+      before.results, 'all preview reads are read-only');
+    await cms.db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE revoked_at IS NULL')
+      .bind(Math.floor(Date.now() / 1000)).run();
+    await page.locator('#refresh').click();
+    await page.getByText('Not authenticated', { exact: true }).waitFor({ timeout: 15_000 });
+    assert.equal(await view.isVisible(), false);
+    assert.equal(await view.locator('#m02-owner-body').textContent(), '', 'revocation scrubs article');
+    assert.equal(await trigger.isVisible(), false);
+    assert.deepEqual(cms.networkAttempts.filter(q => !q.allowed), []);
+  } finally {
+    await cms.close();
+  }
+});

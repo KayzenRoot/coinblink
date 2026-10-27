@@ -46,55 +46,9 @@ jobs:
         shell: bash
         env:
           ECC_CODEQL_SARIF: ${{ runner.temp }}/ecc-codeql-${{ matrix.language }}
+        # The blocking decision comes from the tested gate module, which reads
+        # every result of every run. Only the printed summary is bounded, so a
+        # finding beyond the summary limit cannot pass the gate.
         run: |
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          files = sorted(Path(os.environ["ECC_CODEQL_SARIF"]).rglob("*.sarif"))
-          if not files:
-              raise SystemExit("BLOCKED: CodeQL returned no local SARIF evidence")
-          summary = []
-          ecc_findings = []
-          for file in files:
-              data = json.loads(file.read_text(encoding="utf-8"))
-              for run in data.get("runs", []):
-                  results = run.get("results", [])
-                  findings = [
-                          {
-                              "rule": result.get("ruleId"),
-                              "level": result.get("level"),
-                              "path": (
-                                  result.get("locations", [{}])[0]
-                                  .get("physicalLocation", {})
-                                  .get("artifactLocation", {})
-                                  .get("uri")
-                              ),
-                              "line": (
-                                  result.get("locations", [{}])[0]
-                                  .get("physicalLocation", {})
-                                  .get("region", {})
-                                  .get("startLine")
-                              ),
-                              "message": result.get("message", {}).get("text", "")[:180],
-                          }
-                          for result in results[:30]
-                      ]
-                  summary.append({
-                      "tool": run.get("tool", {}).get("driver", {}).get("name"),
-                      "results": len(results),
-                      "findings": findings,
-                  })
-                  ecc_findings.extend(
-                      item for item in findings
-                      if (item["path"] or "").startswith((
-                          "tools/benchmarks/ecc-coinblink/",
-                          ".agents/skills/ecc-",
-                          ".github/workflows/ecc-",
-                      ))
-                  )
-          print("ECC_CODEQL_READ_ONLY_SARIF=" + json.dumps(summary, sort_keys=True))
-          print("ECC_CODEQL_ECC_FINDINGS=" + json.dumps(ecc_findings, sort_keys=True))
-          if ecc_findings:
-              raise SystemExit("BLOCKED: CodeQL issues inside the ECC experiment")
-          PY
+          python3 tools/benchmarks/ecc-coinblink/validation/ecc_sarif_gate.py "$ECC_CODEQL_SARIF" \
+            | tee "$RUNNER_TEMP/ecc-codeql-gate-${{ matrix.language }}.log"

@@ -51,3 +51,12 @@ A primeira tentativa de `github/codeql-action` exigia `security-events: write` e
 ### Triage dos resultados CodeQL locais (PR #209)
 
 A análise read-only (sem SARIF upload) identificou inicialmente **10 achados**: Python 4, JavaScript/TypeScript 6. Apenas **2** estavam no escopo ECC: `py/unused-import` em `pilot/PrepareCodexPilot.py` (import `sys`) e `py/import-and-import-from` em `validation/test_codex_pilot_gate.py`. Ambos foram corrigidos sem alterar execução. Os **8 restantes**, em `assets/archive/m01/` e `test/modules/CB-M01/CB-M05/CB-M07/`, permanecem para triagem na construção principal; não são tratados silenciosamente como zero. O workflow agora **falha** se a análise SARIF local identificar um achado no escopo ECC, mas não muda código de módulos fora da PR. `success` do CodeQL indica análise concluída, não ausência global de achados; a severidade do campo SARIF era `null` nos resultados observados. O CodeQL da `main` continua sem comprovação de configuração oficial; nenhuma permissão de escrita foi liberada.
+
+### Correção do gate SARIF (2026-10-27)
+
+A revisão técnica apontou um falso negativo possível: o passo inline montava a lista de achados a partir de `results[:30]` e só então filtrava o escopo ECC, de modo que um achado no escopo a partir do índice 30 não bloquearia o job.
+
+- A decisão de bloqueio passou a considerar **todos** os resultados de todas as execuções e de todos os arquivos SARIF; apenas o resumo impresso é limitado a 30 itens.
+- Os caminhos são normalizados antes da checagem de escopo: esquema `file://`, caminho absoluto, `./`, segmentos `..` e separador invertido deixam de permitir que um achado ECC escape por prefixo. A correspondência é ancorada em segmento e, por escolha fail-closed, também aciona em ocorrência aninhada do diretório ECC.
+- A lógica saiu do YAML e virou o módulo `validation/ecc_sarif_gate.py`, chamado pelo workflow, para ser testável. `validation/test_ecc_sarif_gate.py` cobre achado ECC no índice 30 de 31, agregação multi-documento/multi-run, variantes de URI, caminhos fora de escopo, ausência de evidência e uma regressão que exige que o workflow não volte a truncar a decisão.
+- São adicionados dois workflows novos de escopo ECC (CodeQL experimental e validação offline); nenhum workflow existente da `main` é alterado.

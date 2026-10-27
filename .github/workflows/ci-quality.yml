@@ -73,6 +73,25 @@ jobs:
             'test/modules/CB-M04/*.test.mjs' \
             'test/modules/CB-M08/*.test.mjs' \
             'test/modules/CB-M10/*.test.mjs'
+      - name: Node contracts that no module workflow runs
+        # These files pass on main but no workflow executes them.
+        # session-binding-guard.test.mjs covers scripts/assert-no-session-binding.mjs
+        # (the build guard) and golden-assets-integrity.test.mjs pins the golden
+        # asset hashes. The four .contract.test.mjs files under test/modules/CB-M01
+        # read the CB-M01-WO-001 evidence bundle removed in 17586a2 (#141), so they
+        # cannot run here and are deliberately left untouched.
+        run: |
+          node --test \
+            test/golden-assets-integrity.test.mjs \
+            test/session-binding-guard.test.mjs \
+            test/modules/CB-M01/explorer-links.test.mjs \
+            test/modules/CB-M01/git-head.test.mjs \
+            test/modules/CB-M01/home-producer-boundary.test.mjs \
+            test/modules/CB-M01/learning-topics.test.mjs \
+            test/modules/CB-M01/official-sources.test.mjs \
+            test/modules/CB-M01/visual-input-state.test.mjs \
+            test/modules/CB-M01/visual-request-origin.test.mjs \
+            test/modules/CB-M01/visual-server.test.mjs
       - name: Upload coverage artifact for audit (no vendor token)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

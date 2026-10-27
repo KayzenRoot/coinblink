@@ -58,8 +58,11 @@ if(parts){
     if(!focusHint)return;
     const pick=(way)=>order.querySelector(
       '[data-m16-move="'+way+'"][data-m16-id="'+focusHint.id+'"]');
+    const opposite=focusHint.direction==="up"?"down":"up";
     const wanted=pick(focusHint.direction);
-    const target=wanted&&!wanted.disabled?wanted:pick(focusHint.direction==="up"?"down":"up");
+    const fallback=pick(opposite);
+    let target=wanted;
+    if(!wanted||wanted.disabled)target=fallback;
     target?.focus();
     focusHint=null;
   };

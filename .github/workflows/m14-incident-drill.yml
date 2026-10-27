@@ -1,0 +1,39 @@
+name: CoinBlink M14 fictitious incident response rehearsal (offline)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m14-incident-drill.yml"
+      - "src/modules/CB-M14/**"
+      - "src/pages/demo/incident-drill.astro"
+      - "test/modules/CB-M14/**"
+      - "e2e/m14-incident-drill.spec.mjs"
+      - "docs/product/CB-M14-P0-LOCAL-INCIDENT-DRILL-001.md"
+      - ".engineering/evidence/CB-M14-P0-LOCAL-INCIDENT-DRILL-001/**"
+permissions:
+  contents: read
+jobs:
+  safety:
+    name: M14 incident drill Node + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin Node.js 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked dependency install without scripts
+        run: npm ci --ignore-scripts
+      - name: M14 offline model and M11 safety regression
+        run: node --test test/modules/CB-M14/*.test.mjs test/modules/CB-M11/*.test.mjs
+      - name: Build Astro
+        run: npm run build
+      - name: Chromium install
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M14 keyboard axe privacy and M11 browser regression
+        run: ./node_modules/.bin/playwright test e2e/m14-incident-drill.spec.mjs e2e/m11-developer-demo.spec.mjs

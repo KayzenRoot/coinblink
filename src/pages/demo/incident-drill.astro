@@ -1,0 +1,9 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import IncidentDrill from "../../modules/CB-M14/IncidentDrill.astro";
+export const prerender = false;
+---
+<BaseLayout title="CoinBlink · Offline incident rehearsal (DEMO)"
+  description="Synthetic local-only incident response exercise. No real monitoring, credentials, alerts, security actions, or recovery.">
+  <IncidentDrill />
+</BaseLayout>

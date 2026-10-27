@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { buildSeoMetadata } from "../modules/CB-M09/site-locales.mjs";
 
 interface Props {
   title: string;
@@ -8,22 +9,40 @@ interface Props {
 }
 
 const { title, description, lang = "en" } = Astro.props;
+const seo = buildSeoMetadata({
+  pathname: Astro.url.pathname,
+  lang,
+  title,
+  description,
+  origin: import.meta.env.PUBLIC_SITE_ORIGIN,
+});
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={seo.lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
     <link rel="stylesheet" href="/local-journey.css" />
     <meta name="theme-color" content="#070e0c" />
-    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="robots" content={seo.robots} />
     <meta name="description" content={description} />
+    {seo.canonical && <link rel="canonical" href={seo.canonical} />}
+    {seo.alternates.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+    ))}
+    <meta property="og:type" content={seo.openGraph.type} />
+    <meta property="og:site_name" content={seo.openGraph.siteName} />
+    <meta property="og:title" content={seo.openGraph.title} />
+    <meta property="og:description" content={seo.openGraph.description} />
+    <meta property="og:locale" content={seo.openGraph.locale} />
+    {seo.openGraph.url && <meta property="og:url" content={seo.openGraph.url} />}
+    <meta name="twitter:card" content={seo.twitter.card} />
     <title>{title}</title>
   </head>
   <body>
-    <a class="skip-link" href="#main">{lang === "es" ? "Saltar al contenido" : lang === "pt-BR" ? "Pular para o conteúdo" : "Skip to content"}</a>
+    <a class="skip-link" href="#main">{seo.lang === "es" ? "Saltar al contenido" : seo.lang === "pt-BR" ? "Pular para o conteúdo" : "Skip to content"}</a>
     <slot />
   </body>
 </html>

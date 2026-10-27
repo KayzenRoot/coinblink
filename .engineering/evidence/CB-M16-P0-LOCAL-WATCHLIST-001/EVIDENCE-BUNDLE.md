@@ -3,21 +3,28 @@
 **Pinned main base:** `04d73c63080171215ca2297408b5f12e592222ee`. **Isolated branch:** `feat/cb-m16-p0-local-watchlist-001`.
 
 ## Context and boundary
-- Catalog Issue #23 and the long M16 Work Order stay `PLANNED / NOT_ADMITTED / NO CODE AUTHORIZED`. This increment is one bounded **LOCAL synthetic** watchlist preview only. It does not admit M16, does not create an alert service and does not touch production.
-- Owned paths only: `src/modules/CB-M16/**`, `src/pages/demo/watchlist.astro`, `test/modules/CB-M16/**`, `e2e/m16-local-watchlist.spec.mjs`, `.github/workflows/m16-local-watchlist.yml`, `docs/product/CB-M16-P0-LOCAL-WATCHLIST-001.md` and this bundle. No shared file, demo navigation, admin route, dependency, lockfile, workflow of another module, or other PR is modified.
+- Catalog Issue #23 and the long M16 Work Order stay `PLANNED / NOT_ADMITTED / NO CODE AUTHORIZED`. This is one bounded **LOCAL synthetic** watchlist preview. It does not admit M16, does not create an alert service and does not touch production.
+- The owned path set is listed in the Work Order document. No shared file, demo navigation, admin route, dependency, lockfile, workflow of another module or other PR is modified.
 
-## Product and security negative contract
-- `watchlist-model.mjs` exposes an immutable four-entry fictional catalog (`btc`, `eth`, `stable`, `index`) with `id` and `label` only, and a pure calculator that accepts distinct allowlisted ids plus a direction in `none|above|below`.
-- Every accepted input, including all four entries with a direction, returns `status=LOCAL_PREVIEW_ONLY`, `mode=LOCAL_SYNTHETIC`, `alertDelivery=NOT_CONFIGURED`, `alertsEnabled=false`, `notificationsSent=0`, `realTimeData=false`, `live=false`, `providerConnected=false`, `personalDataStored=false`, `accountRequired=false`, `pushEnabled=false`, `emailEnabled=false`, frozen `actions=[]` and a frozen copy of the selection.
-- Rejected inputs return `INVALID_PREVIEW` with no state: non-arrays, duplicates, unknown ids, `__proto__`, `constructor`, path-like values, wrong types, out-of-catalog extras, and any direction outside the allowlist.
-- `/demo/watchlist` renders the noindex BaseLayout demo with four native checkboxes, a native select, a polite status and a keyboard reset. The blocked banner is a static constant in markup. State is browser-only and clears on reset and reload.
-- Asserted absence in Node static contracts: no `fetch`, `XMLHttpRequest`, `sendBeacon`, `localStorage`, `sessionStorage`, `indexedDB`, `innerHTML`, `outerHTML`, `iframe`, `form`, e-mail or password field, `img`, `document.cookie`, `process.env`, `Notification`, `serviceWorker` or `/admin/api`.
+## Capability under test
+- Ordered list management: add a fictional entry, move it up or down, remove it, reset. The browser spec exercises the reorder through the keyboard (`focus` then `Enter`), because mouse-only coverage would miss the focus-restoration path.
+- Focus restoration is asserted explicitly: after an entry moves to the first position its `Move up` control becomes disabled, and focus must land on that entry's remaining enabled move control instead of falling back to the document body.
+
+## Negative contract
+- `watchlist-model.mjs` exposes an immutable four-entry catalog (`btc`, `eth`, `stable`, `index`) carrying `id` and `label` only, plus directions `none|above|below`.
+- `moveLocalWatchlistEntry` returns a new frozen array, or `null` at the edges, for an unknown id, for a non-allowlisted or duplicated order, and for an unsupported direction; the input is never mutated.
+- `buildLocalWatchlist` returns `LOCAL_PREVIEW_ONLY` with `alertDelivery=NOT_CONFIGURED`, `alertsEnabled=false`, `notificationsSent=0`, `realTimeData=false`, `live=false`, `providerConnected=false`, `personalDataStored=false`, `accountRequired=false`, `pushEnabled=false`, `emailEnabled=false`, `orderLocked=false` and frozen `actions=[]` for every accepted input, and `INVALID_PREVIEW` otherwise.
+- Asserted absence across shipped browser sources: no `fetch`, `XMLHttpRequest`, `sendBeacon`, `localStorage`, `sessionStorage`, `indexedDB`, `innerHTML`, `outerHTML`, `iframe`, `form`, e-mail or password field, `img`, `document.cookie`, `process.env`, `new Notification`, `Notification.requestPermission`, `serviceWorker` or `/admin/api`.
 
 ## Local verification performed
-- `node --test test/modules/CB-M16/*.test.mjs` — see the pull request for the recorded result.
+- `node --test test/modules/CB-M16/watchlist-model.test.mjs`: 5 contracts, all passing.
+- `npm run lint` (`--max-warnings=0`): clean. `npm run typecheck`: 0 errors, 0 warnings.
 - `npm run build` on Node 22.19.0.
-- `playwright test e2e/m16-local-watchlist.spec.mjs e2e/m04-market-demo.spec.mjs`: no third-party requests, no page-initiated non-GET request, no page errors, axe WCAG A/AA with zero violations, no horizontal overflow at 320/390/768/1366/1536 px, and `/admin` plus `/admin/login` denied.
-- Not performed: any real market feed, provider connection, alert delivery, account, personal data, consent record, deployment, D1 remote, paid service or production claim. Not verified by a separate human reviewer.
+- `playwright test e2e/m16-local-watchlist.spec.mjs e2e/m04-market-demo.spec.mjs`: 3 passed, with axe WCAG A/AA at zero violations, no horizontal overflow across the five widths, no third-party request, no page-initiated non-GET request, no page errors, and `/admin` plus `/admin/login` denied.
+- A first browser run failed and was correctly diagnosed as a stale build rather than a product defect; the spec was re-run after rebuilding.
+
+## Not performed
+Any real market feed, provider connection, alert delivery, account, personal data, consent record, deployment, remote D1, paid service or production claim. Not verified by a separate human reviewer.
 
 ## STOP
 PR remains Draft. Never Ready, merge, deploy, monitor a real market, deliver a real alert, spend, or use real data or credentials.

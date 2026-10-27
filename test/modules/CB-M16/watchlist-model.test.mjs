@@ -1,90 +1,89 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-const PATH="../../../src/modules/CB-M16/watchlist-model.mjs";
+const MODEL="../../../src/modules/CB-M16/watchlist-model.mjs";
 
-test("M16 P0 watchlist catalog is immutable and contains four bounded fictional entries",async()=>{
-  const {listLocalWatchlistAssets}=await import(PATH);
-  const assets=listLocalWatchlistAssets();
-  assert.equal(Object.isFrozen(assets),true);
-  assert.deepEqual(assets.map(x=>x.id),["btc","eth","stable","index"]);
-  for(const item of assets){
-    assert.ok(Object.isFrozen(item));
-    assert.deepEqual(Object.keys(item).sort(),["id","label"]);
-    assert.equal(typeof item.label,"string");
-    assert.ok(item.label.length>=12);
+const INVALID=Object.freeze({status:"INVALID_PREVIEW",preview:null});
+const DENIED_ORDERS=[null,undefined,true,{},12,"btc",["__proto__"],["../admin"],["btc","btc"],
+  ["btc",null],["btc",3],["btc","eth","stable","index","extra"],["constructor"],
+  ["https://external.invalid"]];
+const ALL_ORDERS=[["btc"],["index","stable"],["eth","btc","index"],["btc","eth","stable","index"]];
+const DIRECTIONS=["none","above","below"];
+
+test("M16 P0 catalog exposes four frozen entries carrying only an id and a label",async()=>{
+  const {listLocalWatchlistEntries}=await import(MODEL);
+  const entries=listLocalWatchlistEntries();
+  assert.equal(Object.isFrozen(entries),true);
+  assert.deepEqual(entries.map((entry)=>entry.id),["btc","eth","stable","index"]);
+  for(const entry of entries){
+    assert.equal(Object.isFrozen(entry),true);
+    assert.deepEqual(Object.keys(entry),["id","label"]);
+    assert.ok(entry.label.length>=20,`label too short: ${entry.label}`);
+    assert.doesNotMatch(entry.label,/https?:|\d{2,}/u);
   }
 });
 
-test("M16 P0 saved watchlist never enables delivery even with every entry and a direction set",async()=>{
-  const {buildLocalWatchlist}=await import(PATH);
-  const ids=["btc","eth","stable","index"];
-  for(const selected of [[],["btc"],["btc","eth"],ids]){
-    for(const threshold of ["none","above","below"]){
-      const result=buildLocalWatchlist(selected,threshold);
-      assert.ok(Object.isFrozen(result));
-      assert.equal(result.status,"LOCAL_PREVIEW_ONLY");
-      assert.equal(result.mode,"LOCAL_SYNTHETIC");
-      assert.equal(result.savedCount,selected.length);
-      assert.equal(result.savedTotal,4);
-      assert.equal(result.threshold,threshold);
-      assert.equal(result.alertDelivery,"NOT_CONFIGURED");
-      assert.equal(result.alertsEnabled,false);
-      assert.equal(result.notificationsSent,0);
-      assert.equal(result.realTimeData,false);
-      assert.equal(result.live,false);
-      assert.equal(result.providerConnected,false);
-      assert.equal(result.personalDataStored,false);
-      assert.equal(result.accountRequired,false);
-      assert.equal(result.pushEnabled,false);
-      assert.equal(result.emailEnabled,false);
-      assert.equal(result.actions.length,0);
-      assert.ok(Object.isFrozen(result.actions));
-      assert.deepEqual([...result.selected],selected);
-      assert.ok(Object.isFrozen(result.selected));
+test("M16 P0 allowed orderings and directions never produce a delivered alert",async()=>{
+  const {buildLocalWatchlist}=await import(MODEL);
+  for(const order of ALL_ORDERS){
+    for(const threshold of DIRECTIONS){
+      const preview=buildLocalWatchlist(order,threshold);
+      assert.equal(preview.status,"LOCAL_PREVIEW_ONLY");
+      assert.equal(preview.mode,"LOCAL_SYNTHETIC");
+      assert.equal(preview.threshold,threshold);
+      assert.deepEqual([...preview.entries],order);
+      assert.equal(preview.alertDelivery,"NOT_CONFIGURED");
+      for(const flag of ["orderLocked","alertsEnabled","realTimeData","live","providerConnected",
+        "personalDataStored","accountRequired","pushEnabled","emailEnabled"]){
+        assert.equal(preview[flag],false,`${flag} must stay false`);
+      }
+      assert.equal(preview.notificationsSent,0);
+      assert.deepEqual(preview.actions,[]);
+      for(const part of [preview.entries,preview.actions,preview])assert.equal(Object.isFrozen(part),true);
     }
   }
 });
 
-test("M16 P0 omitting the direction defaults to none and still cannot deliver",async()=>{
-  const {buildLocalWatchlist}=await import(PATH);
-  for(const result of [buildLocalWatchlist(["btc"]),buildLocalWatchlist(["btc"],undefined)]){
-    assert.equal(result.status,"LOCAL_PREVIEW_ONLY");
-    assert.equal(result.threshold,"none");
-    assert.equal(result.alertsEnabled,false);
-    assert.equal(result.notificationsSent,0);
+test("M16 P0 rejected orderings and directions fail closed without state",async()=>{
+  const {buildLocalWatchlist}=await import(MODEL);
+  for(const order of DENIED_ORDERS)assert.deepEqual(buildLocalWatchlist(order),INVALID);
+  for(const threshold of [null,"","ALERTS","above ",0,[],{},true,"ABOVE"]){
+    assert.deepEqual(buildLocalWatchlist(["btc"],threshold),INVALID);
   }
 });
 
-test("M16 P0 invalid selections, thresholds and duplicates fail closed with zero alert authority",async()=>{
-  const {buildLocalWatchlist}=await import(PATH);
-  const denied=Object.freeze({status:"INVALID_PREVIEW",preview:null});
-  const badSelections=[null,undefined,true,{},12,"btc",["__proto__"],["../admin"],
-    ["btc","btc"],["btc",null],["btc",3],["btc","eth","stable","index","extra"],
-    ["constructor"],["https://external.invalid"]];
-  for(const arg of badSelections)assert.deepEqual(buildLocalWatchlist(arg),denied);
-  for(const threshold of [null,"","ALERTS","above ",0,[],{},true]){
-    assert.deepEqual(buildLocalWatchlist(["btc"],threshold),denied);
+test("M16 P0 reordering swaps neighbours, refuses the edges and never mutates its input",async()=>{
+  const {moveLocalWatchlistEntry}=await import(MODEL);
+  const original=Object.freeze(["btc","eth","stable"]);
+  assert.deepEqual([...moveLocalWatchlistEntry(original,"eth","up")],["eth","btc","stable"]);
+  assert.deepEqual([...moveLocalWatchlistEntry(original,"eth","down")],["btc","stable","eth"]);
+  assert.equal(Object.isFrozen(moveLocalWatchlistEntry(original,"eth","up")),true);
+  assert.deepEqual([...original],["btc","eth","stable"],"input must not be mutated");
+  assert.equal(moveLocalWatchlistEntry(original,"btc","up"),null,
+    "moving the first entry up is refused instead of silently reordering");
+  assert.equal(moveLocalWatchlistEntry(original,"stable","down"),null);
+  for(const bad of [[original,"unknown","up"],[original,"eth","sideways"],[["btc","btc"],"btc","up"],
+    [null,"btc","up"],[[],"btc","up"],[original,null,"up"]]){
+    assert.equal(moveLocalWatchlistEntry(...bad),null,`must reject ${JSON.stringify(bad)}`);
   }
 });
 
-test("M16 P0 static browser contracts forbid accounts, persistence, delivery and privileged routing",()=>{
-  const page=readFileSync("src/modules/CB-M16/WatchlistPreview.astro","utf8");
-  const route=readFileSync("src/pages/demo/watchlist.astro","utf8");
-  const js=readFileSync("src/modules/CB-M16/watchlist-preview.client.js","utf8");
-  const css=readFileSync("src/modules/CB-M16/watchlist-preview.css","utf8");
+test("M16 P0 shipped browser sources keep the no-account, no-delivery boundary",()=>{
+  const sources=["src/modules/CB-M16/WatchlistPreview.astro","src/pages/demo/watchlist.astro",
+    "src/modules/CB-M16/watchlist-preview.client.js"];
+  const page=readFileSync(sources[0],"utf8");
+  const route=readFileSync(sources[1],"utf8");
+  const script=readFileSync(sources[2],"utf8");
+  const styles=readFileSync("src/modules/CB-M16/watchlist-preview.css","utf8");
   assert.match(route,/WatchlistPreview/u);
-  assert.match(page,/data-m16-asset/u);
-  assert.match(page,/data-m16-threshold/u);
-  assert.match(page,/data-m16-progress/u);
-  assert.match(page,/data-m16-status[^>]*aria-live="polite"/u);
+  assert.match(page,/data-m16-add=/u);
+  assert.match(page,/data-m16-order/u);
+  assert.match(page,/data-m16-verdict[^>]*aria-live="polite"/u);
   assert.match(page,/ALERTS DISABLED/u);
-  assert.match(page,/watchlist-preview\.client\.js\?url&no-inline/u);
-  assert.match(page,/watchlist-preview\.css\?url&no-inline/u);
-  assert.match(js,/data-m16-reset/u);
-  assert.match(js,/textContent/u);
-  assert.match(css,/:focus-visible/u);
-  for(const source of [page,route,js]){
-    assert.doesNotMatch(source,/fetch\s*\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|outerHTML|<iframe|<form|type="email"|type="password"|<img|document\.cookie|process\.env|new\s+Notification|Notification\.(?:requestPermission|permission)|serviceWorker|\/admin\/api/iu);
-  }
+  assert.match(page,/watchlist-preview\.(?:client\.js|css)\?url&no-inline/u);
+  assert.match(script,/textContent/u);
+  assert.match(script,/replaceChildren/u);
+  assert.match(styles,/focus-visible/u);
+  const forbidden=/fetch\s*\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|outerHTML|<iframe|<form|type="email"|type="password"|<img|document\.cookie|process\.env|new\s+Notification|Notification\.(?:requestPermission|permission)|serviceWorker|\/admin\/api/iu;
+  for(const source of sources)assert.doesNotMatch(readFileSync(source,"utf8"),forbidden);
 });

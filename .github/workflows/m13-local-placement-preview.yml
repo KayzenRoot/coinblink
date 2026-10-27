@@ -1,0 +1,39 @@
+name: CoinBlink M13 empty placement safety preview (offline)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m13-local-placement-preview.yml"
+      - "src/modules/CB-M13/**"
+      - "src/pages/demo/placements.astro"
+      - "test/modules/CB-M13/**"
+      - "e2e/m13-placement-preview.spec.mjs"
+      - "docs/product/CB-M13-P0-LOCAL-PLACEMENT-PREVIEW-001.md"
+      - ".engineering/evidence/CB-M13-P0-LOCAL-PLACEMENT-PREVIEW-001/**"
+permissions:
+  contents: read
+jobs:
+  safety:
+    name: M13 empty placement Node + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin Node 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Locked install without postinstall
+        run: npm ci --ignore-scripts
+      - name: M13 fictional contract and existing M11 API safety regression
+        run: node --test test/modules/CB-M13/*.test.mjs test/modules/CB-M11/*.test.mjs
+      - name: Astro build
+        run: npm run build
+      - name: Chromium install
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M13 accessibility privacy and M11 browser regression
+        run: ./node_modules/.bin/playwright test e2e/m13-placement-preview.spec.mjs e2e/m11-developer-demo.spec.mjs

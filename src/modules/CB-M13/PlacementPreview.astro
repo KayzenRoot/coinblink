@@ -1,0 +1,36 @@
+---
+import { listLocalPlacementContexts, buildLocalPlacementPreview } from "./placement-preview.mjs";
+import jsUrl from "./placement-preview.client.js?url&no-inline";
+import cssUrl from "./placement-preview.css?url&no-inline";
+const contexts=listLocalPlacementContexts();
+---
+<main id="main" class="m13-lab" data-m13-root>
+  <header class="m13-panel">
+    <p class="m13-flag">M13 · ILLUSTRATIVE · NO LIVE ADS · NO SPONSORS · NO REVENUE</p>
+    <h1>Local ad placement layout lab</h1>
+    <p>Explore empty layout reserves only. These placeholders are not advertisements,
+      sponsors, paid inventory, offers or approved content.</p>
+    <p>There are no pixels, impressions, clicks, audience measurements, tracking, booking,
+      outside scripts or money. Commercial M13 remains PLANNED and NOT ADMITTED.</p>
+  </header>
+  <section class="m13-panel" aria-labelledby="m13-context-title">
+    <h2 id="m13-context-title">ILLUSTRATIVE empty page layout</h2>
+    <label for="m13-context">Fictional publishing context</label>
+    <select id="m13-context" data-m13-context>
+      {contexts.map(context =>
+        <option value={context.id} data-m13-snapshot={JSON.stringify(buildLocalPlacementPreview(context.id))}>
+          {context.label} · {context.slotCount} empty spaces
+        </option>
+      )}
+    </select>
+    <button type="button" data-m13-reset>Reset layout</button>
+    <p data-m13-status aria-live="polite" role="status">2 empty illustrative spaces · NO LIVE ADS</p>
+    <ul class="m13-placeholder-grid" data-m13-card-list aria-label="Empty fictional advertising layout slots"></ul>
+  </section>
+  <p class="m13-notice">EMPTY PLACEHOLDER means no content and no endorsement.
+    This page is a private-style LOCAL educational mock, not a public advertising
+    offer. Sponsorship review, consumer disclosure, editorial separation and privacy
+    approvals are still required before any real advertising product exists.</p>
+</main>
+<script is:inline type="module" src={jsUrl}></script>
+<link rel="stylesheet" href={cssUrl} />

@@ -1,0 +1,25 @@
+/* No provider, no render, no publish. Isolated static M17 planning styling. */
+.m17-lab{width:min(78rem,100%);margin-inline:auto;padding:clamp(1rem,3vw,2.6rem) clamp(.75rem,3vw,2rem) 4rem;color:#e9f4ea}
+.m17-lab__intro{margin-bottom:1.4rem}
+.m17-lab__tag{margin:0 0 .5rem;font-size:.76rem;font-weight:800;letter-spacing:.08em;color:#a9e58c}
+.m17-lab h1{margin:.2rem 0 .6rem;font-size:clamp(1.6rem,4.4vw,2.45rem);line-height:1.2;overflow-wrap:anywhere}
+.m17-lab p{max-width:66ch;line-height:1.7;overflow-wrap:anywhere}
+.m17-lab__halt{margin:.9rem 0 0;padding:.85rem 1rem;border-left:6px solid #e0a888;background:#2f1d17;color:#ffddcc;font-weight:750}
+.m17-card{margin-block:1.1rem;padding:clamp(1rem,2.5vw,1.8rem);border:1px solid #54775f;border-radius:12px;background:#0f2118}
+.m17-card h2{margin:0 0 .5rem;font-size:clamp(1.1rem,2.4vw,1.45rem)}
+.m17-card__hint{margin:0 0 .9rem;color:#c8dccb;font-size:.94rem}
+.m17-field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem}
+.m17-field label{font-weight:700}
+.m17-field input,.m17-field select{min-height:2.75rem;padding:.4rem .6rem;border:1px solid #9fd285;border-radius:8px;background:#0a1710;color:#e9f4ea;font:inherit}
+.m17-field input:focus-visible,.m17-field select:focus-visible,.m17-lab button:focus-visible{outline:3px solid #edfdba;outline-offset:3px}
+.m17-compose{display:grid;gap:.5rem}
+@media (min-width:60rem){.m17-compose{grid-template-columns:14rem minmax(0,1fr) auto;align-items:end}}
+.m17-shots{display:grid;gap:.55rem;padding:0;margin:1rem 0 .4rem;list-style:none}
+.m17-shots>li{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;padding:.65rem .8rem;border:1px dashed #6f9a7b;border-radius:8px;background:#12261b}
+.m17-shots>li span{flex:1 1 18ch;overflow-wrap:anywhere}
+.m17-shots__empty{margin:.3rem 0 .8rem;color:#c2d6c5}
+.m17-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.6rem}
+.m17-lab button{min-height:2.75rem;padding:.5rem .9rem;border:1px solid #a6d88a;border-radius:8px;background:#d0f3aa;color:#122512;font:inherit;font-weight:750;cursor:pointer}
+.m17-lab button:focus-visible{outline:3px solid #edfdba;outline-offset:3px}
+.m17-result{margin:.9rem 0 0;padding:.7rem .9rem;border:1px solid #557a61;border-radius:8px;background:#0c1c13;font-weight:700;overflow-wrap:anywhere}
+.m17-lab__note{max-width:76ch;line-height:1.75;overflow-wrap:anywhere}

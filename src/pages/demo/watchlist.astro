@@ -1,0 +1,9 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WatchlistPreview from "../../modules/CB-M16/WatchlistPreview.astro";
+export const prerender = false;
+---
+<BaseLayout title="CoinBlink · Fictional local watchlist preview (DEMO)"
+  description="Local synthetic watchlist educational preview. It cannot monitor markets or deliver alerts.">
+  <WatchlistPreview />
+</BaseLayout>

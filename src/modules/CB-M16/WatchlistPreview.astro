@@ -1,0 +1,46 @@
+---
+import {listLocalWatchlistAssets} from "./watchlist-model.mjs";
+import cssUrl from "./watchlist-preview.css?url&no-inline";
+import jsUrl from "./watchlist-preview.client.js?url&no-inline";
+const assets=listLocalWatchlistAssets();
+---
+<main id="main" class="m16-lab" data-m16-root>
+  <header class="m16-panel">
+    <p class="m16-label">M16 · LOCAL SYNTHETIC · NOT ADMITTED · NO ACCOUNT · NO LIVE ALERTS</p>
+    <h1>Local watchlist preview</h1>
+    <p>Explore how a future watchlist could look. Every entry below is fictional and nothing
+      is monitored, priced, delivered or stored.</p>
+    <p class="m16-block">ALERTS DISABLED · This preview can never notify, email, push or trade.</p>
+  </header>
+  <section class="m16-panel" aria-labelledby="m16-list-title">
+    <h2 id="m16-list-title">Practice watchlist only</h2>
+    <p class="m16-help">Selections are illustrative and disappear on reset or reload.
+      No preference is saved and no Market, News or CMS record is read or changed.</p>
+    <ul class="m16-items" aria-label="Four fictional watchlist entries">
+      {assets.map(asset=>
+        <li>
+          <label>
+            <input type="checkbox" value={asset.id} data-m16-asset />
+            <span>{asset.label}</span>
+          </label>
+        </li>
+      )}
+    </ul>
+    <label class="m16-threshold">
+      <span>Practice alert direction (never delivered)</span>
+      <select data-m16-threshold>
+        <option value="none">No direction</option>
+        <option value="above">Notionally above a fictional level</option>
+        <option value="below">Notionally below a fictional level</option>
+      </select>
+    </label>
+    <p data-m16-progress>0 of 4 practice entries saved in this session.</p>
+    <p data-m16-status aria-live="polite" role="status">ALERTS DISABLED · NOT_CONFIGURED · Nothing is monitored or delivered.</p>
+    <button type="button" data-m16-reset>Reset practice watchlist</button>
+  </section>
+  <p class="m16-footnote">There is no account, login, personal data, consent record, provider connection,
+    live price, notification, email, push channel, tag or trading action. A real watchlist needs separate
+    documented owner decisions, privacy and consent review, provider licensing and change controls.</p>
+</main>
+<script is:inline type="module" src={jsUrl}></script>
+<link rel="stylesheet" href={cssUrl} />

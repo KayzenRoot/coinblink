@@ -1,0 +1,39 @@
+name: CoinBlink M15 offline launch readiness checklist
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m15-local-launch-checklist.yml"
+      - "src/modules/CB-M15/**"
+      - "src/pages/demo/launch-readiness.astro"
+      - "test/modules/CB-M15/**"
+      - "e2e/m15-local-launch-checklist.spec.mjs"
+      - "docs/product/CB-M15-P0-LOCAL-LAUNCH-CHECKLIST-001.md"
+      - ".engineering/evidence/CB-M15-P0-LOCAL-LAUNCH-CHECKLIST-001/**"
+permissions:
+  contents: read
+jobs:
+  safety:
+    name: M15 blocked local checklist Node + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin Node 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install locked dependencies without install scripts
+        run: npm ci --ignore-scripts
+      - name: M15 forbidden release authority and M11 existing safety
+        run: node --test test/modules/CB-M15/*.test.mjs test/modules/CB-M11/*.test.mjs
+      - name: Build Astro
+        run: npm run build
+      - name: Install Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M15 checklist and M11 existing browser regression
+        run: ./node_modules/.bin/playwright test e2e/m15-local-launch-checklist.spec.mjs e2e/m11-developer-demo.spec.mjs

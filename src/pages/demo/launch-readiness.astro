@@ -1,0 +1,9 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LocalLaunchChecklist from "../../modules/CB-M15/LocalLaunchChecklist.astro";
+export const prerender = false;
+---
+<BaseLayout title="CoinBlink · Fictional local launch readiness (DEMO)"
+  description="Local synthetic launch checklist educational simulation. Cannot approve or launch a production release.">
+  <LocalLaunchChecklist />
+</BaseLayout>

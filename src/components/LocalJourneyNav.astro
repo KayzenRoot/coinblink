@@ -1,7 +1,7 @@
 ---
 interface Props {
   locale?: "en" | "pt-br";
-  current: "home" | "news" | "sources" | "markets" | "research" | "newsletter" | "editorial";
+  current: "home" | "news" | "sources" | "markets" | "research" | "newsletter" | "editorial" | "labs";
 }
 const { locale = "en", current } = Astro.props;
 const pt = locale === "pt-br";
@@ -13,6 +13,7 @@ const entries = [
   { key: "research", href: "/demo/research", label: pt ? "Pesquisa demonstrativa (EN)" : "Research lab" },
   { key: "newsletter", href: "/demo/newsletter", label: pt ? "Boletim demonstrativo (EN)" : "Newsletter lab" },
   { key: "editorial", href: "/demo/editorial/articles", label: pt ? "Editor demonstrativo (EN)" : "Editorial demo" },
+  { key: "labs", href: "/demo", label: pt ? "Laboratórios demo (EN)" : "Demo labs" },
 ];
 ---
 <nav class="cb-local-journey" aria-label={pt ? "Jornada demonstrativa CoinBlink" : "CoinBlink demo journey"} data-journey-nav data-journey-locale={locale}>

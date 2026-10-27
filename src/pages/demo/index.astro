@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
+export const prerender = false;
+const labs = [
+  { href: "/demo/sources", label: "Source lab", detail: "Fictional provenance and eligibility, no ingestion (M03)." },
+  { href: "/demo/markets", label: "Market lab", detail: "Fictional market readiness, never live quotes (M04)." },
+  { href: "/demo/research", label: "Research lab", detail: "Fictional evidence triage, no briefing model (M08)." },
+  { href: "/demo/newsletter", label: "Newsletter lab", detail: "Unsent digest exercise, no mailing list (M10)." },
+  { href: "/demo/editorial/articles", label: "Editorial demo", detail: "Synthetic editor shell, no publication (M05)." },
+  { href: "/demo/api-usage", label: "API usage lab", detail: "Fictional request allowance, no entitlement (M12)." },
+  { href: "/demo/placements", label: "Placement lab", detail: "Empty advertising layout, no sponsor (M13)." },
+  { href: "/demo/incident-drill", label: "Incident drill", detail: "Offline incident rehearsal, no live systems (M14)." },
+  { href: "/demo/launch-readiness", label: "Launch readiness", detail: "Practice checklist, permanently release blocked (M15)." },
+  { href: "/demo/watchlist", label: "Watchlist", detail: "Fictional ordered watchlist, no alerts delivered (M16)." },
+  { href: "/demo/storyboard", label: "Storyboard", detail: "Fictional shot planning, no media produced (M17)." },
+];
+---
+<BaseLayout
+  title="CoinBlink · Demo labs index (DEMO)"
+  description="Index of local synthetic demo labs. Every lab is offline, fictional and unpublished."
+>
+  <LocalJourneyNav current="labs" />
+  <main id="main" class="labs">
+    <header class="labs__intro">
+      <p class="labs__tag">DEMO ONLY · LOCAL SYNTHETIC · NO LIVE DATA · NO PUBLICATION</p>
+      <h1>CoinBlink demo labs</h1>
+      <p>Every laboratory below is a local, offline exercise: invented content, no provider connection,
+        no account, no payment and nothing published. Open one to try it.</p>
+    </header>
+    <nav class="labs__list" aria-label="Demo laboratories">
+      <ul>
+        {labs.map((lab) => (
+          <li>
+            <a href={lab.href}>{lab.label}</a>
+            <span>{lab.detail}</span>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <p class="labs__note">No lab reads live prices, sends a message, stores personal data, calls a provider
+      or unlocks the protected admin route. Real CoinBlink features need separate documented decisions,
+      provider licensing, security review and owner approval.</p>
+  </main>
+</BaseLayout>

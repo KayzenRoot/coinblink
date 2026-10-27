@@ -1,0 +1,58 @@
+name: CoinBlink security analysis
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+# Read-only by default. CodeQL runs with upload disabled, so no security-events
+# permission is requested at all: findings stay in the run log of this workflow.
+permissions:
+  contents: read
+concurrency:
+  group: security-analysis-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    name: Security gate contracts (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin Node 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+      - name: Prove the findings gate before trusting it on real analysis
+        run: node --test test/security/*.test.mjs
+  codeql:
+    name: CodeQL / ${{ matrix.language }}
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python]
+    steps:
+      - name: Checkout without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL without any upload
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+          # Both languages are interpreted, so no build is required and the job
+          # stays fast without installing project dependencies.
+          build-mode: none
+      - name: Analyze the checkout locally
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
+        with:
+          upload: never
+          output: ${{ runner.temp }}/codeql-${{ matrix.language }}
+      - name: Gate on untriaged high or critical findings
+        run: node scripts/security/codeql-findings-gate.mjs "${RUNNER_TEMP}/codeql-${{ matrix.language }}"

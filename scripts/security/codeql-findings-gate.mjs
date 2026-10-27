@@ -25,7 +25,7 @@ function sarifFiles(root) {
     }
   };
   walk(root);
-  return found.sort();
+  return found.sort((a, b) => a.localeCompare(b));
 }
 
 /** Severity per rule, from the tool metadata, tolerating a missing or odd value. */
@@ -43,7 +43,7 @@ function severityByRule(document) {
 
 function normalizePath(uri) {
   if (typeof uri !== "string" || uri === "") return "";
-  let value = uri.replace(/\\/gu, "/");
+  let value = uri.replaceAll("\\", "/");
   value = value.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//u, "");
   value = value.split("?")[0].split("#")[0];
   if (/^[A-Za-z]:\//u.test(value)) value = value.slice(2);
@@ -76,32 +76,45 @@ export function relativeToRepo(path, repoRoot) {
   return path.startsWith(prefix) ? path.slice(prefix.length) : path;
 }
 
+function findingsOfRun(run, severities, repoRoot) {
+  const found = [];
+  for (const result of run.results ?? []) {
+    const { path, line } = location(result);
+    const severity = severities.get(result.ruleId);
+    found.push({
+      rule: result.ruleId ?? null,
+      level: result.level ?? null,
+      severity: Number.isFinite(severity) ? severity : null,
+      path: relativeToRepo(path, repoRoot),
+      line: Number.isInteger(line) ? line : null,
+    });
+  }
+  return found;
+}
+
+function loadDocuments(files) {
+  const documents = [];
+  for (const file of files) {
+    try {
+      documents.push({ file, document: JSON.parse(readFileSync(file, "utf8")) });
+    } catch (error) {
+      throw new Error(`BLOCKED: unreadable SARIF evidence at ${file}: ${error.message}`, { cause: error });
+    }
+  }
+  return documents;
+}
+
 export function readFindings(root, { repoRoot = process.cwd() } = {}) {
   const files = sarifFiles(root);
   if (files.length === 0) throw new Error("BLOCKED: CodeQL returned no local SARIF evidence");
   const findings = [];
   let resultCount = 0;
-  for (const file of files) {
-    let document;
-    try {
-      document = JSON.parse(readFileSync(file, "utf8"));
-    } catch (error) {
-      throw new Error(`BLOCKED: unreadable SARIF evidence at ${file}: ${error.message}`, { cause: error });
-    }
+  for (const { document } of loadDocuments(files)) {
     const severities = severityByRule(document);
     for (const run of document.runs ?? []) {
-      for (const result of run.results ?? []) {
-        resultCount += 1;
-        const { path, line } = location(result);
-        const severity = severities.get(result.ruleId);
-        findings.push({
-          rule: result.ruleId ?? null,
-          level: result.level ?? null,
-          severity: Number.isFinite(severity) ? severity : null,
-          path: relativeToRepo(path, repoRoot),
-          line: Number.isInteger(line) ? line : null,
-        });
-      }
+      const runFindings = findingsOfRun(run, severities, repoRoot);
+      resultCount += runFindings.length;
+      findings.push(...runFindings);
     }
   }
   // Highest severity first, then a stable order so the summary is reproducible.

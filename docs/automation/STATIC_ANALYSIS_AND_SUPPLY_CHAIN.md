@@ -6,12 +6,22 @@
 |---|---|---|---|
 | CodeQL (JavaScript/TypeScript and Python) | `.github/workflows/security-analysis.yml` | Untriaged high or critical static-analysis findings never reach `main` unnoticed | Free for public repositories |
 | Findings gate contracts | same workflow, `contracts` job | The gate itself is tested before it is trusted on real analysis | Free (no install, Node built-ins only) |
-| Dependency review | same workflow, `dependency-review` job | A pull request cannot introduce a dependency with a known high-severity advisory | Free |
 | Gitleaks | `.github/workflows/ci-quality.yml` | No hardcoded secret in the commit history | Free, no license key on a personal public repo |
 | SonarCloud | analysis of each pull request | Quality gate on new code | Free for public repositories |
 | Socket | project and pull-request reports | Dependency risk and supply-chain signals | Free tier |
 
 Nothing in these workflows requires a paid plan, a vendor token, a self-hosted runner or a stored secret.
+
+## Two free checks that are not wired up, and why
+
+Both were attempted and removed after the repository refused them, rather than left as permanently red statuses:
+
+- **Dependency review** (`actions/dependency-review-action`) fails closed with *"Dependency review is not supported on this repository. Please ensure that Dependency graph is enabled."* The Dependency graph is a free repository setting, currently off. Enabling it in Settings → Security analysis is a one-click owner action; the job can be added back afterwards.
+- **`npm audit --audit-level=high`** as a blocking gate is not viable today: it reports two high-severity advisories in `zod@4.6.5`, a transitive dependency of `astro@7.3.8` (`zod: ^4.6.5`). `npm audit fix` does not resolve them and `--force` would install incompatible versions, so the gate would be red on every pull request until upstream allows a safe bump. Tracked separately instead of blocking work.
+
+## No scheduled trigger
+
+The workflow runs on pull requests and on pushes to `main` only. A weekly schedule was written first and removed because this repository's own scope guard classifies scheduled or deployment triggers as elevated: *"Elevated workflow blocked: … scheduled/deployment workflow trigger requires separate authorization"*. Re-adding a cron baseline is an owner decision, not a CI detail.
 
 ## Why CodeQL runs without upload
 

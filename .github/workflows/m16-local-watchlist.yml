@@ -1,0 +1,39 @@
+name: CoinBlink M16 local watchlist preview
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/m16-local-watchlist.yml"
+      - "src/modules/CB-M16/**"
+      - "src/pages/demo/watchlist.astro"
+      - "test/modules/CB-M16/**"
+      - "e2e/m16-local-watchlist.spec.mjs"
+      - "docs/product/CB-M16-P0-LOCAL-WATCHLIST-001.md"
+      - ".engineering/evidence/CB-M16-P0-LOCAL-WATCHLIST-001/**"
+permissions:
+  contents: read
+jobs:
+  safety:
+    name: M16 no-alert watchlist Node + Chromium (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin Node 22.19.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Install locked dependencies without install scripts
+        run: npm ci --ignore-scripts
+      - name: M16 no-delivery contracts and M04 existing market safety
+        run: node --test test/modules/CB-M16/*.test.mjs 'test/modules/CB-M04/*.test.mjs'
+      - name: Build Astro
+        run: npm run build
+      - name: Install Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: M16 watchlist and M04 existing market browser regression
+        run: ./node_modules/.bin/playwright test e2e/m16-local-watchlist.spec.mjs e2e/m04-market-demo.spec.mjs

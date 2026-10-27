@@ -1,0 +1,24 @@
+/* No monitoring, no delivery. Isolated static M16 ordered-watchlist styling. */
+.m16-lab{display:grid;gap:0;width:min(72rem,100%);margin-inline:auto;padding:clamp(1rem,3vw,2.5rem) clamp(.75rem,3vw,2rem) 4rem;color:#e6f2e7}
+.m16-panel{padding:clamp(1rem,2.6vw,1.9rem);border:1px solid #5d7f68;border-radius:14px;margin-block:1.1rem;background:linear-gradient(180deg,#12241a,#0e1c14)}
+.m16-panel h1{margin:.35rem 0;font-size:clamp(1.65rem,4.6vw,2.5rem);line-height:1.22;overflow-wrap:anywhere}
+.m16-panel h2{margin:.2rem 0 .6rem;font-size:clamp(1.15rem,2.6vw,1.5rem)}
+.m16-panel p{max-width:62ch;line-height:1.7;overflow-wrap:anywhere}
+.m16-label{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.06em;color:#bfe9a4;text-transform:uppercase}
+.m16-block{margin:.9rem 0;padding:.9rem 1rem;border:2px dashed #dfa98f;border-radius:10px;background:#331c16;color:#ffdfd0;font-weight:750}
+.m16-help{color:#cfdfd2}
+.m16-catalog{display:grid;gap:.7rem;padding:0;margin:1rem 0;list-style:none}
+@media (min-width:52rem){.m16-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.m16-catalog__item{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem .9rem;border:1px solid #4f6f5c;border-radius:10px;background:#0f2017}
+.m16-catalog__item span{min-width:12ch;overflow-wrap:anywhere}
+.m16-order{display:grid;gap:.6rem;padding:0;margin:1rem 0;list-style:none;counter-reset:entry}
+.m16-order>li{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.7rem .9rem;border-left:4px solid #a7e07b;border-radius:8px;background:#132519;counter-increment:entry}
+.m16-order>li::before{content:counter(entry) ".";font-weight:800;color:#a7e07b}
+.m16-order>li span{flex:1 1 14ch;overflow-wrap:anywhere}
+.m16-empty{margin:.4rem 0;color:#c3d6c6}
+.m16-direction{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin:1rem 0;line-height:1.6}
+.m16-lab button{min-height:2.75rem;padding:.5rem .85rem;border:1px solid #a9d78d;border-radius:8px;background:#cdf2a6;color:#132510;font:inherit;font-weight:750;cursor:pointer}
+.m16-lab button[disabled]{background:#2b3b2f;border-color:#43614d;color:#93a899;cursor:not-allowed}
+.m16-lab button:focus-visible,.m16-lab select:focus-visible,.m16-lab li:focus-visible{outline:3px solid #eafcb4;outline-offset:3px}
+.m16-direction select{min-height:2.75rem;padding:.35rem .6rem;border:1px solid #a9d78d;border-radius:8px;background:#0c1a12;color:#e6f2e7;font:inherit}
+.m16-footnote{max-width:74ch;line-height:1.75;overflow-wrap:anywhere}

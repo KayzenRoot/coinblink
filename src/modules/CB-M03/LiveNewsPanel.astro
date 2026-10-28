@@ -1,0 +1,114 @@
+---
+import { LIVE_NEWS_SOURCES, LIVE_NEWS_WINDOW_SECONDS } from "./rss-sources.mjs";
+import { readLiveNews } from "./live-news.mjs";
+interface Props { snapshot: Awaited<ReturnType<typeof readLiveNews>>; }
+const { snapshot } = Astro.props;
+const live = snapshot.status === "LIVE_HEADLINES";
+const stamp = (iso: string | null) =>
+  iso === null ? "TIME NOT SUPPLIED BY THE FEED" : iso.slice(0, 16).replace("T", " ") + " UTC";
+const feedCount = LIVE_NEWS_SOURCES.length;
+---
+<main id="main" class="m03-live">
+  <nav aria-label="News demonstration"><a href="/demo/sources">← Source lab</a></nav>
+  <header>
+    <p class="m03-live__tag">CB-M03 · LIVE RSS · KEYLESS · DEMO ONLY</p>
+    <h1>Live headlines from public feeds</h1>
+    <p>This page reads {feedCount} public RSS feeds and shows the newest headline, a short excerpt,
+      the publisher and a link to the original article. It stores nothing, keeps no full article
+      text, never republishes a feed and never claims the reporting as its own.</p>
+  </header>
+
+  {snapshot.status === "DISABLED" && (
+    <section class="m03-live__state" role="status" data-m03-live="disabled">
+      <h2>LIVE NEWS DISABLED</h2>
+      <p>No request was made. Live headlines are off because this deployment has not enabled them.</p>
+      <p class="m03-live__note">The source lab remains synthetic and offline. Enabling this page is a
+        single deployment variable, not a code change.</p>
+    </section>
+  )}
+
+  {snapshot.status === "UNAVAILABLE" && (
+    <section class="m03-live__state" role="status" data-m03-live="unavailable">
+      <h2>LIVE NEWS UNAVAILABLE</h2>
+      <p>Reason: <code>{snapshot.reason}</code>. No headline is shown rather than a stale or invented one.</p>
+      <p class="m03-live__note">Each feed fails alone. A timeout, an HTTP error or an empty document is
+        reported here instead of being guessed around.</p>
+    </section>
+  )}
+
+  {live && (
+    <section class="m03-live__state" aria-labelledby="m03-live-latest" data-m03-live="live">
+      <h2 id="m03-live-latest">Newest headlines</h2>
+      <p class="m03-live__warning">THIRD-PARTY HEADLINES · ATTRIBUTION ONLY · NO FULL TEXT · NO REPUBLICATION · NOT AN ENDORSEMENT</p>
+      <p class="m03-live__meta" role="status" aria-live="polite">Collected at {stamp(snapshot.collectedAt)} · {snapshot.itemCount} headlines
+        from {snapshot.sourcesRead} of {feedCount} feeds · refreshed at most every {LIVE_NEWS_WINDOW_SECONDS / 60} minutes.</p>
+      <ol class="m03-live__list">
+        {snapshot.items.map((item: { id: string; title: string; summary: string; link: string; sourceId: string;
+          sourceName: string; sourceHome: string; publishedAt: string | null }) => (
+          <li class="m03-live__item" data-m03-live-item={item.sourceId}>
+            <h3 class="m03-live__headline">
+              <a href={item.link} rel="noreferrer noopener external">{item.title}</a>
+            </h3>
+            {item.summary !== "" && <p class="m03-live__summary">{item.summary}</p>}
+            <p class="m03-live__byline">
+              <a href={item.sourceHome} rel="noreferrer noopener external">{item.sourceName}</a>
+              <span aria-hidden="true"> · </span>
+              <time datetime={item.publishedAt ?? undefined}>{stamp(item.publishedAt)}</time>
+            </p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )}
+
+  {snapshot.sources.length > 0 && (
+    <section class="m03-live__feeds" aria-labelledby="m03-live-feeds">
+      <h2 id="m03-live-feeds">Feed status in this collection</h2>
+      <table>
+        <caption>Every whitelisted publisher and what this collection received from it</caption>
+        <thead>
+          <tr><th scope="col">Publisher</th><th scope="col">Status</th><th scope="col">Headlines</th><th scope="col">Reason</th></tr>
+        </thead>
+        <tbody>
+          {snapshot.sources.map((source: { id: string; name: string; home: string; status: string;
+            reason: string | null; itemCount: number }) => (
+            <tr data-m03-live-source={source.id}>
+              <th scope="row"><a href={source.home} rel="noreferrer noopener external">{source.name}</a></th>
+              <td>{source.status}</td>
+              <td>{source.itemCount}</td>
+              <td>{source.reason ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  )}
+
+  <p class="m03-live__note">Headlines belong to their publishers. CoinBlink links to the original
+    article and shows no more than the feed supplies. Nothing here creates a licence, a subscription
+    or a republication right, and the synthetic newsroom remains the default.</p>
+</main>
+<style>
+  .m03-live{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .m03-live a{color:#b8f34b}
+  .m03-live h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .m03-live p{line-height:1.75;color:#c1d3c5}
+  .m03-live__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .m03-live__state{margin:1.75rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .m03-live__state h2{margin:.2rem 0 .8rem;font-size:1.4rem}
+  .m03-live__warning{color:#f5c981;font-weight:700;font-size:.85rem;letter-spacing:.03em}
+  .m03-live__meta{font-size:.9rem;color:#9fb6a5}
+  .m03-live__list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1rem}
+  .m03-live__item{border-top:1px solid #2f4a38;padding-top:1rem}
+  .m03-live__headline{margin:0 0 .4rem;font-size:1.15rem;line-height:1.35}
+  .m03-live__summary{margin:0 0 .5rem;font-size:.95rem}
+  .m03-live__byline{margin:0;font-size:.82rem;color:#9fb6a5;letter-spacing:.02em}
+  .m03-live__feeds{margin:2rem 0 0}
+  .m03-live__feeds h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5}
+  .m03-live__feeds table{width:100%;border-collapse:collapse;font-size:.9rem}
+  .m03-live__feeds caption{text-align:left;color:#9fb6a5;padding:.4rem 0 .8rem}
+  .m03-live__feeds th,.m03-live__feeds td{padding:.5rem .4rem;border-bottom:1px solid #24392c;text-align:left}
+  .m03-live__feeds thead th{color:#9fb6a5;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
+  .m03-live__note{color:#9fb6a5;font-size:.92rem}
+  .m03-live a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

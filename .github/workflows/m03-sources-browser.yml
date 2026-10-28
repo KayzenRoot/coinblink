@@ -7,8 +7,10 @@ on:
       - ".github/workflows/m03-sources-browser.yml"
       - "src/modules/CB-M03/**"
       - "src/pages/demo/sources.astro"
+      - "src/pages/demo/news/**"
       - "test/modules/CB-M03/**"
       - "e2e/m03-source-demo.spec.mjs"
+      - "e2e/m03-live-news.spec.mjs"
       - "package.json"
       - "package-lock.json"
 
@@ -43,4 +45,4 @@ jobs:
       - name: Chromium
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: Browser acceptance
-        run: ./node_modules/.bin/playwright test e2e/m03-source-demo.spec.mjs
+        run: ./node_modules/.bin/playwright test e2e/m03-source-demo.spec.mjs e2e/m03-live-news.spec.mjs

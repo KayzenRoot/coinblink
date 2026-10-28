@@ -7,6 +7,7 @@ on:
       - ".github/workflows/m04-market-browser.yml"
       - "src/modules/CB-M04/**"
       - "src/pages/demo/markets.astro"
+      - "src/pages/demo/markets/**"
       - "test/modules/CB-M04/**"
       - "e2e/m04-market-demo.spec.mjs"
       - "package.json"

@@ -93,3 +93,25 @@ test("M04 market radar is offline, accessible and has no quotes", async ({ page 
   const audit = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
   expect(audit.violations).toEqual([]);
 });
+
+test("M04 live adapter stays disabled and silent by default", async ({ page }) => {
+  const external = [];
+  const writes = [];
+  page.on("request", (request) => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) external.push(request.url());
+    if (!["GET", "HEAD"].includes(request.method())) writes.push(request.url());
+  });
+  const response = await page.goto("/demo/markets/live");
+  expect(response?.status()).toBe(200);
+  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  await expect(page.getByRole("heading", { name: "LIVE FEED DISABLED" })).toBeVisible();
+  await expect(page.getByText(/No request was made/u)).toBeVisible();
+  await expect(page.getByText(/verified data licence/u)).toBeVisible();
+  // No price table exists while the adapter is off.
+  await expect(page.locator("table")).toHaveCount(0);
+  expect(external).toEqual([]);
+  expect(writes).toEqual([]);
+  const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+});

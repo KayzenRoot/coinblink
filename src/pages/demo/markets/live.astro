@@ -1,0 +1,15 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import LiveQuotesPanel from "../../../modules/CB-M04/LiveQuotesPanel.astro";
+import { readLiveSnapshot } from "../../../modules/CB-M04/live-quotes.mjs";
+export const prerender = false;
+// Off unless the deployment enables it: PUBLIC_MARKET_LIVE is a variable, not a code path.
+const snapshot = await readLiveSnapshot({ enabled: import.meta.env.PUBLIC_MARKET_LIVE });
+---
+<BaseLayout
+  lang="en"
+  title="CoinBlink · Opt-in live market preview (DEMO)"
+  description="Optional third-party price preview, disabled by default, with attribution and no order flow."
+>
+  <LiveQuotesPanel snapshot={snapshot} />
+</BaseLayout>

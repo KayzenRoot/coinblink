@@ -55,6 +55,8 @@ jobs:
           # alternates and og:image for the deployed origin. Empty keeps every
           # absolute URL out of the build.
           PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN }}
+          # Off unless the owner sets the variable; see docs/product/CB-M04-P1-LIVE-ADAPTER-001.md
+          PUBLIC_MARKET_LIVE: ${{ vars.PUBLIC_MARKET_LIVE }}
         run: npm run build
       - name: Reassert the Worker carries no session binding
         run: node scripts/assert-no-session-binding.mjs

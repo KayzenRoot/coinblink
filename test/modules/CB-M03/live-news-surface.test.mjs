@@ -66,6 +66,17 @@ test('the news index shows a compact, attributed strip only when live', () => {
   assert.ok(page.includes('<LiveHeadlineStrip slot="live"'));
 });
 
+test('topics are counted locally and link back into the filter', () => {
+  const topics = readFileSync('src/modules/CB-M03/live-news-topics.mjs', 'utf8');
+  assert.match(topics, /export function extractLiveTopics/u);
+  assert.doesNotMatch(topics, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
+  assert.ok(panel.includes('extractLiveTopics'));
+  assert.ok(panel.includes('data-m03-live-topics'));
+  assert.ok(panel.includes('encodeURIComponent(term)'));
+  assert.ok(panel.includes('copy.topicsTitle'));
+  assert.ok(panel.includes('copy.topicsNote'));
+});
+
 test('the demo lab no longer serves the live reader', () => {
   assert.equal(existsSync('src/pages/demo/news/live.astro'), false);
 });

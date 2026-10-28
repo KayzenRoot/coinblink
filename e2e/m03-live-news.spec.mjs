@@ -39,6 +39,7 @@ test("M03 live headlines stay inert in every locale until a deployment enables t
     expect(filtered?.status(), locale.path + " filtered").toBe(200);
     await expect(page.locator('[data-m03-live="disabled"]')).toBeVisible();
     await expect(page.locator("[data-m03-live-filter]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-live-topics]")).toHaveCount(0);
     await expect(page.locator("[data-m03-live-item]")).toHaveCount(0);
   }
   expect(foreign).toEqual([]);

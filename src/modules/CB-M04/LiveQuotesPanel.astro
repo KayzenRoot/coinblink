@@ -38,7 +38,7 @@ const live = snapshot.status === "LIVE_ATTRIBUTED";
         <caption>Public spot prices observed at {snapshot.asOfUTC}</caption>
         <thead><tr><th scope="col">Pair</th><th scope="col">Price (USD)</th><th scope="col">Source</th></tr></thead>
         <tbody>
-          {snapshot.quotes.map((quote) => (
+          {snapshot.quotes.map((quote: { pair: string; priceUsd: number; source: string }) => (
             <tr>
               <th scope="row">{quote.pair}</th>
               <td>{quote.priceUsd}</td>

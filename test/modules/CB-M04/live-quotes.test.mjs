@@ -68,7 +68,7 @@ test("CB-M04-P1 the reader fails closed on every provider problem", async () => 
     assert.deepEqual(result.quotes, []);
   }
   const network = await readLiveSnapshot({
-    enabled: "enabled", fetchImpl: async () => { throw new Error("boom"); }, cache: createLiveCache(), at: undefined,
+    enabled: "enabled", fetchImpl: async () => { throw new Error("boom"); }, cache: createLiveCache(),
   });
   assert.equal(network.status, "UNAVAILABLE");
   assert.equal(network.reason, "NETWORK");
@@ -78,10 +78,13 @@ test("CB-M04-P1 the reader fails closed on every provider problem", async () => 
   assert.equal(malformed.status, "UNAVAILABLE");
   assert.equal(malformed.reason, "NETWORK");
   const timeout = await readLiveSnapshot({
-    enabled: "enabled", timeoutMs: 5, cache: createLiveCache(),
-    fetchImpl: () => new Promise((_, reject) => {
-      const timer = setTimeout(() => reject(Object.assign(new Error("aborted"), { name: "AbortError" })), 10);
-      timer.unref?.();
+    enabled: "enabled",
+    timeoutMs: 5,
+    cache: createLiveCache(),
+    fetchImpl: (_url, init) => new Promise((_, reject) => {
+      init.signal.addEventListener("abort", () => {
+        reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+      });
     }),
   });
   assert.equal(timeout.reason, "TIMEOUT");

@@ -5,6 +5,7 @@ import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
 import {
   LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSource, filterLiveHeadlines,
 } from "./live-news-filter.mjs";
+import { extractLiveTopics } from "./live-news-topics.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
@@ -21,6 +22,14 @@ const source = clampLiveSource(Astro.url.searchParams.get("source") ?? LIVE_NEWS
 const visible = snapshot.status === "LIVE_HEADLINES"
   ? filterLiveHeadlines(snapshot.items, { query, source })
   : Object.freeze([]);
+const topics = snapshot.status === "LIVE_HEADLINES"
+  ? extractLiveTopics(visible)
+  : Object.freeze([]);
+// A topic keeps the active publisher, so narrowing by source and then by word
+// never silently widens the list again.
+const topicHref = (term: string) =>
+  "/" + locale + "/news/live?q=" + encodeURIComponent(term) +
+  (source === LIVE_NEWS_ALL_SOURCES ? "" : "&source=" + encodeURIComponent(source));
 const liveMeta = snapshot.status === "LIVE_HEADLINES"
   ? fillLiveNewsCopy(copy.meta, {
     time: stamp(snapshot.collectedAt), count: snapshot.itemCount,
@@ -82,6 +91,17 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
         {visible.length} {visible.length === 1 ? copy.resultOne : copy.resultMany}
       </p>
       {visible.length === 0 && <p class="m03-live__note" data-m03-live-empty>{copy.emptyFiltered}</p>}
+      {topics.length > 0 && (
+        <nav class="m03-live__topics" aria-labelledby="m03-live-topics" data-m03-live-topics>
+          <h2 id="m03-live-topics">{copy.topicsTitle}</h2>
+          <p class="m03-live__note">{copy.topicsNote}</p>
+          <ul>
+            {topics.map((topic: { term: string; count: number }) => (
+              <li><a href={topicHref(topic.term)}>{topic.term} · {topic.count}</a></li>
+            ))}
+          </ul>
+        </nav>
+      )}
       <ol class="m03-live__list">
         {visible.map((item: { id: string; title: string; summary: string; link: string; sourceId: string;
           sourceName: string; sourceHome: string; publishedAt: string | null }) => (
@@ -145,6 +165,11 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__filters input,.m03-live__filters select{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.5rem .6rem;min-width:12rem}
   .m03-live__filters button{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.55rem .9rem;font-weight:750;cursor:pointer}
   .m03-live__count{margin:0 0 .75rem;font-size:.9rem;color:#9fb6a5}
+  .m03-live__topics{margin:0 0 1rem}
+  .m03-live__topics h2{font-size:1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:.2rem 0}
+  .m03-live__topics ul{list-style:none;display:flex;flex-wrap:wrap;gap:.45rem;margin:.5rem 0 0;padding:0}
+  .m03-live__topics a{display:inline-block;padding:.3rem .6rem;border:1px solid #456e4e;border-radius:999px;font-size:.82rem;text-decoration:none}
+  .m03-live__topics a:hover{border-color:#b8f34b}
   .m03-live__list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1rem}
   .m03-live__item{border-top:1px solid #2f4a38;padding-top:1rem}
   .m03-live__headline{margin:0 0 .4rem;font-size:1.15rem;line-height:1.35}

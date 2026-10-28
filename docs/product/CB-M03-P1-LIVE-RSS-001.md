@@ -46,6 +46,7 @@ readers to an arbitrary domain.
 | `live-news.mjs` | gate, per-process cache, parallel fetch with per-source abort, fail-closed aggregation |
 | `live-news-copy.mjs` | localized chrome for en, pt-br and es — headlines stay in the publisher's language |
 | `live-news-filter.mjs` | pure narrowing of one collected snapshot by text and publisher; no request, no storage |
+| `live-news-topics.mjs` | document-frequency word list over the visible headlines, with function words removed and plurals folded only when both forms exist |
 | `LiveNewsPanel.astro` | markup only: escaped text, `rel="noreferrer noopener external"` links, explicit rights banner |
 | `LiveHeadlineStrip.astro` | three newest headlines on the news index, rendered only while the reader is live |
 | `src/pages/{en,pt-br,es}/news/live.astro` | the three SSR entries, each reading `PUBLIC_NEWS_LIVE` |
@@ -92,6 +93,13 @@ result, cannot reach the network and stores nothing, so a query cannot multiply
 egress or turn the page into a proxy. The collection itself remains bounded at
 20 items per feed and 60 in total; when the filter excludes everything, the page
 says so and offers a reset instead of an empty list.
+
+Above the list, a second navigation shows the words that appear in at least
+two of the visible headlines, with their counts. It is explicitly a frequency
+list, not an editorial topic model: no inference, no stemming beyond folding a
+plural into its singular when the collection contains both forms, and no
+network. Selecting a chip runs the same local filter and keeps the active
+publisher, so narrowing by source and then by word never widens the list again.
 
 The same collection reaches the news index: `/en/news`, `/pt-br/news` and
 `/es/news` render the three newest headlines above the synthetic catalog, with

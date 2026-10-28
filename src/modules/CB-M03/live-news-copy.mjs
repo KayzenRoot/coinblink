@@ -157,6 +157,16 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Ver todas as {count} manchetes ao vivo →",
     "es": "Ver los {count} titulares en vivo →",
   },
+  topicsTitle: {
+    "en": "Frequent words in this collection",
+    "pt-br": "Palavras frequentes nesta coleta",
+    "es": "Palabras frecuentes en esta recopilación",
+  },
+  topicsNote: {
+    "en": "Counted from the headlines above, not an editorial topic model. Select one to filter.",
+    "pt-br": "Contadas a partir das manchetes acima, não são um modelo editorial de temas. Selecione uma para filtrar.",
+    "es": "Contadas a partir de los titulares anteriores, no son un modelo editorial de temas. Selecciona una para filtrar.",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

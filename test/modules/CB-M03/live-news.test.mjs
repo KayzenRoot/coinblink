@@ -209,3 +209,29 @@ test('timeouts and missing fetch degrade to a reason instead of throwing', async
   assert.equal(networked.reason, 'ALL_SOURCES_FAILED');
   assert.deepEqual(networked.sources.map((source) => source.reason), LIVE_NEWS_SOURCES.map(() => 'NETWORK'));
 });
+
+test('a wide collection keeps every feed bounded and caps the total', async () => {
+  const feed = (host, count) => rss(...Array.from({ length: count }, (_, index) =>
+    '<item><title>' + host + ' story ' + index + '</title><link>https://' + host + '/' + index +
+    '</link><pubDate>Sun, 26 Oct 2026 10:00:00 GMT</pubDate></item>'));
+  const hosts = ['a.example', 'b.example', 'c.example', 'd.example'];
+  const sources = hosts.map((host) => ({
+    id: host.split('.')[0], name: host, home: 'https://' + host, hosts: [host],
+    url: 'https://' + host + '/feed',
+  }));
+  const bodies = Object.fromEntries(sources.map((source) => [source.url, feed(source.hosts[0], 30)]));
+  const snapshot = await readLiveNews({
+    enabled: '1', sources, fetchImpl: okFetch(bodies), now: () => AT, nowMs: () => 0,
+    cache: createNewsCache(),
+  });
+  assert.equal(snapshot.status, 'LIVE_HEADLINES');
+  assert.equal(snapshot.items.length, 60);
+  assert.equal(snapshot.sourcesRead, 4);
+  assert.deepEqual(snapshot.sources.map((source) => source.itemCount), [20, 20, 20, 20]);
+  const perSource = new Map();
+  for (const entry of snapshot.items) {
+    perSource.set(entry.sourceId, (perSource.get(entry.sourceId) ?? 0) + 1);
+  }
+  assert.equal(Math.max(...perSource.values()) <= 20, true);
+});
+

@@ -35,6 +35,19 @@ test('the panel escapes feed text and localizes its chrome', () => {
   assert.match(panel, /copy\.warning/u);
   assert.match(panel, /copy\.rightsNote/u);
   assert.match(panel, /copy\.undated/u);
+  assert.match(panel, /data-m03-live-filter/u);
+  assert.match(panel, /data-m03-live-count/u);
+  assert.match(panel, /data-m03-live-empty/u);
+  assert.match(panel, /filterLiveHeadlines/u);
+  assert.match(panel, /method="get"/u);
+});
+
+test('filtering is local to the collected snapshot and cannot fetch', () => {
+  const filter = readFileSync('src/modules/CB-M03/live-news-filter.mjs', 'utf8');
+  assert.match(filter, /export function filterLiveHeadlines/u);
+  assert.match(filter, /export function clampLiveSource/u);
+  assert.doesNotMatch(filter, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
+  assert.match(filter, /LIVE_NEWS_SOURCES/u);
 });
 
 test('the demo lab no longer serves the live reader', () => {

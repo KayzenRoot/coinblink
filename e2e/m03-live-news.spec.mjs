@@ -34,6 +34,12 @@ test("M03 live headlines stay inert in every locale until a deployment enables t
     await expect(page.getByRole("link", { name: locale.back })).toHaveAttribute("href", locale.news);
     const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     expect(scan.violations, locale.path).toEqual([]);
+    // A filtered address must not crash the disabled page or wake the reader.
+    const filtered = await page.goto(locale.path + "?q=bitcoin&source=unknown");
+    expect(filtered?.status(), locale.path + " filtered").toBe(200);
+    await expect(page.locator('[data-m03-live="disabled"]')).toBeVisible();
+    await expect(page.locator("[data-m03-live-filter]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-live-item]")).toHaveCount(0);
   }
   expect(foreign).toEqual([]);
 });

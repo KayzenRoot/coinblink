@@ -1,7 +1,10 @@
 ---
-import { LIVE_NEWS_SOURCES, LIVE_NEWS_WINDOW_SECONDS } from "./rss-sources.mjs";
+import { LIVE_NEWS_QUERY_MAX, LIVE_NEWS_SOURCES, LIVE_NEWS_WINDOW_SECONDS } from "./rss-sources.mjs";
 import { readLiveNews } from "./live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
+import {
+  LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSource, filterLiveHeadlines,
+} from "./live-news-filter.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
@@ -13,6 +16,11 @@ const stamp = (iso: string | null) =>
   iso === null ? copy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
 const feedCount = LIVE_NEWS_SOURCES.length;
 const intro = fillLiveNewsCopy(copy.intro, { feeds: feedCount });
+const query = clampLiveSearchQuery(Astro.url.searchParams.get("q") ?? "");
+const source = clampLiveSource(Astro.url.searchParams.get("source") ?? LIVE_NEWS_ALL_SOURCES);
+const visible = snapshot.status === "LIVE_HEADLINES"
+  ? filterLiveHeadlines(snapshot.items, { query, source })
+  : Object.freeze([]);
 const liveMeta = snapshot.status === "LIVE_HEADLINES"
   ? fillLiveNewsCopy(copy.meta, {
     time: stamp(snapshot.collectedAt), count: snapshot.itemCount,
@@ -53,8 +61,29 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
       <h2 id="m03-live-latest">{copy.latestTitle}</h2>
       <p class="m03-live__warning">{copy.warning}</p>
       <p class="m03-live__meta" role="status" aria-live="polite">{liveMeta}</p>
+      <form class="m03-live__filters" method="get" action={"/" + locale + "/news/live"}
+        role="search" aria-label={copy.filterTitle} data-m03-live-filter>
+        <label>{copy.filterQueryLabel}
+          <input type="search" name="q" maxlength={LIVE_NEWS_QUERY_MAX} value={query}
+            placeholder={copy.filterQueryHint} autocomplete="off" data-m03-live-query />
+        </label>
+        <label>{copy.filterSourceLabel}
+          <select name="source" data-m03-live-source-select>
+            <option value="all" selected={source === LIVE_NEWS_ALL_SOURCES}>{copy.filterAllSources}</option>
+            {LIVE_NEWS_SOURCES.map((item) => (
+              <option value={item.id} selected={source === item.id}>{item.name}</option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">{copy.filterApply}</button>
+        <a href={"/" + locale + "/news/live"}>{copy.filterReset}</a>
+      </form>
+      <p class="m03-live__count" role="status" aria-live="polite" data-m03-live-count>
+        {visible.length} {visible.length === 1 ? copy.resultOne : copy.resultMany}
+      </p>
+      {visible.length === 0 && <p class="m03-live__note" data-m03-live-empty>{copy.emptyFiltered}</p>}
       <ol class="m03-live__list">
-        {snapshot.items.map((item: { id: string; title: string; summary: string; link: string; sourceId: string;
+        {visible.map((item: { id: string; title: string; summary: string; link: string; sourceId: string;
           sourceName: string; sourceHome: string; publishedAt: string | null }) => (
           <li class="m03-live__item" data-m03-live-item={item.sourceId}>
             <h3 class="m03-live__headline">
@@ -69,6 +98,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
           </li>
         ))}
       </ol>
+      <p class="m03-live__note">{copy.filterNote}</p>
     </section>
   )}
 
@@ -110,6 +140,11 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__state h2{margin:.2rem 0 .8rem;font-size:1.4rem}
   .m03-live__warning{color:#f5c981;font-weight:700;font-size:.85rem;letter-spacing:.03em}
   .m03-live__meta{font-size:.9rem;color:#9fb6a5}
+  .m03-live__filters{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;margin:1.25rem 0 .75rem;padding:1rem;border:1px solid #2f4a38;border-radius:.6rem}
+  .m03-live__filters label{display:grid;gap:.35rem;font-size:.85rem;color:#9fb6a5;font-weight:650}
+  .m03-live__filters input,.m03-live__filters select{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.5rem .6rem;min-width:12rem}
+  .m03-live__filters button{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.55rem .9rem;font-weight:750;cursor:pointer}
+  .m03-live__count{margin:0 0 .75rem;font-size:.9rem;color:#9fb6a5}
   .m03-live__list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1rem}
   .m03-live__item{border-top:1px solid #2f4a38;padding-top:1rem}
   .m03-live__headline{margin:0 0 .4rem;font-size:1.15rem;line-height:1.35}

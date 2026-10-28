@@ -5,7 +5,7 @@
 // card names its publisher. RSS carries no vendor quota, so the only resource
 // guard needed is time: at most one collection per source per window.
 import {
-  LIVE_NEWS_MAX_ITEMS, LIVE_NEWS_SOURCES, LIVE_NEWS_TIMEOUT_MS, LIVE_NEWS_WINDOW_SECONDS,
+  LIVE_NEWS_MAX_ITEMS, LIVE_NEWS_MAX_PER_SOURCE, LIVE_NEWS_SOURCES, LIVE_NEWS_TIMEOUT_MS, LIVE_NEWS_WINDOW_SECONDS,
 } from "./rss-sources.mjs";
 import { parseRssFeed } from "./rss-parse.mjs";
 
@@ -47,7 +47,7 @@ async function collectSource(source, { fetchImpl, collectedAt, timeoutMs }) {
       cache: "no-store",
     });
     if (!response.ok) return { source, status: "UNAVAILABLE", reason: `HTTP_${response.status}`, items: [] };
-    const items = parseRssFeed(await response.text(), { source, collectedAt, limit: LIVE_NEWS_MAX_ITEMS });
+    const items = parseRssFeed(await response.text(), { source, collectedAt, limit: LIVE_NEWS_MAX_PER_SOURCE });
     if (items.length === 0) return { source, status: "UNAVAILABLE", reason: "NO_USABLE_ITEMS", items: [] };
     return { source, status: "OK", reason: null, items };
   } catch (error) {

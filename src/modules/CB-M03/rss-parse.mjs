@@ -4,7 +4,7 @@
 // bounded in length, and every link must be https on the publisher's own host.
 // Nothing is stored and no full article text is ever taken.
 import {
-  LIVE_NEWS_MAX_ITEMS, LIVE_NEWS_SUMMARY_MAX, LIVE_NEWS_TITLE_MAX,
+  LIVE_NEWS_MAX_PER_SOURCE, LIVE_NEWS_SUMMARY_MAX, LIVE_NEWS_TITLE_MAX,
 } from "./rss-sources.mjs";
 
 const ENTITIES = Object.freeze({
@@ -100,7 +100,7 @@ function isFeedSource(source) {
  * @param {{source?: {id: string, name: string, home: string, hosts: readonly string[]}, collectedAt?: string, limit?: number}} [options]
  */
 export function parseRssFeed(xml, options = {}) {
-  const { source, collectedAt, limit = LIVE_NEWS_MAX_ITEMS } = options ?? {};
+  const { source, collectedAt, limit = LIVE_NEWS_MAX_PER_SOURCE } = options ?? {};
   if (typeof xml !== "string" || xml.trim() === "") return Object.freeze([]);
   if (!isFeedSource(source)) throw new TypeError("a source with allowed hosts is required");
   const feed = /** @type {{id: string, name: string, home: string, hosts: readonly string[]}} */ (source);

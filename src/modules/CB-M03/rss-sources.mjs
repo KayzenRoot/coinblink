@@ -3,10 +3,12 @@
 // way this project can show real headlines without a paid plan. The budget we
 // do respect is our own: one collection per source per window.
 export const LIVE_NEWS_WINDOW_SECONDS = 900;
-export const LIVE_NEWS_MAX_ITEMS = 20;
+export const LIVE_NEWS_MAX_ITEMS = 60;
+export const LIVE_NEWS_MAX_PER_SOURCE = 20;
 export const LIVE_NEWS_TITLE_MAX = 200;
 export const LIVE_NEWS_SUMMARY_MAX = 280;
 export const LIVE_NEWS_TIMEOUT_MS = 5000;
+export const LIVE_NEWS_QUERY_MAX = 80;
 
 export const LIVE_NEWS_SOURCES = Object.freeze([
   Object.freeze({

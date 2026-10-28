@@ -45,6 +45,7 @@ readers to an arbitrary domain.
 | `rss-parse.mjs` | pure RSS/Atom projection: strip markup, decode entities, bound title (200) and excerpt (280), https + host validation, dedupe by link, sort desc |
 | `live-news.mjs` | gate, per-process cache, parallel fetch with per-source abort, fail-closed aggregation |
 | `live-news-copy.mjs` | localized chrome for en, pt-br and es — headlines stay in the publisher's language |
+| `live-news-filter.mjs` | pure narrowing of one collected snapshot by text and publisher; no request, no storage |
 | `LiveNewsPanel.astro` | markup only: escaped text, `rel="noreferrer noopener external"` links, explicit rights banner |
 | `src/pages/{en,pt-br,es}/news/live.astro` | the three SSR entries, each reading `PUBLIC_NEWS_LIVE` |
 
@@ -66,11 +67,30 @@ RSS has no quota, so the guard is time, not a counter:
 - a wholly failed collection is cached for 60 seconds so a dead publisher
   cannot become a request storm;
 - each request aborts after 5 seconds;
-- the page caps at 20 headlines total.
+- each feed contributes at most 20 items and the page caps at 60 headlines total.
 
 Worst case per process is 96 collections per source per day (2,880 per month),
 and a Worker isolate normally lives far less than a day. This is a fraction of
 what a browser refreshing the publishers' own pages would generate.
+
+## Discovery
+
+The reader is also the discovery surface for real headlines. A plain GET form
+narrows the current collection by free text and publisher, and the address is
+shareable:
+
+```
+/en/news/live?q=etf&source=coindesk
+```
+
+`live-news-filter.mjs` is pure: it folds accents and case the same way the
+synthetic news catalog does, clamps the query to 80 characters, accepts only a
+publisher from the reviewed whitelist (anything else means "all"), and selects
+from the snapshot already in memory. It never asks a publisher for a search
+result, cannot reach the network and stores nothing, so a query cannot multiply
+egress or turn the page into a proxy. The collection itself remains bounded at
+20 items per feed and 60 in total; when the filter excludes everything, the page
+says so and offers a reset instead of an empty list.
 
 ## Toggle
 
@@ -90,7 +110,7 @@ npm run preview            # wrangler dev on the built Worker
 # open http://127.0.0.1:8787/en/news/live
 ```
 
-Verified on 2026-10-26: 20 headlines rendered from all five publishers, each
+Verified on 2026-10-26: headlines rendered from all five publishers, each
 linked to its own domain, with the collection time and per-feed counts. The
 same collection renders at `/pt-br/news/live` and `/es/news/live` with
 translated chrome; each localized page declares its own `lang` and, with

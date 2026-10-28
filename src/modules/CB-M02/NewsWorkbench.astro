@@ -51,6 +51,7 @@ const visibleSlugs = new Set(news.items.filter(matches).map(item => item.slug));
     <small>CB-M02 · {NEWS_MOCK_POLICY}</small>
     <span class="sr-only">MOCK / FICTIONAL / NOT PUBLISHED</span>
   </header>
+  <slot name="live" />
   <section class="m02-topics" aria-labelledby="m02-topics-title">
     <h2 id="m02-topics-title">{copy.topicTitle}</h2>
     <p>{copy.topicExplanation}</p>

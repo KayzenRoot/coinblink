@@ -51,6 +51,8 @@ test("M03 the news section links to live headlines in each locale", async ({ pag
     const link = page.locator(".m02-live a");
     await expect(link).toHaveAttribute("href", locale.path);
     await expect(link).toContainText("RSS");
+    // With the reader off, the index must not render a strip or wake a feed.
+    await expect(page.locator("[data-m03-live-strip]")).toHaveCount(0);
   }
 });
 

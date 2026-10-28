@@ -142,6 +142,21 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "O filtro apenas restringe esta página; nenhuma requisição adicional é feita a qualquer veículo.",
     "es": "El filtro solo restringe esta página; no se hace ninguna solicitud adicional a los medios.",
   },
+  stripTitle: {
+    "en": "Latest from the industry",
+    "pt-br": "Últimas do setor",
+    "es": "Lo último del sector",
+  },
+  stripNote: {
+    "en": "Third-party headlines, attribution only. Headlines stay in the publisher's language.",
+    "pt-br": "Manchetes de terceiros, somente atribuição. As manchetes permanecem no idioma do veículo.",
+    "es": "Titulares de terceros, solo atribución. Los titulares permanecen en el idioma del medio.",
+  },
+  stripAll: {
+    "en": "See all {count} live headlines →",
+    "pt-br": "Ver todas as {count} manchetes ao vivo →",
+    "es": "Ver los {count} titulares en vivo →",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

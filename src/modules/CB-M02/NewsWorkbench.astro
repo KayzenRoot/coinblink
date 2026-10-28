@@ -8,14 +8,21 @@ import { getNewsLocaleMeta, getNewsHomeHref } from "../CB-M09/news-locale-meta.m
 import LocalArticlePreview from "./LocalArticlePreview.astro";
 import LocalDraftCompare from "./LocalDraftCompare.astro";
 import newsUiUrl from "./news-workbench.client.js?url&no-inline";
-interface Props { locale?: "en" | "pt-br" | "es"; }
-const { locale = "en" } = Astro.props;
+interface Props { locale?: "en" | "pt-br" | "es"; category?: string; }
+const { locale = "en", category } = Astro.props;
 const copy = newsCopy(locale);
 const localeMeta = getNewsLocaleMeta(locale);
 const news = listMockNews();
 const topics = listMockTopics();
 const categories = ["all", "security", "protocol", "education"] as const;
 const base = "/" + locale + "/news";
+// A category route renders the same list already narrowed, so the address is
+// shareable and the page is meaningful without JavaScript. Unknown values fall
+// back to the full list instead of hiding everything.
+const initialCategory = categories.includes(category as (typeof categories)[number])
+  ? (category as (typeof categories)[number]) : "all";
+const visibleCount = news.items.filter(item =>
+  initialCategory === "all" || item.category === initialCategory).length;
 ---
 <main id="main" class="cb-m02" data-m02-root aria-labelledby="m02-title">
   <nav aria-label={localeMeta.navigation}>
@@ -45,16 +52,16 @@ const base = "/" + locale + "/news";
     </label>
     <label>{copy.category}
       <select data-m02-category-select>
-        {categories.map(category => <option value={category}>{copy[category]}</option>)}
+        {categories.map(option => <option value={option} selected={option === initialCategory}>{copy[option]}</option>)}
       </select>
     </label>
     <button type="button" class="m02-clear" data-m02-reset>{copy.resetFilters}</button>
   </div>
-  <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label={copy.results}>{news.items.length} {copy.results}</p>
+  <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label={copy.results}>{visibleCount} {copy.results}</p>
   <div class="m02-results">
     {news.items.map(item => {
       const translated = localizeMockNews(item, locale);
-      return <article data-m02-entry data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(localeMeta.search)}>
+      return <article data-m02-entry hidden={initialCategory !== "all" && item.category !== initialCategory} data-m02-category={item.category} data-m02-searchable={[translated.title, translated.summary, item.category, copy[item.category]].join(" ").toLocaleLowerCase(localeMeta.search)}>
         <small class="m02-warning">{copy.disclaimer} · {copy[item.category]}</small>
         <h2>{translated.title}</h2>
         <p>{translated.summary}</p>
@@ -62,7 +69,7 @@ const base = "/" + locale + "/news";
       </article>;
     })}
   </div>
-  <p data-m02-empty role="status" hidden>{copy.empty}</p>
+  <p data-m02-empty role="status" hidden={visibleCount !== 0}>{copy.empty}</p>
   {locale !== "es" && <LocalArticlePreview locale={locale} />}
   {locale !== "es" && <LocalDraftCompare locale={locale} />}
 </main>

@@ -10,6 +10,9 @@ const HTML_SURFACES=[
   {path:"/en/news",lang:"en"},
   {path:"/pt-br/news",lang:"pt-BR"},
   {path:"/es/news",lang:"es"},
+  {path:"/en/news/category/security",lang:"en"},
+  {path:"/pt-br/news/category/protocol",lang:"pt-BR"},
+  {path:"/es/news/category/education",lang:"es"},
   {path:"/developers",lang:"en"},
   {path:"/demo",lang:"en"},
   {path:"/demo/sources",lang:"en"},
@@ -73,7 +76,7 @@ test("every shipped surface keeps the shared demo invariants",async({page})=>{
 });
 
 test("unknown paths render the styled 404 surface",async({page})=>{
-  for(const path of ["/nao-existe-xyz","/404"]){
+  for(const path of ["/nao-existe-xyz","/404","/en/news/category/unknown-category"]){
     const response=await page.goto(path);
     expect(response?.status(),`${path} must not be served`).toBe(404);
     await expect(page.locator("h1")).toHaveCount(1);

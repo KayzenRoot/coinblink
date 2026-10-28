@@ -4,8 +4,8 @@ import NewsWorkbench from "../CB-M02/NewsWorkbench.astro";
 import NewsArticle from "../CB-M02/NewsArticle.astro";
 import { resolveMockNews } from "../CB-M02/news-workbench.mjs";
 
-interface Props { locale: "en" | "pt-br" | "es"; slug?: string; }
-const { locale, slug } = Astro.props;
+interface Props { locale: "en" | "pt-br" | "es"; slug?: string; category?: string; }
+const { locale, slug, category } = Astro.props;
 const detail = slug === undefined ? null : resolveMockNews(slug);
 const meta = {
   en: {
@@ -31,5 +31,5 @@ const copy = meta[locale];
 ---
 <BaseLayout lang={copy.lang} title={detail ? copy.detailTitle : copy.listTitle}
   description={detail ? copy.detailDescription : copy.listDescription}>
-  {detail ? <NewsArticle locale={locale} item={detail.item} /> : <NewsWorkbench locale={locale} />}
+  {detail ? <NewsArticle locale={locale} item={detail.item} /> : <NewsWorkbench locale={locale} category={category} />}
 </BaseLayout>

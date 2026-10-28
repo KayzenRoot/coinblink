@@ -86,6 +86,17 @@ for (const [locale, title, sample, query] of [
   ["en", "Fictional news discovery", "Fictional wallet safety workshop", "wallet"],
   ["pt-br", "Explorar notícias fictícias", "Oficina fictícia de segurança de carteiras", "carteiras"],
 ]) {
+  test("M02 category route is shareable and narrowed on the server: " + locale, async ({ page }) => {
+    const response = await page.goto("/" + locale + "/news/category/security");
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.locator("[data-m02-entry]")).toHaveCount(3);
+    await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(1);
+    await expect(page.locator("[data-m02-category-select]")).toHaveValue("security");
+    await expect(page.locator("[data-m02-result-count]")).toContainText("1");
+    const empty = await page.goto("/" + locale + "/news/category/unknown-category");
+    expect(empty?.status()).toBe(404);
+  });
   test("M02 fictional news list, search, category, detail and 404 stay safe: " + locale, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const external = [];

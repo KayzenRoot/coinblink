@@ -1,0 +1,76 @@
+---
+import { LIVE_PROVIDER, readLiveSnapshot } from "./live-quotes.mjs";
+interface Props { snapshot: Awaited<ReturnType<typeof readLiveSnapshot>>; }
+const { snapshot } = Astro.props;
+const live = snapshot.status === "LIVE_ATTRIBUTED";
+---
+<main id="main" class="m04-live">
+  <nav aria-label="Market demonstration"><a href="/demo/markets">← Market lab</a></nav>
+  <header>
+    <p class="m04-live__tag">CB-M04 · OPTIONAL THIRD-PARTY ADAPTER · DEMO ONLY</p>
+    <h1>Live market preview (opt-in)</h1>
+    <p>This page can read public market prices from a third party. It never places orders,
+      never stores anything and never trades. Quotes are delayed by up to
+      {LIVE_PROVIDER.cacheSeconds} seconds and are not investment advice.</p>
+  </header>
+
+  {snapshot.status === "DISABLED" && (
+    <section class="m04-live__state" role="status">
+      <h2>LIVE FEED DISABLED</h2>
+      <p>No request was made. The live adapter is off because the deployment has not enabled it.</p>
+      <p class="m04-live__note">The offline market lab keeps every quote <strong>UNAVAILABLE</strong> until a
+        verified data licence exists. Enabling this page is a single deployment variable, not a code change.</p>
+    </section>
+  )}
+
+  {snapshot.status === "UNAVAILABLE" && (
+    <section class="m04-live__state" role="status">
+      <h2>LIVE FEED UNAVAILABLE</h2>
+      <p>Reason: <code>{snapshot.reason}</code>. No price is shown rather than a stale or guessed one.</p>
+      <p class="m04-live__note">Try again later. The adapter fails closed on timeouts, HTTP errors and malformed payloads.</p>
+    </section>
+  )}
+
+  {live && (
+    <section class="m04-live__state" role="status" aria-live="polite">
+      <p class="m04-live__warning">LIVE · THIRD-PARTY · DELAYED UP TO {snapshot.delayedUpToSeconds}s · RIGHTS UNREVIEWED · NOT INVESTMENT ADVICE · NO ORDER FLOW</p>
+      <table class="m04-live__table">
+        <caption>Public spot prices observed at {snapshot.asOfUTC}</caption>
+        <thead><tr><th scope="col">Pair</th><th scope="col">Price (USD)</th><th scope="col">Source</th></tr></thead>
+        <tbody>
+          {snapshot.quotes.map((quote) => (
+            <tr>
+              <th scope="row">{quote.pair}</th>
+              <td>{quote.priceUsd}</td>
+              <td>{quote.source}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="m04-live__attribution">
+        <a href={snapshot.attributionUrl} rel="noreferrer noopener external">{snapshot.attribution}</a>
+        · commercial use not allowed · redistribution rights not reviewed
+      </p>
+    </section>
+  )}
+
+  <p class="m04-live__note">Nothing here creates a licence, a subscription, trading access or a real account.
+    The offline demo remains the default.</p>
+</main>
+<style>
+  .m04-live{max-width:60rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .m04-live a{color:#b8f34b}
+  .m04-live h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15}
+  .m04-live p{line-height:1.75;color:#c1d3c5}
+  .m04-live__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .m04-live__state{margin:1.5rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .m04-live__state h2{margin:.2rem 0 .8rem;font-size:1.4rem}
+  .m04-live__warning{color:#f5c981;font-weight:700;font-size:.85rem;letter-spacing:.03em}
+  .m04-live__table{width:100%;border-collapse:collapse;margin:1rem 0}
+  .m04-live__table caption{text-align:left;color:#c1d3c5;font-size:.9rem;padding-bottom:.6rem}
+  .m04-live__table th,.m04-live__table td{padding:.6rem .5rem;border-bottom:1px solid #2f4a38;text-align:left}
+  .m04-live__table thead th{color:#9fb6a5;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase}
+  .m04-live__attribution{margin:.8rem 0 0;font-size:.9rem}
+  .m04-live__note{color:#9fb6a5;font-size:.92rem}
+  .m04-live a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

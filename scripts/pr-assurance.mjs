@@ -38,13 +38,25 @@ export function classifyPaths(paths) {
   };
 }
 
+/** A scheduled workflow is accepted only while it stays read-only and secret-free. */
+const SCHEDULED_REASON = 'scheduled workflow trigger requires separate authorization';
+// GitHub Actions documented GITHUB_TOKEN permissions, including status writes.
+// New scopes must be reviewed when GitHub adds them.
+const WRITE_SCOPES = new Set([
+  'actions', 'artifact-metadata', 'attestations', 'checks', 'code-quality',
+  'contents', 'copilot-requests', 'deployments', 'id-token', 'issues',
+  'discussions', 'packages', 'pages', 'pull-requests', 'security-events',
+  'statuses', 'workflows',
+]);
+
 /** Shared logic for YAML keys and sequence-style trigger entries. */
 function classifyTrigger(name, reasons) {
   if (name === 'pull_request_target' || name === 'workflow_run') {
     reasons.add('pull_request_target/workflow_run requires separate risk authorization');
   }
-  if (name === 'schedule' || name === 'deployment_status') {
-    reasons.add('scheduled/deployment workflow trigger requires separate authorization');
+  if (name === 'schedule') reasons.add(SCHEDULED_REASON);
+  if (name === 'deployment_status') {
+    reasons.add('deployment_status trigger requires separate authorization');
   }
 }
 /** Normalize ordinary YAML quoted mapping keys and scalar values. */
@@ -56,38 +68,45 @@ function unquoteYamlScalar(text) {
   }
   return value;
 }
+/** True when the line grants the job a write-capable GitHub token permission. */
+function isWriteCapable(key, value) {
+  return (key === 'permissions' && (value === 'write-all' || value.includes('write'))) ||
+    (WRITE_SCOPES.has(key) && value === 'write');
+}
+
 function classifyMapping(key, value, reasons) {
   classifyTrigger(key, reasons);
-  // GitHub Actions documented GITHUB_TOKEN permissions, including status writes.
-  // New scopes must be reviewed when GitHub adds them.
-  const writeScopes = new Set([
-    'actions', 'artifact-metadata', 'attestations', 'checks', 'code-quality',
-    'contents', 'copilot-requests', 'deployments', 'id-token', 'issues',
-    'discussions', 'packages', 'pages', 'pull-requests', 'security-events',
-    'statuses', 'workflows',
-  ]);
-  if ((key === 'permissions' && (value === 'write-all' || value.includes('write'))) ||
-      (writeScopes.has(key) && value === 'write')) {
-    reasons.add('write-capable GitHub token permission');
-  }
-  if (key === 'on' && ['pull_request_target', 'workflow_run', 'schedule'].some(event =>
-    value.includes(event))) {
-    reasons.add('elevated inline workflow trigger requires separate authorization');
+  if (isWriteCapable(key, value)) reasons.add('write-capable GitHub token permission');
+  if (key === 'on') {
+    if (value.includes('pull_request_target') || value.includes('workflow_run')) {
+      reasons.add('pull_request_target/workflow_run requires separate risk authorization');
+    }
+    if (value.includes('schedule')) reasons.add(SCHEDULED_REASON);
+    if (value.includes('deployment_status')) {
+      reasons.add('deployment_status trigger requires separate authorization');
+    }
   }
 }
 /** Avoid backtracking regex; inspect plain and list-form YAML workflow lines. */
 export function unsafeWorkflowLines(content) {
   const reasons = new Set();
+  let writeCapable = false;
+  let referencesSecrets = false;
   for (const originalLine of content.split('\n')) {
     const line = originalLine.split('#', 1)[0].trim();
+    if (line.includes('secrets.')) referencesSecrets = true;
     const event = line.startsWith('- ') ? unquoteYamlScalar(line.slice(2).split(':', 1)[0]) : '';
     classifyTrigger(event, reasons);
     const divider = line.indexOf(':');
     if (divider < 0) continue;
     const key = unquoteYamlScalar(line.slice(0, divider));
     const value = unquoteYamlScalar(line.slice(divider + 1));
+    if (isWriteCapable(key, value)) writeCapable = true;
     classifyMapping(key, value, reasons);
   }
+  // A weekly read-only scan is not an elevation. A scheduled workflow that can
+  // write, or that reads any secret, stays blocked.
+  if (!writeCapable && !referencesSecrets) reasons.delete(SCHEDULED_REASON);
   return [...reasons];
 }
 

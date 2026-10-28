@@ -62,7 +62,14 @@ test('YAML sequence event syntax cannot bypass privileged trigger scan', () => {
   const lines = unsafeWorkflowLines('on:\n  - push\n  - pull_request_target\n  - workflow_run:\npermissions:\n  contents: read\n');
   assert.ok(lines.some(reason => reason.includes('pull_request_target')));
   const scheduling = unsafeWorkflowLines('on:\n  - push\n  - schedule\n');
-  assert.ok(scheduling.some(reason => reason.includes('scheduled/deployment')));
+  assert.deepEqual(scheduling, [], 'a read-only, secret-free scheduled scan is not elevated');
+  const writing = unsafeWorkflowLines('on:\n  schedule:\npermissions:\n  contents: write\n');
+  assert.ok(writing.some(reason => reason.includes('scheduled')),
+    'a scheduled workflow that can write stays blocked');
+  const readingSecrets = unsafeWorkflowLines(
+    'on:\n  schedule:\npermissions:\n  contents: read\nenv:\n  TOKEN: ${{ secrets.ANY }}\n');
+  assert.ok(readingSecrets.some(reason => reason.includes('scheduled')),
+    'a scheduled workflow that reads a secret stays blocked');
 });
 
 test('a subsequent COMMENTED review does not revoke exact-HEAD approval', () => {

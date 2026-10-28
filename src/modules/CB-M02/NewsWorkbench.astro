@@ -71,7 +71,7 @@ const visibleSlugs = new Set(news.items.filter(matches).map(item => item.slug));
     <button type="submit" class="m02-apply">{copy.applyFilters}</button>
     <button type="button" class="m02-clear" data-m02-reset>{copy.resetFilters}</button>
   </form>
-  <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label={copy.results}>{visibleSlugs.size} {copy.results}</p>
+  <p role="status" aria-live="polite" data-m02-result-count data-m02-count-label-singular={copy.resultSingular} data-m02-count-label-plural={copy.resultPlural}>{visibleSlugs.size} {visibleSlugs.size === 1 ? copy.resultSingular : copy.resultPlural}</p>
   <div class="m02-results">
     {news.items.map(item => {
       const translated = localizeMockNews(item, locale);

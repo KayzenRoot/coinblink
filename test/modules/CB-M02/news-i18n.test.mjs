@@ -33,3 +33,14 @@ test("M02 public routes never import drafts, provider secrets or external source
     assert.doesNotMatch(text, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|\.wrangler|\bpublish\s*\(|\/admin\/api|import\s*\(.*https?:/u, file);
   }
 });
+
+test("M02 result counts read correctly for one and for many", async () => {
+  const { newsCopy } = await import("../../../src/modules/CB-M02/news-i18n.mjs");
+  for (const locale of ["en", "pt-br", "es", "de"]) {
+    const copy = newsCopy(locale);
+    assert.equal(typeof copy.resultSingular, "string");
+    assert.equal(typeof copy.resultPlural, "string");
+    assert.notEqual(copy.resultSingular, copy.resultPlural, locale + " must distinguish one from many");
+    assert.ok(copy.resultSingular.length > 0 && copy.resultPlural.length > 0);
+  }
+});

@@ -91,7 +91,8 @@ for (const [locale, title, sample, query] of [
     expect(shared?.status()).toBe(200);
     await expect(page.locator("[data-m02-search]")).toHaveValue(query);
     await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(1);
-    await expect(page.locator("[data-m02-result-count]")).toContainText("1");
+    await expect(page.locator("[data-m02-result-count]")).toContainText(
+      locale === "pt-br" ? "1 exemplo fictício" : "1 fictional example");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     // The filter form is a plain GET, so the enhancement is optional.
     const form = page.locator("form.m02-controls");

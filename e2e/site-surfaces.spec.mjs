@@ -16,6 +16,7 @@ const HTML_SURFACES=[
   {path:"/developers",lang:"en"},
   {path:"/demo",lang:"en"},
   {path:"/demo/sources",lang:"en"},
+  {path:"/demo/news/live",lang:"en"},
   {path:"/demo/markets",lang:"en"},
   {path:"/demo/markets/live",lang:"en"},
   {path:"/demo/research",lang:"en"},

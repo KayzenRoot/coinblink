@@ -57,6 +57,9 @@ jobs:
           PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN }}
           # Off unless the owner sets the variable; see docs/product/CB-M04-P1-LIVE-ADAPTER-001.md
           PUBLIC_MARKET_LIVE: ${{ vars.PUBLIC_MARKET_LIVE }}
+          # Headlines from keyless public RSS. Off unless set; see
+          # docs/product/CB-M03-P1-LIVE-RSS-001.md
+          PUBLIC_NEWS_LIVE: ${{ vars.PUBLIC_NEWS_LIVE }}
         run: npm run build
       - name: Reassert the Worker carries no session binding
         run: node scripts/assert-no-session-binding.mjs
@@ -75,15 +78,25 @@ jobs:
         if: vars.COINBLINK_CF_WORKER_URL != ''
         env:
           COINBLINK_CF_WORKER_URL: ${{ vars.COINBLINK_CF_WORKER_URL }}
+          PUBLIC_NEWS_LIVE: ${{ vars.PUBLIC_NEWS_LIVE }}
         run: |
           node --input-type=module -e '
             const base = process.env.COINBLINK_CF_WORKER_URL.replace(/\/+$/u, "");
-            const checks = ["/health", "/en", "/demo"];
+            const checks = ["/health", "/en", "/demo", "/demo/news/live"];
             for (const path of checks) {
               const response = await fetch(base + path, { redirect: "manual" });
               if (response.status !== 200) {
                 throw new Error(`${path} answered ${response.status}, expected 200`);
               }
+            }
+            // The live-news switch must be observable, not assumed. Enabled may
+            // still read as unavailable when every publisher is down, but it
+            // must never look disabled.
+            const news = await (await fetch(base + "/demo/news/live")).text();
+            const enabled = /^(1|true|enabled|on)$/iu.test((process.env.PUBLIC_NEWS_LIVE ?? "").trim());
+            const state = enabled ? /data-m03-live="(live|unavailable)"/u : /data-m03-live="disabled"/u;
+            if (!state.test(news)) {
+              throw new Error("/demo/news/live does not reflect PUBLIC_NEWS_LIVE=" + process.env.PUBLIC_NEWS_LIVE);
             }
             // Prove the deployed artifact is this commit, not a stale one.
             const health = await (await fetch(base + "/health", { redirect: "manual" })).json();

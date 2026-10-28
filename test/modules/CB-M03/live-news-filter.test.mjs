@@ -49,7 +49,9 @@ test('matching covers title, excerpt and publisher, and is accent-insensitive', 
   assert.equal(matchesLiveHeadline(item(), { query: 'bitcoin' }), true);
   assert.equal(matchesLiveHeadline(item(), { query: 'DEZEMBRO' }), false);
   assert.equal(matchesLiveHeadline(item({ title: 'Ação regulatória' }), { query: 'acao' }), true);
-  assert.equal(matchesLiveHeadline(item(), { query: 'decrypt' }), true);
+  // Publisher names are a select, not text: a chip count and a query agree.
+  assert.equal(matchesLiveHeadline(item(), { query: 'decrypt' }), false);
+  assert.equal(matchesLiveHeadline(item({ title: 'CoinDesk exclusive' }), { query: 'coindesk' }), true);
   assert.equal(matchesLiveHeadline(item(), { query: 'rate hike' }), true);
   assert.equal(matchesLiveHeadline(item(), { query: 'ethereum' }), false);
   assert.equal(matchesLiveHeadline(item(), { query: '', source: 'decrypt' }), true);

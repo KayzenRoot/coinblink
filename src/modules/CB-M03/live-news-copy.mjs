@@ -98,9 +98,9 @@ const COPY_ROWS = Object.freeze({
     "es": "Buscar titulares",
   },
   filterQueryHint: {
-    "en": "Publisher, topic or word",
-    "pt-br": "Veículo, tema ou palavra",
-    "es": "Medio, tema o palabra",
+    "en": "Topic or word",
+    "pt-br": "Tema ou palavra",
+    "es": "Tema o palabra",
   },
   filterSourceLabel: {
     "en": "Publisher",

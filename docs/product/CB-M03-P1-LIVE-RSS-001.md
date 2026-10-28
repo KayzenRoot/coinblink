@@ -79,7 +79,8 @@ what a browser refreshing the publishers' own pages would generate.
 
 The reader is also the discovery surface for real headlines. A plain GET form
 narrows the current collection by free text and publisher, and the address is
-shareable:
+shareable. Free text covers the title and excerpt only; the publisher is a
+separate select, so a topic chip and a text query describe the same field:
 
 ```
 /en/news/live?q=etf&source=coindesk

@@ -352,7 +352,7 @@ test("Brazilian Portuguese uses one shared Golden Home and correct document lang
   assert.match(component, /href=\{locale === "en" \? "\/pt-br" : "\/en"\}/u);
   assert.match(ptRoute, /lang="pt-BR"/u);
   assert.match(ptRoute, /<GoldenHome locale="pt-br"\s*\/>/u);
-  assert.match(secureLayout, /<html lang=\{lang\}>/u);
+  assert.match(secureLayout, /<html lang=\{seo\.lang\}>/u);
   assert.match(copy, /"Regulation": "Regulação"/u);
   assert.match(copy, /"DEMO · NO STORIES CONNECTED": "DEMO · SEM NOTÍCIAS CONECTADAS"/u);
   assert.match(clientScript, /const isPortuguese = /u);

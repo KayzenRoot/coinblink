@@ -44,8 +44,9 @@ readers to an arbitrary domain.
 | `rss-sources.mjs` | whitelist, window, caps, timeout — pure data |
 | `rss-parse.mjs` | pure RSS/Atom projection: strip markup, decode entities, bound title (200) and excerpt (280), https + host validation, dedupe by link, sort desc |
 | `live-news.mjs` | gate, per-process cache, parallel fetch with per-source abort, fail-closed aggregation |
+| `live-news-copy.mjs` | localized chrome for en, pt-br and es — headlines stay in the publisher's language |
 | `LiveNewsPanel.astro` | markup only: escaped text, `rel="noreferrer noopener external"` links, explicit rights banner |
-| `src/pages/demo/news/live.astro` | SSR entry, reads `PUBLIC_NEWS_LIVE` |
+| `src/pages/{en,pt-br,es}/news/live.astro` | the three SSR entries, each reading `PUBLIC_NEWS_LIVE` |
 
 Contract of `readLiveNews` (never throws):
 
@@ -77,7 +78,7 @@ what a browser refreshing the publishers' own pages would generate.
 (case-insensitive). Anything else, including an empty value, keeps the reader
 off. The value is baked at build time, so the deploy workflow reads it from the
 repository variable `PUBLIC_NEWS_LIVE` and the post-deploy smoke test asserts
-that `/demo/news/live` reflects the configured state: `live` or `unavailable`
+that `/en/news/live` reflects the configured state: `live` or `unavailable`
 when enabled, `disabled` when not. The smoke test never requires a specific
 publisher to be up.
 
@@ -86,11 +87,22 @@ Local verification of the enabled path:
 ```bash
 PUBLIC_NEWS_LIVE=enabled npm run build
 npm run preview            # wrangler dev on the built Worker
-# open http://127.0.0.1:8787/demo/news/live
+# open http://127.0.0.1:8787/en/news/live
 ```
 
 Verified on 2026-10-26: 20 headlines rendered from all five publishers, each
-linked to its own domain, with the collection time and per-feed counts.
+linked to its own domain, with the collection time and per-feed counts. The
+same collection renders at `/pt-br/news/live` and `/es/news/live` with
+translated chrome; each localized page declares its own `lang` and, with
+`PUBLIC_SITE_ORIGIN` set, emits hreflang alternates for the other two.
+
+## Locales
+
+The reader is part of the news section, not the demo lab index. The English,
+Portuguese and Spanish pages share one panel and one copy module, and the news
+index in each locale links to its own live page. Only the page furniture is
+translated: the headline and excerpt stay exactly as the publisher wrote them,
+because rewriting them would change someone else's reporting.
 
 ## Rights stance
 

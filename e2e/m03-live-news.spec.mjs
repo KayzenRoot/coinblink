@@ -1,9 +1,19 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-// Live headlines are off by default, so this contract proves the safe default:
-// the page renders, explains itself, and makes no third-party request at all.
-test("M03 live headlines stay inert until a deployment enables them", async ({ page }) => {
+// Live headlines are off by default. This contract proves the safe default in
+// every locale: the page renders, explains itself and makes no external request.
+const LOCALES = [
+  { path: "/en/news/live", news: "/en/news", lang: "en", back: "← News",
+    h1: "Live headlines from public feeds" },
+  { path: "/pt-br/news/live", news: "/pt-br/news", lang: "pt-BR", back: "← Notícias",
+    h1: "Manchetes ao vivo de feeds públicos" },
+  { path: "/es/news/live", news: "/es/news", lang: "es", back: "← Noticias",
+    h1: "Titulares en vivo de fuentes públicas" },
+];
+
+test("M03 live headlines stay inert in every locale until a deployment enables them", async ({ page }) => {
+  test.slow();
   await page.setViewportSize({ width: 390, height: 844 });
   const foreign = [];
   page.on("request", (request) => {
@@ -11,26 +21,36 @@ test("M03 live headlines stay inert until a deployment enables them", async ({ p
       foreign.push(request.url());
     }
   });
-  const response = await page.goto("/demo/news/live");
-  expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { name: "Live headlines from public feeds" })).toBeVisible();
-  const disabled = page.locator('[data-m03-live="disabled"]');
-  await expect(disabled).toBeVisible();
-  await expect(disabled).toContainText("LIVE NEWS DISABLED");
-  await expect(disabled).toContainText("No request was made.");
-  await expect(page.locator("[data-m03-live-item]")).toHaveCount(0);
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-  await expect(page.getByRole("link", { name: "← Source lab" })).toHaveAttribute("href", "/demo/sources");
+  for (const locale of LOCALES) {
+    const response = await page.goto(locale.path);
+    expect(response?.status(), locale.path).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale.lang);
+    await expect(page.getByRole("heading", { level: 1, name: locale.h1 })).toBeVisible();
+    const disabled = page.locator('[data-m03-live="disabled"]');
+    await expect(disabled, locale.path).toBeVisible();
+    await expect(page.locator("[data-m03-live-item]")).toHaveCount(0);
+    await expect(page.locator('[data-m03-live="live"]')).toHaveCount(0);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("link", { name: locale.back })).toHaveAttribute("href", locale.news);
+    const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(scan.violations, locale.path).toEqual([]);
+  }
   expect(foreign).toEqual([]);
-  const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  expect(scan.violations).toEqual([]);
 });
 
-test("M03 demo index advertises the live reader without claiming it is on", async ({ page }) => {
+test("M03 the news section links to live headlines in each locale", async ({ page }) => {
+  for (const locale of LOCALES) {
+    const response = await page.goto(locale.news);
+    expect(response?.status(), locale.news).toBe(200);
+    const link = page.locator(".m02-live a");
+    await expect(link).toHaveAttribute("href", locale.path);
+    await expect(link).toContainText("RSS");
+  }
+});
+
+test("M03 the demo index no longer advertises the live reader", async ({ page }) => {
   const response = await page.goto("/demo");
   expect(response?.status()).toBe(200);
-  const link = page.locator('.labs__list a[href="/demo/news/live"]');
-  await expect(link).toHaveText("Live headlines");
-  await expect(page.locator(".labs__note")).toContainText("opt-in live readers");
-  await expect(page.locator(".labs__note")).toContainText("by default they make no request");
+  await expect(page.locator('.labs__list a[href="/en/news/live"]')).toHaveCount(0);
+  await expect(page.locator(".labs__note")).toContainText("/en/news/live");
 });

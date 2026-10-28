@@ -1,47 +1,58 @@
 ---
 import { LIVE_NEWS_SOURCES, LIVE_NEWS_WINDOW_SECONDS } from "./rss-sources.mjs";
 import { readLiveNews } from "./live-news.mjs";
-interface Props { snapshot: Awaited<ReturnType<typeof readLiveNews>>; }
-const { snapshot } = Astro.props;
+import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
+interface Props {
+  snapshot: Awaited<ReturnType<typeof readLiveNews>>;
+  locale?: "en" | "pt-br" | "es";
+}
+const { snapshot, locale = "en" } = Astro.props;
+const copy = getLiveNewsCopy(locale);
 const live = snapshot.status === "LIVE_HEADLINES";
 const stamp = (iso: string | null) =>
-  iso === null ? "TIME NOT SUPPLIED BY THE FEED" : iso.slice(0, 16).replace("T", " ") + " UTC";
+  iso === null ? copy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
 const feedCount = LIVE_NEWS_SOURCES.length;
+const intro = fillLiveNewsCopy(copy.intro, { feeds: feedCount });
+const liveMeta = snapshot.status === "LIVE_HEADLINES"
+  ? fillLiveNewsCopy(copy.meta, {
+    time: stamp(snapshot.collectedAt), count: snapshot.itemCount,
+    sources: snapshot.sourcesRead, feeds: feedCount,
+    minutes: LIVE_NEWS_WINDOW_SECONDS / 60,
+  })
+  : "";
+const unavailableBody = snapshot.status === "UNAVAILABLE"
+  ? fillLiveNewsCopy(copy.unavailableBody, { reason: snapshot.reason })
+  : "";
 ---
 <main id="main" class="m03-live">
-  <nav aria-label="News demonstration"><a href="/demo/sources">← Source lab</a></nav>
+  <nav aria-label={copy.navigation}><a href={"/" + locale + "/news"}>{copy.back}</a></nav>
   <header>
     <p class="m03-live__tag">CB-M03 · LIVE RSS · KEYLESS · DEMO ONLY</p>
-    <h1>Live headlines from public feeds</h1>
-    <p>This page reads {feedCount} public RSS feeds and shows the newest headline, a short excerpt,
-      the publisher and a link to the original article. It stores nothing, keeps no full article
-      text, never republishes a feed and never claims the reporting as its own.</p>
+    <h1>{copy.h1}</h1>
+    <p>{intro}</p>
   </header>
 
   {snapshot.status === "DISABLED" && (
     <section class="m03-live__state" role="status" data-m03-live="disabled">
-      <h2>LIVE NEWS DISABLED</h2>
-      <p>No request was made. Live headlines are off because this deployment has not enabled them.</p>
-      <p class="m03-live__note">The source lab remains synthetic and offline. Enabling this page is a
-        single deployment variable, not a code change.</p>
+      <h2>{copy.disabledTitle}</h2>
+      <p>{copy.disabledBody}</p>
+      <p class="m03-live__note">{copy.disabledNote}</p>
     </section>
   )}
 
   {snapshot.status === "UNAVAILABLE" && (
     <section class="m03-live__state" role="status" data-m03-live="unavailable">
-      <h2>LIVE NEWS UNAVAILABLE</h2>
-      <p>Reason: <code>{snapshot.reason}</code>. No headline is shown rather than a stale or invented one.</p>
-      <p class="m03-live__note">Each feed fails alone. A timeout, an HTTP error or an empty document is
-        reported here instead of being guessed around.</p>
+      <h2>{copy.unavailableTitle}</h2>
+      <p>{unavailableBody}</p>
+      <p class="m03-live__note">{copy.unavailableNote}</p>
     </section>
   )}
 
   {live && (
     <section class="m03-live__state" aria-labelledby="m03-live-latest" data-m03-live="live">
-      <h2 id="m03-live-latest">Newest headlines</h2>
-      <p class="m03-live__warning">THIRD-PARTY HEADLINES · ATTRIBUTION ONLY · NO FULL TEXT · NO REPUBLICATION · NOT AN ENDORSEMENT</p>
-      <p class="m03-live__meta" role="status" aria-live="polite">Collected at {stamp(snapshot.collectedAt)} · {snapshot.itemCount} headlines
-        from {snapshot.sourcesRead} of {feedCount} feeds · refreshed at most every {LIVE_NEWS_WINDOW_SECONDS / 60} minutes.</p>
+      <h2 id="m03-live-latest">{copy.latestTitle}</h2>
+      <p class="m03-live__warning">{copy.warning}</p>
+      <p class="m03-live__meta" role="status" aria-live="polite">{liveMeta}</p>
       <ol class="m03-live__list">
         {snapshot.items.map((item: { id: string; title: string; summary: string; link: string; sourceId: string;
           sourceName: string; sourceHome: string; publishedAt: string | null }) => (
@@ -63,11 +74,14 @@ const feedCount = LIVE_NEWS_SOURCES.length;
 
   {snapshot.sources.length > 0 && (
     <section class="m03-live__feeds" aria-labelledby="m03-live-feeds">
-      <h2 id="m03-live-feeds">Feed status in this collection</h2>
+      <h2 id="m03-live-feeds">{copy.feedsTitle}</h2>
       <table>
-        <caption>Every whitelisted publisher and what this collection received from it</caption>
+        <caption>{copy.feedsCaption}</caption>
         <thead>
-          <tr><th scope="col">Publisher</th><th scope="col">Status</th><th scope="col">Headlines</th><th scope="col">Reason</th></tr>
+          <tr>
+            <th scope="col">{copy.columnPublisher}</th><th scope="col">{copy.columnStatus}</th>
+            <th scope="col">{copy.columnHeadlines}</th><th scope="col">{copy.columnReason}</th>
+          </tr>
         </thead>
         <tbody>
           {snapshot.sources.map((source: { id: string; name: string; home: string; status: string;
@@ -76,7 +90,7 @@ const feedCount = LIVE_NEWS_SOURCES.length;
               <th scope="row"><a href={source.home} rel="noreferrer noopener external">{source.name}</a></th>
               <td>{source.status}</td>
               <td>{source.itemCount}</td>
-              <td>{source.reason ?? "—"}</td>
+              <td>{source.reason ?? copy.noReason}</td>
             </tr>
           ))}
         </tbody>
@@ -84,9 +98,7 @@ const feedCount = LIVE_NEWS_SOURCES.length;
     </section>
   )}
 
-  <p class="m03-live__note">Headlines belong to their publishers. CoinBlink links to the original
-    article and shows no more than the feed supplies. Nothing here creates a licence, a subscription
-    or a republication right, and the synthetic newsroom remains the default.</p>
+  <p class="m03-live__note">{copy.rightsNote}</p>
 </main>
 <style>
   .m03-live{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}

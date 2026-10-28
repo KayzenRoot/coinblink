@@ -15,10 +15,10 @@ Settings → Secrets and variables → Actions:
 | `CLOUDFLARE_API_TOKEN` | Secret | yes | Token with the **Edit Cloudflare Workers** permission for the target account |
 | `CLOUDFLARE_ACCOUNT_ID` | Secret or Variable | yes | Account that owns the Worker |
 | `COINBLINK_CF_WORKER_NAME` | Variable | no | Target Worker name, defaults to `coinblink-production` |
-| `COINBLINK_CF_WORKER_URL` | Variable | no | Public URL; when set, the workflow smoke tests `/health`, `/en`, `/demo`, `/demo/news/live`, the demo `robots` policy and that `/admin` stays unreachable |
+| `COINBLINK_CF_WORKER_URL` | Variable | no | Public URL; when set, the workflow smoke tests `/health`, `/en`, `/demo`, `/en/news/live`, the demo `robots` policy and that `/admin` stays unreachable |
 | `PUBLIC_SITE_ORIGIN` | Variable | no | Origin of the deployed site. When set, the build emits canonical, hreflang alternates and `og:image`; empty keeps every absolute URL out of the build |
 | `PUBLIC_MARKET_LIVE` | Variable | no | Enables the attributed third-party market preview at `/demo/markets/live`. Empty or anything other than `1`, `true`, `enabled` or `on` keeps it off |
-| `PUBLIC_NEWS_LIVE` | Variable | no | Enables attributed headlines from public RSS at `/demo/news/live`. Empty or anything other than `1`, `true`, `enabled` or `on` keeps it off |
+| `PUBLIC_NEWS_LIVE` | Variable | no | Enables attributed headlines from public RSS at `/en/news/live`. Empty or anything other than `1`, `true`, `enabled` or `on` keeps it off |
 
 Until the two required values exist, the deploy job fails early with an explicit message naming this document, instead of deploying something unintended. The smoke test is skipped with a note when `COINBLINK_CF_WORKER_URL` is absent, so a missing cosmetic variable never turns a good deploy red.
 
@@ -43,7 +43,7 @@ The Worker name is always passed explicitly, so a deploy can never create or tar
 - `WRANGLER_SEND_METRICS=false` everywhere.
 - The site stays a labelled DEMO: `/admin` is unreachable in production, every page carries `noindex, nofollow, noarchive`, and no rights, publication or real-account claim is made by a deploy.
 - `PUBLIC_SITE_ORIGIN` is what turns on canonical, hreflang and `og:image`. It is now set to the deployed Worker origin, so production carries absolute metadata while any local build without it still carries none. Change the variable if the origin ever moves.
-- The two live readers are opt-in and independently switched. The smoke test asserts that `/demo/news/live` reflects `PUBLIC_NEWS_LIVE` — `disabled` when off, `live` or `unavailable` when on — so a forgotten variable shows up as a failed deploy step, not as a silently dead page. A publisher being down never fails the deploy: the page reports the partial collection instead.
+- The two live readers are opt-in and independently switched. The smoke test asserts that `/en/news/live` reflects `PUBLIC_NEWS_LIVE` — `disabled` when off, `live` or `unavailable` when on — so a forgotten variable shows up as a failed deploy step, not as a silently dead page. A publisher being down never fails the deploy: the page reports the partial collection instead.
 
 ## Rollback
 

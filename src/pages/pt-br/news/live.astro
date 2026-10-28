@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import LiveNewsPanel from "../../../modules/CB-M03/LiveNewsPanel.astro";
+import { readLiveNews } from "../../../modules/CB-M03/live-news.mjs";
+import { getLiveNewsCopy } from "../../../modules/CB-M03/live-news-copy.mjs";
+export const prerender = false;
+const copy = getLiveNewsCopy("pt-br");
+// Off unless the deployment enables it: PUBLIC_NEWS_LIVE is a variable, not a code path.
+const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+---
+<BaseLayout lang={copy.lang} title={copy.pageTitle} description={copy.pageDescription}>
+  <LiveNewsPanel snapshot={snapshot} locale="pt-br" />
+</BaseLayout>

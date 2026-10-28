@@ -85,6 +85,11 @@ jobs:
                 throw new Error(`${path} answered ${response.status}, expected 200`);
               }
             }
+            // Prove the deployed artifact is this commit, not a stale one.
+            const health = await (await fetch(base + "/health", { redirect: "manual" })).json();
+            if (health.buildSha !== process.env.GITHUB_SHA) {
+              throw new Error(`/health reports ${health.buildSha}, expected the deployed commit ${process.env.GITHUB_SHA}`);
+            }
             const home = await fetch(base + "/en");
             if (!/noindex, nofollow, noarchive/u.test(await home.text())) {
               throw new Error("/en is missing the demo robots policy");

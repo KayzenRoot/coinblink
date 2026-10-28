@@ -545,6 +545,24 @@ test.describe("CoinBlink M00 local shell", () => {
     }
   });
 
+  test("health reports the build it came from without exposing anything else", async ({ request }) => {
+    const response = await request.get("/health");
+    expect(response.status()).toBe(200);
+    expect(String(response.headers()["content-type"])).toContain("application/json");
+    expect(response.headers()["cache-control"]).toContain("no-store");
+    const body = await response.json();
+    expect(Object.keys(body).sort()).toEqual(["buildSha", "environment", "service", "status"]);
+    expect(body.status).toBe("ok");
+    expect(body.service).toBe("coinblink");
+    expect(typeof body.buildSha).toBe("string");
+    expect(body.buildSha.length).toBeGreaterThan(0);
+    expect(typeof body.environment).toBe("string");
+    // Nothing operational, private or credential-shaped belongs here.
+    const raw = JSON.stringify(body);
+    for (const banned of ["token", "secret", "password", "database", "d1", "session", "cookie"]) {
+      expect(raw.toLowerCase()).not.toContain(banned);
+    }
+  });
   test("robots.txt allows crawlers to read noindex signals without claiming privacy", async ({ request }) => {
     const response = await request.get("/robots.txt");
     expect(response.status()).toBe(200);

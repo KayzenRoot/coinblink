@@ -77,16 +77,16 @@ test("M09 Spanish DEMO entry is safe, accessible and returns from the existing n
     expect(response?.status()).toBe(200);
     await expect(page.locator("html")).toHaveAttribute("lang", "es");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
-    await expect(page.getByRole("heading", { level: 1, name: "CoinBlink en español" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Mercado de Bitcoin/u })).toBeVisible();
     const skip = page.getByRole("link", { name: "Saltar al contenido" });
     await page.keyboard.press("Tab");
     await expect(skip).toBeFocused();
     await expect(skip).toHaveAttribute("href", "#main");
     await expect(page.getByRole("main")).toHaveAttribute("id", "main");
-    await expect(page.getByText("DEMO", { exact: true })).toBeVisible();
+    await expect(page.locator(".demo-banner")).toContainText("DEMO");
     await expect(page.getByRole("link", { name: "Explorar noticias ficticias" })).toHaveAttribute("href", "/es/news");
-    await expect(page.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en");
-    await expect(page.getByRole("link", { name: "Português (Brasil)" })).toHaveAttribute("href", "/pt-br");
+    await expect(page.getByRole("link", { name: "Switch to English" })).toHaveAttribute("href", "/en");
+    await expect(page.getByRole("link", { name: "Mudar para português" })).toHaveAttribute("href", "/pt-br");
     const axe = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
     expect(axe.violations).toEqual([]);
   }
@@ -122,7 +122,7 @@ test("M09 P1 home navigation remains localized, keyboard usable, private-data-fr
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/u);
     if (locale === "es") {
       await expect(page.locator("html")).toHaveAttribute("lang", "es");
-      await expect(page.getByRole("heading", { name: "CoinBlink en español" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /Mercado de Bitcoin/u })).toBeVisible();
       const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
       expect(axe.violations).toEqual([]);
     }

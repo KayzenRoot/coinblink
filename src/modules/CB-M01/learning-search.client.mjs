@@ -7,17 +7,37 @@ if (section) {
   const clear = section.querySelector("[data-learning-clear]");
   const status = section.querySelector("[data-learning-status]");
   const cards = [...document.querySelectorAll("#learn [data-learning-topic]")];
-  const pt = section.dataset.locale === "pt-br";
+  const LABELS = {
+    en: {
+      searchLocale: "en",
+      all: (count) => "Showing all " + count + " educational guides.",
+      none: "No guides match your search. Try another term.",
+      found: (count) => count + (count === 1 ? " guide found." : " guides found."),
+      permalink: "Guide link",
+      permalinkAria: "Link to guide: ",
+    },
+    "pt-br": {
+      searchLocale: "pt-BR",
+      all: (count) => "Exibindo todos os " + count + " guias educativos.",
+      none: "Nenhum guia corresponde à busca. Tente outro termo.",
+      found: (count) => count + (count === 1 ? " guia encontrado." : " guias encontrados."),
+      permalink: "Link do guia",
+      permalinkAria: "Link para o guia: ",
+    },
+    es: {
+      searchLocale: "es",
+      all: (count) => "Mostrando las " + count + " guías educativas.",
+      none: "Ninguna guía coincide con la búsqueda. Prueba otro término.",
+      found: (count) => count + (count === 1 ? " guía encontrada." : " guías encontradas."),
+      permalink: "Enlace de la guía",
+      permalinkAria: "Enlace a la guía: ",
+    },
+  };
+  const locale = section.dataset.locale;
+  const labels = Object.hasOwn(LABELS, locale) ? LABELS[locale] : LABELS.en;
   const normalize = (value) => value.normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase(pt ? "pt-BR" : "en");
+    .replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase(labels.searchLocale);
   const indexes = cards.map((card) => normalize(card.textContent ?? ""));
-
-  function formatMatchCount(visible) {
-    if (pt) {
-      return visible + (visible === 1 ? " guia encontrado." : " guias encontrados.");
-    }
-    return visible + (visible === 1 ? " guide found." : " guides found.");
-  }
 
   function update() {
     const query = normalize(search.value.trim().slice(0, 80));
@@ -29,15 +49,11 @@ if (section) {
     });
     clear.hidden = !query;
     if (!query) {
-      status.textContent = pt
-        ? "Exibindo todos os " + cards.length + " guias educativos."
-        : "Showing all " + cards.length + " educational guides.";
+      status.textContent = labels.all(cards.length);
     } else if (visible === 0) {
-      status.textContent = pt
-        ? "Nenhum guia corresponde à busca. Tente outro termo."
-        : "No guides match your search. Try another term.";
+      status.textContent = labels.none;
     } else {
-      status.textContent = formatMatchCount(visible);
+      status.textContent = labels.found(visible);
     }
   }
 
@@ -50,8 +66,8 @@ if (section) {
     const link = document.createElement("a");
     link.className = "learn-card__permalink";
     link.href = "#" + card.id;
-    link.textContent = pt ? "Link do guia" : "Guide link";
-    link.setAttribute("aria-label", (pt ? "Link para o guia: " : "Link to guide: ") + title);
+    link.textContent = labels.permalink;
+    link.setAttribute("aria-label", labels.permalinkAria + title);
     content.appendChild(link);
   }
 

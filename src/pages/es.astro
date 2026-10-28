@@ -1,25 +1,12 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-
+import GoldenHome from "../modules/CB-M01/GoldenHome.astro";
 export const prerender = false;
 ---
-
 <BaseLayout
   lang="es"
-  title="CoinBlink en español · DEMO"
-  description="Entrada de demostración en español con noticias ficticias. Sin precios en vivo, publicación ni datos externos."
+  title="CoinBlink | Noticias cripto en un instante"
+  description="Página inicial de demostración de CoinBlink en español. Sin precios, noticias ni fuentes externas conectadas."
 >
-  <main class="not-found" id="main">
-    <p class="eyebrow">DEMO</p>
-    <h1>CoinBlink en español</h1>
-    <p class="body-copy">
-      Explora noticias educativas ficticias y no publicadas. Esta demostración
-      no ofrece noticias reales, precios en vivo ni servicios conectados.
-    </p>
-    <nav aria-label="Navegación de la demostración">
-      <a class="button button--primary" href="/es/news">Explorar noticias ficticias</a>
-      <a href="/en" lang="en">English</a>
-      <a href="/pt-br" lang="pt-BR">Português (Brasil)</a>
-    </nav>
-  </main>
+  <GoldenHome locale="es" />
 </BaseLayout>

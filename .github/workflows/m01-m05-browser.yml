@@ -8,12 +8,15 @@ on:
       - "src/modules/CB-M01/**"
       - "src/pages/en.astro"
       - "src/pages/pt-br.astro"
+      - "src/pages/es.astro"
+      - "src/components/LocalJourneyNav.astro"
       - "src/pages/index.astro"
       - "src/pages/404.astro"
       - "src/pages/demo/editorial/**"
       - "src/layouts/**"
       - "src/modules/CB-M05/**"
       - "public/home-demo.js"
+      - "public/explorer-lookup.js"
       - "public/m01-local-draft-preview.js"
       - "public/m05-draft-preview.js"
       - "e2e/m01-*.spec.mjs"
@@ -58,6 +61,7 @@ jobs:
             e2e/m01-editorial-handoff.spec.mjs \
             e2e/m01-official-sources-filter.spec.mjs \
             e2e/m01-learning-search.spec.mjs \
+            e2e/m01-spanish-home.spec.mjs \
             e2e/m01-m05-local-draft-preview.spec.mjs \
             e2e/m05-editorial-demo.spec.mjs \
             e2e/m05-admin-prod-guard.spec.mjs

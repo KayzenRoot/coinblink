@@ -1,23 +1,49 @@
 ---
 interface Props {
-  locale?: "en" | "pt-br";
+  locale?: "en" | "pt-br" | "es";
   current: "home" | "news" | "sources" | "markets" | "research" | "newsletter" | "editorial" | "labs";
 }
 const { locale = "en", current } = Astro.props;
-const pt = locale === "pt-br";
+const COPY = Object.freeze({
+  en: Object.freeze({
+    journey: "CoinBlink demo journey",
+    disclaimer: "DEMO ONLY · Invented stories · Unlicensed sources · No market quotes · No publishing",
+    home: "Home", news: "Fictional news", sources: "Source lab", markets: "Market lab",
+    research: "Research lab", newsletter: "Newsletter lab", editorial: "Editorial demo", labs: "Demo labs",
+  }),
+  "pt-br": Object.freeze({
+    journey: "Jornada demonstrativa CoinBlink",
+    disclaimer: "SOMENTE DEMO · Notícias inventadas · Fontes sem licença · Preços indisponíveis · Sem publicação",
+    home: "Início", news: "Notícias fictícias", sources: "Fontes demonstrativas (EN)",
+    markets: "Mercados demonstrativos (EN)", research: "Pesquisa demonstrativa (EN)",
+    newsletter: "Boletim demonstrativo (EN)", editorial: "Editor demonstrativo (EN)",
+    labs: "Laboratórios demo (EN)",
+  }),
+  es: Object.freeze({
+    journey: "Recorrido de demostración de CoinBlink",
+    disclaimer: "SOLO DEMO · Noticias inventadas · Fuentes sin licencia · Precios no disponibles · Sin publicación",
+    home: "Inicio", news: "Noticias ficticias", sources: "Fuentes de demostración (EN)",
+    markets: "Mercados de demostración (EN)", research: "Investigación de demostración (EN)",
+    newsletter: "Boletín de demostración (EN)", editorial: "Editor de demostración (EN)",
+    labs: "Laboratorios demo (EN)",
+  }),
+});
+const copy = Object.hasOwn(COPY, locale) ? COPY[locale] : COPY.en;
+const PREFIX = Object.freeze({ en: "/en", "pt-br": "/pt-br", es: "/es" });
+const prefix = Object.hasOwn(PREFIX, locale) ? PREFIX[locale] : PREFIX.en;
 const entries = [
-  { key: "home", href: pt ? "/pt-br" : "/en", label: pt ? "Início" : "Home" },
-  { key: "news", href: pt ? "/pt-br/news" : "/en/news", label: pt ? "Notícias fictícias" : "Fictional news" },
-  { key: "sources", href: "/demo/sources", label: pt ? "Fontes demonstrativas (EN)" : "Source lab" },
-  { key: "markets", href: "/demo/markets", label: pt ? "Mercados demonstrativos (EN)" : "Market lab" },
-  { key: "research", href: "/demo/research", label: pt ? "Pesquisa demonstrativa (EN)" : "Research lab" },
-  { key: "newsletter", href: "/demo/newsletter", label: pt ? "Boletim demonstrativo (EN)" : "Newsletter lab" },
-  { key: "editorial", href: "/demo/editorial/articles", label: pt ? "Editor demonstrativo (EN)" : "Editorial demo" },
-  { key: "labs", href: "/demo", label: pt ? "Laboratórios demo (EN)" : "Demo labs" },
+  { key: "home", href: prefix, label: copy.home },
+  { key: "news", href: prefix + "/news", label: copy.news },
+  { key: "sources", href: "/demo/sources", label: copy.sources },
+  { key: "markets", href: "/demo/markets", label: copy.markets },
+  { key: "research", href: "/demo/research", label: copy.research },
+  { key: "newsletter", href: "/demo/newsletter", label: copy.newsletter },
+  { key: "editorial", href: "/demo/editorial/articles", label: copy.editorial },
+  { key: "labs", href: "/demo", label: copy.labs },
 ];
 ---
-<nav class="cb-local-journey" aria-label={pt ? "Jornada demonstrativa CoinBlink" : "CoinBlink demo journey"} data-journey-nav data-journey-locale={locale}>
-  <p class="cb-local-journey__disclaimer">{pt ? "SOMENTE DEMO · Notícias inventadas · Fontes sem licença · Preços indisponíveis · Sem publicação" : "DEMO ONLY · Invented stories · Unlicensed sources · No market quotes · No publishing"}</p>
+<nav class="cb-local-journey" aria-label={copy.journey} data-journey-nav data-journey-locale={locale}>
+  <p class="cb-local-journey__disclaimer">{copy.disclaimer}</p>
   <ul>
     {entries.map(item => (
       <li><a href={item.href} aria-current={current === item.key ? "page" : undefined}>{item.label}</a></li>

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { API_CONTRACT_VERSION, conformsToContract, listContractPaths } from "../src/modules/CB-M11/api-contract.mjs";
+import { API_CONTRACT_VERSION, V1_ENDPOINTS, conformsToContract } from "../src/modules/CB-M11/api-contract.mjs";
 
 test("M11 documentation is local-only, readable, accessible and demonstrates the API", async ({ page }) => {
   const outbound = [], mutations = [], errors = [];
@@ -54,7 +54,8 @@ test("M11 API returns three canonical fictional metadata records with safe respo
 });
 
 test("M11 every sandbox response conforms to the published contract", async ({ request }) => {
-  for (const path of listContractPaths()) {
+  for (const endpoint of V1_ENDPOINTS) {
+    const path = endpoint.examplePath ?? endpoint.path;
     const response = await request.get(path);
     expect(response.status(), `${path} must answer 200`).toBe(200);
     expect(String(response.headers()["content-type"])).toContain("application/json");
@@ -62,6 +63,17 @@ test("M11 every sandbox response conforms to the published contract", async ({ r
     const result = conformsToContract(path, response.status(), payload);
     expect(result.problems, `${path} drifted from contract ${API_CONTRACT_VERSION}`).toEqual([]);
   }
+  // The detail endpoint answers 404 and 405 with the contracted envelopes.
+  const missing = await request.get("/v1/demo/articles/unknown-slug");
+  expect(missing.status()).toBe(404);
+  expect(conformsToContract("/v1/demo/articles/unknown-slug", 404, await missing.json()).problems).toEqual([]);
+  const expanded = await request.get("/v1/demo/articles/demo-wallet-safety?include=body");
+  expect(expanded.status()).toBe(400);
+  expect(conformsToContract("/v1/demo/articles/demo-wallet-safety", 400, await expanded.json()).problems).toEqual([]);
+  const detailWrongMethod = await request.fetch("/v1/demo/articles/demo-wallet-safety", { method: "DELETE" });
+  expect(detailWrongMethod.status()).toBe(405);
+  expect(detailWrongMethod.headers()["allow"]).toBe("GET");
+  expect(conformsToContract("/v1/demo/articles/demo-wallet-safety", 405, await detailWrongMethod.json()).problems).toEqual([]);
   // The contract must also describe what the endpoint promises for mistakes.
   const rejected = await request.get("/v1/demo/articles?limit=1");
   expect(rejected.status()).toBe(400);

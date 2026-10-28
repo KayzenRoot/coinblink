@@ -12,6 +12,21 @@ const EMPTY = Object.freeze({
   items: Object.freeze([]),
 });
 
+/**
+ * The one strict projection of a canonical invented article, shared by the list
+ * and the detail endpoint so the two can never disagree about the shape.
+ * @param {unknown} row
+ * @param {unknown} canonical
+ */
+export function projectDemoArticle(row, canonical) {
+  if (!safeRow(row, canonical)) return null;
+  return Object.freeze({
+    id: row.id, slug: row.slug, category: row.category,
+    title: row.title, summary: row.summary,
+    published: false, rights: "SYNTHETIC_NOT_LICENSED_NEWS",
+  });
+}
+
 const safeRow = (row, canonical) => {
   if (!row || typeof row !== "object" || Array.isArray(row) ||
       !canonical || typeof canonical !== "object" ||
@@ -42,13 +57,12 @@ export function buildDemoArticles(source = listMockNews()) {
   const ids = new Set();
   const result = [];
   for (const [index, row] of source.items.entries()) {
-    if (!safeRow(row, CANONICAL.items[index]) || ids.has(row.id)) return EMPTY;
+    // projectDemoArticle applies the same safeRow check, so a forged or
+    // substituted fixture still yields the empty payload.
+    const projected = projectDemoArticle(row, CANONICAL.items[index]);
+    if (projected === null || ids.has(row.id)) return EMPTY;
     ids.add(row.id);
-    result.push(Object.freeze({
-      id: row.id, slug: row.slug, category: row.category,
-      title: row.title, summary: row.summary,
-      published: false, rights: "SYNTHETIC_NOT_LICENSED_NEWS",
-    }));
+    result.push(projected);
   }
   return Object.freeze({
     status: "DEMO_ONLY", mode: "SYNTHETIC", live: false,

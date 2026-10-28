@@ -10,17 +10,39 @@ import {
 const ENTITIES = Object.freeze({
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'", "#x27": "'",
 });
+const ENTITY_PATTERN = /&(?:amp|lt|gt|quot|apos|nbsp|#39|#x27);/gu;
+const CDATA_PATTERN = /<!\[CDATA\[([\s\S]*?)\]\]>/gu;
 
 export function decodeEntities(text) {
-  return text.replace(/&([a-zA-Z#0-9x]+);/gu, (whole, name) => ENTITIES[name] ?? whole);
+  return text.replace(ENTITY_PATTERN, (whole) => ENTITIES[whole.slice(1, -1)] ?? whole);
 }
 
-/** Remove tags and collapse whitespace: feed descriptions often carry HTML. */
+/** Drop tags in one linear pass: feed descriptions often carry HTML. */
+function removeTags(text) {
+  let kept = "";
+  let index = 0;
+  while (index < text.length) {
+    const open = text.indexOf("<", index);
+    if (open === -1) {
+      kept += text.slice(index);
+      break;
+    }
+    kept += text.slice(index, open) + " ";
+    const close = text.indexOf(">", open + 1);
+    if (close === -1) {
+      kept += text.slice(open);
+      break;
+    }
+    index = close + 1;
+  }
+  return kept;
+}
+
 export function stripMarkup(value) {
   if (typeof value !== "string") return "";
-  const withoutCdata = value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gu, "$1");
-  const withoutTags = withoutCdata.replace(/<[^>]*>/gu, " ");
-  return decodeEntities(withoutTags).replace(/\s+/gu, " ").trim();
+  return decodeEntities(removeTags(value.replace(CDATA_PATTERN, "$1")))
+    .replace(/\s+/gu, " ")
+    .trim();
 }
 
 function clip(text, limit) {
@@ -29,7 +51,7 @@ function clip(text, limit) {
 }
 
 function firstTag(xml, tag) {
-  const pattern = "<" + tag + "(?:\\s[^>]*)?>([\\s\\S]*?)</" + tag + ">";
+  const pattern = String.raw`<${tag}(?:\s[^>]*)?>([\s\S]*?)</${tag}>`;
   const match = new RegExp(pattern, "iu").exec(xml);
   return match === null ? null : match[1];
 }
@@ -64,34 +86,41 @@ function publishedAtOf(item) {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
 }
 
+/** @param {unknown} source */
+function isFeedSource(source) {
+  return source !== null && typeof source === "object" && !Array.isArray(source) &&
+    typeof source.id === "string" && typeof source.name === "string" &&
+    typeof source.home === "string" && Array.isArray(source.hosts);
+}
+
 /**
  * Project one feed into frozen headline items. Malformed entries are dropped
  * individually: one bad item never empties the feed.
  * @param {unknown} xml
- * @param {{source: {id: string, name: string, home: string, hosts: readonly string[]}, collectedAt: string, limit?: number}} options
+ * @param {{source?: {id: string, name: string, home: string, hosts: readonly string[]}, collectedAt?: string, limit?: number}} [options]
  */
-export function parseRssFeed(xml, { source, collectedAt, limit = LIVE_NEWS_MAX_ITEMS } = {}) {
+export function parseRssFeed(xml, options = {}) {
+  const { source, collectedAt, limit = LIVE_NEWS_MAX_ITEMS } = options ?? {};
   if (typeof xml !== "string" || xml.trim() === "") return Object.freeze([]);
-  if (source === null || typeof source !== "object" || !Array.isArray(source.hosts)) {
-    throw new TypeError("a source with allowed hosts is required");
-  }
+  if (!isFeedSource(source)) throw new TypeError("a source with allowed hosts is required");
+  const feed = /** @type {{id: string, name: string, home: string, hosts: readonly string[]}} */ (source);
   const blocks = [...xml.matchAll(/<(item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/\1>/giu)].map((match) => match[2]);
   const seen = new Set();
   const items = [];
   for (const block of blocks) {
     const title = clip(stripMarkup(firstTag(block, "title") ?? ""), LIVE_NEWS_TITLE_MAX);
-    const link = safeLink(linkOf(block), source);
+    const link = safeLink(linkOf(block), feed);
     if (title === "" || link === null || seen.has(link)) continue;
     seen.add(link);
     items.push(Object.freeze({
-      id: source.id + ":" + link,
+      id: feed.id + ":" + link,
       title,
       summary: clip(stripMarkup(firstTag(block, "description") ?? firstTag(block, "summary") ?? ""),
         LIVE_NEWS_SUMMARY_MAX),
       link,
-      sourceId: source.id,
-      sourceName: source.name,
-      sourceHome: source.home,
+      sourceId: feed.id,
+      sourceName: feed.name,
+      sourceHome: feed.home,
       publishedAt: publishedAtOf(block),
       collectedAt,
     }));

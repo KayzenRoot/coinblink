@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { API_CONTRACT_VERSION, conformsToContract, listContractPaths } from "../src/modules/CB-M11/api-contract.mjs";
 
 test("M11 documentation is local-only, readable, accessible and demonstrates the API", async ({ page }) => {
   const outbound = [], mutations = [], errors = [];
@@ -50,6 +51,25 @@ test("M11 API returns three canonical fictional metadata records with safe respo
   for (const banned of ["private_notes", "password", "access_token", "body", "api_key", "published_at", "provider_secret"]) {
     expect(raw).not.toContain('"' + banned + '"');
   }
+});
+
+test("M11 every sandbox response conforms to the published contract", async ({ request }) => {
+  for (const path of listContractPaths()) {
+    const response = await request.get(path);
+    expect(response.status(), `${path} must answer 200`).toBe(200);
+    expect(String(response.headers()["content-type"])).toContain("application/json");
+    const payload = await response.json();
+    const result = conformsToContract(path, response.status(), payload);
+    expect(result.problems, `${path} drifted from contract ${API_CONTRACT_VERSION}`).toEqual([]);
+  }
+  // The contract must also describe what the endpoint promises for mistakes.
+  const rejected = await request.get("/v1/demo/articles?limit=1");
+  expect(rejected.status()).toBe(400);
+  const errorPayload = await rejected.json();
+  expect(conformsToContract("/v1/demo/articles", 400, errorPayload).problems).toEqual([]);
+  const wrongMethod = await request.fetch("/v1/demo/market-readiness", { method: "DELETE" });
+  expect(wrongMethod.status()).toBe(405);
+  expect(conformsToContract("/v1/demo/market-readiness", 405, await wrongMethod.json()).problems).toEqual([]);
 });
 
 test("M11 API rejects expanded queries and unsafe methods without modifying data", async ({ request }) => {

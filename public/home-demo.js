@@ -32,64 +32,75 @@ document.addEventListener("pointerdown", (event) => {
   closeMenu();
 });
 
-const MESSAGES = {
-  en: {
-    searchLocale: "en",
-    count: (n) => String(n) + (n === 1 ? " placeholder" : " placeholders"),
-    all: "Showing all demo placeholders.",
-    summary: (n, category, hasQuery) => "Showing " + n + (n === 1 ? " demo placeholder" : " demo placeholders")
+// One row per message, one value per locale: a missing translation is visible
+// in review and the table shape is written once.
+const MESSAGE_ROWS = {
+  searchLocale: ["en", "pt-BR", "es"],
+  countOne: [" placeholder", " exemplo", " ejemplo"],
+  countMany: [" placeholders", " exemplos", " ejemplos"],
+  all: [
+    "Showing all demo placeholders.",
+    "Exibindo todos os exemplos.",
+    "Mostrando todos los ejemplos de demostración.",
+  ],
+  summary: [
+    (n, category, hasQuery) => "Showing " + n + (n === 1 ? " demo placeholder" : " demo placeholders")
       + category + (hasQuery ? " matching your search." : "."),
-    copyFailed: "Automatic copying is unavailable. Select and copy the link below.",
-    copied: "View link copied.",
-    preview: "Preview only. No email was sent or stored.",
-    filterAria: "Filter official publishers",
-    filterLabel: "Search official publishers",
-    filterPlaceholder: "Name, topic or domain",
-    filterClear: "Clear search",
-    filterNone: "No official publishers match this search.",
-    filterCount: (visible, total) => visible + " of " + total + " official publishers shown.",
-    categoryPrefix: " in ",
-  },
-  "pt-br": {
-    searchLocale: "pt-BR",
-    count: (n) => String(n) + (n === 1 ? " exemplo" : " exemplos"),
-    all: "Exibindo todos os exemplos.",
-    summary: (n, category, hasQuery) => "Exibindo " + n + (n === 1 ? " exemplo" : " exemplos")
+    (n, category, hasQuery) => "Exibindo " + n + (n === 1 ? " exemplo" : " exemplos")
       + category + (hasQuery ? " correspondentes à busca." : "."),
-    copyFailed: "Cópia automática indisponível. Selecione e copie o link abaixo.",
-    copied: "Link da seleção copiado.",
-    preview: "Apenas prévia. Nenhum e-mail foi enviado ou armazenado.",
-    filterAria: "Filtrar fontes oficiais",
-    filterLabel: "Pesquisar fontes oficiais",
-    filterPlaceholder: "Nome, assunto ou domínio",
-    filterClear: "Limpar busca",
-    filterNone: "Nenhuma fonte oficial corresponde à busca.",
-    filterCount: (visible, total) => visible + " de " + total + " fontes oficiais exibidas.",
-    categoryPrefix: " em ",
-  },
-  es: {
-    searchLocale: "es",
-    count: (n) => String(n) + (n === 1 ? " ejemplo" : " ejemplos"),
-    all: "Mostrando todos los ejemplos de demostración.",
-    summary: (n, category, hasQuery) => "Mostrando " + n + (n === 1 ? " ejemplo de demostración" : " ejemplos de demostración")
+    (n, category, hasQuery) => "Mostrando " + n + (n === 1 ? " ejemplo de demostración" : " ejemplos de demostración")
       + category + (hasQuery ? " que coinciden con la búsqueda." : "."),
-    copyFailed: "La copia automática no está disponible. Selecciona y copia el enlace de abajo.",
-    copied: "Enlace de la vista copiado.",
-    preview: "Solo vista previa. No se envió ni almacenó ningún correo.",
-    filterAria: "Filtrar fuentes oficiales",
-    filterLabel: "Buscar fuentes oficiales",
-    filterPlaceholder: "Nombre, tema o dominio",
-    filterClear: "Borrar búsqueda",
-    filterNone: "Ninguna fuente oficial coincide con esta búsqueda.",
-    filterCount: (visible, total) => "Mostrando " + visible + " de " + total + " fuentes oficiales.",
-    categoryPrefix: " en ",
-  },
+  ],
+  copyFailed: [
+    "Automatic copying is unavailable. Select and copy the link below.",
+    "Cópia automática indisponível. Selecione e copie o link abaixo.",
+    "La copia automática no está disponible. Selecciona y copia el enlace de abajo.",
+  ],
+  copied: ["View link copied.", "Link da seleção copiado.", "Enlace de la vista copiado."],
+  preview: [
+    "Preview only. No email was sent or stored.",
+    "Apenas prévia. Nenhum e-mail foi enviado ou armazenado.",
+    "Solo vista previa. No se envió ni almacenó ningún correo.",
+  ],
+  filterAria: ["Filter official publishers", "Filtrar fontes oficiais", "Filtrar fuentes oficiales"],
+  filterLabel: ["Search official publishers", "Pesquisar fontes oficiais", "Buscar fuentes oficiales"],
+  filterPlaceholder: ["Name, topic or domain", "Nome, assunto ou domínio", "Nombre, tema o dominio"],
+  filterClear: ["Clear search", "Limpar busca", "Borrar búsqueda"],
+  filterNone: [
+    "No official publishers match this search.",
+    "Nenhuma fonte oficial corresponde à busca.",
+    "Ninguna fuente oficial coincide con esta búsqueda.",
+  ],
+  filterCount: [
+    (visible, total) => visible + " of " + total + " official publishers shown.",
+    (visible, total) => visible + " de " + total + " fontes oficiais exibidas.",
+    (visible, total) => "Mostrando " + visible + " de " + total + " fuentes oficiales.",
+  ],
+  categoryPrefix: [" in ", " em ", " en "],
 };
 const homeLocale = document.querySelector(".cb-home")?.dataset.locale;
-const messages = Object.hasOwn(MESSAGES, homeLocale) ? MESSAGES[homeLocale] : MESSAGES.en;
-const isEnglish = !Object.hasOwn(MESSAGES, homeLocale) || homeLocale === "en";
-const HOME_PATHS = Object.freeze({ en: "/en", "pt-br": "/pt-br", es: "/es" });
-const defaultPath = Object.hasOwn(HOME_PATHS, homeLocale) ? HOME_PATHS[homeLocale] : HOME_PATHS.en;
+const LOCALE_INDEX = Object.freeze({ en: 0, "pt-br": 1, es: 2 });
+const localeIndex = Object.hasOwn(LOCALE_INDEX, homeLocale) ? LOCALE_INDEX[homeLocale] : 0;
+const pick = (key) => MESSAGE_ROWS[key][localeIndex];
+const messages = {
+  searchLocale: pick("searchLocale"),
+  count: (n) => String(n) + pick(n === 1 ? "countOne" : "countMany"),
+  all: pick("all"),
+  summary: (...args) => pick("summary")(...args),
+  copyFailed: pick("copyFailed"),
+  copied: pick("copied"),
+  preview: pick("preview"),
+  filterAria: pick("filterAria"),
+  filterLabel: pick("filterLabel"),
+  filterPlaceholder: pick("filterPlaceholder"),
+  filterClear: pick("filterClear"),
+  filterNone: pick("filterNone"),
+  filterCount: (...args) => pick("filterCount")(...args),
+  categoryPrefix: pick("categoryPrefix"),
+};
+const isEnglish = localeIndex === 0;
+const HOME_PATHS = Object.freeze(["/en", "/pt-br", "/es"]);
+const defaultPath = HOME_PATHS[localeIndex];
 const placeholderCount = messages.count;
 
 let selected = "All";
@@ -140,7 +151,7 @@ function validatedSectionHash() {
 function buildViewURL(pathname = defaultPath) {
   // Only our first-party locale routes may become link targets.
   // Never derive a destination path or origin from untrusted URL parameters.
-  const safePath = Object.values(HOME_PATHS).includes(pathname) ? pathname : HOME_PATHS.en;
+  const safePath = HOME_PATHS.includes(pathname) ? pathname : HOME_PATHS[0];
   const view = new URL(safePath, window.location.origin);
   if (selected !== "All" && allowedCategories.has(selected)) {
     view.searchParams.set("category", selected);

@@ -29,8 +29,7 @@ export function matchesLiveHeadline(item, { query = "", source = LIVE_NEWS_ALL_S
   if (source !== LIVE_NEWS_ALL_SOURCES && item.sourceId !== source) return false;
   const needle = normalizeLiveSearch(clampLiveSearchQuery(query));
   if (needle === "") return true;
-  return normalizeLiveSearch([item.title, item.summary, item.sourceName].join(" "))
-    .includes(needle);
+  return normalizeLiveSearch([item.title, item.summary].join(" ")).includes(needle);
 }
 
 export function filterLiveHeadlines(items, filter = {}) {

@@ -8,7 +8,7 @@ const approvedHosts = new Set([
 ]);
 
 test("official source directory is finite, immutable and contains only approved HTTPS publisher endpoints", () => {
-  for (const locale of ["en", "pt-br"]) {
+  for (const locale of ["en", "pt-br", "es"]) {
     const sources = getOfficialSources(locale);
     assert.equal(sources.length, 6);
     assert.equal(new Set(sources.map((entry) => entry.id)).size, sources.length);
@@ -33,6 +33,9 @@ test("official source directory is finite, immutable and contains only approved 
 test("locale-specific Ethereum original archive is partial and other publishers remain external English sources", () => {
   const en = getOfficialSources("en");
   const pt = getOfficialSources("pt-br");
+  const es = getOfficialSources("es");
+  assert.deepEqual(en.map(({ id }) => id), es.map(({ id }) => id));
+  assert.match(es.find(({ id }) => id === "sec").description, /regulador de valores/u);
   assert.deepEqual(en.map(({ id }) => id), pt.map(({ id }) => id));
   assert.deepEqual(en, getOfficialSources("other"));
   const ef = pt.find(({ id }) => id === "ethereum-foundation");

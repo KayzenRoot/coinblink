@@ -344,17 +344,21 @@ test("real /en route mounts GoldenHome without bypassing the common secure layou
 
 const copy = await readFile(new URL("../../../src/modules/CB-M01/home-copy.mjs", import.meta.url), "utf8");
 const ptRoute = await readFile(new URL("../../../src/pages/pt-br.astro", import.meta.url), "utf8");
+const esRoute = await readFile(new URL("../../../src/pages/es.astro", import.meta.url), "utf8");
 const secureLayout = await readFile(new URL("../../../src/layouts/BaseLayout.astro", import.meta.url), "utf8");
 
-test("Brazilian Portuguese uses one shared Golden Home and correct document language", () => {
-  assert.match(component, /locale\?: "en" \| "pt-br"/u);
+test("every site language uses one shared Golden Home and correct document language", () => {
+  assert.ok(component.includes('locale?: "en" | "pt-br" | "es"'));
   assert.match(component, /data-locale=\{locale\}/u);
   assert.match(component, /href=\{locale === "en" \? "\/pt-br" : "\/en"\}/u);
   assert.match(ptRoute, /lang="pt-BR"/u);
-  assert.match(ptRoute, /<GoldenHome locale="pt-br"\s*\/>/u);
+  assert.ok(ptRoute.includes('<GoldenHome locale="pt-br" />'));
+  assert.ok(esRoute.includes('lang="es"'));
+  assert.ok(esRoute.includes('<GoldenHome locale="es" />'));
   assert.match(secureLayout, /<html lang=\{seo\.lang\}>/u);
-  assert.match(copy, /"Regulation": "Regulação"/u);
-  assert.match(copy, /"DEMO · NO STORIES CONNECTED": "DEMO · SEM NOTÍCIAS CONECTADAS"/u);
-  assert.match(clientScript, /const isPortuguese = /u);
+  assert.ok(copy.includes('"Regulation": Object.freeze({ "pt-br": "Regulação", es: "Regulación" })'));
+  assert.ok(copy.includes('"DEMO · NO STORIES CONNECTED": Object.freeze({ "pt-br": "DEMO · SEM NOTÍCIAS CONECTADAS"'));
+  assert.ok(clientScript.includes("const MESSAGES = {"));
+  assert.ok(clientScript.includes('es: {'));
   assert.doesNotMatch(clientScript, /\b(?:fetch\s*\(|localStorage|sessionStorage|document\.cookie)\b/u);
 });

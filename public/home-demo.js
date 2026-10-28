@@ -32,11 +32,76 @@ document.addEventListener("pointerdown", (event) => {
   closeMenu();
 });
 
-const isPortuguese = document.querySelector(".cb-home")?.dataset.locale === "pt-br";
-const placeholderCount = (n) => {
-  if (isPortuguese) return String(n) + (n === 1 ? " exemplo" : " exemplos");
-  return String(n) + (n === 1 ? " placeholder" : " placeholders");
+// One row per message, one value per locale: a missing translation is visible
+// in review and the table shape is written once.
+const MESSAGE_ROWS = {
+  searchLocale: ["en", "pt-BR", "es"],
+  countOne: [" placeholder", " exemplo", " ejemplo"],
+  countMany: [" placeholders", " exemplos", " ejemplos"],
+  all: [
+    "Showing all demo placeholders.",
+    "Exibindo todos os exemplos.",
+    "Mostrando todos los ejemplos de demostración.",
+  ],
+  summary: [
+    (n, category, hasQuery) => "Showing " + n + (n === 1 ? " demo placeholder" : " demo placeholders")
+      + category + (hasQuery ? " matching your search." : "."),
+    (n, category, hasQuery) => "Exibindo " + n + (n === 1 ? " exemplo" : " exemplos")
+      + category + (hasQuery ? " correspondentes à busca." : "."),
+    (n, category, hasQuery) => "Mostrando " + n + (n === 1 ? " ejemplo de demostración" : " ejemplos de demostración")
+      + category + (hasQuery ? " que coinciden con la búsqueda." : "."),
+  ],
+  copyFailed: [
+    "Automatic copying is unavailable. Select and copy the link below.",
+    "Cópia automática indisponível. Selecione e copie o link abaixo.",
+    "La copia automática no está disponible. Selecciona y copia el enlace de abajo.",
+  ],
+  copied: ["View link copied.", "Link da seleção copiado.", "Enlace de la vista copiado."],
+  preview: [
+    "Preview only. No email was sent or stored.",
+    "Apenas prévia. Nenhum e-mail foi enviado ou armazenado.",
+    "Solo vista previa. No se envió ni almacenó ningún correo.",
+  ],
+  filterAria: ["Filter official publishers", "Filtrar fontes oficiais", "Filtrar fuentes oficiales"],
+  filterLabel: ["Search official publishers", "Pesquisar fontes oficiais", "Buscar fuentes oficiales"],
+  filterPlaceholder: ["Name, topic or domain", "Nome, assunto ou domínio", "Nombre, tema o dominio"],
+  filterClear: ["Clear search", "Limpar busca", "Borrar búsqueda"],
+  filterNone: [
+    "No official publishers match this search.",
+    "Nenhuma fonte oficial corresponde à busca.",
+    "Ninguna fuente oficial coincide con esta búsqueda.",
+  ],
+  filterCount: [
+    (visible, total) => visible + " of " + total + " official publishers shown.",
+    (visible, total) => visible + " de " + total + " fontes oficiais exibidas.",
+    (visible, total) => "Mostrando " + visible + " de " + total + " fuentes oficiales.",
+  ],
+  categoryPrefix: [" in ", " em ", " en "],
 };
+const homeLocale = document.querySelector(".cb-home")?.dataset.locale;
+const LOCALE_INDEX = Object.freeze({ en: 0, "pt-br": 1, es: 2 });
+const localeIndex = Object.hasOwn(LOCALE_INDEX, homeLocale) ? LOCALE_INDEX[homeLocale] : 0;
+const pick = (key) => MESSAGE_ROWS[key][localeIndex];
+const messages = {
+  searchLocale: pick("searchLocale"),
+  count: (n) => String(n) + pick(n === 1 ? "countOne" : "countMany"),
+  all: pick("all"),
+  summary: (...args) => pick("summary")(...args),
+  copyFailed: pick("copyFailed"),
+  copied: pick("copied"),
+  preview: pick("preview"),
+  filterAria: pick("filterAria"),
+  filterLabel: pick("filterLabel"),
+  filterPlaceholder: pick("filterPlaceholder"),
+  filterClear: pick("filterClear"),
+  filterNone: pick("filterNone"),
+  filterCount: (...args) => pick("filterCount")(...args),
+  categoryPrefix: pick("categoryPrefix"),
+};
+const isEnglish = localeIndex === 0;
+const HOME_PATHS = Object.freeze(["/en", "/pt-br", "/es"]);
+const defaultPath = HOME_PATHS[localeIndex];
+const placeholderCount = messages.count;
 
 let selected = "All";
 let searchText = "";
@@ -46,7 +111,7 @@ const localizedCategories = new Map(buttons.map((button) => [
   button.dataset.category,
   button.dataset.categoryLabel ?? button.dataset.category,
 ]));
-const displayCategory = (id) => isPortuguese ? (localizedCategories.get(id) ?? id) : id;
+const displayCategory = (id) => localizedCategories.get(id) ?? id;
 const cards = [...document.querySelectorAll("[data-news-card]")];
 const searches = [
   document.querySelector("[data-news-search]"),
@@ -83,10 +148,10 @@ function validatedSectionHash() {
   }
 }
 
-function buildViewURL(pathname = isPortuguese ? "/pt-br" : "/en") {
-  // Only our two first-party routes may become link targets.
+function buildViewURL(pathname = defaultPath) {
+  // Only our first-party locale routes may become link targets.
   // Never derive a destination path or origin from untrusted URL parameters.
-  const safePath = pathname === "/pt-br" ? "/pt-br" : "/en";
+  const safePath = HOME_PATHS.includes(pathname) ? pathname : HOME_PATHS[0];
   const view = new URL(safePath, window.location.origin);
   if (selected !== "All" && allowedCategories.has(selected)) {
     view.searchParams.set("category", selected);
@@ -99,7 +164,7 @@ function buildViewURL(pathname = isPortuguese ? "/pt-br" : "/en") {
 
 function updateLanguageSwitch() {
   if (!languageSwitch) return;
-  const url = buildViewURL(isPortuguese ? "/en" : "/pt-br");
+  const url = buildViewURL(isEnglish ? "/pt-br" : "/en");
   languageSwitch.setAttribute("href", url.pathname + url.search + url.hash);
 }
 
@@ -110,9 +175,7 @@ function showManualShare(url) {
     shareURLInput.focus();
     shareURLInput.select();
   }
-  if (shareStatus) shareStatus.textContent = isPortuguese
-    ? "Cópia automática indisponível. Selecione e copie o link abaixo."
-    : "Automatic copying is unavailable. Select and copy the link below.";
+  if (shareStatus) shareStatus.textContent = messages.copyFailed;
 }
 
 // Keep the demonstration view reproducible through a URL, without cookies,
@@ -150,29 +213,22 @@ function restoreFilterURL() {
 
 
 function buildFilterSummary(visible, filtered, query) {
-  if (!filtered) return isPortuguese ? "Exibindo todos os exemplos." : "Showing all demo placeholders.";
-  if (isPortuguese) {
-    const category = selected === "All" ? "" : " em " + displayCategory(selected);
-    return "Exibindo " + placeholderCount(visible) + category
-      + (query ? " correspondentes à busca." : ".");
-  }
-  const category = selected === "All" ? "" : " in " + selected;
-  const noun = visible === 1 ? " demo placeholder" : " demo placeholders";
-  return "Showing " + visible + noun + category
-    + (query ? " matching your search." : ".");
+  if (!filtered) return messages.all;
+  const category = selected === "All" ? "" : messages.categoryPrefix + displayCategory(selected);
+  return messages.summary(visible, category, query !== "");
 }
 
 function filterStories() {
   updateLanguageSwitch();
   if (shareStatus) shareStatus.textContent = "";
   if (manualShare) manualShare.hidden = true;
-  const query = searchText.trim().toLocaleLowerCase("en");
+  const query = searchText.trim().toLocaleLowerCase(messages.searchLocale);
   let visible = 0;
   cards.forEach((card) => {
     const matchesCategory = selected === "All" || card.dataset.categoryValue === selected;
     const category = card.dataset.categoryValue ?? "";
     const searchableText = category + " " + displayCategory(category) + " " + card.textContent;
-    const matchesQuery = !query || searchableText.toLocaleLowerCase("en").includes(query);
+    const matchesQuery = !query || searchableText.toLocaleLowerCase(messages.searchLocale).includes(query);
     card.hidden = !(matchesCategory && matchesQuery);
     if (!card.hidden) visible += 1;
   });
@@ -256,9 +312,7 @@ shareButton?.addEventListener("click", async () => {
   try {
     await window.navigator.clipboard.writeText(url);
     if (manualShare) manualShare.hidden = true;
-    if (shareStatus) shareStatus.textContent = isPortuguese
-      ? "Link da seleção copiado."
-      : "View link copied.";
+    if (shareStatus) shareStatus.textContent = messages.copied;
   } catch {
     showManualShare(url);
   }
@@ -266,9 +320,7 @@ shareButton?.addEventListener("click", async () => {
 
 document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
   const status = document.querySelector("[data-form-status]");
-  if (status) status.textContent = isPortuguese
-    ? "Apenas prévia. Nenhum e-mail foi enviado ou armazenado."
-    : "Preview only. No email was sent or stored.";
+  if (status) status.textContent = messages.preview;
 });
 
 
@@ -282,23 +334,23 @@ if (sourceHeading && sourceCards.length) {
   const controls = document.createElement("div");
   controls.className = "official-sources__filter";
   controls.setAttribute("role", "search");
-  controls.setAttribute("aria-label", isPortuguese ? "Filtrar fontes oficiais" : "Filter official publishers");
+  controls.setAttribute("aria-label", messages.filterAria);
 
   const label = document.createElement("label");
   label.setAttribute("for", "m01-official-source-query");
-  label.textContent = isPortuguese ? "Pesquisar fontes oficiais" : "Search official publishers";
+  label.textContent = messages.filterLabel;
   const search = document.createElement("input");
   search.id = "m01-official-source-query";
   search.type = "search";
   search.autocomplete = "off";
   search.maxLength = 80;
-  search.placeholder = isPortuguese ? "Nome, assunto ou domínio" : "Name, topic or domain";
+  search.placeholder = messages.filterPlaceholder;
   search.dataset.officialSourceQuery = "";
   label.append(search);
 
   const clear = document.createElement("button");
   clear.type = "button";
-  clear.textContent = isPortuguese ? "Limpar busca" : "Clear search";
+  clear.textContent = messages.filterClear;
   clear.dataset.officialSourceReset = "";
   clear.hidden = true;
 
@@ -308,23 +360,15 @@ if (sourceHeading && sourceCards.length) {
   status.setAttribute("aria-live", "polite");
   status.dataset.officialSourceStatus = "";
 
-  const localeForFilter = isPortuguese ? "pt-BR" : "en";
   function describeCount(visibleCount) {
-    if (visibleCount === 0) {
-      return isPortuguese
-        ? "Nenhuma fonte oficial corresponde à busca."
-        : "No official publishers match this search.";
-    }
-    if (isPortuguese) {
-      return visibleCount + " de " + sourceCards.length + " fontes oficiais exibidas.";
-    }
-    return visibleCount + " of " + sourceCards.length + " official publishers shown.";
+    if (visibleCount === 0) return messages.filterNone;
+    return messages.filterCount(visibleCount, sourceCards.length);
   }
   const refresh = () => {
-    const query = search.value.trim().toLocaleLowerCase(localeForFilter);
+    const query = search.value.trim().toLocaleLowerCase(messages.searchLocale);
     let visibleCount = 0;
     for (const card of sourceCards) {
-      const match = !query || (card.textContent || "").toLocaleLowerCase(localeForFilter).includes(query);
+      const match = !query || (card.textContent || "").toLocaleLowerCase(messages.searchLocale).includes(query);
       card.hidden = !match;
       if (match) visibleCount++;
     }

@@ -12,7 +12,22 @@ if (form) {
   const result = form.querySelector("[data-explorer-result]");
   const link = form.querySelector("[data-explorer-link]");
   const provider = form.querySelector("[data-explorer-provider]");
-  const isPt = form.dataset.locale === "pt-br";
+  const MESSAGES = {
+    en: {
+      invalid: "Invalid format for this network and type. Check the characters.",
+      compatible: "Format looks compatible. This does not confirm existence, balance, ownership or network status.",
+    },
+    "pt-br": {
+      invalid: "Formato inválido para a rede e o tipo escolhidos. Confira os caracteres.",
+      compatible: "Formato compatível. Isto não confirma existência, saldo, titularidade ou status na rede.",
+    },
+    es: {
+      invalid: "Formato no válido para la red y el tipo elegidos. Revisa los caracteres.",
+      compatible: "El formato parece compatible. Esto no confirma existencia, saldo, titularidad ni estado en la red.",
+    },
+  };
+  const locale = form.dataset.locale;
+  const messages = Object.hasOwn(MESSAGES, locale) ? MESSAGES[locale] : MESSAGES.en;
 
   const reset = () => {
     link.removeAttribute("href");
@@ -28,16 +43,12 @@ if (form) {
     const lookup = createExplorerLookup(network.value, kind.value, input.value);
     if (!lookup.ok) {
       input.setAttribute("aria-invalid", "true");
-      status.textContent = isPt
-        ? "Formato inválido para a rede e o tipo escolhidos. Confira os caracteres."
-        : "Invalid format for this network and type. Check the characters.";
+      status.textContent = messages.invalid;
       return;
     }
     link.setAttribute("href", lookup.url);
     provider.textContent = lookup.provider;
     result.hidden = false;
-    status.textContent = isPt
-      ? "Formato compatível. Isto não confirma existência, saldo, titularidade ou status na rede."
-      : "Format looks compatible. This does not confirm existence, balance, ownership or network status.";
+    status.textContent = messages.compatible;
   });
 }

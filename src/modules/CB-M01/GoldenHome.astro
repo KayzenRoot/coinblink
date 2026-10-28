@@ -23,13 +23,18 @@ import { getLearningTopics } from "./learning-topics.mjs";
 import { getOfficialSources } from "./official-sources.mjs";
 import { getHomeProducerBoundary } from "./home-producer-boundary.mjs";
 
-interface Props { locale?: "en" | "pt-br"; producerFeeds?: unknown; }
+interface Props { locale?: "en" | "pt-br" | "es"; producerFeeds?: unknown; }
 const { locale = "en", producerFeeds } = Astro.props;
 // Non-privileged producer readiness; LIVE must remain unrenderable without its own admission.
 const safeProducerFeeds = producerFeeds && typeof producerFeeds === "object"
   && !Array.isArray(producerFeeds) ? producerFeeds : {};
 const homeProducerBoundary = getHomeProducerBoundary(safeProducerFeeds);
 const t = (english: string) => translateHome(english, locale);
+const l = (english: string, portuguese: string, spanish: string) => {
+  if (locale === "pt-br") return portuguese;
+  if (locale === "es") return spanish;
+  return english;
+};
 const learningTopics = getLearningTopics(locale);
 const officialSources = getOfficialSources(locale);
 
@@ -80,7 +85,7 @@ const editorialR26Assets = {
         <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
         <input type="search" placeholder={t("Search stories")} autocomplete="off" maxlength="80" data-news-search />
       </label>
-      <a class="language-chip" href={locale === "en" ? "/pt-br" : "/en"} data-language-switch aria-label={locale === "en" ? "Mudar para português" : "Switch to English"}>◎ {locale === "en" ? "PT" : "EN"}</a><span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
+      <a class="language-chip" href={locale === "en" ? "/pt-br" : "/en"} data-language-switch aria-label={locale === "en" ? "Mudar para português" : "Switch to English"}>◎ {locale === "en" ? "PT" : "EN"}</a>{locale === "es" && <a class="language-chip" href="/pt-br" lang="pt-BR" aria-label="Mudar para português">◎ PT</a>}<span class="theme-chip" aria-label={t("Dark theme")}>◐ <i></i></span>
     </div>
   </header>
 
@@ -343,8 +348,8 @@ const editorialR26Assets = {
           <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
         <p class="news-official-discovery" data-m02-news-link>
-          <a href={locale === "pt-br" ? "/pt-br/news" : "/en/news"}>{locale === "pt-br" ? "Explorar histórias fictícias" : "Explore fictional stories"} <span aria-hidden="true">→</span></a>
-          <small>{locale === "pt-br" ? "DEMO offline. Não são notícias publicadas." : "Offline demo. No published news."}</small>
+          <a href={l("/en/news", "/pt-br/news", "/es/news")}>{l("Explore fictional stories", "Explorar histórias fictícias", "Explorar noticias ficticias")} <span aria-hidden="true">→</span></a>
+          <small>{l("Offline demo. No published news.", "DEMO offline. Não são notícias publicadas.", "DEMO sin conexión. No son noticias publicadas.")}</small>
         </p>
         <LocalJourneyNav locale={locale} current="home" />
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
@@ -438,28 +443,28 @@ const editorialR26Assets = {
     <section class="m01-local-draft-preview content-panel" id="local-draft-preview" aria-labelledby="m01-local-draft-title" data-m01-local-draft-preview data-locale={locale}>
       <div class="m01-local-draft-preview__heading">
         <div>
-          <small>{locale === "pt-br" ? "FLUXO M01 + M05 · SOMENTE LOCAL" : "M01 + M05 WORKFLOW · LOCAL ONLY"}</small>
-          <h2 id="m01-local-draft-title">{locale === "pt-br" ? "Visualize seu rascunho na Home" : "Preview your draft on the Home"}</h2>
-          <p>{locale === "pt-br" ? "Exporte um Markdown no editor M05 e escolha o arquivo aqui. A prévia permanece neste navegador, sem upload, aprovação nem publicação." : "Export a Markdown file from the M05 editor and choose it here. The preview stays in this browser: no upload, approval or publication."}</p>
+          <small>{l("M01 + M05 WORKFLOW · LOCAL ONLY", "FLUXO M01 + M05 · SOMENTE LOCAL", "FLUJO M01 + M05 · SOLO LOCAL")}</small>
+          <h2 id="m01-local-draft-title">{l("Preview your draft on the Home", "Visualize seu rascunho na Home", "Previsualiza tu borrador en la Home")}</h2>
+          <p>{l("Export a Markdown file from the M05 editor and choose it here. The preview stays in this browser: no upload, approval or publication.", "Exporte um Markdown no editor M05 e escolha o arquivo aqui. A prévia permanece neste navegador, sem upload, aprovação nem publicação.", "Exporta un Markdown desde el editor M05 y elige el archivo aquí. La vista previa permanece en este navegador, sin subida, aprobación ni publicación.")}</p>
         </div>
-        <span class="m01-local-draft-preview__badge">{locale === "pt-br" ? "NÃO PUBLICADO" : "NOT PUBLISHED"}</span>
+        <span class="m01-local-draft-preview__badge">{l("NOT PUBLISHED", "NÃO PUBLICADO", "NO PUBLICADO")}</span>
       </div>
       <div class="m01-local-draft-preview__controls">
-        <label for="m01-local-draft-file">{locale === "pt-br" ? "Selecionar rascunho CoinBlink (.md)" : "Choose CoinBlink draft (.md)"}</label>
+        <label for="m01-local-draft-file">{l("Choose CoinBlink draft (.md)", "Selecionar rascunho CoinBlink (.md)", "Elegir borrador de CoinBlink (.md)")}</label>
         <input id="m01-local-draft-file" type="file" accept=".md,text/markdown" data-m01-draft-file aria-describedby="m01-draft-import-note" />
-        <button type="button" data-m01-draft-clear hidden>{locale === "pt-br" ? "Limpar prévia" : "Clear preview"}</button>
+        <button type="button" data-m01-draft-clear hidden>{l("Clear preview", "Limpar prévia", "Limpiar vista previa")}</button>
       </div>
-      <p id="m01-draft-import-note" class="m01-local-draft-preview__note">{locale === "pt-br" ? "Arquivo de até 64 KB, gerado pelo editor M05. Nunca insira chaves ou segredos. O conteúdo não é enviado." : "Up to 64 KB, exported from the M05 editor. Never include keys or secrets. The file is never uploaded."}</p>
+      <p id="m01-draft-import-note" class="m01-local-draft-preview__note">{l("Up to 64 KB, exported from the M05 editor. Never include keys or secrets. The file is never uploaded.", "Arquivo de até 64 KB, gerado pelo editor M05. Nunca insira chaves ou segredos. O conteúdo não é enviado.", "Archivo de hasta 64 KB, generado por el editor M05. Nunca incluyas claves ni secretos. El contenido no se envía.")}</p>
       <p class="m01-local-draft-preview__status" data-m01-draft-status role="status" aria-live="polite"></p>
       <article class="m01-local-draft-preview__article" data-m01-draft-result hidden>
-        <small>{locale === "pt-br" ? "PRÉVIA LOCAL · NÃO VERIFICADA · NÃO PUBLICADA" : "LOCAL PREVIEW · UNVERIFIED · NOT PUBLISHED"}</small>
+        <small>{l("LOCAL PREVIEW · UNVERIFIED · NOT PUBLISHED", "PRÉVIA LOCAL · NÃO VERIFICADA · NÃO PUBLICADA", "VISTA PREVIA LOCAL · NO VERIFICADA · NO PUBLICADA")}</small>
         <h3 data-m01-draft-title tabindex="-1"></h3>
         <p class="m01-local-draft-preview__author" data-m01-draft-author></p>
         <p data-m01-draft-summary></p>
         <div class="m01-local-draft-preview__body" data-m01-draft-body></div>
-        <p class="m01-local-draft-preview__source">{locale === "pt-br" ? "Fonte informada (não verificada):" : "Provided source (not verified):"} <span data-m01-draft-source></span></p>
+        <p class="m01-local-draft-preview__source">{l("Provided source (not verified):", "Fonte informada (não verificada):", "Fuente indicada (no verificada):")} <span data-m01-draft-source></span></p>
       </article>
-      <a class="m01-local-draft-preview__editor" href="/demo/editorial/articles/new">{locale === "pt-br" ? "Abrir editor de rascunhos M05 →" : "Open M05 draft editor →"}</a>
+      <a class="m01-local-draft-preview__editor" href="/demo/editorial/articles/new">{l("Open M05 draft editor →", "Abrir editor de rascunhos M05 →", "Abrir editor de borradores M05 →")}</a>
     </section>
 
     <section class="chain-lookup content-panel" id="chain-lookup" aria-labelledby="chain-lookup-title">

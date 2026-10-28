@@ -53,17 +53,19 @@ test("M09 Spanish route and switcher preserve noindex and validate slugs", () =>
 });
 
 
-// CB-M09-ES-ENTRY-A11Y-001: contract-first RED against the unmodified product.
-test("M09 ES entry: a first-class Spanish DEMO page exists and is never LIVE", () => {
+// CB-M09-ES-ENTRY-A11Y-001: the Spanish entry renders the shared Golden Home.
+test("M09 ES entry: a first-class Spanish DEMO page renders the shared home and is never LIVE", () => {
   const entry = readFileSync("src/pages/es.astro", "utf8");
+  const home = readFileSync("src/modules/CB-M01/GoldenHome.astro", "utf8");
   assert.match(entry, /<BaseLayout/u);
   assert.match(entry, /lang="es"/u);
-  assert.match(entry, /href="\/es\/news"/u);
-  assert.match(entry, /href="\/en"/u);
-  assert.match(entry, /href="\/pt-br"/u);
-  assert.match(entry, /DEMO/u);
-  assert.match(entry, /<main[^>]+id="main"/u);
+  assert.match(entry, /<GoldenHome locale="es"\s*\/>/u);
   assert.doesNotMatch(entry, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon|indexedDB|\/admin\/api|innerHTML|https?:\/\//u);
+  assert.ok(home.includes('l("/en/news", "/pt-br/news", "/es/news")'));
+  assert.match(home, /href=\{locale === "en" \? "\/pt-br" : "\/en"\}/u);
+  assert.match(home, /href="\/pt-br" lang="pt-BR"/u);
+  assert.match(home, /<main id="main"/u);
+  assert.match(home, /DEMO/u);
 });
 
 test("M09 ES a11y: Spanish skip label keeps EN and PT-BR unchanged", () => {

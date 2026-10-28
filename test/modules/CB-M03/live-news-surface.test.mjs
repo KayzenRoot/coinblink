@@ -41,6 +41,16 @@ test('the demo lab no longer serves the live reader', () => {
   assert.equal(existsSync('src/pages/demo/news/live.astro'), false);
 });
 
+test('no checked-in document still advertises the retired route', () => {
+  const files = [
+    'docs/automation/env.example', 'docs/automation/CLOUDFLARE_DEPLOYMENT.md',
+    'docs/product/CB-M03-P1-LIVE-RSS-001.md', '.github/workflows/cloudflare-production.yml',
+  ];
+  for (const file of files) {
+    assert.doesNotMatch(readFileSync(file, 'utf8'), /\/demo\/news\/live/u, file);
+  }
+});
+
 test('the news index links to the live page in every locale', () => {
   const workbench = readFileSync('src/modules/CB-M02/NewsWorkbench.astro', 'utf8');
   assert.match(workbench, /base \+ "\/live"/u);

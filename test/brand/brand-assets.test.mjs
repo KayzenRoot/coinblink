@@ -86,14 +86,29 @@ test("standard SVG namespace and local fragment paint servers remain allowed", (
   assert.deepEqual(inspectSvg(safeSample).errors, []);
 });
 
-test("manifest records demo-only rights and keeps site, header, and favicon wiring disabled", async () => {
+test("manifest records demo-only rights, the owner wiring authorization and verified derivatives", async () => {
   const manifest = JSON.parse(await readFile(path.join(REPOSITORY_ROOT, "public/brand/brand-manifest.json"), "utf8"));
   assert.equal(manifest.status, "DEMO_ONLY");
+  // Rights and commercial publication are untouched by the wiring authorization.
   assert.equal(manifest.rightsReview, "PENDING_OWNER_OR_LEGAL");
   assert.equal(manifest.commercialPublicationAllowed, false);
-  assert.equal(manifest.siteIntegrationAllowed, false);
-  assert.equal(manifest.headerIntegrationAllowed, false);
-  assert.equal(manifest.faviconInstalledGlobally, false);
+  assert.equal(manifest.siteIntegrationAllowed, true);
+  assert.equal(manifest.headerIntegrationAllowed, true);
+  assert.equal(manifest.faviconInstalledGlobally, true);
+  assert.equal(manifest.integrationAuthorization.authorizedBy, "KayzenRoot");
+  assert.match(manifest.integrationAuthorization.scope, /DEMO_ONLY/u);
+  const favicon = manifest.assets.find((entry) => entry.path === "public/brand/favicon.svg");
+  assert.equal(favicon.installationStatus, "INSTALLED_DEMO_ONLY");
+  // Every recorded derivative must match the bytes actually committed.
+  assert.equal(manifest.derivatives.length, 3);
+  for (const derivative of manifest.derivatives) {
+    const bytes = await readFile(path.join(REPOSITORY_ROOT, derivative.path));
+    assert.equal(bytes.byteLength, derivative.bytes, derivative.path + " byte length");
+    assert.equal(sha256(bytes), derivative.sha256, derivative.path + " sha256");
+    assert.ok(Number.isInteger(derivative.width) && derivative.width > 0, derivative.path + " width");
+    assert.ok(Number.isInteger(derivative.height) && derivative.height > 0, derivative.path + " height");
+    assert.ok(derivative.source, derivative.path + " records its source");
+  }
   assert.equal(manifest.approval.ownerVectorApproval, "ACCEPTED_FOR_DEMO");
   assert.equal(manifest.approval.authorizedTransport.sha256, "fe8f14a6837aee1a4bfc760461ff30e7b260a7ee89e902c254a357947ba5c0d8");
 

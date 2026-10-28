@@ -86,6 +86,24 @@ for (const [locale, title, sample, query] of [
   ["en", "Fictional news discovery", "Fictional wallet safety workshop", "wallet"],
   ["pt-br", "Explorar notícias fictícias", "Oficina fictícia de segurança de carteiras", "carteiras"],
 ]) {
+  test("M02 search is shareable through the address and works without scripting: " + locale, async ({ page }) => {
+    const shared = await page.goto("/" + locale + "/news?q=" + encodeURIComponent(query));
+    expect(shared?.status()).toBe(200);
+    await expect(page.locator("[data-m02-search]")).toHaveValue(query);
+    await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(1);
+    await expect(page.locator("[data-m02-result-count]")).toContainText("1");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    // The filter form is a plain GET, so the enhancement is optional.
+    const form = page.locator("form.m02-controls");
+    await expect(form).toHaveAttribute("method", "get");
+    await expect(form.locator('input[name="q"]')).toHaveCount(1);
+    await expect(form.locator('select[name="category"]')).toHaveCount(1);
+    await expect(form.getByRole("button", { name: locale === "pt-br" ? "Aplicar filtros" : "Apply filters" })).toBeVisible();
+    const unmatched = await page.goto("/" + locale + "/news?q=unlikely-query-for-demo");
+    expect(unmatched?.status()).toBe(200);
+    await expect(page.locator("[data-m02-entry]:visible")).toHaveCount(0);
+    await expect(page.locator("[data-m02-empty]")).toBeVisible();
+  });
   test("M02 category route is shareable and narrowed on the server: " + locale, async ({ page }) => {
     const response = await page.goto("/" + locale + "/news/category/security");
     expect(response?.status()).toBe(200);

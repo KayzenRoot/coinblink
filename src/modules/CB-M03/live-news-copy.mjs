@@ -87,6 +87,61 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Coletado em {time} · {count} manchetes de {sources} de {feeds} feeds · atualizado no máximo a cada {minutes} minutos.",
     "es": "Recopilado el {time} · {count} titulares de {sources} de {feeds} fuentes · actualizado como máximo cada {minutes} minutos.",
   },
+  filterTitle: {
+    "en": "Find a headline",
+    "pt-br": "Encontrar uma manchete",
+    "es": "Encontrar un titular",
+  },
+  filterQueryLabel: {
+    "en": "Search headlines",
+    "pt-br": "Buscar manchetes",
+    "es": "Buscar titulares",
+  },
+  filterQueryHint: {
+    "en": "Publisher, topic or word",
+    "pt-br": "Veículo, tema ou palavra",
+    "es": "Medio, tema o palabra",
+  },
+  filterSourceLabel: {
+    "en": "Publisher",
+    "pt-br": "Veículo",
+    "es": "Medio",
+  },
+  filterAllSources: {
+    "en": "All publishers",
+    "pt-br": "Todos os veículos",
+    "es": "Todos los medios",
+  },
+  filterApply: {
+    "en": "Apply filters",
+    "pt-br": "Aplicar filtros",
+    "es": "Aplicar filtros",
+  },
+  filterReset: {
+    "en": "Clear filters",
+    "pt-br": "Limpar filtros",
+    "es": "Borrar filtros",
+  },
+  resultOne: {
+    "en": "headline matches",
+    "pt-br": "manchete encontrada",
+    "es": "titular coincide",
+  },
+  resultMany: {
+    "en": "headlines match",
+    "pt-br": "manchetes encontradas",
+    "es": "titulares coinciden",
+  },
+  emptyFiltered: {
+    "en": "No headline in this collection matches the filter. Nothing was requested again.",
+    "pt-br": "Nenhuma manchete desta coleta corresponde ao filtro. Nada foi solicitado novamente.",
+    "es": "Ningún titular de esta recopilación coincide con el filtro. No se solicitó nada de nuevo.",
+  },
+  filterNote: {
+    "en": "The filter only narrows this page; it makes no additional request to any publisher.",
+    "pt-br": "O filtro apenas restringe esta página; nenhuma requisição adicional é feita a qualquer veículo.",
+    "es": "El filtro solo restringe esta página; no se hace ninguna solicitud adicional a los medios.",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

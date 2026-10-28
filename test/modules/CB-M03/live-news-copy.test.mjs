@@ -7,7 +7,9 @@ import {
 const REQUIRED = [
   'lang', 'navigation', 'back', 'h1', 'intro', 'pageTitle', 'pageDescription',
   'disabledTitle', 'disabledBody', 'disabledNote', 'unavailableTitle', 'unavailableBody',
-  'unavailableNote', 'warning', 'meta', 'latestTitle', 'feedsTitle', 'feedsCaption',
+  'unavailableNote', 'warning', 'meta', 'latestTitle', 'filterTitle', 'filterQueryLabel',
+  'filterQueryHint', 'filterSourceLabel', 'filterAllSources', 'filterApply', 'filterReset',
+  'resultOne', 'resultMany', 'emptyFiltered', 'filterNote', 'feedsTitle', 'feedsCaption',
   'columnPublisher', 'columnStatus', 'columnHeadlines', 'columnReason', 'undated', 'noReason',
   'rightsNote',
 ];
@@ -32,7 +34,7 @@ test('every locale carries the same complete, plain-text copy', () => {
 
 test('the chrome is actually translated and the BCP-47 tag is correct', () => {
   for (const key of ['back', 'h1', 'disabledTitle', 'unavailableTitle', 'warning', 'feedsTitle',
-    'columnPublisher', 'rightsNote']) {
+    'columnPublisher', 'rightsNote', 'filterTitle', 'filterQueryLabel', 'emptyFiltered', 'filterNote']) {
     assert.notEqual(LIVE_NEWS_COPY['pt-br'][key], LIVE_NEWS_COPY.en[key], key);
     assert.notEqual(LIVE_NEWS_COPY.es[key], LIVE_NEWS_COPY.en[key], key);
   }

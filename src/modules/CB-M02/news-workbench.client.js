@@ -18,7 +18,9 @@ for (const root of globalThis.document.querySelectorAll("[data-m02-root]")) {
       article.hidden = !match;
       if (match) visible += 1;
     }
-    count.textContent = visible + " " + count.dataset.m02CountLabel;
+    const label = visible === 1
+      ? count.dataset.m02CountLabelSingular : count.dataset.m02CountLabelPlural;
+    count.textContent = visible + " " + label;
     empty.hidden = visible !== 0;
   };
   search.addEventListener("input", filter);

@@ -4,6 +4,11 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # A weekly baseline catches CodeQL queries published after the code was merged.
+  # The repository guard accepts a scheduled workflow only while it stays
+  # read-only and references no secret, which this workflow satisfies.
+  schedule:
+    - cron: "23 5 * * 1"
 # Read-only by default. CodeQL runs with upload disabled, so no security-events
 # permission is requested at all: findings stay in the run log of this workflow.
 permissions:
@@ -56,3 +61,17 @@ jobs:
           output: ${{ runner.temp }}/codeql-${{ matrix.language }}
       - name: Gate on untriaged high or critical findings
         run: node scripts/security/codeql-findings-gate.mjs "${RUNNER_TEMP}/codeql-${{ matrix.language }}"
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Fail when a pull request adds a vulnerable dependency
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+        with:
+          fail-on-severity: high

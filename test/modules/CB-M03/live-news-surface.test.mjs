@@ -50,6 +50,22 @@ test('filtering is local to the collected snapshot and cannot fetch', () => {
   assert.match(filter, /LIVE_NEWS_SOURCES/u);
 });
 
+test('the news index shows a compact, attributed strip only when live', () => {
+  const strip = readFileSync('src/modules/CB-M03/LiveHeadlineStrip.astro', 'utf8');
+  assert.doesNotMatch(strip, /set:html|<script/u);
+  assert.ok(strip.includes('items.slice(0, 3)'), 'the strip is capped at three headlines');
+  assert.ok(strip.includes('rel="noreferrer noopener external"'));
+  assert.ok(strip.includes('data-m03-live-strip'));
+  assert.ok(strip.includes('/news/live'));
+  assert.ok(strip.includes('copy.stripNote'));
+  assert.ok(strip.includes('copy.stripAll'));
+  const workbench = readFileSync('src/modules/CB-M02/NewsWorkbench.astro', 'utf8');
+  assert.ok(workbench.includes('<slot name="live" />'));
+  const page = readFileSync('src/modules/CB-M09/LocalizedNewsPage.astro', 'utf8');
+  assert.ok(page.includes('readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE })'));
+  assert.ok(page.includes('<LiveHeadlineStrip slot="live"'));
+});
+
 test('the demo lab no longer serves the live reader', () => {
   assert.equal(existsSync('src/pages/demo/news/live.astro'), false);
 });

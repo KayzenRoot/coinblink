@@ -82,7 +82,7 @@ jobs:
         run: |
           node --input-type=module -e '
             const base = process.env.COINBLINK_CF_WORKER_URL.replace(/\/+$/u, "");
-            const checks = ["/health", "/en", "/demo", "/demo/news/live"];
+            const checks = ["/health", "/en", "/demo", "/en/news/live", "/pt-br/news/live", "/es/news/live"];
             for (const path of checks) {
               const response = await fetch(base + path, { redirect: "manual" });
               if (response.status !== 200) {
@@ -92,11 +92,11 @@ jobs:
             // The live-news switch must be observable, not assumed. Enabled may
             // still read as unavailable when every publisher is down, but it
             // must never look disabled.
-            const news = await (await fetch(base + "/demo/news/live")).text();
+            const news = await (await fetch(base + "/en/news/live")).text();
             const enabled = /^(1|true|enabled|on)$/iu.test((process.env.PUBLIC_NEWS_LIVE ?? "").trim());
             const state = enabled ? /data-m03-live="(live|unavailable)"/u : /data-m03-live="disabled"/u;
             if (!state.test(news)) {
-              throw new Error("/demo/news/live does not reflect PUBLIC_NEWS_LIVE=" + process.env.PUBLIC_NEWS_LIVE);
+              throw new Error("/en/news/live does not reflect PUBLIC_NEWS_LIVE=" + process.env.PUBLIC_NEWS_LIVE);
             }
             // Prove the deployed artifact is this commit, not a stale one.
             const health = await (await fetch(base + "/health", { redirect: "manual" })).json();

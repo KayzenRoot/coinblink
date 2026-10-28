@@ -1,31 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
-const page = readFileSync('src/pages/demo/news/live.astro', 'utf8');
+const LOCALES = ['en', 'pt-br', 'es'];
+const pages = LOCALES.map((locale) => ({
+  locale,
+  source: readFileSync('src/pages/' + locale + '/news/live.astro', 'utf8'),
+}));
 const panel = readFileSync('src/modules/CB-M03/LiveNewsPanel.astro', 'utf8');
 const reader = readFileSync('src/modules/CB-M03/live-news.mjs', 'utf8');
 const parser = readFileSync('src/modules/CB-M03/rss-parse.mjs', 'utf8');
 const sources = readFileSync('src/modules/CB-M03/rss-sources.mjs', 'utf8');
 
-test('the live page is server-rendered and gated by a deployment variable only', () => {
-  assert.match(page, /export const prerender = false/u);
-  assert.match(page, /readLiveNews\(\{ enabled: import\.meta\.env\.PUBLIC_NEWS_LIVE \}\)/u);
-  assert.match(page, /<LiveNewsPanel snapshot=\{snapshot\} \/>/u);
-  assert.doesNotMatch(page, /set:html|is:inline|client:/u);
+test('each locale page is server-rendered, gated and passes its own locale', () => {
+  for (const { locale, source } of pages) {
+    assert.match(source, /export const prerender = false/u, locale);
+    assert.match(source, /readLiveNews\(\{ enabled: import\.meta\.env\.PUBLIC_NEWS_LIVE \}\)/u, locale);
+    assert.match(source, new RegExp('getLiveNewsCopy\\("' + locale + '"\\)', 'u'), locale);
+    assert.match(source, new RegExp('<LiveNewsPanel snapshot=\\{snapshot\\} locale="' + locale + '" />', 'u'), locale);
+    assert.doesNotMatch(source, /set:html|is:inline|client:/u, locale);
+  }
 });
 
-test('the panel escapes feed text instead of injecting it', () => {
+test('the panel escapes feed text and localizes its chrome', () => {
   assert.doesNotMatch(panel, /set:html/u);
   assert.doesNotMatch(panel, /<script/u);
+  assert.match(panel, /getLiveNewsCopy/u);
+  assert.match(panel, /fillLiveNewsCopy/u);
   assert.match(panel, /<a href=\{item\.link\} rel="noreferrer noopener external">\{item\.title\}<\/a>/u);
   assert.match(panel, /<a href=\{item\.sourceHome\} rel="noreferrer noopener external">\{item\.sourceName\}<\/a>/u);
   assert.match(panel, /data-m03-live="disabled"/u);
   assert.match(panel, /data-m03-live="unavailable"/u);
   assert.match(panel, /data-m03-live="live"/u);
-  assert.match(panel, /ATTRIBUTION ONLY/u);
-  assert.match(panel, /NO FULL TEXT/u);
-  assert.match(panel, /NO REPUBLICATION/u);
+  assert.match(panel, /copy\.warning/u);
+  assert.match(panel, /copy\.rightsNote/u);
+  assert.match(panel, /copy\.undated/u);
+});
+
+test('the demo lab no longer serves the live reader', () => {
+  assert.equal(existsSync('src/pages/demo/news/live.astro'), false);
+});
+
+test('no checked-in document still advertises the retired route', () => {
+  const files = [
+    'docs/automation/env.example', 'docs/automation/CLOUDFLARE_DEPLOYMENT.md',
+    'docs/product/CB-M03-P1-LIVE-RSS-001.md', '.github/workflows/cloudflare-production.yml',
+  ];
+  for (const file of files) {
+    assert.doesNotMatch(readFileSync(file, 'utf8'), /\/demo\/news\/live/u, file);
+  }
+});
+
+test('the news index links to the live page in every locale', () => {
+  const workbench = readFileSync('src/modules/CB-M02/NewsWorkbench.astro', 'utf8');
+  assert.match(workbench, /base \+ "\/live"/u);
+  assert.match(workbench, /copy\.liveHeadlines/u);
+  const i18n = readFileSync('src/modules/CB-M02/news-i18n.mjs', 'utf8');
+  assert.equal([...i18n.matchAll(/liveHeadlines:/gu)].length, LOCALES.length);
 });
 
 test('the reader keeps I/O, parsing and policy in separate layers', () => {

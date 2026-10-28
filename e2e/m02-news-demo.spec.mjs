@@ -191,6 +191,15 @@ test("M01 links to the separate M02 fictitious news workbench in both locales", 
     await expect(handoff).toHaveAttribute("href", "/" + locale + "/news");
   }
 });
+test("M02 news index links to the attributed live headline page in every locale", async ({ page }) => {
+  for (const locale of ["en", "pt-br", "es"]) {
+    const response = await page.goto("/" + locale + "/news");
+    expect(response?.status(), locale).toBe(200);
+    const link = page.locator(".m02-live a");
+    await expect(link).toHaveAttribute("href", "/" + locale + "/news/live");
+    await expect(link).toContainText("RSS");
+  }
+});
 
 for (const locale of ["en", "pt-br"]) {
   test("M02 private M05 article preview rejects forged HTML and keeps data in tab: " + locale, async ({ page }) => {

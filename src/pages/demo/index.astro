@@ -4,7 +4,6 @@ import LocalJourneyNav from "../../components/LocalJourneyNav.astro";
 export const prerender = false;
 const labs = [
   { href: "/demo/sources", label: "Source lab", detail: "Fictional provenance and eligibility, no ingestion (M03)." },
-  { href: "/demo/news/live", label: "Live headlines", detail: "Public RSS headlines with attribution, off unless enabled (M03)." },
   { href: "/demo/markets", label: "Market lab", detail: "Fictional market readiness, never live quotes (M04)." },
   { href: "/demo/research", label: "Research lab", detail: "Fictional evidence triage, no briefing model (M08)." },
   { href: "/demo/newsletter", label: "Newsletter lab", detail: "Unsent digest exercise, no mailing list (M10)." },
@@ -19,7 +18,7 @@ const labs = [
 ---
 <BaseLayout
   title="CoinBlink · Demo labs index (DEMO)"
-  description="Index of CoinBlink demo labs: synthetic exercises plus two opt-in, attributed live readers, all noindex."
+  description="Index of CoinBlink demo labs: synthetic exercises plus one opt-in, attributed market reader, all noindex."
 >
   <LocalJourneyNav current="labs" />
   <main id="main" class="labs">
@@ -40,10 +39,10 @@ const labs = [
       </ul>
     </nav>
     <p class="labs__note">No lab sends a message, stores personal data, takes a payment or unlocks the
-      protected admin route. Two labs are opt-in live readers — <a href="/demo/markets/live">market prices</a>
-      and <a href="/demo/news/live">RSS headlines</a>. When the deployment enables them they read a public
-      endpoint, label the third party, attribute every item and stay noindex; by default they make no request.
-      Real CoinBlink features need separate documented decisions, provider licensing, security review and
-      owner approval.</p>
+      protected admin route. The <a href="/demo/markets/live">market preview</a> is an opt-in live reader: when
+      enabled it reads a public endpoint, labels the third party, attributes every item and stays noindex; by
+      default it makes no request. Real headlines moved to the news section at
+      <a href="/en/news/live">/en/news/live</a>. Real CoinBlink features need separate documented decisions,
+      provider licensing, security review and owner approval.</p>
   </main>
 </BaseLayout>

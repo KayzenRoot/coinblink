@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "captureHeadSha": "8aee74af58bf79400432b12688dc566da53c2995",
+  "reference": {
+    "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+    "width": 1536,
+    "height": 864,
+    "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8"
+  },
+  "capture": {
+    "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
+    "width": 1536,
+    "height": 864,
+    "sha256": "8b39082744788b83c71dd0b2ae7822a9111852d3ba8081b73f54b8b51dd68679"
+  },
+  "comparison": {
+    "red": 30.1241,
+    "green": 33.0684,
+    "blue": 23.7283
+  },
+  "metricNote": "Raw per-channel mean absolute difference on 0-255 scale; descriptive only, not a pass score. Intentional differences include truthful demo/no-data content and retained safety disclosures.",
+  "overlay": {
+    "path": ".engineering/evidence/CB-M01-WO-001/golden-home-desktop-overlay-50.png",
+    "sha256": "0cc0d3c569cf3357b9c3d8a9fcac5663c29cea2da1405e5af6c16c8166546f9f"
+  },
+  "difference3x": {
+    "path": ".engineering/evidence/CB-M01-WO-001/golden-home-desktop-difference-3x.png",
+    "sha256": "f8afaf0cf9bc00308577f0188f315ff45d99cb5763333db4fb298a3893b9a89c"
+  }
+}

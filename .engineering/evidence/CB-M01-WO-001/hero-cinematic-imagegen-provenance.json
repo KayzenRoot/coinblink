@@ -1,0 +1,596 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M01-WO-001",
+  "productState": "LOCAL_PREVIEW_ONLY_NOT_PUBLISHED",
+  "origin": "OPENAI_IMAGE_GENERATION",
+  "provider": "OpenAI built-in image_gen tool",
+  "modelVersion": "NOT_EXPOSED_BY_TOOL_RESULT",
+  "generatedSource": {
+    "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
+    "format": "PNG",
+    "dimensions": [
+      1774,
+      887
+    ],
+    "bytes": 2349624,
+    "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+    "prompt": "Use case: original cinematic website hero artwork for the CoinBlink demonstration homepage. Input image: the attached full-page screenshot is a visual reference only; take composition, palette, lighting, and subject placement from the large hero banner at the top-left, and ignore the rest of the webpage. Create a new, highly faithful cinematic 3D scene that matches the hero's visual direction: a large minted golden Bitcoin coin in three-quarter view, positioned center-right, with clearly visible thick ribbed edge and engraved Bitcoin mark; dramatic dark jagged basalt mountains framing the lower and rear areas; vivid but restrained lime-green rising light trail behind the coin; fine atmospheric haze and a few subtle particles. Composition: extra-wide 2:1 landscape background, keep the left 42 percent very dark and low-detail for separate HTML copy, keep the coin dominant in the right-center, and retain the luminous green chart energy and rocky horizon. Style: premium photoreal 3D product-cinematic render, realistic metal reflections, physically plausible shadows, rich material detail, crisp focus on the coin, layered depth, high-end lighting, deep charcoal and forest-green shadows with warm gold. Make the art original while tracking the reference composition closely. No webpage, panels, logos, UI, buttons, people, symbols other than a simple Bitcoin mark on the coin, no headline, no price, no other writing, no watermark. Do not copy or reproduce any pixels from the reference screenshot."
+  },
+  "visualReference": {
+    "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+    "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8",
+    "use": "COMPOSITION_PALETTE_AND_LIGHTING_REFERENCE_ONLY"
+  },
+  "outputs": {
+    "png": {
+      "path": "src/modules/CB-M01/hero-cinematic-original.png",
+      "bytes": 2349624,
+      "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c"
+    },
+    "webp": {
+      "path": "src/modules/CB-M01/hero-cinematic-original.webp",
+      "bytes": 310054,
+      "sha256": "56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b"
+    },
+    "animation": {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
+      "bytes": 21557886,
+      "sha256": "7dd348ca3158c3f56630ba97006c9aaed6e72cdbeb1250597af3d3aff4ba5c3c",
+      "dimensions": [
+        1600,
+        800
+      ],
+      "sourceFrameCount": 96,
+      "encodedFrameCount": 96,
+      "frameRate": 24,
+      "durationMs": 4000,
+      "durationSeconds": 4,
+      "loop": true,
+      "motion": "SLOW_CAMERA_DRIFT_WITH_SEVEN_GENERATED_LIGHTNING_SPRITES_AND_FLASHES",
+      "independentCoinMotion": false,
+      "source": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend"
+    },
+    "contactSheet": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-contact-sheet.png"
+  },
+  "lightningSprites": {
+    "count": 7,
+    "transparentBackground": true,
+    "files": [
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-01-charge.png",
+        "bytes": 164751,
+        "sha256": "817ee5a850ccd7e84f7be7bb1138781f31bbae64c5564b5f5f98efddc7980fa1",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.971078
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-02-descent.png",
+        "bytes": 288639,
+        "sha256": "3d7449ab6ac5f484cb4e495109babef7e409cd1ba205f926759d05538e684688",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.933662
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-03-impact.png",
+        "bytes": 502026,
+        "sha256": "33af3ce565eba450fcacb300865a5e69f80b6e997680ce0298aa9e669eb6c426",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.870529
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-04-afterglow.png",
+        "bytes": 424970,
+        "sha256": "070978154a34c72bfba09d699ff679e218e0c1be4ba6c65bf42ee3122107e6f4",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.88582
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-05-secondary-right.png",
+        "bytes": 416443,
+        "sha256": "127e010da9945c26ce607caf3ea54d4304a7e25c9ee26f5ace16ac8f23ce930e",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.902475
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-06-secondary-left.png",
+        "bytes": 258384,
+        "sha256": "aaa75d82ac82160a3ac4d77cbe3f91153d90f81cca3eda0dd9bec38ecff93286",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.944814
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-07-ground-fade.png",
+        "bytes": 187482,
+        "sha256": "30013de1a21b3446d47f112fb39b01893e1d11c88329c18f1d8a2fc308ecd2ce",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "transparentPixelRatio": 0.963555
+      }
+    ],
+    "promptSet": {
+      "schemaVersion": 1,
+      "provider": "OpenAI built-in image_gen",
+      "modelVersion": "NOT_EXPOSED_BY_TOOL_RESULT",
+      "referenceSprite": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-v2/lightning-03-impact.png",
+      "spriteSet": [
+        {
+          "filename": "lightning-01-charge.png",
+          "pose": "short charge filament",
+          "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, first charge frame. Input image 1 is the approved centered impact sprite; use only its lightning style, color, and scale. Create a faint, very thin branching filament at the upper end of the same strike path, around x=58% of a wide 2:1 canvas, extending only from y=7% to y=28%. Add a tiny white-green source glint at the top. Leave the rest fully transparent. Preserve true alpha. No clouds, no broad glow, no ground, no landscape, no coin, no other bolt, no detached marks, no text, no watermark."
+        },
+        {
+          "filename": "lightning-02-descent.png",
+          "pose": "descending bolt",
+          "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, descent frame. Input image 1 is the approved centered impact sprite; match its bolt path, thickness, color, and lighting. Create one narrow jagged white-core lime lightning bolt on a wide 2:1 transparent canvas, descending at x=58% from y=6% to y=61%, with only small sharp branches and a very restrained glow tight to the bolt. Leave the bottom 30% and all surrounding space fully transparent. No clouds, haze patches, ground, landscape, coin, extra bolts, text, or watermark."
+        },
+        {
+          "filename": "lightning-03-impact.png",
+          "pose": "ground impact",
+          "prompt": "Use case: precise-object-edit. Asset type: full-canvas transparent VFX overlay for a cinematic website hero. Input image 1 is an existing lightning overlay; use it only as a color and energy-style reference. Create one single, narrow jagged yellow-green lightning bolt striking the ground. Compose on a wide 2:1 transparent canvas; the bolt descends from x=58% near the top edge to a compact white-hot impact at x=58%, y=84%. Give the bolt a crisp white core, a restrained lime-green edge glow, a few fine branches, and only a small localized burst of sparks at the impact. Keep the bolt as the only visible subject. Preserve true transparency everywhere else. Change only the lightning artwork. Avoid all cloud forms, green fog, soft glowing blobs, detached marks, a second bolt, mountains, coin, landscape, shadows, text, or watermark."
+        },
+        {
+          "filename": "lightning-04-afterglow.png",
+          "pose": "fading strike",
+          "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning afterglow overlay. Input image 1 is the approved central bolt; match its exact hue and jagged path. Create the same single bolt reduced to a faint residual filament, with the lower half nearly gone and only a small soft white-green ground contact glow at x=58%, y=84%. Wide 2:1 canvas. Transparent everywhere except the thin faint bolt remnant and compact impact afterglow. Do not include clouds, broad haze, detached green blobs, mountains, coin, landscape, second bolt, text, or watermark."
+        },
+        {
+          "filename": "lightning-05-secondary-right.png",
+          "pose": "secondary right strike",
+          "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, secondary strike on the right. Input image 1 is the approved central bolt; match its color, sharp white core, lime rim, and scale. On a wide 2:1 transparent canvas, make one full-length jagged bolt that starts near x=74%, y=4% and hits ground at x=72%, y=84%, angled slightly inward. Add a tiny localized impact spark. Keep all visible pixels close to the bolt. Preserve true transparency. No clouds, haze patches, other bolts, coin, landscape, text, watermark."
+        },
+        {
+          "filename": "lightning-06-secondary-left.png",
+          "pose": "distant left strike",
+          "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning VFX overlay, distant secondary strike on the left. Input image 1 is the approved central bolt; match its color, sharp white core, lime rim, and scale. On a wide 2:1 transparent canvas, make one narrower, distant jagged bolt that starts near x=44%, y=10% and hits ground at x=47%, y=78%. Keep all visible pixels close to the bolt; use a restrained compact impact spark. Preserve true transparency. No clouds, haze patches, other bolts, coin, landscape, text, watermark."
+        },
+        {
+          "filename": "lightning-07-ground-fade.png",
+          "pose": "ground sparks fading",
+          "prompt": "Use case: precise-object-edit. Asset type: transparent cinematic website lightning impact fade overlay. Input image 1 is the approved lightning sprite; use its lime-white palette and spark style. Create only a compact, low-intensity burst of a few thin fading ground sparks at the bottom of a wide 2:1 transparent canvas, centered at x=58%, y=84%. No vertical bolt at all. Keep the sparks small, dim, and localized within a 12% area around the impact point; preserve true transparency everywhere else. No cloud, fog, detached glow, landscape, coin, text, watermark."
+        }
+      ]
+    },
+    "contactSheet": ".engineering/evidence/CB-M01-WO-001/lightning-sprite-contact-sheet.png"
+  },
+  "technicalPreflight": {
+    "status": "TECHNICAL_PASS_RELEASE_BLOCKED",
+    "validator": "src/modules/CB-M01/hero-cinematic-preflight.mjs",
+    "checkedAt": "2026-10-13",
+    "candidateResults": [
+      {
+        "path": "src/modules/CB-M01/hero-cinematic-original.png",
+        "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+        "technicalPreflightPassed": true,
+        "failures": [],
+        "observedSha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "releaseAllowed": false,
+        "ownerVisualApproval": false,
+        "commercialPublicationAllowed": false,
+        "publicationPermission": false
+      },
+      {
+        "path": "src/modules/CB-M01/hero-cinematic-original.webp",
+        "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+        "technicalPreflightPassed": true,
+        "failures": [],
+        "observedSha256": "56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b",
+        "dimensions": [
+          1774,
+          887
+        ],
+        "releaseAllowed": false,
+        "ownerVisualApproval": false,
+        "commercialPublicationAllowed": false,
+        "publicationPermission": false
+      }
+    ],
+    "motionCandidate": {
+      "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+      "assetClass": "BLENDER_MOTION_DERIVATIVE",
+      "technicalPreflightPassed": true,
+      "failures": [],
+      "observedSha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+      "dimensions": [
+        640,
+        320
+      ],
+      "frameCount": 48,
+      "durationMs": 4000,
+      "releaseAllowed": false,
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false
+    },
+    "historicalR23Status": "FAILED_CLOSED_ORIGINAL_SOURCE_GATE",
+    "reason": "R25 applies the Owner-approved static-master plus Blender-motion policy. Technical integrity does not grant rights, Owner visual approval or publication permission."
+  },
+  "historicalGeneratedAlternates": [
+    {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-lightning.png",
+      "role": "UNUSED_STATIC_LIGHTNING_HERO_ALTERNATE",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "provider": "OpenAI built-in image_gen tool",
+      "modelVersion": "NOT_EXPOSED_BY_TOOL_RESULT",
+      "promptAndSourceLineage": "INCOMPLETE_NOT_RECORDED_WITH_THIS_FILE",
+      "bytes": 2500979,
+      "sha256": "eef98ad0ba91fe267751bc6d57608878b2c2b3acf09d583a08a251b9aa3299a3",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "runtimeReferenced": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "commercialPublicationAllowed": false
+    },
+    {
+      "assetId": "CB-M01-DEMO-LIGHTNING-VFX-ITERATION-1",
+      "pathPrefix": ".engineering/evidence/CB-M01-WO-001/lightning-sprites/",
+      "role": "UNUSED_HISTORICAL_SPRITE_SET",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "provider": "OpenAI built-in image_gen tool",
+      "modelVersion": "NOT_EXPOSED_BY_TOOL_RESULT",
+      "promptAndSourceLineage": "INCOMPLETE_NOT_RECORDED_WITH_THIS_FILE_SET",
+      "runtimeReferenced": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "commercialPublicationAllowed": false,
+      "files": [
+        {
+          "path": "lightning-01-charge.png",
+          "bytes": 745212,
+          "sha256": "e0423810771931020587ded64b972c53569995a84504e079e15a09a246346355",
+          "dimensions": [
+            1774,
+            887
+          ]
+        },
+        {
+          "path": "lightning-02-descent.png",
+          "bytes": 726894,
+          "sha256": "36375e2c04c334fcfa0ba14ffca89be4524501157fc201706c497c5fb0f186bb",
+          "dimensions": [
+            1774,
+            887
+          ]
+        },
+        {
+          "path": "lightning-03-impact.png",
+          "bytes": 1049569,
+          "sha256": "21c0f331040e72f398eaa7c3215e91dfde0211c4ae2a062fa243470f74a39714",
+          "dimensions": [
+            1774,
+            887
+          ]
+        },
+        {
+          "path": "lightning-04-afterglow.png",
+          "bytes": 615718,
+          "sha256": "5a621e84f01ce97b634b66bded9d546918d55b306d653fef465c52cce92f5ed9",
+          "dimensions": [
+            1774,
+            887
+          ]
+        },
+        {
+          "path": "lightning-05-secondary-right.png",
+          "bytes": 447319,
+          "sha256": "27ce2920559050f3308c8b03cbfc1e1f5391964df01b9bdff533dbf0da92f619",
+          "dimensions": [
+            1774,
+            887
+          ]
+        },
+        {
+          "path": "lightning-06-secondary-left.png",
+          "bytes": 700852,
+          "sha256": "d85928311d3deacaf1cae0ad19559bc56926600fa0aeb871a0a38f83b1d854e4",
+          "dimensions": [
+            1774,
+            887
+          ]
+        },
+        {
+          "path": "lightning-07-fade.png",
+          "bytes": 578985,
+          "sha256": "1bac6ccd11b8016b540d040fb1cfca00567e1243e402e566f2f7c133e588e962",
+          "dimensions": [
+            1774,
+            887
+          ]
+        }
+      ]
+    }
+  ],
+  "rights": {
+    "review": "PENDING_OWNER_OR_LEGAL",
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false,
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+    "ownerVisualApproval": false
+  },
+  "staticMaster": {
+    "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+    "origin": "OPENAI_IMAGE_GENERATION",
+    "pipeline": "CODEX_APPROVED_IMAGE_PIPELINE",
+    "path": "src/modules/CB-M01/hero-cinematic-original.png",
+    "sourceMaster": {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
+      "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c"
+    },
+    "rightsStatus": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false,
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+    "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+    "bytes": 2349624,
+    "width": 1774,
+    "height": 887,
+    "format": "png",
+    "role": "PRIMARY_STATIC_HERO_MASTER",
+    "sourceSha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+    "sourceBytes": 2349624,
+    "sourceDimensions": [
+      1774,
+      887
+    ],
+    "outputs": {
+      "png": {
+        "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+        "origin": "OPENAI_IMAGE_GENERATION",
+        "pipeline": "CODEX_APPROVED_IMAGE_PIPELINE",
+        "path": "src/modules/CB-M01/hero-cinematic-original.png",
+        "sourceMaster": {
+          "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
+          "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c"
+        },
+        "rightsStatus": "PENDING_OWNER_OR_LEGAL",
+        "ownerVisualApproval": false,
+        "commercialPublicationAllowed": false,
+        "publicationPermission": false,
+        "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+        "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+        "bytes": 2349624,
+        "width": 1774,
+        "height": 887,
+        "format": "png"
+      },
+      "webp": {
+        "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+        "origin": "OPENAI_IMAGE_GENERATION",
+        "pipeline": "CODEX_APPROVED_IMAGE_PIPELINE",
+        "path": "src/modules/CB-M01/hero-cinematic-original.webp",
+        "sourceMaster": {
+          "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
+          "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c"
+        },
+        "rightsStatus": "PENDING_OWNER_OR_LEGAL",
+        "ownerVisualApproval": false,
+        "commercialPublicationAllowed": false,
+        "publicationPermission": false,
+        "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+        "sha256": "56a36a84487f278420207dbbcb8c643cacca3e0ef065d9ba69114bec69b15c6b",
+        "bytes": 310054,
+        "width": 1774,
+        "height": 887,
+        "format": "webp"
+      }
+    }
+  },
+  "motionDerivative": {
+    "assetClass": "BLENDER_MOTION_DERIVATIVE",
+    "origin": "BLENDER_MOTION_DERIVATIVE",
+    "role": "RUNTIME_PREVIEW",
+    "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+    "bytes": 1394724,
+    "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+    "width": 640,
+    "height": 320,
+    "frameCount": 48,
+    "durationMs": 4000,
+    "averageFramesPerSecond": 12,
+    "derivedFrom": {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
+      "sha256": "7dd348ca3158c3f56630ba97006c9aaed6e72cdbeb1250597af3d3aff4ba5c3c",
+      "sampling": "Every second source frame; resize 1600x800 to 640x320 with Lanczos; preserve the 4,000ms total duration."
+    },
+    "sourceMaster": {
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "pipeline": "CODEX_APPROVED_IMAGE_PIPELINE",
+      "path": "src/modules/CB-M01/hero-cinematic-original.png",
+      "sourceMaster": {
+        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-source.png",
+        "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c"
+      },
+      "rightsStatus": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+      "bytes": 2349624,
+      "width": 1774,
+      "height": 887,
+      "format": "png"
+    },
+    "sourceMasterSha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+    "sourceProject": {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+      "sha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+      "bytes": 4249267
+    },
+    "blenderVersion": "5.2.2 LTS",
+    "portability": {
+      "status": "passed",
+      "absoluteReferences": false,
+      "allExternalReferencesRelative": true,
+      "allExternalImagesPacked": true,
+      "linkedLibraries": 0,
+      "images": [
+        {
+          "name": "hero-cinematic-original.png",
+          "source": "FILE",
+          "relativePath": "//..\\..\\..\\src\\modules\\CB-M01\\hero-cinematic-original.png",
+          "packed": true,
+          "packedBytes": 2349624
+        },
+        {
+          "name": "lightning-01-charge.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-01-charge.png",
+          "packed": true,
+          "packedBytes": 164751
+        },
+        {
+          "name": "lightning-02-descent.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-02-descent.png",
+          "packed": true,
+          "packedBytes": 288639
+        },
+        {
+          "name": "lightning-03-impact.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-03-impact.png",
+          "packed": true,
+          "packedBytes": 502026
+        },
+        {
+          "name": "lightning-04-afterglow.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-04-afterglow.png",
+          "packed": true,
+          "packedBytes": 424970
+        },
+        {
+          "name": "lightning-05-secondary-right.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-05-secondary-right.png",
+          "packed": true,
+          "packedBytes": 416443
+        },
+        {
+          "name": "lightning-06-secondary-left.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-06-secondary-left.png",
+          "packed": true,
+          "packedBytes": 258384
+        },
+        {
+          "name": "lightning-07-ground-fade.png",
+          "source": "FILE",
+          "relativePath": "//lightning-sprites-v2\\lightning-07-ground-fade.png",
+          "packed": true,
+          "packedBytes": 187482
+        },
+        {
+          "name": "Render Result",
+          "source": "VIEWER",
+          "relativePath": "",
+          "packed": false,
+          "packedBytes": 0
+        },
+        {
+          "name": "Viewer Node",
+          "source": "VIEWER",
+          "relativePath": "",
+          "packed": false,
+          "packedBytes": 0
+        }
+      ]
+    },
+    "sourceRender": {
+      "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
+      "sha256": "7dd348ca3158c3f56630ba97006c9aaed6e72cdbeb1250597af3d3aff4ba5c3c",
+      "frameCount": 96,
+      "frameRate": 24,
+      "durationMs": 4000,
+      "width": 1600,
+      "height": 800
+    },
+    "motionOutputs": [
+      {
+        "role": "RUNTIME_PREVIEW",
+        "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+        "bytes": 1394724,
+        "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+        "width": 640,
+        "height": 320,
+        "frameCount": 48,
+        "durationMs": 4000,
+        "averageFramesPerSecond": 12,
+        "derivedFrom": {
+          "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
+          "sha256": "7dd348ca3158c3f56630ba97006c9aaed6e72cdbeb1250597af3d3aff4ba5c3c",
+          "sampling": "Every second source frame; resize 1600x800 to 640x320 with Lanczos; preserve the 4,000ms total duration."
+        }
+      },
+      {
+        "role": "SOURCE_ANIMATION",
+        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-preview.webp",
+        "bytes": 21557886,
+        "sha256": "7dd348ca3158c3f56630ba97006c9aaed6e72cdbeb1250597af3d3aff4ba5c3c",
+        "width": 1600,
+        "height": 800,
+        "frameCount": 96,
+        "durationMs": 4000
+      },
+      {
+        "role": "CONTACT_SHEET",
+        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-motion-contact-sheet.png",
+        "bytes": 1796606,
+        "sha256": "bcd9b47bf2b2bd65b0fb689ca5e12a759cee7fe229dd50271414f827aef9f52f",
+        "width": 1440,
+        "height": 804
+      }
+    ],
+    "rightsStatus": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false,
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+    "dimensions": [
+      640,
+      320
+    ]
+  },
+  "history": [
+    {
+      "recordType": "R25_POLICY_CORRECTION",
+      "supersedes": "R23 requirement that the primary still originate in Blender",
+      "previousAnimationSource": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation.blend",
+      "previousTechnicalPreflightStatus": "FAILED_CLOSED_ORIGINAL_SOURCE_GATE",
+      "decision": "The primary static hero may come from the approved Codex image pipeline; Blender is reserved for motion derivatives. The historical Blender still exports remain separate, are not the static master, and are not used at runtime.",
+      "sourceMasterSha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+      "motionProjectSha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+      "absoluteReferences": false,
+      "rightsAndPublication": "PENDING_OWNER_OR_LEGAL; ownerVisualApproval=false; commercialPublicationAllowed=false; publicationPermission=false",
+      "motionRuntimeSha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+      "motionRuntimeBytes": 1394724
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M01-WO-001",
+  "inspection": "R26_READ_ONLY_REOPEN_IN_BLENDER_NO_RENDER_NO_SAVE",
+  "project": {
+    "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+    "sha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+    "bytes": 4249267
+  },
+  "blenderVersion": "5.2.2 LTS",
+  "scene": {
+    "objectCount": 9,
+    "objects": [
+      {
+        "name": "Generated OpenAI hero plate",
+        "type": "MESH",
+        "animated": false
+      },
+      {
+        "name": "Generated lightning sprite 01",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Generated lightning sprite 02",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Generated lightning sprite 03",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Generated lightning sprite 04",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Generated lightning sprite 05",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Generated lightning sprite 06",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Generated lightning sprite 07",
+        "type": "MESH",
+        "animated": true
+      },
+      {
+        "name": "Slow cinematic camera",
+        "type": "CAMERA",
+        "animated": true
+      }
+    ],
+    "camera": "Slow cinematic camera",
+    "cameraLensMm": 50.0,
+    "frameStart": 1,
+    "frameEnd": 96,
+    "fps": 24,
+    "resolution": [
+      1600,
+      800
+    ],
+    "materials": [
+      "ImageGen lightning overlay 01",
+      "ImageGen lightning overlay 02",
+      "ImageGen lightning overlay 03",
+      "ImageGen lightning overlay 04",
+      "ImageGen lightning overlay 05",
+      "ImageGen lightning overlay 06",
+      "ImageGen lightning overlay 07",
+      "Material",
+      "Unmodified generated hero pixels"
+    ],
+    "images": [
+      {
+        "name": "hero-cinematic-original.png",
+        "filepath": "//..\\..\\..\\src\\modules\\CB-M01\\hero-cinematic-original.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-01-charge.png",
+        "filepath": "//lightning-sprites-v2\\lightning-01-charge.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-02-descent.png",
+        "filepath": "//lightning-sprites-v2\\lightning-02-descent.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-03-impact.png",
+        "filepath": "//lightning-sprites-v2\\lightning-03-impact.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-04-afterglow.png",
+        "filepath": "//lightning-sprites-v2\\lightning-04-afterglow.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-05-secondary-right.png",
+        "filepath": "//lightning-sprites-v2\\lightning-05-secondary-right.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-06-secondary-left.png",
+        "filepath": "//lightning-sprites-v2\\lightning-06-secondary-left.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      },
+      {
+        "name": "lightning-07-ground-fade.png",
+        "filepath": "//lightning-sprites-v2\\lightning-07-ground-fade.png",
+        "relativePath": true,
+        "packed": true,
+        "resolvedFileExists": true
+      }
+    ],
+    "linkedLibraryCount": 0
+  },
+  "portability": {
+    "allImagePathsRelativePackedOrInternal": true,
+    "packedImageCount": 8,
+    "unpackedImagesWithMissingFiles": []
+  },
+  "releaseGate": {
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false,
+    "productState": "DEMO"
+  }
+}

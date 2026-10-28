@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "CB-M01-WO-001",
+  "recordType": "ORIGINAL_DECORATIVE_SCENE_PROVENANCE",
+  "productState": "DRAFT_DEMO_ONLY_NOT_PUBLISHED",
+  "provenanceRecordedAt": "2026-10-13",
+  "source": {
+    "path": "src/modules/CB-M01/GoldenHome.astro",
+    "gitBlobSha": "2154c0bc9fcc51e71657041dced5e86029f30d54",
+    "sha256": "02659a41d9f7d19fd0024508dc6da8896dea1331c74d46d0481688fd57f9c7b7",
+    "changeSourceCommit": null,
+    "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
+    "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
+    "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
+    "rasterDerivativeOfGoldenReference": false,
+    "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked. R26 adds original Codex ImageGen promo and editorial masters with optimized local derivatives and retained SVG failure fallbacks; all remain local DEMO only. CB-M01-WO-001 producer-readiness seam refresh (2026-10-16): GoldenHome Astro frontmatter and nonvisual data-source status attributes changed. Hero/promo HTML source fragments and original image assets were not edited; the full parent source SHA-256 and Git blob are refreshed only. This does not grant live data admission, rights, visual release approval or publication. 2026-10-18 M01-to-M05 DEMO homepage link (English/Portuguese) adds an explicitly MOCK, first-party navigation without editing either original hero/promo scene fragment; source parent hash and Git blob re-pinned to the exact new GoldenHome.astro bytes; no production rights, credential or publication grant."
+  },
+  "goldenReference": {
+    "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+    "sha256": "82cb939ac77d55a4cdc65154809de2b2d0eb25ce0f2ee58c5d26d115e6250df8",
+    "use": "VISUAL_REFERENCE_ONLY_NOT_DISPLAYED_AS_BACKGROUND_OR_CROPPED"
+  },
+  "technicalEvidence": {
+    "head": "7153d8c91c60b7592dbaa4fbc80d5e11b578c31a",
+    "runId": null,
+    "artifactId": null,
+    "captureDate": "2026-10-13",
+    "integratedVisualReport": {
+      "path": ".engineering/evidence/CB-M01-WO-001/integrated-visual-check.json",
+      "sha256": "972163824c53ecb0e9e51b3c578db51273070cda75a1c27847127d77aca970d7"
+    },
+    "isolatedVisualReport": {
+      "path": ".engineering/evidence/CB-M01-WO-001/visual-check.json",
+      "sha256": "8b57d7610d436cc378520d4ede15b80392e1b8a0a7c698f3ce89453e702f24ce"
+    },
+    "hostedChecks": {
+      "runId": 38488533443,
+      "url": "https://github.com/KayzenRoot/coinblink/actions/runs/38488533443",
+      "headSha": "eb9f09e36c319c209d14427cb2a2362797c29808",
+      "conclusion": "SUCCESS",
+      "requiredChecksPassed": 6,
+      "codeRabbitStatus": "SUCCESS_STATUS_ONLY_NOT_A_SUBSTANTIVE_REVIEW"
+    },
+    "screenshotWidths": [
+      1536,
+      768,
+      390
+    ],
+    "screenshots": [
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-desktop-1536x864.png",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "bytes": 789613,
+        "sha256": "5321f1ab9582ce8ac7a36620b9b13f877f247fdde5d92374d3058e24e31a51b9"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-tablet-768x1024.png",
+        "dimensions": [
+          768,
+          1024
+        ],
+        "bytes": 491074,
+        "sha256": "6842a5060bff7c72b2e6bbd7d0dd4002c5bb492768292f6106d7a50466fdc652"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-integrated-mobile-390x844.png",
+        "dimensions": [
+          390,
+          844
+        ],
+        "bytes": 242653,
+        "sha256": "d16340199d9af1489ac8c8c7b11b2001dd0792ada75b495d038c1f99cd2623e1"
+      }
+    ],
+    "isolatedScreenshots": [
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-desktop.png",
+        "dimensions": [
+          1536,
+          864
+        ],
+        "bytes": 789916,
+        "sha256": "78e0ca363bad196d6f5db4714db852e05bcf1865923652f0e20f9083cb304f96"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-tablet.png",
+        "dimensions": [
+          768,
+          1024
+        ],
+        "bytes": 491278,
+        "sha256": "d8ee87d9baccb20017ceb0933b53a8d3f4f438f35cf6e029fd9a3b328c23ac01"
+      },
+      {
+        "path": ".engineering/evidence/CB-M01-WO-001/screenshots/golden-home-mobile.png",
+        "dimensions": [
+          390,
+          844
+        ],
+        "bytes": 242244,
+        "sha256": "9293a52368ce7a9407aebb51b8fd9d64fafefc3874a89d790ac74657aac80ffe"
+      }
+    ],
+    "status": "R25_LOCAL_CAPTURE_PASSED"
+  },
+  "sharedReleaseGate": {
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "liveEditorialEligible": false,
+    "advertisingEligible": false,
+    "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+  },
+  "limitations": [
+    "Two logical scenes are embedded in a larger Astro source file; their digest covers exact source fragments, not raster screenshots.",
+    "The hero contains multiple vector/DOM layers; it is not a single downloadable bitmap or a photorealistic Bitcoin render.",
+    "The promo uses the approved visual logo outside its SVG scene, but the brand's commercial rights clearance remains pending.",
+    "Owner Golden 1:1 visual acceptance, image licensing/trademark checks, public production release and any advertising purpose require separate approval.",
+    "CI accessibility, hashes and screenshots establish repeatability and change detection, not artwork licensing or permission to publish."
+  ],
+  "assets": [
+    {
+      "assetId": "CB-M01-DEMO-HERO-SCENE",
+      "version": "0.4.0",
+      "region": "hero",
+      "description": "Decorative CoinBlink hero using an approved-pipeline static ImageGen master with an optional Blender-rendered motion derivative; accessible HTML copy remains outside the decorative artwork. Not Golden visual approval.",
+      "sourceFragment": {
+        "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
+        "endMarker": "        <div class=\"hero-copy\">",
+        "includeEndMarker": false,
+        "sha256": "b972a5b1c19d78d04c9fec2dcd10b852f1b441150356906f17572b8c1437eb01",
+        "sourceByteLength": 12033
+      },
+      "form": "IMAGEGEN_STATIC_MASTER_WITH_BLENDER_MOTION_DERIVATIVE",
+      "viewBoxes": [
+        "0 0 760 320",
+        "0 0 600 300",
+        "0 0 300 300"
+      ],
+      "altTextMode": "DECORATIVE_PARENT_ARIA_HIDDEN",
+      "themeVariant": "DARK_DEMO_ONLY",
+      "lightThemeApproval": "NOT_APPROVED",
+      "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
+      "physicalImageAsset": "STATIC_IMAGEGEN_MASTER_PLUS_BLENDER_MOTION_DERIVATIVE",
+      "decorativeOverlayAssetIds": [
+        "CB-M01-DEMO-LIGHTNING-VFX"
+      ],
+      "visualComparison": "R25 integrated local responsive screenshots; not Owner Golden visual acceptance.",
+      "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "2154c0bc9fcc51e71657041dced5e86029f30d54",
+      "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "liveEditorialEligible": false,
+      "advertisingEligible": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "locales": [
+        "en",
+        "pt-br"
+      ],
+      "sourceValidationDate": "2026-10-13",
+      "evidenceCommit": null
+    },
+    {
+      "assetId": "CB-M01-DEMO-PROMO-SCENE",
+      "version": "0.1.0",
+      "region": "promo",
+      "description": "Original decorative lime planetary halo, mountainous landscape and tiny anonymous silhouette inside the CoinBlink mock promo.",
+      "sourceFragment": {
+        "startMarker": "<svg class=\"promo-scene\"",
+        "endMarker": "</svg>",
+        "includeEndMarker": true,
+        "sha256": "3701e88f907d15c9c45570016697fa34ca30a98934859a9cf47c15ba45322dbf",
+        "sourceByteLength": 2230
+      },
+      "form": "INLINE_SVG",
+      "viewBoxes": [
+        "0 0 360 180"
+      ],
+      "altTextMode": "DECORATIVE_SVG_ARIA_HIDDEN",
+      "themeVariant": "DARK_DEMO_ONLY",
+      "lightThemeApproval": "NOT_APPROVED",
+      "htmlText": "SEPARATE_ACCESSIBLE_DOM_OUTSIDE_DECORATIVE_SCENE",
+      "physicalImageAsset": "NONE",
+      "visualComparison": "R15 exact-head screenshots, non-pixel-parity",
+      "adjacentBrandAsset": {
+        "path": "assets/reference/coinblink-logo-approved-original-1179x1040.jpg",
+        "sha256": "126cf0835f0edc95f4c512f2ceab9a14f8253c83a42670b2ccc412dc7d846ed0",
+        "status": "OWNER_VISUAL_APPROVED_BUT_COMMERCIAL_CLEARANCE_PENDING",
+        "includedInSvgFragment": false
+      },
+      "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "2154c0bc9fcc51e71657041dced5e86029f30d54",
+      "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
+      "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "liveEditorialEligible": false,
+      "advertisingEligible": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY",
+      "locales": [
+        "en",
+        "pt-br"
+      ],
+      "sourceValidationDate": "2026-10-13",
+      "evidenceCommit": "ad1da7bd27b238ee78e96cb5a6438a37ca4587eb"
+    }
+  ],
+  "supplementalAssets": [
+    {
+      "assetId": "CB-M01-DEMO-ROCK-MATERIAL-R22",
+      "version": "1.0.0",
+      "path": "src/modules/CB-M01/hero-mineral-texture.svg",
+      "gitBlobSha": "b978c22c30ae8eb9e89bc0f144597a78092a93e4",
+      "sha256": "59dbe7af801c0ebbc5896728a2d0c4d2c95aaf04fd27d46a60ad5c0c793a563c",
+      "byteLength": 1589,
+      "dimensions": {
+        "width": 760,
+        "height": 320
+      },
+      "format": "SVG",
+      "origin": "ORIGINAL_SELF_AUTHORED_FIXED_SEED_VECTOR_FILTER",
+      "seed": 22,
+      "role": "DECORATIVE_CLIPPED_MINERAL_SURFACE_ONLY",
+      "altTextMode": "PARENT_HERO_SCENE_ARIA_HIDDEN",
+      "productionReady": false,
+      "rightsReview": "PENDING_OWNER_OR_LEGAL",
+      "commercialPublicationAllowed": false,
+      "ownerVisualApproval": false,
+      "sourceMaster": "SELF_CONTAINED_VECTOR_ASSET",
+      "relationToGolden": "VISUAL_REFERENCE_ONLY_NO_RASTER_EXTRACTION",
+      "sourceValidationDate": "2026-10-13",
+      "checkoutEOL": "LF_ENFORCED_BY_LOCAL_GITATTRIBUTES"
+    }
+  ],
+  "history": [
+    {
+      "recordType": "PRE_R25_SOURCE_SNAPSHOT",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "16a7c9377415e0c894b74772651a2161985db5ac",
+      "sourceSha256": "21204008af16b00218228cf00d5fa7f9031f74cdff6f3c6a9d77210c20dcd074",
+      "heroSourceFragment": {
+        "startMarker": "        <div class=\"hero-scene\" aria-hidden=\"true\">",
+        "endMarker": "        <div class=\"hero-copy\">",
+        "includeEndMarker": false,
+        "sha256": "03624c9465838b38e99b1fd4ae13e776890361719d8674e9e2951979f7ebdc1b",
+        "sourceByteLength": 12550
+      },
+      "capturedBy": "R25 provenance update; preserves the previous exact source digests"
+    },
+    {
+      "recordType": "R25_STATIC_MASTER_AND_MOTION_POLICY_ADOPTION",
+      "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
+      "sourceGitBlobSha": "5385cc3882604ef4a8426d595f74a3f4adc904d6",
+      "staticMaster": {
+        "path": "src/modules/CB-M01/hero-cinematic-original.png",
+        "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+        "origin": "OPENAI_IMAGE_GENERATION"
+      },
+      "motionDerivative": {
+        "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+        "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+        "origin": "BLENDER_MOTION_DERIVATIVE"
+      },
+      "legacyBlenderStillExports": {
+        "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+        "runtimeUsage": false
+      },
+      "decorativeOverlayClass": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "rights": {
+        "ownerVisualApproval": false,
+        "commercialPublicationAllowed": false,
+        "publicationPermission": false
+      },
+      "recordedAt": "2026-10-13T23:43:22.602Z"
+    }
+  ],
+  "r25SupplementalPreview": {
+    "assetId": "CB-M01-DEMO-HERO-BLENDER-LEGACY-STILLS",
+    "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+    "origin": "BLENDER_CYCLES_STILL_RENDER",
+    "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json",
+    "runtimeUsage": false,
+    "staticMaster": false,
+    "role": "LEGACY_BLENDER_STILL_EXPORTS_NOT_USED_BY_RUNTIME",
+    "png": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.png",
+      "format": "PNG",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "P",
+      "bytes": 774726,
+      "sha256": "bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67",
+      "fullyDecoded": true,
+      "maxBytes": 3500000,
+      "encoding": "palette PNG, median-cut, Floyd-Steinberg, optimize, compression 9",
+      "paletteColors": 256,
+      "comparisonToMaster": {
+        "meanAbsoluteErrorRgb": 1.51862,
+        "psnrDb": 38.8281
+      },
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
+    },
+    "webp": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
+      "format": "WEBP",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "RGB",
+      "bytes": 269828,
+      "sha256": "5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e",
+      "fullyDecoded": true,
+      "maxBytes": 1500000,
+      "encoding": "lossy WebP, method 6",
+      "quality": 96,
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
+    },
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false
+  },
+  "cinematicAssetPolicy": {
+    "decision": "R25_OWNER_DIRECTION",
+    "staticMaster": {
+      "assetClass": "STATIC_MASTER_APPROVED_IMAGE_PIPELINE",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "pipeline": "CODEX_APPROVED_IMAGE_PIPELINE",
+      "path": "src/modules/CB-M01/hero-cinematic-original.png",
+      "sha256": "a07bf7ccfa6fa06030de506353c40456f0fb9d4f5d33069f7857c50d0d37448c",
+      "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-imagegen-provenance.json#staticMaster"
+    },
+    "motionDerivative": {
+      "assetClass": "BLENDER_MOTION_DERIVATIVE",
+      "path": "src/modules/CB-M01/hero-cinematic-motion.webp",
+      "sha256": "0e1e9e2070fc717b3b03473bdc4daab3fe371a634e0d486c1af843f57fc41d5a",
+      "sourceProject": {
+        "path": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-animation-portable.blend",
+        "sha256": "898b99ff862f141f27871a2979a1a383fb7a60c3349a0810af2b6fcbafa6d8ec",
+        "bytes": 4249267
+      },
+      "absoluteReferences": false,
+      "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json#animationProject",
+      "dimensions": [
+        640,
+        320
+      ]
+    },
+    "decorativeOverlays": {
+      "assetClass": "DECORATIVE_OVERLAY_INPUT_TO_BLENDER_MOTION",
+      "origin": "OPENAI_IMAGE_GENERATION",
+      "count": 7,
+      "individualBrowserAnimation": false,
+      "packedIntoMotionProject": true,
+      "provenance": ".engineering/evidence/CB-M01-WO-001/lightning-sprites-provenance.json"
+    },
+    "rights": {
+      "review": "PENDING_OWNER_OR_LEGAL",
+      "ownerVisualApproval": false,
+      "commercialPublicationAllowed": false,
+      "publicationPermission": false,
+      "liveEditorialEligible": false,
+      "advertisingEligible": false,
+      "allowedUsage": "LOCAL_OR_NONPUBLIC_DEMO_PREVIEW_ONLY"
+    }
+  },
+  "legacyBlenderStillExports": {
+    "assetId": "CB-M01-DEMO-HERO-BLENDER-LEGACY-STILLS",
+    "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+    "origin": "BLENDER_CYCLES_STILL_RENDER",
+    "provenance": ".engineering/evidence/CB-M01-WO-001/hero-cinematic-blender-provenance.json",
+    "runtimeUsage": false,
+    "staticMaster": false,
+    "role": "LEGACY_BLENDER_STILL_EXPORTS_NOT_USED_BY_RUNTIME",
+    "png": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.png",
+      "format": "PNG",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "P",
+      "bytes": 774726,
+      "sha256": "bffa87afa2c1172057578aa35cd5e5958069618c2fb522baf8a1878e0ddfac67",
+      "fullyDecoded": true,
+      "maxBytes": 3500000,
+      "encoding": "palette PNG, median-cut, Floyd-Steinberg, optimize, compression 9",
+      "paletteColors": 256,
+      "comparisonToMaster": {
+        "meanAbsoluteErrorRgb": 1.51862,
+        "psnrDb": 38.8281
+      },
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
+    },
+    "webp": {
+      "path": "src/modules/CB-M01/hero-cinematic-blender.webp",
+      "format": "WEBP",
+      "dimensions": [
+        2560,
+        1280
+      ],
+      "mode": "RGB",
+      "bytes": 269828,
+      "sha256": "5aa50f820605d4c41f0defd8259eff534ec24750786b8c9b5a317eeec076ed5e",
+      "fullyDecoded": true,
+      "maxBytes": 1500000,
+      "encoding": "lossy WebP, method 6",
+      "quality": 96,
+      "assetClass": "BLENDER_CYCLES_STILL_RENDER_NOT_MASTER",
+      "role": "LEGACY_STILL_EXPORT_NOT_RUNTIME",
+      "runtimeUsage": false
+    },
+    "rightsReview": "PENDING_OWNER_OR_LEGAL",
+    "ownerVisualApproval": false,
+    "commercialPublicationAllowed": false,
+    "publicationPermission": false
+  }
+}

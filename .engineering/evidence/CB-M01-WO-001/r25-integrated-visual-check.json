@@ -1,0 +1,400 @@
+{
+  "status": "passed",
+  "generatedAt": "2026-10-13T23:02:31.496Z",
+  "baseSha": "07f31d8e3e7b7b7d3534274199dfc0e4e07a2f1c",
+  "headSha": "2668fcde6d9c3bdb068580b31492a18845d3a9f0",
+  "route": "/en",
+  "fixture": "built integrated /en route via Wrangler local mode with remote bindings disabled and the Astro dev toolbar disabled",
+  "runtime": "Wrangler 4.149.0 --local",
+  "origin": "http://127.0.0.1:65130",
+  "visualInputState": {
+    "status": "clean",
+    "paths": [
+      "src/modules/CB-M01",
+      "src/layouts/BaseLayout.astro",
+      "src/pages",
+      "src/styles/global.css",
+      "public",
+      "astro.config.mjs",
+      "assets/reference",
+      "test/modules/CB-M01/fixture/src",
+      ".engineering/evidence/CB-M01-WO-001/astro-fixture.config.mjs",
+      "test/modules/CB-M01/visual-check.mjs",
+      "test/modules/CB-M01/integrated-visual-check.mjs",
+      "test/modules/CB-M01/astro-integration.config.mjs",
+      "test/modules/CB-M01/visual-server.mjs",
+      "test/modules/CB-M01/visual-input-state.mjs",
+      "test/modules/CB-M01/visual-request-origin.mjs",
+      "test/modules/CB-M01/git-head.mjs",
+      "test/modules/CB-M01/GoldenHome.contract.test.mjs",
+      "test/modules/CB-M01/visual-server.test.mjs",
+      "test/modules/CB-M01/visual-input-state.test.mjs",
+      "test/modules/CB-M01/visual-request-origin.test.mjs",
+      "test/modules/CB-M01/git-head.test.mjs",
+      "package.json",
+      "package-lock.json"
+    ]
+  },
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1536,
+      "height": 864,
+      "httpStatus": 200,
+      "documentWidth": 1536,
+      "cinematicPreview": {
+        "fullyDecoded": true,
+        "complete": true,
+        "width": 2560,
+        "height": 1280,
+        "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+        "currentOrigin": "http://127.0.0.1:65130",
+        "allowedOrigin": "http://127.0.0.1:65130",
+        "previewActive": true,
+        "visible": true,
+        "sceneOpacity": "1",
+        "objectFit": "cover",
+        "objectPosition": "50% 50%",
+        "widthOnScreen": 728.796875,
+        "heightOnScreen": 280,
+        "lightningLeft": 44.765625,
+        "copyRight": 567.671875,
+        "loading": "eager",
+        "fetchPriority": "high"
+      },
+      "performance": {
+        "largestContentfulPaintMs": 1740,
+        "cumulativeLayoutShift": 0,
+        "previewImage": {
+          "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+          "transferredBytes": 270128,
+          "encodedBodyBytes": 269828,
+          "durationMs": 340.5
+        },
+        "sameOriginTransferredBytes": 2656695,
+        "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+      },
+      "moduleAxeViolations": [],
+      "fullPageAxeViolations": [],
+      "securityHeaders": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-robots-tag": "noindex, nofollow, noarchive"
+      },
+      "robotsMeta": "noindex, nofollow, noarchive"
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "httpStatus": 200,
+      "documentWidth": 768,
+      "cinematicPreview": {
+        "fullyDecoded": true,
+        "complete": true,
+        "width": 2560,
+        "height": 1280,
+        "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+        "currentOrigin": "http://127.0.0.1:65130",
+        "allowedOrigin": "http://127.0.0.1:65130",
+        "previewActive": true,
+        "visible": true,
+        "sceneOpacity": "1",
+        "objectFit": "contain",
+        "objectPosition": "100% 50%",
+        "widthOnScreen": 307.96875,
+        "heightOnScreen": 320,
+        "lightningLeft": 275.671875,
+        "copyRight": 273.265625,
+        "loading": "eager",
+        "fetchPriority": "high"
+      },
+      "performance": {
+        "largestContentfulPaintMs": 560,
+        "cumulativeLayoutShift": 0,
+        "previewImage": {
+          "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+          "transferredBytes": 0,
+          "encodedBodyBytes": 269828,
+          "durationMs": 0
+        },
+        "sameOriginTransferredBytes": 900,
+        "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+      },
+      "moduleAxeViolations": [],
+      "fullPageAxeViolations": [],
+      "securityHeaders": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-robots-tag": "noindex, nofollow, noarchive"
+      },
+      "robotsMeta": "noindex, nofollow, noarchive"
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "httpStatus": 200,
+      "documentWidth": 390,
+      "cinematicPreview": {
+        "fullyDecoded": true,
+        "complete": true,
+        "width": 2560,
+        "height": 1280,
+        "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+        "currentOrigin": "http://127.0.0.1:65130",
+        "allowedOrigin": "http://127.0.0.1:65130",
+        "previewActive": true,
+        "visible": true,
+        "sceneOpacity": "1",
+        "objectFit": "cover",
+        "objectPosition": "50% 50%",
+        "widthOnScreen": 356,
+        "heightOnScreen": 183.203125,
+        "lightningLeft": 17,
+        "copyRight": 355,
+        "loading": "eager",
+        "fetchPriority": "high"
+      },
+      "performance": {
+        "largestContentfulPaintMs": 440,
+        "cumulativeLayoutShift": 0,
+        "previewImage": {
+          "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+          "transferredBytes": 0,
+          "encodedBodyBytes": 269828,
+          "durationMs": 0
+        },
+        "sameOriginTransferredBytes": 900,
+        "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+      },
+      "moduleAxeViolations": [],
+      "fullPageAxeViolations": [],
+      "securityHeaders": {
+        "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-robots-tag": "noindex, nofollow, noarchive"
+      },
+      "robotsMeta": "noindex, nofollow, noarchive"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": ".engineering/evidence/CB-M01-WO-001/screenshots/r25-hero-desktop-1536x864.png",
+      "sha256": "5bfd327a12ebbdee3991344c20eac1b9880c9eb7da17e603a304fd9ce35703bb",
+      "bytes": 694898
+    },
+    {
+      "file": ".engineering/evidence/CB-M01-WO-001/screenshots/r25-hero-tablet-768x1024.png",
+      "sha256": "abcb511f47d17deb3b453f198e121cb6249da2eb225b973a31339f9232606deb",
+      "bytes": 472186
+    },
+    {
+      "file": ".engineering/evidence/CB-M01-WO-001/screenshots/r25-hero-mobile-390x844.png",
+      "sha256": "97adf7d2d9b0ef709812550a0b5fb4cd31e91aa44f6a99fb7c33351adff330bc",
+      "bytes": 210180
+    }
+  ],
+  "renderPerformance": [
+    {
+      "viewport": "desktop",
+      "largestContentfulPaintMs": 1740,
+      "cumulativeLayoutShift": 0,
+      "previewImage": {
+        "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+        "transferredBytes": 270128,
+        "encodedBodyBytes": 269828,
+        "durationMs": 340.5
+      },
+      "sameOriginTransferredBytes": 2656695,
+      "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+    },
+    {
+      "viewport": "tablet",
+      "largestContentfulPaintMs": 560,
+      "cumulativeLayoutShift": 0,
+      "previewImage": {
+        "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+        "transferredBytes": 0,
+        "encodedBodyBytes": 269828,
+        "durationMs": 0
+      },
+      "sameOriginTransferredBytes": 900,
+      "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+    },
+    {
+      "viewport": "mobile",
+      "largestContentfulPaintMs": 440,
+      "cumulativeLayoutShift": 0,
+      "previewImage": {
+        "path": "/_astro/hero-cinematic-blender.CZFFZKKi.webp",
+        "transferredBytes": 0,
+        "encodedBodyBytes": 269828,
+        "durationMs": 0
+      },
+      "sameOriginTransferredBytes": 900,
+      "measurement": "single local desktop/tablet/mobile browser pass; lab data, not field Core Web Vitals"
+    }
+  ],
+  "desktopGeometry": {
+    ".demo-banner": {
+      "x": 0,
+      "y": 0,
+      "width": 1536,
+      "height": 22,
+      "bottom": 22
+    },
+    ".cb-header": {
+      "x": 43.765625,
+      "y": 22,
+      "width": 1448.46875,
+      "height": 49,
+      "bottom": 71
+    },
+    ".brand": {
+      "x": 43.765625,
+      "y": 22,
+      "width": 295,
+      "height": 48,
+      "bottom": 70
+    },
+    ".hero-panel": {
+      "x": 43.765625,
+      "y": 73,
+      "width": 1089.734375,
+      "height": 282,
+      "bottom": 355
+    },
+    ".market-panel": {
+      "x": 1143.5,
+      "y": 73,
+      "width": 348.71875,
+      "height": 282,
+      "bottom": 355
+    },
+    ".ticker-strip": {
+      "x": 43.765625,
+      "y": 361,
+      "width": 1448.46875,
+      "height": 30,
+      "bottom": 391
+    },
+    ".trending-strip": {
+      "x": 43.765625,
+      "y": 397,
+      "width": 1448.46875,
+      "height": 45,
+      "bottom": 442
+    },
+    ".category-rail": {
+      "x": 43.765625,
+      "y": 457,
+      "width": 1448.46875,
+      "height": 50,
+      "bottom": 507
+    },
+    ".content-grid": {
+      "x": 43.765625,
+      "y": 518,
+      "width": 1448.46875,
+      "height": 190,
+      "bottom": 708
+    },
+    "#latest-news": {
+      "x": 43.765625,
+      "y": 715,
+      "width": 983.625,
+      "height": 228,
+      "bottom": 943
+    },
+    ".news-cards": {
+      "x": 55.765625,
+      "y": 747.5,
+      "width": 959.625,
+      "height": 106,
+      "bottom": 853.5
+    },
+    "#newsletter": {
+      "x": 1036.390625,
+      "y": 715,
+      "width": 455.828125,
+      "height": 228,
+      "bottom": 943
+    }
+  },
+  "mobileHero": {
+    "ctas": [
+      {
+        "label": "Explore demo stories →",
+        "left": 35,
+        "right": 178.421875,
+        "top": 288.46875,
+        "bottom": 332.46875,
+        "height": 44,
+        "minHeight": 44
+      },
+      {
+        "label": "View market panel",
+        "left": 35,
+        "right": 150.484375,
+        "top": 340.46875,
+        "bottom": 384.46875,
+        "height": 44,
+        "minHeight": 44
+      }
+    ],
+    "status": {
+      "left": 35,
+      "right": 185,
+      "top": 496,
+      "bottom": 546,
+      "height": 50
+    },
+    "coin": {
+      "left": 235.88331604003906,
+      "right": 363.53814697265625,
+      "top": 433.67730712890625,
+      "bottom": 561.3076782226562,
+      "height": 127.63037109375
+    },
+    "ctaStatusOverlap": false,
+    "ctaCoinOverlap": false,
+    "statusCoinOverlap": false
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "externalRequests": [],
+  "desktopEditorialCardGeometry": {
+    "artRight": 132.765625,
+    "artTop": 748.5,
+    "artBottom": 852.5,
+    "copyLeft": 132.765625,
+    "copyTop": 748.5,
+    "copyBottom": 852.5
+  },
+  "lightningMotionAccessibility": {
+    "mode": "DEMO_LOCAL_ONLY",
+    "normalAnimationFrameCount": 7,
+    "allSevenImagesDecoded": true,
+    "allImagesSameOrigin": true,
+    "reducedMotionNoAnimations": true,
+    "reducedMotionStaticImpact": true
+  },
+  "previewFallback": {
+    "previewActive": false,
+    "previewImageComplete": true,
+    "vectorFallbackVisible": true,
+    "coinBounds": {
+      "width": 276.4476318359375,
+      "height": 291.78448486328125
+    }
+  },
+  "recordType": "R25_CINEMATIC_ASSET_INTEGRATED_VISUAL_EVIDENCE",
+  "testedSourceHead": "2668fcde6d9c3bdb068580b31492a18845d3a9f0"
+}

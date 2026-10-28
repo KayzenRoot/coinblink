@@ -1,0 +1,8 @@
+---
+import LocalizedNewsPage from "../../../../modules/CB-M09/LocalizedNewsPage.astro";
+export const prerender = false;
+const KNOWN_CATEGORIES = ["security", "protocol", "education"];
+const category = Astro.params.category ?? "";
+if (!KNOWN_CATEGORIES.includes(category)) Astro.response.status = 404;
+---
+<LocalizedNewsPage locale="en" category={category} />

@@ -35,6 +35,7 @@ const base = "/" + locale + "/news";
       <p class="lead">{shown.summary}</p>
       <p>{shown.body}</p>
       <p class="m02-status">{NEWS_MOCK_POLICY}</p>
+      <p><a href={base + "/category/" + shown.category}>{copy[shown.category]} · {copy.moreInCategory} →</a></p>
       {path?.status === "MOCK_PATH_NOT_PUBLISHED" && (
         <nav class="m02-reading-path" aria-label={copy.readingPath}>
           <p>{copy.step} {path.position} {copy.of} {path.total} · {copy.pathDisclaimer}</p>

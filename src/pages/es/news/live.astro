@@ -8,6 +8,6 @@ const copy = getLiveNewsCopy("es");
 // Off unless the deployment enables it: PUBLIC_NEWS_LIVE is a variable, not a code path.
 const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
 ---
-<BaseLayout lang={copy.lang} title={copy.pageTitle} description={copy.pageDescription}>
+<BaseLayout lang="es" title={copy.pageTitle} description={copy.pageDescription}>
   <LiveNewsPanel snapshot={snapshot} locale="es" />
 </BaseLayout>

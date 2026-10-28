@@ -51,6 +51,10 @@ jobs:
         env:
           PUBLIC_BUILD_SHA: ${{ github.sha }}
           PUBLIC_BUILD_ENV: production
+          # When this variable is set, the build emits canonical, hreflang
+          # alternates and og:image for the deployed origin. Empty keeps every
+          # absolute URL out of the build.
+          PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN }}
         run: npm run build
       - name: Reassert the Worker carries no session binding
         run: node scripts/assert-no-session-binding.mjs

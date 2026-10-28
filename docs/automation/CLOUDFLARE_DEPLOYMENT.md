@@ -16,6 +16,7 @@ Settings → Secrets and variables → Actions:
 | `CLOUDFLARE_ACCOUNT_ID` | Secret or Variable | yes | Account that owns the Worker |
 | `COINBLINK_CF_WORKER_NAME` | Variable | no | Target Worker name, defaults to `coinblink-production` |
 | `COINBLINK_CF_WORKER_URL` | Variable | no | Public URL; when set, the workflow smoke tests `/health`, `/en`, `/demo`, the demo `robots` policy and that `/admin` stays unreachable |
+| `PUBLIC_SITE_ORIGIN` | Variable | no | Origin of the deployed site. When set, the build emits canonical, hreflang alternates and `og:image`; empty keeps every absolute URL out of the build |
 
 Until the two required values exist, the deploy job fails early with an explicit message naming this document, instead of deploying something unintended. The smoke test is skipped with a note when `COINBLINK_CF_WORKER_URL` is absent, so a missing cosmetic variable never turns a good deploy red.
 
@@ -39,7 +40,7 @@ The Worker name is always passed explicitly, so a deploy can never create or tar
 - Only `main` deploys. `workflow_dispatch` exists for a manual re-run of the same commit.
 - `WRANGLER_SEND_METRICS=false` everywhere.
 - The site stays a labelled DEMO: `/admin` is unreachable in production, every page carries `noindex, nofollow, noarchive`, and no rights, publication or real-account claim is made by a deploy.
-- `PUBLIC_SITE_ORIGIN` is what turns on canonical and hreflang metadata. Leaving it empty keeps absolute URLs out of the build, so set it only once the real origin exists.
+- `PUBLIC_SITE_ORIGIN` is what turns on canonical, hreflang and `og:image`. It is now set to the deployed Worker origin, so production carries absolute metadata while any local build without it still carries none. Change the variable if the origin ever moves.
 
 ## Rollback
 

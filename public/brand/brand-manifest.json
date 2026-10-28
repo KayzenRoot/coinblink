@@ -80,14 +80,51 @@
       "sha256": "0f446faef5fc69f4bdc76fffa03cf0b0e6feb6e4ddb4aceefce8e97e4d1e6e16",
       "viewBox": "0 0 512 512",
       "variant": "Favicon asset library file",
-      "recommendedSurface": "Browser tab or PWA preview only after separate approval",
-      "installationStatus": "NOT_INSTALLED"
+      "recommendedSurface": "Browser tab and PWA preview, DEMO_ONLY",
+      "installationStatus": "INSTALLED_DEMO_ONLY"
     }
   ],
   "rightsReview": "PENDING_OWNER_OR_LEGAL",
   "commercialPublicationAllowed": false,
-  "siteIntegrationAllowed": false,
-  "headerIntegrationAllowed": false,
-  "faviconInstalledGlobally": false,
-  "derivatives": []
+  "siteIntegrationAllowed": true,
+  "headerIntegrationAllowed": true,
+  "faviconInstalledGlobally": true,
+  "integrationAuthorization": {
+    "authorizedBy": "KayzenRoot",
+    "authorizedAt": "2026-10-28",
+    "scope": "DEMO_ONLY favicon, icon and header wiring on the demonstration site",
+    "note": "Rights, trademark and commercial publication review are unchanged and remain pending."
+  },
+  "derivatives": [
+    {
+      "path": "public/brand/apple-touch-icon.png",
+      "bytes": 28368,
+      "sha256": "20c06f79a69a97040a28d2ea71683c865d631831b269071daa65c116634936be",
+      "width": 180,
+      "height": 180,
+      "source": "public/brand/coinblink-symbol.svg",
+      "derivation": "Rasterised from the approved symbol vector; no redesign.",
+      "surface": "Apple touch icon and web manifest icon"
+    },
+    {
+      "path": "public/brand/icon-512.png",
+      "bytes": 115906,
+      "sha256": "7b0483d599be002db9c58f83c6d6f4f9336b4594fd031921cc37ae3f2458987a",
+      "width": 512,
+      "height": 512,
+      "source": "public/brand/coinblink-symbol.svg",
+      "derivation": "Rasterised from the approved symbol vector; no redesign.",
+      "surface": "Web manifest icon"
+    },
+    {
+      "path": "public/brand/og-image.jpg",
+      "bytes": 171603,
+      "sha256": "f4f5ad690e451bbd63ac86f9c5b6e970ba6824c9754baaa01d6213eb3abf5b6b",
+      "width": 1200,
+      "height": 630,
+      "source": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
+      "derivation": "Cropped and resized from the golden-home master reference; no redesign.",
+      "surface": "Open Graph preview when a site origin is configured"
+    }
+  ]
 }

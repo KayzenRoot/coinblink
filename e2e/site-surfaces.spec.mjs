@@ -58,6 +58,9 @@ test("every shipped surface keeps the shared demo invariants",async({page})=>{
     if(!ogLocale)seen.push("missing og:locale");
     if(await page.locator('link[rel="canonical"]').count()>0)seen.push("canonical without origin");
     if(await page.locator('link[rel="alternate"][hreflang]').count()>0)seen.push("hreflang without origin");
+    if(await page.locator('link[rel="icon"][href="/brand/favicon.svg"]').count()!==1)seen.push("missing favicon link");
+    if(await page.locator('link[rel="apple-touch-icon"][href="/brand/apple-touch-icon.png"]').count()!==1)seen.push("missing apple touch icon");
+    if(await page.locator('link[rel="manifest"][href="/brand/site.webmanifest"]').count()!==1)seen.push("missing web manifest");
     if(seen.length>0)failures.push(`${surface.path}: ${seen.join("; ")}`);
     // A page with a wrong language tag also fails the axe language rule, so the
     // scan doubles as a second opinion on the document language.
@@ -90,4 +93,24 @@ test("the protected admin tree stays an indistinguishable bare refusal",async({p
   expect(api.status()).toBe(200);
   expect(String(api.headers()["content-type"])).toContain("application/json");
   expect(await api.text()).not.toContain("<html");
+});
+
+test("the brand icons and the web manifest are served",async({request})=>{
+  const expected=[
+    {path:"/brand/favicon.svg",type:"image/svg+xml"},
+    {path:"/brand/apple-touch-icon.png",type:"image/png"},
+    {path:"/brand/icon-512.png",type:"image/png"},
+    {path:"/brand/og-image.jpg",type:"image/jpeg"},
+    {path:"/brand/site.webmanifest",type:"application/manifest+json"},
+  ];
+  for(const asset of expected){
+    const response=await request.get(asset.path);
+    expect(response.status(),`${asset.path} must be served`).toBe(200);
+    expect(String(response.headers()["content-type"])).toContain(asset.type);
+  }
+  const manifest=await (await request.get("/brand/site.webmanifest")).json();
+  expect(manifest.name).toContain("DEMO");
+  expect(manifest.icons.map((icon)=>icon.src).sort()).toEqual([
+    "/brand/apple-touch-icon.png","/brand/favicon.svg","/brand/icon-512.png",
+  ]);
 });

@@ -2,6 +2,7 @@
 // a real origin is configured, so the DEMO build never invents a canonical URL.
 export const SITE_LOCALES = Object.freeze(["en", "pt-br", "es"]);
 export const DEMO_ROBOTS = "noindex, nofollow, noarchive";
+export const SOCIAL_IMAGE_PATH = "/brand/og-image.jpg";
 export const DEFAULT_LOCALE = "en";
 const OG_LOCALE = Object.freeze({ en: "en_US", "pt-BR": "pt_BR", es: "es_ES" });
 // The layout prop is a BCP-47 language tag; the site registry uses lowercase
@@ -81,6 +82,7 @@ export function buildSeoMetadata({ pathname, lang, title, description, origin } 
       description,
       locale: OG_LOCALE[lang],
       url: canonical,
+      image: canonical === null ? null : resolvedOrigin + SOCIAL_IMAGE_PATH,
     }),
     twitter: Object.freeze({ card: "summary" }),
   });

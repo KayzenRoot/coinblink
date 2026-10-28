@@ -1,0 +1,15 @@
+{
+  "name": "CoinBlink (DEMO)",
+  "short_name": "CoinBlink",
+  "description": "Fictional CoinBlink demonstration. No live data, no accounts, no publishing.",
+  "start_url": "/en",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#070e0c",
+  "theme_color": "#070e0c",
+  "icons": [
+    { "src": "/brand/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/brand/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

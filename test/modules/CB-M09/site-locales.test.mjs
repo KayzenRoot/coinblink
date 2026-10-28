@@ -54,6 +54,7 @@ test("M09 P1 without an origin the DEMO build emits no absolute URL", async () =
     assert.equal(seo.canonical, null);
     assert.deepEqual(seo.alternates, []);
     assert.equal(seo.openGraph.url, null);
+    assert.equal(seo.openGraph.image, null, "no social image without a configured origin");
     assert.equal(seo.robots, "noindex, nofollow, noarchive");
     assert.equal(seo.openGraph.type, "website");
     assert.equal(seo.openGraph.siteName, "CoinBlink");
@@ -74,6 +75,7 @@ test("M09 P1 with an origin every localized page gets canonical, alternates and 
     assert.equal(seo.absolute, true);
     assert.equal(seo.canonical, ORIGIN + pathFor[lang]);
     assert.equal(seo.openGraph.url, seo.canonical);
+    assert.equal(seo.openGraph.image, ORIGIN + "/brand/og-image.jpg");
     assert.equal(seo.openGraph.locale, expectedOg[lang]);
     assert.deepEqual(seo.alternates.map((item) => item.hreflang), ["en", "pt-BR", "es", "x-default"]);
     assert.deepEqual(seo.alternates.map((item) => item.href), [

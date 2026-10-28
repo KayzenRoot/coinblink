@@ -14,7 +14,10 @@ function makeWorkbench() {
     dataset: { m02Topic: value },
     addEventListener: (name, callback) => listeners.set("topic:" + value + ":" + name, callback),
   }));
-  const count = { textContent: "3 exemplos fictícios", dataset: { m02CountLabel: "exemplos fictícios" } };
+  const count = {
+    textContent: "3 exemplos fictícios",
+    dataset: { m02CountLabelSingular: "exemplo fictício", m02CountLabelPlural: "exemplos fictícios" },
+  };
   const empty = { hidden: true };
   const entries = [
     { dataset: { m02Category: "security", m02Searchable: "Oficina fictícia de segurança" }, hidden: false },
@@ -42,7 +45,7 @@ test("M02 fictional localized search folds diacritics and case without network",
   ui.search.value = "  SEGURANCA ";
   ui.onInput();
   assert.deepEqual(ui.entries.map(x => x.hidden), [false, true, true]);
-  assert.equal(ui.count.textContent, "1 exemplos fictícios");
+  assert.equal(ui.count.textContent, "1 exemplo fictício");
   assert.equal(ui.empty.hidden, true);
   ui.search.value = "ficticios";
   ui.onInput();

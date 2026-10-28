@@ -8,6 +8,11 @@ export const API_CONTRACT_VERSION = "2026-10-demo.1";
 
 const ENVELOPE_FIELDS = Object.freeze(["live", "mode", "redistributable", "status", "items"]);
 const COMMON_INVARIANTS = Object.freeze({ mode: "SYNTHETIC", live: false, redistributable: false });
+const ERROR_STATUSES = Object.freeze([
+  Object.freeze({ status: 400, payloadStatus: "BAD_REQUEST" }),
+  Object.freeze({ status: 405, payloadStatus: "METHOD_NOT_ALLOWED" }),
+  Object.freeze({ status: 503, payloadStatus: "UNAVAILABLE" }),
+]);
 
 export const V1_ENDPOINTS = Object.freeze([
   Object.freeze({
@@ -16,11 +21,7 @@ export const V1_ENDPOINTS = Object.freeze([
     methods: Object.freeze(["GET"]),
     allowedQueryParameters: Object.freeze([]),
     success: Object.freeze({ status: 200, payloadStatus: "DEMO_ONLY" }),
-    errorStatuses: Object.freeze([
-      Object.freeze({ status: 400, payloadStatus: "BAD_REQUEST" }),
-      Object.freeze({ status: 405, payloadStatus: "METHOD_NOT_ALLOWED" }),
-      Object.freeze({ status: 503, payloadStatus: "UNAVAILABLE" }),
-    ]),
+    errorStatuses: ERROR_STATUSES,
     envelopeFields: ENVELOPE_FIELDS,
     itemFields: Object.freeze(["category", "id", "published", "rights", "slug", "summary", "title"]),
     itemInvariants: Object.freeze({ published: false, rights: "SYNTHETIC_NOT_LICENSED_NEWS" }),
@@ -32,11 +33,7 @@ export const V1_ENDPOINTS = Object.freeze([
     methods: Object.freeze(["GET"]),
     allowedQueryParameters: Object.freeze([]),
     success: Object.freeze({ status: 200, payloadStatus: "BLOCKED_DEMO" }),
-    errorStatuses: Object.freeze([
-      Object.freeze({ status: 400, payloadStatus: "BAD_REQUEST" }),
-      Object.freeze({ status: 405, payloadStatus: "METHOD_NOT_ALLOWED" }),
-      Object.freeze({ status: 503, payloadStatus: "UNAVAILABLE" }),
-    ]),
+    errorStatuses: ERROR_STATUSES,
     envelopeFields: ENVELOPE_FIELDS,
     itemFields: Object.freeze(["asset", "blockers", "freshness", "numericQuote", "pair", "publiclyUsable", "rights"]),
     itemInvariants: Object.freeze({ rights: "NOT_CLEARED", numericQuote: null, publiclyUsable: false }),
@@ -65,34 +62,33 @@ function sameFields(actual, declared) {
   return keys.length === declared.length && declared.every((field) => Object.hasOwn(actual, field));
 }
 
-/**
- * Check one observed response against the contract.
- * @returns {{ok: boolean, problems: ReadonlyArray<string>}}
- */
-export function conformsToContract(path, status, payload) {
+function matchesInvariant(value, expected) {
+  if (expected === null) return value === null;
+  if (typeof expected === "object") return JSON.stringify(value) === JSON.stringify(expected);
+  return value === expected;
+}
+
+/** Envelope checks, or null when the envelope shape itself is wrong. */
+function envelopeProblems(endpoint, status, payload) {
+  if (!sameFields(payload, endpoint.envelopeFields)) return null;
   const problems = [];
-  const endpoint = contractFor(path);
-  if (endpoint === null) return { ok: false, problems: Object.freeze([`unknown path ${path}`]) };
-  const known = [endpoint.success, ...endpoint.errorStatuses].some((entry) => entry.status === status);
-  if (!known) problems.push(`undeclared status ${status}`);
-  if (!sameFields(payload, endpoint.envelopeFields)) {
-    problems.push("envelope fields differ from the contract");
-    return { ok: false, problems: Object.freeze(problems) };
-  }
+  const declaredStatuses = [endpoint.success, ...endpoint.errorStatuses].map((entry) => entry.status);
+  if (!declaredStatuses.includes(status)) problems.push(`undeclared status ${status}`);
   for (const [field, expected] of Object.entries(COMMON_INVARIANTS)) {
     if (payload[field] !== expected) problems.push(`${field} must stay ${JSON.stringify(expected)}`);
   }
-  const declaredStatuses = [endpoint.success.payloadStatus,
+  const declaredPayloads = [endpoint.success.payloadStatus,
     ...endpoint.errorStatuses.map((entry) => entry.payloadStatus)];
-  if (typeof payload.status !== "string" || !declaredStatuses.includes(payload.status)) {
+  if (typeof payload.status !== "string" || !declaredPayloads.includes(payload.status)) {
     problems.push(`undeclared payload status ${JSON.stringify(payload.status)}`);
   }
-  if (!Array.isArray(payload.items)) {
-    problems.push("items must be an array");
-    return { ok: false, problems: Object.freeze(problems) };
-  }
-  const isSuccess = status === endpoint.success.status;
-  if (isSuccess) {
+  return problems;
+}
+
+function itemProblems(endpoint, status, payload) {
+  if (!Array.isArray(payload.items)) return ["items must be an array"];
+  const problems = [];
+  if (status === endpoint.success.status) {
     if (payload.status !== endpoint.success.payloadStatus) problems.push("success payload status mismatch");
     if (payload.items.length !== endpoint.itemCount) problems.push(`expected ${endpoint.itemCount} items`);
   } else if (payload.items.length !== 0) {
@@ -104,11 +100,25 @@ export function conformsToContract(path, status, payload) {
       break;
     }
     for (const [field, expected] of Object.entries(endpoint.itemInvariants)) {
-      const value = item[field];
-      const matches = expected === null ? value === null
-        : (typeof expected === "object" ? JSON.stringify(value) === JSON.stringify(expected) : value === expected);
-      if (!matches) problems.push(`item.${field} must stay ${JSON.stringify(expected)}`);
+      if (!matchesInvariant(item[field], expected)) {
+        problems.push(`item.${field} must stay ${JSON.stringify(expected)}`);
+      }
     }
   }
+  return problems;
+}
+
+/**
+ * Check one observed response against the contract. Never throws.
+ * @returns {{ok: boolean, problems: ReadonlyArray<string>}}
+ */
+export function conformsToContract(path, status, payload) {
+  const endpoint = contractFor(path);
+  if (endpoint === null) return { ok: false, problems: Object.freeze([`unknown path ${path}`]) };
+  const envelope = envelopeProblems(endpoint, status, payload);
+  if (envelope === null) {
+    return { ok: false, problems: Object.freeze(["envelope fields differ from the contract"]) };
+  }
+  const problems = [...envelope, ...itemProblems(endpoint, status, payload)];
   return { ok: problems.length === 0, problems: Object.freeze(problems) };
 }

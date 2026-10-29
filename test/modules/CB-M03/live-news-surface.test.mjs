@@ -63,6 +63,9 @@ test('the news index shows a compact, attributed strip only when live', () => {
   assert.ok(strip.includes('/news/live'));
   assert.ok(strip.includes('copy.stripNote'));
   assert.ok(strip.includes('copy.stripAll'));
+  assert.ok(strip.includes('clusterLiveHeadlines'));
+  assert.ok(strip.includes('copy.stripCoverage'));
+  assert.ok(strip.includes('/news/coverage'));
   const workbench = readFileSync('src/modules/CB-M02/NewsWorkbench.astro', 'utf8');
   assert.ok(workbench.includes('<slot name="live" />'));
   const page = readFileSync('src/modules/CB-M09/LocalizedNewsPage.astro', 'utf8');

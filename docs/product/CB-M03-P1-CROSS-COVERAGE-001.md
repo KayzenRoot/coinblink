@@ -66,10 +66,14 @@ the same pure module; the highlight uses no additional data or request.
 `/{locale}/news/coverage` is the shareable home of the feature. It reads the
 same gated snapshot, clusters it with the same module and lists every group
 (capped at 8) with the newest headline, the publisher count, the relative time
-and one link per publisher. When the collection has no multi-source story it
+and one link per publisher with the publisher's relative publication time, so
+the reader can see who carried the story first. When the collection has no
+multi-source story it
 renders an explicit empty state; when live news is disabled it makes no
 request and explains the gate, exactly like the reader. The live page's
-highlight links here with the number of covered stories.
+highlight links here with the number of covered stories, and the news index
+strip shows the same link so a reader can reach coverage without opening the
+live page first.
 
 Routes: `src/pages/{en,pt-br,es}/news/coverage.astro`, each a thin wrapper over
 `CoveragePage.astro`. Copy lives in the same key-major table

@@ -2,6 +2,7 @@
 import { readLiveNews } from "./live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
 import { exactLiveTime, formatLiveAge } from "./live-time.mjs";
+import { clusterLiveHeadlines } from "./live-clusters.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
@@ -11,6 +12,7 @@ const copy = getLiveNewsCopy(locale);
 const live = snapshot.status === "LIVE_HEADLINES";
 const newest = snapshot.status === "LIVE_HEADLINES" ? snapshot.items.slice(0, 3) : Object.freeze([]);
 const all = live ? fillLiveNewsCopy(copy.stripAll, { count: snapshot.itemCount }) : "";
+const coverageCount = live ? clusterLiveHeadlines(snapshot.items).length : 0;
 const nowMs = Date.now();
 const age = (iso: string | null) => formatLiveAge(iso, nowMs, locale) ?? copy.undated;
 const exact = (iso: string | null) => exactLiveTime(iso);
@@ -33,6 +35,11 @@ const exact = (iso: string | null) => exactLiveTime(iso);
       ))}
     </ul>
     <a class="m03-strip__all" href={"/" + locale + "/news/live"}>{all}</a>
+    {coverageCount > 0 && (
+      <a class="m03-strip__coverage" href={"/" + locale + "/news/coverage"}>
+        {fillLiveNewsCopy(copy.stripCoverage, { count: coverageCount })}
+      </a>
+    )}
   </section>
 )}
 <style>
@@ -46,5 +53,6 @@ const exact = (iso: string | null) => exactLiveTime(iso);
   .m03-strip__byline{display:block;margin-top:.2rem;font-size:.78rem;color:#9fb6a5}
   .m03-strip__byline a{color:#b8f34b}
   .m03-strip__all{display:inline-block;font-size:.85rem;font-weight:700;color:#b8f34b}
+  .m03-strip__coverage{display:inline-block;margin-left:1rem;font-size:.85rem;color:#9fb6a5}
   .m03-strip a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

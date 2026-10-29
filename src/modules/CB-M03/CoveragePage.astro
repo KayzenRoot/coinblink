@@ -36,6 +36,7 @@ const pool = live
   : Object.freeze([]);
 const allClusters = live ? clusterLiveHeadlines(pool) : Object.freeze([]);
 const clusters = source === LIVE_NEWS_ALL_SOURCES ? allClusters : clustersForSource(allClusters, source);
+const publisherAge = (iso: string | null) => formatLiveAge(iso, nowMs, locale) ?? copy.undated;
 const rows = clusters.map((cluster) => ({
   cluster,
   publishers: coveragePublishers(cluster),
@@ -125,6 +126,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
               {publishers.map((member) => (
                 <li>
                   <a href={member.link} rel="noreferrer noopener external">{member.sourceName}</a>
+                  <time datetime={member.publishedAt ?? undefined}>{publisherAge(member.publishedAt)}</time>
                 </li>
               ))}
             </ul>
@@ -162,6 +164,8 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-coverage__publishers{list-style:none;display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 0;padding:0}
   .m03-coverage__publishers a{display:inline-block;padding:.25rem .6rem;border:1px solid #456e4e;border-radius:999px;font-size:.82rem;text-decoration:none}
   .m03-coverage__publishers a:hover{border-color:#b8f34b}
+  .m03-coverage__publishers li{display:inline-flex;align-items:baseline}
+  .m03-coverage__publishers time{margin-left:.35rem;font-size:.78rem;color:#9fb6a5}
   .m03-coverage__note{color:#9fb6a5;font-size:.92rem}
   .m03-coverage a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

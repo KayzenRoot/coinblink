@@ -1,0 +1,65 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAboutCopy } from "./about-copy.mjs";
+interface Props { locale?: "en" | "pt-br" | "es"; }
+const { locale = "en" } = Astro.props;
+const copy = getAboutCopy(locale);
+---
+<BaseLayout lang={copy.lang} title={copy.pageTitle} description={copy.pageDescription}>
+  <main id="main" class="about" data-about-page={locale}>
+    <nav aria-label={copy.linksTitle}><a href={"/" + locale + "/news/live"}>{copy.back}</a></nav>
+    <header>
+      <p class="about__tag">{copy.tag}</p>
+      <h1>{copy.h1}</h1>
+      <p>{copy.intro}</p>
+    </header>
+
+    <section aria-labelledby="about-headlines">
+      <h2 id="about-headlines">{copy.headlinesTitle}</h2>
+      <p>{copy.headlinesBody}</p>
+    </section>
+    <section aria-labelledby="about-attribution">
+      <h2 id="about-attribution">{copy.attributionTitle}</h2>
+      <p>{copy.attributionBody}</p>
+    </section>
+    <section aria-labelledby="about-intake">
+      <h2 id="about-intake">{copy.intakeTitle}</h2>
+      <p>{copy.intakeBody}</p>
+    </section>
+    <section aria-labelledby="about-synthetic">
+      <h2 id="about-synthetic">{copy.syntheticTitle}</h2>
+      <p>{copy.syntheticBody}</p>
+    </section>
+    <section aria-labelledby="about-not-connected">
+      <h2 id="about-not-connected">{copy.notConnectedTitle}</h2>
+      <p>{copy.notConnectedBody}</p>
+    </section>
+
+    <nav class="about__links" aria-labelledby="about-links">
+      <h2 id="about-links">{copy.linksTitle}</h2>
+      <ul>
+        <li><a href={"/" + locale + "/news/live"}>{copy.liveLink}</a></li>
+        <li><a href={"/" + locale + "/news/sources"}>{copy.sourcesLink}</a></li>
+        <li><a href="/demo/intake">{copy.intakeLink}</a></li>
+        <li><a href="/developers">{copy.developersLink}</a></li>
+        <li><a href="/demo">{copy.labsLink}</a></li>
+        <li><a href={"/" + locale}>{copy.homeLink}</a></li>
+      </ul>
+    </nav>
+
+    <p class="about__note">{copy.note}</p>
+  </main>
+</BaseLayout>
+<style>
+  .about{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .about a{color:#b8f34b}
+  .about h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .about h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:2rem 0 .6rem}
+  .about p{line-height:1.75;color:#c1d3c5}
+  .about__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .about__links ul{list-style:none;margin:.5rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.5rem}
+  .about__links a{text-decoration:none}
+  .about__links a:hover{text-decoration:underline}
+  .about__note{color:#9fb6a5;font-size:.92rem;margin-top:2rem}
+  .about a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

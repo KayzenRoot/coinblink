@@ -72,6 +72,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Todas as fontes →",
     "es": "Todas las fuentes →",
   },
+  howItWorks: {
+    "en": "How this works →",
+    "pt-br": "Como funciona →",
+    "es": "Cómo funciona →",
+  },
   liveLink: {
     en: "All live headlines →",
     "pt-br": "Todas as manchetes ao vivo →",

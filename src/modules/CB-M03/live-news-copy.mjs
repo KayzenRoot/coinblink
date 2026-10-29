@@ -267,6 +267,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "A atualização falhou; exibindo a última coleta bem-sucedida de {time}.",
     "es": "La actualización falló; se muestra la última recopilación correcta de {time}.",
   },
+  howItWorks: {
+    "en": "How this works →",
+    "pt-br": "Como funciona →",
+    "es": "Cómo funciona →",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

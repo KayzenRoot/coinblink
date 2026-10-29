@@ -6,6 +6,11 @@ on:
       - ".github/workflows/m09-seo-metadata.yml"
       - "src/layouts/BaseLayout.astro"
       - "src/modules/CB-M09/**"
+      - "src/pages/en/about.astro"
+      - "src/pages/pt-br/about.astro"
+      - "src/pages/es/about.astro"
+      - "e2e/m09-about.spec.mjs"
+      - "docs/product/CB-M09-P1-ABOUT-001.md"
       - "test/modules/CB-M09/**"
       - "e2e/m09-seo-metadata.spec.mjs"
       - "docs/product/CB-M09-P1-SEO-METADATA-001.md"
@@ -36,4 +41,4 @@ jobs:
       - name: Install Chromium
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: M09 metadata and the existing Spanish news browser regression
-        run: ./node_modules/.bin/playwright test e2e/m09-seo-metadata.spec.mjs e2e/m09-spanish-news.spec.mjs
+        run: ./node_modules/.bin/playwright test e2e/m09-seo-metadata.spec.mjs e2e/m09-spanish-news.spec.mjs e2e/m09-about.spec.mjs

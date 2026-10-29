@@ -137,7 +137,11 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
           {snapshot.sources.map((source: { id: string; name: string; home: string; status: string;
             reason: string | null; itemCount: number }) => (
             <tr data-m03-live-source={source.id}>
-              <th scope="row"><a href={source.home} rel="noreferrer noopener external">{source.name}</a></th>
+              <th scope="row">
+                <a href={"/" + locale + "/news/source/" + source.id}>{source.name}</a>
+                <a class="m03-live__official" href={source.home} rel="noreferrer noopener external"
+                  aria-label={source.name + " — " + copy.officialSite}>↗</a>
+              </th>
               <td>{source.status}</td>
               <td>{source.itemCount}</td>
               <td>{source.reason ?? copy.noReason}</td>
@@ -181,6 +185,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__feeds caption{text-align:left;color:#9fb6a5;padding:.4rem 0 .8rem}
   .m03-live__feeds th,.m03-live__feeds td{padding:.5rem .4rem;border-bottom:1px solid #24392c;text-align:left}
   .m03-live__feeds thead th{color:#9fb6a5;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
+  .m03-live__official{margin-left:.35rem;font-size:.9em;text-decoration:none}
   .m03-live__note{color:#9fb6a5;font-size:.92rem}
   .m03-live a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

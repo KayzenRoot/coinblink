@@ -20,6 +20,8 @@ const HTML_SURFACES=[
   {path:"/en/news/live",lang:"en"},
   {path:"/pt-br/news/live",lang:"pt-BR"},
   {path:"/es/news/live",lang:"es"},
+  {path:"/en/news/source/coindesk",lang:"en"},
+  {path:"/es/news/source/coindesk",lang:"es"},
   {path:"/demo/markets",lang:"en"},
   {path:"/demo/markets/live",lang:"en"},
   {path:"/demo/research",lang:"en"},

@@ -83,3 +83,39 @@ test("M03 private intake gate stays closed and inert while the reader is off", a
   expect(scan.violations).toEqual([]);
   expect(foreign).toEqual([]);
 });
+
+const PUBLISHER_PAGES = [
+  { path: "/en/news/source/coindesk", lang: "en" },
+  { path: "/pt-br/news/source/coindesk", lang: "pt-BR" },
+  { path: "/es/news/source/coindesk", lang: "es" },
+];
+
+test("M03 publisher pages are attributed and inert while the reader is off", async ({ page }) => {
+  test.slow();
+  const foreign = [];
+  page.on("request", (request) => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) {
+      foreign.push(request.url());
+    }
+  });
+  for (const publisher of PUBLISHER_PAGES) {
+    const response = await page.goto(publisher.path);
+    expect(response?.status(), publisher.path).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("lang", publisher.lang);
+    await expect(page.getByRole("heading", { level: 1, name: "CoinDesk" })).toBeVisible();
+    await expect(page.locator('[data-m03-source-state="DISABLED"]')).toBeVisible();
+    await expect(page.locator("[data-m03-source-item]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-source-empty]")).toBeVisible();
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("link", { name: "https://www.coindesk.com" }))
+      .toHaveAttribute("rel", "noreferrer noopener external");
+    const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(scan.violations, publisher.path).toEqual([]);
+  }
+  const missing = await page.goto("/en/news/source/unknown-source");
+  expect(missing?.status()).toBe(404);
+  await expect(page.locator("[data-m03-source-missing]")).toBeVisible();
+  const badLocale = await page.goto("/fr/news/source/coindesk");
+  expect(badLocale?.status()).toBe(404);
+  expect(foreign).toEqual([]);
+});

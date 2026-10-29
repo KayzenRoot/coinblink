@@ -82,7 +82,7 @@ jobs:
         run: |
           node --input-type=module -e '
             const base = process.env.COINBLINK_CF_WORKER_URL.replace(/\/+$/u, "");
-            const checks = ["/health", "/en", "/demo", "/demo/intake", "/en/news/live", "/pt-br/news/live", "/es/news/live"];
+            const checks = ["/health", "/en", "/demo", "/demo/intake", "/en/news/live", "/pt-br/news/live", "/es/news/live", "/en/news/source/coindesk"];
             for (const path of checks) {
               const response = await fetch(base + path, { redirect: "manual" });
               if (response.status !== 200) {

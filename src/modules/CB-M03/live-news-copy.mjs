@@ -167,6 +167,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Contadas a partir das manchetes acima, não são um modelo editorial de temas. Selecione uma para filtrar.",
     "es": "Contadas a partir de los titulares anteriores, no son un modelo editorial de temas. Selecciona una para filtrar.",
   },
+  officialSite: {
+    "en": "official site",
+    "pt-br": "site oficial",
+    "es": "sitio oficial",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

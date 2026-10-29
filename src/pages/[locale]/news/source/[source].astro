@@ -1,0 +1,110 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { LIVE_NEWS_SOURCES } from "../../../../modules/CB-M03/rss-sources.mjs";
+import { readLiveNews } from "../../../../modules/CB-M03/live-news.mjs";
+import { fillLiveNewsCopy, getLiveNewsCopy } from "../../../../modules/CB-M03/live-news-copy.mjs";
+import { getSourcePageCopy } from "../../../../modules/CB-M03/source-page-copy.mjs";
+export const prerender = false;
+
+const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
+const { locale = "en", source: sourceId = "" } = Astro.params;
+const validLocale = Object.hasOwn(SITE_LANG, locale);
+const localeKey = validLocale ? locale : "en";
+let lang: "en" | "pt-BR" | "es" = "en";
+if (localeKey === "pt-br") lang = "pt-BR";
+else if (localeKey === "es") lang = "es";
+const copy = getSourcePageCopy(localeKey);
+const liveCopy = getLiveNewsCopy(localeKey);
+const source = LIVE_NEWS_SOURCES.find((entry) => entry.id === sourceId) ?? null;
+const known = validLocale && source !== null;
+if (!known) Astro.response.status = 404;
+
+// Only a known publisher triggers a collection; an unknown address makes no request.
+const snapshot = known && source !== null ? await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE }) : null;
+const feed = snapshot === null || source === null
+  ? null
+  : snapshot.sources.find((entry: { id: string }) => entry.id === source.id) ?? null;
+const items = snapshot?.status === "LIVE_HEADLINES" && source !== null
+  ? snapshot.items.filter((item: { sourceId: string }) => item.sourceId === source.id)
+  : [];
+const stamp = (iso: string | null) =>
+  iso === null ? liveCopy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
+const name = source?.name ?? copy.notFoundTitle;
+const statusLine = (() => {
+  if (snapshot === null) return copy.statusDisabled;
+  if (snapshot.status === "DISABLED") return copy.statusDisabled;
+  if (snapshot.status === "UNAVAILABLE") {
+    return fillLiveNewsCopy(copy.statusUnavailable, { reason: snapshot.reason });
+  }
+  if (feed !== null && feed.status !== "OK") {
+    return fillLiveNewsCopy(copy.statusUnavailable, { reason: feed.reason ?? "UNAVAILABLE" });
+  }
+  if (items.length === 0) return copy.statusPending;
+  return fillLiveNewsCopy(copy.statusLive, { time: stamp(snapshot.collectedAt), count: items.length });
+})();
+const pageTitle = known ? fillLiveNewsCopy(copy.title, { name }) : copy.notFoundTitle;
+const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.notFoundBody;
+---
+<BaseLayout lang={lang} title={pageTitle} description={pageDescription}>
+  <main id="main" class="source-page" data-m03-source-page={source?.id ?? "unknown"}>
+    <nav aria-label={liveCopy.navigation}><a href={"/" + localeKey + "/news/live"}>{copy.back}</a></nav>
+    {known && source !== null ? (
+      <>
+        <header>
+          <p class="source-page__tag">CB-M03 · ATTRIBUTED HEADLINES · DEMO</p>
+          <h1>{name}</h1>
+          <p>{pageDescription}</p>
+        </header>
+        <section class="source-page__status" aria-labelledby="source-status" data-m03-source-state={snapshot?.status ?? "DISABLED"}>
+          <h2 id="source-status">{copy.statusTitle}</h2>
+          <p>{statusLine}</p>
+        </section>
+        <section aria-labelledby="source-items">
+          <h2 id="source-items">{fillLiveNewsCopy(copy.itemsTitle, { name })}</h2>
+          {items.length === 0 && <p data-m03-source-empty>{copy.noItems}</p>}
+          {items.length > 0 && (
+            <ol class="source-page__list">
+              {items.map((item: { id: string; title: string; summary: string; link: string;
+                sourceId: string; sourceName: string; publishedAt: string | null }) => (
+                <li data-m03-source-item={item.sourceId}>
+                  <h3><a href={item.link} rel="noreferrer noopener external">{item.title}</a></h3>
+                  {item.summary !== "" && <p>{item.summary}</p>}
+                  <p class="source-page__byline"><time datetime={item.publishedAt ?? undefined}>{stamp(item.publishedAt)}</time></p>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+        <aside class="source-page__aside" aria-labelledby="source-about">
+          <h2 id="source-about">{copy.siteLabel}</h2>
+          <p><a href={source.home} rel="noreferrer noopener external">{source.home}</a></p>
+          <p>{fillLiveNewsCopy(copy.rightsNote, { name })}</p>
+          <p><a href={"/" + localeKey + "/news/live"}>{copy.allHeadlines}</a></p>
+        </aside>
+      </>
+    ) : (
+      <section class="source-page__status" role="status" data-m03-source-missing>
+        <h1>{copy.notFoundTitle}</h1>
+        <p>{copy.notFoundBody}</p>
+        <p><a href={"/" + localeKey + "/news/live"}>{copy.allHeadlines}</a></p>
+      </section>
+    )}
+  </main>
+</BaseLayout>
+<style>
+  .source-page{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .source-page a{color:#b8f34b}
+  .source-page h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .source-page h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:2rem 0 .6rem}
+  .source-page p{line-height:1.75;color:#c1d3c5}
+  .source-page__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .source-page__status{padding:1rem 1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .source-page__list{list-style:none;margin:0;padding:0;display:grid;gap:1rem}
+  .source-page__list li{border-top:1px solid #2f4a38;padding-top:1rem}
+  .source-page__list h3{margin:0 0 .4rem;font-size:1.1rem;line-height:1.35}
+  .source-page__list h3 a{text-decoration:none}
+  .source-page__list h3 a:hover{text-decoration:underline}
+  .source-page__byline{margin:0;font-size:.8rem;color:#9fb6a5}
+  .source-page__aside{margin-top:2rem;padding-top:1rem;border-top:1px solid #2f4a38;font-size:.92rem}
+  .source-page a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

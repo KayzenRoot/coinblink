@@ -5,9 +5,10 @@ import { ABOUT_COPY, ABOUT_LOCALES, getAboutCopy } from '../../../src/modules/CB
 
 const REQUIRED = [
   'lang', 'pageTitle', 'pageDescription', 'back', 'h1', 'tag', 'intro', 'headlinesTitle',
-  'headlinesBody', 'attributionTitle', 'attributionBody', 'intakeTitle', 'intakeBody',
+  'headlinesBody', 'attributionTitle', 'attributionBody', 'coverageTitle', 'coverageBody',
+  'localTitle', 'localBody', 'intakeTitle', 'intakeBody',
   'syntheticTitle', 'syntheticBody', 'notConnectedTitle', 'notConnectedBody', 'linksTitle',
-  'liveLink', 'sourcesLink', 'intakeLink', 'developersLink', 'labsLink', 'homeLink', 'note',
+  'liveLink', 'sourcesLink', 'coverageLink', 'intakeLink', 'developersLink', 'labsLink', 'homeLink', 'note',
 ];
 const pages = ABOUT_LOCALES.map((locale) => ({
   locale,
@@ -36,8 +37,9 @@ test('every locale carries the same complete about copy', () => {
 });
 
 test('the substantive sections are translated, not left in English', () => {
-  for (const key of ['h1', 'intro', 'headlinesBody', 'attributionBody', 'intakeBody',
-    'syntheticBody', 'notConnectedBody', 'note']) {
+  for (const key of ['h1', 'intro', 'headlinesBody', 'attributionBody', 'coverageTitle',
+    'coverageBody', 'localTitle', 'localBody', 'intakeBody', 'syntheticBody',
+    'notConnectedBody', 'coverageLink', 'note']) {
     assert.notEqual(ABOUT_COPY['pt-br'][key], ABOUT_COPY.en[key], key);
     assert.notEqual(ABOUT_COPY.es[key], ABOUT_COPY.en[key], key);
   }
@@ -52,7 +54,7 @@ test('the three locale pages render the shared component with their locale', () 
   assert.ok(component.includes('getAboutCopy'));
   assert.ok(component.includes('<BaseLayout lang={copy.lang}'));
   assert.doesNotMatch(component, /set:html|<script|<form/u);
-  for (const path of ['/news/live', '/news/sources', '/demo/intake', '/developers', '/demo']) {
+  for (const path of ['/news/live', '/news/sources', '/news/coverage', '/demo/intake', '/developers', '/demo']) {
     assert.ok(component.includes(path), path);
   }
 });

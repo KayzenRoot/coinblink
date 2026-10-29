@@ -3,11 +3,17 @@ import AxeBuilder from "@axe-core/playwright";
 
 const LOCALES = [
   { slug: "en", path: "/en/about", lang: "en", h1: "How CoinBlink works",
-    live: "/en/news/live", sources: "/en/news/sources", home: "/en", back: "← Live headlines" },
+    live: "/en/news/live", sources: "/en/news/sources", home: "/en", back: "← Live headlines",
+    coverage: "/en/news/coverage", coverageTitle: "Cross-publisher coverage",
+    localTitle: "What stays in your browser" },
   { slug: "pt-br", path: "/pt-br/about", lang: "pt-BR", h1: "Como o CoinBlink funciona",
-    live: "/pt-br/news/live", sources: "/pt-br/news/sources", home: "/pt-br", back: "← Manchetes ao vivo" },
+    live: "/pt-br/news/live", sources: "/pt-br/news/sources", home: "/pt-br", back: "← Manchetes ao vivo",
+    coverage: "/pt-br/news/coverage", coverageTitle: "Cobertura entre veículos",
+    localTitle: "O que fica no seu navegador" },
   { slug: "es", path: "/es/about", lang: "es", h1: "Cómo funciona CoinBlink",
-    live: "/es/news/live", sources: "/es/news/sources", home: "/es", back: "← Titulares en vivo" },
+    live: "/es/news/live", sources: "/es/news/sources", home: "/es", back: "← Titulares en vivo",
+    coverage: "/es/news/coverage", coverageTitle: "Cobertura entre medios",
+    localTitle: "Qué se queda en tu navegador" },
 ];
 
 test("M09 explanation page is localized, transparent and inert", async ({ page }) => {
@@ -32,6 +38,9 @@ test("M09 explanation page is localized, transparent and inert", async ({ page }
     await expect(page.locator('a[href="' + locale.home + '"]').first()).toBeVisible();
     await expect(page.locator('a[href="/demo/intake"]')).toBeVisible();
     await expect(page.locator('a[href="/developers"]')).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: locale.coverageTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: locale.localTitle })).toBeVisible();
+    await expect(page.locator('a[href="' + locale.coverage + '"]').first()).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByText("What is not connected")).toHaveCount(locale.slug === "en" ? 1 : 0);
     const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

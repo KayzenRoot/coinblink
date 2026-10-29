@@ -57,6 +57,26 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Cada manchete nomeia seu veículo e linka para o original. O CoinBlink não reivindica a reportagem, não republica feeds e não possui referência de direitos para nenhuma fonte.",
     es: "Cada titular nombra a su medio y enlaza al original. CoinBlink no reclama la cobertura, no republica fuentes y no tiene referencia de derechos para ninguna fuente.",
   },
+  coverageTitle: {
+    "en": "Cross-publisher coverage",
+    "pt-br": "Cobertura entre veículos",
+    "es": "Cobertura entre medios",
+  },
+  coverageBody: {
+    "en": "When two headlines share enough significant title words, the reader notes the other publishers that carried the same story and links each one. The match is mechanical, not editorial, the publishers' text is never merged or rewritten, and the public API exposes only counts. A dedicated page lists every covered story.",
+    "pt-br": "Quando dois títulos compartilham palavras significativas suficientes, o leitor indica os outros veículos que publicaram a mesma história e linka cada um. A comparação é mecânica, não editorial, o texto dos veículos nunca é fundido nem reescrito, e a API pública expõe apenas contagens. Uma página dedicada lista todas as histórias cobertas.",
+    "es": "Cuando dos titulares comparten suficientes palabras significativas, el lector indica los otros medios que publicaron la misma historia y enlaza cada uno. La comparación es mecánica, no editorial, el texto de los medios nunca se fusiona ni se reescribe, y la API pública expone solo recuentos. Una página dedicada lista todas las historias cubiertas.",
+  },
+  localTitle: {
+    "en": "What stays in your browser",
+    "pt-br": "O que fica no seu navegador",
+    "es": "Qué se queda en tu navegador",
+  },
+  localBody: {
+    "en": "Saved searches and the marker that shows what arrived since your last visit live only in this browser. They are not an account, they are not sent anywhere, and clearing site data removes them. The language switch keeps the current path and filters.",
+    "pt-br": "Buscas salvas e a marcação do que chegou desde a sua última visita ficam somente neste navegador. Não são uma conta, não são enviadas a lugar nenhum e apagar os dados do site as remove. O seletor de idioma mantém o caminho e os filtros atuais.",
+    "es": "Las búsquedas guardadas y la marca de lo que llegó desde tu última visita se quedan solo en este navegador. No son una cuenta, no se envían a ningún lugar y borrar los datos del sitio las elimina. El selector de idioma mantiene la ruta y los filtros actuales.",
+  },
   intakeTitle: {
     en: "Editorial intake",
     "pt-br": "Entrada editorial",
@@ -91,6 +111,11 @@ const COPY_ROWS = Object.freeze({
     en: "Where to look next",
     "pt-br": "Para onde ir agora",
     es: "Adónde ir ahora",
+  },
+  coverageLink: {
+    "en": "All covered stories",
+    "pt-br": "Todas as histórias cobertas",
+    "es": "Todas las historias cubiertas",
   },
   liveLink: { en: "Live headlines →", "pt-br": "Manchetes ao vivo →", es: "Titulares en vivo →" },
   sourcesLink: { en: "Source directory →", "pt-br": "Diretório de fontes →", es: "Directorio de fuentes →" },

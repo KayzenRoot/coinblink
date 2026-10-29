@@ -22,6 +22,10 @@ const copy = getAboutCopy(locale);
       <h2 id="about-attribution">{copy.attributionTitle}</h2>
       <p>{copy.attributionBody}</p>
     </section>
+    <section aria-labelledby="about-coverage">
+      <h2 id="about-coverage">{copy.coverageTitle}</h2>
+      <p>{copy.coverageBody}</p>
+    </section>
     <section aria-labelledby="about-intake">
       <h2 id="about-intake">{copy.intakeTitle}</h2>
       <p>{copy.intakeBody}</p>
@@ -29,6 +33,10 @@ const copy = getAboutCopy(locale);
     <section aria-labelledby="about-synthetic">
       <h2 id="about-synthetic">{copy.syntheticTitle}</h2>
       <p>{copy.syntheticBody}</p>
+    </section>
+    <section aria-labelledby="about-local">
+      <h2 id="about-local">{copy.localTitle}</h2>
+      <p>{copy.localBody}</p>
     </section>
     <section aria-labelledby="about-not-connected">
       <h2 id="about-not-connected">{copy.notConnectedTitle}</h2>
@@ -40,6 +48,7 @@ const copy = getAboutCopy(locale);
       <ul>
         <li><a href={"/" + locale + "/news/live"}>{copy.liveLink}</a></li>
         <li><a href={"/" + locale + "/news/sources"}>{copy.sourcesLink}</a></li>
+        <li><a href={"/" + locale + "/news/coverage"}>{copy.coverageLink}</a></li>
         <li><a href="/demo/intake">{copy.intakeLink}</a></li>
         <li><a href="/developers">{copy.developersLink}</a></li>
         <li><a href="/demo">{copy.labsLink}</a></li>

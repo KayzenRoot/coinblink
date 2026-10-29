@@ -28,6 +28,12 @@ page and the source directory link to it ("How this works →" / "Como funciona 
   outbound link; publisher language preserved; nothing stored, no full article.
 - **Attribution and rights** — every headline names its publisher and links out;
   no republication and no rights reference for any source.
+- **Cross-publisher coverage** — mechanical title matching notes the other
+  publishers that carried a story; text is never merged and the public API
+  exposes counts only.
+- **Browser state** — saved searches and the since-your-last-visit marker stay
+  in the browser, are not an account and are never sent; the language switch
+  keeps the path and filters.
 - **Editorial intake** — the private gate evaluates collected headlines and
   denies every candidate because no source has an owner-approved rights
   reference; nothing is queued, approved or published.
@@ -36,7 +42,7 @@ page and the source directory link to it ("How this works →" / "Como funciona 
 - **What is not connected** — no accounts, payments, audience analytics,
   newsletter delivery or protected admin access; the market preview is off by
   default.
-- **Links** — live headlines, source directory, intake gate, developer sandbox,
+- **Links** — live headlines, source directory, covered stories, intake gate, developer sandbox,
   demo labs and home.
 
 The page carries `noindex, nofollow, noarchive` like every demo surface and

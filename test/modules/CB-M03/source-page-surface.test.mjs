@@ -14,7 +14,7 @@ test('the publisher page is validated, gated and escaped', () => {
   assert.doesNotMatch(page, /set:html|<script|<form/u);
   assert.match(page, /rel="noreferrer noopener external"/u);
   assert.ok(page.includes('item.sourceId === source.id'));
-  assert.ok(page.includes('known ? await readLiveNews'));
+  assert.ok(page.includes('known && source !== null ? await readLiveNews'));
 });
 
 test('the live feed table links to the publisher page and keeps the official site', () => {

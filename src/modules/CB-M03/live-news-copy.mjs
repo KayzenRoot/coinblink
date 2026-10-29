@@ -172,6 +172,26 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "site oficial",
     "es": "sitio oficial",
   },
+  sinceTitle: {
+    "en": "Time window",
+    "pt-br": "Janela de tempo",
+    "es": "Ventana de tiempo",
+  },
+  sinceAny: {
+    "en": "Any time",
+    "pt-br": "Qualquer horário",
+    "es": "Cualquier hora",
+  },
+  sinceHours: {
+    "en": "Last {hours}h",
+    "pt-br": "Últimas {hours}h",
+    "es": "Últimas {hours}h",
+  },
+  sinceNote: {
+    "en": "Headlines without a publication time are hidden inside a time window.",
+    "pt-br": "Manchetes sem horário de publicação ficam ocultas em uma janela de tempo.",
+    "es": "Los titulares sin hora de publicación se ocultan dentro de una ventana de tiempo.",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

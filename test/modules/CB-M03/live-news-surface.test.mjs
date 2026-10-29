@@ -72,7 +72,7 @@ test('topics are counted locally and link back into the filter', () => {
   assert.doesNotMatch(topics, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
   assert.ok(panel.includes('extractLiveTopics'));
   assert.ok(panel.includes('data-m03-live-topics'));
-  assert.ok(panel.includes('encodeURIComponent(term)'));
+  assert.ok(panel.includes('const topicHref = (term: string) => viewHref(term, source, sinceHours)'));
   assert.ok(panel.includes('copy.topicsTitle'));
   assert.ok(panel.includes('copy.topicsNote'));
 });
@@ -117,4 +117,12 @@ test('no other M03 module gained network or storage access', () => {
     const source = readFileSync('src/modules/CB-M03/' + file, 'utf8');
     assert.doesNotMatch(source, /\bfetch\s*\(/u, file + ' must stay offline');
   }
+});
+
+test('the live page offers a local, shareable time window', () => {
+  assert.ok(panel.includes('data-m03-live-since'));
+  assert.ok(panel.includes('clampLiveSince'));
+  assert.ok(panel.includes('name="since"'));
+  assert.ok(panel.includes('LIVE_NEWS_SINCE_OPTIONS'));
+  assert.ok(panel.includes('sinceHours, nowMs'));
 });

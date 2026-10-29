@@ -9,6 +9,7 @@ export const LIVE_NEWS_TITLE_MAX = 200;
 export const LIVE_NEWS_SUMMARY_MAX = 280;
 export const LIVE_NEWS_TIMEOUT_MS = 5000;
 export const LIVE_NEWS_QUERY_MAX = 80;
+export const LIVE_NEWS_SINCE_OPTIONS = Object.freeze([3, 12, 24]);
 
 export const LIVE_NEWS_SOURCES = Object.freeze([
   Object.freeze({

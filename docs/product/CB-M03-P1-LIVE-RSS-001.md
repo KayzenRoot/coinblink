@@ -95,6 +95,14 @@ egress or turn the page into a proxy. The collection itself remains bounded at
 20 items per feed and 60 in total; when the filter excludes everything, the page
 says so and offers a reset instead of an empty list.
 
+The list can also be narrowed by freshness. `?since=3`, `?since=12` or
+`?since=24` keeps only headlines published inside that window, computed from
+the cached snapshot at render time. Any other value means "any time". The
+presets are plain links that preserve the current query and publisher, so a
+window is shareable and works without JavaScript. Inside a window, headlines
+without a publication time are hidden: freshness cannot be proven without a
+date.
+
 Above the list, a second navigation shows the words that appear in at least
 two of the visible headlines, with their counts. It is explicitly a frequency
 list, not an editorial topic model: no inference, no stemming beyond folding a

@@ -8,12 +8,13 @@ import { exactLiveTime, formatLiveAge } from "../../../../modules/CB-M03/live-ti
 import {
   buildCoverageIndex, clusterLiveHeadlines, coverageOthers,
 } from "../../../../modules/CB-M03/live-clusters.mjs";
+import ReaderLocaleSwitch from "../../../../modules/CB-M03/ReaderLocaleSwitch.astro";
 export const prerender = false;
 
 const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
 const { locale = "en", source: sourceId = "" } = Astro.params;
 const validLocale = Object.hasOwn(SITE_LANG, locale);
-const localeKey = validLocale ? locale : "en";
+const localeKey: "en" | "pt-br" | "es" = locale === "pt-br" || locale === "es" ? locale : "en";
 let lang: "en" | "pt-BR" | "es" = "en";
 if (localeKey === "pt-br") lang = "pt-BR";
 else if (localeKey === "es") lang = "es";
@@ -66,6 +67,7 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
 <BaseLayout lang={lang} title={pageTitle} description={pageDescription}>
   <main id="main" class="source-page" data-m03-source-page={source?.id ?? "unknown"}>
     <nav aria-label={liveCopy.navigation}><a href={"/" + localeKey + "/news/live"}>{copy.back}</a></nav>
+    <ReaderLocaleSwitch locale={localeKey} />
     {known && source !== null ? (
       <>
         <header>

@@ -4,6 +4,7 @@ import { LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
 import { readLiveNews } from "./live-news.mjs";
 import { fillLiveNewsCopy } from "./live-news-copy.mjs";
 import { getSourceDirectoryCopy } from "./source-directory-copy.mjs";
+import ReaderLocaleSwitch from "./ReaderLocaleSwitch.astro";
 interface Props { locale?: "en" | "pt-br" | "es"; }
 const { locale = "en" } = Astro.props;
 let lang: "en" | "pt-BR" | "es" = "en";
@@ -27,6 +28,7 @@ const feedFor = (id: string) => snapshot.sources.find((source: { id: string }) =
 <BaseLayout lang={lang} title={copy.pageTitle} description={copy.pageDescription}>
   <main id="main" class="source-directory" data-m03-sources-page>
     <nav aria-label={copy.h1}><a href={"/" + locale + "/news/live"}>{copy.back}</a></nav>
+    <ReaderLocaleSwitch locale={locale} />
     <header>
       <p class="source-directory__tag">CB-M03 · PUBLIC RSS · ATTRIBUTION ONLY</p>
       <h1>{copy.h1}</h1>

@@ -168,3 +168,22 @@ test("M06 system pulse reports only measured state while the reader is off", asy
   await expect(page.locator('[data-m06-pulse-editorial="LOCAL_ONLY"]')).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
 });
+
+test("M03 the reader language switch keeps the path and its filters", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto("/en/news/live?q=bitcoin&since=24");
+  expect(response?.status()).toBe(200);
+  const nav = page.locator("[data-m03-locale-switch]");
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole("link", { name: "English" }))
+    .toHaveAttribute("href", "/en/news/live?q=bitcoin&since=24");
+  await expect(nav.getByRole("link", { name: "Português (Brasil)" }))
+    .toHaveAttribute("href", "/pt-br/news/live?q=bitcoin&since=24");
+  await expect(nav.getByRole("link", { name: "Español" }))
+    .toHaveAttribute("href", "/es/news/live?q=bitcoin&since=24");
+  await expect(nav.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "page");
+  await nav.getByRole("link", { name: "Português (Brasil)" }).click();
+  await expect(page).toHaveURL(/\/pt-br\/news\/live\?q=bitcoin&since=24$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await expect(page.getByRole("heading", { level: 1, name: "Manchetes ao vivo de feeds públicos" })).toBeVisible();
+});

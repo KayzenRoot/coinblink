@@ -10,6 +10,7 @@ export const LIVE_NEWS_CLUSTER_MIN_SHARED = 4;
 export const LIVE_NEWS_CLUSTER_MIN_SIMILARITY = 0.5;
 export const LIVE_NEWS_CLUSTER_MAX = 8;
 export const LIVE_NEWS_CLUSTER_MAX_OTHERS = 4;
+export const LIVE_NEWS_TOP_COVERAGE_MAX = 3;
 
 const TOKEN_MIN_LENGTH = 3;
 const MIN_TITLE_TOKENS = 4;
@@ -239,4 +240,45 @@ export function coverageOthers(cluster, itemId, limit = LIVE_NEWS_CLUSTER_MAX_OT
     if (others.length >= max) break;
   }
   return Object.freeze(others);
+}
+
+/**
+ * The most covered stories for the highlight strip, already ordered by
+ * coverage and recency. Invalid entries are skipped.
+ * @param {unknown} clusters
+ * @param {number} [limit]
+ * @returns {ReadonlyArray<LiveCoverageCluster>}
+ */
+export function topCoverageClusters(clusters, limit = LIVE_NEWS_TOP_COVERAGE_MAX) {
+  const max = clampOption(limit, LIVE_NEWS_TOP_COVERAGE_MAX, OPTION_MAX);
+  if (!Array.isArray(clusters)) return Object.freeze([]);
+  const picked = [];
+  for (const cluster of clusters) {
+    if (cluster === null || typeof cluster !== "object") continue;
+    if (!Array.isArray(cluster.members) || typeof cluster.coverage !== "number") continue;
+    if (cluster.coverage < 2) continue;
+    picked.push(cluster);
+    if (picked.length >= max) break;
+  }
+  return Object.freeze(picked);
+}
+
+/**
+ * One member per publisher in a cluster, in member order, for attribution.
+ * @param {unknown} cluster
+ * @returns {ReadonlyArray<LiveCoverageMember>}
+ */
+export function coveragePublishers(cluster) {
+  if (cluster === null || typeof cluster !== "object" || !Array.isArray(cluster.members)) {
+    return Object.freeze([]);
+  }
+  const seen = new Set();
+  const publishers = [];
+  for (const member of cluster.members) {
+    if (member === null || typeof member !== "object") continue;
+    if (typeof member.sourceId !== "string" || seen.has(member.sourceId)) continue;
+    seen.add(member.sourceId);
+    publishers.push(member);
+  }
+  return Object.freeze(publishers);
 }

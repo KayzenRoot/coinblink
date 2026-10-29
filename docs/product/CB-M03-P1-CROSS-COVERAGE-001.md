@@ -49,6 +49,18 @@ note appears only when at least one visible headline has coverage.
 Localization lives in `live-news-copy.mjs` as two key-major rows
 (`alsoCovered`, `coverageNote`) in en, pt-br and es.
 
+## Most covered now
+
+The same clusters feed a highlight section above the list: up to three stories
+carried by at least two publishers, ordered by publisher count and then
+recency. Each shows the newest headline linked to its article and one link per
+publisher. The section is computed from the whole collection, so it does not
+shrink when the reader filters the list, and it is absent when no story has
+more than one publisher.
+
+`topCoverageClusters(clusters, limit)` and `coveragePublishers(cluster)` live in
+the same pure module; the highlight uses no additional data or request.
+
 ## Boundaries
 
 - Coverage is computed from titles only. Excerpts are ignored so publisher

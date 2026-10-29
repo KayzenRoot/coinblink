@@ -5,7 +5,9 @@ import {
   buildCoverageIndex,
   clusterLiveHeadlines,
   coverageOthers,
+  coveragePublishers,
   tokenizeLiveTitle,
+  topCoverageClusters,
 } from '../../../src/modules/CB-M03/live-clusters.mjs';
 
 const item = (id, sourceId, title, publishedAt = '2026-10-29T10:00:00.000Z', sourceName = sourceId) => ({
@@ -113,4 +115,21 @@ test('the coverage index maps every clustered headline to its cluster', () => {
   assert.equal(index.get('unknown'), undefined);
   assert.equal(buildCoverageIndex(null).size, 0);
   assert.equal(buildCoverageIndex([{ members: [null, { id: '' }] }]).size, 0);
+});
+
+test('the highlight strip picks the most covered stories and one link per publisher', () => {
+  const third = item('c1', 'decrypt', 'Bitcoin ETF inflows reach a record high');
+  const fourth = item('c2', 'cointelegraph', 'Bitcoin ETF record highs as inflows accelerate');
+  const clusters = clusterLiveHeadlines([dogeA, dogeB, bitcoinA, bitcoinB, third, fourth]);
+  const top = topCoverageClusters(clusters);
+  assert.equal(top.length, 2);
+  assert.equal(top[0].coverage, 4);
+  assert.equal(topCoverageClusters(clusters, 1).length, 1);
+  assert.deepEqual(topCoverageClusters(null), []);
+  assert.deepEqual(topCoverageClusters([{ coverage: 1, members: [] }]), []);
+  assert.equal(Object.isFrozen(top), true);
+  assert.deepEqual(coveragePublishers(top[0]).map((member) => member.sourceId),
+    ['theblock', 'coindesk', 'decrypt', 'cointelegraph']);
+  assert.equal(coveragePublishers({ members: [bitcoinA, { ...bitcoinA, id: 'a2' }] }).length, 1);
+  assert.deepEqual(coveragePublishers(null), []);
 });

@@ -8,7 +8,9 @@ import {
   LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSince, clampLiveSource, filterLiveHeadlines,
 } from "./live-news-filter.mjs";
 import { extractLiveTopics } from "./live-news-topics.mjs";
-import { buildCoverageIndex, clusterLiveHeadlines, coverageOthers } from "./live-clusters.mjs";
+import {
+  buildCoverageIndex, clusterLiveHeadlines, coverageOthers, coveragePublishers, topCoverageClusters,
+} from "./live-clusters.mjs";
 import { exactLiveTime, formatLiveAge } from "./live-time.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
@@ -44,6 +46,10 @@ const rows = visible.map((item) => ({
   others: coverageOthers(coverageIndex.get(item.id), item.id),
 }));
 const coveredCount = rows.filter((row) => row.others.length > 0).length;
+const topRows = topCoverageClusters(clusters).map((cluster) => ({
+  cluster,
+  publishers: coveragePublishers(cluster),
+}));
 // A topic keeps the active publisher and window, so narrowing step by step
 // never silently widens the list again.
 const viewHref = (nextQuery: string, nextSource: string, nextSince: number) => {
@@ -157,6 +163,30 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
           </ul>
         </nav>
       )}
+      {topRows.length > 0 && (
+        <section class="m03-live__top" aria-labelledby="m03-live-top" data-m03-live-top>
+          <h2 id="m03-live-top">{copy.topTitle}</h2>
+          <p class="m03-live__note">{copy.topNote}</p>
+          <ol>
+            {topRows.map(({ cluster, publishers }) => (
+              <li data-m03-live-top-item={cluster.id}>
+                <a class="m03-live__top-headline" href={cluster.members[0].link}
+                  rel="noreferrer noopener external">{cluster.members[0].title}</a>
+                <p class="m03-live__top-sources">
+                  <span>{fillLiveNewsCopy(copy.topPublishers, { count: cluster.coverage })}</span>
+                  <span aria-hidden="true"> · </span>
+                  {publishers.map((member, index) => (
+                    <span>
+                      <a href={member.link} rel="noreferrer noopener external">{member.sourceName}</a>
+                      {index < publishers.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
       <ol class="m03-live__list">
         {rows.map(({ item, others }) => (
           <li class="m03-live__item" data-m03-live-item={item.sourceId}>
@@ -260,6 +290,13 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__summary{margin:0 0 .5rem;font-size:.95rem}
   .m03-live__byline{margin:0;font-size:.82rem;color:#9fb6a5;letter-spacing:.02em}
   .m03-live p.m03-live__coverage{margin:.3rem 0 0;font-size:.82rem;color:#9fb6a5}
+  .m03-live__top{margin:1.25rem 0;padding:1rem 1.25rem;border:1px solid #456e4e;border-radius:.6rem;background:#0d1914}
+  .m03-live__top h2{font-size:1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:.2rem 0}
+  .m03-live__top ol{list-style:none;margin:.75rem 0 0;padding:0;display:grid;gap:.85rem}
+  .m03-live__top li{border-top:1px solid #24392c;padding-top:.6rem}
+  .m03-live__top li:first-child{border-top:0;padding-top:0}
+  .m03-live a.m03-live__top-headline{font-size:1.05rem;font-weight:700;line-height:1.4;text-decoration:none}
+  .m03-live p.m03-live__top-sources{margin:.25rem 0 0;font-size:.82rem;color:#9fb6a5}
   .m03-live__feeds{margin:2rem 0 0}
   .m03-live__feeds h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5}
   .m03-live__feeds table{width:100%;border-collapse:collapse;font-size:.9rem}

@@ -85,6 +85,26 @@ test("every shipped surface keeps the shared demo invariants",async({page})=>{
   expect(foreign).toEqual([]);
 });
 
+test("every shipped surface is mobile-safe at 390px",async({page})=>{
+  test.slow();
+  await page.setViewportSize({width:390,height:844});
+  const failures=[];
+  for(const surface of HTML_SURFACES){
+    const response=await page.goto(surface.path);
+    if(response?.status()!==200)failures.push(`${surface.path}: status ${response?.status()}`);
+    const lang=await page.locator("html").getAttribute("lang");
+    if(lang!==surface.lang)failures.push(`${surface.path}: lang ${lang}`);
+    const metrics=await page.evaluate(()=>({
+      viewport:document.documentElement.clientWidth,
+      scroll:document.documentElement.scrollWidth,
+    }));
+    if(metrics.scroll>metrics.viewport)failures.push(`${surface.path}: overflow ${metrics.scroll} > ${metrics.viewport}`);
+    const scan=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
+    for(const violation of scan.violations)failures.push(`${surface.path}: axe ${violation.id}`);
+  }
+  expect(failures).toEqual([]);
+});
+
 test("unknown paths render the styled 404 surface",async({page})=>{
   for(const path of ["/nao-existe-xyz","/404","/en/news/category/unknown-category"]){
     const response=await page.goto(path);

@@ -68,6 +68,7 @@ jobs:
             --test-reporter=spec --test-reporter-destination=stdout \
             --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \
             test/automation/ci-quality-contract.test.mjs \
+            test/automation/docs-links.test.mjs \
             'test/modules/CB-M02/*.test.mjs' \
             'test/modules/CB-M03/*.test.mjs' \
             'test/modules/CB-M04/*.test.mjs' \

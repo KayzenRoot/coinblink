@@ -9,6 +9,7 @@ const sourceRootKeys = new Set([
   "assets",
   "previews",
   "vars",
+  "upload_source_maps",
 ]);
 
 const generatedRootKeys = new Set([
@@ -61,6 +62,7 @@ const generatedRootKeys = new Set([
   "dev",
   "previews",
   "no_bundle",
+  "upload_source_maps",
 ]);
 
 const resourceBindingKeys = [
@@ -207,4 +209,5 @@ export function assertWorkerPreviewConfig(config, source = "Worker config", { ge
   assert.equal(config.assets.not_found_handling, "404-page", `${source} must preserve the real 404 page`);
   assert.deepEqual(config.vars ?? {}, {}, `${source} must not contain unchecked production plaintext variables`);
   assert.deepEqual(config.previews, {}, `${source} must declare an empty isolated previews block with no inherited resources`);
+  assert.equal(config.upload_source_maps, false, `${source} must not upload source maps to the provider`);
 }

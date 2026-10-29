@@ -28,6 +28,8 @@ test("M03 every locale renders the coverage page and makes no external request",
     await expect(page.locator('[data-m03-coverage="disabled"]')).toBeVisible();
     await expect(page.locator('[data-m03-coverage="live"]')).toHaveCount(0);
     await expect(page.locator("[data-m03-coverage-item]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-coverage-filter]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-coverage-since]")).toHaveCount(0);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByRole("link", { name: BACK[locale] }))
       .toHaveAttribute("href", "/" + locale + "/news");

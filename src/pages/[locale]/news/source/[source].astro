@@ -106,7 +106,7 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
           )}
           {clusters.length > 0 && (
             <p class="source-page__note">
-              <a href={"/" + localeKey + "/news/coverage"}>{fillLiveNewsCopy(liveCopy.coverageAll, { count: clusters.length })}</a>
+              <a href={"/" + localeKey + "/news/coverage?source=" + source.id}>{fillLiveNewsCopy(liveCopy.coverageAll, { count: clusters.length })}</a>
             </p>
           )}
         </section>

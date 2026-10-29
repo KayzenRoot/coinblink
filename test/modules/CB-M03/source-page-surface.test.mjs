@@ -33,6 +33,6 @@ test('the publisher page shows which other publishers carried each story', () =>
   assert.match(page, /coverageOthers/u);
   assert.ok(page.includes('data-m03-source-coverage'));
   assert.ok(page.includes('liveCopy.alsoCovered'));
-  assert.ok(page.includes('"/" + localeKey + "/news/coverage"'));
+  assert.ok(page.includes('"/" + localeKey + "/news/coverage?source=" + source.id'));
   assert.ok(page.includes('fillLiveNewsCopy(liveCopy.coverageAll, { count: clusters.length })'));
 });

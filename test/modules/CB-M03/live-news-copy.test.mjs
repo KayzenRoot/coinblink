@@ -15,6 +15,7 @@ const REQUIRED = [
   'alsoCovered', 'coverageNote', 'topTitle', 'topPublishers', 'topNote',
   'coverageAll', 'coveragePageTitle', 'coveragePageDescription', 'coverageH1', 'coverageIntro',
   'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
+  'coverageFilterTitle', 'coverageFilterNote', 'coverageFilteredEmpty',
   'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll',
   'savedRemove', 'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared',
   'feedsTitle', 'feedsCaption',
@@ -47,8 +48,10 @@ test('the chrome is actually translated and the BCP-47 tag is correct', () => {
     'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedRemove',
     'alsoCovered', 'coverageNote', 'topTitle', 'topPublishers', 'topNote', 'coverageAll',
     'coverageH1', 'coverageIntro', 'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
+    'coverageFilterTitle', 'coverageFilterNote', 'coverageFilteredEmpty',
   'coverageAll', 'coveragePageTitle', 'coveragePageDescription', 'coverageH1', 'coverageIntro',
-  'coverageMeta', 'coverageEmpty', 'coverageLiveLink', 'topTitle', 'topPublishers', 'topNote',
+  'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
+  'coverageFilterTitle', 'coverageFilterNote', 'coverageFilteredEmpty', 'topTitle', 'topPublishers', 'topNote',
     'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared']) {
     assert.notEqual(LIVE_NEWS_COPY['pt-br'][key], LIVE_NEWS_COPY.en[key], key);
     assert.notEqual(LIVE_NEWS_COPY.es[key], LIVE_NEWS_COPY.en[key], key);

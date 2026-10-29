@@ -1,8 +1,11 @@
 ---
-import { LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
+import { LIVE_NEWS_SINCE_OPTIONS, LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
 import { readLiveNews } from "./live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
-import { clusterLiveHeadlines, coveragePublishers } from "./live-clusters.mjs";
+import { clusterLiveHeadlines, clustersForSource, coveragePublishers } from "./live-clusters.mjs";
+import {
+  LIVE_NEWS_ALL_SOURCES, clampLiveSince, clampLiveSource, withinLiveSince,
+} from "./live-news-filter.mjs";
 import { formatLiveAge } from "./live-time.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
@@ -13,12 +16,29 @@ const copy = getLiveNewsCopy(locale);
 const live = snapshot.status === "LIVE_HEADLINES";
 const stamp = (iso: string | null) =>
   iso === null ? copy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
+const nowMs = Date.now();
+const source = clampLiveSource(Astro.url.searchParams.get("source") ?? LIVE_NEWS_ALL_SOURCES);
+const sinceHours = clampLiveSince(Astro.url.searchParams.get("since") ?? "");
+// The window narrows the pool before grouping; the publisher filter keeps the
+// whole story, so a filtered view still shows every publisher that carried it.
+const viewHref = (nextSource: string, nextSince: number) => {
+  const params = new URLSearchParams();
+  if (nextSource !== LIVE_NEWS_ALL_SOURCES) params.set("source", nextSource);
+  if (nextSince > 0) params.set("since", String(nextSince));
+  const search = params.toString();
+  return "/" + locale + "/news/coverage" + (search === "" ? "" : "?" + search);
+};
+const filtered = source !== LIVE_NEWS_ALL_SOURCES || sinceHours > 0;
 const intro = fillLiveNewsCopy(copy.coverageIntro, { feeds: LIVE_NEWS_SOURCES.length });
-const clusters = live ? clusterLiveHeadlines(snapshot.items) : Object.freeze([]);
+const pool = live
+  ? snapshot.items.filter((item: { publishedAt: string | null }) => withinLiveSince(item, sinceHours, nowMs))
+  : Object.freeze([]);
+const allClusters = live ? clusterLiveHeadlines(pool) : Object.freeze([]);
+const clusters = source === LIVE_NEWS_ALL_SOURCES ? allClusters : clustersForSource(allClusters, source);
 const rows = clusters.map((cluster) => ({
   cluster,
   publishers: coveragePublishers(cluster),
-  age: formatLiveAge(cluster.latestAt, Date.now(), locale) ?? copy.undated,
+  age: formatLiveAge(cluster.latestAt, nowMs, locale) ?? copy.undated,
 }));
 const meta = live
   ? fillLiveNewsCopy(copy.coverageMeta, {
@@ -57,8 +77,34 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
     <section class="m03-coverage__state" aria-labelledby="m03-coverage-stories" data-m03-coverage="live">
       <h2 id="m03-coverage-stories">{copy.topTitle}</h2>
       <p class="m03-coverage__meta" role="status" aria-live="polite">{meta}</p>
+      <form class="m03-coverage__filters" method="get" action={"/" + locale + "/news/coverage"}
+        role="search" aria-label={copy.coverageFilterTitle} data-m03-coverage-filter>
+        <label>{copy.filterSourceLabel}
+          <select name="source">
+            <option value="all" selected={source === LIVE_NEWS_ALL_SOURCES}>{copy.filterAllSources}</option>
+            {LIVE_NEWS_SOURCES.map((entry) => (
+              <option value={entry.id} selected={source === entry.id}>{entry.name}</option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">{copy.filterApply}</button>
+        <a href={"/" + locale + "/news/coverage"}>{copy.filterReset}</a>
+        {sinceHours > 0 && <input type="hidden" name="since" value={sinceHours} />}
+      </form>
+      <nav class="m03-coverage__since" aria-label={copy.sinceTitle} data-m03-coverage-since>
+        <span>{copy.sinceTitle}:</span>
+        <a href={viewHref(source, 0)} aria-current={sinceHours === 0 ? "true" : undefined}>{copy.sinceAny}</a>
+        {LIVE_NEWS_SINCE_OPTIONS.map((hours) => (
+          <a href={viewHref(source, hours)} aria-current={sinceHours === hours ? "true" : undefined}>
+            {fillLiveNewsCopy(copy.sinceHours, { hours })}
+          </a>
+        ))}
+      </nav>
+      <p class="m03-coverage__note">{copy.coverageFilterNote}</p>
       {rows.length === 0 && (
-        <p class="m03-coverage__note" data-m03-coverage-empty>{copy.coverageEmpty}</p>
+        <p class="m03-coverage__note" data-m03-coverage-empty>
+          {filtered ? copy.coverageFilteredEmpty : copy.coverageEmpty}
+        </p>
       )}
       <ol class="m03-coverage__list">
         {rows.map(({ cluster, publishers, age }) => (
@@ -99,6 +145,13 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-coverage__state{margin:1.75rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
   .m03-coverage__state h2{margin:.2rem 0 .8rem;font-size:1.4rem}
   .m03-coverage__meta{font-size:.9rem;color:#9fb6a5}
+  .m03-coverage__filters{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;margin:1rem 0 .5rem;padding:1rem;border:1px solid #2f4a38;border-radius:.6rem}
+  .m03-coverage__filters label{display:grid;gap:.35rem;font-size:.85rem;color:#9fb6a5;font-weight:650}
+  .m03-coverage__filters select{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.5rem .6rem;min-width:12rem}
+  .m03-coverage__filters button{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.55rem .9rem;font-weight:750;cursor:pointer}
+  .m03-coverage__since{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.35rem 0 .5rem;font-size:.85rem;color:#9fb6a5}
+  .m03-coverage__since a{padding:.22rem .55rem;border:1px solid #456e4e;border-radius:999px;text-decoration:none}
+  .m03-coverage__since a[aria-current="true"]{border-color:#b8f34b;color:#b8f34b;font-weight:700}
   .m03-coverage__list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1.35rem}
   .m03-coverage__item{border-top:1px solid #2f4a38;padding-top:1rem}
   .m03-coverage__item:first-child{border-top:0;padding-top:0}

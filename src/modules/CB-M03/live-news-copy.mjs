@@ -197,6 +197,21 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Ver as {count} histórias cobertas →",
     "es": "Ver las {count} historias cubiertas →",
   },
+  coverageFilterTitle: {
+    "en": "Filter covered stories",
+    "pt-br": "Filtrar histórias cobertas",
+    "es": "Filtrar historias cubiertas",
+  },
+  coverageFilterNote: {
+    "en": "Filters narrow the collection before grouping. A publisher filter keeps the whole story, including the other publishers that carried it.",
+    "pt-br": "Os filtros restringem a coleta antes do agrupamento. O filtro por veículo mantém a história inteira, incluindo os outros veículos que a publicaram.",
+    "es": "Los filtros restringen la recopilación antes del agrupamiento. El filtro por medio mantiene la historia completa, incluidos los otros medios que la publicaron.",
+  },
+  coverageFilteredEmpty: {
+    "en": "No covered story matches these filters.",
+    "pt-br": "Nenhuma história coberta corresponde a estes filtros.",
+    "es": "Ninguna historia cubierta coincide con estos filtros.",
+  },
   coveragePageTitle: {
     "en": "CoinBlink · Stories covered by several publishers (DEMO)",
     "pt-br": "CoinBlink · Histórias cobertas por vários veículos (DEMO)",

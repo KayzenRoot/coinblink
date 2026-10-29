@@ -10,6 +10,7 @@ const SEEDS = [
   "/en/news/sources", "/pt-br/news/sources", "/es/news/sources",
   "/en/news/source/coindesk",
   "/developers",
+  "/en/about", "/pt-br/about", "/es/about",
   "/demo", "/demo/sources", "/demo/intake", "/demo/pulse",
   "/demo/markets", "/demo/markets/live", "/demo/editorial/articles",
 ];

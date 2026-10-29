@@ -11,7 +11,7 @@ const REQUIRED = [
   'filterTitle', 'filterQueryLabel',
   'filterQueryHint', 'filterSourceLabel', 'filterAllSources', 'filterApply', 'filterReset',
   'resultOne', 'resultMany', 'emptyFiltered', 'filterNote', 'topicsTitle', 'topicsNote',
-  'sinceTitle', 'sinceAny', 'sinceHours', 'sinceNote', 'allSources', 'staleWarning',
+  'sinceTitle', 'sinceAny', 'sinceHours', 'sinceNote', 'allSources', 'staleWarning', 'howItWorks',
   'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll',
   'savedRemove', 'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared',
   'feedsTitle', 'feedsCaption',

@@ -358,7 +358,8 @@ test("every site language uses one shared Golden Home and correct document langu
   assert.match(secureLayout, /<html lang=\{seo\.lang\}>/u);
   assert.ok(copy.includes('"Regulation": Object.freeze({ "pt-br": "Regulação", es: "Regulación" })'));
   assert.ok(copy.includes('"DEMO · NO STORIES CONNECTED": Object.freeze({ "pt-br": "DEMO · SEM NOTÍCIAS CONECTADAS"'));
-  assert.ok(clientScript.includes("const MESSAGES = {"));
-  assert.ok(clientScript.includes('es: {'));
+  assert.ok(clientScript.includes("const MESSAGE_ROWS = {"));
+  assert.ok(clientScript.includes('"pt-br":'));
+  assert.ok(clientScript.includes('const LOCALE_INDEX = Object.freeze({ en: 0, "pt-br": 1, es: 2 })'));
   assert.doesNotMatch(clientScript, /\b(?:fetch\s*\(|localStorage|sessionStorage|document\.cookie)\b/u);
 });

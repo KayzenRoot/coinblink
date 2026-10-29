@@ -118,6 +118,17 @@ jobs:
             if (!state.test(news)) {
               throw new Error("/en/news/live does not reflect PUBLIC_NEWS_LIVE=" + process.env.PUBLIC_NEWS_LIVE);
             }
+            const statusResponse = await fetch(base + "/v1/news/status", { redirect: "manual" });
+            if (statusResponse.status !== 200) {
+              throw new Error("/v1/news/status answered " + statusResponse.status + ", expected 200");
+            }
+            const statusPayload = await statusResponse.json();
+            if (!["ok", "disabled", "unavailable"].includes(statusPayload.status)) {
+              throw new Error("/v1/news/status reported unknown state " + statusPayload.status);
+            }
+            if (!Array.isArray(statusPayload.feeds) || statusPayload.feeds.some((feed) => "title" in feed)) {
+              throw new Error("/v1/news/status must expose feed state without headline text");
+            }
             const home = await fetch(base + "/en");
             if (!/noindex, nofollow, noarchive/u.test(await home.text())) {
               throw new Error("/en is missing the demo robots policy");

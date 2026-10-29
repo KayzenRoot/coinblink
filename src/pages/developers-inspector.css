@@ -22,3 +22,5 @@
 .m11-inspector code{
   overflow-wrap:anywhere;white-space:pre-wrap;
 }
+
+.m11-status-example{white-space:pre-wrap;overflow-wrap:anywhere}

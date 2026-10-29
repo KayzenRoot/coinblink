@@ -83,9 +83,34 @@ Access-Control-Allow-Origin: *
         rejected with 400.
       </p>
       <p class="body-copy">
-        Both real endpoints return an <code>ETag</code>. Send it back as
+        All three real endpoints return an <code>ETag</code>. Send it back as
         <code>If-None-Match</code> to receive 304 without a body.
       </p>
+    </section>
+    <section aria-labelledby="m11-coverage-status">
+      <h2 id="m11-coverage-status">Coverage counts (content-free)</h2>
+      <p class="body-copy">
+        <code>GET /v1/news/coverage</code> counts the stories carried by more than one
+        publisher and how many covered stories name each publisher. It uses the same
+        mechanical title matching as the reader and returns aggregates only: no
+        headlines, links or article timestamps.
+      </p>
+      <pre class="m11-status-example"><code>{`GET /v1/news/coverage
+
+200 OK
+Content-Type: application/json
+Cache-Control: public, max-age=60
+
+{
+  "status": "ok",
+  "mode": "LIVE_THIRD_PARTY",
+  "stories": 4,
+  "headlines": 60,
+  "rights": "ATTRIBUTION_ONLY",
+  "publishers": [{ "id": "coindesk", "stories": 3 }, ...],
+  "disclaimer": "Counts only. ..."
+}`}</code></pre>
+      <nav aria-label="Coverage counts"><a href="/v1/news/coverage">Open the coverage JSON</a></nav>
     </section>
     <section aria-labelledby="m11-source-catalog">
       <h2 id="m11-source-catalog">Publisher catalog (real, metadata only)</h2>
@@ -121,7 +146,7 @@ Cache-Control: max-age=3600
     <section aria-labelledby="m11-openapi">
       <h2 id="m11-openapi">OpenAPI 3.1 contract</h2>
       <p class="body-copy">
-        The two real endpoints are described in a machine-readable document, including the
+        The three real endpoints are described in a machine-readable document, including the
         200/304/400/405/503 responses and the content-free schemas. It also supports
         <code>If-None-Match</code>.
       </p>

@@ -13,10 +13,11 @@ feed code generators or validators without scraping documentation.
 
 - `openapi: "3.1.0"`, title "CoinBlink public metadata API", version `1.0.0`,
   relative server `"/"` so it works on any deployment origin.
-- Paths: `/v1/news/status` and `/v1/sources`, both `GET`.
+- Paths: `/v1/news/status`, `/v1/news/coverage` and `/v1/sources`, all `GET`.
 - Every operation documents `200`, `304`, `400`, `405` and `503`, with no
   security scheme and no parameters.
-- Schemas: `FeedStatus`, `NewsStatus`, `Source`, `SourceCatalog`, `Error`.
+- Schemas: `FeedStatus`, `NewsStatus`, `PublisherCoverage`, `CoverageStatus`, `Source`,
+  `SourceCatalog`, `Error`.
 
 `FeedStatus` is exactly `id`, `status`, `itemCount`, `reason`;
 `Source` is exactly `id`, `name`, `home`, `feed`, `pages`, `rights`. The
@@ -37,7 +38,7 @@ property, so a generated client cannot expect editorial content.
 
 ## Verification
 
-- Model tests: both paths and all five responses, every `$ref` resolves, the
+- Model tests: every path and all five responses, every `$ref` resolves, the
   feed and source schemas have exact keys and no editorial field, the document
   is deeply frozen.
 - Endpoint contract: methods, headers, conditional response, no storage or item

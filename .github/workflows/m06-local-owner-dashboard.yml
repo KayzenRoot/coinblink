@@ -6,6 +6,8 @@ on:
     paths:
       - ".github/workflows/m06-local-owner-dashboard.yml"
       - "src/modules/CB-M06/**"
+      - "src/pages/demo/pulse.astro"
+      - "src/pages/demo/index.astro"
       - "src/modules/CB-M05/p1c-local/local-cms-ui.mjs"
       - "test/modules/CB-M06/**"
       - "test/modules/CB-M05/p1c-local-admin-preview.test.mjs"
@@ -37,7 +39,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
       - name: Pure read-only metrics contract
-        run: node --test test/modules/CB-M06/owner-dashboard.test.mjs
+        run: node --test test/modules/CB-M06/owner-dashboard.test.mjs test/modules/CB-M06/pulse-surface.test.mjs
       - name: Build and no-session-binding guard
         run: npm run build
       - name: Install Chromium

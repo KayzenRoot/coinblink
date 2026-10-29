@@ -154,3 +154,26 @@ test("M03 source directory lists every publisher and stays inert while the reade
   }
   expect(foreign).toEqual([]);
 });
+
+test("M06 system pulse reports only measured state while the reader is off", async ({ page }) => {
+  const foreign = [];
+  page.on("request", (request) => {
+    if (!request.url().startsWith("http://127.0.0.1:4321/") && !request.url().startsWith("data:")) {
+      foreign.push(request.url());
+    }
+  });
+  const response = await page.goto("/demo/pulse");
+  expect(response?.status()).toBe(200);
+  await expect(page.getByRole("heading", { level: 1, name: "System pulse" })).toBeVisible();
+  const pulse = page.locator("[data-m06-pulse]");
+  await expect(pulse).toHaveAttribute("data-m06-pulse-reader", "DISABLED");
+  await expect(pulse).toHaveAttribute("data-m06-pulse-build", "local");
+  await expect(page.locator("[data-m06-pulse-state]")).toContainText("No request was made");
+  await expect(page.locator('[data-m06-pulse-intake="not-measured"]')).toBeVisible();
+  await expect(page.locator("[data-m06-pulse-source]")).toHaveCount(0);
+  await expect(page.locator('[data-m06-pulse-editorial="LOCAL_ONLY"]')).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  expect(scan.violations).toEqual([]);
+  expect(foreign).toEqual([]);
+});

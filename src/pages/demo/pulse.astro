@@ -1,0 +1,144 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { LIVE_NEWS_SOURCES } from "../../modules/CB-M03/rss-sources.mjs";
+import { readLiveNews } from "../../modules/CB-M03/live-news.mjs";
+import { buildLiveIntakeReview } from "../../modules/CB-M03/live-intake.mjs";
+import { SITE_LOCALES } from "../../modules/CB-M09/site-locales.mjs";
+export const prerender = false;
+
+const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const review = snapshot.status === "LIVE_HEADLINES" ? buildLiveIntakeReview(snapshot) : null;
+const buildSha = (import.meta.env.PUBLIC_BUILD_SHA ?? "").trim();
+const environment = (import.meta.env.PUBLIC_BUILD_ENV ?? "").trim() || "development";
+const origin = (import.meta.env.PUBLIC_SITE_ORIGIN ?? "").trim();
+const readerFlag = (import.meta.env.PUBLIC_NEWS_LIVE ?? "").trim();
+const stamp = (iso: string) => iso.slice(0, 16).replace("T", " ") + " UTC";
+const liveState = (() => {
+  if (snapshot.status === "DISABLED") return "No request was made; the reader is off.";
+  if (snapshot.status === "UNAVAILABLE") return "Unavailable: " + snapshot.reason;
+  return null;
+})();
+---
+<BaseLayout
+  lang="en"
+  title="CoinBlink · System pulse (DEMO)"
+  description="Verifiable deployment, collection and intake signals; no invented analytics, storage or publication."
+>
+  <main id="main" class="pulse" data-m06-pulse data-m06-pulse-reader={snapshot.status}
+    data-m06-pulse-build={buildSha === "" ? "local" : buildSha}>
+    <nav aria-label="Demo laboratories"><a href="/demo">← Demo labs</a></nav>
+    <header>
+      <p class="pulse__tag">CB-M06 · COMMAND CENTER · VERIFIABLE SIGNALS ONLY</p>
+      <h1>System pulse</h1>
+      <p>Every number on this page comes from the current build or the current collection.
+        There is no audience analytics, no invented count and no stored metric.</p>
+    </header>
+
+    <section aria-labelledby="pulse-deployment">
+      <h2 id="pulse-deployment">Deployment</h2>
+      <dl class="pulse__metrics">
+        <div><dt>Build</dt><dd>{buildSha === "" ? "local" : buildSha.slice(0, 12)}</dd></div>
+        <div><dt>Environment</dt><dd>{environment}</dd></div>
+        <div><dt>Origin</dt><dd>{origin === "" ? "not configured" : origin}</dd></div>
+        <div><dt>Reader flag</dt><dd>{readerFlag === "" ? "unset" : readerFlag}</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="pulse-collection">
+      <h2 id="pulse-collection">Live collection</h2>
+      {liveState !== null && <p class="pulse__state" data-m06-pulse-state>{liveState}</p>}
+      {snapshot.status === "LIVE_HEADLINES" && (
+        <>
+          <dl class="pulse__metrics">
+            <div><dt>Collected at</dt><dd>{stamp(snapshot.collectedAt)}</dd></div>
+            <div><dt>Feeds responded</dt><dd>{snapshot.sourcesRead} of {LIVE_NEWS_SOURCES.length}</dd></div>
+            <div><dt>Headlines</dt><dd>{snapshot.itemCount}</dd></div>
+            <div><dt>Rights</dt><dd>{snapshot.rightsStatus}</dd></div>
+          </dl>
+          <table>
+            <caption>Per-publisher collection state</caption>
+            <thead>
+              <tr><th scope="col">Publisher</th><th scope="col">Feed</th><th scope="col">Headlines</th><th scope="col">Reason</th></tr>
+            </thead>
+            <tbody>
+              {snapshot.sources.map((source: { id: string; name: string; status: string;
+                reason: string | null; itemCount: number }) => (
+                <tr data-m06-pulse-source={source.id}>
+                  <th scope="row">{source.name}</th>
+                  <td>{source.status}</td>
+                  <td>{source.itemCount}</td>
+                  <td>{source.reason ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </section>
+
+    <section aria-labelledby="pulse-intake">
+      <h2 id="pulse-intake">Private intake</h2>
+      {review === null && <p class="pulse__state" data-m06-pulse-intake="not-measured">
+        The gate is not measured because the collection is not live.
+      </p>}
+      {review !== null && (
+        <>
+          <dl class="pulse__metrics">
+            <div><dt>Registered sources</dt><dd>{review.registrySize} of {LIVE_NEWS_SOURCES.length}</dd></div>
+            <div><dt>Evaluated</dt><dd>{review.evaluated}</dd></div>
+            <div><dt>Admitted</dt><dd>{review.admitted}</dd></div>
+            <div><dt>Denied</dt><dd>{review.denied}</dd></div>
+          </dl>
+          <p class="pulse__warning">NO SOURCE HAS AN APPROVED RIGHTS REFERENCE · INTAKE REMAINS CLOSED</p>
+          <p><a href="/demo/intake">Open the intake gate →</a></p>
+        </>
+      )}
+    </section>
+
+    <section aria-labelledby="pulse-editorial">
+      <h2 id="pulse-editorial">Editorial CMS</h2>
+      <p class="pulse__state" data-m06-pulse-editorial="LOCAL_ONLY">
+        LOCAL ONLY · The editorial CMS runs in the local test harness. This deployment has no
+        database, owner identity or publishing binding, so no draft count or view metric exists here.
+      </p>
+      <p><a href="/demo/editorial/articles">Open the synthetic editorial demo →</a></p>
+    </section>
+
+    <section aria-labelledby="pulse-surfaces">
+      <h2 id="pulse-surfaces">Public surfaces</h2>
+      <dl class="pulse__metrics">
+        <div><dt>Publishers</dt><dd>{LIVE_NEWS_SOURCES.length}</dd></div>
+        <div><dt>Site locales</dt><dd>{SITE_LOCALES.length}</dd></div>
+        <div><dt>Saved searches</dt><dd>browser-only</dd></div>
+      </dl>
+      <p>
+        <a href="/en/news/live">Live headlines →</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/en/news/sources">Source directory →</a>
+      </p>
+    </section>
+
+    <p class="pulse__note">No request is sent anywhere except the collection described above. This
+      page stores nothing, publishes nothing and cannot approve a source or unlock the admin route.</p>
+  </main>
+</BaseLayout>
+<style>
+  .pulse{max-width:72rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .pulse a{color:#b8f34b}
+  .pulse h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .pulse h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:2rem 0 .6rem}
+  .pulse p{line-height:1.75;color:#c1d3c5}
+  .pulse__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .pulse__state{padding:1rem 1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .pulse__warning{color:#f5c981;font-weight:700;font-size:.85rem;letter-spacing:.03em}
+  .pulse__metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.75rem;margin:1rem 0}
+  .pulse__metrics div{padding:.8rem;border:1px solid #2f4a38;border-radius:.6rem;background:#111c17}
+  .pulse__metrics dt{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:#9fb6a5}
+  .pulse__metrics dd{margin:.3rem 0 0;font-size:1.3rem;font-weight:700;color:#f5f8f5;overflow-wrap:anywhere}
+  .pulse table{width:100%;border-collapse:collapse;font-size:.88rem}
+  .pulse caption{text-align:left;color:#9fb6a5;padding:.4rem 0 .8rem}
+  .pulse th,.pulse td{padding:.5rem .4rem;border-bottom:1px solid #24392c;text-align:left}
+  .pulse thead th{color:#9fb6a5;font-size:.76rem;letter-spacing:.05em;text-transform:uppercase}
+  .pulse__note{color:#9fb6a5;font-size:.92rem}
+  .pulse a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

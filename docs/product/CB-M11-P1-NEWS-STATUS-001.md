@@ -37,6 +37,7 @@ successfully collected; consumers must check `stale` before treating
 
 - `GET` → 200 with `application/json; charset=utf-8`, `Cache-Control:
   public, max-age=60`, `Access-Control-Allow-Origin: *`.
+- A matching `If-None-Match` returns 304 with the same cache/CORS headers and no body.
 - `OPTIONS` → 204 with the same CORS headers.
 - `HEAD` → 200 without a body.
 - Any other method → 405 with `Allow: GET`.

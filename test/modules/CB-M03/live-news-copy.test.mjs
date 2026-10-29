@@ -13,6 +13,8 @@ const REQUIRED = [
   'resultOne', 'resultMany', 'emptyFiltered', 'filterNote', 'topicsTitle', 'topicsNote',
   'sinceTitle', 'sinceAny', 'sinceHours', 'sinceNote', 'allSources', 'staleWarning', 'howItWorks',
   'alsoCovered', 'coverageNote', 'topTitle', 'topPublishers', 'topNote',
+  'coverageAll', 'coveragePageTitle', 'coveragePageDescription', 'coverageH1', 'coverageIntro',
+  'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
   'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll',
   'savedRemove', 'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared',
   'feedsTitle', 'feedsCaption',
@@ -43,7 +45,10 @@ test('the chrome is actually translated and the BCP-47 tag is correct', () => {
     'columnPublisher', 'rightsNote', 'filterTitle', 'filterQueryLabel', 'emptyFiltered', 'filterNote',
     'stripTitle', 'stripNote', 'topicsTitle', 'topicsNote', 'officialSite', 'sinceTitle', 'sinceNote', 'allSources', 'staleWarning',
     'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedRemove',
-    'alsoCovered', 'coverageNote', 'topTitle', 'topPublishers', 'topNote', 'topTitle', 'topPublishers', 'topNote',
+    'alsoCovered', 'coverageNote', 'topTitle', 'topPublishers', 'topNote', 'coverageAll',
+    'coverageH1', 'coverageIntro', 'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
+  'coverageAll', 'coveragePageTitle', 'coveragePageDescription', 'coverageH1', 'coverageIntro',
+  'coverageMeta', 'coverageEmpty', 'coverageLiveLink', 'topTitle', 'topPublishers', 'topNote',
     'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared']) {
     assert.notEqual(LIVE_NEWS_COPY['pt-br'][key], LIVE_NEWS_COPY.en[key], key);
     assert.notEqual(LIVE_NEWS_COPY.es[key], LIVE_NEWS_COPY.en[key], key);
@@ -58,10 +63,16 @@ test('placeholders agree across locales and fill leaves unknown names untouched'
   const meta = placeholders(LIVE_NEWS_COPY.en.meta);
   const stripAll = placeholders(LIVE_NEWS_COPY.en.stripAll);
   const topPublishers = placeholders(LIVE_NEWS_COPY.en.topPublishers);
+  const coverageIntro = placeholders(LIVE_NEWS_COPY.en.coverageIntro);
+  const coverageMeta = placeholders(LIVE_NEWS_COPY.en.coverageMeta);
+  const coverageAll = placeholders(LIVE_NEWS_COPY.en.coverageAll);
   assert.deepEqual(intro, ['feeds']);
   assert.deepEqual(meta, ['count', 'feeds', 'minutes', 'sources', 'time']);
   assert.deepEqual(stripAll, ['count']);
   assert.deepEqual(topPublishers, ['count']);
+  assert.deepEqual(coverageIntro, ['feeds']);
+  assert.deepEqual(coverageMeta, ['count', 'sources', 'time']);
+  assert.deepEqual(coverageAll, ['count']);
   assert.deepEqual(placeholders(LIVE_NEWS_COPY.en.sinceHours), ['hours']);
   assert.deepEqual(placeholders(LIVE_NEWS_COPY.en.staleWarning), ['time']);
   assert.deepEqual(placeholders(LIVE_NEWS_COPY.en.savedRemove), ['label']);
@@ -71,6 +82,9 @@ test('placeholders agree across locales and fill leaves unknown names untouched'
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].meta), meta, locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].stripAll), stripAll, locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].topPublishers), topPublishers, locale);
+    assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].coverageIntro), coverageIntro, locale);
+    assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].coverageMeta), coverageMeta, locale);
+    assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].coverageAll), coverageAll, locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].sinceHours), ['hours'], locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].staleWarning), ['time'], locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].savedRemove), ['label'], locale);

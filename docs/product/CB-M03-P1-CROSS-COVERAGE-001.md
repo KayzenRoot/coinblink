@@ -61,6 +61,21 @@ more than one publisher.
 `topCoverageClusters(clusters, limit)` and `coveragePublishers(cluster)` live in
 the same pure module; the highlight uses no additional data or request.
 
+## Coverage page
+
+`/{locale}/news/coverage` is the shareable home of the feature. It reads the
+same gated snapshot, clusters it with the same module and lists every group
+(capped at 8) with the newest headline, the publisher count, the relative time
+and one link per publisher. When the collection has no multi-source story it
+renders an explicit empty state; when live news is disabled it makes no
+request and explains the gate, exactly like the reader. The live page's
+highlight links here with the number of covered stories.
+
+Routes: `src/pages/{en,pt-br,es}/news/coverage.astro`, each a thin wrapper over
+`CoveragePage.astro`. Copy lives in the same key-major table
+(`coveragePageTitle`, `coveragePageDescription`, `coverageH1`, `coverageIntro`,
+`coverageMeta`, `coverageEmpty`, `coverageAll`, `coverageLiveLink`).
+
 ## Boundaries
 
 - Coverage is computed from titles only. Excerpts are ignored so publisher

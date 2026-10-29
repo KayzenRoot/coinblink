@@ -24,7 +24,8 @@ test('each locale page is server-rendered, gated and passes its own locale', () 
 
 test('the panel escapes feed text and localizes its chrome', () => {
   assert.doesNotMatch(panel, /set:html/u);
-  assert.doesNotMatch(panel, /<script/u);
+  assert.doesNotMatch(panel, /<script[^>]*\bis:inline\b/u);
+  assert.ok(panel.includes('import "./saved-searches.client.mjs"'));
   assert.match(panel, /getLiveNewsCopy/u);
   assert.match(panel, /fillLiveNewsCopy/u);
   assert.match(panel, /<a href=\{item\.link\} rel="noreferrer noopener external">\{item\.title\}<\/a>/u);
@@ -125,4 +126,15 @@ test('the live page offers a local, shareable time window', () => {
   assert.ok(panel.includes('name="since"'));
   assert.ok(panel.includes('LIVE_NEWS_SINCE_OPTIONS'));
   assert.ok(panel.includes('sinceHours, nowMs'));
+});
+
+test('saved searches stay browser-local and escaped', () => {
+  const client = readFileSync('src/modules/CB-M03/saved-searches.client.mjs', 'utf8');
+  assert.ok(panel.includes('data-m03-saved-searches'));
+  assert.ok(panel.includes('saved-searches.client.mjs'));
+  assert.ok(panel.includes('data-m03-save-current'));
+  assert.ok(panel.includes('hidden'));
+  assert.doesNotMatch(client, /fetch\s*\(|XMLHttpRequest|document\.cookie|sessionStorage|innerHTML/u);
+  assert.ok(client.includes('window.localStorage'));
+  assert.ok(client.includes('textContent'));
 });

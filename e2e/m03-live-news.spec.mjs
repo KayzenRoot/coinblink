@@ -41,6 +41,7 @@ test("M03 live headlines stay inert in every locale until a deployment enables t
     await expect(page.locator("[data-m03-live-filter]")).toHaveCount(0);
     await expect(page.locator("[data-m03-live-topics]")).toHaveCount(0);
     await expect(page.locator("[data-m03-live-since]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-saved-searches]")).toHaveCount(0);
     await expect(page.locator("[data-m03-live-item]")).toHaveCount(0);
   }
   expect(foreign).toEqual([]);

@@ -12,6 +12,8 @@ const REQUIRED = [
   'filterQueryHint', 'filterSourceLabel', 'filterAllSources', 'filterApply', 'filterReset',
   'resultOne', 'resultMany', 'emptyFiltered', 'filterNote', 'topicsTitle', 'topicsNote',
   'sinceTitle', 'sinceAny', 'sinceHours', 'sinceNote', 'allSources',
+  'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll',
+  'savedRemove', 'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared',
   'feedsTitle', 'feedsCaption',
   'columnPublisher', 'columnStatus', 'columnHeadlines', 'columnReason', 'undated', 'noReason',
   'rightsNote',
@@ -38,7 +40,9 @@ test('every locale carries the same complete, plain-text copy', () => {
 test('the chrome is actually translated and the BCP-47 tag is correct', () => {
   for (const key of ['back', 'h1', 'disabledTitle', 'unavailableTitle', 'warning', 'feedsTitle',
     'columnPublisher', 'rightsNote', 'filterTitle', 'filterQueryLabel', 'emptyFiltered', 'filterNote',
-    'stripTitle', 'stripNote', 'topicsTitle', 'topicsNote', 'officialSite', 'sinceTitle', 'sinceNote', 'allSources']) {
+    'stripTitle', 'stripNote', 'topicsTitle', 'topicsNote', 'officialSite', 'sinceTitle', 'sinceNote', 'allSources',
+    'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedRemove',
+    'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared']) {
     assert.notEqual(LIVE_NEWS_COPY['pt-br'][key], LIVE_NEWS_COPY.en[key], key);
     assert.notEqual(LIVE_NEWS_COPY.es[key], LIVE_NEWS_COPY.en[key], key);
   }
@@ -55,11 +59,15 @@ test('placeholders agree across locales and fill leaves unknown names untouched'
   assert.deepEqual(meta, ['count', 'feeds', 'minutes', 'sources', 'time']);
   assert.deepEqual(stripAll, ['count']);
   assert.deepEqual(placeholders(LIVE_NEWS_COPY.en.sinceHours), ['hours']);
+  assert.deepEqual(placeholders(LIVE_NEWS_COPY.en.savedRemove), ['label']);
+  assert.deepEqual(placeholders(LIVE_NEWS_COPY.en.savedFull), ['max']);
   for (const locale of LIVE_NEWS_LOCALES) {
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].intro), intro, locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].meta), meta, locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].stripAll), stripAll, locale);
     assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].sinceHours), ['hours'], locale);
+    assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].savedRemove), ['label'], locale);
+    assert.deepEqual(placeholders(LIVE_NEWS_COPY[locale].savedFull), ['max'], locale);
   }
   assert.equal(fillLiveNewsCopy('{a} {b}', { a: 'x', b: 2 }), 'x 2');
   assert.equal(fillLiveNewsCopy('{a} {b}', { a: 'x' }), 'x {b}');

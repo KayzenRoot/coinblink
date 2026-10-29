@@ -79,6 +79,15 @@ test('cross-coverage is computed locally and annotated per headline', () => {
   assert.ok(panel.includes('data-m03-live-coverage-note'));
   assert.ok(panel.includes('copy.alsoCovered'));
   assert.ok(panel.includes('copy.coverageNote'));
+  assert.ok(panel.includes('topCoverageClusters'));
+  assert.ok(panel.includes('coveragePublishers'));
+  assert.ok(panel.includes('data-m03-live-top'));
+  assert.ok(panel.includes('data-m03-live-top-item'));
+  assert.ok(panel.includes('copy.topTitle'));
+  assert.ok(panel.includes('copy.topNote'));
+  assert.ok(panel.includes('copy.topPublishers'));
+  assert.match(clusters, /export function topCoverageClusters/u);
+  assert.match(clusters, /export function coveragePublishers/u);
   assert.ok(panel.includes('rel="noreferrer noopener external">{other.sourceName}</a>'));
 });
 

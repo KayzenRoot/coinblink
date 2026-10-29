@@ -177,6 +177,21 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "A cobertura é detectada mecanicamente por palavras significativas do título compartilhadas entre as manchetes. É um auxílio de leitura, não um julgamento editorial, e o texto dos veículos nunca é fundido nem reescrito.",
     "es": "La cobertura se detecta mecánicamente por palabras significativas del titular compartidas entre los titulares. Es una ayuda de lectura, no un juicio editorial, y el texto de los medios nunca se fusiona ni se reescribe.",
   },
+  topTitle: {
+    "en": "Most covered now",
+    "pt-br": "Mais cobertas agora",
+    "es": "Más cubiertas ahora",
+  },
+  topPublishers: {
+    "en": "{count} publishers",
+    "pt-br": "{count} veículos",
+    "es": "{count} medios",
+  },
+  topNote: {
+    "en": "Stories that more than one publisher carried in this collection, ordered by publisher count and then recency. This highlight uses the same mechanical title matching as the notes under each headline.",
+    "pt-br": "Histórias que mais de um veículo publicou nesta coleta, ordenadas pela quantidade de veículos e depois pela recência. Este destaque usa a mesma comparação mecânica de títulos das notas sob cada manchete.",
+    "es": "Historias que más de un medio publicó en esta recopilación, ordenadas por cantidad de medios y luego por recencia. Este destaque usa la misma comparación mecánica de titulares que las notas bajo cada titular.",
+  },
   officialSite: {
     "en": "official site",
     "pt-br": "site oficial",

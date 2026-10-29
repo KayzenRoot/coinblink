@@ -28,7 +28,7 @@ test('the panel escapes feed text and localizes its chrome', () => {
   assert.ok(panel.includes('import "./saved-searches.client.mjs"'));
   assert.match(panel, /getLiveNewsCopy/u);
   assert.match(panel, /fillLiveNewsCopy/u);
-  assert.match(panel, /<a href=\{item\.link\} rel="noreferrer noopener external">\{item\.title\}<\/a>/u);
+  assert.match(panel, /<a href=\{item\.link\} lang=\{item\.language\} rel="noreferrer noopener external">\{item\.title\}<\/a>/u);
   assert.match(panel, /<a href=\{item\.sourceHome\} rel="noreferrer noopener external">\{item\.sourceName\}<\/a>/u);
   assert.match(panel, /data-m03-live="disabled"/u);
   assert.match(panel, /data-m03-live="unavailable"/u);
@@ -58,6 +58,7 @@ test('the news index shows a compact, attributed strip only when live', () => {
   assert.doesNotMatch(strip, /set:html|<script/u);
   assert.ok(strip.includes('items.slice(0, 3)'), 'the strip is capped at three headlines');
   assert.ok(strip.includes('rel="noreferrer noopener external"'));
+  assert.ok(strip.includes('lang={item.language}'));
   assert.ok(strip.includes('data-m03-live-strip'));
   assert.ok(strip.includes('/news/live'));
   assert.ok(strip.includes('copy.stripNote'));

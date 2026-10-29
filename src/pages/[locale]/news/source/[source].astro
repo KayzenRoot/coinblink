@@ -39,7 +39,7 @@ const clusters = snapshot?.status === "LIVE_HEADLINES"
   : Object.freeze([]);
 const coverageIndex = buildCoverageIndex(clusters);
 const rows = items.map((item: { id: string; title: string; summary: string; link: string;
-  sourceId: string; sourceName: string; publishedAt: string | null }) => ({
+  sourceId: string; sourceName: string; publishedAt: string | null; language: string }) => ({
   item,
   others: coverageOthers(coverageIndex.get(item.id), item.id),
 }));
@@ -85,11 +85,11 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
           {items.length > 0 && (
             <ol class="source-page__list">
               {rows.map(({ item, others }: { item: { id: string; title: string; summary: string; link: string;
-                sourceId: string; sourceName: string; publishedAt: string | null };
+                sourceId: string; sourceName: string; publishedAt: string | null; language: string };
                 others: ReadonlyArray<{ sourceId: string; sourceName: string; link: string }> }) => (
                 <li data-m03-source-item={item.sourceId}>
-                  <h3><a href={item.link} rel="noreferrer noopener external">{item.title}</a></h3>
-                  {item.summary !== "" && <p>{item.summary}</p>}
+                  <h3><a href={item.link} lang={item.language} rel="noreferrer noopener external">{item.title}</a></h3>
+                  {item.summary !== "" && <p lang={item.language}>{item.summary}</p>}
                   <p class="source-page__byline"><time datetime={item.publishedAt ?? undefined} title={exact(item.publishedAt) || undefined}>{age(item.publishedAt)}</time></p>
                   {others.length > 0 && (
                     <p class="source-page__coverage" data-m03-source-coverage>

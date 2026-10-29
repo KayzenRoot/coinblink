@@ -15,6 +15,7 @@ const item = (id, sourceId, title, publishedAt = '2026-10-29T10:00:00.000Z', sou
   id,
   sourceId,
   sourceName,
+  language: 'en',
   title,
   link: 'https://' + sourceId + '.example/' + id,
   publishedAt,
@@ -53,6 +54,9 @@ test('the same story from two publishers forms one cluster', () => {
   assert.equal(Object.isFrozen(clusters[0]), true);
   assert.equal(Object.isFrozen(clusters[0].members), true);
   assert.equal(Object.isFrozen(clusters[0].members[0]), true);
+  assert.equal(clusters[0].members[0].language, 'en');
+  const withoutLanguage = clusterLiveHeadlines([bitcoinA, { ...bitcoinB, language: undefined }]);
+  assert.equal(withoutLanguage[0].members[0].language, null);
 });
 
 test('unrelated stories and same-publisher duplicates never cluster', () => {

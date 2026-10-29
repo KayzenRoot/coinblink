@@ -21,6 +21,7 @@ const OPTION_MAX = 1000;
  * @property {string} id
  * @property {string} sourceId
  * @property {string} sourceName
+ * @property {string | null} language
  * @property {string} title
  * @property {string} link
  * @property {string | null} publishedAt
@@ -65,7 +66,7 @@ export function tokenizeLiveTitle(title) {
 
 function readRecord(item) {
   if (item === null || typeof item !== "object") return null;
-  const { id, title, link, sourceId, sourceName, publishedAt } = item;
+  const { id, title, link, sourceId, sourceName, publishedAt, language } = item;
   if (typeof id !== "string" || id === "") return null;
   if (typeof title !== "string" || title === "") return null;
   if (typeof link !== "string" || link === "") return null;
@@ -77,6 +78,7 @@ function readRecord(item) {
       id,
       sourceId,
       sourceName: typeof sourceName === "string" && sourceName !== "" ? sourceName : sourceId,
+      language: typeof language === "string" && language !== "" ? language : null,
       title,
       link,
       publishedAt: typeof publishedAt === "string" && publishedAt !== "" ? publishedAt : null,

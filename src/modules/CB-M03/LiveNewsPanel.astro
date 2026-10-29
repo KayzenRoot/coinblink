@@ -176,7 +176,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
           <ol>
             {topRows.map(({ cluster, publishers }) => (
               <li data-m03-live-top-item={cluster.id}>
-                <a class="m03-live__top-headline" href={cluster.members[0].link}
+                <a class="m03-live__top-headline" href={cluster.members[0].link} lang={cluster.members[0].language ?? undefined}
                   rel="noreferrer noopener external">{cluster.members[0].title}</a>
                 <p class="m03-live__top-sources">
                   <span>{fillLiveNewsCopy(copy.topPublishers, { count: cluster.coverage })}</span>
@@ -197,12 +197,14 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
         </section>
       )}
       <ol class="m03-live__list" data-m03-live-list data-m03-new-label={copy.newBadge}>
-        {rows.map(({ item, others }) => (
+        {rows.map(({ item, others }: { item: { id: string; title: string; summary: string; link: string;
+          sourceId: string; sourceName: string; sourceHome: string; publishedAt: string | null; language: string };
+          others: ReadonlyArray<{ sourceId: string; sourceName: string; link: string }> }) => (
           <li class="m03-live__item" data-m03-live-item={item.sourceId}>
             <h3 class="m03-live__headline">
-              <a href={item.link} rel="noreferrer noopener external">{item.title}</a>
+              <a href={item.link} lang={item.language} rel="noreferrer noopener external">{item.title}</a>
             </h3>
-            {item.summary !== "" && <p class="m03-live__summary">{item.summary}</p>}
+            {item.summary !== "" && <p class="m03-live__summary" lang={item.language}>{item.summary}</p>}
             <p class="m03-live__byline">
               <a href={item.sourceHome} rel="noreferrer noopener external">{item.sourceName}</a>
               <span aria-hidden="true"> · </span>

@@ -15,23 +15,23 @@ export const LIVE_NEWS_FAILURE_RETRY_SECONDS = 60;
 
 export const LIVE_NEWS_SOURCES = Object.freeze([
   Object.freeze({
-    id: "cointelegraph", name: "Cointelegraph", url: "https://cointelegraph.com/rss",
+    id: "cointelegraph", language: "en", name: "Cointelegraph", url: "https://cointelegraph.com/rss",
     home: "https://cointelegraph.com", hosts: Object.freeze(["cointelegraph.com"]),
   }),
   Object.freeze({
-    id: "decrypt", name: "Decrypt", url: "https://decrypt.co/feed",
+    id: "decrypt", language: "en", name: "Decrypt", url: "https://decrypt.co/feed",
     home: "https://decrypt.co", hosts: Object.freeze(["decrypt.co"]),
   }),
   Object.freeze({
-    id: "coindesk", name: "CoinDesk", url: "https://www.coindesk.com/arc/outboundfeeds/rss",
+    id: "coindesk", language: "en", name: "CoinDesk", url: "https://www.coindesk.com/arc/outboundfeeds/rss",
     home: "https://www.coindesk.com", hosts: Object.freeze(["coindesk.com", "www.coindesk.com"]),
   }),
   Object.freeze({
-    id: "cryptoslate", name: "CryptoSlate", url: "https://cryptoslate.com/feed/",
+    id: "cryptoslate", language: "en", name: "CryptoSlate", url: "https://cryptoslate.com/feed/",
     home: "https://cryptoslate.com", hosts: Object.freeze(["cryptoslate.com"]),
   }),
   Object.freeze({
-    id: "bitcoinmagazine", name: "Bitcoin Magazine", url: "https://bitcoinmagazine.com/feed",
+    id: "bitcoinmagazine", language: "en", name: "Bitcoin Magazine", url: "https://bitcoinmagazine.com/feed",
     home: "https://bitcoinmagazine.com", hosts: Object.freeze(["bitcoinmagazine.com"]),
   }),
 ]);

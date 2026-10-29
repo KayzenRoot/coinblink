@@ -2,6 +2,25 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { API_CONTRACT_VERSION, V1_ENDPOINTS, conformsToContract } from "../src/modules/CB-M11/api-contract.mjs";
 
+async function expectPublicJson(request, path, cache) {
+  const response = await request.get(path);
+  expect(response.status()).toBe(200);
+  const headers = response.headers();
+  expect(headers["content-type"]).toContain("application/json");
+  if (cache) expect(headers["cache-control"]).toContain(cache);
+  const etag = headers["etag"];
+  expect(etag).toMatch(/^"[0-9a-f]{8}-[0-9a-f]+"$/u);
+  const conditional = await request.get(path, { headers: { "if-none-match": etag } });
+  expect(conditional.status()).toBe(304);
+  expect(await conditional.text()).toBe("");
+  expect((await request.get(path, { headers: { "if-none-match": '"nope"' } })).status()).toBe(200);
+  expect((await request.get(path + "?x=1")).status()).toBe(400);
+  const post = await request.post(path);
+  expect(post.status()).toBe(405);
+  expect(post.headers()["allow"]).toBe("GET");
+  return response;
+}
+
 test("M11 documentation is local-only, readable, accessible and demonstrates the API", async ({ page }) => {
   const outbound = [], mutations = [], errors = [];
   page.on("request", req => {
@@ -185,17 +204,8 @@ test("M11 P1 inline API response inspectors show exact fictional GET JSON with k
 });
 
 test("M11 live status endpoint is content-free and read-only", async ({ request }) => {
-  const response = await request.get("/v1/news/status");
-  expect(response.status()).toBe(200);
-  const headers = response.headers();
-  expect(headers["content-type"]).toContain("application/json");
-  expect(headers["access-control-allow-origin"]).toBe("*");
-  expect(headers["cache-control"]).toContain("max-age=60");
-  const etag = headers["etag"];
-  expect(etag).toMatch(/^"[0-9a-f]{8}-[0-9a-f]+"$/u);
-  const conditional = await request.get("/v1/news/status", { headers: { "if-none-match": etag } });
-  expect(conditional.status()).toBe(304);
-  expect(await conditional.text()).toBe("");
+  const response = await expectPublicJson(request, "/v1/news/status", "max-age=60");
+  expect(response.headers()["access-control-allow-origin"]).toBe("*");
   const payload = await response.json();
   expect(["ok", "disabled", "unavailable"]).toContain(payload.status);
   expect(Array.isArray(payload.feeds)).toBe(true);
@@ -205,11 +215,6 @@ test("M11 live status endpoint is content-free and read-only", async ({ request 
   for (const feed of payload.feeds) {
     expect(Object.keys(feed).sort()).toEqual(["id", "itemCount", "reason", "status"]);
   }
-  const query = await request.get("/v1/news/status?x=1");
-  expect(query.status()).toBe(400);
-  const post = await request.post("/v1/news/status");
-  expect(post.status()).toBe(405);
-  expect(post.headers()["allow"]).toBe("GET");
 });
 
 test("M11 developer page links to the live status JSON", async ({ page }) => {
@@ -219,18 +224,7 @@ test("M11 developer page links to the live status JSON", async ({ page }) => {
 });
 
 test("M11 publisher catalog is metadata-only and read-only", async ({ request }) => {
-  const response = await request.get("/v1/sources");
-  expect(response.status()).toBe(200);
-  const headers = response.headers();
-  expect(headers["content-type"]).toContain("application/json");
-  expect(headers["cache-control"]).toContain("max-age=3600, s-maxage=60");
-  const etag = headers["etag"];
-  expect(etag).toMatch(/^"[0-9a-f]{8}-[0-9a-f]+"$/u);
-  const cached = await request.get("/v1/sources", { headers: { "if-none-match": etag } });
-  expect(cached.status()).toBe(304);
-  expect(await cached.text()).toBe("");
-  const mismatch = await request.get("/v1/sources", { headers: { "if-none-match": '"nope"' } });
-  expect(mismatch.status()).toBe(200);
+  const response = await expectPublicJson(request, "/v1/sources", "max-age=3600, s-maxage=60");
   const payload = await response.json();
   expect(payload.status).toBe("ok");
   expect(payload.mode).toBe("PUBLIC_METADATA");
@@ -242,14 +236,27 @@ test("M11 publisher catalog is metadata-only and read-only", async ({ request })
     expect(source.rights).toBe("ATTRIBUTION_ONLY");
     expect(JSON.stringify(source)).not.toContain("title");
   }
-  expect((await request.get("/v1/sources?x=1")).status()).toBe(400);
-  const post = await request.post("/v1/sources");
-  expect(post.status()).toBe(405);
-  expect(post.headers()["allow"]).toBe("GET");
 });
 
 test("M11 developer page links to the publisher catalog", async ({ page }) => {
   await page.goto("/developers");
   await expect(page.getByRole("heading", { name: "Publisher catalog (real, metadata only)" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the source catalog JSON" })).toHaveAttribute("href", "/v1/sources");
+});
+
+test("M11 OpenAPI document matches the real endpoints", async ({ request }) => {
+  const response = await expectPublicJson(request, "/v1/openapi.json", "max-age=3600");
+  const doc = await response.json();
+  expect(doc.openapi).toBe("3.1.0");
+  expect(Object.keys(doc.paths).sort()).toEqual(["/v1/news/status", "/v1/sources"]);
+  expect(doc.paths["/v1/news/status"].get.responses["200"].content["application/json"].schema.$ref)
+    .toBe("#/components/schemas/NewsStatus");
+  expect(doc.paths["/v1/sources"].get.responses["200"].content["application/json"].schema.$ref)
+    .toBe("#/components/schemas/SourceCatalog");
+});
+
+test("M11 developer page links to the OpenAPI document", async ({ page }) => {
+  await page.goto("/developers");
+  await expect(page.getByRole("heading", { name: "OpenAPI 3.1 contract" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the OpenAPI document" })).toHaveAttribute("href", "/v1/openapi.json");
 });

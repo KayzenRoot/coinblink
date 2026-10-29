@@ -262,6 +262,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Buscas salvas limpas.",
     "es": "Búsquedas guardadas borradas.",
   },
+  staleWarning: {
+    "en": "Refresh failed; showing the last successful collection from {time}.",
+    "pt-br": "A atualização falhou; exibindo a última coleta bem-sucedida de {time}.",
+    "es": "La actualización falló; se muestra la última recopilación correcta de {time}.",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

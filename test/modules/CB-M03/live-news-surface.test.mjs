@@ -138,3 +138,9 @@ test('saved searches stay browser-local and escaped', () => {
   assert.ok(client.includes('window.localStorage'));
   assert.ok(client.includes('textContent'));
 });
+
+test('a stale collection is labelled in the panel', () => {
+  assert.ok(panel.includes('data-m03-live-stale'));
+  assert.ok(panel.includes('copy.staleWarning'));
+  assert.ok(panel.includes('snapshot.stale === true'));
+});

@@ -80,6 +80,11 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
       <h2 id="m03-live-latest">{copy.latestTitle}</h2>
       <p class="m03-live__warning">{copy.warning}</p>
       <p class="m03-live__meta" role="status" aria-live="polite">{liveMeta}</p>
+      {snapshot.status === "LIVE_HEADLINES" && snapshot.stale === true && (
+        <p class="m03-live__warning" data-m03-live-stale>
+          {fillLiveNewsCopy(copy.staleWarning, { time: stamp(snapshot.collectedAt) })}
+        </p>
+      )}
       <form class="m03-live__filters" method="get" action={"/" + locale + "/news/live"}
         role="search" aria-label={copy.filterTitle} data-m03-live-filter>
         <label>{copy.filterQueryLabel}

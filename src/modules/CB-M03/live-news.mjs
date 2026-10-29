@@ -5,22 +5,27 @@
 // card names its publisher. RSS carries no vendor quota, so the only resource
 // guard needed is time: at most one collection per source per window.
 import {
-  LIVE_NEWS_MAX_ITEMS, LIVE_NEWS_MAX_PER_SOURCE, LIVE_NEWS_SOURCES, LIVE_NEWS_TIMEOUT_MS, LIVE_NEWS_WINDOW_SECONDS,
+  LIVE_NEWS_FAILURE_RETRY_SECONDS, LIVE_NEWS_MAX_ITEMS, LIVE_NEWS_MAX_PER_SOURCE, LIVE_NEWS_SOURCES,
+  LIVE_NEWS_STALE_MAX_SECONDS, LIVE_NEWS_TIMEOUT_MS, LIVE_NEWS_WINDOW_SECONDS,
 } from "./rss-sources.mjs";
 import { parseRssFeed } from "./rss-parse.mjs";
 
 const ENABLED_VALUES = new Set(["1", "true", "enabled", "on"]);
-const FAILURE_RETRY_SECONDS = 60;
 
 /** Only an explicit affirmative value enables live headlines. */
 export function isLiveNewsEnabled(value) {
   return typeof value === "string" && ENABLED_VALUES.has(value.trim().toLowerCase());
 }
 
-/** Per-process memo: bounds egress to one collection per source per window. */
+/**
+ * Per-process memo: bounds egress to one collection per source per window and
+ * remembers the last good collection so a short outage can serve stale data.
+ */
 export function createNewsCache() {
   let expiresAt = 0;
   let value = null;
+  let lastGood = null;
+  let lastGoodAt = 0;
   return {
     read(nowMs) {
       return value !== null && nowMs < expiresAt ? value : null;
@@ -28,6 +33,14 @@ export function createNewsCache() {
     write(nowMs, next, ttlSeconds) {
       expiresAt = nowMs + ttlSeconds * 1000;
       value = next;
+      // A stale or failed snapshot never extends the life of the last good one.
+      if (next.status === "LIVE_HEADLINES" && next.stale !== true) {
+        lastGood = next;
+        lastGoodAt = nowMs;
+      }
+    },
+    stale(nowMs, maxAgeMs) {
+      return lastGood !== null && nowMs - lastGoodAt <= maxAgeMs ? lastGood : null;
     },
   };
 }
@@ -109,17 +122,26 @@ export async function readLiveNews(options = {}) {
     .sort(headlineSort)
     .slice(0, LIVE_NEWS_MAX_ITEMS));
   if (items.length === 0) {
+    const lastGood = typeof cache.stale === "function"
+      ? cache.stale(nowMs(), LIVE_NEWS_STALE_MAX_SECONDS * 1000)
+      : null;
+    if (lastGood !== null) {
+      const stale = Object.freeze({ ...lastGood, stale: true, refreshFailedAt: now() });
+      cache.write(nowMs(), stale, LIVE_NEWS_FAILURE_RETRY_SECONDS);
+      return stale;
+    }
     const failed = Object.freeze({
       status: "UNAVAILABLE", reason: "ALL_SOURCES_FAILED", collectedAt,
       items, sources: readable,
     });
-    cache.write(nowMs(), failed, FAILURE_RETRY_SECONDS);
+    cache.write(nowMs(), failed, LIVE_NEWS_FAILURE_RETRY_SECONDS);
     return failed;
   }
   const snapshot = Object.freeze({
     status: "LIVE_HEADLINES",
     mode: "LIVE_THIRD_PARTY",
     collectedAt,
+    stale: false,
     rightsStatus: "HEADLINES_WITH_ATTRIBUTION_ONLY",
     commercialUseAllowed: false,
     fullTextStored: false,

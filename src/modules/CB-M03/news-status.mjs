@@ -29,6 +29,7 @@ export function buildNewsStatus(snapshot, options = {}) {
       mode: "LIVE_THIRD_PARTY",
       reason: snapshot.reason,
       windowSeconds,
+      stale: false,
       feedsTotal: LIVE_NEWS_SOURCES.length,
       feedsRead: 0,
       items: 0,
@@ -41,10 +42,13 @@ export function buildNewsStatus(snapshot, options = {}) {
     throw new TypeError("unknown live-news snapshot status");
   }
   const feeds = Object.freeze(feedRows(snapshot));
+  const stale = snapshot.stale === true;
   return Object.freeze({
     status: "ok",
     mode: "LIVE_THIRD_PARTY",
     collectedAt: snapshot.collectedAt,
+    stale,
+    ...(stale ? { refreshFailedAt: snapshot.refreshFailedAt } : {}),
     windowSeconds,
     feedsTotal: feeds.length,
     feedsRead: snapshot.sourcesRead,

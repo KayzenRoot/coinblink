@@ -10,6 +10,7 @@ const MAX_LENGTH = 40;
 
 // Function words in the three site languages. Anything else is counted as-is:
 // the reader sees a frequency list, not an editorial classification.
+// Cross-coverage reuses the same list so both features agree on what is noise.
 const STOPWORDS = new Set([
   "about", "above", "according", "across", "ademas", "after", "again", "against",
   "ahead", "ahora", "ainda", "algo", "algun", "alguna", "along", "also",
@@ -43,6 +44,11 @@ const STOPWORDS = new Set([
   "you", "your",
   "appeared", "continue", "continues", "credit", "image", "magazine", "originally", "photo", "post", "posts", "published", "read", "reads", "stories", "story",
 ]);
+
+/** True when the word carries no subject in en, pt-br or es. */
+export function isLiveNewsStopword(word) {
+  return STOPWORDS.has(word);
+}
 
 function words(text) {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/gu, "").toLocaleLowerCase("en")

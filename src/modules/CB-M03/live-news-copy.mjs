@@ -167,6 +167,16 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Contadas a partir das manchetes acima, não são um modelo editorial de temas. Selecione uma para filtrar.",
     "es": "Contadas a partir de los titulares anteriores, no son un modelo editorial de temas. Selecciona una para filtrar.",
   },
+  alsoCovered: {
+    "en": "Also covered by:",
+    "pt-br": "Também coberto por:",
+    "es": "También cubierto por:",
+  },
+  coverageNote: {
+    "en": "Coverage is detected mechanically from significant title words shared by the headlines. It is a reading aid, not an editorial judgement, and the publishers' text is never merged or rewritten.",
+    "pt-br": "A cobertura é detectada mecanicamente por palavras significativas do título compartilhadas entre as manchetes. É um auxílio de leitura, não um julgamento editorial, e o texto dos veículos nunca é fundido nem reescrito.",
+    "es": "La cobertura se detecta mecánicamente por palabras significativas del titular compartidas entre los titulares. Es una ayuda de lectura, no un juicio editorial, y el texto de los medios nunca se fusiona ni se reescribe.",
+  },
   officialSite: {
     "en": "official site",
     "pt-br": "site oficial",

@@ -67,6 +67,21 @@ test('the news index shows a compact, attributed strip only when live', () => {
   assert.ok(page.includes('<LiveHeadlineStrip slot="live"'));
 });
 
+test('cross-coverage is computed locally and annotated per headline', () => {
+  const clusters = readFileSync('src/modules/CB-M03/live-clusters.mjs', 'utf8');
+  assert.match(clusters, /export function clusterLiveHeadlines/u);
+  assert.match(clusters, /export function coverageOthers/u);
+  assert.doesNotMatch(clusters, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
+  assert.ok(panel.includes('clusterLiveHeadlines'));
+  assert.ok(panel.includes('buildCoverageIndex'));
+  assert.ok(panel.includes('coverageOthers'));
+  assert.ok(panel.includes('data-m03-live-coverage'));
+  assert.ok(panel.includes('data-m03-live-coverage-note'));
+  assert.ok(panel.includes('copy.alsoCovered'));
+  assert.ok(panel.includes('copy.coverageNote'));
+  assert.ok(panel.includes('rel="noreferrer noopener external">{other.sourceName}</a>'));
+});
+
 test('topics are counted locally and link back into the filter', () => {
   const topics = readFileSync('src/modules/CB-M03/live-news-topics.mjs', 'utf8');
   assert.match(topics, /export function extractLiveTopics/u);

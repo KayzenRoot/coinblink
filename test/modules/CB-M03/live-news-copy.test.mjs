@@ -12,6 +12,7 @@ const REQUIRED = [
   'filterQueryHint', 'filterSourceLabel', 'filterAllSources', 'filterApply', 'filterReset',
   'resultOne', 'resultMany', 'emptyFiltered', 'filterNote', 'topicsTitle', 'topicsNote',
   'sinceTitle', 'sinceAny', 'sinceHours', 'sinceNote', 'allSources', 'staleWarning', 'howItWorks',
+  'alsoCovered', 'coverageNote',
   'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll',
   'savedRemove', 'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared',
   'feedsTitle', 'feedsCaption',
@@ -42,6 +43,7 @@ test('the chrome is actually translated and the BCP-47 tag is correct', () => {
     'columnPublisher', 'rightsNote', 'filterTitle', 'filterQueryLabel', 'emptyFiltered', 'filterNote',
     'stripTitle', 'stripNote', 'topicsTitle', 'topicsNote', 'officialSite', 'sinceTitle', 'sinceNote', 'allSources', 'staleWarning',
     'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedRemove',
+    'alsoCovered', 'coverageNote',
     'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared']) {
     assert.notEqual(LIVE_NEWS_COPY['pt-br'][key], LIVE_NEWS_COPY.en[key], key);
     assert.notEqual(LIVE_NEWS_COPY.es[key], LIVE_NEWS_COPY.en[key], key);

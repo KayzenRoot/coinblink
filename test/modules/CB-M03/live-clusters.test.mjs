@@ -4,6 +4,7 @@ import {
   LIVE_NEWS_CLUSTER_MAX_OTHERS,
   buildCoverageIndex,
   clusterLiveHeadlines,
+  clustersForSource,
   coverageOthers,
   coveragePublishers,
   tokenizeLiveTitle,
@@ -132,4 +133,18 @@ test('the highlight strip picks the most covered stories and one link per publis
     ['theblock', 'coindesk', 'decrypt', 'cointelegraph']);
   assert.equal(coveragePublishers({ members: [bitcoinA, { ...bitcoinA, id: 'a2' }] }).length, 1);
   assert.deepEqual(coveragePublishers(null), []);
+});
+
+test('a publisher filter keeps whole stories, including the other publishers', () => {
+  const third = item('c1', 'decrypt', 'Bitcoin ETF inflows reach a record high');
+  const clusters = clusterLiveHeadlines([dogeA, dogeB, bitcoinA, bitcoinB, third]);
+  const bitcoinOnly = clustersForSource(clusters, 'coindesk');
+  assert.equal(bitcoinOnly.length, 1);
+  assert.equal(bitcoinOnly[0].members.length, 3);
+  assert.deepEqual(bitcoinOnly[0].members.map((member) => member.sourceId),
+    ['theblock', 'coindesk', 'decrypt']);
+  assert.equal(clustersForSource(clusters, 'unknown').length, 0);
+  assert.deepEqual(clustersForSource(null, 'coindesk'), []);
+  assert.deepEqual(clustersForSource(clusters, ''), []);
+  assert.equal(Object.isFrozen(bitcoinOnly), true);
 });

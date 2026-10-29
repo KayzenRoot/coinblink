@@ -32,6 +32,16 @@ test('the coverage component renders the groups offline', () => {
     /set:html|<script|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
 });
 
+test('the coverage page narrows the collection without breaking a story apart', () => {
+  for (const marker of ['clampLiveSince', 'clampLiveSource', 'withinLiveSince', 'clustersForSource',
+    'data-m03-coverage-filter', 'data-m03-coverage-since', 'copy.coverageFilterNote',
+    'copy.coverageFilteredEmpty', 'copy.coverageEmpty']) {
+    assert.ok(component.includes(marker), marker);
+  }
+  assert.ok(component.includes('source === LIVE_NEWS_ALL_SOURCES ? allClusters : clustersForSource(allClusters, source)'));
+  assert.ok(component.includes('viewHref(source, 0)'));
+});
+
 test('the live highlight exposes the full page with the covered-story count', () => {
   assert.ok(panel.includes('"/" + locale + "/news/coverage"'));
   assert.ok(panel.includes('fillLiveNewsCopy(copy.coverageAll, { count: clusters.length })'));

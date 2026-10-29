@@ -74,7 +74,15 @@ highlight links here with the number of covered stories.
 Routes: `src/pages/{en,pt-br,es}/news/coverage.astro`, each a thin wrapper over
 `CoveragePage.astro`. Copy lives in the same key-major table
 (`coveragePageTitle`, `coveragePageDescription`, `coverageH1`, `coverageIntro`,
-`coverageMeta`, `coverageEmpty`, `coverageAll`, `coverageLiveLink`).
+`coverageMeta`, `coverageEmpty`, `coverageAll`, `coverageLiveLink`,
+`coverageFilterTitle`, `coverageFilterNote`, `coverageFilteredEmpty`).
+
+The page accepts two server-rendered filters: `?since=<reviewed window>` narrows
+the pool before clustering, and `?source=<reviewed publisher>` keeps the whole
+story while showing only groups that include that publisher. Selecting a
+publisher therefore never hides the other publishers that carried the same
+story. Filter state is linkable and shareable, and a filtered empty result has
+its own message. The publisher page links here with `?source=<id>`.
 
 ## Publisher pages
 

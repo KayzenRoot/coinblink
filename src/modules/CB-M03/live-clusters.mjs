@@ -282,3 +282,19 @@ export function coveragePublishers(cluster) {
   }
   return Object.freeze(publishers);
 }
+
+/**
+ * Clusters that include a given publisher, keeping every member of the story.
+ * @param {unknown} clusters
+ * @param {unknown} sourceId
+ * @returns {ReadonlyArray<LiveCoverageCluster>}
+ */
+export function clustersForSource(clusters, sourceId) {
+  if (!Array.isArray(clusters) || typeof sourceId !== "string" || sourceId === "") {
+    return Object.freeze([]);
+  }
+  return Object.freeze(clusters.filter((cluster) =>
+    cluster !== null && typeof cluster === "object" && Array.isArray(cluster.members)
+    && cluster.members.some((member) =>
+      member !== null && typeof member === "object" && member.sourceId === sourceId)));
+}

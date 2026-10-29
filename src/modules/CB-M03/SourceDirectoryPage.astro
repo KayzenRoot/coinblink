@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
+import { readLiveNews } from "./live-news.mjs";
+import { fillLiveNewsCopy } from "./live-news-copy.mjs";
+import { getSourceDirectoryCopy } from "./source-directory-copy.mjs";
+interface Props { locale?: "en" | "pt-br" | "es"; }
+const { locale = "en" } = Astro.props;
+let lang: "en" | "pt-BR" | "es" = "en";
+if (locale === "pt-br") lang = "pt-BR";
+else if (locale === "es") lang = "es";
+const copy = getSourceDirectoryCopy(locale);
+const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const stamp = (iso: string) => iso.slice(0, 16).replace("T", " ") + " UTC";
+const stateLine = (() => {
+  if (snapshot.status === "DISABLED") return copy.disabledStatus;
+  if (snapshot.status === "UNAVAILABLE") {
+    return fillLiveNewsCopy(copy.unavailableStatus, { reason: snapshot.reason });
+  }
+  const responded = snapshot.sources.filter((source: { status: string }) => source.status === "OK").length;
+  return fillLiveNewsCopy(copy.liveStatus, {
+    time: stamp(snapshot.collectedAt), ok: responded, total: LIVE_NEWS_SOURCES.length,
+  });
+})();
+const feedFor = (id: string) => snapshot.sources.find((source: { id: string }) => source.id === id) ?? null;
+---
+<BaseLayout lang={lang} title={copy.pageTitle} description={copy.pageDescription}>
+  <main id="main" class="source-directory" data-m03-sources-page>
+    <nav aria-label={copy.h1}><a href={"/" + locale + "/news/live"}>{copy.back}</a></nav>
+    <header>
+      <p class="source-directory__tag">CB-M03 · PUBLIC RSS · ATTRIBUTION ONLY</p>
+      <h1>{copy.h1}</h1>
+      <p>{copy.intro}</p>
+    </header>
+    <section class="source-directory__status" aria-labelledby="sources-status"
+      data-m03-sources-state={snapshot.status}>
+      <h2 id="sources-status">{copy.statusTitle}</h2>
+      <p>{stateLine}</p>
+    </section>
+    <section aria-labelledby="sources-list">
+      <h2 id="sources-list">{copy.publishers}</h2>
+      <ul class="source-directory__list">
+        {LIVE_NEWS_SOURCES.map((source) => {
+          const feed = feedFor(source.id);
+          return (
+            <li data-m03-sources-item={source.id}>
+              <h3><a href={"/" + locale + "/news/source/" + source.id}>{source.name}</a></h3>
+              <p><a href={source.home} rel="noreferrer noopener external">{copy.officialSite}</a></p>
+              {feed && (
+                <p class="source-directory__feed">
+                  {fillLiveNewsCopy(copy.feedLine, { status: feed.status, count: feed.itemCount })}
+                  {feed.reason ? " · " + feed.reason : ""}
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+    <aside class="source-directory__aside">
+      <p>{copy.rightsNote}</p>
+      <p><a href={"/" + locale + "/news/live"}>{copy.liveLink}</a></p>
+    </aside>
+  </main>
+</BaseLayout>
+<style>
+  .source-directory{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .source-directory a{color:#b8f34b}
+  .source-directory h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .source-directory h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:2rem 0 .6rem}
+  .source-directory p{line-height:1.75;color:#c1d3c5}
+  .source-directory__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .source-directory__status{padding:1rem 1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .source-directory__list{list-style:none;margin:0;padding:0;display:grid;gap:1rem}
+  .source-directory__list li{border-top:1px solid #2f4a38;padding-top:1rem}
+  .source-directory__list h3{margin:0 0 .3rem;font-size:1.1rem}
+  .source-directory__list h3 a{text-decoration:none}
+  .source-directory__list h3 a:hover{text-decoration:underline}
+  .source-directory__list p{margin:.2rem 0}
+  .source-directory__feed{font-size:.84rem;color:#9fb6a5}
+  .source-directory__aside{margin-top:2rem;padding-top:1rem;border-top:1px solid #2f4a38;font-size:.92rem}
+  .source-directory a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

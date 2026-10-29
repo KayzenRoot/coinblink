@@ -13,6 +13,7 @@ on:
       - "src/pages/pt-br/news/live.astro"
       - "src/pages/es/news/live.astro"
       - "src/pages/**/news/source/**"
+      - "src/pages/*/news/sources.astro"
       - "test/modules/CB-M03/**"
       - "e2e/m03-source-demo.spec.mjs"
       - "e2e/m03-live-news.spec.mjs"

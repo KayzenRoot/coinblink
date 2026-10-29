@@ -70,6 +70,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Ver todas as manchetes ao vivo →",
     es: "Ver todos los titulares en vivo →",
   },
+  allSources: {
+    "en": "All sources →",
+    "pt-br": "Todas as fontes →",
+    "es": "Todas las fuentes →",
+  },
   notFoundTitle: {
     en: "Publisher not found",
     "pt-br": "Veículo não encontrado",

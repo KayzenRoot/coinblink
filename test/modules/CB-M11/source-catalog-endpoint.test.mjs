@@ -10,7 +10,7 @@ test('the catalog endpoint is read-only, cached and CORS-open', () => {
   assert.ok(route.includes('export const GET'));
   assert.ok(route.includes('export const OPTIONS'));
   assert.ok(route.includes('export const ALL'));
-  assert.ok(route.includes('"cache-control": "public, max-age=3600"'));
+  assert.ok(route.includes('"cache-control": "public, max-age=3600, s-maxage=60"'));
   assert.ok(route.includes('"access-control-allow-origin": "*"'));
   assert.ok(route.includes('"x-robots-tag": "noindex"'));
   assert.ok(route.includes('UNSUPPORTED_QUERY'));

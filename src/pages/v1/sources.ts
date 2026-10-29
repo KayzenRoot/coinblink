@@ -7,7 +7,7 @@ export const prerender = false;
 
 const HEADERS = Object.freeze({
   "content-type": "application/json; charset=utf-8",
-  "cache-control": "public, max-age=3600",
+  "cache-control": "public, max-age=3600, s-maxage=60",
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, HEAD, OPTIONS",
   "x-robots-tag": "noindex",

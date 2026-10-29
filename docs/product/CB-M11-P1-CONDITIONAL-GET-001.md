@@ -38,7 +38,7 @@ missing or empty header never matches.
 | Endpoint | Body | Cache |
 | --- | --- | --- |
 | `GET /v1/news/status` | collection state, feed counts, stale flag | `max-age=60` |
-| `GET /v1/sources` | five publishers, metadata only | `max-age=3600` |
+| `GET /v1/sources` | five publishers, metadata only | `max-age=3600, s-maxage=60` |
 
 `/developers` documents the ETag behaviour for both.
 

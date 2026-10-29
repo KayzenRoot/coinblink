@@ -253,3 +253,31 @@ test("M11 developer page links to the publisher catalog", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Publisher catalog (real, metadata only)" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the source catalog JSON" })).toHaveAttribute("href", "/v1/sources");
 });
+
+test("M11 OpenAPI document matches the real endpoints", async ({ request }) => {
+  const response = await request.get("/v1/openapi.json");
+  expect(response.status()).toBe(200);
+  const headers = response.headers();
+  expect(headers["content-type"]).toContain("application/json");
+  const etag = headers["etag"];
+  expect(etag).toBeTruthy();
+  const conditional = await request.get("/v1/openapi.json", { headers: { "if-none-match": etag } });
+  expect(conditional.status()).toBe(304);
+  const doc = await response.json();
+  expect(doc.openapi).toBe("3.1.0");
+  expect(Object.keys(doc.paths).sort()).toEqual(["/v1/news/status", "/v1/sources"]);
+  expect(doc.paths["/v1/news/status"].get.responses["200"].content["application/json"].schema.$ref)
+    .toBe("#/components/schemas/NewsStatus");
+  expect(doc.paths["/v1/sources"].get.responses["200"].content["application/json"].schema.$ref)
+    .toBe("#/components/schemas/SourceCatalog");
+  expect((await request.get("/v1/openapi.json?x=1")).status()).toBe(400);
+  const post = await request.post("/v1/openapi.json");
+  expect(post.status()).toBe(405);
+  expect(post.headers()["allow"]).toBe("GET");
+});
+
+test("M11 developer page links to the OpenAPI document", async ({ page }) => {
+  await page.goto("/developers");
+  await expect(page.getByRole("heading", { name: "OpenAPI 3.1 contract" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the OpenAPI document" })).toHaveAttribute("href", "/v1/openapi.json");
+});

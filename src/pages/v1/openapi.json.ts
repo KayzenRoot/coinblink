@@ -1,0 +1,36 @@
+// CB-M11-P1-OPENAPI-001: public OpenAPI 3.1 contract for the metadata API.
+import type { APIRoute } from "astro";
+import { buildOpenApiDocument } from "../../modules/CB-M11/openapi.mjs";
+import { conditionalResponse } from "../../modules/CB-M11/conditional-get.mjs";
+
+export const prerender = false;
+
+const HEADERS = Object.freeze({
+  "content-type": "application/json; charset=utf-8",
+  "cache-control": "public, max-age=3600, s-maxage=60",
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, HEAD, OPTIONS",
+  "x-robots-tag": "noindex",
+});
+
+function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}) {
+  return new Response(JSON.stringify(body), { status, headers: { ...HEADERS, ...extraHeaders } });
+}
+
+export const GET: APIRoute = ({ url, request }) => {
+  if ([...url.searchParams.keys()].length > 0) {
+    return json({ status: "bad_request", reason: "UNSUPPORTED_QUERY" }, 400);
+  }
+  try {
+    return conditionalResponse(JSON.stringify(buildOpenApiDocument()), request, HEADERS);
+  } catch {
+    return json({ status: "unavailable", reason: "INTERNAL" }, 503);
+  }
+};
+
+export const OPTIONS: APIRoute = () => new Response(null, { status: 204, headers: HEADERS });
+
+export const ALL: APIRoute = ({ request }) => {
+  if (request.method === "HEAD") return new Response(null, { status: 200, headers: HEADERS });
+  return json({ status: "method_not_allowed" }, 405, { allow: "GET" });
+};

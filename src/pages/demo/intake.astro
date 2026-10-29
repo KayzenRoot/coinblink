@@ -1,0 +1,162 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { readLiveNews } from "../../modules/CB-M03/live-news.mjs";
+import { buildLiveIntakeReview } from "../../modules/CB-M03/live-intake.mjs";
+export const prerender = false;
+// Off unless the deployment enables the reader: PUBLIC_NEWS_LIVE is a variable.
+const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const review = snapshot.status === "LIVE_HEADLINES" ? buildLiveIntakeReview(snapshot) : null;
+const sourceRows = snapshot.sources.map((source: { id: string; name: string; status: string; itemCount: number }) => {
+  const gate = review === null
+    ? undefined
+    : review.sources.find((entry: { id: string }) => entry.id === source.id);
+  return {
+    id: source.id,
+    name: source.name,
+    feedStatus: source.status,
+    collected: source.itemCount,
+    registered: gate?.registered === true,
+    admitted: typeof gate?.admitted === "number" ? gate.admitted : 0,
+    denied: typeof gate?.denied === "number" ? gate.denied : 0,
+  };
+});
+---
+<BaseLayout
+  lang="en"
+  title="CoinBlink · Private intake gate (DEMO)"
+  description="Admission check between the live headline collection and private editorial review; nothing is stored or published."
+>
+  <main id="main" class="intake" data-m03-intake>
+    <nav aria-label="Editorial demonstration"><a href="/demo/editorial/articles">← Editorial demo</a></nav>
+    <header>
+      <p class="intake__tag">CB-M03 · PRIVATE REVIEW INTAKE · NO PUBLICATION</p>
+      <h1>Private intake gate</h1>
+      <p>Every collected headline is checked against the admission gate. A source may only
+        enter private editorial review when a trusted registry entry carries an owner-approved
+        rights reference. Nothing here is stored, queued, approved or published.</p>
+    </header>
+
+    {snapshot.status === "DISABLED" && (
+      <section class="intake__state" role="status" data-m03-intake-state="disabled">
+        <h2>READER DISABLED</h2>
+        <p>No request was made. The intake gate needs a live collection, and this deployment has
+          not enabled the reader.</p>
+      </section>
+    )}
+
+    {snapshot.status === "UNAVAILABLE" && (
+      <section class="intake__state" role="status" data-m03-intake-state="unavailable">
+        <h2>READER UNAVAILABLE</h2>
+        <p>Reason: <code>{snapshot.reason}</code>. The gate evaluates nothing rather than inventing
+          candidates.</p>
+      </section>
+    )}
+
+    {review && (
+      <>
+        <section aria-labelledby="intake-metrics" data-m03-intake-state="measured">
+          <h2 id="intake-metrics">Measured outcome</h2>
+          <p class="intake__warning">NO SOURCE HAS AN APPROVED RIGHTS REFERENCE · INTAKE REMAINS CLOSED</p>
+          <dl class="intake__metrics">
+            <div><dt>Sources registered</dt><dd>{review.registrySize} of {snapshot.sources.length}</dd></div>
+            <div><dt>Candidates evaluated</dt><dd>{review.evaluated}</dd></div>
+            <div><dt>Admitted to private review</dt><dd>{review.admitted}</dd></div>
+            <div><dt>Denied</dt><dd>{review.denied}</dd></div>
+            <div><dt>Skipped without a publication time</dt><dd>{review.skippedUndated}</dd></div>
+          </dl>
+        </section>
+
+        <section aria-labelledby="intake-sources">
+          <h2 id="intake-sources">Sources in this collection</h2>
+          <table>
+            <caption>Collection health and admission status per publisher</caption>
+            <thead>
+              <tr>
+                <th scope="col">Publisher</th><th scope="col">Feed</th><th scope="col">Collected</th>
+                <th scope="col">Registered</th><th scope="col">Admitted</th><th scope="col">Denied</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sourceRows.map((source: { id: string; name: string; feedStatus: string; collected: number;
+                registered: boolean; admitted: number; denied: number }) => (
+                <tr data-m03-intake-source={source.id}>
+                  <th scope="row">{source.name}</th>
+                  <td>{source.feedStatus}</td>
+                  <td>{source.collected}</td>
+                  <td>{source.registered ? "yes" : "no"}</td>
+                  <td>{source.admitted}</td>
+                  <td>{source.denied}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <section aria-labelledby="intake-items">
+          <h2 id="intake-items">Evaluated headlines</h2>
+          <p>Each row shows the gate decision for the current collection. Titles and links remain
+            the publisher's; the gate only decides whether a private review may begin.</p>
+          {review.items.length === 0 && <p data-m03-intake-empty>No dated headline was available to evaluate.</p>}
+          {review.items.length > 0 && (
+            <table>
+              <caption>{review.items.length} dated headlines evaluated at collection time</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Headline</th><th scope="col">Publisher</th>
+                  <th scope="col">Decision</th><th scope="col">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {review.items.map((item: { externalId: string; title: string; link: string;
+                  sourceName: string; decision: string; reason: string | null; rightsRef: string | null }) => (
+                  <tr data-m03-intake-item={item.decision}>
+                    <th scope="row"><a href={item.link} rel="noreferrer noopener external">{item.title}</a></th>
+                    <td>{item.sourceName}</td>
+                    <td>{item.decision}</td>
+                    <td>{item.reason ?? item.rightsRef}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        <section aria-labelledby="intake-requirements">
+          <h2 id="intake-requirements">What admission requires</h2>
+          <ul>
+            <li>A trusted registry entry with the publisher's exact origin and allowed path prefix.</li>
+            <li><code>intakePermission: PRIVATE_REVIEW_INTAKE</code> on that entry.</li>
+            <li>An owner-approved rights reference. None exists today, so the gate denies everything.</li>
+            <li>A canonical https article URL on that publisher's origin.</li>
+            <li>A printable title (8–240 characters) and a real publication timestamp.</li>
+            <li>Even then the result is <code>PRIVATE_REVIEW_ONLY</code>, never publication.</li>
+          </ul>
+        </section>
+      </>
+    )}
+
+    <p class="intake__note">Headlines belong to their publishers. This page reads the same cached
+      collection as the public reader, adds no request, stores nothing and cannot approve or publish.</p>
+  </main>
+</BaseLayout>
+<style>
+  .intake{max-width:72rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .intake a{color:#b8f34b}
+  .intake h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .intake h2{font-size:1.15rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:2rem 0 .6rem}
+  .intake p{line-height:1.75;color:#c1d3c5}
+  .intake__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .intake__state{margin:1.5rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .intake__warning{color:#f5c981;font-weight:700;font-size:.85rem;letter-spacing:.03em}
+  .intake__metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.75rem;margin:1rem 0}
+  .intake__metrics div{padding:.8rem;border:1px solid #2f4a38;border-radius:.6rem;background:#111c17}
+  .intake__metrics dt{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:#9fb6a5}
+  .intake__metrics dd{margin:.3rem 0 0;font-size:1.5rem;font-weight:700;color:#f5f8f5}
+  .intake table{width:100%;border-collapse:collapse;font-size:.88rem}
+  .intake caption{text-align:left;color:#9fb6a5;padding:.4rem 0 .8rem}
+  .intake th,.intake td{padding:.5rem .4rem;border-bottom:1px solid #24392c;text-align:left;vertical-align:top}
+  .intake thead th{color:#9fb6a5;font-size:.76rem;letter-spacing:.05em;text-transform:uppercase}
+  .intake code{background:#0b1513;border:1px solid #2f4a38;border-radius:.3rem;padding:.1rem .3rem;font-size:.82em}
+  .intake__note{color:#9fb6a5;font-size:.92rem}
+  .intake a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

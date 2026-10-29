@@ -7,6 +7,8 @@ on:
       - ".github/workflows/m03-sources-browser.yml"
       - "src/modules/CB-M03/**"
       - "src/pages/demo/sources.astro"
+      - "src/pages/demo/intake.astro"
+      - "src/pages/demo/index.astro"
       - "src/pages/en/news/live.astro"
       - "src/pages/pt-br/news/live.astro"
       - "src/pages/es/news/live.astro"

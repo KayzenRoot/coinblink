@@ -44,6 +44,7 @@ The Worker name is always passed explicitly, so a deploy can never create or tar
 - The site stays a labelled DEMO: `/admin` is unreachable in production, every page carries `noindex, nofollow, noarchive`, and no rights, publication or real-account claim is made by a deploy.
 - `PUBLIC_SITE_ORIGIN` is what turns on canonical, hreflang and `og:image`. It is now set to the deployed Worker origin, so production carries absolute metadata while any local build without it still carries none. Change the variable if the origin ever moves.
 - The two live readers are opt-in and independently switched. The smoke test asserts that `/en/news/live` reflects `PUBLIC_NEWS_LIVE` — `disabled` when off, `live` or `unavailable` when on — so a forgotten variable shows up as a failed deploy step, not as a silently dead page. A publisher being down never fails the deploy: the page reports the partial collection instead.
+- Cloudflare can keep serving the previous version for a short window right after `wrangler deploy`. The smoke test therefore polls `/health` for up to 90 seconds until it reports `GITHUB_SHA` before checking routes, rather than failing a healthy deployment on propagation delay.
 
 ## Rollback
 

@@ -26,6 +26,7 @@ export function createNewsCache() {
   let value = null;
   let lastGood = null;
   let lastGoodAt = 0;
+  const perSource = new Map();
   return {
     read(nowMs) {
       return value !== null && nowMs < expiresAt ? value : null;
@@ -42,27 +43,50 @@ export function createNewsCache() {
     stale(nowMs, maxAgeMs) {
       return lastGood !== null && nowMs - lastGoodAt <= maxAgeMs ? lastGood : null;
     },
+    sourceState(id) {
+      return perSource.get(id) ?? null;
+    },
+    rememberSource(id, state) {
+      perSource.set(id, state);
+    },
   };
 }
 
 export const defaultNewsCache = createNewsCache();
 
-async function collectSource(source, { fetchImpl, collectedAt, timeoutMs }) {
+async function collectSource(source, { fetchImpl, collectedAt, timeoutMs, previous }) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const headers = {
+    accept: "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9",
+    "user-agent": "CoinBlink/1.0 (live headline reader; attribution only)",
+  };
+  if (previous !== null && typeof previous.etag === "string" && previous.etag !== "") {
+    headers["if-none-match"] = previous.etag;
+  } else if (previous !== null && typeof previous.lastModified === "string" && previous.lastModified !== "") {
+    headers["if-modified-since"] = previous.lastModified;
+  }
   try {
     const response = await fetchImpl(source.url, {
       signal: controller.signal,
-      headers: {
-        accept: "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9",
-        "user-agent": "CoinBlink/1.0 (live headline reader; attribution only)",
-      },
+      headers,
       cache: "no-store",
     });
+    if (response.status === 304) {
+      if (previous === null || !Array.isArray(previous.items) || previous.items.length === 0) {
+        return { source, status: "UNAVAILABLE", reason: "UNEXPECTED_304", items: [] };
+      }
+      return { source, status: "OK", reason: null, items: previous.items, notModified: true, state: previous };
+    }
     if (!response.ok) return { source, status: "UNAVAILABLE", reason: `HTTP_${response.status}`, items: [] };
     const items = parseRssFeed(await response.text(), { source, collectedAt, limit: LIVE_NEWS_MAX_PER_SOURCE });
     if (items.length === 0) return { source, status: "UNAVAILABLE", reason: "NO_USABLE_ITEMS", items: [] };
-    return { source, status: "OK", reason: null, items };
+    const state = {
+      items,
+      etag: response.headers?.get?.("etag") ?? null,
+      lastModified: response.headers?.get?.("last-modified") ?? null,
+    };
+    return { source, status: "OK", reason: null, items, notModified: false, state };
   } catch (error) {
     const reason = error?.name === "AbortError" ? "TIMEOUT" : "NETWORK";
     return { source, status: "UNAVAILABLE", reason, items: [] };
@@ -87,6 +111,7 @@ function summaryOf(results) {
     status: result.status,
     reason: result.reason,
     itemCount: result.items.length,
+    notModified: result.notModified === true,
   }));
 }
 
@@ -114,8 +139,14 @@ export async function readLiveNews(options = {}) {
     return Object.freeze({ status: "UNAVAILABLE", reason: "NO_FETCH", items: Object.freeze([]), sources: Object.freeze([]) });
   }
   const collectedAt = now();
+  const previousFor = (id) => (typeof cache.sourceState === "function" ? cache.sourceState(id) : null);
   const results = await Promise.all(sources.map((source) =>
-    collectSource(source, { fetchImpl, collectedAt, timeoutMs })));
+    collectSource(source, { fetchImpl, collectedAt, timeoutMs, previous: previousFor(source.id) })));
+  for (const result of results) {
+    if (result.status === "OK" && result.state !== undefined && typeof cache.rememberSource === "function") {
+      cache.rememberSource(result.source.id, result.state);
+    }
+  }
   const readable = summaryOf(results);
   const items = Object.freeze(results
     .flatMap((result) => result.items)

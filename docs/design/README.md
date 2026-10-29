@@ -10,7 +10,7 @@
 - Actual golden files, when ingested, **must be bit-identical** to owner-approved raster originals. Never replace them with recreated images or remote search results.
 - The frozen Bible intentionally remains unchanged so the source-text import matches the exact owner-approved original. Future clarified canonical versions must be independently approved and versioned, not silently edited.
 
-**Product Source Pack status:** incomplete. Source text imported; Golden JPG binaries blocked by current authenticated tool transfer path; visual implementation not authorized. See [Source Pack staging index](../source-pack/README.md).
+**Product Source Pack status:** incomplete. Source text imported; Golden JPG binaries blocked by current authenticated tool transfer path; visual implementation not authorized. See the [reference manifest](../../assets/reference/reference-manifest.json) for the current asset status.
 
 ## New v2.0 internal-page design expansion (ALL DRAFT, not frozen visual approval)
 

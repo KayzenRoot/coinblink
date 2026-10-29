@@ -120,20 +120,7 @@ function compareClusters(a, b) {
   return a.id.localeCompare(b.id);
 }
 
-/**
- * Group headline items carried by at least two publishers. Items without a
- * usable id, title, link or source are skipped instead of failing the page.
- * @param {unknown} items
- * @param {{minShared?: number, minSimilarity?: number, maxClusters?: number}} [options]
- * @returns {ReadonlyArray<LiveCoverageCluster>}
- */
-export function clusterLiveHeadlines(items, options = {}) {
-  const settings = options !== null && typeof options === "object" ? options : {};
-  const minShared = clampOption(settings.minShared, LIVE_NEWS_CLUSTER_MIN_SHARED, OPTION_MAX);
-  const minSimilarity = Number.isFinite(settings.minSimilarity) && settings.minSimilarity > 0
-    ? Math.min(settings.minSimilarity, 1)
-    : LIVE_NEWS_CLUSTER_MIN_SIMILARITY;
-  const maxClusters = clampOption(settings.maxClusters, LIVE_NEWS_CLUSTER_MAX, OPTION_MAX);
+function readRecords(items) {
   const records = [];
   if (Array.isArray(items)) {
     for (const item of items) {
@@ -142,7 +129,10 @@ export function clusterLiveHeadlines(items, options = {}) {
     }
   }
   records.sort(compareRecords);
+  return records;
+}
 
+function linkRecords(records, minShared, minSimilarity) {
   const parents = records.map((_, index) => index);
   for (let i = 0; i < records.length; i += 1) {
     for (let j = i + 1; j < records.length; j += 1) {
@@ -151,7 +141,10 @@ export function clusterLiveHeadlines(items, options = {}) {
       parents[findRoot(parents, j)] = findRoot(parents, i);
     }
   }
+  return parents;
+}
 
+function groupRecords(records, parents) {
   const groups = new Map();
   for (let i = 0; i < records.length; i += 1) {
     const root = findRoot(parents, i);
@@ -159,7 +152,10 @@ export function clusterLiveHeadlines(items, options = {}) {
     if (group === undefined) groups.set(root, [records[i].member]);
     else group.push(records[i].member);
   }
+  return groups;
+}
 
+function buildClusters(groups) {
   const clusters = [];
   for (const members of groups.values()) {
     const sources = new Set(members.map((member) => member.sourceId));
@@ -172,6 +168,24 @@ export function clusterLiveHeadlines(items, options = {}) {
     }));
   }
   clusters.sort(compareClusters);
+  return clusters;
+}
+
+/**
+ * Group headline items carried by at least two publishers. Items without a
+ * usable id, title, link or source are skipped instead of failing the page.
+ * @param {unknown} items
+ * @param {{minShared?: number, minSimilarity?: number, maxClusters?: number}} [options]
+ * @returns {ReadonlyArray<LiveCoverageCluster>}
+ */
+export function clusterLiveHeadlines(items, options = {}) {
+  const minShared = clampOption(options.minShared, LIVE_NEWS_CLUSTER_MIN_SHARED, OPTION_MAX);
+  const minSimilarity = Number.isFinite(options.minSimilarity) && options.minSimilarity > 0
+    ? Math.min(options.minSimilarity, 1)
+    : LIVE_NEWS_CLUSTER_MIN_SIMILARITY;
+  const maxClusters = clampOption(options.maxClusters, LIVE_NEWS_CLUSTER_MAX, OPTION_MAX);
+  const records = readRecords(items);
+  const clusters = buildClusters(groupRecords(records, linkRecords(records, minShared, minSimilarity)));
   return Object.freeze(clusters.slice(0, maxClusters));
 }
 

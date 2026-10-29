@@ -144,3 +144,13 @@ test('a stale collection is labelled in the panel', () => {
   assert.ok(panel.includes('copy.staleWarning'));
   assert.ok(panel.includes('snapshot.stale === true'));
 });
+
+test('headline times are relative with the exact instant preserved', () => {
+  const strip = readFileSync('src/modules/CB-M03/LiveHeadlineStrip.astro', 'utf8');
+  const sourcePage = readFileSync('src/pages/[locale]/news/source/[source].astro', 'utf8');
+  for (const file of [panel, strip, sourcePage]) {
+    assert.ok(file.includes('formatLiveAge'));
+    assert.ok(file.includes('exactLiveTime'));
+    assert.ok(file.includes('title={exact(item.publishedAt) || undefined}'));
+  }
+});

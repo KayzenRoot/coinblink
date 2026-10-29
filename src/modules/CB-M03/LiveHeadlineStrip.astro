@@ -1,6 +1,7 @@
 ---
 import { readLiveNews } from "./live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
+import { exactLiveTime, formatLiveAge } from "./live-time.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
@@ -10,8 +11,9 @@ const copy = getLiveNewsCopy(locale);
 const live = snapshot.status === "LIVE_HEADLINES";
 const newest = snapshot.status === "LIVE_HEADLINES" ? snapshot.items.slice(0, 3) : Object.freeze([]);
 const all = live ? fillLiveNewsCopy(copy.stripAll, { count: snapshot.itemCount }) : "";
-const stamp = (iso: string | null) =>
-  iso === null ? copy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
+const nowMs = Date.now();
+const age = (iso: string | null) => formatLiveAge(iso, nowMs, locale) ?? copy.undated;
+const exact = (iso: string | null) => exactLiveTime(iso);
 ---
 {live && newest.length > 0 && (
   <section class="m03-strip" aria-labelledby="m03-strip-title" data-m03-live-strip>
@@ -25,7 +27,7 @@ const stamp = (iso: string | null) =>
           <span class="m03-strip__byline">
             <a href={item.sourceHome} rel="noreferrer noopener external">{item.sourceName}</a>
             <span aria-hidden="true"> · </span>
-            <time datetime={item.publishedAt ?? undefined}>{stamp(item.publishedAt)}</time>
+            <time datetime={item.publishedAt ?? undefined} title={exact(item.publishedAt) || undefined}>{age(item.publishedAt)}</time>
           </span>
         </li>
       ))}

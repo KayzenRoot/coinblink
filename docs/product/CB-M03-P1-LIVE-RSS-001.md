@@ -106,6 +106,15 @@ window is shareable and works without JavaScript. Inside a window, headlines
 without a publication time are hidden: freshness cannot be proven without a
 date.
 
+Every headline card shows a localized relative age ("7 minutes ago", "há 7
+minutos", "hace 1 hora") computed at render time from the cached snapshot. The
+exact instant stays in the `<time datetime>` attribute and in its tooltip as
+`YYYY-MM-DD HH:MM UTC`, so the friendly label never replaces the verifiable
+one. The same formatter is used on the news-index strip and on the publisher
+pages; missing or unparseable dates keep the explicit "time not supplied"
+label, and a future timestamp is treated as "just now" rather than a negative
+age.
+
 Above the list, a second navigation shows the words that appear in at least
 two of the visible headlines, with their counts. It is explicitly a frequency
 list, not an editorial topic model: no inference, no stemming beyond folding a

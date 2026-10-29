@@ -80,6 +80,7 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
           <p><a href={source.home} rel="noreferrer noopener external">{source.home}</a></p>
           <p>{fillLiveNewsCopy(copy.rightsNote, { name })}</p>
           <p><a href={"/" + localeKey + "/news/live"}>{copy.allHeadlines}</a></p>
+          <p><a href={"/" + localeKey + "/news/sources"}>{copy.allSources}</a></p>
         </aside>
       </>
     ) : (

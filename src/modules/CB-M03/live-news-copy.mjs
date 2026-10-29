@@ -192,6 +192,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Manchetes sem horário de publicação ficam ocultas em uma janela de tempo.",
     "es": "Los titulares sin hora de publicación se ocultan dentro de una ventana de tiempo.",
   },
+  allSources: {
+    "en": "All sources →",
+    "pt-br": "Todas as fontes →",
+    "es": "Todas las fuentes →",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

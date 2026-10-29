@@ -197,6 +197,21 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Ver as {count} histórias cobertas →",
     "es": "Ver las {count} historias cubiertas →",
   },
+  newBadge: {
+    "en": "New",
+    "pt-br": "Nova",
+    "es": "Nuevo",
+  },
+  newStatus: {
+    "en": "{count} new since your last visit",
+    "pt-br": "{count} novas desde sua última visita",
+    "es": "{count} nuevos desde tu última visita",
+  },
+  newNote: {
+    "en": "The marker is stored only in this browser; it is not an account and sends nothing.",
+    "pt-br": "A marcação fica somente neste navegador; não é uma conta e não envia nada.",
+    "es": "La marca se guarda solo en este navegador; no es una cuenta y no envía nada.",
+  },
   coverageFilterTitle: {
     "en": "Filter covered stories",
     "pt-br": "Filtrar histórias cobertas",

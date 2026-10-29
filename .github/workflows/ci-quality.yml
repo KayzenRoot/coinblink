@@ -77,13 +77,16 @@ jobs:
         # These files pass on main but no workflow executes them.
         # session-binding-guard.test.mjs covers scripts/assert-no-session-binding.mjs
         # (the build guard) and golden-assets-integrity.test.mjs pins the golden
-        # asset hashes. The four .contract.test.mjs files under test/modules/CB-M01
-        # read the CB-M01-WO-001 evidence bundle removed in 17586a2 (#141), so they
-        # cannot run here and are deliberately left untouched.
+        # asset hashes. The CB-M01 evidence bundle was restored, so its four
+        # contract files now run here instead of being silently skipped.
         run: |
           node --test \
             test/golden-assets-integrity.test.mjs \
             test/session-binding-guard.test.mjs \
+            test/modules/CB-M01/GoldenHome.contract.test.mjs \
+            test/modules/CB-M01/HeroCinematicPreflight.contract.test.mjs \
+            test/modules/CB-M01/HeroLightningSprites.contract.test.mjs \
+            test/modules/CB-M01/R26StaticAssets.contract.test.mjs \
             test/modules/CB-M01/explorer-links.test.mjs \
             test/modules/CB-M01/git-head.test.mjs \
             test/modules/CB-M01/home-producer-boundary.test.mjs \

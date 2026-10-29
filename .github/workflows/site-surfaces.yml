@@ -9,6 +9,7 @@ on:
       - "src/modules/**"
       - "src/components/**"
       - "e2e/site-surfaces.spec.mjs"
+      - "e2e/link-integrity.spec.mjs"
       - "playwright.config.mjs"
 permissions:
   contents: read
@@ -35,3 +36,5 @@ jobs:
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: Sweep every surface for language, heading, demo robots, metadata and axe
         run: ./node_modules/.bin/playwright test e2e/site-surfaces.spec.mjs
+      - name: Crawl internal links on the seeded surfaces
+        run: ./node_modules/.bin/playwright test e2e/link-integrity.spec.mjs

@@ -4,7 +4,7 @@
 // repeats the same five feed requests from each isolate. The Cache API is
 // shared inside a data center; this adapter stores the already-frozen snapshot
 // and falls back to the previous behaviour when the cache is absent or fails.
-export const SHARED_SNAPSHOT_KEY = "https://coinblink.internal/cb-m03/live-snapshot/v1";
+export const SHARED_SNAPSHOT_KEY = "https://coinblink.internal/cb-m03/live-snapshot/v2";
 
 function usable(cache) {
   return cache !== null && typeof cache === "object"

@@ -21,9 +21,9 @@ const exact = (iso: string | null) => exactLiveTime(iso);
     <p class="m03-strip__note">{copy.stripNote}</p>
     <ul class="m03-strip__list">
       {newest.map((item: { id: string; title: string; link: string; sourceId: string;
-        sourceName: string; sourceHome: string; publishedAt: string | null }) => (
+        sourceName: string; sourceHome: string; publishedAt: string | null; language: string }) => (
         <li data-m03-live-strip-item={item.sourceId}>
-          <a class="m03-strip__headline" href={item.link} rel="noreferrer noopener external">{item.title}</a>
+          <a class="m03-strip__headline" href={item.link} lang={item.language} rel="noreferrer noopener external">{item.title}</a>
           <span class="m03-strip__byline">
             <a href={item.sourceHome} rel="noreferrer noopener external">{item.sourceName}</a>
             <span aria-hidden="true"> · </span>

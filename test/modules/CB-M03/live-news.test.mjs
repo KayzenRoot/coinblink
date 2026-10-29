@@ -29,6 +29,7 @@ test('feed projection keeps text, strips markup and bounds every field', () => {
   assert.equal(entry.sourceId, 'decrypt');
   assert.equal(entry.sourceName, 'Decrypt');
   assert.equal(entry.sourceHome, 'https://decrypt.co');
+  assert.equal(entry.language, 'en');
   assert.equal(entry.collectedAt, AT);
   assert.equal(Object.isFrozen(entry), true);
   assert.equal(entry.link, 'https://decrypt.co/1');
@@ -95,6 +96,7 @@ test('the source whitelist is https, uniquely identified and self-consistent', (
     assert.equal(source.hosts.includes(new URL(source.home).hostname), true);
     assert.equal(Object.isFrozen(source), true);
     assert.equal(Object.isFrozen(source.hosts), true);
+    assert.equal(source.language, 'en', source.id);
   }
 });
 

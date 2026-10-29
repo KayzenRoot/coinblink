@@ -112,7 +112,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
         {rows.map(({ cluster, publishers, age }) => (
           <li class="m03-coverage__item" data-m03-coverage-item={cluster.id}>
             <h3 class="m03-coverage__headline">
-              <a href={cluster.members[0].link} rel="noreferrer noopener external">
+              <a href={cluster.members[0].link} lang={cluster.members[0].language ?? undefined} rel="noreferrer noopener external">
                 {cluster.members[0].title}
               </a>
             </h3>

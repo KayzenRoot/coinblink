@@ -97,13 +97,13 @@ function isFeedSource(source) {
  * Project one feed into frozen headline items. Malformed entries are dropped
  * individually: one bad item never empties the feed.
  * @param {unknown} xml
- * @param {{source?: {id: string, name: string, home: string, hosts: readonly string[]}, collectedAt?: string, limit?: number}} [options]
+ * @param {{source?: {id: string, name: string, home: string, hosts: readonly string[], language?: string}, collectedAt?: string, limit?: number}} [options]
  */
 export function parseRssFeed(xml, options = {}) {
   const { source, collectedAt, limit = LIVE_NEWS_MAX_PER_SOURCE } = options ?? {};
   if (typeof xml !== "string" || xml.trim() === "") return Object.freeze([]);
   if (!isFeedSource(source)) throw new TypeError("a source with allowed hosts is required");
-  const feed = /** @type {{id: string, name: string, home: string, hosts: readonly string[]}} */ (source);
+  const feed = /** @type {{id: string, name: string, home: string, hosts: readonly string[], language?: string}} */ (source);
   const blocks = [...xml.matchAll(/<(item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/\1>/giu)].map((match) => match[2]);
   const seen = new Set();
   const items = [];
@@ -121,6 +121,7 @@ export function parseRssFeed(xml, options = {}) {
       sourceId: feed.id,
       sourceName: feed.name,
       sourceHome: feed.home,
+      language: typeof feed.language === "string" && feed.language !== "" ? feed.language : "en",
       publishedAt: publishedAtOf(block),
       collectedAt,
     }));

@@ -185,6 +185,9 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
               </li>
             ))}
           </ol>
+          <p class="m03-live__note">
+            <a href={"/" + locale + "/news/coverage"}>{fillLiveNewsCopy(copy.coverageAll, { count: clusters.length })}</a>
+          </p>
         </section>
       )}
       <ol class="m03-live__list">

@@ -1,0 +1,112 @@
+---
+import { LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
+import { readLiveNews } from "./live-news.mjs";
+import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
+import { clusterLiveHeadlines, coveragePublishers } from "./live-clusters.mjs";
+import { formatLiveAge } from "./live-time.mjs";
+interface Props {
+  snapshot: Awaited<ReturnType<typeof readLiveNews>>;
+  locale?: "en" | "pt-br" | "es";
+}
+const { snapshot, locale = "en" } = Astro.props;
+const copy = getLiveNewsCopy(locale);
+const live = snapshot.status === "LIVE_HEADLINES";
+const stamp = (iso: string | null) =>
+  iso === null ? copy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
+const intro = fillLiveNewsCopy(copy.coverageIntro, { feeds: LIVE_NEWS_SOURCES.length });
+const clusters = live ? clusterLiveHeadlines(snapshot.items) : Object.freeze([]);
+const rows = clusters.map((cluster) => ({
+  cluster,
+  publishers: coveragePublishers(cluster),
+  age: formatLiveAge(cluster.latestAt, Date.now(), locale) ?? copy.undated,
+}));
+const meta = live
+  ? fillLiveNewsCopy(copy.coverageMeta, {
+    time: stamp(snapshot.collectedAt), count: rows.length, sources: snapshot.sourcesRead,
+  })
+  : "";
+const unavailableBody = snapshot.status === "UNAVAILABLE"
+  ? fillLiveNewsCopy(copy.unavailableBody, { reason: snapshot.reason })
+  : "";
+---
+<main id="main" class="m03-coverage">
+  <nav aria-label={copy.navigation}><a href={"/" + locale + "/news"}>{copy.back}</a></nav>
+  <header>
+    <p class="m03-coverage__tag">CB-M03 · LIVE RSS · KEYLESS · DEMO ONLY</p>
+    <h1>{copy.coverageH1}</h1>
+    <p>{intro}</p>
+  </header>
+
+  {snapshot.status === "DISABLED" && (
+    <section class="m03-coverage__state" role="status" data-m03-coverage="disabled">
+      <h2>{copy.disabledTitle}</h2>
+      <p>{copy.disabledBody}</p>
+      <p class="m03-coverage__note">{copy.disabledNote}</p>
+    </section>
+  )}
+
+  {snapshot.status === "UNAVAILABLE" && (
+    <section class="m03-coverage__state" role="status" data-m03-coverage="unavailable">
+      <h2>{copy.unavailableTitle}</h2>
+      <p>{unavailableBody}</p>
+      <p class="m03-coverage__note">{copy.unavailableNote}</p>
+    </section>
+  )}
+
+  {live && (
+    <section class="m03-coverage__state" aria-labelledby="m03-coverage-stories" data-m03-coverage="live">
+      <h2 id="m03-coverage-stories">{copy.topTitle}</h2>
+      <p class="m03-coverage__meta" role="status" aria-live="polite">{meta}</p>
+      {rows.length === 0 && (
+        <p class="m03-coverage__note" data-m03-coverage-empty>{copy.coverageEmpty}</p>
+      )}
+      <ol class="m03-coverage__list">
+        {rows.map(({ cluster, publishers, age }) => (
+          <li class="m03-coverage__item" data-m03-coverage-item={cluster.id}>
+            <h3 class="m03-coverage__headline">
+              <a href={cluster.members[0].link} rel="noreferrer noopener external">
+                {cluster.members[0].title}
+              </a>
+            </h3>
+            <p class="m03-coverage__byline">
+              <span>{fillLiveNewsCopy(copy.topPublishers, { count: cluster.coverage })}</span>
+              <span aria-hidden="true"> · </span>
+              <time datetime={cluster.latestAt ?? undefined}>{age}</time>
+            </p>
+            <ul class="m03-coverage__publishers">
+              {publishers.map((member) => (
+                <li>
+                  <a href={member.link} rel="noreferrer noopener external">{member.sourceName}</a>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )}
+
+  <p class="m03-coverage__note"><a href={"/" + locale + "/news/live"}>{copy.coverageLiveLink}</a></p>
+  <p class="m03-coverage__note">{copy.rightsNote}</p>
+  <p class="m03-coverage__note"><a href={"/" + locale + "/about"}>{copy.howItWorks}</a></p>
+</main>
+<style>
+  .m03-coverage{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .m03-coverage a{color:#b8f34b}
+  .m03-coverage h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .m03-coverage p{line-height:1.75;color:#c1d3c5}
+  .m03-coverage__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .m03-coverage__state{margin:1.75rem 0;padding:1.25rem;border:1px solid #456e4e;border-radius:.8rem;background:#111c17}
+  .m03-coverage__state h2{margin:.2rem 0 .8rem;font-size:1.4rem}
+  .m03-coverage__meta{font-size:.9rem;color:#9fb6a5}
+  .m03-coverage__list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1.35rem}
+  .m03-coverage__item{border-top:1px solid #2f4a38;padding-top:1rem}
+  .m03-coverage__item:first-child{border-top:0;padding-top:0}
+  .m03-coverage__headline{margin:0 0 .4rem;font-size:1.15rem;line-height:1.35}
+  .m03-coverage__byline{margin:0;font-size:.82rem;color:#9fb6a5;letter-spacing:.02em}
+  .m03-coverage__publishers{list-style:none;display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 0;padding:0}
+  .m03-coverage__publishers a{display:inline-block;padding:.25rem .6rem;border:1px solid #456e4e;border-radius:999px;font-size:.82rem;text-decoration:none}
+  .m03-coverage__publishers a:hover{border-color:#b8f34b}
+  .m03-coverage__note{color:#9fb6a5;font-size:.92rem}
+  .m03-coverage a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

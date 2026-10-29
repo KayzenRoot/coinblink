@@ -192,6 +192,46 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Histórias que mais de um veículo publicou nesta coleta, ordenadas pela quantidade de veículos e depois pela recência. Este destaque usa a mesma comparação mecânica de títulos das notas sob cada manchete.",
     "es": "Historias que más de un medio publicó en esta recopilación, ordenadas por cantidad de medios y luego por recencia. Este destaque usa la misma comparación mecánica de titulares que las notas bajo cada titular.",
   },
+  coverageAll: {
+    "en": "See all {count} covered stories →",
+    "pt-br": "Ver as {count} histórias cobertas →",
+    "es": "Ver las {count} historias cubiertas →",
+  },
+  coveragePageTitle: {
+    "en": "CoinBlink · Stories covered by several publishers (DEMO)",
+    "pt-br": "CoinBlink · Histórias cobertas por vários veículos (DEMO)",
+    "es": "CoinBlink · Historias cubiertas por varios medios (DEMO)",
+  },
+  coveragePageDescription: {
+    "en": "A mechanical, attributed view of the stories that more than one public RSS publisher carried in the current collection.",
+    "pt-br": "Uma visão mecânica e atribuída das histórias que mais de um veículo de RSS público publicou na coleta atual.",
+    "es": "Una vista mecánica y atribuida de las historias que más de un medio de RSS público publicó en la recopilación actual.",
+  },
+  coverageH1: {
+    "en": "Stories covered by several publishers",
+    "pt-br": "Histórias cobertas por vários veículos",
+    "es": "Historias cubiertas por varios medios",
+  },
+  coverageIntro: {
+    "en": "Each group below links every publisher that carried the same story. Matching uses shared significant words in the headlines from {feeds} public feeds: it is a reading aid, not an editorial judgement.",
+    "pt-br": "Cada grupo abaixo linka todos os veículos que publicaram a mesma história. A comparação usa palavras significativas compartilhadas nos títulos de {feeds} feeds públicos: é um auxílio de leitura, não um julgamento editorial.",
+    "es": "Cada grupo siguiente enlaza todos los medios que publicaron la misma historia. La comparación usa palabras significativas compartidas en los titulares de {feeds} fuentes públicas: es una ayuda de lectura, no un juicio editorial.",
+  },
+  coverageMeta: {
+    "en": "Collected at {time} · {count} covered stories · {sources} publishers read",
+    "pt-br": "Coletado em {time} · {count} histórias cobertas · {sources} veículos lidos",
+    "es": "Recopilado el {time} · {count} historias cubiertas · {sources} medios leídos",
+  },
+  coverageEmpty: {
+    "en": "No story in this collection is covered by more than one publisher right now.",
+    "pt-br": "Nenhuma história desta coleta está coberta por mais de um veículo agora.",
+    "es": "Ninguna historia de esta recopilación está cubierta por más de un medio ahora.",
+  },
+  coverageLiveLink: {
+    "en": "Back to live headlines",
+    "pt-br": "Voltar para as manchetes ao vivo",
+    "es": "Volver a los titulares en vivo",
+  },
   officialSite: {
     "en": "official site",
     "pt-br": "site oficial",

@@ -15,9 +15,11 @@ on:
       - "src/pages/es/news/live.astro"
       - "src/pages/**/news/source/**"
       - "src/pages/*/news/sources.astro"
+      - "src/pages/*/news/coverage.astro"
       - "test/modules/CB-M03/**"
       - "e2e/m03-source-demo.spec.mjs"
       - "e2e/m03-live-news.spec.mjs"
+      - "e2e/m03-coverage.spec.mjs"
       - "package.json"
       - "package-lock.json"
 
@@ -52,4 +54,4 @@ jobs:
       - name: Chromium
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: Browser acceptance
-        run: ./node_modules/.bin/playwright test e2e/m03-source-demo.spec.mjs e2e/m03-live-news.spec.mjs
+        run: ./node_modules/.bin/playwright test e2e/m03-source-demo.spec.mjs e2e/m03-live-news.spec.mjs e2e/m03-coverage.spec.mjs

@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import { readLiveNews } from "../../../modules/CB-M03/live-news.mjs";
 import { buildNewsStatus } from "../../../modules/CB-M03/news-status.mjs";
 import { LIVE_NEWS_WINDOW_SECONDS } from "../../../modules/CB-M03/rss-sources.mjs";
-import { matchesIfNoneMatch, strongEtag } from "../../../modules/CB-M11/conditional-get.mjs";
+import { conditionalResponse } from "../../../modules/CB-M11/conditional-get.mjs";
 
 export const prerender = false;
 
@@ -29,11 +29,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   try {
     const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
     const body = JSON.stringify(buildNewsStatus(snapshot, { windowSeconds: LIVE_NEWS_WINDOW_SECONDS }));
-    const etag = strongEtag(body);
-    if (matchesIfNoneMatch(request.headers.get("if-none-match"), etag)) {
-      return new Response(null, { status: 304, headers: { ...HEADERS, etag } });
-    }
-    return new Response(body, { status: 200, headers: { ...HEADERS, etag } });
+    return conditionalResponse(body, request, HEADERS);
   } catch {
     return json({ status: "unavailable", reason: "INTERNAL" }, 503);
   }

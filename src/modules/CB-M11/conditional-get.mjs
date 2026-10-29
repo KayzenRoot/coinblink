@@ -6,7 +6,7 @@ export function strongEtag(body) {
   if (typeof body !== "string") throw new TypeError("body must be a string");
   let hash = 0x811c9dc5;
   for (let index = 0; index < body.length; index += 1) {
-    hash ^= body.charCodeAt(index);
+    hash ^= body.codePointAt(index) ?? 0;
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
   return '"' + hash.toString(16).padStart(8, "0") + "-" + body.length.toString(16) + '"';
@@ -21,4 +21,20 @@ export function matchesIfNoneMatch(header, etag) {
     if (value.replace(/^W\//u, "") === etag) return true;
   }
   return false;
+}
+
+/**
+ * Build the 200/304 pair both public endpoints share.
+ * @param {string} body
+ * @param {{headers?: {get: (name: string) => string | null}}} request
+ * @param {Record<string, string>} headers
+ */
+export function conditionalResponse(body, request, headers) {
+  if (typeof body !== "string") throw new TypeError("body must be a string");
+  const etag = strongEtag(body);
+  const validator = request?.headers?.get?.("if-none-match") ?? null;
+  if (matchesIfNoneMatch(validator, etag)) {
+    return new Response(null, { status: 304, headers: { ...headers, etag } });
+  }
+  return new Response(body, { status: 200, headers: { ...headers, etag } });
 }

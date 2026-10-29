@@ -17,9 +17,7 @@ test('the status endpoint is read-only, cached briefly and CORS-open', () => {
   assert.ok(route.includes('allow: "GET"'));
   assert.ok(route.includes('readLiveNews'));
   assert.ok(route.includes('buildNewsStatus'));
-  assert.ok(route.includes('strongEtag'));
-  assert.ok(route.includes('if-none-match'));
-  assert.ok(route.includes('304'));
+  assert.ok(route.includes('conditionalResponse'));
   assert.doesNotMatch(route, /localStorage|sessionStorage|innerHTML/u);
 });
 

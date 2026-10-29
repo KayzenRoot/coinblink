@@ -11,7 +11,7 @@ const marketExample = buildDemoMarketReadiness();
 
 <BaseLayout
   title="Developer sandbox · CoinBlink DEMO"
-  description="Offline synthetic developer API demonstration only. No real articles, accounts, licensing, billing or live market data."
+  description="Offline synthetic developer API demonstration plus a content-free live collection status endpoint. No real articles, accounts, licensing, billing or market data."
 >
   <link rel="stylesheet" href={inspectorCssUrl} />
   <main id="main" class="not-found">
@@ -52,6 +52,36 @@ Query parameters: unsupported
 Write methods: unsupported
 Not the commercial /v1/articles
 API.</code></pre>
+    </section>
+    <section aria-labelledby="m11-news-status">
+      <h2 id="m11-news-status">Live collection status (content-free)</h2>
+      <p class="body-copy">
+        <code>GET /v1/news/status</code> reports which public RSS feeds responded, how many
+        headlines each contributed, the collection time and the rights status. It contains no
+        headline text, excerpt, article body or publisher name, so it can be polled from a
+        script without redistributing anyone&rsquo;s reporting.
+      </p>
+      <pre class="m11-status-example"><code>{`GET /v1/news/status
+
+200 OK
+Content-Type: application/json
+Cache-Control: max-age=60
+Access-Control-Allow-Origin: *
+
+{
+  "status": "ok",
+  "mode": "LIVE_THIRD_PARTY",
+  "feedsRead": 5,
+  "feedsTotal": 5,
+  "items": 60,
+  ...
+}`}</code></pre>
+      <nav aria-label="Live collection status"><a href="/v1/news/status">Open the status JSON</a></nav>
+      <p class="body-copy">
+        When the reader is disabled the endpoint answers with status <code>disabled</code> and
+        an empty feed list. Only GET, HEAD and OPTIONS are supported; query parameters are
+        rejected with 400.
+      </p>
     </section>
     <section class="m11-inspector-section" aria-labelledby="m11-inspector-title">
       <h2 id="m11-inspector-title">Inspect synthetic API responses</h2>

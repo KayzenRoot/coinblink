@@ -183,3 +183,31 @@ test("M11 P1 inline API response inspectors show exact fictional GET JSON with k
   expect(mutations).toEqual([]);
   expect(errors).toEqual([]);
 });
+
+test("M11 live status endpoint is content-free and read-only", async ({ request }) => {
+  const response = await request.get("/v1/news/status");
+  expect(response.status()).toBe(200);
+  const headers = response.headers();
+  expect(headers["content-type"]).toContain("application/json");
+  expect(headers["access-control-allow-origin"]).toBe("*");
+  expect(headers["cache-control"]).toContain("max-age=60");
+  const payload = await response.json();
+  expect(["ok", "disabled", "unavailable"]).toContain(payload.status);
+  expect(Array.isArray(payload.feeds)).toBe(true);
+  expect(payload.feedsTotal).toBe(5);
+  expect(Array.isArray(payload.items)).toBe(false);
+  for (const feed of payload.feeds) {
+    expect(Object.keys(feed).sort()).toEqual(["id", "itemCount", "reason", "status"]);
+  }
+  const query = await request.get("/v1/news/status?x=1");
+  expect(query.status()).toBe(400);
+  const post = await request.post("/v1/news/status");
+  expect(post.status()).toBe(405);
+  expect(post.headers()["allow"]).toBe("GET");
+});
+
+test("M11 developer page links to the live status JSON", async ({ page }) => {
+  await page.goto("/developers");
+  await expect(page.getByRole("heading", { name: "Live collection status (content-free)" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the status JSON" })).toHaveAttribute("href", "/v1/news/status");
+});

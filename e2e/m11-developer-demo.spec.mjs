@@ -223,6 +223,30 @@ test("M11 developer page links to the live status JSON", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Open the status JSON" })).toHaveAttribute("href", "/v1/news/status");
 });
 
+test("M11 coverage counts are aggregate-only and read-only", async ({ request }) => {
+  const response = await expectPublicJson(request, "/v1/news/coverage", "max-age=60");
+  expect(response.headers()["access-control-allow-origin"]).toBe("*");
+  const payload = await response.json();
+  expect(["ok", "disabled", "unavailable"]).toContain(payload.status);
+  expect(typeof payload.stories).toBe("number");
+  expect(typeof payload.headlines).toBe("number");
+  expect(Array.isArray(payload.publishers)).toBe(true);
+  for (const row of payload.publishers) {
+    expect(Object.keys(row).sort()).toEqual(["id", "stories"]);
+  }
+  const serialized = JSON.stringify(payload);
+  for (const forbidden of ["title", "summary", "link", "publishedAt"]) {
+    expect(serialized).not.toContain('"' + forbidden + '"');
+  }
+});
+
+test("M11 developer page links to the coverage JSON", async ({ page }) => {
+  await page.goto("/developers");
+  await expect(page.getByRole("heading", { name: "Coverage counts (content-free)" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the coverage JSON" }))
+    .toHaveAttribute("href", "/v1/news/coverage");
+});
+
 test("M11 publisher catalog is metadata-only and read-only", async ({ request }) => {
   const response = await expectPublicJson(request, "/v1/sources", "max-age=3600, s-maxage=60");
   const payload = await response.json();
@@ -248,11 +272,13 @@ test("M11 OpenAPI document matches the real endpoints", async ({ request }) => {
   const response = await expectPublicJson(request, "/v1/openapi.json", "max-age=3600");
   const doc = await response.json();
   expect(doc.openapi).toBe("3.1.0");
-  expect(Object.keys(doc.paths).sort()).toEqual(["/v1/news/status", "/v1/sources"]);
+  expect(Object.keys(doc.paths).sort()).toEqual(["/v1/news/coverage", "/v1/news/status", "/v1/sources"]);
   expect(doc.paths["/v1/news/status"].get.responses["200"].content["application/json"].schema.$ref)
     .toBe("#/components/schemas/NewsStatus");
   expect(doc.paths["/v1/sources"].get.responses["200"].content["application/json"].schema.$ref)
     .toBe("#/components/schemas/SourceCatalog");
+  expect(doc.paths["/v1/news/coverage"].get.responses["200"].content["application/json"].schema.$ref)
+    .toBe("#/components/schemas/CoverageStatus");
 });
 
 test("M11 developer page links to the OpenAPI document", async ({ page }) => {

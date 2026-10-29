@@ -1,6 +1,6 @@
 // CB-M11-P1-OPENAPI-001: machine-readable contract for the public metadata API.
 //
-// The document describes the two real endpoints and their content-free
+// The document describes the three real endpoints and their content-free
 // payloads. It is static, frozen and safe to serve with a long browser cache.
 const JSON_CONTENT = "application/json";
 const ERROR_REF = "#/components/schemas/Error";
@@ -41,7 +41,7 @@ export function buildOpenApiDocument() {
     info: {
       title: "CoinBlink public metadata API",
       version: "1.0.0",
-      description: "Content-free collection status and publisher metadata. No article text, headline or excerpt is exposed.",
+      description: "Content-free collection status, coverage counts and publisher metadata. No article text, headline or excerpt is exposed.",
     },
     servers: [{ url: "/" }],
     paths: {
@@ -50,6 +50,13 @@ export function buildOpenApiDocument() {
           "Collection status",
           "Reports feed health, counts and collection time. Supports If-None-Match validation.",
           "#/components/schemas/NewsStatus",
+        ),
+      },
+      "/v1/news/coverage": {
+        get: operation(
+          "Coverage counts",
+          "Counts the stories carried by more than one publisher and the stories per publisher. Aggregates only.",
+          "#/components/schemas/CoverageStatus",
         ),
       },
       "/v1/sources": {
@@ -120,6 +127,30 @@ export function buildOpenApiDocument() {
               },
             },
             rights: { const: "ATTRIBUTION_ONLY" },
+          },
+        },
+        PublisherCoverage: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "stories"],
+          properties: {
+            id: { type: "string" },
+            stories: { type: "integer", minimum: 0 },
+          },
+        },
+        CoverageStatus: {
+          type: "object",
+          required: ["status", "mode", "stories", "headlines", "rights", "publishers", "disclaimer"],
+          properties: {
+            status: { type: "string", enum: ["ok", "disabled", "unavailable"] },
+            mode: { type: "string", enum: ["LIVE_THIRD_PARTY"] },
+            reason: { type: ["string", "null"] },
+            collectedAt: { type: "string", format: "date-time" },
+            stories: { type: "integer", minimum: 0 },
+            headlines: { type: "integer", minimum: 0 },
+            rights: { type: "string" },
+            publishers: { type: "array", items: { $ref: "#/components/schemas/PublisherCoverage" } },
+            disclaimer: { type: "string" },
           },
         },
         SourceCatalog: {

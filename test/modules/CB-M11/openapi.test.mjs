@@ -22,11 +22,11 @@ function resolveRef(ref) {
   return ref.replace(/^#\//u, '').split('/').reduce((node, part) => node?.[part], doc);
 }
 
-test('the document declares both real endpoints and every response the routes use', () => {
+test('the document declares every real endpoint and every response the routes use', () => {
   assert.equal(doc.openapi, '3.1.0');
   assert.equal(doc.info.title, 'CoinBlink public metadata API');
   assert.equal(doc.servers[0].url, '/');
-  assert.deepEqual(Object.keys(doc.paths).sort(), ['/v1/news/status', '/v1/sources']);
+  assert.deepEqual(Object.keys(doc.paths).sort(), ['/v1/news/coverage', '/v1/news/status', '/v1/sources']);
   for (const path of Object.values(doc.paths)) {
     assert.deepEqual(Object.keys(path.get.responses).sort(), ['200', '304', '400', '405', '503']);
     assert.deepEqual(path.get.security, []);
@@ -46,6 +46,14 @@ test('every schema reference resolves and the feed schema stays content-free', (
   }
   assert.deepEqual(Object.keys(doc.components.schemas.Source.properties).sort(),
     ['feed', 'home', 'id', 'name', 'pages', 'rights']);
+  const coverage = doc.components.schemas.CoverageStatus;
+  assert.deepEqual(Object.keys(coverage.properties).sort(),
+    ['collectedAt', 'disclaimer', 'headlines', 'mode', 'publishers', 'reason', 'rights', 'status', 'stories']);
+  assert.deepEqual(Object.keys(doc.components.schemas.PublisherCoverage.properties).sort(), ['id', 'stories']);
+  const serializedCoverage = JSON.stringify(coverage);
+  for (const forbidden of ['title', 'summary', 'link', 'publishedAt', 'body', 'content']) {
+    assert.equal(serializedCoverage.includes('"' + forbidden + '"'), false, forbidden);
+  }
 });
 
 test('the document is deeply frozen and describes the cache validators', () => {

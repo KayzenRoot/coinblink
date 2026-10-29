@@ -102,7 +102,7 @@ jobs:
               throw new Error(`/health reports ${last}, expected the deployed commit ${expectedSha} within 90s`);
             }
             const health = await waitForDeployedSha();
-            const checks = ["/health", "/en", "/demo", "/demo/intake", "/en/news/live", "/pt-br/news/live", "/es/news/live", "/en/news/coverage", "/en/news/source/coindesk", "/en/news/sources", "/demo/pulse", "/v1/sources", "/v1/openapi.json", "/en/about"];
+            const checks = ["/health", "/en", "/demo", "/demo/intake", "/en/news/live", "/pt-br/news/live", "/es/news/live", "/en/news/coverage", "/en/news/source/coindesk", "/en/news/sources", "/demo/pulse", "/v1/news/coverage", "/v1/sources", "/v1/openapi.json", "/en/about"];
             for (const path of checks) {
               const response = await fetch(base + path, { redirect: "manual" });
               if (response.status !== 200) {
@@ -128,6 +128,17 @@ jobs:
             }
             if (typeof statusPayload.stale !== "boolean" || !Array.isArray(statusPayload.feeds) || statusPayload.feeds.some((feed) => "title" in feed)) {
               throw new Error("/v1/news/status must expose feed state without headline text");
+            }
+            const coverageResponse = await fetch(base + "/v1/news/coverage", { redirect: "manual", cache: "no-store" });
+            if (coverageResponse.status !== 200) {
+              throw new Error("/v1/news/coverage answered " + coverageResponse.status + ", expected 200");
+            }
+            const coveragePayload = await coverageResponse.json();
+            if (!["ok", "disabled", "unavailable"].includes(coveragePayload.status)
+              || typeof coveragePayload.stories !== "number"
+              || !Array.isArray(coveragePayload.publishers)
+              || coveragePayload.publishers.some((row) => typeof row.id !== "string" || typeof row.stories !== "number")) {
+              throw new Error("/v1/news/coverage must expose aggregate counts only");
             }
             // A shared edge cache can still hold the pre-deploy catalog for a
             // short window. Poll with revalidation until the new ETag appears.

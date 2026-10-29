@@ -82,7 +82,9 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
           {items.length === 0 && <p data-m03-source-empty>{copy.noItems}</p>}
           {items.length > 0 && (
             <ol class="source-page__list">
-              {rows.map(({ item, others }) => (
+              {rows.map(({ item, others }: { item: { id: string; title: string; summary: string; link: string;
+                sourceId: string; sourceName: string; publishedAt: string | null };
+                others: ReadonlyArray<{ sourceId: string; sourceName: string; link: string }> }) => (
                 <li data-m03-source-item={item.sourceId}>
                   <h3><a href={item.link} rel="noreferrer noopener external">{item.title}</a></h3>
                   {item.summary !== "" && <p>{item.summary}</p>}
@@ -90,7 +92,7 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
                   {others.length > 0 && (
                     <p class="source-page__coverage" data-m03-source-coverage>
                       <span>{liveCopy.alsoCovered}</span>{" "}
-                      {others.map((other, index) => (
+                      {others.map((other: { sourceId: string; sourceName: string; link: string }, index: number) => (
                         <span>
                           <a href={other.link} rel="noreferrer noopener external">{other.sourceName}</a>
                           {index < others.length - 1 ? ", " : ""}

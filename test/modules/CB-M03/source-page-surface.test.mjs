@@ -26,3 +26,13 @@ test('the source copy module is key-major and has no I/O', () => {
   assert.match(copy, /SOURCE_PAGE_COPY/u);
   assert.doesNotMatch(copy, /fetch\s*\(|localStorage|sessionStorage|indexedDB/u);
 });
+
+test('the publisher page shows which other publishers carried each story', () => {
+  assert.match(page, /clusterLiveHeadlines/u);
+  assert.match(page, /buildCoverageIndex/u);
+  assert.match(page, /coverageOthers/u);
+  assert.ok(page.includes('data-m03-source-coverage'));
+  assert.ok(page.includes('liveCopy.alsoCovered'));
+  assert.ok(page.includes('"/" + localeKey + "/news/coverage"'));
+  assert.ok(page.includes('fillLiveNewsCopy(liveCopy.coverageAll, { count: clusters.length })'));
+});

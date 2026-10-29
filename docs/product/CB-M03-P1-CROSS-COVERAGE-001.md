@@ -76,6 +76,15 @@ Routes: `src/pages/{en,pt-br,es}/news/coverage.astro`, each a thin wrapper over
 (`coveragePageTitle`, `coveragePageDescription`, `coverageH1`, `coverageIntro`,
 `coverageMeta`, `coverageEmpty`, `coverageAll`, `coverageLiveLink`).
 
+## Publisher pages
+
+`/{locale}/news/source/{id}` clusters the same snapshot before narrowing to
+that publisher, then annotates each listed headline with the other publishers
+that carried it, using the same `alsoCovered` copy row. The section also links
+to the full coverage page with the cluster count. The publisher's own list is
+unchanged: only items from the chosen publisher appear, and the annotation
+adds links to the other publishers' articles.
+
 ## Boundaries
 
 - Coverage is computed from titles only. Excerpts are ignored so publisher

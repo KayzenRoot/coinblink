@@ -223,7 +223,7 @@ test("M11 publisher catalog is metadata-only and read-only", async ({ request })
   expect(response.status()).toBe(200);
   const headers = response.headers();
   expect(headers["content-type"]).toContain("application/json");
-  expect(headers["cache-control"]).toContain("max-age=3600");
+  expect(headers["cache-control"]).toContain("max-age=3600, s-maxage=60");
   const etag = headers["etag"];
   expect(etag).toMatch(/^"[0-9a-f]{8}-[0-9a-f]+"$/u);
   const cached = await request.get("/v1/sources", { headers: { "if-none-match": etag } });

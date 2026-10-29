@@ -129,16 +129,25 @@ jobs:
             if (typeof statusPayload.stale !== "boolean" || !Array.isArray(statusPayload.feeds) || statusPayload.feeds.some((feed) => "title" in feed)) {
               throw new Error("/v1/news/status must expose feed state without headline text");
             }
-            const catalogResponse = await fetch(base + "/v1/sources");
-            const catalogEtag = catalogResponse.headers.get("etag");
-            if (!catalogEtag) {
-              throw new Error("/v1/sources must return an ETag");
+            // A shared edge cache can still hold the pre-deploy catalog for a
+            // short window. Poll with revalidation until the new ETag appears.
+            let catalog = null;
+            let catalogEtag = "";
+            const catalogDeadline = Date.now() + 90_000;
+            while (Date.now() < catalogDeadline) {
+              const response = await fetch(base + "/v1/sources", { headers: { "cache-control": "no-cache" } });
+              catalogEtag = response.headers.get("etag") ?? "";
+              catalog = await response.json();
+              if (catalogEtag) break;
+              await new Promise((resolve) => setTimeout(resolve, 3000));
             }
-            const catalogCached = await fetch(base + "/v1/sources", { headers: { "if-none-match": catalogEtag } });
+            if (!catalogEtag) {
+              throw new Error("/v1/sources must return an ETag within 90s");
+            }
+            const catalogCached = await fetch(base + "/v1/sources", { headers: { "if-none-match": catalogEtag, "cache-control": "no-cache" } });
             if (catalogCached.status !== 304) {
               throw new Error("/v1/sources must answer 304 for a matching ETag, got " + catalogCached.status);
             }
-            const catalog = await catalogResponse.json();
             if (catalog.count !== 5 || !Array.isArray(catalog.sources) || catalog.sources.length !== 5) {
               throw new Error("/v1/sources must list the five publishers");
             }

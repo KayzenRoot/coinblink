@@ -43,7 +43,8 @@ response.
 ## HTTP behaviour
 
 - `GET` → 200, `application/json; charset=utf-8`, `Cache-Control: public,
-  max-age=3600`, `Access-Control-Allow-Origin: *`.
+  max-age=3600, s-maxage=60` (browsers cache for an hour, shared edges for
+  one minute so a deploy cannot serve stale metadata), `Access-Control-Allow-Origin: *`.
 - A matching `If-None-Match` returns 304 with no body.
 - `OPTIONS` → 204; `HEAD` → 200; other methods → 405 with `Allow: GET`.
 - Any query parameter → 400 `UNSUPPORTED_QUERY`.

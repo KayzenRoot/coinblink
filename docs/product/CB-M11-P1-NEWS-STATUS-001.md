@@ -17,6 +17,8 @@ channel. The endpoint therefore exposes counts and status codes only.
 | `status` | `ok`, `disabled` or `unavailable` |
 | `mode` | always `LIVE_THIRD_PARTY` |
 | `collectedAt` | ISO timestamp of the current snapshot (`ok` only) |
+| `stale` | `true` when the reader served its last good collection after a total outage |
+| `refreshFailedAt` | ISO timestamp of the failed refresh (`stale` only) |
 | `windowSeconds` | collection window (900) |
 | `feedsTotal` | configured publishers (5) |
 | `feedsRead` | publishers that answered (`ok`) |
@@ -26,7 +28,9 @@ channel. The endpoint therefore exposes counts and status codes only.
 | `feeds[]` | `{ id, status, itemCount, reason }` — **no name, title or text** |
 | `disclaimer` | "This response contains no headline text or article content." |
 
-When the reader is disabled or unavailable, `feeds` is empty, `items` and
+A stale response keeps `status: "ok"` because the data is real and was
+successfully collected; consumers must check `stale` before treating
+`collectedAt` as current. When the reader is disabled or unavailable, `feeds` is empty, `items` and
 `feedsRead` are `0`, `rights` is `NO_CONTENT`, and `reason` explains why.
 
 ## HTTP behaviour

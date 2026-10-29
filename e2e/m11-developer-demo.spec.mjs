@@ -195,6 +195,7 @@ test("M11 live status endpoint is content-free and read-only", async ({ request 
   expect(["ok", "disabled", "unavailable"]).toContain(payload.status);
   expect(Array.isArray(payload.feeds)).toBe(true);
   expect(payload.feedsTotal).toBe(5);
+  expect(payload.stale).toBe(false);
   expect(Array.isArray(payload.items)).toBe(false);
   for (const feed of payload.feeds) {
     expect(Object.keys(feed).sort()).toEqual(["id", "itemCount", "reason", "status"]);

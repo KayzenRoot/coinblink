@@ -235,3 +235,76 @@ test('a wide collection keeps every feed bounded and caps the total', async () =
   assert.equal(Math.max(...perSource.values()) <= 20, true);
 });
 
+
+test('a temporary total outage serves the last good collection as stale, then fails closed', async () => {
+  const hosts = ['a.example', 'b.example'];
+  const sources = hosts.map((host) => ({
+    id: host.split('.')[0], name: host, home: 'https://' + host, hosts: [host], url: 'https://' + host + '/feed',
+  }));
+  const feed = (host) => rss(...Array.from({ length: 3 }, (_, index) =>
+    '<item><title>' + host + ' story ' + index + '</title><link>https://' + host + '/' + index +
+    '</link><pubDate>Sun, 26 Oct 2026 10:00:00 GMT</pubDate></item>'));
+  const bodies = Object.fromEntries(sources.map((source) => [source.url, feed(source.hosts[0])]));
+  let failing = false;
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(url);
+    if (failing) throw new Error('offline');
+    return { ok: true, status: 200, text: async () => bodies[url] };
+  };
+  let clock = 0;
+  const cache = createNewsCache();
+  const options = {
+    enabled: '1', sources, fetchImpl, now: () => new Date(clock + 1000).toISOString(),
+    nowMs: () => clock, cache,
+  };
+  const fresh = await readLiveNews(options);
+  assert.equal(fresh.stale, false);
+  assert.equal(fresh.itemCount, 6);
+  failing = true;
+  clock += 901000;
+  const stale = await readLiveNews(options);
+  assert.equal(stale.status, 'LIVE_HEADLINES');
+  assert.equal(stale.stale, true);
+  assert.equal(stale.collectedAt, fresh.collectedAt);
+  assert.deepEqual(stale.items, fresh.items);
+  assert.equal(typeof stale.refreshFailedAt, 'string');
+  const before = calls.length;
+  const cached = await readLiveNews(options);
+  assert.equal(cached, stale);
+  assert.equal(calls.length, before);
+  clock += 61000;
+  const again = await readLiveNews(options);
+  assert.equal(again.stale, true);
+  assert.ok(calls.length > before);
+  clock = 3600000 + 1000;
+  const gone = await readLiveNews(options);
+  assert.equal(gone.status, 'UNAVAILABLE');
+  assert.equal(gone.reason, 'ALL_SOURCES_FAILED');
+});
+
+test('a successful refresh clears the stale flag and updates the collection time', async () => {
+  const sources = [{ id: 'a', name: 'A', home: 'https://a.example', hosts: ['a.example'], url: 'https://a.example/feed' }];
+  const body = '<item><title>Recovered story</title><link>https://a.example/1</link><pubDate>Sun, 26 Oct 2026 10:00:00 GMT</pubDate></item>';
+  let failing = false;
+  const fetchImpl = async () => {
+    if (failing) throw new Error('offline');
+    return { ok: true, status: 200, text: async () => body };
+  };
+  let clock = 0;
+  const cache = createNewsCache();
+  const options = {
+    enabled: '1', sources, fetchImpl, now: () => new Date(clock + 1000).toISOString(),
+    nowMs: () => clock, cache,
+  };
+  const fresh = await readLiveNews(options);
+  failing = true;
+  clock += 901000;
+  const stale = await readLiveNews(options);
+  assert.equal(stale.stale, true);
+  failing = false;
+  clock = 1030000;
+  const recovered = await readLiveNews(options);
+  assert.equal(recovered.stale, false);
+  assert.notEqual(recovered.collectedAt, fresh.collectedAt);
+});

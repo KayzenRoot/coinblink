@@ -56,7 +56,8 @@ Contract of `readLiveNews` (never throws):
 - `DISABLED` / `NOT_ENABLED` — the variable is absent or not affirmative; no request is made.
 - `LIVE_HEADLINES` — at least one feed produced usable items. Each feed's own status is reported.
 - `UNAVAILABLE` / `NO_FETCH` — the runtime has no `fetch`.
-- `UNAVAILABLE` / `ALL_SOURCES_FAILED` — every feed failed (timeout, HTTP status, empty document).
+- `UNAVAILABLE` / `ALL_SOURCES_FAILED` — every feed failed (timeout, HTTP status, empty document) and no recent good collection exists.
+- `LIVE_HEADLINES` with `stale: true` — every feed failed, but the last good collection is at most one hour old. The original `collectedAt` is preserved, `refreshFailedAt` records the failed attempt, and the page shows a warning. A stale snapshot never extends the last-good timestamp, is retried every 60 seconds, and after one hour the reader fails closed again.
 
 Per-source reasons are `TIMEOUT`, `NETWORK`, `HTTP_<code>` or `NO_USABLE_ITEMS`.
 A source that fails does not hide the others: 4 of 5 healthy feeds still render.
@@ -68,6 +69,8 @@ RSS has no quota, so the guard is time, not a counter:
 - one collection per source per 15-minute window, memoised per process;
 - a wholly failed collection is cached for 60 seconds so a dead publisher
   cannot become a request storm;
+- a stale fallback serves the last good collection for at most one hour, with
+  an explicit warning and a 60-second retry;
 - each request aborts after 5 seconds;
 - each feed contributes at most 20 items and the page caps at 60 headlines total.
 

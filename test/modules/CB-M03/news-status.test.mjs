@@ -19,6 +19,7 @@ const live = {
 test('a live status reports counts and feed state without any content', () => {
   const payload = buildNewsStatus(live, { windowSeconds: 900 });
   assert.equal(payload.status, 'ok');
+  assert.equal(payload.stale, false);
   assert.equal(payload.mode, 'LIVE_THIRD_PARTY');
   assert.equal(payload.collectedAt, '2026-10-29T12:00:00.000Z');
   assert.equal(payload.feedsRead, 2);
@@ -45,6 +46,7 @@ test('disabled and unavailable collections expose no feed data', () => {
   assert.equal(disabled.feedsTotal, 5);
   assert.deepEqual(disabled.feeds, []);
   assert.equal(disabled.rights, 'NO_CONTENT');
+  assert.equal(disabled.stale, false);
   assert.equal(disabled.windowSeconds, 900);
 
   const unavailable = buildNewsStatus({ status: 'UNAVAILABLE', reason: 'ALL_SOURCES_FAILED' }, { windowSeconds: 60 });
@@ -52,6 +54,13 @@ test('disabled and unavailable collections expose no feed data', () => {
   assert.equal(unavailable.reason, 'ALL_SOURCES_FAILED');
   assert.equal(unavailable.windowSeconds, 60);
   assert.deepEqual(unavailable.feeds, []);
+});
+
+test('a stale snapshot is flagged and carries the failed refresh time', () => {
+  const stale = buildNewsStatus({ ...live, stale: true, refreshFailedAt: '2026-10-29T12:30:00.000Z' });
+  assert.equal(stale.status, 'ok');
+  assert.equal(stale.stale, true);
+  assert.equal(stale.refreshFailedAt, '2026-10-29T12:30:00.000Z');
 });
 
 test('invalid snapshots fail closed', () => {

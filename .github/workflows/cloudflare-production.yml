@@ -126,7 +126,7 @@ jobs:
             if (!["ok", "disabled", "unavailable"].includes(statusPayload.status)) {
               throw new Error("/v1/news/status reported unknown state " + statusPayload.status);
             }
-            if (!Array.isArray(statusPayload.feeds) || statusPayload.feeds.some((feed) => "title" in feed)) {
+            if (typeof statusPayload.stale !== "boolean" || !Array.isArray(statusPayload.feeds) || statusPayload.feeds.some((feed) => "title" in feed)) {
               throw new Error("/v1/news/status must expose feed state without headline text");
             }
             const home = await fetch(base + "/en");

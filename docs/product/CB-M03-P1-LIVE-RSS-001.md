@@ -128,6 +128,19 @@ the publisher and time on each item and a link to the full page. The strip reads
 through the same cache, so opening the index does not multiply collections, and
 it renders nothing at all while the reader is off.
 
+## Conditional fetching
+
+Each publisher's validators are remembered per process: the `ETag` and
+`Last-Modified` returned with a successful collection. On the next window the
+reader sends `If-None-Match` (or `If-Modified-Since` when there is no ETag).
+A `304 Not Modified` reuses the items from that feed, counts it as `OK` and
+marks it `notModified: true` in the snapshot. The number of requests does not
+change — still one per source per 15-minute window — only the transferred bytes
+drop when a publisher honours the validator.
+
+A `304` with no previous representation is impossible in normal operation and
+fails that source as `UNEXPECTED_304` instead of inventing items.
+
 ## Toggle
 
 `PUBLIC_NEWS_LIVE` accepts exactly `1`, `true`, `enabled` or `on`

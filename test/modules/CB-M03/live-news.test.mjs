@@ -308,3 +308,69 @@ test('a successful refresh clears the stale flag and updates the collection time
   assert.equal(recovered.stale, false);
   assert.notEqual(recovered.collectedAt, fresh.collectedAt);
 });
+
+test('a second window revalidates with the stored ETag and reuses a 304', async () => {
+  const sources = [{ id: 'alpha', name: 'Alpha', home: 'https://alpha.example', hosts: ['alpha.example'], url: 'https://alpha.example/feed' }];
+  const body = rss('<item><title>Alpha story</title><link>https://alpha.example/1</link><pubDate>Sun, 26 Oct 2026 10:00:00 GMT</pubDate></item>');
+  const seen = [];
+  const fetchImpl = async (url, init) => {
+    seen.push(init.headers);
+    if (seen.length === 1) {
+      return { ok: true, status: 200, headers: new Headers({ etag: '"v1"' }), text: async () => body };
+    }
+    return { ok: false, status: 304, headers: new Headers({ etag: '"v1"' }), text: async () => '' };
+  };
+  let clock = 0;
+  const cache = createNewsCache();
+  const options = {
+    enabled: '1', sources, fetchImpl, now: () => new Date(clock + 1000).toISOString(),
+    nowMs: () => clock, cache,
+  };
+  const first = await readLiveNews(options);
+  assert.equal(first.sources[0].notModified, false);
+  assert.equal(first.items.length, 1);
+  clock += 901000;
+  const second = await readLiveNews(options);
+  assert.equal(seen.length, 2);
+  assert.equal(seen[0]['if-none-match'], undefined);
+  assert.equal(seen[1]['if-none-match'], '"v1"');
+  assert.deepEqual(second.items, first.items);
+  assert.equal(second.sources[0].status, 'OK');
+  assert.equal(second.sources[0].notModified, true);
+});
+
+test('Last-Modified is used when the feed has no ETag', async () => {
+  const sources = [{ id: 'beta', name: 'Beta', home: 'https://beta.example', hosts: ['beta.example'], url: 'https://beta.example/feed' }];
+  const body = rss('<item><title>Beta story</title><link>https://beta.example/1</link><pubDate>Sun, 26 Oct 2026 10:00:00 GMT</pubDate></item>');
+  const seen = [];
+  const fetchImpl = async (url, init) => {
+    seen.push(init.headers);
+    if (seen.length === 1) {
+      return { ok: true, status: 200, headers: new Headers({ 'last-modified': 'Wed, 29 Oct 2026 12:00:00 GMT' }), text: async () => body };
+    }
+    return { ok: false, status: 304, headers: new Headers(), text: async () => '' };
+  };
+  let clock = 0;
+  const cache = createNewsCache();
+  const options = {
+    enabled: '1', sources, fetchImpl, now: () => new Date(clock + 1000).toISOString(),
+    nowMs: () => clock, cache,
+  };
+  await readLiveNews(options);
+  clock += 901000;
+  const second = await readLiveNews(options);
+  assert.equal(seen[1]['if-none-match'], undefined);
+  assert.equal(seen[1]['if-modified-since'], 'Wed, 29 Oct 2026 12:00:00 GMT');
+  assert.equal(second.sources[0].notModified, true);
+});
+
+test('a 304 without a previous representation fails closed', async () => {
+  const sources = [{ id: 'gamma', name: 'Gamma', home: 'https://gamma.example', hosts: ['gamma.example'], url: 'https://gamma.example/feed' }];
+  const fetchImpl = async () => ({ ok: false, status: 304, headers: new Headers(), text: async () => '' });
+  const snapshot = await readLiveNews({
+    enabled: '1', sources, fetchImpl, now: () => AT, nowMs: () => 0, cache: createNewsCache(),
+  });
+  assert.equal(snapshot.status, 'UNAVAILABLE');
+  assert.equal(snapshot.reason, 'ALL_SOURCES_FAILED');
+  assert.equal(snapshot.sources[0].reason, 'UNEXPECTED_304');
+});

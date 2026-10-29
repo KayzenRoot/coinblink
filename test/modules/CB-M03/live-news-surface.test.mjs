@@ -154,3 +154,11 @@ test('headline times are relative with the exact instant preserved', () => {
     assert.ok(file.includes('title={exact(item.publishedAt) || undefined}'));
   }
 });
+
+test('feeds are revalidated with conditional headers', () => {
+  assert.ok(reader.includes('if-none-match'));
+  assert.ok(reader.includes('if-modified-since'));
+  assert.ok(reader.includes('UNEXPECTED_304'));
+  assert.ok(reader.includes('notModified'));
+  assert.ok(reader.includes('sourceState'));
+});

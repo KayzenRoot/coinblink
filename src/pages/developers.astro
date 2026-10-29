@@ -11,7 +11,7 @@ const marketExample = buildDemoMarketReadiness();
 
 <BaseLayout
   title="Developer sandbox · CoinBlink DEMO"
-  description="Offline synthetic developer API demonstration plus a content-free live collection status endpoint. No real articles, accounts, licensing, billing or market data."
+  description="Offline synthetic developer API demonstration plus content-free live status and publisher catalog endpoints. No real articles, accounts, licensing, billing or market data."
 >
   <link rel="stylesheet" href={inspectorCssUrl} />
   <main id="main" class="not-found">
@@ -82,6 +82,36 @@ Access-Control-Allow-Origin: *
         an empty feed list. Only GET, HEAD and OPTIONS are supported; query parameters are
         rejected with 400.
       </p>
+    </section>
+    <section aria-labelledby="m11-source-catalog">
+      <h2 id="m11-source-catalog">Publisher catalog (real, metadata only)</h2>
+      <p class="body-copy">
+        <code>GET /v1/sources</code> lists the five publishers CoinBlink is allowed to read:
+        id, name, home page, RSS feed and the localized reader page for each. It contains no
+        headlines, excerpts or article content.
+      </p>
+      <pre class="m11-status-example"><code>{`GET /v1/sources
+
+200 OK
+Content-Type: application/json
+Cache-Control: max-age=3600
+
+{
+  "status": "ok",
+  "count": 5,
+  "sources": [
+    {
+      "id": "coindesk",
+      "name": "CoinDesk",
+      "home": "https://www.coindesk.com",
+      "feed": "https://www.coindesk.com/arc/outboundfeeds/rss",
+      "pages": { "en": "/en/news/source/coindesk", ... },
+      "rights": "ATTRIBUTION_ONLY"
+    },
+    ...
+  ]
+}`}</code></pre>
+      <nav aria-label="Publisher catalog"><a href="/v1/sources">Open the source catalog JSON</a></nav>
     </section>
     <section class="m11-inspector-section" aria-labelledby="m11-inspector-title">
       <h2 id="m11-inspector-title">Inspect synthetic API responses</h2>

@@ -212,3 +212,32 @@ test("M11 developer page links to the live status JSON", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Live collection status (content-free)" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the status JSON" })).toHaveAttribute("href", "/v1/news/status");
 });
+
+test("M11 publisher catalog is metadata-only and read-only", async ({ request }) => {
+  const response = await request.get("/v1/sources");
+  expect(response.status()).toBe(200);
+  const headers = response.headers();
+  expect(headers["content-type"]).toContain("application/json");
+  expect(headers["cache-control"]).toContain("max-age=3600");
+  const payload = await response.json();
+  expect(payload.status).toBe("ok");
+  expect(payload.mode).toBe("PUBLIC_METADATA");
+  expect(payload.count).toBe(5);
+  expect(payload.sources).toHaveLength(5);
+  for (const source of payload.sources) {
+    expect(Object.keys(source).sort()).toEqual(["feed", "home", "id", "name", "pages", "rights"]);
+    expect(source.feed).toMatch(/^https:\/\//u);
+    expect(source.rights).toBe("ATTRIBUTION_ONLY");
+    expect(JSON.stringify(source)).not.toContain("title");
+  }
+  expect((await request.get("/v1/sources?x=1")).status()).toBe(400);
+  const post = await request.post("/v1/sources");
+  expect(post.status()).toBe(405);
+  expect(post.headers()["allow"]).toBe("GET");
+});
+
+test("M11 developer page links to the publisher catalog", async ({ page }) => {
+  await page.goto("/developers");
+  await expect(page.getByRole("heading", { name: "Publisher catalog (real, metadata only)" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the source catalog JSON" })).toHaveAttribute("href", "/v1/sources");
+});

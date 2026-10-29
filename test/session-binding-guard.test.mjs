@@ -65,6 +65,7 @@ function generatedConfig(overrides = {}) {
     },
     previews: {},
     no_bundle: true,
+    upload_source_maps: false,
     ...overrides,
   };
 }
@@ -120,4 +121,10 @@ test("rejects unreviewed top-level variables", () => {
   const result = runGuard(config);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /unchecked production plaintext variables/);
+});
+
+test("rejects source map uploads", () => {
+  const result = runGuard(generatedConfig({ upload_source_maps: true }));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /must not upload source maps/);
 });

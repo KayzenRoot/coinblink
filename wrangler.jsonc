@@ -9,5 +9,6 @@
     "binding": "ASSETS",
     "not_found_handling": "404-page"
   },
+  "upload_source_maps": false,
   "previews": {}
 }

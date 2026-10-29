@@ -23,6 +23,7 @@ test('the directory is gated, escaped and lists every whitelisted publisher', ()
   assert.match(component, /readLiveNews\(\{ enabled: import\.meta\.env\.PUBLIC_NEWS_LIVE \}\)/u);
   assert.ok(component.includes('LIVE_NEWS_SOURCES.map'));
   assert.ok(component.includes('data-m03-sources-page'));
+  assert.ok(component.includes('<ReaderLocaleSwitch locale={locale} />'));
   assert.ok(component.includes('data-m03-sources-state={snapshot.status}'));
   assert.ok(component.includes('data-m03-sources-item={source.id}'));
   assert.ok(component.includes('rel="noreferrer noopener external"'));

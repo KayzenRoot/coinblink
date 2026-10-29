@@ -1,0 +1,32 @@
+---
+import {
+  READER_LOCALES, readerLocaleLabel, readerLocaleLinks, readerLocaleName, readerLocaleTag,
+} from "./reader-locale.mjs";
+interface Props { locale?: "en" | "pt-br" | "es"; }
+const { locale = "en" } = Astro.props;
+const label = readerLocaleLabel(locale);
+// A path that does not belong to this locale (for example an unknown-locale
+// 404) has no honest siblings, so the switch is omitted instead of guessing.
+const local = Astro.url.pathname === "/" + locale || Astro.url.pathname.startsWith("/" + locale + "/");
+const links = local ? readerLocaleLinks(locale, Astro.url.pathname, Astro.url.search) : null;
+---
+{links !== null && (
+<nav class="m03-locale" aria-label={label} data-m03-locale-switch>
+  <span>{label}:</span>
+  <ul>
+    {READER_LOCALES.map((key) => (
+      <li>
+        <a lang={readerLocaleTag(key)} hreflang={readerLocaleTag(key)} href={links[key]}
+          aria-current={key === locale ? "page" : undefined}>{readerLocaleName(key)}</a>
+      </li>
+    ))}
+  </ul>
+</nav>
+)}
+<style>
+  .m03-locale{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.75rem 0 0;font-size:.85rem;color:#9fb6a5}
+  .m03-locale ul{display:flex;flex-wrap:wrap;gap:.4rem;list-style:none;margin:0;padding:0}
+  .m03-locale a{display:inline-block;padding:.25rem .6rem;border:1px solid #456e4e;border-radius:999px;color:#b8f34b;text-decoration:none}
+  .m03-locale a[aria-current="page"]{border-color:#b8f34b;color:#f9d594;font-weight:700}
+  .m03-locale a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

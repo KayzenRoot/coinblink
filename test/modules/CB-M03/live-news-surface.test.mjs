@@ -35,6 +35,8 @@ test('the panel escapes feed text and localizes its chrome', () => {
   assert.match(panel, /data-m03-live="live"/u);
   assert.match(panel, /copy\.warning/u);
   assert.match(panel, /copy\.rightsNote/u);
+  assert.ok(panel.includes('<ReaderLocaleSwitch locale={locale} />'));
+  assert.ok(panel.includes('import ReaderLocaleSwitch from "./ReaderLocaleSwitch.astro"'));
   assert.match(panel, /copy\.undated/u);
   assert.match(panel, /data-m03-live-filter/u);
   assert.match(panel, /data-m03-live-count/u);

@@ -7,6 +7,7 @@ import {
   clustersForSource,
   coverageOthers,
   coveragePublishers,
+  searchCoverageClusters,
   tokenizeLiveTitle,
   topCoverageClusters,
 } from '../../../src/modules/CB-M03/live-clusters.mjs';
@@ -151,4 +152,19 @@ test('a publisher filter keeps whole stories, including the other publishers', (
   assert.deepEqual(clustersForSource(null, 'coindesk'), []);
   assert.deepEqual(clustersForSource(clusters, ''), []);
   assert.equal(Object.isFrozen(bitcoinOnly), true);
+});
+
+test('coverage search matches any publisher title, accents and case included', () => {
+  const third = item('c1', 'decrypt', 'Bitcoin ETF inflows reach a record high');
+  const clusters = clusterLiveHeadlines([dogeA, dogeB, bitcoinA, bitcoinB, third]);
+  assert.equal(clusters.length, 2);
+  const matched = searchCoverageClusters(clusters, 'DOGECOIN');
+  assert.equal(matched.length, 1);
+  assert.equal(matched[0].members.some((member) => member.title.includes('Dogecoin')), true);
+  assert.equal(searchCoverageClusters(clusters, 'bitcoin etf').length, 1);
+  assert.equal(searchCoverageClusters(clusters, 'zzzz').length, 0);
+  assert.equal(searchCoverageClusters(clusters, '   ').length, 2);
+  assert.deepEqual(searchCoverageClusters(null, 'bitcoin'), []);
+  assert.deepEqual(searchCoverageClusters(clusters, null).length, 2);
+  assert.equal(Object.isFrozen(matched), true);
 });

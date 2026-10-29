@@ -34,11 +34,12 @@ test('the coverage component renders the groups offline', () => {
 
 test('the coverage page narrows the collection without breaking a story apart', () => {
   for (const marker of ['clampLiveSince', 'clampLiveSource', 'withinLiveSince', 'clustersForSource',
+    'clampLiveSearchQuery', 'searchCoverageClusters', 'data-m03-coverage-query',
     'data-m03-coverage-filter', 'data-m03-coverage-since', 'copy.coverageFilterNote',
     'copy.coverageFilteredEmpty', 'copy.coverageEmpty', 'ReaderLocaleSwitch']) {
     assert.ok(component.includes(marker), marker);
   }
-  assert.ok(component.includes('source === LIVE_NEWS_ALL_SOURCES ? allClusters : clustersForSource(allClusters, source)'));
+  assert.ok(component.includes('source === LIVE_NEWS_ALL_SOURCES ? matched : clustersForSource(matched, source)'));
   assert.ok(component.includes('viewHref(source, 0)'));
 });
 

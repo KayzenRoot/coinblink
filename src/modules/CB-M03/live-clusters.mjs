@@ -5,6 +5,7 @@
 // publishers that carried the same story. No inference, no network, no storage,
 // and the publishers' text is never merged or rewritten.
 import { isLiveNewsStopword } from "./live-news-topics.mjs";
+import { normalizeLiveSearch } from "./live-news-filter.mjs";
 
 export const LIVE_NEWS_CLUSTER_MIN_SHARED = 4;
 export const LIVE_NEWS_CLUSTER_MIN_SIMILARITY = 0.5;
@@ -299,4 +300,22 @@ export function clustersForSource(clusters, sourceId) {
     cluster !== null && typeof cluster === "object" && Array.isArray(cluster.members)
     && cluster.members.some((member) =>
       member !== null && typeof member === "object" && member.sourceId === sourceId)));
+}
+
+/**
+ * Keep clusters where at least one member title matches the reader's search.
+ * An empty query keeps every cluster; an invalid collection yields none.
+ * @param {unknown} clusters
+ * @param {unknown} query
+ * @returns {ReadonlyArray<LiveCoverageCluster>}
+ */
+export function searchCoverageClusters(clusters, query) {
+  if (!Array.isArray(clusters)) return Object.freeze([]);
+  const needle = typeof query === "string" ? normalizeLiveSearch(query).trim() : "";
+  if (needle === "") return Object.freeze([...clusters]);
+  return Object.freeze(clusters.filter((cluster) =>
+    cluster !== null && typeof cluster === "object" && Array.isArray(cluster.members)
+    && cluster.members.some((member) =>
+      member !== null && typeof member === "object" && typeof member.title === "string"
+      && normalizeLiveSearch(member.title).includes(needle))));
 }

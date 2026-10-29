@@ -81,9 +81,10 @@ Routes: `src/pages/{en,pt-br,es}/news/coverage.astro`, each a thin wrapper over
 `coverageMeta`, `coverageEmpty`, `coverageAll`, `coverageLiveLink`,
 `coverageFilterTitle`, `coverageFilterNote`, `coverageFilteredEmpty`).
 
-The page accepts two server-rendered filters: `?since=<reviewed window>` narrows
-the pool before clustering, and `?source=<reviewed publisher>` keeps the whole
-story while showing only groups that include that publisher. Selecting a
+The page accepts three server-rendered filters: `?q=<text>` keeps clusters where
+at least one member title matches (accent- and case-insensitive), `?since=<reviewed
+window>` narrows the pool before clustering, and `?source=<reviewed publisher>`
+keeps the whole story while showing only groups that include that publisher. Selecting a
 publisher therefore never hides the other publishers that carried the same
 story. Filter state is linkable and shareable, and a filtered empty result has
 its own message. The publisher page links here with `?source=<id>`.

@@ -4,6 +4,7 @@ import { LIVE_NEWS_SOURCES } from "../../../../modules/CB-M03/rss-sources.mjs";
 import { readLiveNews } from "../../../../modules/CB-M03/live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "../../../../modules/CB-M03/live-news-copy.mjs";
 import { getSourcePageCopy } from "../../../../modules/CB-M03/source-page-copy.mjs";
+import { exactLiveTime, formatLiveAge } from "../../../../modules/CB-M03/live-time.mjs";
 export const prerender = false;
 
 const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
@@ -29,6 +30,9 @@ const items = snapshot?.status === "LIVE_HEADLINES" && source !== null
   : [];
 const stamp = (iso: string | null) =>
   iso === null ? liveCopy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
+const nowMs = Date.now();
+const age = (iso: string | null) => formatLiveAge(iso, nowMs, localeKey) ?? liveCopy.undated;
+const exact = (iso: string | null) => exactLiveTime(iso);
 const name = source?.name ?? copy.notFoundTitle;
 const statusLine = (() => {
   if (snapshot === null) return copy.statusDisabled;
@@ -69,7 +73,7 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
                 <li data-m03-source-item={item.sourceId}>
                   <h3><a href={item.link} rel="noreferrer noopener external">{item.title}</a></h3>
                   {item.summary !== "" && <p>{item.summary}</p>}
-                  <p class="source-page__byline"><time datetime={item.publishedAt ?? undefined}>{stamp(item.publishedAt)}</time></p>
+                  <p class="source-page__byline"><time datetime={item.publishedAt ?? undefined} title={exact(item.publishedAt) || undefined}>{age(item.publishedAt)}</time></p>
                 </li>
               ))}
             </ol>

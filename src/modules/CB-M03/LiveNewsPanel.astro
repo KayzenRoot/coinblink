@@ -8,6 +8,7 @@ import {
   LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSince, clampLiveSource, filterLiveHeadlines,
 } from "./live-news-filter.mjs";
 import { extractLiveTopics } from "./live-news-topics.mjs";
+import { exactLiveTime, formatLiveAge } from "./live-time.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
@@ -23,6 +24,8 @@ const query = clampLiveSearchQuery(Astro.url.searchParams.get("q") ?? "");
 const source = clampLiveSource(Astro.url.searchParams.get("source") ?? LIVE_NEWS_ALL_SOURCES);
 const sinceHours = clampLiveSince(Astro.url.searchParams.get("since") ?? "");
 const nowMs = Date.now();
+const age = (iso: string | null) => formatLiveAge(iso, nowMs, locale) ?? copy.undated;
+const exact = (iso: string | null) => exactLiveTime(iso);
 const visible = snapshot.status === "LIVE_HEADLINES"
   ? filterLiveHeadlines(snapshot.items, { query, source, sinceHours, nowMs })
   : Object.freeze([]);
@@ -153,7 +156,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
             <p class="m03-live__byline">
               <a href={item.sourceHome} rel="noreferrer noopener external">{item.sourceName}</a>
               <span aria-hidden="true"> · </span>
-              <time datetime={item.publishedAt ?? undefined}>{stamp(item.publishedAt)}</time>
+              <time datetime={item.publishedAt ?? undefined} title={exact(item.publishedAt) || undefined}>{age(item.publishedAt)}</time>
             </p>
           </li>
         ))}

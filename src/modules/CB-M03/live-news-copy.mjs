@@ -152,6 +152,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Manchetes de terceiros, somente atribuição. As manchetes permanecem no idioma do veículo.",
     "es": "Titulares de terceros, solo atribución. Los titulares permanecen en el idioma del medio.",
   },
+  stripCoverage: {
+    "en": "{count} stories covered by several publishers →",
+    "pt-br": "{count} histórias cobertas por vários veículos →",
+    "es": "{count} historias cubiertas por varios medios →",
+  },
   stripAll: {
     "en": "See all {count} live headlines →",
     "pt-br": "Ver todas as {count} manchetes ao vivo →",

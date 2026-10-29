@@ -29,6 +29,8 @@ test("M03 live headlines stay inert in every locale until a deployment enables t
     const disabled = page.locator('[data-m03-live="disabled"]');
     await expect(disabled, locale.path).toBeVisible();
     await expect(page.locator("[data-m03-live-item]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-live-list]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-new-status]")).toHaveCount(0);
     await expect(page.locator('[data-m03-live="live"]')).toHaveCount(0);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByRole("link", { name: locale.back })).toHaveAttribute("href", locale.news);

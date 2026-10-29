@@ -149,10 +149,14 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
       </section>
       <script>
         import "./saved-searches.client.mjs";
+        import "./last-visit.client.mjs";
       </script>
       <p class="m03-live__count" role="status" aria-live="polite" data-m03-live-count>
         {visible.length} {visible.length === 1 ? copy.resultOne : copy.resultMany}
       </p>
+      <p class="m03-live__note" role="status" aria-live="polite" hidden
+        data-m03-new-status data-m03-new-template={copy.newStatus}></p>
+      <p class="m03-live__note">{copy.newNote}</p>
       {visible.length === 0 && <p class="m03-live__note" data-m03-live-empty>{copy.emptyFiltered}</p>}
       {topics.length > 0 && (
         <nav class="m03-live__topics" aria-labelledby="m03-live-topics" data-m03-live-topics>
@@ -192,7 +196,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
           </p>
         </section>
       )}
-      <ol class="m03-live__list">
+      <ol class="m03-live__list" data-m03-live-list data-m03-new-label={copy.newBadge}>
         {rows.map(({ item, others }) => (
           <li class="m03-live__item" data-m03-live-item={item.sourceId}>
             <h3 class="m03-live__headline">
@@ -292,6 +296,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__list{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;gap:1rem}
   .m03-live__item{border-top:1px solid #2f4a38;padding-top:1rem}
   .m03-live__headline{margin:0 0 .4rem;font-size:1.15rem;line-height:1.35}
+  .m03-live__new{display:inline-block;margin-left:.4rem;padding:.05rem .4rem;border-radius:999px;background:#b8f34b;color:#10170b;font-size:.68rem;font-weight:800;letter-spacing:.04em;vertical-align:.08em}
   .m03-live__summary{margin:0 0 .5rem;font-size:.95rem}
   .m03-live__byline{margin:0;font-size:.82rem;color:#9fb6a5;letter-spacing:.02em}
   .m03-live p.m03-live__coverage{margin:.3rem 0 0;font-size:.82rem;color:#9fb6a5}

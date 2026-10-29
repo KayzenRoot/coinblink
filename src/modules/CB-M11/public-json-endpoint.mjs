@@ -20,12 +20,14 @@ function json(body, status, headers, extraHeaders = {}) {
 }
 
 /**
- * @param {{headers: Record<string, string>, buildBody: () => string | Promise<string>}} options
+ * @param {{headers?: Record<string, string>, buildBody?: () => string | Promise<string>}} [options]
  */
 export function publicJsonEndpoint(options) {
   const { headers, buildBody } = options ?? {};
   if (typeof buildBody !== "function") throw new TypeError("buildBody must be a function");
-  if (headers === null || typeof headers !== "object") throw new TypeError("headers are required");
+  if (!headers || typeof headers !== "object" || Array.isArray(headers)) {
+    throw new TypeError("headers are required");
+  }
   return Object.freeze({
     GET: async ({ url, request }) => {
       if ([...url.searchParams.keys()].length > 0) {

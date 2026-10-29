@@ -1,6 +1,7 @@
 // CB-M11-P1-SOURCE-CATALOG-001: public publisher metadata endpoint.
 import type { APIRoute } from "astro";
 import { buildSourceCatalog } from "../../modules/CB-M03/source-catalog.mjs";
+import { matchesIfNoneMatch, strongEtag } from "../../modules/CB-M11/conditional-get.mjs";
 
 export const prerender = false;
 
@@ -16,12 +17,17 @@ function json(body: unknown, status: number, extraHeaders: Record<string, string
   return new Response(JSON.stringify(body), { status, headers: { ...HEADERS, ...extraHeaders } });
 }
 
-export const GET: APIRoute = ({ url }) => {
+export const GET: APIRoute = ({ url, request }) => {
   if ([...url.searchParams.keys()].length > 0) {
     return json({ status: "bad_request", reason: "UNSUPPORTED_QUERY" }, 400);
   }
   try {
-    return json(buildSourceCatalog(), 200);
+    const body = JSON.stringify(buildSourceCatalog());
+    const etag = strongEtag(body);
+    if (matchesIfNoneMatch(request.headers.get("if-none-match"), etag)) {
+      return new Response(null, { status: 304, headers: { ...HEADERS, etag } });
+    }
+    return new Response(body, { status: 200, headers: { ...HEADERS, etag } });
   } catch {
     return json({ status: "unavailable", reason: "INTERNAL" }, 503);
   }

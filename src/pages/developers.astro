@@ -82,6 +82,10 @@ Access-Control-Allow-Origin: *
         an empty feed list. Only GET, HEAD and OPTIONS are supported; query parameters are
         rejected with 400.
       </p>
+      <p class="body-copy">
+        Both real endpoints return an <code>ETag</code>. Send it back as
+        <code>If-None-Match</code> to receive 304 without a body.
+      </p>
     </section>
     <section aria-labelledby="m11-source-catalog">
       <h2 id="m11-source-catalog">Publisher catalog (real, metadata only)</h2>
@@ -111,6 +115,7 @@ Cache-Control: max-age=3600
     ...
   ]
 }`}</code></pre>
+      <p class="body-copy">Supports the same ETag/304 behaviour as the status endpoint.</p>
       <nav aria-label="Publisher catalog"><a href="/v1/sources">Open the source catalog JSON</a></nav>
     </section>
     <section class="m11-inspector-section" aria-labelledby="m11-inspector-title">

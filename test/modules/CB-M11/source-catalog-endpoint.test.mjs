@@ -16,6 +16,9 @@ test('the catalog endpoint is read-only, cached and CORS-open', () => {
   assert.ok(route.includes('UNSUPPORTED_QUERY'));
   assert.ok(route.includes('allow: "GET"'));
   assert.ok(route.includes('buildSourceCatalog'));
+  assert.ok(route.includes('strongEtag'));
+  assert.ok(route.includes('if-none-match'));
+  assert.ok(route.includes('304'));
   assert.doesNotMatch(route, /localStorage|sessionStorage|innerHTML/u);
 });
 

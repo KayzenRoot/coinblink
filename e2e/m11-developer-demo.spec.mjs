@@ -191,6 +191,11 @@ test("M11 live status endpoint is content-free and read-only", async ({ request 
   expect(headers["content-type"]).toContain("application/json");
   expect(headers["access-control-allow-origin"]).toBe("*");
   expect(headers["cache-control"]).toContain("max-age=60");
+  const etag = headers["etag"];
+  expect(etag).toMatch(/^"[0-9a-f]{8}-[0-9a-f]+"$/u);
+  const conditional = await request.get("/v1/news/status", { headers: { "if-none-match": etag } });
+  expect(conditional.status()).toBe(304);
+  expect(await conditional.text()).toBe("");
   const payload = await response.json();
   expect(["ok", "disabled", "unavailable"]).toContain(payload.status);
   expect(Array.isArray(payload.feeds)).toBe(true);
@@ -219,6 +224,13 @@ test("M11 publisher catalog is metadata-only and read-only", async ({ request })
   const headers = response.headers();
   expect(headers["content-type"]).toContain("application/json");
   expect(headers["cache-control"]).toContain("max-age=3600");
+  const etag = headers["etag"];
+  expect(etag).toMatch(/^"[0-9a-f]{8}-[0-9a-f]+"$/u);
+  const cached = await request.get("/v1/sources", { headers: { "if-none-match": etag } });
+  expect(cached.status()).toBe(304);
+  expect(await cached.text()).toBe("");
+  const mismatch = await request.get("/v1/sources", { headers: { "if-none-match": '"nope"' } });
+  expect(mismatch.status()).toBe(200);
   const payload = await response.json();
   expect(payload.status).toBe("ok");
   expect(payload.mode).toBe("PUBLIC_METADATA");

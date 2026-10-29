@@ -129,7 +129,16 @@ jobs:
             if (typeof statusPayload.stale !== "boolean" || !Array.isArray(statusPayload.feeds) || statusPayload.feeds.some((feed) => "title" in feed)) {
               throw new Error("/v1/news/status must expose feed state without headline text");
             }
-            const catalog = await (await fetch(base + "/v1/sources")).json();
+            const catalogResponse = await fetch(base + "/v1/sources");
+            const catalogEtag = catalogResponse.headers.get("etag");
+            if (!catalogEtag) {
+              throw new Error("/v1/sources must return an ETag");
+            }
+            const catalogCached = await fetch(base + "/v1/sources", { headers: { "if-none-match": catalogEtag } });
+            if (catalogCached.status !== 304) {
+              throw new Error("/v1/sources must answer 304 for a matching ETag, got " + catalogCached.status);
+            }
+            const catalog = await catalogResponse.json();
             if (catalog.count !== 5 || !Array.isArray(catalog.sources) || catalog.sources.length !== 5) {
               throw new Error("/v1/sources must list the five publishers");
             }

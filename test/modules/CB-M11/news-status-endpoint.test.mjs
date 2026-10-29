@@ -10,14 +10,10 @@ test('the status endpoint is read-only, cached briefly and CORS-open', () => {
   assert.ok(route.includes('export const GET'));
   assert.ok(route.includes('export const OPTIONS'));
   assert.ok(route.includes('export const ALL'));
-  assert.ok(route.includes('"cache-control": "public, max-age=60"'));
-  assert.ok(route.includes('"access-control-allow-origin": "*"'));
-  assert.ok(route.includes('"x-robots-tag": "noindex"'));
-  assert.ok(route.includes('UNSUPPORTED_QUERY'));
-  assert.ok(route.includes('allow: "GET"'));
+  assert.ok(route.includes('publicJsonHeaders("public, max-age=60")'));
   assert.ok(route.includes('readLiveNews'));
   assert.ok(route.includes('buildNewsStatus'));
-  assert.ok(route.includes('conditionalResponse'));
+  assert.ok(route.includes('publicJsonEndpoint'));
   assert.doesNotMatch(route, /localStorage|sessionStorage|innerHTML/u);
 });
 

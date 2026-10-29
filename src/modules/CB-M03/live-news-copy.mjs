@@ -223,9 +223,9 @@ const COPY_ROWS = Object.freeze({
     "es": "Filtrar historias cubiertas",
   },
   coverageFilterNote: {
-    "en": "Filters narrow the collection before grouping. A publisher filter keeps the whole story, including the other publishers that carried it.",
-    "pt-br": "Os filtros restringem a coleta antes do agrupamento. O filtro por veículo mantém a história inteira, incluindo os outros veículos que a publicaram.",
-    "es": "Los filtros restringen la recopilación antes del agrupamiento. El filtro por medio mantiene la historia completa, incluidos los otros medios que la publicaron.",
+    "en": "Search and filters narrow the collection before grouping. A publisher filter keeps the whole story, including the other publishers that carried it.",
+    "pt-br": "A busca e os filtros restringem a coleta antes do agrupamento. O filtro por veículo mantém a história inteira, incluindo os outros veículos que a publicaram.",
+    "es": "La búsqueda y los filtros restringen la recopilación antes del agrupamiento. El filtro por medio mantiene la historia completa, incluidos los otros medios que la publicaron.",
   },
   coverageFilteredEmpty: {
     "en": "No covered story matches these filters.",

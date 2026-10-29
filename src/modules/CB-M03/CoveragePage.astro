@@ -1,10 +1,12 @@
 ---
-import { LIVE_NEWS_SINCE_OPTIONS, LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
+import { LIVE_NEWS_QUERY_MAX, LIVE_NEWS_SINCE_OPTIONS, LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
 import { readLiveNews } from "./live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
-import { clusterLiveHeadlines, clustersForSource, coveragePublishers } from "./live-clusters.mjs";
 import {
-  LIVE_NEWS_ALL_SOURCES, clampLiveSince, clampLiveSource, withinLiveSince,
+  clusterLiveHeadlines, clustersForSource, coveragePublishers, searchCoverageClusters,
+} from "./live-clusters.mjs";
+import {
+  LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSince, clampLiveSource, withinLiveSince,
 } from "./live-news-filter.mjs";
 import { formatLiveAge } from "./live-time.mjs";
 import ReaderLocaleSwitch from "./ReaderLocaleSwitch.astro";
@@ -20,22 +22,25 @@ const stamp = (iso: string | null) =>
 const nowMs = Date.now();
 const source = clampLiveSource(Astro.url.searchParams.get("source") ?? LIVE_NEWS_ALL_SOURCES);
 const sinceHours = clampLiveSince(Astro.url.searchParams.get("since") ?? "");
+const query = clampLiveSearchQuery(Astro.url.searchParams.get("q") ?? "");
 // The window narrows the pool before grouping; the publisher filter keeps the
 // whole story, so a filtered view still shows every publisher that carried it.
 const viewHref = (nextSource: string, nextSince: number) => {
   const params = new URLSearchParams();
+  if (query !== "") params.set("q", query);
   if (nextSource !== LIVE_NEWS_ALL_SOURCES) params.set("source", nextSource);
   if (nextSince > 0) params.set("since", String(nextSince));
   const search = params.toString();
   return "/" + locale + "/news/coverage" + (search === "" ? "" : "?" + search);
 };
-const filtered = source !== LIVE_NEWS_ALL_SOURCES || sinceHours > 0;
+const filtered = query !== "" || source !== LIVE_NEWS_ALL_SOURCES || sinceHours > 0;
 const intro = fillLiveNewsCopy(copy.coverageIntro, { feeds: LIVE_NEWS_SOURCES.length });
 const pool = live
   ? snapshot.items.filter((item: { publishedAt: string | null }) => withinLiveSince(item, sinceHours, nowMs))
   : Object.freeze([]);
 const allClusters = live ? clusterLiveHeadlines(pool) : Object.freeze([]);
-const clusters = source === LIVE_NEWS_ALL_SOURCES ? allClusters : clustersForSource(allClusters, source);
+const matched = searchCoverageClusters(allClusters, query);
+const clusters = source === LIVE_NEWS_ALL_SOURCES ? matched : clustersForSource(matched, source);
 const publisherAge = (iso: string | null) => formatLiveAge(iso, nowMs, locale) ?? copy.undated;
 const rows = clusters.map((cluster) => ({
   cluster,
@@ -82,6 +87,10 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
       <p class="m03-coverage__meta" role="status" aria-live="polite">{meta}</p>
       <form class="m03-coverage__filters" method="get" action={"/" + locale + "/news/coverage"}
         role="search" aria-label={copy.coverageFilterTitle} data-m03-coverage-filter>
+        <label>{copy.filterQueryLabel}
+          <input type="search" name="q" maxlength={LIVE_NEWS_QUERY_MAX} value={query}
+            placeholder={copy.filterQueryHint} autocomplete="off" data-m03-coverage-query />
+        </label>
         <label>{copy.filterSourceLabel}
           <select name="source">
             <option value="all" selected={source === LIVE_NEWS_ALL_SOURCES}>{copy.filterAllSources}</option>
@@ -151,7 +160,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-coverage__meta{font-size:.9rem;color:#9fb6a5}
   .m03-coverage__filters{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;margin:1rem 0 .5rem;padding:1rem;border:1px solid #2f4a38;border-radius:.6rem}
   .m03-coverage__filters label{display:grid;gap:.35rem;font-size:.85rem;color:#9fb6a5;font-weight:650}
-  .m03-coverage__filters select{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.5rem .6rem;min-width:12rem}
+  .m03-coverage__filters input,.m03-coverage__filters select{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.5rem .6rem;min-width:12rem}
   .m03-coverage__filters button{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.55rem .9rem;font-weight:750;cursor:pointer}
   .m03-coverage__since{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.35rem 0 .5rem;font-size:.85rem;color:#9fb6a5}
   .m03-coverage__since a{padding:.22rem .55rem;border:1px solid #456e4e;border-radius:999px;text-decoration:none}

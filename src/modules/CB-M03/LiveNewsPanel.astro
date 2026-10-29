@@ -8,6 +8,7 @@ import {
   LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSince, clampLiveSource, filterLiveHeadlines,
 } from "./live-news-filter.mjs";
 import { extractLiveTopics } from "./live-news-topics.mjs";
+import { buildCoverageIndex, clusterLiveHeadlines, coverageOthers } from "./live-clusters.mjs";
 import { exactLiveTime, formatLiveAge } from "./live-time.mjs";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
@@ -32,6 +33,17 @@ const visible = snapshot.status === "LIVE_HEADLINES"
 const topics = snapshot.status === "LIVE_HEADLINES"
   ? extractLiveTopics(visible)
   : Object.freeze([]);
+// Coverage runs over the whole collection, not the filtered view, so an item
+// still knows the other publishers that carried it after narrowing the list.
+const clusters = snapshot.status === "LIVE_HEADLINES"
+  ? clusterLiveHeadlines(snapshot.items)
+  : Object.freeze([]);
+const coverageIndex = buildCoverageIndex(clusters);
+const rows = visible.map((item) => ({
+  item,
+  others: coverageOthers(coverageIndex.get(item.id), item.id),
+}));
+const coveredCount = rows.filter((row) => row.others.length > 0).length;
 // A topic keeps the active publisher and window, so narrowing step by step
 // never silently widens the list again.
 const viewHref = (nextQuery: string, nextSource: string, nextSince: number) => {
@@ -146,8 +158,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
         </nav>
       )}
       <ol class="m03-live__list">
-        {visible.map((item: { id: string; title: string; summary: string; link: string; sourceId: string;
-          sourceName: string; sourceHome: string; publishedAt: string | null }) => (
+        {rows.map(({ item, others }) => (
           <li class="m03-live__item" data-m03-live-item={item.sourceId}>
             <h3 class="m03-live__headline">
               <a href={item.link} rel="noreferrer noopener external">{item.title}</a>
@@ -158,10 +169,24 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
               <span aria-hidden="true"> · </span>
               <time datetime={item.publishedAt ?? undefined} title={exact(item.publishedAt) || undefined}>{age(item.publishedAt)}</time>
             </p>
+            {others.length > 0 && (
+              <p class="m03-live__coverage" data-m03-live-coverage>
+                <span>{copy.alsoCovered}</span>{" "}
+                {others.map((other, index) => (
+                  <span>
+                    <a href={other.link} rel="noreferrer noopener external">{other.sourceName}</a>
+                    {index < others.length - 1 ? ", " : ""}
+                  </span>
+                ))}
+              </p>
+            )}
           </li>
         ))}
       </ol>
       <p class="m03-live__note">{copy.filterNote}</p>
+      {coveredCount > 0 && (
+        <p class="m03-live__note" data-m03-live-coverage-note>{copy.coverageNote}</p>
+      )}
     </section>
   )}
 
@@ -234,6 +259,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__headline{margin:0 0 .4rem;font-size:1.15rem;line-height:1.35}
   .m03-live__summary{margin:0 0 .5rem;font-size:.95rem}
   .m03-live__byline{margin:0;font-size:.82rem;color:#9fb6a5;letter-spacing:.02em}
+  .m03-live p.m03-live__coverage{margin:.3rem 0 0;font-size:.82rem;color:#9fb6a5}
   .m03-live__feeds{margin:2rem 0 0}
   .m03-live__feeds h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5}
   .m03-live__feeds table{width:100%;border-collapse:collapse;font-size:.9rem}

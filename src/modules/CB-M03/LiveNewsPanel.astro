@@ -108,6 +108,20 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
         ))}
       </nav>
       <p class="m03-live__note">{copy.sinceNote}</p>
+      <section class="m03-live__saved" aria-labelledby="m03-live-saved" data-m03-saved-searches hidden
+        data-locale={locale} data-current-q={query} data-current-source={source}
+        data-current-since={sinceHours}>
+        <h2 id="m03-live-saved">{copy.savedTitle}</h2>
+        <p class="m03-live__note">{copy.savedNote}</p>
+        <button type="button" data-m03-save-current>{copy.savedSave}</button>
+        <p class="m03-live__note" data-m03-save-status role="status" aria-live="polite"></p>
+        <ul class="m03-live__saved-list" data-m03-saved-list></ul>
+        <p class="m03-live__note" data-m03-saved-empty hidden>{copy.savedEmpty}</p>
+        <button type="button" data-m03-saved-clear hidden>{copy.savedClear}</button>
+      </section>
+      <script>
+        import "./saved-searches.client.mjs";
+      </script>
       <p class="m03-live__count" role="status" aria-live="polite" data-m03-live-count>
         {visible.length} {visible.length === 1 ? copy.resultOne : copy.resultMany}
       </p>
@@ -194,6 +208,13 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   .m03-live__since{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.35rem 0 .5rem;font-size:.85rem;color:#9fb6a5}
   .m03-live__since a{padding:.22rem .55rem;border:1px solid #456e4e;border-radius:999px;text-decoration:none}
   .m03-live__since a[aria-current="true"]{border-color:#b8f34b;color:#b8f34b;font-weight:700}
+  .m03-live__saved{margin:1rem 0;padding:1rem 1.25rem;border:1px solid #2f4a38;border-radius:.6rem}
+  .m03-live__saved h2{font-size:1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:.2rem 0}
+  .m03-live__saved-list{list-style:none;margin:.5rem 0 0;padding:0;display:grid;gap:.45rem}
+  .m03-live__saved-list li{display:flex;justify-content:space-between;gap:.75rem;align-items:center}
+  .m03-live__saved-list a{text-decoration:none}
+  .m03-live__saved-list button{background:transparent;border:1px solid #456e4e;color:#e9f6eb;border-radius:.35rem;padding:.1rem .45rem;cursor:pointer}
+  .m03-live__saved button[data-m03-save-current]{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.5rem .8rem;font-weight:700;cursor:pointer}
   .m03-live__topics{margin:0 0 1rem}
   .m03-live__topics h2{font-size:1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:.2rem 0}
   .m03-live__topics ul{list-style:none;display:flex;flex-wrap:wrap;gap:.45rem;margin:.5rem 0 0;padding:0}

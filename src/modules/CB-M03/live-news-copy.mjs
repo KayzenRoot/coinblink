@@ -197,6 +197,71 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Todas as fontes →",
     "es": "Todas las fuentes →",
   },
+  savedTitle: {
+    "en": "Saved searches",
+    "pt-br": "Buscas salvas",
+    "es": "Búsquedas guardadas",
+  },
+  savedNote: {
+    "en": "Stored in this browser only. No account, no server and no tracking.",
+    "pt-br": "Guardadas apenas neste navegador. Sem conta, servidor ou rastreamento.",
+    "es": "Guardadas solo en este navegador. Sin cuenta, servidor ni rastreo.",
+  },
+  savedSave: {
+    "en": "Save this search",
+    "pt-br": "Salvar esta busca",
+    "es": "Guardar esta búsqueda",
+  },
+  savedClear: {
+    "en": "Clear saved searches",
+    "pt-br": "Limpar buscas salvas",
+    "es": "Borrar búsquedas guardadas",
+  },
+  savedEmpty: {
+    "en": "No saved search yet.",
+    "pt-br": "Nenhuma busca salva ainda.",
+    "es": "Todavía no hay búsquedas guardadas.",
+  },
+  savedAll: {
+    "en": "All headlines",
+    "pt-br": "Todas as manchetes",
+    "es": "Todos los titulares",
+  },
+  savedRemove: {
+    "en": "Remove {label}",
+    "pt-br": "Remover {label}",
+    "es": "Quitar {label}",
+  },
+  savedFull: {
+    "en": "You can save up to {max} searches.",
+    "pt-br": "Você pode salvar até {max} buscas.",
+    "es": "Puedes guardar hasta {max} búsquedas.",
+  },
+  savedDuplicate: {
+    "en": "This search is already saved.",
+    "pt-br": "Esta busca já está salva.",
+    "es": "Esta búsqueda ya está guardada.",
+  },
+  savedSaved: {
+    "en": "Search saved in this browser.",
+    "pt-br": "Busca salva neste navegador.",
+    "es": "Búsqueda guardada en este navegador.",
+  },
+  savedError: {
+    "en": "This browser could not store the search.",
+    "pt-br": "Este navegador não conseguiu armazenar a busca.",
+    "es": "Este navegador no pudo guardar la búsqueda.",
+  },
+  savedRemoved: {
+    "en": "Saved search removed.",
+    "pt-br": "Busca salva removida.",
+    "es": "Búsqueda guardada eliminada.",
+  },
+  savedCleared: {
+    "en": "Saved searches cleared.",
+    "pt-br": "Buscas salvas limpas.",
+    "es": "Búsquedas guardadas borradas.",
+  },
   feedsTitle: {
     "en": "Feed status in this collection",
     "pt-br": "Situação dos feeds nesta coleta",

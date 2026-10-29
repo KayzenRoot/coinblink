@@ -9,6 +9,9 @@ import {
   LIVE_NEWS_STALE_MAX_SECONDS, LIVE_NEWS_TIMEOUT_MS, LIVE_NEWS_WINDOW_SECONDS,
 } from "./rss-sources.mjs";
 import { parseRssFeed } from "./rss-parse.mjs";
+import {
+  SHARED_SNAPSHOT_KEY, readSharedSnapshot, resolveSharedCache, writeSharedSnapshot,
+} from "./shared-snapshot.mjs";
 
 const ENABLED_VALUES = new Set(["1", "true", "enabled", "on"]);
 
@@ -129,12 +132,26 @@ export async function readLiveNews(options = {}) {
     nowMs = () => Date.now(),
     timeoutMs = LIVE_NEWS_TIMEOUT_MS,
     cache = defaultNewsCache,
+    sharedCache = resolveSharedCache(),
+    sharedKey = SHARED_SNAPSHOT_KEY,
   } = options;
   if (!isLiveNewsEnabled(enabled)) {
     return Object.freeze({ status: "DISABLED", reason: "NOT_ENABLED", items: Object.freeze([]), sources: Object.freeze([]) });
   }
   const cached = cache.read(nowMs());
   if (cached !== null) return cached;
+  // Another isolate in this data center may have collected within the window.
+  const shared = await readSharedSnapshot(sharedCache, sharedKey);
+  if (shared !== null) {
+    const collectedMs = Date.parse(shared.collectedAt);
+    if (Number.isFinite(collectedMs)) {
+      const ageSeconds = Math.floor((nowMs() - collectedMs) / 1000);
+      if (ageSeconds >= 0 && ageSeconds < LIVE_NEWS_WINDOW_SECONDS) {
+        cache.write(nowMs(), shared, LIVE_NEWS_WINDOW_SECONDS - ageSeconds);
+        return shared;
+      }
+    }
+  }
   if (typeof fetchImpl !== "function") {
     return Object.freeze({ status: "UNAVAILABLE", reason: "NO_FETCH", items: Object.freeze([]), sources: Object.freeze([]) });
   }
@@ -182,5 +199,6 @@ export async function readLiveNews(options = {}) {
     items,
   });
   cache.write(nowMs(), snapshot, LIVE_NEWS_WINDOW_SECONDS);
+  await writeSharedSnapshot(sharedCache, snapshot, LIVE_NEWS_WINDOW_SECONDS, sharedKey);
   return snapshot;
 }

@@ -3,7 +3,9 @@
 // Narrowing never triggers another request: it only selects from what the
 // current collection already returned, so a search cannot multiply egress or
 // turn the reader into a proxy for arbitrary publisher queries.
-import { LIVE_NEWS_QUERY_MAX, LIVE_NEWS_SOURCES } from "./rss-sources.mjs";
+import {
+  LIVE_NEWS_QUERY_MAX, LIVE_NEWS_SINCE_OPTIONS, LIVE_NEWS_SOURCES,
+} from "./rss-sources.mjs";
 
 export const LIVE_NEWS_ALL_SOURCES = "all";
 
@@ -32,7 +34,25 @@ export function matchesLiveHeadline(item, { query = "", source = LIVE_NEWS_ALL_S
   return normalizeLiveSearch([item.title, item.summary].join(" ")).includes(needle);
 }
 
+/** Only the reviewed time windows narrow the list; anything else means all. */
+export function clampLiveSince(value) {
+  const hours = typeof value === "number" ? value : Number.parseInt(String(value ?? ""), 10);
+  return LIVE_NEWS_SINCE_OPTIONS.includes(hours) ? hours : 0;
+}
+
+/** A window hides undated headlines: freshness cannot be proven without a time. */
+export function withinLiveSince(item, sinceHours, nowMs) {
+  if (sinceHours <= 0) return true;
+  if (item === null || typeof item !== "object" || typeof item.publishedAt !== "string") return false;
+  const published = Date.parse(item.publishedAt);
+  if (!Number.isFinite(published)) return false;
+  return nowMs - published <= sinceHours * 60 * 60 * 1000;
+}
+
 export function filterLiveHeadlines(items, filter = {}) {
   if (!Array.isArray(items)) return Object.freeze([]);
-  return Object.freeze(items.filter((item) => matchesLiveHeadline(item, filter)));
+  const sinceHours = clampLiveSince(filter.sinceHours);
+  const nowMs = Number.isFinite(filter.nowMs) ? filter.nowMs : Date.now();
+  return Object.freeze(items.filter((item) =>
+    matchesLiveHeadline(item, filter) && withinLiveSince(item, sinceHours, nowMs)));
 }

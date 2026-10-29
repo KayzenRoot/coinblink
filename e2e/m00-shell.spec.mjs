@@ -537,8 +537,12 @@ test.describe("CoinBlink M00 local shell", () => {
       const response = await request.get(path);
       const headers = response.headers();
       expect(headers["content-security-policy"]).toContain("default-src 'self'");
-      expect(headers["permissions-policy"]).toBe("camera=(), geolocation=(), microphone=()");
-      expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+      expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+      expect(headers["content-security-policy"]).not.toContain("unsafe-inline");
+      expect(headers["permissions-policy"]).toBe("accelerometer=(), browsing-topics=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()");
+      expect(headers["referrer-policy"]).toBe("no-referrer");
+      expect(headers["cross-origin-opener-policy"]).toBe("same-origin");
+      expect(headers["strict-transport-security"]).toBe("max-age=31536000; includeSubDomains");
       expect(headers["x-content-type-options"]).toBe("nosniff");
       expect(headers["x-frame-options"]).toBe("DENY");
       expect(headers["x-robots-tag"]).toBe("noindex, nofollow, noarchive");

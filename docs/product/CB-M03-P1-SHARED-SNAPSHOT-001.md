@@ -18,7 +18,7 @@ dependency.
 `src/modules/CB-M03/shared-snapshot.mjs`:
 
 - `SHARED_SNAPSHOT_KEY` — a synthetic same-origin-style key,
-  `https://coinblink.internal/cb-m03/live-snapshot/v1`. Bump the version when
+  `https://coinblink.internal/cb-m03/live-snapshot/v2`. Bump the version when
   the collected shape changes.
 - `resolveSharedCache(candidate)` — returns the cache only when it exposes
   `match` and `put`; otherwise `null`. Defaults to `globalThis.caches?.default`.

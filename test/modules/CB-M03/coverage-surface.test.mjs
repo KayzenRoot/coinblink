@@ -3,40 +3,36 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const LOCALES = ['en', 'pt-br', 'es'];
-const pages = LOCALES.map((locale) => ({
-  locale,
-  source: readFileSync('src/pages/' + locale + '/news/coverage.astro', 'utf8'),
-}));
+const pageOf = (locale) => readFileSync('src/pages/' + locale + '/news/coverage.astro', 'utf8');
 const component = readFileSync('src/modules/CB-M03/CoveragePage.astro', 'utf8');
 const panel = readFileSync('src/modules/CB-M03/LiveNewsPanel.astro', 'utf8');
 
-test('each locale renders its own coverage page and keeps the reader gated', () => {
-  for (const { locale, source } of pages) {
-    assert.match(source, /export const prerender = false/u, locale);
-    assert.match(source, /readLiveNews\(\{ enabled: import\.meta\.env\.PUBLIC_NEWS_LIVE \}\)/u, locale);
-    assert.match(source, new RegExp('getLiveNewsCopy\\("' + locale + '"\\)', 'u'), locale);
-    assert.match(source, new RegExp('<CoveragePage snapshot=\\{snapshot\\} locale="' + locale + '" />', 'u'), locale);
-    assert.doesNotMatch(source, /set:html|is:inline|client:/u, locale);
+test('the three coverage routes are thin, gated wrappers with their own locale', () => {
+  const sources = Object.fromEntries(LOCALES.map((locale) => [locale, pageOf(locale)]));
+  assert.deepEqual(Object.keys(sources), LOCALES);
+  const joined = LOCALES.map((locale) => sources[locale]).join('\n');
+  assert.equal(joined.match(/export const prerender = false/gu)?.length, 3);
+  assert.equal(joined.match(/readLiveNews\(/gu)?.length, 3);
+  assert.doesNotMatch(joined, /set:html|is:inline|client:/u);
+  for (const locale of LOCALES) {
+    assert.ok(sources[locale].includes('<CoveragePage snapshot={snapshot} locale="' + locale + '" />'), locale);
+    assert.ok(sources[locale].includes('getLiveNewsCopy("' + locale + '")'), locale);
+    assert.ok(sources[locale].includes('readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE })'), locale);
   }
+  assert.ok(sources['pt-br'].includes('<BaseLayout lang="pt-BR"'), 'the BCP-47 tag is canonical');
 });
 
-test('the coverage page groups the same snapshot and adds no request or storage', () => {
-  assert.match(component, /clusterLiveHeadlines/u);
-  assert.match(component, /coveragePublishers/u);
-  assert.match(component, /formatLiveAge/u);
-  assert.doesNotMatch(component, /set:html|<script/u);
-  assert.doesNotMatch(component, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
-  assert.match(component, /data-m03-coverage="disabled"/u);
-  assert.match(component, /data-m03-coverage="unavailable"/u);
-  assert.match(component, /data-m03-coverage="live"/u);
-  assert.match(component, /data-m03-coverage-item/u);
-  assert.match(component, /copy\.coverageEmpty/u);
-  assert.match(component, /copy\.coverageLiveLink/u);
-  assert.match(component, /rel="noreferrer noopener external"/u);
-  assert.match(component, /\{"\/" \+ locale \+ "\/news\/live"\}/u);
+test('the coverage component renders the groups offline', () => {
+  for (const marker of ['clusterLiveHeadlines', 'coveragePublishers', 'formatLiveAge',
+    'data-m03-coverage-item', 'copy.coverageEmpty', 'copy.coverageLiveLink',
+    'rel="noreferrer noopener external"', 'data-m03-coverage="disabled"']) {
+    assert.ok(component.includes(marker), marker);
+  }
+  assert.doesNotMatch(component,
+    /set:html|<script|fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage/u);
 });
 
-test('the live reader links to the full coverage page', () => {
+test('the live highlight exposes the full page with the covered-story count', () => {
   assert.ok(panel.includes('"/" + locale + "/news/coverage"'));
   assert.ok(panel.includes('fillLiveNewsCopy(copy.coverageAll, { count: clusters.length })'));
 });

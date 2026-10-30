@@ -156,6 +156,7 @@ export async function dashboardPage({ db, expiresAt }) {
     + '<dt>Session expires</dt><dd>' + escapeHtml(new Date(expiresAt * 1000).toISOString()) + '</dd></dl>'
     + '<p><a href="/admin/drafts">Open drafts</a> · <a href="/admin/analytics">Analytics</a>'
     + ' · <a href="/admin/research">Research desk</a>'
+    + ' · <a href="/admin/social">Social accounts</a>'
     + ' · <a href="/admin/security">Security and audit</a></p>'
     + '<h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
     + (hasRecovery ? '<p class="admin__note">A recovery passkey is registered.</p>' : '<button type="button" id="owner-enroll-recovery">Add recovery passkey</button>')

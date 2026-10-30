@@ -1,8 +1,7 @@
 // CB-M07-P1-X-OAUTH-001: OAuth 2.0 authorization-code + PKCE for X.
 //
-// The flow proves the configured X app and shows the authenticated handle. It
-// deliberately does not persist the access or refresh token: publishing stays
-// disabled until the owner storage and authorization layer (M05) exists.
+// The callback hands the tokens to the owner-only vault (token-vault.mjs),
+// which stores only AES-GCM ciphertext. Publishing remains disabled.
 export const X_AUTHORIZE_URL = "https://twitter.com/i/oauth2/authorize";
 export const X_TOKEN_URL = "https://api.twitter.com/2/oauth2/token";
 export const X_ME_URL = "https://api.twitter.com/2/users/me";
@@ -102,6 +101,7 @@ export async function exchangeCode({
   }
   return Object.freeze({
     accessToken: payload.access_token,
+    refreshToken: typeof payload.refresh_token === "string" ? payload.refresh_token : null,
     tokenType: typeof payload.token_type === "string" ? payload.token_type : "bearer",
     scope: typeof payload.scope === "string" ? payload.scope : "",
     expiresIn: Number.isFinite(payload.expires_in) ? payload.expires_in : null,

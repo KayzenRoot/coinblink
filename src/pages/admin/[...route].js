@@ -13,6 +13,7 @@ import {
 } from '../../modules/CB-M05/p1-production/drafts.mjs';
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 import { analyticsPage } from '../../modules/CB-M06/pageview.mjs';
+import { listSocialAccounts, revokeSocialAccount, socialPage } from '../../modules/CB-M07/token-vault.mjs';
 import {
   RESEARCH_MODEL, generateResearch, listResearchNotes, readResearchNote, researchListPage,
   researchNotePage, researchUsage, validResearchModel,
@@ -142,6 +143,20 @@ async function productionAdmin(request, env) {
         'x-robots-tag': 'noindex',
       },
     });
+  }
+  if (method === 'GET' && path === '/admin/social') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return socialPage({ accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request) });
+  }
+  if (method === 'POST' && path === '/admin/social/revoke') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    await revokeSocialAccount({
+      db: config.db, provider: String(auth.form.get('provider') ?? ''),
+      accountId: String(auth.form.get('accountId') ?? ''),
+    });
+    return redirectTo('/admin/social');
   }
   const researchMatch = /^\/admin\/research\/([0-9a-f-]{36})$/u.exec(path);
   if (method === 'GET' && path === '/admin/research') {

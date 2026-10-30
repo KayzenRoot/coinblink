@@ -230,11 +230,12 @@ test('the admin and webhook routes expose the billing contract', () => {
   assert.doesNotMatch(route, /card number|cvc/iu);
 });
 
-test('the public return hop bounces to the authenticated billing page', () => {
+test('the public return page bounces to the authenticated billing page', () => {
   const source = readFileSync('src/pages/billing/return.ts', 'utf8');
-  for (const marker of ['OUTCOMES', '"success"', '"cancelled"', '/admin/billing?checkout=', '"cache-control": "no-store"']) {
+  for (const marker of ['OUTCOMES', '"success"', '"cancelled"', '/admin/billing?checkout=',
+    'http-equiv="refresh"', 'Continue to the billing page', '"cache-control": "no-store"']) {
     assert.ok(source.includes(marker), marker);
   }
-  assert.match(source, /status:\s*303/u);
+  assert.doesNotMatch(source, /<script|unsafe-inline|unsafe-eval/iu);
   assert.doesNotMatch(source, /import\s+\{[^}]*authorize/iu);
 });

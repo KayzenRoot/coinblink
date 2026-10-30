@@ -28,10 +28,11 @@ so the policy allows `https://checkout.stripe.com` — the only external origin 
 the CSP. Without it the session is created but the browser refuses the
 redirection and the owner stays on the billing page.
 
-The success and cancel URLs point at `/billing/return?status=...`, a public
-endpoint that only 303s to `/admin/billing?checkout=...`. The owner cookie is
-`SameSite=Strict`, so the cross-site navigation from Stripe carries no session;
-the second, same-site hop does, and the authenticated page renders the outcome.
+The success and cancel URLs point at `/billing/return?status=...`. The owner
+cookie is `SameSite=Strict` and a redirect chain that starts at Stripe stays
+cross-site for the whole chain, so the landing is a tiny public document whose
+meta refresh and link navigate to `/admin/billing?checkout=...` from our own
+origin, which does carry the session.
 
 ## Webhook
 

@@ -26,6 +26,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #cbfa
 .admin__draft-form input,.admin__draft-form textarea{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.6rem .7rem;font:inherit}
 .admin__draft-form textarea{resize:vertical}
 .admin__error{color:#ffb4a8;font-weight:700}
+.admin__ok{color:#b6f26a;font-weight:700}
 
 .admin__table{width:100%;border-collapse:collapse;font-size:.86rem;margin:.5rem 0 1.4rem}
 .admin__table th,.admin__table td{padding:.5rem .35rem;border-bottom:1px solid #24392c;text-align:left;vertical-align:top}

@@ -1,7 +1,10 @@
 import { defineMiddleware } from "astro:middleware";
 
 const securityHeaders: ReadonlyArray<readonly [string, string]> = [
-  ["Content-Security-Policy", "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; media-src 'self'; frame-src 'none'; worker-src 'none'"],
+  // form-action also governs the redirect target of a form POST, so the Stripe
+  // Checkout origin has to be allowed for /admin/billing/checkout to hand the
+  // owner to Stripe. It is the only external origin in the policy.
+  ["Content-Security-Policy", "default-src 'self'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; media-src 'self'; frame-src 'none'; worker-src 'none'"],
   ["Permissions-Policy", "accelerometer=(), browsing-topics=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"],
   ["Referrer-Policy", "no-referrer"],
   ["Cross-Origin-Opener-Policy", "same-origin"],

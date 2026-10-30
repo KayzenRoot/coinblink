@@ -101,6 +101,16 @@ test('subscription events upsert the entitlement and are idempotent', async () =
   assert.equal((await handleStripeEvent({ db, event: SUBSCRIPTION, nowMs: NOW })).status, 'duplicate');
 });
 
+test('the period end falls back to the subscription item', async () => {
+  const db = fakeDb();
+  const event = structuredClone(SUBSCRIPTION);
+  delete event.data.object.current_period_end;
+  event.data.object.items.data[0].current_period_end = 1_800_172_800;
+  assert.equal((await handleStripeEvent({ db, event, nowMs: NOW })).status, 'processed');
+  const insert = db.calls.find((call) => call.sql.includes('INSERT INTO cms_billing_subscriptions'));
+  assert.equal(insert.args[5], 1_800_172_800);
+});
+
 test('checkout completion records the Stripe customer without card data', async () => {
   const db = fakeDb();
   const event = {
@@ -147,12 +157,20 @@ test('checkout refuses missing settings, live keys and unknown plans', async () 
   assert.equal((await checkoutForPlan({ ...base, env: {}, plan: 'monthly' })).status, 'not_configured');
   assert.equal((await checkoutForPlan({ ...base, env: { ...ENV, STRIPE_SECRET_KEY: LIVE_KEY }, plan: 'monthly' })).status, 'live_disabled');
   assert.equal((await checkoutForPlan({ ...base, env: ENV, plan: 'weekly' })).status, 'invalid_plan');
+  let body = null;
   const redirect = await checkoutForPlan({
     ...base, env: ENV, plan: 'yearly',
-    fetchImpl: async () => new Response(JSON.stringify({ id: 'cs_1', url: 'https://checkout.stripe.com/x' }), { status: 200 }),
+    fetchImpl: async (_url, options) => {
+      body = new URLSearchParams(options.body.toString());
+      return new Response(JSON.stringify({ id: 'cs_1', url: 'https://checkout.stripe.com/x' }), { status: 200 });
+    },
   });
   assert.equal(redirect.status, 'redirect');
   assert.equal(redirect.url, 'https://checkout.stripe.com/x');
+  // A Strict owner cookie is not sent on the cross-site return, so Stripe lands
+  // on the public same-origin hop instead of the authenticated page.
+  assert.equal(body.get('success_url'), 'https://example.test/billing/return?status=success');
+  assert.equal(body.get('cancel_url'), 'https://example.test/billing/return?status=cancelled');
 });
 
 test('the billing page shows the plan, missing keys and the test-mode guard', async () => {
@@ -177,6 +195,16 @@ test('the billing page shows the plan, missing keys and the test-mode guard', as
     config: { ...CONFIG, apiKey: LIVE_KEY }, csrf: 'c'.repeat(64),
   });
   assert.match(await live.text(), /Live Stripe keys are disabled/u);
+  const done = billingPage({
+    status: { active: true, subscription: null, customer: null },
+    config: CONFIG, csrf: 'c'.repeat(64), checkout: 'success',
+  });
+  assert.match(await done.text(), /Payment completed/u);
+  const cancelled = billingPage({
+    status: { active: false, subscription: null, customer: null },
+    config: CONFIG, csrf: 'c'.repeat(64), checkout: 'cancelled',
+  });
+  assert.match(await cancelled.text(), /Checkout cancelled/u);
   assert.deepEqual(missingBillingKeys({ apiKey: null, webhookSecret: null, monthlyPrice: null, yearlyPrice: null }),
     ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_MONTHLY', 'STRIPE_PRICE_YEARLY']);
 });
@@ -192,7 +220,7 @@ test('billing status marks only active and trialing subscriptions as entitled', 
 
 test('the admin and webhook routes expose the billing contract', () => {
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
-  for (const marker of ['/admin/billing', 'checkoutForPlan', 'billingPage', 'billingStatus']) {
+  for (const marker of ['/admin/billing', 'checkoutForPlan', 'billingPage', 'billingStatus', "searchParams.get('checkout')"]) {
     assert.ok(route.includes(marker), marker);
   }
   const webhook = readFileSync('src/pages/api/stripe/webhook.ts', 'utf8');
@@ -200,4 +228,13 @@ test('the admin and webhook routes expose the billing contract', () => {
     assert.ok(webhook.includes(marker), marker);
   }
   assert.doesNotMatch(route, /card number|cvc/iu);
+});
+
+test('the public return hop bounces to the authenticated billing page', () => {
+  const source = readFileSync('src/pages/billing/return.ts', 'utf8');
+  for (const marker of ['OUTCOMES', '"success"', '"cancelled"', '/admin/billing?checkout=', '"cache-control": "no-store"']) {
+    assert.ok(source.includes(marker), marker);
+  }
+  assert.match(source, /status:\s*303/u);
+  assert.doesNotMatch(source, /import\s+\{[^}]*authorize/iu);
 });

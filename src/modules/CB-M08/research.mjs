@@ -214,6 +214,7 @@ export async function generateResearch({ db, ai, draft, focus, language, nowMs, 
   if (parsed === null) return { status: 'invalid_output' };
   const verified = verifyEvidence({ output: parsed, source: sourceForDraft(draft) });
   if (verified.output === null) return { status: 'unverified_output' };
+  const createdAt = Math.floor(nowMs / 1000);
   const note = Object.freeze({
     id: crypto.randomUUID(),
     draftId: draft.id,
@@ -225,7 +226,7 @@ export async function generateResearch({ db, ai, draft, focus, language, nowMs, 
     impact: verified.output.impact,
     questions: verified.output.questions,
     evidence: verified.output.evidence,
-    createdAt: nowMs,
+    createdAt,
   });
   const inserted = await db.prepare(
     'INSERT INTO cms_research_notes(id,owner_id,draft_id,draft_revision,model,language,focus,input_digest,output_json,created_at) VALUES (?,1,?,?,?,?,?,?,?,?)',
@@ -259,6 +260,13 @@ export async function readResearchNote(db, id) {
   return Object.freeze({ ...row, ...output });
 }
 
+/** Accept both the stored seconds and a legacy millisecond value. */
+function isoFromEpoch(value) {
+  const numeric = Number(value);
+  const seconds = numeric > 1e12 ? Math.floor(numeric / 1000) : numeric;
+  return new Date(seconds * 1000).toISOString();
+}
+
 function csrfField(csrf) {
   return '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">';
 }
@@ -271,7 +279,7 @@ export function researchListPage({ drafts, notes, csrf, used, cap = RESEARCH_LIM
   const options = drafts.map((draft) => '<option value="' + escapeHtml(draft.id) + '">'
     + escapeHtml(draft.title) + ' · revision ' + escapeHtml(String(draft.revision)) + '</option>').join('');
   const items = notes.map((note) => '<li><a href="/admin/research/' + escapeHtml(note.id) + '">'
-    + escapeHtml(new Date(note.createdAt * 1000).toISOString()) + '</a> <span class="admin__note">· '
+    + escapeHtml(isoFromEpoch(note.createdAt)) + '</a> <span class="admin__note">· '
     + escapeHtml(note.model) + ' · ' + escapeHtml(note.language) + '</span></li>').join('');
   const form = drafts.length === 0
     ? '<p>Create a draft first. The research desk only analyses your own private drafts.</p>'
@@ -302,7 +310,7 @@ export function researchNotePage({ note, csrf }) {
     + '<dl class="admin__facts"><dt>Draft revision</dt><dd>' + escapeHtml(String(note.draftRevision)) + '</dd>'
     + '<dt>Model</dt><dd><code>' + escapeHtml(note.model) + '</code></dd>'
     + '<dt>Language</dt><dd>' + escapeHtml(note.language) + '</dd>'
-    + '<dt>Created</dt><dd>' + escapeHtml(new Date(note.createdAt * 1000).toISOString()) + '</dd>'
+    + '<dt>Created</dt><dd>' + escapeHtml(isoFromEpoch(note.createdAt)) + '</dd>'
     + (note.focus === '' ? '' : '<dt>Focus</dt><dd>' + escapeHtml(note.focus) + '</dd>') + '</dl>'
     + '<h2>Summary</h2><p>' + escapeHtml(note.summary) + '</p>'
     + '<h2>Impact</h2><p>' + escapeHtml(note.impact) + '</p>'

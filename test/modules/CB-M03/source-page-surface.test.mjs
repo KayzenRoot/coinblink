@@ -11,7 +11,8 @@ test('the publisher page is validated, gated and escaped', () => {
   assert.match(page, /Astro\.response\.status = 404/u);
   assert.match(page, /LIVE_NEWS_SOURCES\.find/u);
   assert.match(page, /data-m03-source-page/u);
-  assert.doesNotMatch(page, /set:html|<script|<form/u);
+  assert.doesNotMatch(page, /set:html|<script/u);
+  assert.ok(page.includes('method="get"'));
   assert.match(page, /rel="noreferrer noopener external"/u);
   assert.ok(page.includes('item.sourceId === source.id'));
   assert.ok(page.includes('known && source !== null ? await readLiveNews'));
@@ -34,6 +35,12 @@ test('the publisher page shows which other publishers carried each story', () =>
   assert.ok(page.includes('data-m03-source-coverage'));
   assert.ok(page.includes('<ReaderLocaleSwitch locale={localeKey} />'));
   assert.ok(page.includes('lang={item.language}'));
+  for (const marker of ['clampLiveSearchQuery', 'clampLiveSince', 'filterLiveHeadlines',
+    'data-m03-source-filter', 'data-m03-source-query', 'data-m03-source-since',
+    'data-m03-source-filtered', 'viewHref(', 'liveCopy.emptyFiltered']) {
+    assert.ok(page.includes(marker), marker);
+  }
+  assert.ok(page.includes('snapshot?.status === "LIVE_HEADLINES" && ('));
   assert.ok(page.includes('liveCopy.alsoCovered'));
   assert.ok(page.includes('"/" + localeKey + "/news/coverage?source=" + source.id'));
   assert.ok(page.includes('fillLiveNewsCopy(liveCopy.coverageAll, { count: clusters.length })'));

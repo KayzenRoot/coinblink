@@ -14,6 +14,7 @@ const HTML_SURFACES=[
   {path:"/pt-br/news/category/protocol",lang:"pt-BR"},
   {path:"/es/news/category/education",lang:"es"},
   {path:"/developers",lang:"en"},
+  {path:"/status",lang:"en"},
   {path:"/en/about",lang:"en"},
   {path:"/pt-br/about",lang:"pt-BR"},
   {path:"/es/about",lang:"es"},

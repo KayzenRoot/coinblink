@@ -1,0 +1,109 @@
+---
+// CB-M14-P1-STATUS-SURFACE-001: public, content-free operational state.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildInfo } from "../lib/build-info";
+import { readLiveNews } from "../modules/CB-M03/live-news.mjs";
+import { buildCoverageStatus } from "../modules/CB-M03/coverage-status.mjs";
+import { LIVE_NEWS_SOURCES } from "../modules/CB-M03/rss-sources.mjs";
+
+export const prerender = false;
+
+Astro.response.headers.set("cache-control", "no-store");
+
+const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const coverage = buildCoverageStatus(snapshot);
+const live = snapshot.status === "LIVE_HEADLINES";
+const stateKey = snapshot.status === "LIVE_HEADLINES"
+  ? "live"
+  : snapshot.status === "DISABLED" ? "disabled" : "unavailable";
+const stateLabel = stateKey === "live" ? "Live" : stateKey === "disabled" ? "Disabled" : "Unavailable";
+const feeds = Array.isArray(snapshot.sources) ? snapshot.sources : Object.freeze([]);
+---
+<BaseLayout lang="en" title="CoinBlink · public status" description="Measured deployment and collection state. Counts and feed health only; no headline text.">
+  <main id="main" class="status" data-m14-status-page data-m14-state={stateKey}>
+    <nav aria-label="Status navigation">
+      <a href="/en">← Home</a> · <a href="/developers">Developers</a> · <a href="/en/about">How it works</a>
+    </nav>
+    <header>
+      <p class="status__tag">CB-M14 · PUBLIC STATUS · CONTENT-FREE</p>
+      <h1>Service status</h1>
+      <p>Measured state of this deployment. No headline text, excerpt, article link or article timestamp appears on this page.</p>
+    </header>
+
+    <section aria-labelledby="status-build">
+      <h2 id="status-build">Build</h2>
+      <dl class="status__facts">
+        <dt>Commit</dt><dd><code>{buildInfo.sha}</code></dd>
+        <dt>Environment</dt><dd><code>{buildInfo.environment}</code></dd>
+      </dl>
+      <p><a href="/health">Open the health JSON</a></p>
+    </section>
+
+    <section aria-labelledby="status-live">
+      <h2 id="status-live">Live collection</h2>
+      <p class="status__state" data-m14-state-label={stateKey}><strong>{stateLabel}</strong>
+        {snapshot.status === "DISABLED" && <span> — live news is off in this deployment; no feed request was made.</span>}
+        {snapshot.status === "UNAVAILABLE" && <span> — the collection could not be read: {snapshot.reason}.</span>}
+      </p>
+      {live && (
+        <dl class="status__facts">
+          <dt>Collected at</dt><dd>{snapshot.collectedAt}</dd>
+          <dt>Headlines</dt><dd>{snapshot.itemCount}</dd>
+          <dt>Feeds read</dt><dd>{snapshot.sourcesRead} of {LIVE_NEWS_SOURCES.length}</dd>
+          <dt>Covered stories</dt><dd>{coverage.stories}</dd>
+          <dt>Stale fallback</dt><dd>{snapshot.stale === true ? "yes" : "no"}</dd>
+        </dl>
+      )}
+      <table>
+        <caption>Feed health for this collection. Publisher ids only; no headline is shown.</caption>
+        <thead>
+          <tr><th scope="col">Publisher id</th><th scope="col">State</th><th scope="col">Headlines</th><th scope="col">Reason</th></tr>
+        </thead>
+        <tbody>
+          {feeds.map((feed: { id: string; status: string; itemCount: number; reason: string | null }) => (
+            <tr data-m14-feed={feed.id}>
+              <th scope="row"><code>{feed.id}</code></th>
+              <td>{feed.status}</td>
+              <td>{feed.itemCount}</td>
+              <td>{feed.reason ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {feeds.length === 0 && <p>No collection was attempted.</p>}
+    </section>
+
+    <section aria-labelledby="status-contracts">
+      <h2 id="status-contracts">Public contracts</h2>
+      <ul class="status__links">
+        <li><a href="/v1/news/status">Collection status JSON</a></li>
+        <li><a href="/v1/news/coverage">Coverage counts JSON</a></li>
+        <li><a href="/v1/sources">Publisher catalog JSON</a></li>
+        <li><a href="/v1/openapi.json">OpenAPI 3.1 document</a></li>
+        <li><a href="/en/news/sources">Human-readable source directory</a></li>
+        <li><a href="/en/news/coverage">Human-readable coverage page</a></li>
+      </ul>
+    </section>
+
+    <p class="status__note">This page is public and read-only. It reports measured state, not an incident channel, and it does not create or change any collection.</p>
+  </main>
+</BaseLayout>
+<style>
+  .status{max-width:64rem;margin:0 auto;padding:clamp(1.5rem,5vw,4rem);min-height:60vh;color:#e9f6eb}
+  .status a{color:#b8f34b}
+  .status h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.15;margin:.4rem 0 1rem}
+  .status h2{font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:2rem 0 .6rem}
+  .status p{line-height:1.75;color:#c1d3c5}
+  .status__tag{color:#f5c981;font-weight:700;letter-spacing:.04em;font-size:.82rem}
+  .status__state{padding:.9rem 1.1rem;border:1px solid #456e4e;border-radius:.7rem;background:#111c17}
+  .status__facts{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1.25rem;margin:1rem 0}
+  .status__facts dt{color:#9fb6a5}
+  .status__facts dd{margin:0}
+  .status table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:1rem}
+  .status caption{text-align:left;color:#9fb6a5;padding:.4rem 0 .8rem}
+  .status th,.status td{padding:.5rem .4rem;border-bottom:1px solid #24392c;text-align:left}
+  .status thead th{color:#9fb6a5;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
+  .status__links{list-style:none;margin:.5rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.45rem}
+  .status__note{color:#9fb6a5;font-size:.92rem;margin-top:2rem}
+  .status a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

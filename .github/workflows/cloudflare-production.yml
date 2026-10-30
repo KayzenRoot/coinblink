@@ -102,12 +102,19 @@ jobs:
               throw new Error(`/health reports ${last}, expected the deployed commit ${expectedSha} within 90s`);
             }
             const health = await waitForDeployedSha();
-            const checks = ["/health", "/en", "/demo", "/demo/intake", "/en/news/live", "/pt-br/news/live", "/es/news/live", "/en/news/coverage", "/en/news/source/coindesk", "/en/news/sources", "/demo/pulse", "/v1/news/coverage", "/v1/sources", "/v1/openapi.json", "/en/about"];
+            const checks = ["/health", "/en", "/demo", "/demo/intake", "/en/news/live", "/pt-br/news/live", "/es/news/live", "/en/news/coverage", "/en/news/source/coindesk", "/en/news/sources", "/demo/pulse", "/status", "/v1/news/coverage", "/v1/sources", "/v1/openapi.json", "/en/about"];
             for (const path of checks) {
               const response = await fetch(base + path, { redirect: "manual" });
               if (response.status !== 200) {
                 throw new Error(`${path} answered ${response.status}, expected 200`);
               }
+            }
+            const statusPage = await (await fetch(base + "/status", { cache: "no-store" })).text();
+            if (!statusPage.includes(expectedSha)) {
+              throw new Error("/status does not report the deployed commit " + expectedSha);
+            }
+            if (statusPage.includes("data-m03-live-item")) {
+              throw new Error("/status must not expose headline items");
             }
             // The live-news switch must be observable, not assumed. Enabled may
             // still read as unavailable when every publisher is down, but it

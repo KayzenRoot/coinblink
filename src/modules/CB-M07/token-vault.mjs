@@ -34,7 +34,7 @@ function fromBase64Url(value) {
   return bytes;
 }
 
-async function vaultKey(secret) {
+async function vaultKey(secret, info = 'social-token-v1') {
   if (typeof secret !== 'string' || !SECRET.test(secret)) {
     throw new TypeError('vault secret must be 64 hex characters');
   }
@@ -43,20 +43,20 @@ async function vaultKey(secret) {
     name: 'HKDF',
     hash: 'SHA-256',
     salt: new TextEncoder().encode('coinblink-m07-vault'),
-    info: new TextEncoder().encode('social-token-v1'),
+    info: new TextEncoder().encode(info),
   }, material, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
 
-export async function encryptToken({ secret, plaintext }) {
+export async function encryptToken({ secret, plaintext, info }) {
   if (typeof plaintext !== 'string' || plaintext === '') throw new TypeError('plaintext is required');
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const key = await vaultKey(secret);
+  const key = await vaultKey(secret, info);
   const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plaintext));
   return Object.freeze({ ciphertext: toBase64Url(new Uint8Array(ciphertext)), iv: toBase64Url(iv) });
 }
 
-export async function decryptToken({ secret, ciphertext, iv }) {
-  const key = await vaultKey(secret);
+export async function decryptToken({ secret, ciphertext, iv, info }) {
+  const key = await vaultKey(secret, info);
   const plaintext = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: fromBase64Url(iv) },
     key,

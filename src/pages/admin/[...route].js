@@ -12,6 +12,7 @@ import {
   listRevisions, readDraft, updateDraft,
 } from '../../modules/CB-M05/p1-production/drafts.mjs';
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
+import { analyticsPage } from '../../modules/CB-M06/pageview.mjs';
 
 export const prerender = false;
 
@@ -42,6 +43,11 @@ async function productionAdmin(request, env) {
   const redirectTo = (target) => Response.redirect(new URL(target, url.origin), 303);
   const formInput = (form) => Object.fromEntries(form.entries());
   const draftMatch = /^\/admin\/drafts\/([0-9a-f-]{36})(?:\/(revisions|export))?$/u.exec(path);
+  if (method === 'GET' && path === '/admin/analytics') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return analyticsPage({ db: config.db, nowMs: Date.now(), csrf: csrfFromRequest(request) });
+  }
   if (method === 'GET' && path === '/admin/security') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);

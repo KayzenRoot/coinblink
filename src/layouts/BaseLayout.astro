@@ -48,5 +48,8 @@ const seo = buildSeoMetadata({
   <body>
     <a class="skip-link" href="#main">{seo.lang === "es" ? "Saltar al contenido" : seo.lang === "pt-BR" ? "Pular para o conteúdo" : "Skip to content"}</a>
     <slot />
+    {import.meta.env.PUBLIC_ANALYTICS_LIVE === "true" && (
+      <script is:inline src="/analytics.js" defer></script>
+    )}
   </body>
 </html>

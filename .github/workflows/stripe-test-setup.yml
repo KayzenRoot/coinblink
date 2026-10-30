@@ -1,0 +1,73 @@
+name: Stripe test setup
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Create test products, prices and webhook
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ "$STRIPE_SECRET_KEY" != sk_test_* ]]; then
+            echo "::error::STRIPE_SECRET_KEY is not a test-mode key"
+            exit 1
+          fi
+          api() { curl -sS -H "Authorization: Bearer $STRIPE_SECRET_KEY" "$@"; }
+          product_for() {
+            local name="$1"
+            api "https://api.stripe.com/v1/products?limit=100&active=true" > products.json
+            local id
+            id=$(node -e "const j=require('./products.json');const p=(j.data||[]).find(x=>x.name===process.argv[1]);if(p)process.stdout.write(p.id)" "$name")
+            if [[ -z "$id" ]]; then
+              api -X POST https://api.stripe.com/v1/products -d "name=$name" > product.json
+              id=$(node -e "const j=require('./product.json');if(!j.id){console.error(j.error?.message||'product creation failed');process.exit(1)}process.stdout.write(j.id)")
+            fi
+            printf '%s' "$id"
+          }
+          price_for() {
+            local product="$1" interval="$2" amount="$3"
+            api "https://api.stripe.com/v1/prices?product=$product&active=true&limit=100" > prices.json
+            local id
+            id=$(node -e "const j=require('./prices.json');const p=(j.data||[]).find(x=>x.recurring?.interval===process.argv[1]&&x.unit_amount===Number(process.argv[2]));if(p)process.stdout.write(p.id)" "$interval" "$amount")
+            if [[ -z "$id" ]]; then
+              api -X POST https://api.stripe.com/v1/prices \
+                -d "product=$product" -d "unit_amount=$amount" -d "currency=usd" \
+                -d "recurring[interval]=$interval" > price.json
+              id=$(node -e "const j=require('./price.json');if(!j.id){console.error(j.error?.message||'price creation failed');process.exit(1)}process.stdout.write(j.id)")
+            fi
+            printf '%s' "$id"
+          }
+          MONTHLY_PRODUCT=$(product_for "CoinBlink Monthly")
+          YEARLY_PRODUCT=$(product_for "CoinBlink Yearly")
+          MONTHLY_PRICE=$(price_for "$MONTHLY_PRODUCT" month 900)
+          YEARLY_PRICE=$(price_for "$YEARLY_PRODUCT" year 9000)
+          api "https://api.stripe.com/v1/webhook_endpoints?limit=100" > hooks.json
+          node -e "const j=require('./hooks.json');for(const h of j.data||[])if(h.url==='https://coinblink-production.kayzendev.workers.dev/api/stripe/webhook')console.log(h.id)" > old_hooks.txt
+          while read -r id; do
+            if [[ -n "$id" ]]; then api -X DELETE "https://api.stripe.com/v1/webhook_endpoints/$id" >/dev/null; fi
+          done < old_hooks.txt
+          api -X POST https://api.stripe.com/v1/webhook_endpoints \
+            -d "url=https://coinblink-production.kayzendev.workers.dev/api/stripe/webhook" \
+            -d "enabled_events[]=checkout.session.completed" \
+            -d "enabled_events[]=customer.subscription.updated" \
+            -d "enabled_events[]=customer.subscription.deleted" \
+            -d "enabled_events[]=invoice.paid" > hook.json
+          WEBHOOK_ID=$(node -e "const j=require('./hook.json');if(!j.id){console.error(j.error?.message||'webhook creation failed');process.exit(1)}process.stdout.write(j.id)")
+          WEBHOOK_SECRET=$(node -e "const j=require('./hook.json');if(!j.secret){console.error('webhook secret missing');process.exit(1)}process.stdout.write(j.secret)")
+          printf '%s' "$WEBHOOK_SECRET" | ./node_modules/.bin/wrangler secret put STRIPE_WEBHOOK_SECRET --name coinblink-production
+          printf '%s' "$STRIPE_SECRET_KEY" | ./node_modules/.bin/wrangler secret put STRIPE_SECRET_KEY --name coinblink-production
+          echo "STRIPE_MONTHLY_PRICE=$MONTHLY_PRICE"
+          echo "STRIPE_YEARLY_PRICE=$YEARLY_PRICE"
+          echo "STRIPE_WEBHOOK_ID=$WEBHOOK_ID"

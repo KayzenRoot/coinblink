@@ -28,8 +28,8 @@ export function json(data, status = 200, extra = {}) {
   });
 }
 
-export function denied(status = 404, extra = {}) {
-  return new Response('Not found', { status, headers: { ...SECURITY_HEADERS, 'content-type': 'text/plain; charset=utf-8', ...extra } });
+export function denied(status = 404) {
+  return new Response('Not found', { status, headers: { ...SECURITY_HEADERS, 'content-type': 'text/plain; charset=utf-8' } });
 }
 
 export function escapeHtml(value) {
@@ -327,7 +327,12 @@ export async function logout(request, { db, secret, now }) {
       await db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE session_digest=? AND revoked_at IS NULL').bind(now, digest).run();
     }
   }
-  return json({ signedOut: true }, 200, {
-    'set-cookie': OWNER_COOKIE + '=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0',
+  return new Response(null, {
+    status: 303,
+    headers: {
+      ...SECURITY_HEADERS,
+      location: '/admin/login',
+      'set-cookie': OWNER_COOKIE + '=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0',
+    },
   });
 }

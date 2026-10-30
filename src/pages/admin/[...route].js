@@ -25,7 +25,7 @@ async function productionAdmin(request, env) {
   const url = new URL(request.url);
   if (!sameOrigin(request, config.origin)) return denied(404, { 'x-m05-reason': 'origin' });
   const now = Math.floor(Date.now() / 1000);
-  const path = url.pathname;
+  const path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
   const method = request.method;
 
   if (method === 'GET' && path === '/admin') {
@@ -67,7 +67,7 @@ async function productionAdmin(request, env) {
   if (method === 'POST' && path === '/admin/logout') {
     return logout(request, { db: config.db, secret: config.secret, now });
   }
-  return denied(404, { 'x-m05-reason': 'route' });
+  return denied(404, { 'x-m05-reason': 'route', 'x-m05-path': method + ':' + path });
 }
 
 export const ALL = async ({ request, locals }) => {

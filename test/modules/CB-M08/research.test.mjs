@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { withProductionAiBinding } from '../../../scripts/add-production-ai-binding.mjs';
 import { assertWorkerPreviewConfig } from '../../../scripts/worker-preview-config-safety.mjs';
 import {
   RESEARCH_LIMITS, RESEARCH_MODEL, buildPrompt, generateResearch, normalizeFocus, parseResearchOutput,
@@ -169,17 +170,17 @@ test('the admin route exposes the research desk and the reviewed AI binding', ()
   assert.doesNotMatch(route, /publish|schedule/iu);
 });
 
-test('the Worker config allows exactly the reviewed AI binding', () => {
+test('local previews stay credential-free and only the deploy config adds AI', () => {
   const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
-  assert.equal(config.ai.binding, 'AI');
-  assert.deepEqual(Object.keys(config.ai), ['binding']);
-  assert.equal(assertWorkerPreviewConfig(config, 'wrangler.jsonc'), undefined);
+  assert.equal(Object.hasOwn(config, 'ai'), false, 'wrangler dev must not proxy AI without a token');
+  const deployed = withProductionAiBinding(config, { generated: false });
+  assert.deepEqual(deployed.ai, { binding: 'AI' });
   for (const changed of [
-    { ...config, ai: { binding: 'AI', remote: true } },
-    { ...config, ai: { binding: 'OTHER' } },
-    { ...config, ai: [] },
-    { ...config, analytics_engine_datasets: [{ binding: 'AE' }] },
+    { ...deployed, ai: { binding: 'AI', remote: true } },
+    { ...deployed, ai: { binding: 'OTHER' } },
+    { ...deployed, ai: [] },
+    { ...deployed, analytics_engine_datasets: [{ binding: 'AE' }] },
   ]) {
-    assert.throws(() => assertWorkerPreviewConfig(changed, 'wrangler.jsonc'));
+    assert.throws(() => assertWorkerPreviewConfig(changed, 'deploy config'));
   }
 });

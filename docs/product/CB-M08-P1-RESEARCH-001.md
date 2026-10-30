@@ -21,6 +21,11 @@ value issued at login. An unknown draft or note is an indistinguishable 404.
 - Model: `@cf/meta/llama-3.1-8b-instruct-fp8` through the `AI` binding (checked
   against the account's model catalog). The Worker accepts `M08_MODEL` only
   when it matches `@cf/<vendor>/<model>`.
+- The binding is added only to the production deploy config by
+  `scripts/add-production-ai-binding.mjs`, which validates the result. The
+  built preview config stays credential-free: `wrangler dev` and CI never try
+  to open a remote AI proxy, and the research desk reports that Workers AI is
+  unavailable locally.
 - At most 20 notes per owner per UTC day. The cap is checked before the model
   is called.
 - The prompt contains only title, summary and body (6,000 characters maximum)

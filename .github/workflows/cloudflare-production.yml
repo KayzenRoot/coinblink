@@ -65,8 +65,10 @@ jobs:
         run: npm run build
       - name: Reassert the Worker carries no session binding
         run: node scripts/assert-no-session-binding.mjs
+      - name: Add the reviewed production AI binding
+        run: node scripts/add-production-ai-binding.mjs
       - name: Validate the generated Worker bundle without publishing
-        run: ./node_modules/.bin/wrangler deploy --dry-run --config ./dist/server/wrangler.json --name "$COINBLINK_CF_WORKER_NAME"
+        run: ./node_modules/.bin/wrangler deploy --dry-run --config ./dist/server/wrangler.deploy.json --name "$COINBLINK_CF_WORKER_NAME"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
           COINBLINK_CF_WORKER_NAME: ${{ vars.COINBLINK_CF_WORKER_NAME || 'coinblink-production' }}
@@ -81,7 +83,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
           COINBLINK_CF_WORKER_NAME: ${{ vars.COINBLINK_CF_WORKER_NAME || 'coinblink-production' }}
-        run: ./node_modules/.bin/wrangler deploy --config ./dist/server/wrangler.json --name "$COINBLINK_CF_WORKER_NAME"
+        run: ./node_modules/.bin/wrangler deploy --config ./dist/server/wrangler.deploy.json --name "$COINBLINK_CF_WORKER_NAME"
       - name: Smoke test the deployed Worker
         if: vars.COINBLINK_CF_WORKER_URL != ''
         env:

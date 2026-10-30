@@ -11,9 +11,6 @@
       "database_id": "d47ec576-cec4-470e-966f-bc05b8cfcdc1"
     }
   ],
-  "ai": {
-    "binding": "AI"
-  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

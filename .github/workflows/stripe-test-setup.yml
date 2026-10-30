@@ -24,8 +24,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          KEY="$(printf '%s' "$STRIPE_SECRET_KEY" | tr -d '
-' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          KEY="$(printf '%s' "$STRIPE_SECRET_KEY" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
           case "$KEY" in
             sk_test_*) KEY_TYPE=test ;;
             sk_live_*) KEY_TYPE=live ;;

@@ -8,7 +8,7 @@ import { fillLiveNewsCopy } from '../../../src/modules/CB-M03/live-news-copy.mjs
 const REQUIRED = [
   'back', 'pageTitle', 'pageDescription', 'h1', 'intro', 'statusTitle', 'liveStatus',
   'disabledStatus', 'unavailableStatus', 'publishers', 'officialSite', 'feedLine',
-  'rightsNote', 'liveLink', 'allSources', 'howItWorks',
+  'rightsNote', 'liveLink', 'opmlLink', 'allSources', 'howItWorks',
 ];
 const placeholders = (text) => [...text.matchAll(/\{([a-z]+)\}/gu)].map((match) => match[1]).sort();
 
@@ -30,7 +30,7 @@ test('every locale carries the same complete, plain-text directory copy', () => 
 test('the chrome is translated and placeholders agree across locales', () => {
   for (const key of ['back', 'pageTitle', 'h1', 'intro', 'statusTitle', 'liveStatus',
     'disabledStatus', 'unavailableStatus', 'publishers', 'officialSite', 'feedLine',
-    'rightsNote', 'liveLink', 'allSources', 'howItWorks']) {
+    'rightsNote', 'liveLink', 'opmlLink', 'allSources', 'howItWorks']) {
     assert.notEqual(SOURCE_DIRECTORY_COPY['pt-br'][key], SOURCE_DIRECTORY_COPY.en[key], key);
     assert.notEqual(SOURCE_DIRECTORY_COPY.es[key], SOURCE_DIRECTORY_COPY.en[key], key);
   }

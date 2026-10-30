@@ -3,10 +3,14 @@
 // owner environment is present; anonymous requests stay an indistinguishable 404.
 import { createLocalAdminRouter } from '../../modules/CB-M05/p1c-local/local-admin-router.mjs';
 import {
-  authorize, bootstrapChallenge, bootstrapClaim, bootstrapPage, dashboardPage, denied, json,
-  enrollChallenge, enrollClaim, login, loginChallenge, loginPage, logout, ownerExists, readConfig,
-  readJson, sameOrigin,
+  authorize, authorizeForm, bootstrapChallenge, bootstrapClaim, bootstrapPage, csrfFromRequest,
+  dashboardPage, denied, enrollChallenge, enrollClaim, json, login, loginChallenge, loginPage,
+  logout, ownerExists, readConfig, readJson, sameOrigin,
 } from '../../modules/CB-M05/p1-production/owner-auth.mjs';
+import {
+  createDraft, draftFormPage, draftMarkdown, draftRevisionsPage, draftsPage, listDrafts,
+  listRevisions, readDraft, updateDraft,
+} from '../../modules/CB-M05/p1-production/drafts.mjs';
 
 export const prerender = false;
 
@@ -33,6 +37,69 @@ async function productionAdmin(request, env) {
   if (method === 'POST' && path === '/admin/logout') {
     if (url.origin !== config.origin) return denied(404);
     return logout(request, { db: config.db, secret: config.secret, now });
+  }
+  const redirectTo = (target) => Response.redirect(new URL(target, url.origin), 303);
+  const formInput = (form) => Object.fromEntries(form.entries());
+  const draftMatch = /^\/admin\/drafts\/([0-9a-f-]{36})(?:\/(revisions|export))?$/u.exec(path);
+  if (method === 'GET' && path === '/admin/drafts') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return draftsPage({ drafts: await listDrafts(config.db), csrf: csrfFromRequest(request) });
+  }
+  if (method === 'GET' && path === '/admin/drafts/new') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return draftFormPage({ draft: null, csrf: csrfFromRequest(request), action: '/admin/drafts' });
+  }
+  if (method === 'POST' && path === '/admin/drafts') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    try {
+      const id = await createDraft({ db: config.db, secret: config.secret, input: formInput(auth.form), now });
+      if (id === null) return draftFormPage({ draft: null, csrf: csrfFromRequest(request), action: '/admin/drafts', error: 'Could not save the draft.' });
+      return redirectTo('/admin/drafts/' + id);
+    } catch (error) {
+      return draftFormPage({ draft: null, csrf: csrfFromRequest(request), action: '/admin/drafts', error: error.message });
+    }
+  }
+  if (draftMatch !== null && method === 'GET' && draftMatch[2] === undefined) {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const draft = await readDraft(config.db, draftMatch[1]);
+    if (draft === null) return denied(404);
+    return draftFormPage({ draft, csrf: csrfFromRequest(request), action: '/admin/drafts/' + draft.id });
+  }
+  if (draftMatch !== null && method === 'POST' && draftMatch[2] === undefined) {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await updateDraft({ db: config.db, input: { ...formInput(auth.form), id: draftMatch[1] }, now });
+    if (result.status === 'missing') return denied(404);
+    if (result.status === 'conflict') {
+      return draftFormPage({ draft: result.draft, csrf: csrfFromRequest(request), action: '/admin/drafts/' + draftMatch[1], error: 'This draft changed. Reload and edit the latest revision.' });
+    }
+    return redirectTo('/admin/drafts/' + draftMatch[1]);
+  }
+  if (draftMatch !== null && method === 'GET' && draftMatch[2] === 'revisions') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const draft = await readDraft(config.db, draftMatch[1]);
+    if (draft === null) return denied(404);
+    return draftRevisionsPage({ draft, revisions: await listRevisions(config.db, draft.id), csrf: csrfFromRequest(request) });
+  }
+  if (draftMatch !== null && method === 'GET' && draftMatch[2] === 'export') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const draft = await readDraft(config.db, draftMatch[1]);
+    if (draft === null) return denied(404);
+    return new Response(draftMarkdown(draft), {
+      status: 200,
+      headers: {
+        'content-type': 'text/markdown; charset=utf-8',
+        'content-disposition': 'attachment; filename="draft-' + draft.id + '.md"',
+        'cache-control': 'no-store',
+        'x-robots-tag': 'noindex',
+      },
+    });
   }
   if (!sameOrigin(request, config.origin)) return denied(404);
 

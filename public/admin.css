@@ -17,3 +17,12 @@ input{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4
 .admin__note{color:#9fb6a5;font-size:.92rem}
 #owner-status{min-height:1.5rem;color:#f5c981;font-weight:650}
 a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+
+.admin__drafts{list-style:none;margin:1rem 0;padding:0;display:grid;gap:.6rem}
+.admin__drafts li{padding:.65rem .8rem;border:1px solid #2f4a38;border-radius:.5rem;background:#0d1914}
+.admin__drafts a{text-decoration:none;font-weight:700}
+.admin__draft-form{display:grid;gap:.85rem}
+.admin__draft-form label{display:grid;gap:.35rem;color:#9fb6a5;font-size:.9rem;font-weight:650}
+.admin__draft-form input,.admin__draft-form textarea{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.6rem .7rem;font:inherit}
+.admin__draft-form textarea{resize:vertical}
+.admin__error{color:#ffb4a8;font-weight:700}

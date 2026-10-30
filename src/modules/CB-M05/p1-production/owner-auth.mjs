@@ -154,6 +154,7 @@ export async function dashboardPage({ db, expiresAt }) {
   return page('Owner workspace', '<p>Authenticated as the single CoinBlink owner.</p>'
     + '<dl class="admin__facts"><dt>Drafts</dt><dd>' + drafts + '</dd>'
     + '<dt>Session expires</dt><dd>' + escapeHtml(new Date(expiresAt * 1000).toISOString()) + '</dd></dl>'
+    + '<p><a href="/admin/drafts">Open drafts</a></p>'
     + '<h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
     + (hasRecovery ? '<p class="admin__note">A recovery passkey is registered.</p>' : '<button type="button" id="owner-enroll-recovery">Add recovery passkey</button>')
     + '<p id="owner-status" role="status" aria-live="polite"></p>'
@@ -409,4 +410,26 @@ export async function enrollClaim({ request, config, now, challenge, response })
   ]);
   if (results.some((result) => result?.meta?.changes !== 1)) return json({ error: 'enroll_conflict' }, 409);
   return json({ enrolled: true, deviceKind: 'recovery' }, 201);
+}
+
+/** Raw CSRF value from the same-origin cookie, for server-rendered forms. */
+export function csrfFromRequest(request) {
+  const match = /(?:^|; )cb_owner_csrf=([0-9a-f]{64})/u.exec(request.headers.get('cookie') ?? '');
+  return match ? match[1] : '';
+}
+
+/** Session plus a validated urlencoded form body. */
+export async function authorizeForm(request, config, now) {
+  const session = await authorize(request, { db: config.db, secret: config.secret, now });
+  if (session === null) return null;
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return null;
+  }
+  const csrf = String(form.get('csrf') ?? '');
+  if (!HEX64.test(csrf)) return null;
+  const digest = await keyedDigest(config.secret, csrf);
+  return equalHex(digest, session.csrfDigest) ? { session, form } : null;
 }

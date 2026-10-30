@@ -3,7 +3,7 @@ import { runtimeBinding, runtimeEnv } from "../../../lib/runtime-env";
 
 export const prerender = false;
 
-export const GET: APIRoute = () => {
+export const GET: APIRoute = ({ request }) => {
   const db = runtimeBinding("CMS_DB") as { prepare?: unknown } | undefined;
   const owner = runtimeEnv("M05_OWNER_ENABLED");
   const secret = runtimeEnv("M05_SESSION_SECRET");
@@ -17,6 +17,7 @@ export const GET: APIRoute = () => {
     secretHex: /^[0-9a-f]{64}$/u.test(secret ?? ""),
     rpId: runtimeEnv("M05_RP_ID") ?? null,
     origin: runtimeEnv("M05_ORIGIN") ?? null,
+    requestOrigin: new URL(request.url).origin,
   }), {
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" },
   });

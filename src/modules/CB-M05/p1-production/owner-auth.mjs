@@ -28,8 +28,8 @@ export function json(data, status = 200, extra = {}) {
   });
 }
 
-export function denied(status = 404) {
-  return new Response('Not found', { status, headers: { ...SECURITY_HEADERS, 'content-type': 'text/plain; charset=utf-8' } });
+export function denied(status = 404, extra = {}) {
+  return new Response('Not found', { status, headers: { ...SECURITY_HEADERS, 'content-type': 'text/plain; charset=utf-8', ...extra } });
 }
 
 export function escapeHtml(value) {

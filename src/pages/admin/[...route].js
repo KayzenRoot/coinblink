@@ -11,6 +11,7 @@ import {
   createDraft, draftFormPage, draftMarkdown, draftRevisionsPage, draftsPage, listDrafts,
   listRevisions, readDraft, updateDraft,
 } from '../../modules/CB-M05/p1-production/drafts.mjs';
+import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 
 export const prerender = false;
 
@@ -41,6 +42,37 @@ async function productionAdmin(request, env) {
   const redirectTo = (target) => Response.redirect(new URL(target, url.origin), 303);
   const formInput = (form) => Object.fromEntries(form.entries());
   const draftMatch = /^\/admin\/drafts\/([0-9a-f-]{36})(?:\/(revisions|export))?$/u.exec(path);
+  if (method === 'GET' && path === '/admin/security') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return securityPage({
+      db: config.db, csrf: csrfFromRequest(request), currentDigest: session.digest, now,
+      error: url.searchParams.get('error') ?? '',
+    });
+  }
+  if (method === 'POST' && path === '/admin/security/credential/revoke') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await revokeCredential({
+      db: config.db, credentialId: String(auth.form.get('credentialId') ?? ''),
+      currentCredentialId: auth.session.credentialId, now,
+    });
+    if (result.status === 'revoked' && result.current) {
+      return logout(request, { db: config.db, secret: config.secret, now });
+    }
+    const error = result.status === 'last' ? 'The last active passkey cannot be revoked.' : '';
+    return redirectTo('/admin/security' + (error === '' ? '' : '?error=' + encodeURIComponent(error)));
+  }
+  if (method === 'POST' && path === '/admin/security/session/revoke') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await revokeSession({
+      db: config.db, digest: String(auth.form.get('digest') ?? ''),
+      currentDigest: auth.session.digest, now,
+    });
+    if (result.status === 'current') return logout(request, { db: config.db, secret: config.secret, now });
+    return redirectTo('/admin/security');
+  }
   if (method === 'GET' && path === '/admin/drafts') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);

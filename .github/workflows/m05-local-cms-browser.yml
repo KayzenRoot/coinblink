@@ -7,6 +7,9 @@ on:
       - ".github/workflows/m05-local-cms-browser.yml"
       - "src/modules/CB-M05/**"
       - "test/modules/CB-M05/**"
+      - "wrangler.jsonc"
+      - "migrations/**"
+      - ".github/workflows/cloudflare-production.yml"
       - "scripts/dev-studio.mjs"
       - "package.json"
       - "package-lock.json"
@@ -47,7 +50,7 @@ jobs:
       - name: Smoke synthetic Owner sign-in and logout
         run: npm run cms:smoke
       - name: Browser regression for local D1, session and unsaved drafts
-        run: node --test test/modules/CB-M05/p1c-local-admin-preview.test.mjs test/modules/CB-M05/p1c-local-unsaved-changes.test.mjs
+        run: node --test test/modules/CB-M05/production-d1-binding.test.mjs test/modules/CB-M05/p1c-local-admin-preview.test.mjs test/modules/CB-M05/p1c-local-unsaved-changes.test.mjs
 
 
   # CB-P0-EDITORIAL-BRIDGE-001: evidence-only regression job, no production credentials.

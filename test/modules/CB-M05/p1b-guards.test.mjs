@@ -131,7 +131,9 @@ test('P1B SEC-01: test harness is not imported by product modules or routed thro
     assert.doesNotMatch(readFileSync(file, 'utf8'), /p1b-local|p1b-fixtures/iu, path.relative(repositoryRoot, file));
   }
   const rootWrangler = readFileSync(path.join(repositoryRoot, 'wrangler.jsonc'), 'utf8');
-  assert.doesNotMatch(rootWrangler, /d1_databases|CB_M05_P1B_LOCAL|00000000-0000-4000-8000-000000000085/iu);
+  assert.match(rootWrangler, /"binding": "CMS_DB"/u);
+  assert.match(rootWrangler, /"database_name": "coinblink-cms"/u);
+  assert.doesNotMatch(rootWrangler, /preview_database_id|CB_M05_P1B_LOCAL|00000000-0000-4000-8000-000000000085/iu);
   assert.ok(readFileSync(path.join(repositoryRoot, P1B_SCHEMA_PATH), 'utf8').includes('TEST-') === false);
 });
 

@@ -16,10 +16,18 @@ function fromBytes(value) {
   return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, '');
 }
 
+function csrf() {
+  const match = /(?:^|; )cb_owner_csrf=([0-9a-f]{64})/u.exec(document.cookie);
+  return match ? match[1] : '';
+}
+
 async function post(path, body) {
+  const headers = { 'content-type': 'application/json' };
+  const token = csrf();
+  if (token !== '') headers['x-cb-csrf'] = token;
   const response = await fetch(path, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers,
     credentials: 'same-origin',
     body: JSON.stringify(body ?? {}),
   });
@@ -86,31 +94,62 @@ if (bootstrapForm) {
   });
 }
 
+async function signIn(kind, button) {
+  button.disabled = true;
+  try {
+    say('Requesting a sign-in challenge…');
+    const options = await post('/admin/login/challenge', { kind });
+    const publicKey = {
+      ...options,
+      challenge: toBytes(options.challenge),
+      allowCredentials: options.allowCredentials.map((entry) => ({ ...entry, id: toBytes(entry.id) })),
+    };
+    say('Waiting for your passkey…');
+    const credential = await navigator.credentials.get({ publicKey });
+    if (!credential) throw new Error('No passkey assertion returned');
+    say('Verifying the signature…');
+    await post('/admin/login', {
+      credentialId: options.allowCredentials[0].id,
+      challenge: options.challenge,
+      response: serialize(credential),
+    });
+    location.assign('/admin');
+  } catch (error) {
+    say('Could not sign in: ' + (error?.message ?? 'unknown error'));
+    button.disabled = false;
+  }
+}
+
 const loginButton = document.getElementById('owner-login');
-if (loginButton) {
-  loginButton.addEventListener('click', async () => {
-    loginButton.disabled = true;
+if (loginButton) loginButton.addEventListener('click', () => signIn('primary', loginButton));
+const recoveryButton = document.getElementById('owner-login-recovery');
+if (recoveryButton) recoveryButton.addEventListener('click', () => signIn('recovery', recoveryButton));
+
+const enrollButton = document.getElementById('owner-enroll-recovery');
+if (enrollButton) {
+  enrollButton.addEventListener('click', async () => {
+    enrollButton.disabled = true;
     try {
-      say('Requesting a sign-in challenge…');
-      const options = await post('/admin/login/challenge', {});
+      say('Requesting a recovery-passkey challenge…');
+      const options = await post('/admin/security/enroll/challenge', { kind: 'recovery' });
       const publicKey = {
         ...options,
         challenge: toBytes(options.challenge),
-        allowCredentials: options.allowCredentials.map((entry) => ({ ...entry, id: toBytes(entry.id) })),
+        user: { ...options.user, id: toBytes(options.user.id) },
+        excludeCredentials: (options.excludeCredentials ?? []).map((entry) => ({ ...entry, id: toBytes(entry.id) })),
       };
-      say('Waiting for your passkey…');
-      const credential = await navigator.credentials.get({ publicKey });
-      if (!credential) throw new Error('No passkey assertion returned');
-      say('Verifying the signature…');
-      await post('/admin/login', {
-        credentialId: options.allowCredentials[0].id,
+      say('Waiting for your recovery passkey…');
+      const credential = await navigator.credentials.create({ publicKey });
+      if (!credential) throw new Error('No passkey was created');
+      await post('/admin/security/enroll/claim', {
         challenge: options.challenge,
         response: serialize(credential),
       });
-      location.assign('/admin');
+      say('Recovery passkey registered. Reloading…');
+      location.reload();
     } catch (error) {
-      say('Could not sign in: ' + (error?.message ?? 'unknown error'));
-      loginButton.disabled = false;
+      say('Could not enroll: ' + (error?.message ?? 'unknown error'));
+      enrollButton.disabled = false;
     }
   });
 }

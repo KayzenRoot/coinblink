@@ -4,7 +4,8 @@
 import { createLocalAdminRouter } from '../../modules/CB-M05/p1c-local/local-admin-router.mjs';
 import {
   authorize, bootstrapChallenge, bootstrapClaim, bootstrapPage, dashboardPage, denied, json,
-  login, loginChallenge, loginPage, logout, ownerExists, readConfig, readJson, sameOrigin,
+  enrollChallenge, enrollClaim, login, loginChallenge, loginPage, logout, ownerExists, readConfig,
+  readJson, sameOrigin,
 } from '../../modules/CB-M05/p1-production/owner-auth.mjs';
 
 export const prerender = false;
@@ -61,7 +62,17 @@ async function productionAdmin(request, env) {
     });
   }
   if (method === 'POST' && path === '/admin/login/challenge') {
-    return loginChallenge({ db: config.db, config, now });
+    const body = await readJson(request);
+    return loginChallenge({ db: config.db, config, now, kind: body?.kind ?? 'primary' });
+  }
+  if (method === 'POST' && path === '/admin/security/enroll/challenge') {
+    const body = await readJson(request);
+    return enrollChallenge({ request, config, now, kind: body?.kind ?? 'recovery' });
+  }
+  if (method === 'POST' && path === '/admin/security/enroll/claim') {
+    const body = await readJson(request);
+    if (body === null) return json({ error: 'invalid_request' }, 400);
+    return enrollClaim({ request, config, now, challenge: body.challenge, response: body.response });
   }
   if (method === 'POST' && path === '/admin/login') {
     const body = await readJson(request);

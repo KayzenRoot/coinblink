@@ -6,6 +6,7 @@
 import { verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 
 export const OWNER_COOKIE = '__Host-cb_owner';
+export const CSRF_COOKIE = 'cb_owner_csrf';
 export const SESSION_TTL_SECONDS = 12 * 60 * 60;
 export const CHALLENGE_TTL_SECONDS = 5 * 60;
 export const BOOTSTRAP_TICKET_TTL_SECONDS = 15 * 60;
@@ -129,7 +130,8 @@ export function page(title, body, status = 200) {
 
 export function loginPage() {
   return page('Owner sign in', '<p>Use the passkey registered for this deployment.</p>'
-    + '<button type="button" id="owner-login">Sign in with passkey</button>'
+    + '<button type="button" id="owner-login">Sign in with primary passkey</button>'
+    + '<button type="button" id="owner-login-recovery">Use recovery passkey</button>'
     + '<p id="owner-status" role="status" aria-live="polite"></p>'
     + '<p class="admin__note"><a href="/admin/bootstrap">First-time setup</a></p>');
 }
@@ -145,9 +147,16 @@ export function bootstrapPage() {
 export async function dashboardPage({ db, expiresAt }) {
   const row = await db.prepare('SELECT COUNT(*) AS drafts FROM cms_drafts WHERE owner_id=1').first();
   const drafts = Number(row?.drafts ?? 0);
+  const credentials = await db.prepare('SELECT credential_id,device_kind FROM cms_credentials WHERE owner_id=1 AND revoked_at IS NULL ORDER BY device_kind').all();
+  const rows = credentials?.results ?? [];
+  const hasRecovery = rows.some((entry) => entry.device_kind === 'recovery');
+  const list = rows.map((entry) => '<li><code>' + escapeHtml(String(entry.credential_id).slice(0, 12)) + '…</code> · ' + escapeHtml(entry.device_kind) + '</li>').join('');
   return page('Owner workspace', '<p>Authenticated as the single CoinBlink owner.</p>'
     + '<dl class="admin__facts"><dt>Drafts</dt><dd>' + drafts + '</dd>'
     + '<dt>Session expires</dt><dd>' + escapeHtml(new Date(expiresAt * 1000).toISOString()) + '</dd></dl>'
+    + '<h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
+    + (hasRecovery ? '<p class="admin__note">A recovery passkey is registered.</p>' : '<button type="button" id="owner-enroll-recovery">Add recovery passkey</button>')
+    + '<p id="owner-status" role="status" aria-live="polite"></p>'
     + '<form method="post" action="/admin/logout"><button type="submit">Sign out</button></form>'
     + '<p class="admin__note">Read-only foundation. Publishing, billing and real customer data remain disabled.</p>');
 }
@@ -175,6 +184,26 @@ async function registrationOptions({ db, config, ticket, now }) {
   });
 }
 
+async function verifiedRegistration({ response, challenge, config }) {
+  try {
+    const result = await verifyRegistrationResponse({
+      response,
+      expectedChallenge: challenge,
+      expectedOrigin: config.origin,
+      expectedRPID: config.rpId,
+      requireUserPresence: true,
+      requireUserVerification: true,
+    });
+    const credential = result?.registrationInfo?.credential;
+    if (result?.verified !== true || !credential || credential.id !== response.id || response.rawId !== response.id) {
+      return null;
+    }
+    return credential;
+  } catch {
+    return null;
+  }
+}
+
 export async function bootstrapChallenge({ db, config, ticket, now }) {
   const options = await registrationOptions({ db, config, ticket, now });
   return options === null ? json({ error: 'invalid_ticket' }, 403) : json(options);
@@ -193,23 +222,8 @@ export async function bootstrapClaim({ db, config, ticket, challenge, response, 
     + 'AND t.consumed_at IS NULL AND t.expires_at>? AND NOT EXISTS (SELECT 1 FROM cms_owner)',
   ).bind(challengeDigest, ticketDigest, config.origin, config.rpId, now, now).first();
   if (!pending) return json({ error: 'invalid_ticket' }, 403);
-  let registration;
-  try {
-    registration = await verifyRegistrationResponse({
-      response,
-      expectedChallenge: challenge,
-      expectedOrigin: config.origin,
-      expectedRPID: config.rpId,
-      requireUserPresence: true,
-      requireUserVerification: true,
-    });
-  } catch {
-    return json({ error: 'registration_rejected' }, 403);
-  }
-  const credential = registration?.registrationInfo?.credential;
-  if (registration?.verified !== true || !credential || credential.id !== response.id || response.rawId !== response.id) {
-    return json({ error: 'registration_rejected' }, 403);
-  }
+  const credential = await verifiedRegistration({ response, challenge, config });
+  if (credential === null) return json({ error: 'registration_rejected' }, 403);
   const marker = crypto.randomUUID();
   const results = await db.batch([
     db.prepare('UPDATE cms_bootstrap_tickets SET consumed_at=?,consume_marker=? WHERE ticket_digest=? AND consumed_at IS NULL AND expires_at>? AND NOT EXISTS (SELECT 1 FROM cms_owner)')
@@ -227,8 +241,9 @@ export async function bootstrapClaim({ db, config, ticket, challenge, response, 
   return json({ owner: 1, claimed: true }, 201);
 }
 
-export async function loginChallenge({ db, config, now }) {
-  const credential = await db.prepare("SELECT credential_id FROM cms_credentials WHERE owner_id=1 AND device_kind='primary' AND revoked_at IS NULL").first();
+export async function loginChallenge({ db, config, now, kind = 'primary' }) {
+  if (kind !== 'primary' && kind !== 'recovery') return json({ error: 'invalid_kind' }, 400);
+  const credential = await db.prepare('SELECT credential_id FROM cms_credentials WHERE owner_id=1 AND device_kind=? AND revoked_at IS NULL').bind(kind).first();
   if (!credential) return json({ error: 'no_owner' }, 404);
   await db.prepare('DELETE FROM cms_challenges WHERE consumed_at IS NULL AND expires_at<=?').bind(now).run();
   const challenge = toBase64Url(crypto.getRandomValues(new Uint8Array(32)));
@@ -260,7 +275,7 @@ export async function login({ db, config, credentialId, challenge, response, now
   if (response.id !== credentialId || response.rawId !== credentialId) return json({ error: 'invalid_request' }, 400);
   const challengeDigest = await sha256(challenge);
   const record = await db.prepare(
-    "SELECT c.credential_id,c.public_key,c.sign_count FROM cms_credentials c JOIN cms_challenges h ON h.credential_id=c.credential_id "
+    "SELECT c.credential_id,c.public_key,c.sign_count,c.device_kind FROM cms_credentials c JOIN cms_challenges h ON h.credential_id=c.credential_id "
     + "WHERE h.challenge_digest=? AND c.credential_id=? AND c.owner_id=1 AND c.revoked_at IS NULL AND h.consumed_at IS NULL "
     + "AND h.expires_at>? AND h.origin=? AND h.rp_id=? AND h.purpose='login'",
   ).bind(challengeDigest, credentialId, now, config.origin, config.rpId).first();
@@ -298,9 +313,10 @@ export async function login({ db, config, credentialId, challenge, response, now
       .bind(tokenDigest, csrfDigest, now, now + SESSION_TTL_SECONDS, challengeDigest, credentialId, marker, marker, nextCounter),
   ]);
   if (results.some((result) => result?.meta?.changes !== 1)) return json({ error: 'login_conflict' }, 409);
-  return json({ authenticated: true, csrf, expiresInSeconds: SESSION_TTL_SECONDS }, 200, {
-    'set-cookie': OWNER_COOKIE + '=' + token + '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=' + SESSION_TTL_SECONDS,
-  });
+  const headers = new Headers({ ...SECURITY_HEADERS, 'content-type': 'application/json; charset=utf-8' });
+  headers.append('set-cookie', OWNER_COOKIE + '=' + token + '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=' + SESSION_TTL_SECONDS);
+  headers.append('set-cookie', CSRF_COOKIE + '=' + csrf + '; Path=/admin; Secure; SameSite=Strict; Max-Age=' + SESSION_TTL_SECONDS);
+  return new Response(JSON.stringify({ authenticated: true, csrf, expiresInSeconds: SESSION_TTL_SECONDS }), { status: 200, headers });
 }
 
 export async function authorize(request, { db, secret, now }) {
@@ -311,10 +327,10 @@ export async function authorize(request, { db, secret, now }) {
   if (!HEX64.test(token)) return null;
   const digest = await keyedDigest(secret, token);
   const row = await db.prepare(
-    'SELECT s.owner_id,s.expires_at,s.credential_id FROM cms_sessions s JOIN cms_credentials c ON c.credential_id=s.credential_id '
+    'SELECT s.owner_id,s.expires_at,s.credential_id,s.csrf_digest FROM cms_sessions s JOIN cms_credentials c ON c.credential_id=s.credential_id '
     + 'WHERE s.session_digest=? AND s.owner_id=1 AND s.revoked_at IS NULL AND s.expires_at>? AND c.revoked_at IS NULL',
   ).bind(digest, now).first();
-  return row?.owner_id === 1 ? Object.freeze({ ownerId: 1, expiresAt: row.expires_at, credentialId: row.credential_id }) : null;
+  return row?.owner_id === 1 ? Object.freeze({ ownerId: 1, expiresAt: row.expires_at, credentialId: row.credential_id, csrfDigest: row.csrf_digest, digest }) : null;
 }
 
 export async function logout(request, { db, secret, now }) {
@@ -327,12 +343,70 @@ export async function logout(request, { db, secret, now }) {
       await db.prepare('UPDATE cms_sessions SET revoked_at=? WHERE session_digest=? AND revoked_at IS NULL').bind(now, digest).run();
     }
   }
-  return new Response(null, {
-    status: 303,
-    headers: {
-      ...SECURITY_HEADERS,
-      location: '/admin/login',
-      'set-cookie': OWNER_COOKIE + '=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0',
-    },
+  const headers = new Headers({ ...SECURITY_HEADERS, location: '/admin/login' });
+  headers.append('set-cookie', OWNER_COOKIE + '=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0');
+  headers.append('set-cookie', CSRF_COOKIE + '=; Path=/admin; Secure; SameSite=Strict; Max-Age=0');
+  return new Response(null, { status: 303, headers });
+}
+
+/** Session plus the CSRF value issued at login. */
+export async function authorizeMutation(request, config, now) {
+  const session = await authorize(request, { db: config.db, secret: config.secret, now });
+  if (session === null) return null;
+  const csrf = request.headers.get('x-cb-csrf') ?? '';
+  if (!HEX64.test(csrf)) return null;
+  const digest = await keyedDigest(config.secret, csrf);
+  return equalHex(digest, session.csrfDigest) ? session : null;
+}
+
+/** Begin enrolling a recovery passkey from an authenticated session. */
+export async function enrollChallenge({ request, config, now, kind = 'recovery' }) {
+  const session = await authorizeMutation(request, config, now);
+  if (session === null) return json({ error: 'forbidden' }, 403);
+  if (kind !== 'recovery') return json({ error: 'invalid_kind' }, 400);
+  const existing = await config.db.prepare("SELECT credential_id FROM cms_credentials WHERE owner_id=1 AND device_kind=? AND revoked_at IS NULL").bind(kind).first();
+  if (existing) return json({ error: 'already_enrolled' }, 409);
+  const challenge = toBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+  const inserted = await config.db.prepare(
+    'INSERT INTO cms_enroll_challenges(challenge_digest,credential_kind,requires_recovery,session_digest,issuer_credential_id,origin,rp_id,expires_at) VALUES (?,?,0,?,?,?,?,?)',
+  ).bind(await sha256(challenge), kind, session.digest, session.credentialId, config.origin, config.rpId, now + CHALLENGE_TTL_SECONDS).run();
+  if (inserted.meta?.changes !== 1) return json({ error: 'enroll_unavailable' }, 409);
+  const active = await config.db.prepare('SELECT credential_id FROM cms_credentials WHERE owner_id=1 AND revoked_at IS NULL').all();
+  return json({
+    challenge,
+    rp: { id: config.rpId, name: 'CoinBlink' },
+    user: { id: toBase64Url(new TextEncoder().encode('coinblink-owner')), name: 'owner', displayName: 'CoinBlink Owner' },
+    pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+    timeout: CHALLENGE_TTL_SECONDS * 1000,
+    attestation: 'none',
+    authenticatorSelection: { residentKey: 'preferred', userVerification: 'required' },
+    excludeCredentials: (active?.results ?? []).map((entry) => ({ id: entry.credential_id, type: 'public-key' })),
   });
+}
+
+/** Finish enrolling a recovery passkey and append the audit event. */
+export async function enrollClaim({ request, config, now, challenge, response }) {
+  const session = await authorizeMutation(request, config, now);
+  if (session === null) return json({ error: 'forbidden' }, 403);
+  if (!BASE64URL.test(challenge ?? '') || response === null || typeof response !== 'object') {
+    return json({ error: 'invalid_request' }, 400);
+  }
+  const digest = await sha256(challenge);
+  const pending = await config.db.prepare(
+    "SELECT challenge_digest FROM cms_enroll_challenges WHERE challenge_digest=? AND session_digest=? AND credential_kind='recovery' AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=?",
+  ).bind(digest, session.digest, now, config.origin, config.rpId).first();
+  if (!pending) return json({ error: 'invalid_challenge' }, 403);
+  const credential = await verifiedRegistration({ response, challenge, config });
+  if (credential === null) return json({ error: 'registration_rejected' }, 403);
+  const marker = crypto.randomUUID();
+  const results = await config.db.batch([
+    config.db.prepare("UPDATE cms_enroll_challenges SET consumed_at=?,consume_marker=? WHERE challenge_digest=? AND session_digest=? AND consumed_at IS NULL AND expires_at>? AND EXISTS (SELECT 1 FROM cms_credentials WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL)")
+      .bind(now, marker, digest, session.digest, now, session.credentialId),
+    config.db.prepare("INSERT INTO cms_credentials(credential_id,owner_id,public_key,sign_count,device_kind) SELECT ?,1,?,?,'recovery' WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges WHERE challenge_digest=? AND consume_marker=?)")
+      .bind(credential.id, credential.publicKey, credential.counter, digest, marker),
+    config.db.prepare("INSERT INTO cms_audit_events(event_id,event,actor,subject,device_kind,created_at) SELECT ?,'device_enrolled','owner-session',?,'recovery',? WHERE EXISTS (SELECT 1 FROM cms_enroll_challenges WHERE challenge_digest=? AND consume_marker=?)")
+      .bind(crypto.randomUUID(), credential.id, now, digest, marker),
+  ]);
+  if (results.some((result) => result?.meta?.changes !== 1)) return json({ error: 'enroll_conflict' }, 409);
+  return json({ enrolled: true, deviceKind: 'recovery' }, 201);
 }

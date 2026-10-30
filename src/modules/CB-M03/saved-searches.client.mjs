@@ -11,6 +11,7 @@ import {
 const root = document.querySelector("[data-m03-saved-searches]");
 if (root) {
   const locale = root.dataset.locale ?? "en";
+  const surface = root.dataset.surface === "coverage" ? "coverage" : "live";
   const copy = getLiveNewsCopy(locale);
   const sourceNames = new Map(LIVE_NEWS_SOURCES.map((source) => [source.id, source.name]));
   const storage = (() => {
@@ -25,6 +26,7 @@ if (root) {
       q: root.dataset.currentQ ?? "",
       source: root.dataset.currentSource ?? "all",
       since: Number(root.dataset.currentSince ?? 0),
+      surface,
     });
     const list = root.querySelector("[data-m03-saved-list]");
     const empty = root.querySelector("[data-m03-saved-empty]");
@@ -34,6 +36,7 @@ if (root) {
 
     const labelOf = (entry) => {
       const parts = [];
+      if (entry.surface === "coverage") parts.push(copy.savedCoverage);
       if (entry.q !== "") parts.push(entry.q);
       if (entry.source !== "all") parts.push(sourceNames.get(entry.source) ?? entry.source);
       if (entry.since > 0) parts.push(fillLiveNewsCopy(copy.sinceHours, { hours: entry.since }));

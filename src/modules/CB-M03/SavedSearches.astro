@@ -1,0 +1,37 @@
+---
+import { getLiveNewsCopy } from "./live-news-copy.mjs";
+interface Props {
+  locale?: "en" | "pt-br" | "es";
+  surface?: "live" | "coverage";
+  query?: string;
+  source?: string;
+  since?: number;
+}
+const { locale = "en", surface = "live", query = "", source = "all", since = 0 } = Astro.props;
+const copy = getLiveNewsCopy(locale);
+---
+<section class="m03-saved" aria-labelledby="m03-saved" hidden
+  data-m03-saved-searches data-locale={locale} data-surface={surface}
+  data-current-q={query} data-current-source={source} data-current-since={since}>
+  <h2 id="m03-saved">{copy.savedTitle}</h2>
+  <p class="m03-saved__note">{copy.savedNote}</p>
+  <button type="button" data-m03-save-current>{copy.savedSave}</button>
+  <p class="m03-saved__note" data-m03-save-status role="status" aria-live="polite"></p>
+  <ul class="m03-saved__list" data-m03-saved-list></ul>
+  <p class="m03-saved__note" data-m03-saved-empty hidden>{copy.savedEmpty}</p>
+  <button type="button" data-m03-saved-clear hidden>{copy.savedClear}</button>
+</section>
+<script>
+  import "./saved-searches.client.mjs";
+</script>
+<style>
+  .m03-saved{margin:1rem 0;padding:1rem 1.25rem;border:1px solid #2f4a38;border-radius:.6rem;color:#e9f6eb}
+  .m03-saved h2{font-size:1rem;letter-spacing:.03em;text-transform:uppercase;color:#9fb6a5;margin:.2rem 0}
+  .m03-saved__note{color:#9fb6a5;font-size:.92rem;line-height:1.75}
+  .m03-saved__list{list-style:none;margin:.5rem 0 0;padding:0;display:grid;gap:.45rem}
+  .m03-saved__list li{display:flex;justify-content:space-between;gap:.75rem;align-items:center}
+  .m03-saved__list a{color:#b8f34b;text-decoration:none}
+  .m03-saved__list button{background:transparent;border:1px solid #456e4e;color:#e9f6eb;border-radius:.35rem;padding:.1rem .45rem;cursor:pointer}
+  .m03-saved button[data-m03-save-current]{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.5rem .8rem;font-weight:700;cursor:pointer}
+  .m03-saved a:focus-visible,.m03-saved button:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
+</style>

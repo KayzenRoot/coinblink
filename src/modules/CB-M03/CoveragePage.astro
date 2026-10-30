@@ -10,6 +10,7 @@ import {
 } from "./live-news-filter.mjs";
 import { formatLiveAge } from "./live-time.mjs";
 import ReaderLocaleSwitch from "./ReaderLocaleSwitch.astro";
+import SavedSearches from "./SavedSearches.astro";
 interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
@@ -113,6 +114,7 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
         ))}
       </nav>
       <p class="m03-coverage__note">{copy.coverageFilterNote}</p>
+      <SavedSearches locale={locale} surface="coverage" query={query} source={source} since={sinceHours} />
       {rows.length === 0 && (
         <p class="m03-coverage__note" data-m03-coverage-empty>
           {filtered ? copy.coverageFilteredEmpty : copy.coverageEmpty}

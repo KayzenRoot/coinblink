@@ -297,6 +297,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Todas as fontes →",
     "es": "Todas las fuentes →",
   },
+  savedCoverage: {
+    "en": "Coverage",
+    "pt-br": "Cobertura",
+    "es": "Cobertura",
+  },
   savedTitle: {
     "en": "Saved searches",
     "pt-br": "Buscas salvas",

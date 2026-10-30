@@ -17,7 +17,7 @@ function fakeStorage(initial) {
 
 test('a saved search keeps only query, publisher and window', () => {
   const entry = normalizeSavedSearch({ q: '  bitcoin  ', source: 'coindesk', since: '12', title: 'ignored' });
-  assert.deepEqual(entry, { q: 'bitcoin', source: 'coindesk', since: 12, id: 'bitcoin|coindesk|12' });
+  assert.deepEqual(entry, { q: 'bitcoin', source: 'coindesk', since: 12, surface: 'live', id: 'live|bitcoin|coindesk|12' });
   assert.equal(Object.isFrozen(entry), true);
   assert.equal(normalizeSavedSearch({}), null);
   assert.equal(normalizeSavedSearch(null), null);
@@ -27,10 +27,15 @@ test('a saved search keeps only query, publisher and window', () => {
   assert.equal(fallback.since, 0);
 });
 
-test('the saved link is a canonical live URL', () => {
+test('the saved link is a canonical URL for its surface', () => {
   const entry = normalizeSavedSearch({ q: 'etf', source: 'coindesk', since: 12 });
   assert.equal(savedSearchHref(entry, 'en'), '/en/news/live?q=etf&source=coindesk&since=12');
   assert.equal(savedSearchHref(normalizeSavedSearch({ q: 'acao' }), 'pt-br'), '/pt-br/news/live?q=acao');
+  const coverage = normalizeSavedSearch({ q: 'etf', surface: 'coverage', since: 24 });
+  assert.equal(coverage.surface, 'coverage');
+  assert.equal(savedSearchHref(coverage, 'es'), '/es/news/coverage?q=etf&since=24');
+  assert.equal(normalizeSavedSearch({ q: 'x', surface: 'unknown' }).surface, 'live');
+  assert.equal(normalizeSavedSearch({ q: 'x' }).surface, 'live', 'stored entries without a surface stay live');
 });
 
 test('reading tolerates corrupt, foreign and oversized data', () => {
@@ -49,7 +54,7 @@ test('reading tolerates corrupt, foreign and oversized data', () => {
     { q: '', source: 'all', since: 0 },
     null,
   ]);
-  assert.deepEqual(readSavedSearches(fakeStorage(duplicated)).map((entry) => entry.id), ['bitcoin|all|0']);
+  assert.deepEqual(readSavedSearches(fakeStorage(duplicated)).map((entry) => entry.id), ['live|bitcoin|all|0']);
 });
 
 test('adding is newest first, deduplicated and bounded', () => {
@@ -72,7 +77,7 @@ test('the stored payload never contains headline text', () => {
   const storage = fakeStorage();
   addSavedSearch(storage, { q: 'bitcoin', source: 'decrypt', since: 3, title: 'Secret headline' });
   const payload = JSON.parse(storage.raw());
-  assert.deepEqual(Object.keys(payload[0]).sort(), ['id', 'q', 'since', 'source']);
+  assert.deepEqual(Object.keys(payload[0]).sort(), ['id', 'q', 'since', 'source', 'surface']);
   assert.equal(storage.raw().includes('Secret headline'), false);
 });
 
@@ -93,4 +98,16 @@ test('removing and clearing report what happened and survive storage errors', ()
   const failed = addSavedSearch(broken, { q: 'bitcoin' });
   assert.equal(failed.status, 'ERROR');
   assert.deepEqual(failed.items, []);
+});
+
+test('the same filters can be saved on the live reader and the coverage page', () => {
+  const storage = fakeStorage();
+  const live = addSavedSearch(storage, { q: 'bitcoin', surface: 'live' });
+  assert.equal(live.status, 'SAVED');
+  const coverage = addSavedSearch(storage, { q: 'bitcoin', surface: 'coverage' });
+  assert.equal(coverage.status, 'SAVED');
+  assert.deepEqual(coverage.items.map((entry) => entry.surface), ['coverage', 'live']);
+  assert.equal(addSavedSearch(storage, { q: 'bitcoin', surface: 'coverage' }).status, 'DUPLICATE');
+  const removed = removeSavedSearch(storage, coverage.items[0].id);
+  assert.deepEqual(removed.items.map((entry) => entry.surface), ['live']);
 });

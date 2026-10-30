@@ -17,7 +17,7 @@ const REQUIRED = [
   'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
   'coverageFilterTitle', 'coverageFilterNote', 'coverageFilteredEmpty',
   'newBadge', 'newStatus', 'newNote',
-  'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll',
+  'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedCoverage',
   'savedRemove', 'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared',
   'feedsTitle', 'feedsCaption',
   'columnPublisher', 'columnStatus', 'columnHeadlines', 'columnReason', 'undated', 'noReason',
@@ -46,7 +46,7 @@ test('the chrome is actually translated and the BCP-47 tag is correct', () => {
   for (const key of ['back', 'h1', 'disabledTitle', 'unavailableTitle', 'warning', 'feedsTitle',
     'columnPublisher', 'rightsNote', 'filterTitle', 'filterQueryLabel', 'emptyFiltered', 'filterNote',
     'stripTitle', 'stripNote', 'stripCoverage', 'topicsTitle', 'topicsNote', 'officialSite', 'sinceTitle', 'sinceNote', 'allSources', 'staleWarning',
-    'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedRemove',
+    'savedTitle', 'savedNote', 'savedSave', 'savedClear', 'savedEmpty', 'savedAll', 'savedCoverage', 'savedRemove',
     'alsoCovered', 'coverageNote', 'topTitle', 'topPublishers', 'topNote', 'coverageAll',
     'coverageH1', 'coverageIntro', 'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
     'coverageFilterTitle', 'coverageFilterNote', 'coverageFilteredEmpty',
@@ -56,7 +56,7 @@ test('the chrome is actually translated and the BCP-47 tag is correct', () => {
   'coverageMeta', 'coverageEmpty', 'coverageLiveLink',
   'coverageFilterTitle', 'coverageFilterNote', 'coverageFilteredEmpty',
   'newBadge', 'newStatus', 'newNote', 'topTitle', 'topPublishers', 'topNote',
-    'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared']) {
+    'savedFull', 'savedDuplicate', 'savedSaved', 'savedError', 'savedRemoved', 'savedCleared', 'savedCoverage']) {
     assert.notEqual(LIVE_NEWS_COPY['pt-br'][key], LIVE_NEWS_COPY.en[key], key);
     assert.notEqual(LIVE_NEWS_COPY.es[key], LIVE_NEWS_COPY.en[key], key);
   }

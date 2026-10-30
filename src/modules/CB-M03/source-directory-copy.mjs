@@ -77,6 +77,11 @@ const COPY_ROWS = Object.freeze({
     "pt-br": "Como funciona →",
     "es": "Cómo funciona →",
   },
+  opmlLink: {
+    en: "Subscribe to all feeds (OPML)",
+    "pt-br": "Assinar todos os feeds (OPML)",
+    es: "Suscribirse a todas las fuentes (OPML)",
+  },
   liveLink: {
     en: "All live headlines →",
     "pt-br": "Todas as manchetes ao vivo →",

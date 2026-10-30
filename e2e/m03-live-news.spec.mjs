@@ -189,3 +189,21 @@ test("M03 the reader language switch keeps the path and its filters", async ({ p
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
   await expect(page.getByRole("heading", { level: 1, name: "Manchetes ao vivo de feeds públicos" })).toBeVisible();
 });
+
+test("M03 the source directory exports the public feeds as OPML", async ({ request, page }) => {
+  const response = await request.get("/sources.opml");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("text/x-opml");
+  expect(response.headers()["cache-control"]).toContain("max-age=3600");
+  const body = await response.text();
+  expect((body.match(/<outline /g) ?? []).length).toBe(5);
+  expect(body).toContain('xmlUrl="https://cointelegraph.com/rss"');
+  const etag = response.headers()["etag"];
+  expect(etag).toBeTruthy();
+  expect((await request.get("/sources.opml", { headers: { "if-none-match": etag } })).status()).toBe(304);
+  expect((await request.get("/sources.opml?x=1")).status()).toBe(400);
+  expect((await request.post("/sources.opml")).status()).toBe(405);
+  await page.goto("/en/news/sources");
+  await expect(page.getByRole("link", { name: "Subscribe to all feeds (OPML)" }))
+    .toHaveAttribute("href", "/sources.opml");
+});

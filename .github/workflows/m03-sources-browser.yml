@@ -16,6 +16,7 @@ on:
       - "src/pages/**/news/source/**"
       - "src/pages/*/news/sources.astro"
       - "src/pages/*/news/coverage.astro"
+      - "src/pages/sources.opml.ts"
       - "test/modules/CB-M03/**"
       - "e2e/m03-source-demo.spec.mjs"
       - "e2e/m03-live-news.spec.mjs"

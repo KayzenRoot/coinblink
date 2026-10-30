@@ -184,6 +184,26 @@ async function registrationOptions({ db, config, ticket, now }) {
   });
 }
 
+async function verifiedRegistration({ response, challenge, config }) {
+  try {
+    const result = await verifyRegistrationResponse({
+      response,
+      expectedChallenge: challenge,
+      expectedOrigin: config.origin,
+      expectedRPID: config.rpId,
+      requireUserPresence: true,
+      requireUserVerification: true,
+    });
+    const credential = result?.registrationInfo?.credential;
+    if (result?.verified !== true || !credential || credential.id !== response.id || response.rawId !== response.id) {
+      return null;
+    }
+    return credential;
+  } catch {
+    return null;
+  }
+}
+
 export async function bootstrapChallenge({ db, config, ticket, now }) {
   const options = await registrationOptions({ db, config, ticket, now });
   return options === null ? json({ error: 'invalid_ticket' }, 403) : json(options);
@@ -202,23 +222,8 @@ export async function bootstrapClaim({ db, config, ticket, challenge, response, 
     + 'AND t.consumed_at IS NULL AND t.expires_at>? AND NOT EXISTS (SELECT 1 FROM cms_owner)',
   ).bind(challengeDigest, ticketDigest, config.origin, config.rpId, now, now).first();
   if (!pending) return json({ error: 'invalid_ticket' }, 403);
-  let registration;
-  try {
-    registration = await verifyRegistrationResponse({
-      response,
-      expectedChallenge: challenge,
-      expectedOrigin: config.origin,
-      expectedRPID: config.rpId,
-      requireUserPresence: true,
-      requireUserVerification: true,
-    });
-  } catch {
-    return json({ error: 'registration_rejected' }, 403);
-  }
-  const credential = registration?.registrationInfo?.credential;
-  if (registration?.verified !== true || !credential || credential.id !== response.id || response.rawId !== response.id) {
-    return json({ error: 'registration_rejected' }, 403);
-  }
+  const credential = await verifiedRegistration({ response, challenge, config });
+  if (credential === null) return json({ error: 'registration_rejected' }, 403);
   const marker = crypto.randomUUID();
   const results = await db.batch([
     db.prepare('UPDATE cms_bootstrap_tickets SET consumed_at=?,consume_marker=? WHERE ticket_digest=? AND consumed_at IS NULL AND expires_at>? AND NOT EXISTS (SELECT 1 FROM cms_owner)')
@@ -391,23 +396,8 @@ export async function enrollClaim({ request, config, now, challenge, response })
     "SELECT challenge_digest FROM cms_enroll_challenges WHERE challenge_digest=? AND session_digest=? AND credential_kind='recovery' AND consumed_at IS NULL AND expires_at>? AND origin=? AND rp_id=?",
   ).bind(digest, session.digest, now, config.origin, config.rpId).first();
   if (!pending) return json({ error: 'invalid_challenge' }, 403);
-  let registration;
-  try {
-    registration = await verifyRegistrationResponse({
-      response,
-      expectedChallenge: challenge,
-      expectedOrigin: config.origin,
-      expectedRPID: config.rpId,
-      requireUserPresence: true,
-      requireUserVerification: true,
-    });
-  } catch {
-    return json({ error: 'registration_rejected' }, 403);
-  }
-  const credential = registration?.registrationInfo?.credential;
-  if (registration?.verified !== true || !credential || credential.id !== response.id || response.rawId !== response.id) {
-    return json({ error: 'registration_rejected' }, 403);
-  }
+  const credential = await verifiedRegistration({ response, challenge, config });
+  if (credential === null) return json({ error: 'registration_rejected' }, 403);
   const marker = crypto.randomUUID();
   const results = await config.db.batch([
     config.db.prepare("UPDATE cms_enroll_challenges SET consumed_at=?,consume_marker=? WHERE challenge_digest=? AND session_digest=? AND consumed_at IS NULL AND expires_at>? AND EXISTS (SELECT 1 FROM cms_credentials WHERE credential_id=? AND owner_id=1 AND revoked_at IS NULL)")

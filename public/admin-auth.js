@@ -17,7 +17,7 @@ function fromBytes(value) {
 }
 
 function csrf() {
-  const match = document.cookie.match(/(?:^|; )cb_owner_csrf=([0-9a-f]{64})/u);
+  const match = /(?:^|; )cb_owner_csrf=([0-9a-f]{64})/u.exec(document.cookie);
   return match ? match[1] : '';
 }
 

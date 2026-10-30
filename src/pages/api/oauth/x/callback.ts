@@ -35,7 +35,8 @@ export const GET: APIRoute = async ({ cookies, url }) => {
   const clientSecret = runtimeEnv("X_CLIENT_SECRET");
   const db = runtimeBinding("CMS_DB");
   const secret = runtimeEnv("M05_SESSION_SECRET");
-  if (clientId === undefined || clientSecret === undefined) {
+  const ownerEnabled = runtimeEnv("M05_OWNER_ENABLED");
+  if (clientId === undefined || clientSecret === undefined || ownerEnabled !== "true") {
     return page(503, "X OAuth is not configured",
       "<p>This deployment has no X client credentials. Nothing was exchanged.</p>");
   }

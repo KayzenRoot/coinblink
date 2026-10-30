@@ -99,12 +99,14 @@ test('the routes keep the secret server-side and store no token', () => {
   assert.ok(start.includes('sameSite: "lax"'));
   assert.ok(start.includes('authorize(request'));
   assert.ok(start.includes('createOauthState'));
+  assert.ok(start.includes('M05_OWNER_ENABLED'));
   assert.ok(callback.includes('runtimeEnv("X_CLIENT_SECRET")'));
   assert.ok(callback.includes('params.state !== state'));
   assert.ok(callback.includes('exchangeCode'));
   assert.ok(callback.includes('fetchViewer'));
   assert.ok(callback.includes('consumeOauthState'));
   assert.ok(callback.includes('storeSocialAccount'));
+  assert.ok(callback.includes('M05_OWNER_ENABLED'));
   assert.ok(callback.includes('Publishing is disabled'));
   assert.doesNotMatch(callback, /token\.accessToken[^)]*page|accessToken.*\+/u);
 });

@@ -24,7 +24,9 @@ export const GET: APIRoute = async ({ cookies, redirect, request, url }) => {
   const clientId = runtimeEnv("X_CLIENT_ID");
   const db = runtimeBinding("CMS_DB");
   const secret = runtimeEnv("M05_SESSION_SECRET");
-  if (clientId === undefined || db === undefined || db === null || typeof secret !== "string") {
+  const ownerEnabled = runtimeEnv("M05_OWNER_ENABLED");
+  if (clientId === undefined || db === undefined || db === null || typeof secret !== "string"
+    || ownerEnabled !== "true") {
     return new Response("X OAuth is not configured on this deployment.", { status: 503, headers: NO_STORE });
   }
   const session = await authorize(request, { db, secret, now: Math.floor(Date.now() / 1000) });

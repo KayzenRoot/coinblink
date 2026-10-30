@@ -21,7 +21,9 @@ with a composite primary key and a day index. The endpoint upserts with
 `POST /api/analytics/pageview` requires `Origin` and `Sec-Fetch-Site:
 same-origin`, JSON content type, a body under 2 KB and a valid path; it answers
 204. `public/analytics.js` uses `navigator.sendBeacon` with a fetch fallback and
-is loaded by `BaseLayout`.
+is loaded by `BaseLayout` only when `PUBLIC_ANALYTICS_LIVE=true`. Production
+deploys set it explicitly; PR and local builds leave it off, so tests and
+previews make no analytics request.
 
 ## Dashboard
 

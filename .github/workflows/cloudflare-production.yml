@@ -60,6 +60,8 @@ jobs:
           # Headlines from keyless public RSS. Off unless set; see
           # docs/product/CB-M03-P1-LIVE-RSS-001.md
           PUBLIC_NEWS_LIVE: ${{ vars.PUBLIC_NEWS_LIVE }}
+          # Cookieless aggregate pageviews are enabled only in production builds.
+          PUBLIC_ANALYTICS_LIVE: "true"
         run: npm run build
       - name: Reassert the Worker carries no session binding
         run: node scripts/assert-no-session-binding.mjs

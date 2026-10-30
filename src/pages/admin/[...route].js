@@ -19,6 +19,9 @@ import {
 } from '../../modules/CB-M05/p1-production/settings.mjs';
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
 import {
+  billingPage, billingStatus, checkoutForPlan, readBillingConfig,
+} from '../../modules/CB-M12/billing.mjs';
+import {
   RESEARCH_MODEL, generateResearch, listResearchNotes, readResearchNote, researchListPage,
   researchNotePage, researchUsage, validResearchModel,
 } from '../../modules/CB-M08/research.mjs';
@@ -146,6 +149,33 @@ async function productionAdmin(request, env) {
         'cache-control': 'no-store',
         'x-robots-tag': 'noindex',
       },
+    });
+  }
+  if (method === 'GET' && path === '/admin/billing') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const billingConfig = await readBillingConfig({ db: config.db, secret: config.secret, env: env.INTEGRATIONS });
+    return billingPage({
+      status: await billingStatus({ db: config.db }), config: billingConfig,
+      csrf: csrfFromRequest(request), error: url.searchParams.get('error') ?? '',
+    });
+  }
+  if (method === 'POST' && path === '/admin/billing/checkout') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await checkoutForPlan({
+      db: config.db, secret: config.secret, env: env.INTEGRATIONS,
+      plan: String(auth.form.get('plan') ?? ''), origin: url.origin,
+    });
+    if (result.status === 'redirect') return redirectTo(result.url);
+    const billingConfig = await readBillingConfig({ db: config.db, secret: config.secret, env: env.INTEGRATIONS });
+    const message = result.status === 'not_configured' ? 'Missing settings: ' + result.missing.join(', ')
+      : result.status === 'live_disabled' ? 'Live Stripe keys are disabled. Use a test key.'
+        : result.status === 'invalid_plan' ? 'Choose monthly or yearly.'
+          : (result.message ?? 'Checkout failed.');
+    return billingPage({
+      status: await billingStatus({ db: config.db }), config: billingConfig,
+      csrf: csrfFromRequest(request), error: message,
     });
   }
   if (method === 'GET' && path === '/admin/settings') {

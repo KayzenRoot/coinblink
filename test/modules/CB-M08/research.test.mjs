@@ -109,6 +109,7 @@ test('a generated note is stored only after the evidence check', async () => {
     db, ai, draft: DRAFT, focus: '', language: 'en', nowMs: 1_800_000_000_000,
   });
   assert.equal(result.status, 'created');
+  assert.equal(result.note.createdAt, Math.floor(1_800_000_000_000 / 1000), 'created_at is stored in seconds');
   assert.equal(result.note.draftRevision, 2);
   assert.equal(result.note.evidence.length, 1);
   assert.equal(ai.seen.length, 1);
@@ -159,6 +160,13 @@ test('the pages render the note and keep publishing out of reach', async () => {
   assert.match(noteBody, /Evidence from the draft/u);
   assert.match(noteBody, /miners added 4,000 BTC/u);
   assert.match(noteBody, /Not published, not scheduled/u);
+
+  const legacy = researchNotePage({
+    note: { ...ANSWER, id: UUID, draftId: UUID, draftRevision: 2, model: RESEARCH_MODEL, language: 'en', focus: '', createdAt: 1_800_000_000_000 },
+    csrf: 'b'.repeat(64),
+  });
+  assert.ok((await legacy.text()).includes(new Date(1_800_000_000_000).toISOString()),
+    'a legacy millisecond row renders the same instant');
 });
 
 test('the admin route exposes the research desk and the reviewed AI binding', () => {

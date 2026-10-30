@@ -20,13 +20,13 @@ export const COUNTED_TABLES = Object.freeze([
   "cms_pageviews", "cms_research_notes", "cms_audit_events",
 ]);
 
-const TABLE = /CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+"?([A-Za-z0-9_]+)"?/giu;
-const INSERT = /INSERT\s+INTO\s+"?([A-Za-z0-9_]+)"?/giu;
+const TABLE = /CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+"?(\w+)"?/giu;
+const INSERT = /INSERT\s+INTO\s+"?(\w+)"?/giu;
 
 export function tableNamesFromDump(sql) {
   const names = new Set();
   for (const match of String(sql).matchAll(TABLE)) names.add(match[1]);
-  return Object.freeze([...names].sort());
+  return Object.freeze([...names].sort((left, right) => left.localeCompare(right)));
 }
 
 function insertedTables(sql) {

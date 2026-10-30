@@ -15,6 +15,10 @@ import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-
 import { analyticsPage } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage } from '../../modules/CB-M07/token-vault.mjs';
 import {
+  clearSetting, listSettings, setSetting, settingsPage,
+} from '../../modules/CB-M05/p1-production/settings.mjs';
+import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
+import {
   RESEARCH_MODEL, generateResearch, listResearchNotes, readResearchNote, researchListPage,
   researchNotePage, researchUsage, validResearchModel,
 } from '../../modules/CB-M08/research.mjs';
@@ -144,6 +148,48 @@ async function productionAdmin(request, env) {
       },
     });
   }
+  if (method === 'GET' && path === '/admin/settings') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return settingsPage({
+      entries: await listSettings({ db: config.db, secret: config.secret, env: env.INTEGRATIONS }),
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('saved') ?? '',
+    });
+  }
+  if (method === 'POST' && path === '/admin/settings/save') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const key = String(auth.form.get('key') ?? '');
+    try {
+      const saved = await setSetting({
+        db: config.db, secret: config.secret, key,
+        value: String(auth.form.get('value') ?? ''), nowMs: Date.now(),
+      });
+      return redirectTo('/admin/settings?saved=' + encodeURIComponent(saved ? key + ' saved' : 'Could not save ' + key));
+    } catch (error) {
+      return redirectTo('/admin/settings?saved=' + encodeURIComponent(error.message));
+    }
+  }
+  if (method === 'POST' && path === '/admin/settings/clear') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const key = String(auth.form.get('key') ?? '');
+    const cleared = await clearSetting({ db: config.db, key, nowMs: Date.now() });
+    return redirectTo('/admin/settings?saved=' + encodeURIComponent(cleared ? key + ' cleared' : 'Could not clear ' + key));
+  }
+  if (method === 'POST' && path === '/admin/settings/test-email') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await sendTestEmail({
+      db: config.db, secret: config.secret, env: env.INTEGRATIONS,
+      to: String(auth.form.get('to') ?? ''), nowMs: Date.now(),
+    });
+    return settingsPage({
+      entries: await listSettings({ db: config.db, secret: config.secret, env: env.INTEGRATIONS }),
+      csrf: csrfFromRequest(request), result,
+    });
+  }
   if (method === 'GET' && path === '/admin/social') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);
@@ -267,6 +313,12 @@ export const ALL = async ({ request, locals }) => {
       M05_ORIGIN: runtimeEnv('M05_ORIGIN'),
       AI: runtimeBinding('AI'),
       M08_MODEL: runtimeEnv('M08_MODEL'),
+      INTEGRATIONS: Object.fromEntries([
+        'RESEND_API_KEY', 'COINBLINK_EMAIL_FROM', 'COINBLINK_TEST_EMAIL',
+        'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_MONTHLY', 'STRIPE_PRICE_YEARLY',
+        'X_CLIENT_ID', 'X_CLIENT_SECRET', 'META_APP_ID', 'META_APP_SECRET',
+        'TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET', 'M08_MODEL',
+      ].map((key) => [key, runtimeEnv(key)])),
     });
   }
   // DEV is compile-time false in the Cloudflare production build. Never accept

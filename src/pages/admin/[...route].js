@@ -21,9 +21,9 @@ const unavailable = () => new Response('Not found', {
 
 async function productionAdmin(request, env) {
   const config = readConfig(env);
-  if (config === null) return denied(404);
+  if (config === null) return denied(404, { 'x-m05-reason': 'config' });
   const url = new URL(request.url);
-  if (!sameOrigin(request, config.origin)) return denied(404);
+  if (!sameOrigin(request, config.origin)) return denied(404, { 'x-m05-reason': 'origin' });
   const now = Math.floor(Date.now() / 1000);
   const path = url.pathname;
   const method = request.method;
@@ -67,7 +67,7 @@ async function productionAdmin(request, env) {
   if (method === 'POST' && path === '/admin/logout') {
     return logout(request, { db: config.db, secret: config.secret, now });
   }
-  return denied(404);
+  return denied(404, { 'x-m05-reason': 'route' });
 }
 
 export const ALL = async ({ request, locals }) => {

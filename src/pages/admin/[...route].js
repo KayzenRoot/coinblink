@@ -13,6 +13,10 @@ import {
 } from '../../modules/CB-M05/p1-production/drafts.mjs';
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 import { analyticsPage } from '../../modules/CB-M06/pageview.mjs';
+import {
+  RESEARCH_MODEL, generateResearch, listResearchNotes, readResearchNote, researchListPage,
+  researchNotePage, researchUsage, validResearchModel,
+} from '../../modules/CB-M08/research.mjs';
 
 export const prerender = false;
 
@@ -139,6 +143,51 @@ async function productionAdmin(request, env) {
       },
     });
   }
+  const researchMatch = /^\/admin\/research\/([0-9a-f-]{36})$/u.exec(path);
+  if (method === 'GET' && path === '/admin/research') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const usage = await researchUsage({ db: config.db, nowMs: Date.now() });
+    return researchListPage({
+      drafts: await listDrafts(config.db), notes: await listResearchNotes(config.db),
+      csrf: csrfFromRequest(request), used: usage.used, cap: usage.cap,
+    });
+  }
+  if (method === 'POST' && path === '/admin/research') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const draft = await readDraft(config.db, String(auth.form.get('draftId') ?? ''));
+    if (draft === null) return denied(404);
+    const result = await generateResearch({
+      db: config.db, ai: env.AI, draft,
+      focus: String(auth.form.get('focus') ?? ''),
+      language: String(auth.form.get('language') ?? 'en'),
+      nowMs: Date.now(),
+      model: validResearchModel(env.M08_MODEL) ? env.M08_MODEL : RESEARCH_MODEL,
+    });
+    if (result.status === 'created') return redirectTo('/admin/research/' + result.note.id);
+    const messages = {
+      capped: 'Daily research limit reached. Try again tomorrow (UTC).',
+      unavailable: 'Workers AI is not configured or did not answer.',
+      invalid_output: 'The model did not return the required JSON shape. Nothing was saved.',
+      unverified_output: 'No quoted evidence matched the draft. Nothing was saved.',
+      invalid: 'The request was invalid.',
+      missing: 'Draft not found.',
+    };
+    const usage = await researchUsage({ db: config.db, nowMs: Date.now() });
+    return researchListPage({
+      drafts: await listDrafts(config.db), notes: await listResearchNotes(config.db),
+      csrf: csrfFromRequest(request), used: usage.used, cap: usage.cap,
+      error: messages[result.status] ?? 'Could not generate a research note.',
+    });
+  }
+  if (researchMatch !== null && method === 'GET') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const note = await readResearchNote(config.db, researchMatch[1]);
+    if (note === null) return denied(404);
+    return researchNotePage({ note, csrf: csrfFromRequest(request) });
+  }
   if (!sameOrigin(request, config.origin)) return denied(404);
 
   if (method === 'GET' && path === '/admin') {
@@ -201,6 +250,8 @@ export const ALL = async ({ request, locals }) => {
       M05_SESSION_SECRET: runtimeEnv('M05_SESSION_SECRET'),
       M05_RP_ID: runtimeEnv('M05_RP_ID'),
       M05_ORIGIN: runtimeEnv('M05_ORIGIN'),
+      AI: runtimeBinding('AI'),
+      M08_MODEL: runtimeEnv('M08_MODEL'),
     });
   }
   // DEV is compile-time false in the Cloudflare production build. Never accept

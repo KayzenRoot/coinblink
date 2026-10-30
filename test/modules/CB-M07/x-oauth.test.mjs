@@ -51,13 +51,14 @@ test('the token exchange sends the verifier and never exposes the token in error
   let seen = null;
   const fetchImpl = async (url, options) => {
     seen = { url, options };
-    return new Response(JSON.stringify({ access_token: 'secret-token', token_type: 'bearer', scope: 'tweet.read', expires_in: 7200 }), { status: 200 });
+    return new Response(JSON.stringify({ access_token: 'secret-token', refresh_token: 'refresh-token', token_type: 'bearer', scope: 'tweet.read', expires_in: 7200 }), { status: 200 });
   };
   const token = await exchangeCode({
     fetchImpl, clientId: 'client', clientSecret: 'secret', code: 'code-1',
     verifier: 'verifier-1', redirectUri: 'https://example.test/callback',
   });
   assert.equal(token.accessToken, 'secret-token');
+  assert.equal(token.refreshToken, 'refresh-token');
   assert.equal(token.expiresIn, 7200);
   assert.equal(seen.url, X_TOKEN_URL);
   assert.equal(seen.options.method, 'POST');
@@ -96,10 +97,16 @@ test('the routes keep the secret server-side and store no token', () => {
   assert.ok(start.includes('httpOnly: true'));
   assert.ok(start.includes('secure: true'));
   assert.ok(start.includes('sameSite: "lax"'));
+  assert.ok(start.includes('authorize(request'));
+  assert.ok(start.includes('createOauthState'));
+  assert.ok(start.includes('M05_OWNER_ENABLED'));
   assert.ok(callback.includes('runtimeEnv("X_CLIENT_SECRET")'));
   assert.ok(callback.includes('params.state !== state'));
   assert.ok(callback.includes('exchangeCode'));
   assert.ok(callback.includes('fetchViewer'));
-  assert.ok(callback.includes('This verification did not store the access or refresh token'));
+  assert.ok(callback.includes('consumeOauthState'));
+  assert.ok(callback.includes('storeSocialAccount'));
+  assert.ok(callback.includes('M05_OWNER_ENABLED'));
+  assert.ok(callback.includes('Publishing is disabled'));
   assert.doesNotMatch(callback, /token\.accessToken[^)]*page|accessToken.*\+/u);
 });

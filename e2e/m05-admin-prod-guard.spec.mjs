@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 // This suite hits the actual built Cloudflare/Astro preview, not a route mock.
 // The experimental M05 Admin bridge must be dead on *every* deployed build,
 // regardless of fake Browser headers, query parameters or cookies.
-for (const route of ['/admin', '/admin/workspace', '/admin/articles', '/admin/settings', '/admin/drafts', '/admin/security']) {
+for (const route of ['/admin', '/admin/workspace', '/admin/articles', '/admin/settings', '/admin/drafts', '/admin/security', '/admin/analytics']) {
   test('M05 production-build /admin is strictly unavailable: ' + route, async ({ page, request }) => {
     const externalRequests = [];
     page.on('request', entry => {

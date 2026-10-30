@@ -20,7 +20,9 @@
     "cms:temporary": "node test/modules/CB-M05/p1c-local-preview.mjs --preview --admin",
     "cms:smoke": "node test/modules/CB-M05/p1c-local-preview.mjs --smoke --admin",
     "studio:local": "node scripts/dev-studio.mjs",
-    "studio:check": "node scripts/dev-studio.mjs --check"
+    "studio:check": "node scripts/dev-studio.mjs --check",
+    "d1:backup": "node scripts/d1-backup.mjs",
+    "d1:drill": "node scripts/d1-restore-drill.mjs"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

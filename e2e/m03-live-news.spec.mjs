@@ -110,6 +110,8 @@ test("M03 publisher pages are attributed and inert while the reader is off", asy
     await expect(page.locator('[data-m03-source-state="DISABLED"]')).toBeVisible();
     await expect(page.locator("[data-m03-source-item]")).toHaveCount(0);
     await expect(page.locator("[data-m03-source-empty]")).toBeVisible();
+    await expect(page.locator("[data-m03-source-filter]")).toHaveCount(0);
+    await expect(page.locator("[data-m03-source-since]")).toHaveCount(0);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByRole("link", { name: "https://www.coindesk.com" }))
       .toHaveAttribute("rel", "noreferrer noopener external");

@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
-import { LIVE_NEWS_SOURCES } from "../../../../modules/CB-M03/rss-sources.mjs";
+import {
+  LIVE_NEWS_QUERY_MAX, LIVE_NEWS_SINCE_OPTIONS, LIVE_NEWS_SOURCES,
+} from "../../../../modules/CB-M03/rss-sources.mjs";
 import { readLiveNews } from "../../../../modules/CB-M03/live-news.mjs";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "../../../../modules/CB-M03/live-news-copy.mjs";
 import { getSourcePageCopy } from "../../../../modules/CB-M03/source-page-copy.mjs";
@@ -8,6 +10,9 @@ import { exactLiveTime, formatLiveAge } from "../../../../modules/CB-M03/live-ti
 import {
   buildCoverageIndex, clusterLiveHeadlines, coverageOthers,
 } from "../../../../modules/CB-M03/live-clusters.mjs";
+import {
+  clampLiveSearchQuery, clampLiveSince, filterLiveHeadlines,
+} from "../../../../modules/CB-M03/live-news-filter.mjs";
 import ReaderLocaleSwitch from "../../../../modules/CB-M03/ReaderLocaleSwitch.astro";
 export const prerender = false;
 
@@ -29,9 +34,14 @@ const snapshot = known && source !== null ? await readLiveNews({ enabled: import
 const feed = snapshot === null || source === null
   ? null
   : snapshot.sources.find((entry: { id: string }) => entry.id === source.id) ?? null;
-const items = snapshot?.status === "LIVE_HEADLINES" && source !== null
+const nowMs = Date.now();
+const query = clampLiveSearchQuery(Astro.url.searchParams.get("q") ?? "");
+const sinceHours = clampLiveSince(Astro.url.searchParams.get("since") ?? "");
+const sourceItems = snapshot?.status === "LIVE_HEADLINES" && source !== null
   ? snapshot.items.filter((item: { sourceId: string }) => item.sourceId === source.id)
   : [];
+const items = filterLiveHeadlines(sourceItems, { query, sinceHours, nowMs });
+const filtered = query !== "" || sinceHours > 0;
 // Clusters use the whole collection, so an item still knows which other
 // publishers carried it even though only this publisher's items are listed.
 const clusters = snapshot?.status === "LIVE_HEADLINES"
@@ -45,8 +55,15 @@ const rows = items.map((item: { id: string; title: string; summary: string; link
 }));
 const stamp = (iso: string | null) =>
   iso === null ? liveCopy.undated : iso.slice(0, 16).replace("T", " ") + " UTC";
-const nowMs = Date.now();
 const age = (iso: string | null) => formatLiveAge(iso, nowMs, localeKey) ?? liveCopy.undated;
+const viewHref = (nextSince: number) => {
+  const params = new URLSearchParams();
+  if (query !== "") params.set("q", query);
+  if (nextSince > 0) params.set("since", String(nextSince));
+  const search = params.toString();
+  const base = "/" + localeKey + "/news/source/" + (source?.id ?? "");
+  return search === "" ? base : base + "?" + search;
+};
 const exact = (iso: string | null) => exactLiveTime(iso);
 const name = source?.name ?? copy.notFoundTitle;
 const statusLine = (() => {
@@ -58,8 +75,8 @@ const statusLine = (() => {
   if (feed !== null && feed.status !== "OK") {
     return fillLiveNewsCopy(copy.statusUnavailable, { reason: feed.reason ?? "UNAVAILABLE" });
   }
-  if (items.length === 0) return copy.statusPending;
-  return fillLiveNewsCopy(copy.statusLive, { time: stamp(snapshot.collectedAt), count: items.length });
+  if (sourceItems.length === 0) return copy.statusPending;
+  return fillLiveNewsCopy(copy.statusLive, { time: stamp(snapshot.collectedAt), count: sourceItems.length });
 })();
 const pageTitle = known ? fillLiveNewsCopy(copy.title, { name }) : copy.notFoundTitle;
 const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.notFoundBody;
@@ -81,7 +98,38 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
         </section>
         <section aria-labelledby="source-items">
           <h2 id="source-items">{fillLiveNewsCopy(copy.itemsTitle, { name })}</h2>
-          {items.length === 0 && <p data-m03-source-empty>{copy.noItems}</p>}
+          {snapshot?.status === "LIVE_HEADLINES" && (
+            <>
+              <form class="source-page__filters" method="get"
+                action={"/" + localeKey + "/news/source/" + source.id} role="search"
+                aria-label={liveCopy.filterTitle} data-m03-source-filter>
+                <label>{liveCopy.filterQueryLabel}
+                  <input type="search" name="q" maxlength={LIVE_NEWS_QUERY_MAX} value={query}
+                    placeholder={liveCopy.filterQueryHint} autocomplete="off" data-m03-source-query />
+                </label>
+                <button type="submit">{liveCopy.filterApply}</button>
+                <a href={"/" + localeKey + "/news/source/" + source.id}>{liveCopy.filterReset}</a>
+                {sinceHours > 0 && <input type="hidden" name="since" value={sinceHours} />}
+              </form>
+              <nav class="source-page__since" aria-label={liveCopy.sinceTitle} data-m03-source-since>
+                <span>{liveCopy.sinceTitle}:</span>
+                <a href={viewHref(0)} aria-current={sinceHours === 0 ? "true" : undefined}>{liveCopy.sinceAny}</a>
+                {LIVE_NEWS_SINCE_OPTIONS.map((hours) => (
+                  <a href={viewHref(hours)} aria-current={sinceHours === hours ? "true" : undefined}>
+                    {fillLiveNewsCopy(liveCopy.sinceHours, { hours })}
+                  </a>
+                ))}
+              </nav>
+              <p class="source-page__note">{liveCopy.filterNote}</p>
+              {filtered && (
+                <p class="source-page__count" role="status" aria-live="polite" data-m03-source-filtered>
+                  {items.length} {items.length === 1 ? liveCopy.resultOne : liveCopy.resultMany}
+                </p>
+              )}
+            </>
+          )}
+          {sourceItems.length === 0 && <p data-m03-source-empty>{copy.noItems}</p>}
+          {sourceItems.length > 0 && items.length === 0 && <p data-m03-source-empty>{liveCopy.emptyFiltered}</p>}
           {items.length > 0 && (
             <ol class="source-page__list">
               {rows.map(({ item, others }: { item: { id: string; title: string; summary: string; link: string;
@@ -145,6 +193,14 @@ const pageDescription = known ? fillLiveNewsCopy(copy.intro, { name }) : copy.no
   .source-page__byline{margin:0;font-size:.8rem;color:#9fb6a5}
   .source-page__coverage{margin:.35rem 0 0;font-size:.82rem;color:#9fb6a5}
   .source-page__note{font-size:.92rem;color:#9fb6a5}
+  .source-page__filters{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;margin:1rem 0 .5rem;padding:1rem;border:1px solid #2f4a38;border-radius:.6rem}
+  .source-page__filters label{display:grid;gap:.35rem;font-size:.85rem;color:#9fb6a5;font-weight:650}
+  .source-page__filters input{background:#0b1513;color:#e9f6eb;border:1px solid #456e4e;border-radius:.4rem;padding:.5rem .6rem;min-width:12rem}
+  .source-page__filters button{background:#b8f34b;color:#10170b;border:0;border-radius:.4rem;padding:.55rem .9rem;font-weight:750;cursor:pointer}
+  .source-page__since{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.35rem 0 .5rem;font-size:.85rem;color:#9fb6a5}
+  .source-page__since a{padding:.22rem .55rem;border:1px solid #456e4e;border-radius:999px;text-decoration:none}
+  .source-page__since a[aria-current="true"]{border-color:#b8f34b;color:#b8f34b;font-weight:700}
+  .source-page__count{font-size:.9rem;color:#9fb6a5}
   .source-page__aside{margin-top:2rem;padding-top:1rem;border-top:1px solid #2f4a38;font-size:.92rem}
   .source-page a:focus-visible{outline:3px solid #cbfa58;outline-offset:3px}
 </style>

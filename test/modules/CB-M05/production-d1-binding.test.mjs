@@ -35,5 +35,9 @@ test('main applies migrations before deploying and the admin route stays closed'
   assert.ok(migrationStep > 0, 'migration step exists');
   assert.ok(deployStep > migrationStep, 'migrations run before deploy');
   assert.match(workflow.slice(migrationStep, deployStep), /d1 migrations apply coinblink-cms --remote/u);
-  assert.match(admin, /if \(!import\.meta\.env\.DEV\) return unavailable\(\);/u);
+  assert.match(admin, /if \(!import\.meta\.env\.DEV\) \{/u);
+  assert.match(admin, /productionAdmin/u);
+  assert.match(admin, /readConfig/u);
+  assert.match(admin, /return denied\(404\)/u);
+  assert.match(admin, /CB_M05_LOCAL_TEST_ONLY/u);
 });

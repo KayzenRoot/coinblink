@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  bootstrapChallenge, equalHex, escapeHtml, keyedDigest, loginChallenge, ownerExists, readConfig,
+  bootstrapChallenge, equalHex, escapeHtml, keyedDigest, loginChallenge, logout, ownerExists, readConfig,
   sameOrigin, toBase64Url,
 } from '../../../src/modules/CB-M05/p1-production/owner-auth.mjs';
 
@@ -63,6 +63,20 @@ test('bootstrap and login fail closed without a valid ticket or owner', async ()
   assert.equal(bootstrap.status, 403);
   const login = await loginChallenge({ db: fakeDb(null), config: CONFIG, now: 1000 });
   assert.equal(login.status, 404);
+});
+
+test('logout clears the cookie and returns to the sign-in page', async () => {
+  const db = {
+    prepare: () => ({ bind: () => ({ run: async () => ({ meta: { changes: 1 } }) }) }),
+  };
+  const request = new Request('https://example.test/admin/logout', {
+    method: 'POST',
+    headers: { cookie: '__Host-cb_owner=' + 'a'.repeat(64) },
+  });
+  const response = await logout(request, { db, secret: SECRET, now: 1000 });
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get('location'), '/admin/login');
+  assert.match(response.headers.get('set-cookie'), /Max-Age=0/u);
 });
 
 test('the route and client keep secrets out of HTML and use same-origin WebAuthn', () => {

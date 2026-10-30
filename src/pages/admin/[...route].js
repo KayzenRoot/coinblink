@@ -21,12 +21,19 @@ const unavailable = () => new Response('Not found', {
 
 async function productionAdmin(request, env) {
   const config = readConfig(env);
-  if (config === null) return denied(404, { 'x-m05-reason': 'config' });
+  if (config === null) return denied(404);
   const url = new URL(request.url);
-  if (!sameOrigin(request, config.origin)) return denied(404, { 'x-m05-reason': 'origin' });
   const now = Math.floor(Date.now() / 1000);
-  const path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
+  const path = url.pathname;
   const method = request.method;
+  // Logout is a same-origin form POST. The strict Origin/Sec-Fetch-Site pair is
+  // required for credential-changing endpoints, but a logout only revokes the
+  // cookie already presented; URL origin plus SameSite=Strict is sufficient.
+  if (method === 'POST' && path === '/admin/logout') {
+    if (url.origin !== config.origin) return denied(404);
+    return logout(request, { db: config.db, secret: config.secret, now });
+  }
+  if (!sameOrigin(request, config.origin)) return denied(404);
 
   if (method === 'GET' && path === '/admin') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
@@ -64,10 +71,7 @@ async function productionAdmin(request, env) {
       response: body.response, now,
     });
   }
-  if (method === 'POST' && path === '/admin/logout') {
-    return logout(request, { db: config.db, secret: config.secret, now });
-  }
-  return denied(404, { 'x-m05-reason': 'route', 'x-m05-path': method + ':' + path });
+  return denied(404);
 }
 
 export const ALL = async ({ request, locals }) => {

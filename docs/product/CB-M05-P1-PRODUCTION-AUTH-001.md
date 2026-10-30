@@ -32,6 +32,18 @@ request origin to match `M05_ORIGIN`. Writes also require `Origin` and
 - No access token, refresh token, credential secret or session value is logged
   or rendered.
 
+## Recovery passkey
+
+The owner can enroll one recovery passkey from the authenticated dashboard. The
+enrollment challenge is bound to the current session digest and issuer
+credential, requires the CSRF value issued at login, excludes the active
+credential and writes a `device_enrolled` audit event. The login page exposes
+two entries: primary and recovery; each request selects the matching active
+credential, so a lost primary does not lock the owner out. The session's CSRF
+value is carried in `cb_owner_csrf` (`Secure`, `SameSite=Strict`, scoped to
+`/admin`, readable by the same-origin form code) and must be sent as
+`x-cb-csrf` for enrollment.
+
 ## Configuration
 
 Worker secrets/vars (never commit real values):

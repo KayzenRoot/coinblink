@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  bootstrapChallenge, equalHex, escapeHtml, keyedDigest, loginChallenge, logout, ownerExists, readConfig,
-  sameOrigin, toBase64Url,
+  bootstrapChallenge, enrollChallenge, enrollClaim, equalHex, escapeHtml, keyedDigest, loginChallenge,
+  logout, ownerExists, readConfig, sameOrigin, toBase64Url,
 } from '../../../src/modules/CB-M05/p1-production/owner-auth.mjs';
 
 const SECRET = 'a'.repeat(64);
@@ -79,6 +79,16 @@ test('logout clears the cookie and returns to the sign-in page', async () => {
   assert.match(response.headers.get('set-cookie'), /Max-Age=0/u);
 });
 
+test('recovery enrollment fails closed without an authenticated session', async () => {
+  const request = new Request('https://example.test/admin/security/enroll/challenge', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+  });
+  const challenge = await enrollChallenge({ request, config: { ...CONFIG, db: fakeDb(null) }, now: 1000 });
+  assert.equal(challenge.status, 403);
+  const claim = await enrollClaim({ request, config: { ...CONFIG, db: fakeDb(null) }, now: 1000, challenge: 'x'.repeat(32), response: {} });
+  assert.equal(claim.status, 403);
+});
+
 test('the route and client keep secrets out of HTML and use same-origin WebAuthn', () => {
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
   const auth = readFileSync('src/modules/CB-M05/p1-production/owner-auth.mjs', 'utf8');
@@ -86,6 +96,8 @@ test('the route and client keep secrets out of HTML and use same-origin WebAuthn
   const css = readFileSync('public/admin.css', 'utf8');
   assert.ok(route.includes('productionAdmin'));
   assert.ok(route.includes('runtimeBinding'));
+  assert.ok(route.includes('enrollChallenge'));
+  assert.ok(route.includes('/admin/security/enroll/challenge'));
   assert.ok(route.includes('runtime-env'));
   assert.ok(route.includes('readConfig'));
   assert.ok(auth.includes('M05_OWNER_ENABLED'));
@@ -93,6 +105,8 @@ test('the route and client keep secrets out of HTML and use same-origin WebAuthn
   assert.doesNotMatch(auth, /console\.(log|warn|error)|localStorage|sessionStorage/u);
   assert.ok(client.includes('navigator.credentials.create'));
   assert.ok(client.includes('navigator.credentials.get'));
+  assert.ok(client.includes('owner-enroll-recovery'));
+  assert.ok(client.includes('x-cb-csrf'));
   assert.doesNotMatch(client, /https?:\/\//u);
   assert.match(css, /admin__facts/u);
   assert.ok(auth.includes('__Host-cb_owner'));

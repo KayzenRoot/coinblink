@@ -22,13 +22,21 @@ test('every response carries the reviewed security header set', () => {
 
 test('the CSP stays self-only and forbids framing, plugins, workers and inline code', () => {
   for (const directive of [
-    "default-src 'self'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
+    "default-src 'self'", "base-uri 'self'", "form-action 'self' https://checkout.stripe.com",
+    "frame-ancestors 'none'",
     "object-src 'none'", "script-src 'self'", "style-src 'self'", "connect-src 'self'",
     "manifest-src 'self'", "frame-src 'none'", "worker-src 'none'",
   ]) {
     assert.ok(source.includes(directive), directive);
   }
   assert.doesNotMatch(source, /unsafe-inline|unsafe-eval|unsafe-hashes/u);
+});
+
+test('Stripe Checkout is the only external origin allowed by the CSP', () => {
+  const csp = source.match(/Content-Security-Policy", "([^"]+)"/u)?.[1] ?? '';
+  const origins = csp.match(/https?:\/\/[^\s;]+/gu) ?? [];
+  assert.deepEqual(origins, ['https://checkout.stripe.com']);
+  assert.match(csp, /form-action 'self' https:\/\/checkout\.stripe\.com(;|$)/u);
 });
 
 test('sensors, payments and browser topics are denied by default', () => {

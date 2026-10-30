@@ -23,6 +23,11 @@ The Worker creates a Stripe Checkout Session in `subscription` mode with
 `/admin/billing`, and the configured test email as `customer_email`. Stripe
 hosts the payment page; CoinBlink never sees a card number.
 
+`form-action` in the global CSP also governs the redirect target of a form POST,
+so the policy allows `https://checkout.stripe.com` — the only external origin in
+the CSP. Without it the session is created but the browser refuses the
+redirection and the owner stays on the billing page.
+
 ## Webhook
 
 `POST /api/stripe/webhook` is public but authenticated by the

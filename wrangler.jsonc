@@ -4,6 +4,13 @@
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-10-08",
   "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "CMS_DB",
+      "database_name": "coinblink-cms",
+      "database_id": "d47ec576-cec4-470e-966f-bc05b8cfcdc1"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

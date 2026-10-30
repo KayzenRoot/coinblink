@@ -9,6 +9,7 @@ const sourceRootKeys = new Set([
   "assets",
   "previews",
   "vars",
+  "d1_databases",
   "upload_source_maps",
 ]);
 
@@ -126,6 +127,32 @@ const resourceBindingKeys = [
   "containers",
 ];
 
+const OWNER_D1_BINDING = "CMS_DB";
+const OWNER_D1_NAME = "coinblink-cms";
+const OWNER_D1_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
+
+function assertOwnerD1Binding(value, source, generated) {
+  assert.ok(Array.isArray(value), `${source} d1_databases must be an array`);
+  // Local and preview fixtures may declare the key with no binding. A present
+  // binding, however, must be exactly the reviewed owner database.
+  if (value.length === 0) return;
+  assert.equal(value.length, 1, `${source} must declare exactly one owner D1 binding`);
+  const binding = value[0];
+  assert.ok(binding && typeof binding === "object" && !Array.isArray(binding),
+    `${source} d1_databases[0] must be an object`);
+  assertExactKeys(binding, generated
+    ? ["binding", "database_name", "database_id", "migrations_dir"]
+    : ["binding", "database_name", "database_id"], `${source} D1 binding must stay minimal`);
+  assert.equal(binding.binding, OWNER_D1_BINDING, `${source} D1 binding must be ${OWNER_D1_BINDING}`);
+  assert.equal(binding.database_name, OWNER_D1_NAME, `${source} D1 database name must be ${OWNER_D1_NAME}`);
+  assert.match(binding.database_id, OWNER_D1_ID, `${source} D1 database id must be a UUID`);
+  assert.equal(Object.hasOwn(binding, "preview_database_id"), false,
+    `${source} must not bind a remote preview D1 database`);
+  if (generated) {
+    assert.equal(binding.migrations_dir, "../../migrations", `${source} D1 migrations dir must be reviewed`);
+  }
+}
+
 function isRecursivelyEmpty(value) {
   if (value === undefined || value === null) return true;
   if (Array.isArray(value)) return value.length === 0;
@@ -166,8 +193,11 @@ export function assertWorkerPreviewConfig(config, source = "Worker config", { ge
   const sessionBindings = findSessionBindings(config);
   assert.deepEqual(sessionBindings, [], `${source} must not contain an unrequested SESSION binding`);
 
-  const configuredResources = resourceBindingKeys.filter((key) => Object.hasOwn(config, key) && !isRecursivelyEmpty(config[key]));
-  assert.deepEqual(configuredResources, [], `${source} must not configure production or preview resource bindings`);
+  const configuredResources = resourceBindingKeys
+    .filter((key) => key !== "d1_databases")
+    .filter((key) => Object.hasOwn(config, key) && !isRecursivelyEmpty(config[key]));
+  assert.deepEqual(configuredResources, [], `${source} must not configure unreviewed resource bindings`);
+  if (Object.hasOwn(config, "d1_databases")) assertOwnerD1Binding(config.d1_databases, source, generated);
 
   assert.equal(config.name, "coinblink-m00-local", `${source} must preserve the local-only Worker name`);
   if (generated) {

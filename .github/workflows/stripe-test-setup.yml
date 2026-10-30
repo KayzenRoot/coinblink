@@ -20,11 +20,22 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          if [[ "$STRIPE_SECRET_KEY" != sk_test_* ]]; then
-            echo "::error::STRIPE_SECRET_KEY is not a test-mode key"
+          KEY="$(printf '%s' "$STRIPE_SECRET_KEY" | tr -d '
+' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          case "$KEY" in
+            sk_test_*) KEY_TYPE=test ;;
+            sk_live_*) KEY_TYPE=live ;;
+            rk_test_*) KEY_TYPE=restricted_test ;;
+            rk_live_*) KEY_TYPE=restricted_live ;;
+            *) KEY_TYPE=unknown ;;
+          esac
+          echo "STRIPE_KEY_TYPE=$KEY_TYPE"
+          echo "STRIPE_KEY_LENGTH=${#KEY}"
+          if [[ "$KEY_TYPE" != test && "$KEY_TYPE" != restricted_test ]]; then
+            echo "::error::STRIPE_SECRET_KEY is not a test-mode key ($KEY_TYPE)"
             exit 1
           fi
-          api() { curl -sS -H "Authorization: Bearer $STRIPE_SECRET_KEY" "$@"; }
+          api() { curl -sS -H "Authorization: Bearer $KEY" "$@"; }
           product_for() {
             local name="$1"
             api "https://api.stripe.com/v1/products?limit=100&active=true" > products.json
@@ -67,7 +78,7 @@ jobs:
           WEBHOOK_ID=$(node -e "const j=require('./hook.json');if(!j.id){console.error(j.error?.message||'webhook creation failed');process.exit(1)}process.stdout.write(j.id)")
           WEBHOOK_SECRET=$(node -e "const j=require('./hook.json');if(!j.secret){console.error('webhook secret missing');process.exit(1)}process.stdout.write(j.secret)")
           printf '%s' "$WEBHOOK_SECRET" | ./node_modules/.bin/wrangler secret put STRIPE_WEBHOOK_SECRET --name coinblink-production
-          printf '%s' "$STRIPE_SECRET_KEY" | ./node_modules/.bin/wrangler secret put STRIPE_SECRET_KEY --name coinblink-production
+          printf '%s' "$KEY" | ./node_modules/.bin/wrangler secret put STRIPE_SECRET_KEY --name coinblink-production
           echo "STRIPE_MONTHLY_PRICE=$MONTHLY_PRICE"
           echo "STRIPE_YEARLY_PRICE=$YEARLY_PRICE"
           echo "STRIPE_WEBHOOK_ID=$WEBHOOK_ID"

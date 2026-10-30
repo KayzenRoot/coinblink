@@ -1,6 +1,10 @@
 name: Stripe test setup
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/stripe-test-setup.yml
 permissions:
   contents: read
 jobs:

@@ -73,7 +73,8 @@ jobs:
             'test/modules/CB-M03/*.test.mjs' \
             'test/modules/CB-M04/*.test.mjs' \
             'test/modules/CB-M08/*.test.mjs' \
-            'test/modules/CB-M10/*.test.mjs'
+            'test/modules/CB-M10/*.test.mjs' \
+            'test/modules/CB-M14/*.test.mjs'
       - name: Node contracts that no module workflow runs
         # These files pass on main but no workflow executes them.
         # session-binding-guard.test.mjs covers scripts/assert-no-session-binding.mjs

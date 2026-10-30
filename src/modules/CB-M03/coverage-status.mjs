@@ -23,8 +23,21 @@ function emptyProjection(status, reason) {
 }
 
 /**
+ * @typedef {object} CoverageStatus
+ * @property {string} status
+ * @property {string} mode
+ * @property {string | null} [reason]
+ * @property {string} [collectedAt]
+ * @property {number} stories
+ * @property {number} headlines
+ * @property {string} rights
+ * @property {ReadonlyArray<{id: string, stories: number}>} publishers
+ * @property {string} disclaimer
+ */
+
+/**
  * @param {unknown} snapshot
- * @returns {Readonly<object>}
+ * @returns {Readonly<CoverageStatus>}
  */
 export function buildCoverageStatus(snapshot) {
   if (snapshot === null || typeof snapshot !== "object" || typeof snapshot.status !== "string") {

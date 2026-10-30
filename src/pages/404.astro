@@ -1,19 +1,21 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getNotFoundCopy, localeFromPathname } from "../modules/CB-M09/not-found-copy.mjs";
 
 export const prerender = false;
 Astro.response.status = 404;
----
 
-<BaseLayout
-  title="Page not found · CoinBlink"
-  description="This path is not part of the CoinBlink M00 local preview."
->
-  <main class="not-found" id="main">
-    <p class="eyebrow">COINBLINK · LOCAL PREVIEW</p>
+const locale = localeFromPathname(Astro.url.pathname);
+const copy = getNotFoundCopy(locale);
+const lang: "en" | "pt-BR" | "es" = copy.lang === "pt-BR" ? "pt-BR" : copy.lang === "es" ? "es" : "en";
+---
+<BaseLayout lang={lang} title={copy.pageTitle} description={copy.pageDescription}>
+  <main class="not-found" id="main" data-m09-not-found={locale}>
+    <p class="eyebrow">{copy.eyebrow}</p>
     <p class="not-found__code" aria-hidden="true">404</p>
-    <h1>Page not found</h1>
-    <p class="body-copy">This route is not available in the M00 foundation.</p>
-    <a class="button button--primary" href="/en">Return to home</a>
+    <h1>{copy.h1}</h1>
+    <p class="body-copy">{copy.body}</p>
+    <p><a class="button button--primary" href={"/" + locale}>{copy.home}</a></p>
+    <p><a href={"/" + locale + "/news"}>{copy.news}</a></p>
   </main>
 </BaseLayout>

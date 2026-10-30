@@ -112,11 +112,18 @@ test("every shipped surface is mobile-safe at 390px",async({page})=>{
   expect(failures).toEqual([]);
 });
 
-test("unknown paths render the styled 404 surface",async({page})=>{
-  for(const path of ["/nao-existe-xyz","/404","/en/news/category/unknown-category"]){
-    const response=await page.goto(path);
-    expect(response?.status(),`${path} must not be served`).toBe(404);
-    await expect(page.locator("h1")).toHaveCount(1);
+test("unknown paths render the styled, localized 404 surface",async({page})=>{
+  const cases=[
+    {path:"/nao-existe-xyz",lang:"en",h1:"Page not found"},
+    {path:"/pt-br/nao-existe",lang:"pt-BR",h1:"Página não encontrada"},
+    {path:"/es/no-existe",lang:"es",h1:"Página no encontrada"},
+    {path:"/404",lang:"en",h1:"Page not found"},
+  ];
+  for(const item of cases){
+    const response=await page.goto(item.path);
+    expect(response?.status(),`${item.path} must not be served`).toBe(404);
+    await expect(page.locator("html")).toHaveAttribute("lang",item.lang);
+    await expect(page.locator("h1")).toHaveText(item.h1);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content","noindex, nofollow, noarchive");
   }
 });

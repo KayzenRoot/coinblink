@@ -6,6 +6,7 @@ on:
       - ".github/workflows/m09-seo-metadata.yml"
       - "src/layouts/BaseLayout.astro"
       - "src/modules/CB-M09/**"
+      - "src/pages/404.astro"
       - "src/pages/en/about.astro"
       - "src/pages/pt-br/about.astro"
       - "src/pages/es/about.astro"

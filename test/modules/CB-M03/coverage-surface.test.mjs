@@ -25,6 +25,7 @@ test('the three coverage routes are thin, gated wrappers with their own locale',
 test('the coverage component renders the groups offline', () => {
   for (const marker of ['clusterLiveHeadlines', 'coveragePublishers', 'formatLiveAge',
     'data-m03-coverage-item', 'lang={cluster.members[0].language ?? undefined}', 'publisherAge(member.publishedAt)', 'copy.coverageEmpty', 'copy.coverageLiveLink',
+    '<SavedSearches locale={locale} surface="coverage"',
     'rel="noreferrer noopener external"', 'data-m03-coverage="disabled"']) {
     assert.ok(component.includes(marker), marker);
   }

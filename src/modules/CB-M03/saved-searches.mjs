@@ -10,6 +10,7 @@ import {
 
 export const SAVED_SEARCH_KEY = "coinblink.live.saved-searches.v1";
 export const SAVED_SEARCH_MAX = 8;
+const SURFACES = new Set(["live", "coverage"]);
 
 function freezeItems(items) {
   return Object.freeze(items);
@@ -21,8 +22,9 @@ export function normalizeSavedSearch(input) {
   const q = clampLiveSearchQuery(typeof input.q === "string" ? input.q : "");
   const source = clampLiveSource(typeof input.source === "string" ? input.source : LIVE_NEWS_ALL_SOURCES);
   const since = clampLiveSince(input.since);
+  const surface = typeof input.surface === "string" && SURFACES.has(input.surface) ? input.surface : "live";
   if (q === "" && source === LIVE_NEWS_ALL_SOURCES && since === 0) return null;
-  return Object.freeze({ q, source, since, id: [q, source, since].join("|") });
+  return Object.freeze({ q, source, since, surface, id: [surface, q, source, since].join("|") });
 }
 
 export function savedSearchHref(entry, locale) {
@@ -31,7 +33,8 @@ export function savedSearchHref(entry, locale) {
   if (entry.source !== LIVE_NEWS_ALL_SOURCES) params.set("source", entry.source);
   if (entry.since > 0) params.set("since", String(entry.since));
   const search = params.toString();
-  return "/" + locale + "/news/live" + (search === "" ? "" : "?" + search);
+  const path = entry.surface === "coverage" ? "/news/coverage" : "/news/live";
+  return "/" + locale + path + (search === "" ? "" : "?" + search);
 }
 
 function storedEntries(storage) {

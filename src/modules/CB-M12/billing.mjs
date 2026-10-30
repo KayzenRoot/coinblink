@@ -107,11 +107,21 @@ export async function verifyStripeSignature({ payload, header, secret, nowMs, to
   return signatures.some((signature) => timingSafeEqualHex(signature, expected));
 }
 
+// Stripe moved the period end from the subscription to its first item; the
+// subscription-level field is still read first for older API versions.
+function periodEnd(data, item) {
+  for (const candidate of [data.current_period_end, item?.current_period_end]) {
+    if (Number.isFinite(candidate)) return Number(candidate);
+  }
+  return null;
+}
+
 function subscriptionRow(event, now) {
   const data = event.data?.object;
   if (data === null || typeof data !== 'object') return null;
   const customerId = typeof data.customer === 'string' ? data.customer : '';
-  const priceId = data.items?.data?.[0]?.price?.id;
+  const item = data.items?.data?.[0];
+  const priceId = item?.price?.id;
   if (typeof data.id !== 'string' || customerId === '' || !PRICE.test(priceId ?? '')) return null;
   return {
     id: data.id,
@@ -119,7 +129,7 @@ function subscriptionRow(event, now) {
     customerId,
     status: typeof data.status === 'string' ? data.status : 'unknown',
     priceId,
-    currentPeriodEnd: Number.isFinite(data.current_period_end) ? Number(data.current_period_end) : null,
+    currentPeriodEnd: periodEnd(data, item),
     cancelAtPeriodEnd: data.cancel_at_period_end === true ? 1 : 0,
     updatedAt: now,
   };
@@ -191,8 +201,8 @@ export async function checkoutForPlan({ db, secret, env, plan, origin, fetchImpl
   try {
     const session = await createCheckoutSession({
       fetchImpl, apiKey: config.apiKey, priceId, email: config.email,
-      successUrl: new URL('/admin/billing?checkout=success', origin).toString(),
-      cancelUrl: new URL('/admin/billing?checkout=cancelled', origin).toString(),
+      successUrl: new URL('/billing/return?status=success', origin).toString(),
+      cancelUrl: new URL('/billing/return?status=cancelled', origin).toString(),
       ownerId: 1,
     });
     return Object.freeze({ status: 'redirect', url: session.url });
@@ -205,7 +215,7 @@ function csrfField(csrf) {
   return '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">';
 }
 
-export function billingPage({ status, config, csrf, error = '' }) {
+export function billingPage({ status, config, csrf, error = '', checkout = '' }) {
   const missing = missingBillingKeys(config);
   const live = config?.apiKey !== null && config?.apiKey !== undefined && !TEST_KEY.test(config.apiKey);
   const plan = status.subscription;
@@ -224,6 +234,11 @@ export function billingPage({ status, config, csrf, error = '' }) {
   return page('Billing', '<p><a href="/admin">Owner workspace</a> · <a href="/admin/settings">Settings</a>'
     + ' · <a href="/admin/social">Social accounts</a></p>'
     + (error === '' ? '' : '<p class="admin__error" role="alert">' + escapeHtml(error) + '</p>')
+    + (checkout === 'success'
+      ? '<p class="admin__ok" role="status">Payment completed. Stripe confirms the subscription through the webhook.</p>'
+      : checkout === 'cancelled'
+        ? '<p class="admin__note" role="status">Checkout cancelled. Nothing was charged.</p>'
+        : '')
     + '<p class="admin__note">Stripe test mode only. No card data reaches CoinBlink; Stripe hosts the checkout.</p>'
     + facts
     + (missing.length === 0 ? '' : '<p class="admin__error" role="alert">Missing settings: ' + escapeHtml(missing.join(', ')) + '.</p>')

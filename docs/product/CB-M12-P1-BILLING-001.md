@@ -28,6 +28,11 @@ so the policy allows `https://checkout.stripe.com` — the only external origin 
 the CSP. Without it the session is created but the browser refuses the
 redirection and the owner stays on the billing page.
 
+The success and cancel URLs point at `/billing/return?status=...`, a public
+endpoint that only 303s to `/admin/billing?checkout=...`. The owner cookie is
+`SameSite=Strict`, so the cross-site navigation from Stripe carries no session;
+the second, same-site hop does, and the authenticated page renders the outcome.
+
 ## Webhook
 
 `POST /api/stripe/webhook` is public but authenticated by the
@@ -36,7 +41,9 @@ tolerance and a timing-safe comparison. It handles:
 
 - `checkout.session.completed`: records the Stripe customer id and email.
 - `customer.subscription.created`, `.updated`, `.deleted`: upserts status,
-  price, period end and cancel-at-period-end.
+  price, period end and cancel-at-period-end. Stripe moved the period end to the
+  subscription item, so the handler reads the subscription field first and then
+  `items.data[0].current_period_end`.
 - `invoice.paid`: recorded for idempotency; entitlement follows the
   subscription status.
 

@@ -158,6 +158,7 @@ async function productionAdmin(request, env) {
     return billingPage({
       status: await billingStatus({ db: config.db }), config: billingConfig,
       csrf: csrfFromRequest(request), error: url.searchParams.get('error') ?? '',
+      checkout: url.searchParams.get('checkout') ?? '',
     });
   }
   if (method === 'POST' && path === '/admin/billing/checkout') {

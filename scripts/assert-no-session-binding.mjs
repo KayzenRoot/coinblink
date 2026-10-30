@@ -23,5 +23,5 @@ assert.ok(workerConfigs.length > 1, "Astro build must emit a Worker Wrangler con
 
 for (const configPath of workerConfigs.slice(1)) {
   assertWorkerPreviewConfig(JSON.parse(readFileSync(configPath, "utf8")), configPath, { generated: true });
-  process.stdout.write("No SESSION or unreviewed bindings in " + configPath + "; owner D1 CMS_DB only\n");
+  process.stdout.write("No SESSION or unreviewed bindings in " + configPath + "; owner D1 CMS_DB and AI only\n");
 }

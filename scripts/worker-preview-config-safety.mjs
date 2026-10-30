@@ -10,6 +10,7 @@ const sourceRootKeys = new Set([
   "previews",
   "vars",
   "d1_databases",
+  "ai",
   "upload_source_maps",
 ]);
 
@@ -39,6 +40,7 @@ const generatedRootKeys = new Set([
   "kv_namespaces",
   "r2_buckets",
   "d1_databases",
+  "ai",
   "vectorize",
   "ai_search_namespaces",
   "ai_search",
@@ -153,6 +155,15 @@ function assertOwnerD1Binding(value, source, generated) {
   }
 }
 
+const OWNER_AI_BINDING = "AI";
+
+function assertOwnerAiBinding(value, source) {
+  assert.ok(value && typeof value === "object" && !Array.isArray(value),
+    `${source} ai must be an object`);
+  assertExactKeys(value, ["binding"], `${source} AI binding must stay minimal`);
+  assert.equal(value.binding, OWNER_AI_BINDING, `${source} AI binding must be ${OWNER_AI_BINDING}`);
+}
+
 function isRecursivelyEmpty(value) {
   if (value === undefined || value === null) return true;
   if (Array.isArray(value)) return value.length === 0;
@@ -194,10 +205,11 @@ export function assertWorkerPreviewConfig(config, source = "Worker config", { ge
   assert.deepEqual(sessionBindings, [], `${source} must not contain an unrequested SESSION binding`);
 
   const configuredResources = resourceBindingKeys
-    .filter((key) => key !== "d1_databases")
+    .filter((key) => key !== "d1_databases" && key !== "ai")
     .filter((key) => Object.hasOwn(config, key) && !isRecursivelyEmpty(config[key]));
   assert.deepEqual(configuredResources, [], `${source} must not configure unreviewed resource bindings`);
   if (Object.hasOwn(config, "d1_databases")) assertOwnerD1Binding(config.d1_databases, source, generated);
+  if (Object.hasOwn(config, "ai")) assertOwnerAiBinding(config.ai, source);
 
   assert.equal(config.name, "coinblink-m00-local", `${source} must preserve the local-only Worker name`);
   if (generated) {

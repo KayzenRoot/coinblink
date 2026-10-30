@@ -6,3 +6,8 @@ export function runtimeEnv(key: string): string | undefined {
   const value = (env as Record<string, unknown> | undefined)?.[key];
   return typeof value === "string" && value !== "" ? value : undefined;
 }
+
+/** Read a non-string Worker binding (D1, KV, etc.) from the runtime environment. */
+export function runtimeBinding(key: string): unknown {
+  return (env as Record<string, unknown> | undefined)?.[key];
+}

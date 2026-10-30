@@ -72,9 +72,16 @@ async function productionAdmin(request, env) {
 
 export const ALL = async ({ request, locals }) => {
   if (!import.meta.env.DEV) {
-    // Astro v6+ exposes Worker bindings through the official module.
-    const { env } = await import('cloudflare:workers');
-    return productionAdmin(request, env);
+    // Use the same static cloudflare:workers helper that already serves the X
+    // OAuth routes; the dynamic module import is not reliable in this bundle.
+    const { runtimeBinding, runtimeEnv } = await import('../../lib/runtime-env');
+    return productionAdmin(request, {
+      CMS_DB: runtimeBinding('CMS_DB'),
+      M05_OWNER_ENABLED: runtimeEnv('M05_OWNER_ENABLED'),
+      M05_SESSION_SECRET: runtimeEnv('M05_SESSION_SECRET'),
+      M05_RP_ID: runtimeEnv('M05_RP_ID'),
+      M05_ORIGIN: runtimeEnv('M05_ORIGIN'),
+    });
   }
   // DEV is compile-time false in the Cloudflare production build. Never accept
   // a browser-supplied header or cookie as an opt-in for fixture privileges.

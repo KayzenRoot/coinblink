@@ -71,7 +71,8 @@ test('the route and client keep secrets out of HTML and use same-origin WebAuthn
   const client = readFileSync('public/admin-auth.js', 'utf8');
   const css = readFileSync('public/admin.css', 'utf8');
   assert.ok(route.includes('productionAdmin'));
-  assert.ok(route.includes('cloudflare:workers'));
+  assert.ok(route.includes('runtimeBinding'));
+  assert.ok(route.includes('runtime-env'));
   assert.ok(route.includes('readConfig'));
   assert.ok(auth.includes('M05_OWNER_ENABLED'));
   assert.doesNotMatch(route, /console\.(log|warn|error)/u);

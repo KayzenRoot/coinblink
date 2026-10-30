@@ -176,7 +176,8 @@ export async function billingStatus({ db }) {
     subscription = await db.prepare(
       'SELECT stripe_subscription_id AS subscriptionId,status,price_id AS priceId,'
       + 'current_period_end AS currentPeriodEnd,cancel_at_period_end AS cancelAtPeriodEnd,updated_at AS updatedAt '
-      + 'FROM cms_billing_subscriptions WHERE owner_id=1 ORDER BY updated_at DESC LIMIT 1',
+      + "FROM cms_billing_subscriptions WHERE owner_id=1 "
+      + "ORDER BY CASE WHEN status IN ('active','trialing') THEN 0 ELSE 1 END, updated_at DESC LIMIT 1",
     ).first() ?? null;
     customer = await db.prepare('SELECT stripe_customer_id AS customerId,email FROM cms_billing_customers WHERE owner_id=1')
       .first() ?? null;

@@ -218,6 +218,19 @@ test('billing status marks only active and trialing subscriptions as entitled', 
   assert.equal(none.active, false);
 });
 
+test('a replaced subscription never hides the one that still entitles', async () => {
+  const statements = [];
+  const db = {
+    prepare(sql) {
+      statements.push(sql);
+      return { first: async () => ({ status: 'active', priceId: 'price_monthly1234' }) };
+    },
+  };
+  assert.equal((await billingStatus({ db })).active, true);
+  assert.match(statements[0], /CASE WHEN status IN \('active','trialing'\) THEN 0 ELSE 1 END/u);
+  assert.match(statements[0], /updated_at DESC/u);
+});
+
 test('the admin and webhook routes expose the billing contract', () => {
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
   for (const marker of ['/admin/billing', 'checkoutForPlan', 'billingPage', 'billingStatus', "searchParams.get('checkout')"]) {

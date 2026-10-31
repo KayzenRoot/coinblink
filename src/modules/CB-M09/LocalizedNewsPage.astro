@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import NewsWorkbench from "../CB-M02/NewsWorkbench.astro";
 import NewsArticle from "../CB-M02/NewsArticle.astro";
 import LiveHeadlineStrip from "../CB-M03/LiveHeadlineStrip.astro";
+import PublishedArticles from "../CB-M05/PublishedArticles.astro";
 import { readLiveNews } from "../CB-M03/live-news.mjs";
 import { resolveMockNews } from "../CB-M02/news-workbench.mjs";
 
@@ -41,8 +42,11 @@ const copy = meta[locale];
   {detail
     ? <NewsArticle locale={locale} item={detail.item} />
     : (
-      <NewsWorkbench locale={locale} category={category}>
-        {liveSnapshot && <LiveHeadlineStrip slot="live" snapshot={liveSnapshot} locale={locale} />}
-      </NewsWorkbench>
+      <>
+        <PublishedArticles locale={locale} />
+        <NewsWorkbench locale={locale} category={category}>
+          {liveSnapshot && <LiveHeadlineStrip slot="live" snapshot={liveSnapshot} locale={locale} />}
+        </NewsWorkbench>
+      </>
     )}
 </BaseLayout>

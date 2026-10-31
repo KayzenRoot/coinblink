@@ -148,19 +148,28 @@ const COLUMNS = 'id,locale,slug,title,summary,body,tags,author_label AS authorLa
 export async function listArticles({ db, locale = null, limit = 50, includeAll = false }) {
   const bounded = Math.min(Math.max(Number(limit) || 50, 1), 200);
   const state = includeAll ? "status IN ('published','unpublished')" : "status='published'";
-  const rows = locale === null
-    ? await db.prepare('SELECT ' + COLUMNS + ' FROM cms_articles WHERE ' + state + ' ORDER BY published_at DESC LIMIT ?')
-      .bind(bounded).all()
-    : await db.prepare('SELECT ' + COLUMNS + ' FROM cms_articles WHERE ' + state + ' AND locale=? ORDER BY published_at DESC LIMIT ?')
-      .bind(locale, bounded).all();
-  return Object.freeze((rows?.results ?? []).map(mapArticle));
+  try {
+    const rows = locale === null
+      ? await db.prepare('SELECT ' + COLUMNS + ' FROM cms_articles WHERE ' + state + ' ORDER BY published_at DESC LIMIT ?')
+        .bind(bounded).all()
+      : await db.prepare('SELECT ' + COLUMNS + ' FROM cms_articles WHERE ' + state + ' AND locale=? ORDER BY published_at DESC LIMIT ?')
+        .bind(locale, bounded).all();
+    return Object.freeze((rows?.results ?? []).map(mapArticle));
+  } catch {
+    // A database without the migration must render an empty list, not a 500.
+    return Object.freeze([]);
+  }
 }
 
 export async function readArticle({ db, locale, slug }) {
   if (!validLocale(locale) || typeof slug !== 'string' || slug === '') return null;
-  const row = await db.prepare('SELECT ' + COLUMNS + ' FROM cms_articles WHERE locale=? AND slug=?')
-    .bind(locale, slug).first() ?? null;
-  return row === null ? null : mapArticle(row);
+  try {
+    const row = await db.prepare('SELECT ' + COLUMNS + ' FROM cms_articles WHERE locale=? AND slug=?')
+      .bind(locale, slug).first() ?? null;
+    return row === null ? null : mapArticle(row);
+  } catch {
+    return null;
+  }
 }
 
 function escapeHtml(value) {

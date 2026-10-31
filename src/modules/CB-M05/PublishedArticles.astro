@@ -1,0 +1,41 @@
+---
+// CB-M05-P1-PUBLISHING-001: published owner articles on the locale news index.
+import { listArticles } from "./p1-production/articles.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
+
+type Row = {
+  slug: string; title: string; summary: string; authorLabel: string; publishedAt: number;
+};
+
+interface Props { locale: "en" | "pt-br" | "es" }
+const { locale } = Astro.props;
+const articles = await listArticles({ db: runtimeBinding("CMS_DB"), locale, limit: 12 }) as Row[];
+const copy = {
+  en: { tag: "COINBLINK · ORIGINAL", title: "Published by CoinBlink", empty: "Nothing published in this language yet.", all: "All articles" },
+  "pt-br": { tag: "COINBLINK · ORIGINAL", title: "Publicado pelo CoinBlink", empty: "Nada publicado neste idioma ainda.", all: "Todos os artigos" },
+  es: { tag: "COINBLINK · ORIGINAL", title: "Publicado por CoinBlink", empty: "Todavía no hay nada publicado en este idioma.", all: "Todos los artículos" },
+}[locale];
+---
+
+<section class="published" aria-labelledby="published-title" data-cb-published>
+  <p class="published__tag">{copy.tag}</p>
+  <h2 id="published-title">{copy.title}</h2>
+  {articles.length === 0
+    ? <p class="published__empty">{copy.empty}</p>
+    : (
+      <ul class="published__list">
+        {articles.map((article: Row) => (
+          <li>
+            <a href={`/${locale}/article/${article.slug}`}>{article.title}</a>
+            <p>{article.summary}</p>
+            <small>
+              <time datetime={new Date(article.publishedAt * 1000).toISOString()}>
+                {new Date(article.publishedAt * 1000).toISOString().slice(0, 10)}
+              </time>
+              {article.authorLabel !== "" && <span> · {article.authorLabel}</span>}
+            </small>
+          </li>
+        ))}
+      </ul>
+    )}
+</section>

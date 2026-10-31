@@ -165,3 +165,13 @@ test('the public page and the API expose only metadata', () => {
     assert.ok(route.includes(marker), marker);
   }
 });
+
+test('a database without the migration renders an empty list, not a 500', async () => {
+  const broken = {
+    prepare() {
+      throw new Error('D1_ERROR: no such table: cms_articles: SQLITE_ERROR');
+    },
+  };
+  assert.deepEqual(await listArticles({ db: broken }), []);
+  assert.equal(await readArticle({ db: broken, locale: 'en', slug: 'anything' }), null);
+});

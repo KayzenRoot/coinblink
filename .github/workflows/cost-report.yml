@@ -1,0 +1,46 @@
+name: CoinBlink cost report
+
+# Weekly provider cost inputs for the owner. The token stays in repository
+# secrets; the job prints only aggregate counters and uploads them as an
+# artifact, never the credential.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coinblink-cost-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    name: Provider cost inputs (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - name: Report
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          COINBLINK_CF_WORKER_NAME: coinblink-production
+        run: node scripts/cost-report.mjs --days 7 | tee cost-report.txt
+      - name: Upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cost-report
+          path: cost-report.txt
+          retention-days: 30
+          if-no-files-found: error

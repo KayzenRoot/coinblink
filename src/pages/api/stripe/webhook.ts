@@ -5,13 +5,15 @@
 import type { APIRoute } from "astro";
 import { handleStripeEvent, readBillingConfig, verifyStripeSignature } from "../../../modules/CB-M12/billing.mjs";
 import { recordOpsEvent } from "../../../modules/CB-M14/ops-events.mjs";
+import { notifyEvent } from "../../../modules/CB-M14/alert-email.mjs";
 import { runtimeBinding, runtimeEnv } from "../../../lib/runtime-env";
 
 export const prerender = false;
 
 const KEYS = [
   "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_MONTHLY",
-  "STRIPE_PRICE_YEARLY", "COINBLINK_TEST_EMAIL",
+  "STRIPE_PRICE_YEARLY", "COINBLINK_TEST_EMAIL", "RESEND_API_KEY",
+  "COINBLINK_EMAIL_FROM",
 ];
 
 function json(status: number, body: unknown): Response {
@@ -35,19 +37,25 @@ export const POST: APIRoute = async ({ request }) => {
     secret: config.webhookSecret, nowMs: Date.now(),
   });
   if (!valid) {
-    await recordOpsEvent({ db, type: "webhook_invalid_signature", detail: "rejected by signature check" });
+    const nowMs = Date.now();
+    await recordOpsEvent({ db, type: "webhook_invalid_signature", detail: "rejected by signature check", nowMs });
+    await notifyEvent({ db, secret, env, type: "webhook_invalid_signature", detail: "rejected by signature check", nowMs });
     return json(400, { error: "invalid_signature" });
   }
   let event: unknown;
   try {
     event = JSON.parse(payload);
   } catch {
-    await recordOpsEvent({ db, type: "webhook_invalid_event", detail: "invalid json" });
+    const nowMs = Date.now();
+    await recordOpsEvent({ db, type: "webhook_invalid_event", detail: "invalid json", nowMs });
+    await notifyEvent({ db, secret, env, type: "webhook_invalid_event", detail: "invalid json", nowMs });
     return json(400, { error: "invalid_json" });
   }
   const result = await handleStripeEvent({ db, event, nowMs: Date.now() });
   if (result.status === "invalid") {
-    await recordOpsEvent({ db, type: "webhook_invalid_event", detail: "unknown or malformed event" });
+    const nowMs = Date.now();
+    await recordOpsEvent({ db, type: "webhook_invalid_event", detail: "unknown or malformed event", nowMs });
+    await notifyEvent({ db, secret, env, type: "webhook_invalid_event", detail: "unknown or malformed event", nowMs });
     return json(400, { error: "invalid_event" });
   }
   return json(200, { received: true, duplicate: result.status === "duplicate" });

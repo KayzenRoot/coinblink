@@ -136,6 +136,31 @@ export async function storeSocialAccount({ db, secret, provider, account, token,
   }
 }
 
+/**
+ * Stores a token the owner pasted for a provider whose app is not connected yet
+ * (Instagram, TikTok). The token is encrypted with the same vault and never
+ * rendered back; the account appears in the list as "manual".
+ */
+export async function storeManualAccount({ db, secret, provider, username, token, nowMs = Date.now() }) {
+  const allowed = ['instagram', 'tiktok'];
+  if (!allowed.includes(provider)) return Object.freeze({ status: 'invalid', reason: 'provider' });
+  const handle = String(username ?? '').trim().replace(/^@/u, '');
+  if (!/^[A-Za-z0-9._-]{2,40}$/u.test(handle)) return Object.freeze({ status: 'invalid', reason: 'username' });
+  const raw = String(token ?? '').trim();
+  if (raw.length < 20 || raw.length > 4096) return Object.freeze({ status: 'invalid', reason: 'token' });
+  const sealed = await encryptToken({ secret, plaintext: raw, info: 'social-token-v1' });
+  const now = Math.floor(nowMs / 1000);
+  await db.prepare(
+    'INSERT INTO cms_social_accounts(provider,account_id,owner_id,username,display_name,scopes,'
+    + 'access_token_ciphertext,access_token_iv,refresh_token_ciphertext,refresh_token_iv,expires_at,created_at,updated_at) '
+    + "VALUES (?,?,1,?,?,?,?,?,NULL,NULL,NULL,?,?) "
+    + 'ON CONFLICT(provider,account_id) DO UPDATE SET username=excluded.username,'
+    + 'access_token_ciphertext=excluded.access_token_ciphertext,access_token_iv=excluded.access_token_iv,'
+    + 'updated_at=excluded.updated_at',
+  ).bind(provider, 'manual:' + handle, handle, handle, 'manual', sealed.ciphertext, sealed.iv, now, now).run();
+  return Object.freeze({ status: 'stored', provider, username: handle });
+}
+
 export async function listSocialAccounts(db) {
   const result = await db.prepare(
     'SELECT provider,account_id AS accountId,username,display_name AS displayName,scopes,'
@@ -155,7 +180,7 @@ function csrfField(csrf) {
   return '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">';
 }
 
-export function socialPage({ accounts, csrf }) {
+export function socialPage({ accounts, csrf, message = '' }) {
   const items = accounts.map((account) => '<li><strong>@' + escapeHtml(account.username) + '</strong>'
     + ' <span class="admin__note">· ' + escapeHtml(account.provider) + ' · '
     + escapeHtml(account.scopes || 'no scopes reported') + '</span>'
@@ -168,6 +193,16 @@ export function socialPage({ accounts, csrf }) {
     + (accounts.length === 0 ? '<p>No social account is connected.</p>'
       : '<ul class="admin__drafts">' + items + '</ul>')
     + '<p><a class="admin__button" href="/api/oauth/x/start">Connect X</a></p>'
+    + (message === '' ? '' : '<p class="admin__error" role="alert">' + escapeHtml(message) + '</p>')
+    + '<h2>Manual token</h2>'
+    + '<p class="admin__note">For Instagram and TikTok while their developer apps are not connected. '
+    + 'The token is encrypted with the same vault and never rendered back.</p>'
+    + '<form method="post" action="/admin/social/manual" class="admin__draft-form">' + csrfField(csrf)
+    + '<label>Provider<select name="provider"><option value="instagram">Instagram</option>'
+    + '<option value="tiktok">TikTok</option></select></label>'
+    + '<label>Handle<input name="username" required maxlength="40" placeholder="coinblink"></label>'
+    + '<label>Access token<input name="token" type="password" required autocomplete="off"></label>'
+    + '<button type="submit">Store token</button></form>'
     + '<p class="admin__note">Tokens are encrypted with AES-GCM at rest. Publishing is disabled: '
     + 'connecting an account does not post anything until a separate approval flow exists.</p>'
     + '<form method="post" action="/admin/logout">' + csrfField(csrf) + '<button type="submit">Sign out</button></form>');

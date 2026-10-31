@@ -6,6 +6,8 @@ import LiveHeadlineStrip from "../CB-M03/LiveHeadlineStrip.astro";
 import PublishedArticles from "../CB-M05/PublishedArticles.astro";
 import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
 import { readLiveNews } from "../CB-M03/live-news.mjs";
+import { filterSnapshot, hiddenSourceIds } from "../CB-M03/source-policy.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
 import { resolveMockNews } from "../CB-M02/news-workbench.mjs";
 
 interface Props { locale: "en" | "pt-br" | "es"; slug?: string; category?: string; }
@@ -14,7 +16,10 @@ const detail = slug === undefined ? null : resolveMockNews(slug);
 // The strip is opt-in and off by default, so a disabled build performs no
 // request even though the news index is the busiest surface in the section.
 const liveSnapshot = detail === null
-  ? await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE })
+  ? filterSnapshot(
+    await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE }),
+    await hiddenSourceIds({ db: runtimeBinding("CMS_DB") }),
+  )
   : null;
 const meta = {
   en: {

@@ -3,6 +3,8 @@ import {
   LIVE_NEWS_QUERY_MAX, LIVE_NEWS_SINCE_OPTIONS, LIVE_NEWS_SOURCES, LIVE_NEWS_WINDOW_SECONDS,
 } from "./rss-sources.mjs";
 import { readLiveNews } from "./live-news.mjs";
+import { filterSnapshot, hiddenSourceIds } from "./source-policy.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
 import { fillLiveNewsCopy, getLiveNewsCopy } from "./live-news-copy.mjs";
 import {
   LIVE_NEWS_ALL_SOURCES, clampLiveSearchQuery, clampLiveSince, clampLiveSource, filterLiveHeadlines,
@@ -18,7 +20,10 @@ interface Props {
   snapshot: Awaited<ReturnType<typeof readLiveNews>>;
   locale?: "en" | "pt-br" | "es";
 }
-const { snapshot, locale = "en" } = Astro.props;
+const props = Astro.props;
+// The owner can hide a source from readers without a deploy.
+const snapshot = filterSnapshot(props.snapshot, await hiddenSourceIds({ db: runtimeBinding("CMS_DB") }));
+const locale = props.locale ?? "en";
 const copy = getLiveNewsCopy(locale);
 const live = snapshot.status === "LIVE_HEADLINES";
 const stamp = (iso: string | null) =>

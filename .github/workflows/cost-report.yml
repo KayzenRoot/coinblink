@@ -1,12 +1,11 @@
 name: CoinBlink cost report
 
-# Weekly provider cost inputs for the owner. The token stays in repository
+# Provider cost inputs for the owner, on demand. The token stays in repository
 # secrets; the job prints only aggregate counters and uploads them as an
-# artifact, never the credential.
+# artifact, never the credential. A scheduled trigger is intentionally absent:
+# the repository guard requires separate authorization for cron workflows.
 
 on:
-  schedule:
-    - cron: "17 6 * * 1"
   workflow_dispatch:
 
 permissions:

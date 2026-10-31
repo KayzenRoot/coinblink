@@ -34,6 +34,7 @@ import {
   alertsSection, buildAlerts, countOpsEvents, keysNearQuota, listOpsEvents, recordOpsEvent,
 } from '../../modules/CB-M14/ops-events.mjs';
 import { notifyEvent } from '../../modules/CB-M14/alert-email.mjs';
+import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
 import { buildInfo } from '../../lib/build-info';
 
 export const prerender = false;
@@ -219,6 +220,30 @@ async function productionAdmin(request, env) {
         events: await listOpsEvents({ db: config.db }),
       }),
     }));
+  }
+  if (method === 'GET' && path === '/admin/launch') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const nowMs = Date.now();
+    const ops = await readOps({ db: config.db, nowMs });
+    const status = await billingStatus({ db: config.db });
+    const billingConfig = await readBillingConfig({ db: config.db, secret: config.secret, env: env.INTEGRATIONS });
+    const integrations = env.INTEGRATIONS ?? {};
+    const confirmed = await config.db.prepare(
+      "SELECT COUNT(*) AS total FROM cms_newsletter_subscribers WHERE status='confirmed'",
+    ).first();
+    const items = evaluateLaunch({
+      ops,
+      billing: { active: status.active, missing: missingBillingKeys(billingConfig) },
+      email: {
+        apiKey: typeof integrations.RESEND_API_KEY === 'string' && integrations.RESEND_API_KEY !== '',
+        from: typeof integrations.COINBLINK_EMAIL_FROM === 'string' && integrations.COINBLINK_EMAIL_FROM !== '',
+      },
+      eventsLastDay: await countOpsEvents({ db: config.db, nowMs }),
+      confirmedSubscribers: Number(confirmed?.total ?? 0),
+      origin: typeof env.M05_ORIGIN === 'string' ? env.M05_ORIGIN : '',
+    });
+    return page('Launch gate', launchSection({ items, verdict: launchVerdict(items) }));
   }
   if (method === 'GET' && path === '/admin/newsletter') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });

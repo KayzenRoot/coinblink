@@ -169,6 +169,7 @@ export async function dashboardPage({ db, expiresAt }) {
     + ' · <a href="/admin/api">API access</a>'
     + ' · <a href="/admin/ops">Operations</a>'
     + ' · <a href="/admin/newsletter">Newsletter</a>'
+    + ' · <a href="/admin/launch">Launch gate</a>'
     + ' · <a href="/admin/security">Security and audit</a></p>'
     + '<h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
     + (hasRecovery ? '<p class="admin__note">A recovery passkey is registered.</p>' : '<button type="button" id="owner-enroll-recovery">Add recovery passkey</button>')

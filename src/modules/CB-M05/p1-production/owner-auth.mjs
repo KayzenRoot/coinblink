@@ -113,8 +113,15 @@ export function sameOrigin(request, expectedOrigin) {
   return origin === expectedOrigin && request.headers.get('sec-fetch-site') === 'same-origin';
 }
 
-export function page(title, body, status = 200) {
-  const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+// A browser or a hand-typed URL may carry a trailing slash. Routes are matched
+// on the exact path, so `/admin/` has to mean `/admin` instead of falling
+// through to the anonymous 404.
+export function normalizePath(pathname) {
+  const trimmed = String(pathname).replace(/\/+$/u, '');
+  return trimmed === '' ? '/' : trimmed;
+}
+
+export function page(title, body, status = 200) {  const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=device-width, initial-scale=1">'
     + '<meta name="robots" content="noindex, nofollow, noarchive">'
     + '<title>' + escapeHtml(title) + ' · CoinBlink</title>'
@@ -159,6 +166,7 @@ export async function dashboardPage({ db, expiresAt }) {
     + ' · <a href="/admin/social">Social accounts</a>'
     + ' · <a href="/admin/settings">Settings</a>'
     + ' · <a href="/admin/billing">Billing</a>'
+    + ' · <a href="/admin/api">API access</a>'
     + ' · <a href="/admin/security">Security and audit</a></p>'
     + '<h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
     + (hasRecovery ? '<p class="admin__note">A recovery passkey is registered.</p>' : '<button type="button" id="owner-enroll-recovery">Add recovery passkey</button>')

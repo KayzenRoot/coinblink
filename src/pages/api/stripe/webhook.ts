@@ -4,6 +4,7 @@
 // test-mode keys are accepted by the billing module. No card data is stored.
 import type { APIRoute } from "astro";
 import { handleStripeEvent, readBillingConfig, verifyStripeSignature } from "../../../modules/CB-M12/billing.mjs";
+import { recordOpsEvent } from "../../../modules/CB-M14/ops-events.mjs";
 import { runtimeBinding, runtimeEnv } from "../../../lib/runtime-env";
 
 export const prerender = false;
@@ -33,15 +34,22 @@ export const POST: APIRoute = async ({ request }) => {
     payload, header: request.headers.get("stripe-signature") ?? "",
     secret: config.webhookSecret, nowMs: Date.now(),
   });
-  if (!valid) return json(400, { error: "invalid_signature" });
+  if (!valid) {
+    await recordOpsEvent({ db, type: "webhook_invalid_signature", detail: "rejected by signature check" });
+    return json(400, { error: "invalid_signature" });
+  }
   let event: unknown;
   try {
     event = JSON.parse(payload);
   } catch {
+    await recordOpsEvent({ db, type: "webhook_invalid_event", detail: "invalid json" });
     return json(400, { error: "invalid_json" });
   }
   const result = await handleStripeEvent({ db, event, nowMs: Date.now() });
-  if (result.status === "invalid") return json(400, { error: "invalid_event" });
+  if (result.status === "invalid") {
+    await recordOpsEvent({ db, type: "webhook_invalid_event", detail: "unknown or malformed event" });
+    return json(400, { error: "invalid_event" });
+  }
   return json(200, { received: true, duplicate: result.status === "duplicate" });
 };
 

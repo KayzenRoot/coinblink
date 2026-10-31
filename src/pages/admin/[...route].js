@@ -29,6 +29,9 @@ import {
   apiKeysPage, createApiKey, listApiKeys, revokeApiKey,
 } from '../../modules/CB-M11/api-keys.mjs';
 import { launchGates, opsPage, readOps } from '../../modules/CB-M14/ops.mjs';
+import {
+  alertsSection, buildAlerts, countOpsEvents, keysNearQuota, listOpsEvents,
+} from '../../modules/CB-M14/ops-events.mjs';
 import { buildInfo } from '../../lib/build-info';
 
 export const prerender = false;
@@ -191,16 +194,28 @@ async function productionAdmin(request, env) {
     const ops = await readOps({ db: config.db, nowMs });
     const status = await billingStatus({ db: config.db });
     const billingConfig = await readBillingConfig({ db: config.db, secret: config.secret, env: env.INTEGRATIONS });
+    const research = await researchUsage({ db: config.db, nowMs });
+    const keys = await listApiKeys({ db: config.db, nowMs });
     return page('Operations', opsPage({
       ops,
       gates: launchGates({
         ops,
         billing: { missing: missingBillingKeys(billingConfig), active: status.active },
-        research: await researchUsage({ db: config.db, nowMs }),
+        research,
       }),
       build: buildInfo,
       subscription: status.subscription,
       csrf: csrfFromRequest(request),
+      alertsHtml: alertsSection({
+        alerts: buildAlerts({
+          subscription: status.subscription,
+          quotaNear: keysNearQuota(keys),
+          eventsLastDay: await countOpsEvents({ db: config.db, nowMs }),
+          research,
+          nowMs,
+        }),
+        events: await listOpsEvents({ db: config.db }),
+      }),
     }));
   }
   if (method === 'GET' && path === '/admin/api') {

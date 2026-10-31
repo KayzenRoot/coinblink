@@ -108,3 +108,14 @@ test('only explicit CodeRabbit coverage marker qualifies as covered', () => {
     body:'<!-- final_review_risk_coverage:{"coveredCommitId":"'+HEAD+'","kind":"reviewed"} -->'}];
   assert.equal(codeRabbitState(covered,HEAD),'COVERED_BY_REVIEW');
 });
+
+test('only the owner-authorized cost report may run on a schedule with a secret', () => {
+  const scheduled = 'on:\n  schedule:\npermissions:\n  contents: read\nenv:\n  TOKEN: ${{ secrets.X }}\n';
+  assert.ok(unsafeWorkflowLines(scheduled).some((reason) => reason.includes('scheduled')),
+    'default stays blocked');
+  assert.deepEqual(unsafeWorkflowLines(scheduled, { allowScheduledSecrets: true }), [],
+    'the exception clears only the scheduled reason for a read-only workflow');
+  const writing = scheduled + 'permissions:\n  contents: write\n';
+  assert.ok(unsafeWorkflowLines(writing, { allowScheduledSecrets: true })
+    .some((reason) => reason.includes('write-capable')), 'a write token stays blocked');
+});

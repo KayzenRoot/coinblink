@@ -46,7 +46,7 @@ test("M09 Spanish route and switcher preserve noindex and validate slugs", () =>
   // The demo robots value now has a single source in the M09 locale model.
   assert.match(readFileSync("src/modules/CB-M09/site-locales.mjs", "utf8"),
     /DEMO_ROBOTS = "noindex, nofollow, noarchive"/u);
-  assert.match(layout, /content=\{seo\.robots\}/u);
+  assert.match(layout, /content=\{robots \?\? seo\.robots\}/u);
   for (const text of [listing, detail, component, workbench]) {
     assert.doesNotMatch(text, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon|indexedDB|\/admin\/api|innerHTML/u);
   }
@@ -76,7 +76,7 @@ test("M09 ES a11y: Spanish skip label keeps EN and PT-BR unchanged", () => {
   // The demo robots value now has a single source in the M09 locale model.
   assert.match(readFileSync("src/modules/CB-M09/site-locales.mjs", "utf8"),
     /DEMO_ROBOTS = "noindex, nofollow, noarchive"/u);
-  assert.match(layout, /content=\{seo\.robots\}/u);
+  assert.match(layout, /content=\{robots \?\? seo\.robots\}/u);
 });
 
 test("M09 ES navigation: Spanish demo articles offer a return to the ES entry", () => {

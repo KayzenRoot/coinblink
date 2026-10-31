@@ -6,9 +6,10 @@ interface Props {
   title: string;
   description: string;
   lang?: "en" | "pt-BR" | "es";
+  robots?: string;
 }
 
-const { title, description, lang = "en" } = Astro.props;
+const { title, description, lang = "en", robots } = Astro.props;
 const seo = buildSeoMetadata({
   pathname: Astro.url.pathname,
   lang,
@@ -29,7 +30,7 @@ const seo = buildSeoMetadata({
     <link rel="manifest" href="/brand/site.webmanifest" />
     <link rel="stylesheet" href="/local-journey.css" />
     <meta name="theme-color" content="#070e0c" />
-    <meta name="robots" content={seo.robots} />
+    <meta name="robots" content={robots ?? seo.robots} />
     <meta name="description" content={description} />
     {seo.canonical && <link rel="canonical" href={seo.canonical} />}
     {seo.alternates.map((alternate) => (

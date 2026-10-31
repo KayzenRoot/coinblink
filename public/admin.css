@@ -172,3 +172,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 /* A table or fact list inside a panel keeps the outer card as the only frame. */
 .panel .admin__table,.panel .admin__facts{background:transparent;border:0;box-shadow:none;padding-left:0;padding-right:0}
 .panel .admin__table th{background:transparent}
+
+.admin__checklist{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding:.8rem 1rem;margin:0}
+.admin__checklist legend{color:var(--muted);font-size:.82rem;padding:0 .35rem}
+.admin__check{display:flex;align-items:center;gap:.5rem;font-size:.9rem;color:var(--text);font-weight:500}
+.admin__check input{width:1rem;height:1rem;accent-color:var(--accent)}
+.admin__check small{color:var(--muted)}

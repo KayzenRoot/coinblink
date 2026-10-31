@@ -23,6 +23,9 @@ import {
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
 import { listSubscribers, subscriberCounts, subscribersSection } from '../../modules/CB-M10/newsletter.mjs';
 import {
+  createEdition, editionsAdminSection, listEditions, sendEdition,
+} from '../../modules/CB-M10/editions.mjs';
+import {
   billingPage, billingStatus, checkoutForPlan, missingBillingKeys, readBillingConfig,
 } from '../../modules/CB-M12/billing.mjs';
 import {
@@ -298,6 +301,51 @@ async function productionAdmin(request, env) {
     return page('Newsletter', subscribersSection({
       subscribers: await listSubscribers({ db: config.db }),
       counts: await subscriberCounts({ db: config.db }),
+    }));
+  }
+  if (method === 'GET' && path === '/admin/editions') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return page('Editions', editionsAdminSection({
+      editions: await listEditions({ db: config.db }),
+      articles: await listArticles({ db: config.db, limit: 50 }),
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('error') ?? '',
+    }));
+  }
+  if (method === 'POST' && path === '/admin/editions/create') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await createEdition({
+      db: config.db,
+      locale: String(auth.form.get('locale') ?? ''),
+      subject: String(auth.form.get('subject') ?? ''),
+      intro: String(auth.form.get('intro') ?? ''),
+      articleIds: auth.form.getAll('article_ids').map((value) => String(value)),
+      nowMs: Date.now(),
+    });
+    if (result.status === 'draft') return redirectTo('/admin/editions');
+    const reason = result.reason === 'articles'
+      ? 'Choose at least one published article in the selected locale.'
+      : result.reason === 'subject' ? 'The subject must have 4 to 140 characters.'
+        : 'Choose a supported locale.';
+    return redirectTo('/admin/editions?error=' + encodeURIComponent(reason));
+  }
+  if (method === 'POST' && path === '/admin/editions/send') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await sendEdition({
+      db: config.db, secret: config.secret, env: env.INTEGRATIONS,
+      id: String(auth.form.get('id') ?? ''), nowMs: Date.now(), origin: config.origin,
+    });
+    const message = result.status === 'sent' ? '' : result.status === 'already_sent'
+      ? 'That edition was already sent.' : 'Could not send: ' + result.status + '.';
+    return page('Editions', editionsAdminSection({
+      editions: await listEditions({ db: config.db }),
+      articles: await listArticles({ db: config.db, limit: 50 }),
+      csrf: csrfFromRequest(request),
+      message,
+      result: result.status === 'sent' ? result : null,
     }));
   }
   if (method === 'GET' && path === '/admin/api') {

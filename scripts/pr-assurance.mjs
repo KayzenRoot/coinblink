@@ -88,7 +88,7 @@ function classifyMapping(key, value, reasons) {
   }
 }
 /** Avoid backtracking regex; inspect plain and list-form YAML workflow lines. */
-export function unsafeWorkflowLines(content) {
+export function unsafeWorkflowLines(content, options = {}) {
   const reasons = new Set();
   let writeCapable = false;
   let referencesSecrets = false;
@@ -106,7 +106,9 @@ export function unsafeWorkflowLines(content) {
   }
   // A weekly read-only scan is not an elevation. A scheduled workflow that can
   // write, or that reads any secret, stays blocked.
-  if (!writeCapable && !referencesSecrets) reasons.delete(SCHEDULED_REASON);
+  if (!writeCapable && (!referencesSecrets || options.allowScheduledSecrets === true)) {
+    reasons.delete(SCHEDULED_REASON);
+  }
   return [...reasons];
 }
 
@@ -205,7 +207,12 @@ async function runScope(ctx, label) {
       throw new Error('Cannot inspect entire workflow: ' + filename);
     }
     const full = Buffer.from(data.content.replaceAll('\n', ''), 'base64').toString('utf8');
-    return unsafeWorkflowLines(full).map(reason => filename + ': ' + reason);
+    // Exactly one scheduled workflow may read a secret: the owner-authorized
+    // cost report. It must stay read-only and carry the marker comment.
+    const allowScheduledSecrets = filename === '.github/workflows/cost-report.yml'
+      && full.includes('# owner-authorized-schedule')
+      && full.includes('permissions:') && full.includes('contents: read');
+    return unsafeWorkflowLines(full, { allowScheduledSecrets }).map(reason => filename + ': ' + reason);
   }));
   const findings = violations.flat();
   if (findings.length) throw new Error('Elevated workflow blocked: ' + findings.join('; '));

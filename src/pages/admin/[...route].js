@@ -5,7 +5,7 @@ import { createLocalAdminRouter } from '../../modules/CB-M05/p1c-local/local-adm
 import {
   authorize, authorizeForm, bootstrapChallenge, bootstrapClaim, bootstrapPage, csrfFromRequest,
   dashboardPage, denied, enrollChallenge, enrollClaim, json, login, loginChallenge, loginPage,
-  logout, ownerExists, readConfig, readJson, sameOrigin,
+  logout, ownerExists, page, readConfig, readJson, sameOrigin,
 } from '../../modules/CB-M05/p1-production/owner-auth.mjs';
 import {
   createDraft, draftFormPage, draftMarkdown, draftRevisionsPage, draftsPage, listDrafts,
@@ -25,6 +25,9 @@ import {
   RESEARCH_MODEL, generateResearch, listResearchNotes, readResearchNote, researchListPage,
   researchNotePage, researchUsage, validResearchModel,
 } from '../../modules/CB-M08/research.mjs';
+import {
+  apiKeysPage, createApiKey, listApiKeys, revokeApiKey,
+} from '../../modules/CB-M11/api-keys.mjs';
 
 export const prerender = false;
 
@@ -178,6 +181,43 @@ async function productionAdmin(request, env) {
       status: await billingStatus({ db: config.db }), config: billingConfig,
       csrf: csrfFromRequest(request), error: message,
     });
+  }
+  if (method === 'GET' && path === '/admin/api') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return page('API access', apiKeysPage({
+      keys: await listApiKeys({ db: config.db }),
+      active: (await billingStatus({ db: config.db })).active,
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('error') ?? '',
+    }));
+  }
+  if (method === 'POST' && path === '/admin/api/create') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const active = (await billingStatus({ db: config.db })).active;
+    try {
+      const issued = await createApiKey({
+        db: config.db, label: String(auth.form.get('label') ?? ''),
+        plan: String(auth.form.get('plan') ?? 'sandbox'), active,
+      });
+      return page('API access', apiKeysPage({
+        keys: await listApiKeys({ db: config.db }), active, csrf: csrfFromRequest(request), issued,
+      }));
+    } catch (error) {
+      return page('API access', apiKeysPage({
+        keys: await listApiKeys({ db: config.db }), active, csrf: csrfFromRequest(request),
+        message: error.message,
+      }), 400);
+    }
+  }
+  if (method === 'POST' && path === '/admin/api/revoke') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const revoked = await revokeApiKey({ db: config.db, keyId: String(auth.form.get('key_id') ?? '') });
+    return redirectTo(revoked
+      ? '/admin/api'
+      : '/admin/api?error=' + encodeURIComponent('Could not revoke that key.'));
   }
   if (method === 'GET' && path === '/admin/settings') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });

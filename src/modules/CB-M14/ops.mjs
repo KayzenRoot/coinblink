@@ -73,7 +73,7 @@ export function launchGates({ ops, billing, research }) {
   ]);
 }
 
-export function opsPage({ ops, gates, build, subscription, csrf }) {
+export function opsPage({ ops, gates, build, subscription, csrf, alertsHtml = '' }) {
   const rows = [
     ['Deployed commit', '<code>' + escapeHtml(build.sha) + '</code> (' + escapeHtml(build.environment) + ')'],
     ['Subscription', subscription === null
@@ -90,6 +90,7 @@ export function opsPage({ ops, gates, build, subscription, csrf }) {
     + ' · <a href="/admin/api">API access</a> · <a href="/admin/analytics">Analytics</a>'
     + ' · <a href="/admin/research">Research desk</a></p>'
     + '<dl class="admin__facts">' + rows.map(([term, value]) => '<dt>' + escapeHtml(term) + '</dt><dd>' + value + '</dd>').join('') + '</dl>'
+    + alertsHtml
     + '<h2>Launch gates</h2>'
     + '<table class="admin__table"><thead><tr><th>State</th><th>Gate</th><th>Measured</th></tr></thead><tbody>'
     + gateRows + '</tbody></table>'

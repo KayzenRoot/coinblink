@@ -1,0 +1,63 @@
+---
+// CB-M10-P1-NEWSLETTER-001: public subscribe page.
+//
+// The form posts to the JSON endpoint; a browser form submission is answered
+// with a 303 back here, so the page works without JavaScript.
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+export const prerender = false;
+
+const status = Astro.url.searchParams.get("status") ?? "";
+const messages: Record<string, string> = {
+  accepted: "Check your inbox: we sent a confirmation link. The subscription only starts after you open it.",
+  invalid: "That address does not look right. Please type a full email address.",
+};
+const message = messages[status] ?? "";
+---
+
+<BaseLayout
+  lang="en"
+  title="CoinBlink · newsletter"
+  description="Subscribe to the CoinBlink digest. Double opt-in: the subscription starts only after you open the confirmation link."
+>
+  <main id="main" class="status">
+    <nav aria-label="Newsletter navigation">
+      <a href="/en">← Home</a> · <a href="/pt-br">Português</a> · <a href="/es">Español</a>
+    </nav>
+    <header>
+      <p class="status__tag">CB-M10 · NEWSLETTER · DOUBLE OPT-IN</p>
+      <h1>Subscribe to the CoinBlink digest</h1>
+      <p>
+        One message per edition, no tracking pixels and no third-party advertising.
+        You confirm the address by opening the link we send, and every message
+        carries an unsubscribe link.
+      </p>
+    </header>
+
+    {message !== "" && <p class="body-copy" role="status">{message}</p>}
+
+    <form method="post" action="/api/newsletter/subscribe" class="admin__draft-form">
+      <label>
+        Email
+        <input type="email" name="email" required maxlength="254" autocomplete="email" placeholder="you@example.com">
+      </label>
+      <label>
+        Language
+        <select name="locale">
+          <option value="en">English</option>
+          <option value="pt-br">Português (BR)</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+      <button type="submit">Send the confirmation link</button>
+    </form>
+
+    <p class="body-copy">
+      We store the address, the chosen language and the confirmation time. Nothing else.
+      An address that never confirms stays pending and receives no further message.
+    </p>
+    <p class="body-copy">
+      Read <a href="/en/about">how CoinBlink works</a> or go back to <a href="/en">the home page</a>.
+    </p>
+  </main>
+</BaseLayout>

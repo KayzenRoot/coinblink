@@ -47,6 +47,19 @@ const markets = [
 ];
 const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
 const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
+import { readLiveNews } from "../CB-M03/live-news.mjs";
+
+// Real, attributed headlines. When the reader is disabled or the collection is
+// unavailable the panel keeps the reviewed placeholders instead of inventing
+// content, and the copy below states which mode is on.
+const liveNews = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+type LiveHeadline = { link: string; title: string; sourceName: string; publishedAt: string | null };
+const liveItems: LiveHeadline[] = liveNews.status === "LIVE_HEADLINES"
+  ? (liveNews.items as LiveHeadline[]).slice(0, 4)
+  : [];
+const liveOn = liveItems.length > 0;
+const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
+
 const stories = [
   { category: "Bitcoin", tag: "MARKET", artwork: "bitcoin" },
   { category: "Ethereum", tag: "DEVELOPMENT", artwork: "ethereum" },
@@ -335,21 +348,32 @@ const editorialR26Assets = {
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
       <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title" data-m01-news-source-state={homeProducerBoundary.news.status}>
-        <div class="news-heading"><div><small>{t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{t("4 placeholders")}</span></div>
+        <div class="news-heading"><div><small>{liveOn ? t("LIVE · ATTRIBUTED HEADLINES") : t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{liveOn ? liveItems.length + " " + t("headlines") : t("4 placeholders")}</span></div>
+        {liveOn ? (
+          <ul class="news-live">
+            {liveItems.map((item) => (
+              <li>
+                <a href={item.link} rel="noreferrer noopener external">{item.title}</a>
+                <small><b>{item.sourceName}</b><time datetime={item.publishedAt ?? undefined}>{liveStamp(item.publishedAt)}</time></small>
+              </li>
+            ))}
+          </ul>
+        ) : (
         <div class="news-cards">
           {stories.map((story, index) => {
             const artwork = editorialR26Assets[story.artwork];
             return <article class="news-card" data-news-card data-category-value={story.category}><div class={"news-art art-" + (index + 1)} aria-hidden="true"><picture class="editorial-image" data-preview-region="editorial"><source type="image/webp" srcset={artwork.webp.src} /><img src={artwork.png.src} width="768" height="512" alt="" loading="lazy" decoding="async" /></picture><EditorialArtwork variant={story.artwork} /></div><div><span>{t(story.tag)}</span><small>DEMO</small><h3>{t("Editorial placeholder · no live story connected")}</h3><p>{t("No factual claim or live article is represented.")}</p></div></article>;
           })}
         </div>
+        )}
         <div class="news-no-results" data-news-empty role="status" hidden>
           <strong>{t("No demo placeholders match.")}</strong>
           <p>{t("Try another category or search term. No live news is connected.")}</p>
           <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
         <p class="news-official-discovery" data-m02-news-link>
-          <a href={l("/en/news", "/pt-br/news", "/es/news")}>{l("Explore fictional stories", "Explorar histórias fictícias", "Explorar noticias ficticias")} <span aria-hidden="true">→</span></a>
-          <small>{l("Offline demo. No published news.", "DEMO offline. Não são notícias publicadas.", "DEMO sin conexión. No son noticias publicadas.")}</small>
+          <a href={liveOn ? l("/en/news/live", "/pt-br/news/live", "/es/news/live") : l("/en/news", "/pt-br/news", "/es/news")}>{liveOn ? l("See all live headlines", "Ver todas as manchetes ao vivo", "Ver todos los titulares en vivo") : l("Explore fictional stories", "Explorar histórias fictícias", "Explorar noticias ficticias")} <span aria-hidden="true">→</span></a>
+          <small>{liveOn ? l("Attributed to the original publishers.", "Atribuídas aos veículos originais.", "Atribuidos a los medios originales.") : l("Offline demo. No published news.", "DEMO offline. Não são notícias publicadas.", "DEMO sin conexión. No son noticias publicadas.")}</small>
         </p>
         <LocalJourneyNav locale={locale} current="home" />
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
@@ -506,9 +530,9 @@ const editorialR26Assets = {
       <p class="chain-lookup__warning" id="chain-lookup-warning">{t("Public identifiers only. Never paste private keys or recovery phrases. The input stays in this page until you choose to open an external explorer. Format checking is not blockchain verification.")}</p>
     </section>
 
-    <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {t("visual samples are placeholders. Video publishing and live feeds are unavailable. The blockchain lookup only prepares external links; CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{t("MOCK MODE")}</strong></section>
+    <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {liveOn ? t("Headlines are collected from public RSS feeds and attributed to the original publisher; the market ticker and blockchain lookup remain placeholders. CoinBlink does not republish article text.") : t("visual samples are placeholders. Video publishing and live feeds are unavailable. The blockchain lookup only prepares external links; CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{liveOn ? t("LIVE HEADLINES") : t("MOCK MODE")}</strong></section>
   </main>
-  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
+  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{liveOn ? t("Attributed headlines from public feeds · no market data") : t("Demonstration only · no live market or editorial data")}</span><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
 <script is:inline src="/home-demo.js"></script>

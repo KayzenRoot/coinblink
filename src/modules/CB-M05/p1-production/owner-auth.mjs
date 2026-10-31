@@ -216,15 +216,14 @@ export async function dashboardPage({ db, expiresAt, stats = null }) {
   const daily = analytics?.daily ?? [];
   const chart = daily.length === 0 ? '' : (() => {
     const peak = Math.max(1, ...daily.map((day) => Number(day.views)));
-    const bars = daily.slice().reverse().map((day, index) => {
-      const height = Math.max(2, Math.round((Number(day.views) / peak) * 64));
-      const x = 8 + index * 38;
-      return '<rect x="' + x + '" y="' + (72 - height) + '" width="26" height="' + height
-        + '" rx="6" class="chart__bar"></rect>';
+    const bars = daily.slice().reverse().map((day) => {
+      const step = Math.max(2, Math.round((Number(day.views) / peak) * 20) * 5);
+      return '<div class="chart__bar chart__bar--h' + step + '" title="'
+        + escapeHtml(day.day + ': ' + day.views + ' views') + '"></div>';
     }).join('');
     return '<figure class="chart"><figcaption class="chart__caption">Pageviews per day</figcaption>'
-      + '<svg viewBox="0 0 292 80" role="img" aria-label="Pageviews per day, last seven days" class="chart__svg">'
-      + bars + '</svg></figure>';
+      + '<div class="chart__bars" role="img" aria-label="Pageviews per day, last seven days">'
+      + bars + '</div></figure>';
   })();
   const alerts = stats?.alerts ?? [];
   const gates = stats?.gates ?? null;

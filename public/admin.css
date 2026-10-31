@@ -70,7 +70,7 @@ code{background:#0a1712;border:1px solid var(--line-soft);border-radius:6px;padd
 .admin__ok{color:var(--accent-soft);font-weight:700}
 .admin__secret{display:inline-block;padding:.5rem .7rem;border:1px dashed var(--accent);border-radius:var(--radius-sm);color:var(--accent-soft);word-break:break-all}
 
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.9rem;margin:0 0 1.1rem}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.9rem;margin:0 0 1.1rem}
 .kpi{position:relative;padding:1rem 1.1rem;border-radius:var(--radius);border:1px solid var(--line-soft);
   background:linear-gradient(160deg,rgba(20,38,28,.95),rgba(9,18,14,.95));box-shadow:var(--shadow);
   overflow:hidden;animation:rise .4s ease both}
@@ -86,9 +86,32 @@ code{background:#0a1712;border:1px solid var(--line-soft);border-radius:6px;padd
 .chart{margin:0 0 1.1rem;padding:1rem 1.1rem;border:1px solid var(--line-soft);border-radius:var(--radius);
   background:linear-gradient(180deg,rgba(16,30,23,.9),rgba(9,18,14,.9));box-shadow:var(--shadow)}
 .chart__caption{margin:0 0 .5rem;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:#7f9a88}
-.chart__svg{width:100%;height:auto;display:block}
-.chart__bar{fill:var(--accent);opacity:.82;transition:opacity .2s ease}
-.chart__bar:hover{opacity:1}
+.chart__bars{display:flex;align-items:flex-end;gap:.55rem;height:170px}
+.chart__bar{flex:1;min-width:0;border-radius:10px 10px 4px 4px;
+  background:linear-gradient(180deg,var(--accent-soft),var(--accent));
+  opacity:.85;transition:opacity .2s ease,transform .2s ease;transform-origin:bottom}
+.chart__bar:hover{opacity:1;transform:scaleY(1.02)}
+.chart__bar--h5{height:5%}
+.chart__bar--h10{height:10%}
+.chart__bar--h15{height:15%}
+.chart__bar--h20{height:20%}
+.chart__bar--h25{height:25%}
+.chart__bar--h30{height:30%}
+.chart__bar--h35{height:35%}
+.chart__bar--h40{height:40%}
+.chart__bar--h45{height:45%}
+.chart__bar--h50{height:50%}
+.chart__bar--h55{height:55%}
+.chart__bar--h60{height:60%}
+.chart__bar--h65{height:65%}
+.chart__bar--h70{height:70%}
+.chart__bar--h75{height:75%}
+.chart__bar--h80{height:80%}
+.chart__bar--h85{height:85%}
+.chart__bar--h90{height:90%}
+.chart__bar--h95{height:95%}
+.chart__bar--h100{height:100%}
+.chart__bar--h2{height:2%}
 
 /* ---------- tables & forms ---------- */
 .admin__table{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;margin:0 0 1.2rem;overflow:hidden}
@@ -145,3 +168,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .admin-nav__exit{margin:0 0 0 auto;padding:0}
   .admin-nav__exit button{padding:.45rem .7rem}
 }
+
+/* A table or fact list inside a panel keeps the outer card as the only frame. */
+.panel .admin__table,.panel .admin__facts{background:transparent;border:0;box-shadow:none;padding-left:0;padding-right:0}
+.panel .admin__table th{background:transparent}

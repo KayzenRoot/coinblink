@@ -149,3 +149,16 @@ test('the public endpoints and the admin route expose the contract', () => {
   const dashboard = readFileSync('src/modules/CB-M05/p1-production/owner-auth.mjs', 'utf8');
   assert.match(dashboard, /href="\/admin\/newsletter"/u);
 });
+
+test('the public page renders a no-JS form and the JSON clients keep their envelope', () => {
+  const page = readFileSync('src/pages/newsletter/index.astro', 'utf8');
+  for (const marker of ['action="/api/newsletter/subscribe"', 'method="post"', 'name="email"',
+    'name="locale"', 'type="email"', 'Double opt-in', 'unsubscribe link']) {
+    assert.ok(page.includes(marker), marker);
+  }
+  const route = readFileSync('src/pages/api/newsletter/subscribe.ts', 'utf8');
+  assert.ok(route.includes('wantsHtml'));
+  assert.ok(route.includes('/newsletter?status=accepted'));
+  assert.ok(route.includes('/newsletter?status=invalid'));
+  assert.match(route, /reply\(202/u);
+});

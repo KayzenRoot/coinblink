@@ -40,8 +40,15 @@ export const POST: APIRoute = async ({ request, url }) => {
   const length = Number(request.headers.get("content-length") ?? "0");
   if (length > 4096) return reply(413, { status: "too_large" });
   const input = await readInput(request);
+  // A browser form submission is answered with a redirect so the page works
+  // without JavaScript; API clients keep the JSON envelope.
+  const wantsHtml = (request.headers.get("accept") ?? "").includes("text/html")
+    && !(request.headers.get("content-type") ?? "").includes("application/json");
   const result = await subscribe({ db, email: input.email, locale: input.locale, nowMs: Date.now() });
-  if (result.status === "invalid") return reply(400, { status: "invalid_email" });
+  if (result.status === "invalid") {
+    if (wantsHtml) return Response.redirect(new URL("/newsletter?status=invalid", url.origin), 303);
+    return reply(400, { status: "invalid_email" });
+  }
   if (result.status === "created") {
     const integrations = Object.fromEntries(
       ["RESEND_API_KEY", "COINBLINK_EMAIL_FROM"].map((key) => [key, runtimeEnv(key)]),
@@ -66,6 +73,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       }
     }
   }
+  if (wantsHtml) return Response.redirect(new URL("/newsletter?status=accepted", url.origin), 303);
   return reply(202, { status: "accepted" });
 };
 

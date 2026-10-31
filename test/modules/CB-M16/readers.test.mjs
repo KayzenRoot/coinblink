@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   addSymbol, consumeLogin, listSymbols, logout, normalizeEmail, normalizeSymbol, readSession,
-  readSessionCookie, removeSymbol, requestLogin, sendLoginLink, sessionCookie, TOKEN_TTL_SECONDS,
+  readSessionCookie, readerPage, removeSymbol, requestLogin, sendLoginLink, sessionCookie,
+  signInPage, TOKEN_TTL_SECONDS, deleteReader,
 } from '../../../src/modules/CB-M16/readers.mjs';
 
 const NOW = Date.UTC(2026, 9, 31, 12, 0, 0);
@@ -45,6 +46,33 @@ function fakeDb() {
           return null;
         },
         async run() {
+          if (sql.startsWith('DELETE FROM cms_watchlist')) {
+            const before = watchlist.length;
+            for (let index = watchlist.length - 1; index >= 0; index -= 1) {
+              if (watchlist[index].readerId === args[0]) watchlist.splice(index, 1);
+            }
+            return { meta: { changes: before - watchlist.length } };
+          }
+          if (sql.startsWith('DELETE FROM cms_reader_sessions')) {
+            const before = sessions.length;
+            for (let index = sessions.length - 1; index >= 0; index -= 1) {
+              if (sessions[index].readerId === args[0]) sessions.splice(index, 1);
+            }
+            return { meta: { changes: before - sessions.length } };
+          }
+          if (sql.startsWith('DELETE FROM cms_reader_tokens')) {
+            const before = tokens.length;
+            for (let index = tokens.length - 1; index >= 0; index -= 1) {
+              if (tokens[index].readerId === args[0]) tokens.splice(index, 1);
+            }
+            return { meta: { changes: before - tokens.length } };
+          }
+          if (sql.startsWith('DELETE FROM cms_readers')) {
+            const index = readers.findIndex((row) => row.id === args[0]);
+            if (index === -1) return { meta: { changes: 0 } };
+            readers.splice(index, 1);
+            return { meta: { changes: 1 } };
+          }
           if (sql.startsWith('INSERT INTO cms_readers')) {
             readers.push({ id: args[0], email: args[1], locale: args[2], status: 'pending', confirmedAt: null });
             return { meta: { changes: 1 } };
@@ -192,4 +220,29 @@ test('the routes wire the account flow and check the origin on writes', () => {
   assert.ok(watchlist.includes('origin !== url.origin'));
   const page = readFileSync('src/pages/reader/index.ts', 'utf8');
   assert.ok(page.includes('readerPage('));
+});
+
+test('deleting an account removes the reader, watchlist, sessions and sends', async () => {
+  const db = fakeDb();
+  const requested = await requestLogin({ db, email: 'reader@example.com', nowMs: NOW });
+  const { readerId } = await consumeLogin({ db, token: requested.token, nowMs: NOW });
+  await addSymbol({ db, readerId, symbol: 'BTC', nowMs: NOW });
+  assert.equal(await deleteReader({ db, readerId }), true);
+  assert.equal(db.readers.length, 0);
+  assert.equal(db.watchlist.length, 0);
+  assert.equal(db.sessions.length, 0);
+  assert.equal(db.tokens.length, 0);
+  assert.equal(await deleteReader({ db, readerId }), false);
+});
+
+test('the reader screen offers the deletion and the sign-in page confirms it', async () => {
+  const html = await (readerPage({ email: 'reader@example.com', symbols: ['BTC'] })).text();
+  assert.match(html, /action="\/reader\/delete"/u);
+  assert.match(html, /name="confirm"/u);
+  const signin = await (signInPage({ deleted: true })).text();
+  assert.match(signin, /Your account and watchlist were deleted/u);
+  const route = readFileSync('src/pages/reader/delete.ts', 'utf8');
+  for (const marker of ['deleteReader', 'origin', 'clearSessionCookie', '/reader/signin?deleted=1']) {
+    assert.ok(route.includes(marker), marker);
+  }
 });

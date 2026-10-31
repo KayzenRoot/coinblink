@@ -17,6 +17,7 @@ research notes) that need no external credential.
 |---|---|
 | Worker requests and errors | `workersInvocationsAdaptive` |
 | D1 rows read and written | `d1AnalyticsAdaptiveGroups` |
+| Workers AI neurons | `aiInferenceAdaptiveGroups` (`sum.totalNeurons`) |
 
 The query is filtered by account, time window and, when set, `scriptName`
 (`COINBLINK_CF_WORKER_NAME`, default `coinblink-production`) and `databaseId`.
@@ -36,17 +37,17 @@ $ node scripts/cost-report.mjs --days 3
 CoinBlink provider cost inputs
 window: 2026-10-28T13:18:36.324Z → 2026-10-31T13:18:36.324Z
 
-Workers requests: 2357
+Workers requests: 2136
 Workers errors:   0
-D1 rows read:     1642
+D1 rows read:     1712
 D1 rows written:  352
-  script coinblink-production: 2357 requests, 0 errors
+Workers AI neurons: 9.248
+  script coinblink-production: 2136 requests, 0 errors
+  model @cf/meta/llama-3.1-8b-instruct-fp8: 9.248 neurons
 ```
 
 ## Gaps
 
-- Workers AI usage is not in the report yet; the GraphQL field for neurons has
-  to be confirmed against the current schema.
 - Stripe fees and Resend usage are not included; billing provider exports remain
   the source for those.
 - The report is manual. A scheduled job would need the token as a CI secret.

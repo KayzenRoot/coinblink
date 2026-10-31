@@ -16,6 +16,7 @@ export function summarizeCosts(payload) {
   const account = payload.data?.viewer?.accounts?.[0] ?? {};
   const workers = account.workersInvocationsAdaptive ?? [];
   const databases = account.d1AnalyticsAdaptiveGroups ?? [];
+  const models = account.aiInferenceAdaptiveGroups ?? [];
   const sum = (rows, key) => rows.reduce((total, row) => total + Number(row?.sum?.[key] ?? 0), 0);
   return Object.freeze({
     workers: Object.freeze({
@@ -30,6 +31,13 @@ export function summarizeCosts(payload) {
     d1: Object.freeze({
       rowsRead: sum(databases, 'rowsRead'),
       rowsWritten: sum(databases, 'rowsWritten'),
+    }),
+    ai: Object.freeze({
+      neurons: Math.round(sum(models, 'totalNeurons') * 1000) / 1000,
+      models: Object.freeze(models.map((row) => Object.freeze({
+        model: row?.dimensions?.modelId ?? 'unknown',
+        neurons: Math.round(Number(row?.sum?.totalNeurons ?? 0) * 1000) / 1000,
+      }))),
     }),
   });
 }
@@ -50,7 +58,9 @@ export function costQuery({ accountId, from, to, scriptName, databaseId }) {
     + 'workersInvocationsAdaptive(limit: 50, filter: {' + range + script + '}) '
     + '{ sum { requests errors } dimensions { scriptName } } '
     + 'd1AnalyticsAdaptiveGroups(limit: 50, filter: {' + range + database + '}) '
-    + '{ sum { rowsRead rowsWritten } dimensions { databaseId } } } } }';
+    + '{ sum { rowsRead rowsWritten } dimensions { databaseId } } '
+    + 'aiInferenceAdaptiveGroups(limit: 50, filter: {' + range + '}) '
+    + '{ sum { totalNeurons } dimensions { modelId } } } } }';
 }
 
 export async function readProviderCosts({
@@ -82,9 +92,13 @@ export function formatReport(costs, range) {
     'Workers errors:   ' + costs.workers.errors,
     'D1 rows read:     ' + costs.d1.rowsRead,
     'D1 rows written:  ' + costs.d1.rowsWritten,
+    'Workers AI neurons: ' + costs.ai.neurons,
   ];
   for (const script of costs.workers.scripts) {
     lines.push('  script ' + script.script + ': ' + script.requests + ' requests, ' + script.errors + ' errors');
+  }
+  for (const model of costs.ai.models) {
+    lines.push('  model ' + model.model + ': ' + model.neurons + ' neurons');
   }
   return lines.join('\n');
 }

@@ -43,6 +43,8 @@ import { notifyEvent } from '../../modules/CB-M14/alert-email.mjs';
 import {
   adsAdminSection, createPlacement, createSponsor, listPlacements, listSponsors, pausePlacement,
 } from '../../modules/CB-M13/ads.mjs';
+import { alertsAdminSection, previewDigests, sendDigests } from '../../modules/CB-M16/alerts.mjs';
+import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
 import { buildInfo } from '../../lib/build-info';
 
@@ -304,6 +306,30 @@ async function productionAdmin(request, env) {
     return page('Newsletter', subscribersSection({
       subscribers: await listSubscribers({ db: config.db }),
       counts: await subscriberCounts({ db: config.db }),
+    }));
+  }
+  if (method === 'GET' && path === '/admin/alerts') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+    return page('Alerts', alertsAdminSection({
+      preview: await previewDigests({ db: config.db, snapshot, nowMs: Date.now() }),
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('error') ?? '',
+    }));
+  }
+  if (method === 'POST' && path === '/admin/alerts/send') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+    const result = await sendDigests({
+      db: config.db, secret: config.secret, env: env.INTEGRATIONS, snapshot, nowMs: Date.now(),
+    });
+    return page('Alerts', alertsAdminSection({
+      preview: await previewDigests({ db: config.db, snapshot, nowMs: Date.now() }),
+      csrf: csrfFromRequest(request),
+      result: result.status === 'done' ? result : null,
+      message: result.status === 'not_configured' ? 'Configure the Resend key and the sender first.' : '',
     }));
   }
   if (method === 'GET' && path === '/admin/ads') {

@@ -132,6 +132,7 @@ const ADMIN_NAV = Object.freeze([
   Object.freeze({ href: '/admin/newsletter', label: 'Newsletter', title: 'Newsletter' }),
   Object.freeze({ href: '/admin/editions', label: 'Editions', title: 'Editions' }),
   Object.freeze({ href: '/admin/ads', label: 'Ads', title: 'Ads' }),
+  Object.freeze({ href: '/admin/alerts', label: 'Alerts', title: 'Alerts' }),
   Object.freeze({ href: '/admin/social', label: 'Social', title: 'Social accounts' }),
   Object.freeze({ href: '/admin/billing', label: 'Billing', title: 'Billing' }),
   Object.freeze({ href: '/admin/api', label: 'API', title: 'API access' }),

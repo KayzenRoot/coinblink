@@ -677,3 +677,21 @@ code {
     transition-duration: 0.01ms;
   }
 }
+/* Published owner article. Palette follows the home page. */
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+.article{max-width:46rem;margin:0 auto;padding:clamp(1.6rem,4vw,3.4rem) clamp(1.1rem,4vw,2rem)}
+.article__nav{display:flex;gap:.8rem;font-size:.9rem;margin-bottom:2rem}
+.article__nav a{color:#b8f34b;text-decoration:none}
+.article__nav a:hover{text-decoration:underline}
+.article__tag{margin:0;color:#f5c981;font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.article h1{margin:.5rem 0 1rem;font-size:clamp(1.8rem,4vw,2.9rem);line-height:1.12;letter-spacing:-.02em}
+.article__meta{display:flex;flex-wrap:wrap;gap:.9rem;margin:0 0 1.6rem;color:#9fb6a5;font-size:.86rem}
+.article__summary{margin:0 0 1.8rem;padding:1rem 1.2rem;border-left:3px solid #b8f34b;border-radius:0 12px 12px 0;background:#0d1a15;color:#d7e6d9;font-size:1.05rem;line-height:1.6}
+.article__body p{margin:0 0 1.1rem;line-height:1.75;color:#dbe9dd}
+.article__tags{display:flex;flex-wrap:wrap;gap:.45rem;margin:1.8rem 0 0;padding:0;list-style:none}
+.article__tags li{padding:.25rem .6rem;border:1px solid #2f4a38;border-radius:999px;color:#b7e985;font-size:.76rem}
+.article__provenance{margin:1.8rem 0 0;padding:1rem 1.2rem;border:1px solid #22402f;border-radius:14px;background:#0b1712;color:#9fb6a5;font-size:.84rem;line-height:1.6}
+.article__provenance a{color:#b8f34b}
+.article__back{margin-top:2.2rem;font-size:.9rem}
+.article__back a{color:#b8f34b;text-decoration:none}

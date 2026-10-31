@@ -175,7 +175,8 @@ test('the admin route exposes the research desk and the reviewed AI binding', ()
     "runtimeBinding('AI')"]) {
     assert.ok(route.includes(marker), marker);
   }
-  assert.doesNotMatch(route, /publish|schedule/iu);
+  // Publishing is owner-triggered only; nothing schedules or auto-publishes.
+  assert.doesNotMatch(route, /schedule/iu);
 });
 
 test('local previews stay credential-free and only the deploy config adds AI', () => {

@@ -11,6 +11,9 @@ import {
   createDraft, draftFormPage, draftMarkdown, draftRevisionsPage, draftsPage, listDrafts,
   listRevisions, readDraft, updateDraft,
 } from '../../modules/CB-M05/p1-production/drafts.mjs';
+import {
+  articlesAdminSection, listArticles, publishDraft, unpublishArticle,
+} from '../../modules/CB-M05/p1-production/articles.mjs';
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage } from '../../modules/CB-M07/token-vault.mjs';
@@ -220,6 +223,50 @@ async function productionAdmin(request, env) {
         events: await listOpsEvents({ db: config.db }),
       }),
     }));
+  }
+  if (method === 'GET' && path === '/admin/articles') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return page('Articles', articlesAdminSection({
+      articles: await listArticles({ db: config.db, includeAll: true }),
+      drafts: await listDrafts(config.db),
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('error') ?? '',
+    }));
+  }
+  if (method === 'POST' && path === '/admin/articles/publish') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await publishDraft({
+      db: config.db,
+      draftId: String(auth.form.get('draft_id') ?? ''),
+      locale: String(auth.form.get('locale') ?? ''),
+      tags: String(auth.form.get('tags') ?? ''),
+      provenanceNote: String(auth.form.get('provenance_note') ?? ''),
+      nowMs: Date.now(),
+    });
+    if (result.status === 'published') {
+      return page('Articles', articlesAdminSection({
+        articles: await listArticles({ db: config.db, includeAll: true }),
+        drafts: await listDrafts(config.db),
+        csrf: csrfFromRequest(request),
+        published: result.article,
+      }));
+    }
+    const reason = result.status === 'missing' ? 'Draft not found.'
+      : 'Check the locale, the tags and the provenance note (at least 10 characters).';
+    return page('Articles', articlesAdminSection({
+      articles: await listArticles({ db: config.db, includeAll: true }),
+      drafts: await listDrafts(config.db),
+      csrf: csrfFromRequest(request),
+      message: reason,
+    }), 400);
+  }
+  if (method === 'POST' && path === '/admin/articles/unpublish') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const done = await unpublishArticle({ db: config.db, id: String(auth.form.get('id') ?? ''), nowMs: Date.now() });
+    return redirectTo(done ? '/admin/articles' : '/admin/articles?error=' + encodeURIComponent('Could not unpublish that article.'));
   }
   if (method === 'GET' && path === '/admin/launch') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });

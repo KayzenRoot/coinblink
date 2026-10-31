@@ -1,0 +1,65 @@
+---
+// CB-M05-P1-PUBLISHING-001: public page for an owner-authored article.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { readArticle } from "./p1-production/articles.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
+
+interface Props { locale: "en" | "pt-br" | "es"; slug: string }
+const { locale, slug } = Astro.props;
+const article = await readArticle({ db: runtimeBinding("CMS_DB"), locale, slug });
+
+export const prerender = false;
+
+if (article === null) Astro.response.status = 404;
+else if (article.status !== "published") Astro.response.status = 410;
+
+const lang = locale === "pt-br" ? "pt-BR" : locale;
+const paragraphs: string[] = article === null ? [] : article.body.split(/\n{2,}/u).map((part: string) => part.trim()).filter((part: string) => part !== "");
+const published = article === null ? "" : new Date(article.publishedAt * 1000).toISOString().slice(0, 10);
+const navLabel = locale === "pt-br" ? "Notícias" : locale === "es" ? "Noticias" : "News";
+const provenanceLabel = locale === "pt-br" ? "Proveniência" : locale === "es" ? "Procedencia" : "Provenance";
+const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "es" ? "Volver a los titulares" : "Back to the headlines";
+---
+
+{article === null || article.status !== "published" ? (
+  <BaseLayout lang={lang} title="CoinBlink · article" description="This article is not available.">
+    <main class="article">
+      <p class="article__tag">CB-M05 · ARTICLE</p>
+      <h1>{article === null ? "Not found" : "No longer published"}</h1>
+      <p class="article__summary">
+        {article === null ? "There is no article at this address." : "The owner unpublished this article. The address is kept so links do not silently change meaning."}
+      </p>
+      <p class="article__back"><a href={`/${locale}/news`}>{backLabel}</a></p>
+    </main>
+  </BaseLayout>
+) : (
+  <BaseLayout lang={lang} title={`CoinBlink · ${article.title}`} description={article.summary}>
+    <main class="article">
+      <nav class="article__nav" aria-label="Article navigation">
+        <a href={`/${locale}`}>← CoinBlink</a>
+        <a href={`/${locale}/news`}>{navLabel}</a>
+      </nav>
+      <p class="article__tag">COINBLINK · ORIGINAL</p>
+      <h1>{article.title}</h1>
+      <p class="article__meta">
+        {article.authorLabel !== "" && <span>{article.authorLabel}</span>}
+        <time datetime={new Date(article.publishedAt * 1000).toISOString()}>{published}</time>
+        <span>revision {article.revision}</span>
+      </p>
+      <p class="article__summary">{article.summary}</p>
+      <div class="article__body">
+        {paragraphs.map((paragraph: string) => <p>{paragraph}</p>)}
+      </div>
+      {article.tags.length > 0 && (
+        <ul class="article__tags" aria-label="Tags">
+          {article.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+      <aside class="article__provenance">
+        <strong>{provenanceLabel}.</strong> {article.provenanceNote}
+        {" "}<a href={article.sourceUrl} rel="noreferrer noopener external">Source</a>.
+      </aside>
+      <p class="article__back"><a href={`/${locale}/news`}>{backLabel}</a></p>
+    </main>
+  </BaseLayout>
+)}

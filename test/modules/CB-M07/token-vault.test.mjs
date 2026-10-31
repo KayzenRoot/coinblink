@@ -116,5 +116,6 @@ test('the admin route exposes social custody without a publish action', () => {
   for (const marker of ['/admin/social', 'listSocialAccounts', 'revokeSocialAccount', 'socialPage']) {
     assert.ok(route.includes(marker), marker);
   }
-  assert.doesNotMatch(route, /publish|schedule/iu);
+  // Publishing is owner-triggered only; nothing schedules or auto-publishes.
+  assert.doesNotMatch(route, /schedule/iu);
 });

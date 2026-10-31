@@ -126,6 +126,7 @@ export function normalizePath(pathname) {
 const ADMIN_NAV = Object.freeze([
   Object.freeze({ href: '/admin', label: 'Dashboard', title: 'Owner workspace' }),
   Object.freeze({ href: '/admin/drafts', label: 'Drafts', title: 'Drafts' }),
+  Object.freeze({ href: '/admin/articles', label: 'Articles', title: 'Articles' }),
   Object.freeze({ href: '/admin/analytics', label: 'Analytics', title: 'Analytics' }),
   Object.freeze({ href: '/admin/research', label: 'Research', title: 'Research desk' }),
   Object.freeze({ href: '/admin/newsletter', label: 'Newsletter', title: 'Newsletter' }),

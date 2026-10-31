@@ -23,8 +23,9 @@ const marketExample = buildDemoMarketReadiness();
       for commercial redistribution.
     </p>
     <p class="body-copy">
-      No signup, API keys, external providers, market prices, private drafts, payments,
-      live data, or rate-limit guarantees are connected.
+      There is no self-serve signup. Partner keys are issued by the owner, and the
+      metered endpoint below requires one; the sandbox endpoints stay open and
+      synthetic. No market prices, private drafts or payments are connected.
     </p>
     <p class="body-copy">
       No live quotes, trading or licensed market redistribution. The blocked market
@@ -52,6 +53,52 @@ Query parameters: unsupported
 Write methods: unsupported
 Not the commercial /v1/articles
 API.</code></pre>
+    </section>
+    <section aria-labelledby="m11-metered">
+      <h2 id="m11-metered">Metered partner access (API key)</h2>
+      <p class="body-copy">
+        <code>GET /v1/status</code> serves the same content-free collection state to a
+        registered partner and counts every accepted call against the key plan. Send the key
+        as <code>Authorization: Bearer &lt;key&gt;</code> or <code>x-api-key: &lt;key&gt;</code>.
+        Keys are issued by the owner and shown once; CoinBlink stores only a digest.
+      </p>
+      <pre class="m11-status-example"><code>{`GET /v1/status
+Authorization: Bearer cbk_xxxxxxxxxxxxxxxx.&lt;secret&gt;
+
+200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "status": "ok",
+  "contract": {
+    "version": "v1",
+    "license": "CoinBlink operational metadata; no third-party article content",
+    "redistribution": false,
+    "attribution": { "required": true, "path": "/en/news/sources" }
+  },
+  "plan": "sandbox",
+  "quota": { "limit": 1000, "used": 1, "remaining": 999, "period": "2026-10" },
+  "generatedAt": "2026-10-31T12:00:00.000Z",
+  "collection": { "status": "ok", "feedsRead": 5, "items": 60 }
+}`}</code></pre>
+      <p class="body-copy">
+        Plans are Sandbox (1&nbsp;000 calls per UTC month, no subscription needed),
+        Starter (25&nbsp;000) and Pro (250&nbsp;000); the paid plans require an entitling
+        subscription. The counter is atomic, so two concurrent calls cannot pass the limit.
+      </p>
+      <ul class="body-copy">
+        <li><code>401 API_KEY_REQUIRED</code> / <code>401 INVALID_API_KEY</code> — send a valid key.</li>
+        <li><code>403 API_KEY_REVOKED</code> — the key was revoked; ask the owner for a new one.</li>
+        <li><code>429 QUOTA_EXCEEDED</code> — the plan limit is spent. Honour <code>Retry-After</code>, which counts the seconds to the first instant of the next UTC month.</li>
+        <li><code>503 NOT_CONFIGURED</code> — the database binding is missing; retry later.</li>
+      </ul>
+      <p class="body-copy">
+        Responses are <code>cache-control: no-store</code> because they are metered per key.
+        The payload never contains third-party article text and states
+        <code>redistribution: false</code>: attribution to
+        <a href="/en/news/sources">the source directory</a> is required.
+      </p>
     </section>
     <section aria-labelledby="m11-news-status">
       <h2 id="m11-news-status">Live collection status (content-free)</h2>

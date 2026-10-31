@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const layout = readFileSync('src/layouts/BaseLayout.astro', 'utf8');
 const component = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
@@ -42,4 +42,8 @@ test('the weekly cost report is the only scheduled workflow with a secret', () =
   assert.match(workflow, /# owner-authorized-schedule/u);
   assert.match(workflow, /contents: read/u);
   assert.doesNotMatch(workflow, /contents: write/u);
+});
+
+test('no static robots.txt shadows the route that carries the sitemap', () => {
+  assert.equal(existsSync('public/robots.txt'), false);
 });

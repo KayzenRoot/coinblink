@@ -19,7 +19,7 @@ import {
 } from '../../modules/CB-M05/p1-production/settings.mjs';
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
 import {
-  billingPage, billingStatus, checkoutForPlan, readBillingConfig,
+  billingPage, billingStatus, checkoutForPlan, missingBillingKeys, readBillingConfig,
 } from '../../modules/CB-M12/billing.mjs';
 import {
   RESEARCH_MODEL, generateResearch, listResearchNotes, readResearchNote, researchListPage,
@@ -28,6 +28,8 @@ import {
 import {
   apiKeysPage, createApiKey, listApiKeys, revokeApiKey,
 } from '../../modules/CB-M11/api-keys.mjs';
+import { launchGates, opsPage, readOps } from '../../modules/CB-M14/ops.mjs';
+import { buildInfo } from '../../lib/build-info';
 
 export const prerender = false;
 
@@ -181,6 +183,25 @@ async function productionAdmin(request, env) {
       status: await billingStatus({ db: config.db }), config: billingConfig,
       csrf: csrfFromRequest(request), error: message,
     });
+  }
+  if (method === 'GET' && path === '/admin/ops') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    const nowMs = Date.now();
+    const ops = await readOps({ db: config.db, nowMs });
+    const status = await billingStatus({ db: config.db });
+    const billingConfig = await readBillingConfig({ db: config.db, secret: config.secret, env: env.INTEGRATIONS });
+    return page('Operations', opsPage({
+      ops,
+      gates: launchGates({
+        ops,
+        billing: { missing: missingBillingKeys(billingConfig), active: status.active },
+        research: await researchUsage({ db: config.db, nowMs }),
+      }),
+      build: buildInfo,
+      subscription: status.subscription,
+      csrf: csrfFromRequest(request),
+    }));
   }
   if (method === 'GET' && path === '/admin/api') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });

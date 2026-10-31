@@ -88,3 +88,12 @@ test('the webhook notifies after recording, for both rejection paths', () => {
   assert.ok(webhook.includes('RESEND_API_KEY'));
   assert.ok(webhook.includes('COINBLINK_EMAIL_FROM'));
 });
+
+test('research and newsletter failures also notify, not just record', () => {
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.ok(route.includes("type: 'research_failed'"));
+  assert.match(route, /notifyEvent\(\{[\s\S]{0,200}research_failed/u);
+  const subscribe = readFileSync('src/pages/api/newsletter/subscribe.ts', 'utf8');
+  assert.ok(subscribe.includes('email_failed'));
+  assert.match(subscribe, /notifyEvent\(\{[\s\S]{0,160}email_failed/u);
+});

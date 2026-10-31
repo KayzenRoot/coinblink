@@ -7,6 +7,7 @@ import type { APIRoute } from "astro";
 import { subscribe } from "../../../modules/CB-M10/newsletter.mjs";
 import { sendEmail } from "../../../modules/CB-M10/resend.mjs";
 import { recordOpsEvent } from "../../../modules/CB-M14/ops-events.mjs";
+import { notifyEvent } from "../../../modules/CB-M14/alert-email.mjs";
 import { getSetting } from "../../../modules/CB-M05/p1-production/settings.mjs";
 import { runtimeBinding, runtimeEnv } from "../../../lib/runtime-env";
 
@@ -56,7 +57,12 @@ export const POST: APIRoute = async ({ request, url }) => {
             + "\n\nIf you did not ask for this, ignore the message.",
         });
       } catch {
-        await recordOpsEvent({ db, type: "email_failed", detail: "newsletter confirmation" });
+        const nowMs = Date.now();
+        await recordOpsEvent({ db, type: "email_failed", detail: "newsletter confirmation", nowMs });
+        await notifyEvent({
+          db, secret, env: integrations, type: "email_failed",
+          detail: "newsletter confirmation", nowMs,
+        });
       }
     }
   }

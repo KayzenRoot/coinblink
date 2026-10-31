@@ -1,0 +1,23 @@
+---
+// CB-M13-P1-ADS-001: one sponsored slot, counted server-side and linked through
+// /ad/click so the click is measured without JavaScript.
+import { activePlacement, recordImpression } from "./ads.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
+
+interface Props { slot: "home" | "article" | "newsletter" }
+const { slot } = Astro.props;
+const db = runtimeBinding("CMS_DB");
+const placement = db === undefined || db === null ? null : await activePlacement({ db, slot });
+if (placement !== null) await recordImpression({ db, placementId: placement.id });
+const label = { home: "Sponsored", article: "Sponsored", newsletter: "Sponsored" }[slot];
+---
+
+{placement !== null && (
+  <aside class="sponsored" data-cb-sponsored data-cb-slot={slot} aria-label={label}>
+    <p class="sponsored__label">{label} · {placement.sponsorName}</p>
+    {placement.body !== "" && <p class="sponsored__body">{placement.body}</p>}
+    <a class="sponsored__cta" href={`/ad/click?id=${placement.id}`} rel="sponsored noopener">
+      {placement.ctaLabel !== "" ? placement.ctaLabel : placement.sponsorName}
+    </a>
+  </aside>
+)}

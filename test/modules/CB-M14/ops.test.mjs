@@ -80,5 +80,5 @@ test('the admin route serves the operations page behind the owner session', () =
     assert.ok(route.includes(marker), marker);
   }
   const dashboard = readFileSync('src/modules/CB-M05/p1-production/owner-auth.mjs', 'utf8');
-  assert.match(dashboard, /href="\/admin\/ops"/u);
+  assert.match(dashboard, /'\/admin\/ops'/u);
 });

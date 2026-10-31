@@ -12,7 +12,7 @@ import {
   listRevisions, readDraft, updateDraft,
 } from '../../modules/CB-M05/p1-production/drafts.mjs';
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
-import { analyticsPage } from '../../modules/CB-M06/pageview.mjs';
+import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage } from '../../modules/CB-M07/token-vault.mjs';
 import {
   clearSetting, listSettings, setSetting, settingsPage,
@@ -407,7 +407,17 @@ async function productionAdmin(request, env) {
   if (method === 'GET' && path === '/admin') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);
-    return dashboardPage({ db: config.db, expiresAt: session.expiresAt });
+    const nowMs = Date.now();
+    return dashboardPage({
+      db: config.db,
+      expiresAt: session.expiresAt,
+      stats: {
+        ops: await readOps({ db: config.db, nowMs }),
+        analytics: await readAnalytics({ db: config.db, nowMs }),
+        counts: await subscriberCounts({ db: config.db }),
+        status: await billingStatus({ db: config.db }),
+      },
+    });
   }
   if (method === 'GET' && path === '/admin/login') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });

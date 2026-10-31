@@ -4,11 +4,11 @@
 // reveals whether the address was already on the list. The confirmation token
 // travels only by email.
 import type { APIRoute } from "astro";
-import { subscribe } from "../../modules/CB-M10/newsletter.mjs";
-import { sendEmail } from "../../modules/CB-M10/resend.mjs";
-import { recordOpsEvent } from "../../modules/CB-M14/ops-events.mjs";
-import { getSetting } from "../../modules/CB-M05/p1-production/settings.mjs";
-import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
+import { subscribe } from "../../../modules/CB-M10/newsletter.mjs";
+import { sendEmail } from "../../../modules/CB-M10/resend.mjs";
+import { recordOpsEvent } from "../../../modules/CB-M14/ops-events.mjs";
+import { getSetting } from "../../../modules/CB-M05/p1-production/settings.mjs";
+import { runtimeBinding, runtimeEnv } from "../../../lib/runtime-env";
 
 export const prerender = false;
 

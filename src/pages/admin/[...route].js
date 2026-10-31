@@ -16,7 +16,7 @@ import {
 } from '../../modules/CB-M05/p1-production/articles.mjs';
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
-import { listSocialAccounts, revokeSocialAccount, socialPage } from '../../modules/CB-M07/token-vault.mjs';
+import { listSocialAccounts, revokeSocialAccount, socialPage, storeManualAccount } from '../../modules/CB-M07/token-vault.mjs';
 import {
   clearSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
@@ -45,6 +45,8 @@ import {
 } from '../../modules/CB-M13/ads.mjs';
 import { alertsAdminSection, previewDigests, sendDigests } from '../../modules/CB-M16/alerts.mjs';
 import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
+import { listPolicy, setPolicy, sourcesAdminSection } from '../../modules/CB-M03/source-policy.mjs';
+import { LIVE_NEWS_SOURCES } from '../../modules/CB-M03/rss-sources.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
 import { buildInfo } from '../../lib/build-info';
 
@@ -308,6 +310,28 @@ async function productionAdmin(request, env) {
       counts: await subscriberCounts({ db: config.db }),
     }));
   }
+  if (method === 'GET' && path === '/admin/sources') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return page('Sources', sourcesAdminSection({
+      sources: LIVE_NEWS_SOURCES,
+      policy: await listPolicy({ db: config.db }),
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('error') ?? '',
+    }));
+  }
+  if (method === 'POST' && path === '/admin/sources/toggle') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const ok = await setPolicy({
+      db: config.db,
+      sourceId: String(auth.form.get('source_id') ?? ''),
+      hidden: String(auth.form.get('hidden') ?? '') === '1',
+      note: String(auth.form.get('note') ?? ''),
+      nowMs: Date.now(),
+    });
+    return redirectTo(ok ? '/admin/sources' : '/admin/sources?error=' + encodeURIComponent('Unknown source id.'));
+  }
   if (method === 'GET' && path === '/admin/alerts') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);
@@ -510,6 +534,24 @@ async function productionAdmin(request, env) {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);
     return socialPage({ accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request) });
+  }
+  if (method === 'POST' && path === '/admin/social/manual') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await storeManualAccount({
+      db: config.db, secret: config.secret,
+      provider: String(auth.form.get('provider') ?? ''),
+      username: String(auth.form.get('username') ?? ''),
+      token: String(auth.form.get('token') ?? ''),
+      nowMs: Date.now(),
+    });
+    if (result.status === 'stored') return redirectTo('/admin/social');
+    const reason = result.reason === 'token' ? 'The token looks too short or too long.'
+      : result.reason === 'username' ? 'The handle must be 2-40 letters, digits, dot, dash or underscore.'
+        : 'Choose Instagram or TikTok.';
+    return page('Social accounts', socialPage({
+      accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request), message: reason,
+    }), 400);
   }
   if (method === 'POST' && path === '/admin/social/revoke') {
     const auth = await authorizeForm(request, config, now);

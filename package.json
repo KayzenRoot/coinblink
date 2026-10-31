@@ -22,7 +22,8 @@
     "studio:local": "node scripts/dev-studio.mjs",
     "studio:check": "node scripts/dev-studio.mjs --check",
     "d1:backup": "node scripts/d1-backup.mjs",
-    "d1:drill": "node scripts/d1-restore-drill.mjs"
+    "d1:drill": "node scripts/d1-restore-drill.mjs",
+    "cost:report": "node scripts/cost-report.mjs"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

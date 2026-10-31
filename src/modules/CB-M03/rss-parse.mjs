@@ -11,10 +11,18 @@ const ENTITIES = Object.freeze({
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'", "#x27": "'",
 });
 const ENTITY_PATTERN = /&(?:amp|lt|gt|quot|apos|nbsp|#39|#x27);/gu;
+// Feeds also emit numeric references such as &#8217; for a curly apostrophe.
+// Decoding them here keeps the renderer from showing the reference itself.
+const NUMERIC_PATTERN = /&#(\d{1,7});|&#x([0-9a-f]{1,6});/giu;
 const CDATA_PATTERN = /<!\[CDATA\[([\s\S]*?)\]\]>/gu;
 
 export function decodeEntities(text) {
-  return text.replace(ENTITY_PATTERN, (whole) => ENTITIES[whole.slice(1, -1)] ?? whole);
+  return text
+    .replace(ENTITY_PATTERN, (whole) => ENTITIES[whole.slice(1, -1)] ?? whole)
+    .replace(NUMERIC_PATTERN, (whole, decimal, hexadecimal) => {
+      const code = decimal === undefined ? Number.parseInt(hexadecimal, 16) : Number(decimal);
+      return Number.isInteger(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : whole;
+    });
 }
 
 /** Drop tags in one linear pass: feed descriptions often carry HTML. */

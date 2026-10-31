@@ -121,13 +121,53 @@ export function normalizePath(pathname) {
   return trimmed === '' ? '/' : trimmed;
 }
 
-export function page(title, body, status = 200) {  const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+// Owner console navigation. The sidebar persists on every admin page; `title`
+// decides the active item, and a page can override it through `options.active`.
+const ADMIN_NAV = Object.freeze([
+  Object.freeze({ href: '/admin', label: 'Dashboard', title: 'Owner workspace' }),
+  Object.freeze({ href: '/admin/drafts', label: 'Drafts', title: 'Drafts' }),
+  Object.freeze({ href: '/admin/analytics', label: 'Analytics', title: 'Analytics' }),
+  Object.freeze({ href: '/admin/research', label: 'Research', title: 'Research desk' }),
+  Object.freeze({ href: '/admin/newsletter', label: 'Newsletter', title: 'Newsletter' }),
+  Object.freeze({ href: '/admin/social', label: 'Social', title: 'Social accounts' }),
+  Object.freeze({ href: '/admin/billing', label: 'Billing', title: 'Billing' }),
+  Object.freeze({ href: '/admin/api', label: 'API', title: 'API access' }),
+  Object.freeze({ href: '/admin/ops', label: 'Operations', title: 'Operations' }),
+  Object.freeze({ href: '/admin/launch', label: 'Launch gate', title: 'Launch gate' }),
+  Object.freeze({ href: '/admin/settings', label: 'Settings', title: 'Settings' }),
+  Object.freeze({ href: '/admin/security', label: 'Security', title: 'Security and audit' }),
+]);
+
+function navFor(title, active) {
+  const current = active ?? ADMIN_NAV.find((item) => item.title === title
+    || title.startsWith(item.title) || item.title.startsWith(title))?.href ?? '';
+  return ADMIN_NAV.map((item) => '<a class="admin-nav__link'
+    + (item.href === current ? ' is-active' : '') + '" href="' + item.href + '"'
+    + (item.href === current ? ' aria-current="page"' : '') + '>'
+    + escapeHtml(item.label) + '</a>').join('');
+}
+
+export function page(title, body, status = 200, options = {}) {
+  const chrome = options.chrome !== false;
+  const shell = chrome
+    ? '<body class="admin-shell"><aside class="admin-nav" aria-label="Owner console">'
+      + '<a class="admin-nav__brand" href="/admin"><span class="admin-nav__dot"></span>CoinBlink</a>'
+      + '<p class="admin-nav__tag">OWNER CONSOLE</p>'
+      + '<nav class="admin-nav__list">' + navFor(title, options.active) + '</nav>'
+      + '<form method="post" action="/admin/logout" class="admin-nav__exit">'
+      + '<button type="submit">Sign out</button></form></aside>'
+      + '<main class="admin-main"><div class="admin admin--wide">'
+      + '<header class="admin-head"><p class="admin__tag">CB-M05 · OWNER ONLY · NO PUBLISHING</p>'
+      + '<h1>' + escapeHtml(title) + '</h1></header>' + body + '</div></main>'
+    : '<body class="admin-bare"><main class="admin">'
+      + '<p class="admin__tag">CB-M05 · OWNER ONLY · NO PUBLISHING</p>'
+      + '<h1>' + escapeHtml(title) + '</h1>' + body + '</main>';
+  const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=device-width, initial-scale=1">'
     + '<meta name="robots" content="noindex, nofollow, noarchive">'
     + '<title>' + escapeHtml(title) + ' · CoinBlink</title>'
-    + '<link rel="stylesheet" href="/admin.css"></head><body><main class="admin">'
-    + '<p class="admin__tag">CB-M05 · OWNER ONLY · NO PUBLISHING</p>'
-    + '<h1>' + escapeHtml(title) + '</h1>' + body + '</main>'
+    + '<link rel="stylesheet" href="/admin.css"></head>'
+    + shell
     + '<script type="module" src="/admin-auth.js"></script></body></html>';
   return new Response(html, {
     status,
@@ -140,41 +180,62 @@ export function loginPage() {
     + '<button type="button" id="owner-login">Sign in with primary passkey</button>'
     + '<button type="button" id="owner-login-recovery">Use recovery passkey</button>'
     + '<p id="owner-status" role="status" aria-live="polite"></p>'
-    + '<p class="admin__note"><a href="/admin/bootstrap">First-time setup</a></p>');
+    + '<p class="admin__note"><a href="/admin/bootstrap">First-time setup</a></p>', 200, { chrome: false });
 }
 
 export function bootstrapPage() {
+  // The first-time setup page is reached before a session exists.
   return page('Register the owner passkey', '<p>Paste the one-time bootstrap ticket issued for this deployment. It expires in 15 minutes and works once.</p>'
     + '<form id="owner-bootstrap"><label>Bootstrap ticket<input id="owner-ticket" name="ticket" autocomplete="off" spellcheck="false" required></label>'
     + '<button type="submit">Register passkey</button></form>'
     + '<p id="owner-status" role="status" aria-live="polite"></p>'
-    + '<p class="admin__note"><a href="/admin/login">Already registered? Sign in</a></p>');
+    + '<p class="admin__note"><a href="/admin/login">Already registered? Sign in</a></p>', 200, { chrome: false });
 }
 
-export async function dashboardPage({ db, expiresAt }) {
+export async function dashboardPage({ db, expiresAt, stats = null }) {
   const row = await db.prepare('SELECT COUNT(*) AS drafts FROM cms_drafts WHERE owner_id=1').first();
   const drafts = Number(row?.drafts ?? 0);
   const credentials = await db.prepare('SELECT credential_id,device_kind FROM cms_credentials WHERE owner_id=1 AND revoked_at IS NULL ORDER BY device_kind').all();
   const rows = credentials?.results ?? [];
   const hasRecovery = rows.some((entry) => entry.device_kind === 'recovery');
   const list = rows.map((entry) => '<li><code>' + escapeHtml(String(entry.credential_id).slice(0, 12)) + '…</code> · ' + escapeHtml(entry.device_kind) + '</li>').join('');
-  return page('Owner workspace', '<p>Authenticated as the single CoinBlink owner.</p>'
-    + '<dl class="admin__facts"><dt>Drafts</dt><dd>' + drafts + '</dd>'
-    + '<dt>Session expires</dt><dd>' + escapeHtml(new Date(expiresAt * 1000).toISOString()) + '</dd></dl>'
-    + '<p><a href="/admin/drafts">Open drafts</a> · <a href="/admin/analytics">Analytics</a>'
-    + ' · <a href="/admin/research">Research desk</a>'
-    + ' · <a href="/admin/social">Social accounts</a>'
-    + ' · <a href="/admin/settings">Settings</a>'
-    + ' · <a href="/admin/billing">Billing</a>'
-    + ' · <a href="/admin/api">API access</a>'
-    + ' · <a href="/admin/ops">Operations</a>'
-    + ' · <a href="/admin/newsletter">Newsletter</a>'
-    + ' · <a href="/admin/launch">Launch gate</a>'
-    + ' · <a href="/admin/security">Security and audit</a></p>'
-    + '<h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
+  const ops = stats?.ops ?? null;
+  const analytics = stats?.analytics ?? null;
+  const counts = stats?.counts ?? null;
+  const subscription = stats?.status?.subscription ?? null;
+  const cards = [
+    ['Drafts', drafts, 'editorial'],
+    ['Pageviews · 7d', analytics?.total ?? 0, 'traffic'],
+    ['API calls · month', ops?.apiCalls ?? 0, 'api'],
+    ['Research notes', ops?.notes ?? 0, 'research'],
+    ['Subscribers', counts?.confirmed ?? 0, 'email'],
+    ['Plan', subscription === null ? 'none' : subscription.status, 'billing'],
+  ].map(([label, value, tone]) => '<article class="kpi kpi--' + tone + '">'
+    + '<p class="kpi__label">' + escapeHtml(label) + '</p>'
+    + '<p class="kpi__value">' + escapeHtml(String(value)) + '</p></article>').join('');
+  const daily = analytics?.daily ?? [];
+  const chart = daily.length === 0 ? '' : (() => {
+    const peak = Math.max(1, ...daily.map((day) => Number(day.views)));
+    const bars = daily.slice().reverse().map((day, index) => {
+      const height = Math.max(2, Math.round((Number(day.views) / peak) * 64));
+      const x = 8 + index * 38;
+      return '<rect x="' + x + '" y="' + (72 - height) + '" width="26" height="' + height
+        + '" rx="6" class="chart__bar"></rect>';
+    }).join('');
+    return '<figure class="chart"><figcaption class="chart__caption">Pageviews per day</figcaption>'
+      + '<svg viewBox="0 0 292 80" role="img" aria-label="Pageviews per day, last seven days" class="chart__svg">'
+      + bars + '</svg></figure>';
+  })();
+  return page('Owner workspace',
+    '<section class="kpis" aria-label="Control panel">' + cards + '</section>'
+    + chart
+    + '<section class="panel"><h2>Session</h2>'
+    + '<dl class="admin__facts"><dt>Authenticated</dt><dd>single CoinBlink owner</dd>'
+    + '<dt>Session expires</dt><dd>' + escapeHtml(new Date(expiresAt * 1000).toISOString()) + '</dd>'
+    + '<dt>Passkeys</dt><dd>' + rows.length + ' active</dd></dl></section>'
+    + '<section class="panel"><h2>Passkeys</h2><ul class="admin__credentials">' + list + '</ul>'
     + (hasRecovery ? '<p class="admin__note">A recovery passkey is registered.</p>' : '<button type="button" id="owner-enroll-recovery">Add recovery passkey</button>')
-    + '<p id="owner-status" role="status" aria-live="polite"></p>'
-    + '<form method="post" action="/admin/logout"><button type="submit">Sign out</button></form>'
+    + '<p id="owner-status" role="status" aria-live="polite"></p></section>'
     + '<p class="admin__note">Read-only foundation. Publishing, billing and real customer data remain disabled.</p>');
 }
 

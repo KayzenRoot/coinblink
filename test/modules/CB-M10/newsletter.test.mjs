@@ -147,7 +147,7 @@ test('the public endpoints and the admin route expose the contract', () => {
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
   assert.ok(route.includes("path === '/admin/newsletter'"));
   const dashboard = readFileSync('src/modules/CB-M05/p1-production/owner-auth.mjs', 'utf8');
-  assert.match(dashboard, /href="\/admin\/newsletter"/u);
+  assert.match(dashboard, /'\/admin\/newsletter'/u);
 });
 
 test('the public page renders a no-JS form and the JSON clients keep their envelope', () => {

@@ -1,6 +1,15 @@
 ---
 import ArticlePage from "../../../modules/CB-M05/ArticlePage.astro";
+import { readArticle } from "../../../modules/CB-M05/p1-production/articles.mjs";
+import { runtimeBinding } from "../../../lib/runtime-env";
+
 export const prerender = false;
+
 const { slug } = Astro.params;
+const article = await readArticle({ db: runtimeBinding("CMS_DB"), locale: "en", slug: slug ?? "" });
+// The status is set on the route, not inside the component: a component cannot
+// change the response status of the page it renders into.
+if (article === null) Astro.response.status = 404;
+else if (article.status !== "published") Astro.response.status = 410;
 ---
-<ArticlePage locale="en" slug={slug ?? ""} />
+<ArticlePage locale="en" article={article} />

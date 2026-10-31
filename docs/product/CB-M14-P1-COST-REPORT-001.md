@@ -30,6 +30,13 @@ A GraphQL error is surfaced with its message instead of printing zeros.
 
 Both are required; the script exits `2` without them.
 
+## In CI
+
+`.github/workflows/cost-report.yml` runs the same script with the deploy token
+from repository secrets and uploads the text as a 30-day artifact. A manual run
+on `main` printed the same counters, which confirms the secret can read
+Analytics.
+
 ## Observed
 
 ```
@@ -50,7 +57,9 @@ Workers AI neurons: 9.248
 
 - Stripe fees and Resend usage are not included; billing provider exports remain
   the source for those.
-- The report is manual. A scheduled job would need the token as a CI secret.
+- The report runs on demand: locally or through the `cost-report` workflow
+  (`workflow_dispatch`). The repository guard refuses a `schedule` trigger
+  without separate authorization, so a weekly cron is not enabled yet.
 
 ## Verification
 

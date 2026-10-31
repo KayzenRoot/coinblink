@@ -31,8 +31,9 @@ import {
 } from '../../modules/CB-M11/api-keys.mjs';
 import { launchGates, opsPage, readOps } from '../../modules/CB-M14/ops.mjs';
 import {
-  alertsSection, buildAlerts, countOpsEvents, keysNearQuota, listOpsEvents,
+  alertsSection, buildAlerts, countOpsEvents, keysNearQuota, listOpsEvents, recordOpsEvent,
 } from '../../modules/CB-M14/ops-events.mjs';
+import { notifyEvent } from '../../modules/CB-M14/alert-email.mjs';
 import { buildInfo } from '../../lib/build-info';
 
 export const prerender = false;
@@ -343,6 +344,17 @@ async function productionAdmin(request, env) {
       model: validResearchModel(env.M08_MODEL) ? env.M08_MODEL : RESEARCH_MODEL,
     });
     if (result.status === 'created') return redirectTo('/admin/research/' + result.note.id);
+    // A model or provider failure is worth the owner's attention; a capped or
+    // invalid request is not.
+    if (result.status === 'unavailable' || result.status === 'invalid_output' || result.status === 'unverified_output') {
+      const nowMs = Date.now();
+      const detail = 'research ' + result.status;
+      await recordOpsEvent({ db: config.db, type: 'research_failed', detail, nowMs });
+      await notifyEvent({
+        db: config.db, secret: config.secret, env: env.INTEGRATIONS,
+        type: 'research_failed', detail, nowMs,
+      });
+    }
     const messages = {
       capped: 'Daily research limit reached. Try again tomorrow (UTC).',
       unavailable: 'Workers AI is not configured or did not answer.',

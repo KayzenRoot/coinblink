@@ -25,8 +25,9 @@ rejected Stripe webhook at night stayed invisible until the next visit.
 
 ## Not yet
 
-- Only the webhook paths notify. Research and email failures are recorded but
-  not emailed.
+- Research failures notify only for provider or verification failures
+  (`unavailable`, `invalid_output`, `unverified_output`); a capped or invalid
+  request is not an alert.
 - No digest, no per-severity routing and no acknowledgement.
 
 ## Verification

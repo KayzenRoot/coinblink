@@ -71,8 +71,8 @@ test('the dashboard is a control panel with measured cards and a chart', async (
   assert.match(html, /class="kpi__value">40</u);
   assert.match(html, /class="kpi__value">12</u);
   assert.match(html, /class="kpi__value">active</u);
-  assert.match(html, /class="chart__svg"/u);
-  assert.equal((html.match(/chart__bar/gu) ?? []).length, 2);
+  assert.match(html, /class="chart__bars"/u);
+  assert.equal((html.match(/chart__bar chart__bar--h/gu) ?? []).length, 2);
   assert.match(html, /recovery/u);
   assert.match(html, /<h2>Attention<\/h2>/u);
   assert.match(html, /Subscription status is past_due/u);
@@ -84,7 +84,7 @@ test('the dashboard is a control panel with measured cards and a chart', async (
 test('the dashboard survives without stats', async () => {
   const html = await (await dashboardPage({ db: fakeDb(), expiresAt: 1_800_000_000 })).text();
   assert.match(html, /class="kpis"/u);
-  assert.doesNotMatch(html, /chart__svg/u);
+  assert.doesNotMatch(html, /chart__bars/u);
   assert.match(html, /No alerts/u);
   assert.match(html, /No operational events recorded/u);
 });

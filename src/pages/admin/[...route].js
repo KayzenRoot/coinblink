@@ -18,6 +18,7 @@ import {
   clearSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
+import { listSubscribers, subscriberCounts, subscribersSection } from '../../modules/CB-M10/newsletter.mjs';
 import {
   billingPage, billingStatus, checkoutForPlan, missingBillingKeys, readBillingConfig,
 } from '../../modules/CB-M12/billing.mjs';
@@ -216,6 +217,14 @@ async function productionAdmin(request, env) {
         }),
         events: await listOpsEvents({ db: config.db }),
       }),
+    }));
+  }
+  if (method === 'GET' && path === '/admin/newsletter') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return page('Newsletter', subscribersSection({
+      subscribers: await listSubscribers({ db: config.db }),
+      counts: await subscriberCounts({ db: config.db }),
     }));
   }
   if (method === 'GET' && path === '/admin/api') {

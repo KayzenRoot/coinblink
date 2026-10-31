@@ -29,7 +29,9 @@ export async function isFirstInWindow({ db, type, nowMs, windowSeconds = ALERT_W
  * Emails the owner about an event already recorded. Returns `sent`, `throttled`,
  * `not_configured` or `failed`; never throws.
  */
-export async function notifyEvent({ db, secret, env, type, detail = '', nowMs = Date.now(), fetchImpl }) {
+export async function notifyEvent({
+  db, secret, env, type, detail = '', nowMs = Date.now(), fetchImpl = globalThis.fetch,
+}) {
   if (!SUBJECTS[type]) return Object.freeze({ status: 'unknown_type' });
   try {
     if (!(await isFirstInWindow({ db, type, nowMs }))) return Object.freeze({ status: 'throttled' });

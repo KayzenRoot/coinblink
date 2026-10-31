@@ -109,6 +109,18 @@ export async function logout({ db, token, nowMs = Date.now() }) {
   return result?.meta?.changes === 1;
 }
 
+/** Deletes the reader and everything tied to it. Irreversible by design. */
+export async function deleteReader({ db, readerId }) {
+  const id = String(readerId ?? '');
+  if (id === '') return false;
+  await db.prepare('DELETE FROM cms_watchlist WHERE reader_id = ?').bind(id).run();
+  await db.prepare('DELETE FROM cms_reader_sessions WHERE reader_id = ?').bind(id).run();
+  await db.prepare('DELETE FROM cms_reader_tokens WHERE reader_id = ?').bind(id).run();
+  await db.prepare('DELETE FROM cms_reader_alert_sends WHERE reader_id = ?').bind(id).run();
+  const result = await db.prepare('DELETE FROM cms_readers WHERE id = ?').bind(id).run();
+  return result?.meta?.changes === 1;
+}
+
 export async function addSymbol({ db, readerId, symbol, nowMs = Date.now() }) {
   const clean = normalizeSymbol(symbol);
   if (clean === null) return Object.freeze({ status: 'invalid' });
@@ -205,9 +217,10 @@ function respond(html) {
   });
 }
 
-export function signInPage({ message = '' } = {}) {
+export function signInPage({ message = '', deleted = false } = {}) {
   return respond(shell('Sign in',
-    (message === '' ? '' : '<p class="admin__error" role="alert">' + escapeHtml(message) + '</p>')
+    (deleted ? '<p class="admin__ok" role="status">Your account and watchlist were deleted.</p>' : '')
+    + (message === '' ? '' : '<p class="admin__error" role="alert">' + escapeHtml(message) + '</p>')
     + '<p>Enter your address and we send a link. The link works once and expires in 15 minutes. '
     + 'No password is stored.</p>'
     + '<form method="post" action="/api/reader/login" class="admin__draft-form">'
@@ -233,6 +246,10 @@ export function readerPage({ email, symbols }) {
     + '<button type="submit">Add to watchlist</button></form>'
     + items
     + '<form method="post" action="/reader/logout"><button type="submit">Sign out</button></form>'
+    + '<form method="post" action="/reader/delete" class="admin__draft-form">'
+    + '<label class="admin__check"><input type="checkbox" name="confirm" value="yes" required> '
+    + 'Delete my account, watchlist and sessions</label>'
+    + '<button type="submit">Delete account</button></form>'
     + '<p class="admin__note">The watchlist holds up to 20 symbols and is tied to this address. '
     + 'Email alerts are the next step and are not sent yet.</p>'));
 }

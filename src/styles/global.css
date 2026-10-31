@@ -695,3 +695,15 @@ code {
 .article__provenance a{color:#b8f34b}
 .article__back{margin-top:2.2rem;font-size:.9rem}
 .article__back a{color:#b8f34b;text-decoration:none}
+
+/* Published owner articles on the news index. */
+.published{max-width:52rem;margin:0 auto;padding:2rem clamp(1rem,4vw,2rem) 0}
+.published__tag{margin:0;color:#f5c981;font-size:.72rem;font-weight:700;letter-spacing:.14em}
+.published h2{margin:.35rem 0 1rem;font-size:1.4rem;color:#e9f6eb}
+.published__empty{color:#9fb6a5}
+.published__list{list-style:none;margin:0;padding:0;display:grid;gap:.9rem}
+.published__list li{padding:1rem 1.2rem;border:1px solid #22402f;border-radius:16px;background:#0d1a15}
+.published__list a{color:#e9f6eb;font-size:1.05rem;font-weight:700;text-decoration:none}
+.published__list a:hover{color:#b8f34b}
+.published__list p{margin:.4rem 0 .6rem;color:#c1d3c5;line-height:1.6;font-size:.94rem}
+.published__list small{color:#9fb6a5;font-size:.8rem}

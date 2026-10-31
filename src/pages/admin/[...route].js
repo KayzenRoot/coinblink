@@ -408,14 +408,43 @@ async function productionAdmin(request, env) {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);
     const nowMs = Date.now();
+    const ops = await readOps({ db: config.db, nowMs });
+    const status = await billingStatus({ db: config.db });
+    const billingConfig = await readBillingConfig({ db: config.db, secret: config.secret, env: env.INTEGRATIONS });
+    const research = await researchUsage({ db: config.db, nowMs });
+    const keys = await listApiKeys({ db: config.db, nowMs });
+    const alerts = buildAlerts({
+      subscription: status.subscription,
+      quotaNear: keysNearQuota(keys),
+      eventsLastDay: await countOpsEvents({ db: config.db, nowMs }),
+      research,
+      nowMs,
+    });
+    const confirmedRow = await config.db.prepare(
+      "SELECT COUNT(*) AS total FROM cms_newsletter_subscribers WHERE status='confirmed'",
+    ).first();
+    const gateItems = evaluateLaunch({
+      ops,
+      billing: { active: status.active, missing: missingBillingKeys(billingConfig) },
+      email: {
+        apiKey: typeof (env.INTEGRATIONS ?? {}).RESEND_API_KEY === 'string' && (env.INTEGRATIONS ?? {}).RESEND_API_KEY !== '',
+        from: typeof (env.INTEGRATIONS ?? {}).COINBLINK_EMAIL_FROM === 'string' && (env.INTEGRATIONS ?? {}).COINBLINK_EMAIL_FROM !== '',
+      },
+      eventsLastDay: await countOpsEvents({ db: config.db, nowMs }),
+      confirmedSubscribers: Number(confirmedRow?.total ?? 0),
+      origin: typeof env.M05_ORIGIN === 'string' ? env.M05_ORIGIN : '',
+    });
     return dashboardPage({
       db: config.db,
       expiresAt: session.expiresAt,
       stats: {
-        ops: await readOps({ db: config.db, nowMs }),
+        ops,
         analytics: await readAnalytics({ db: config.db, nowMs }),
         counts: await subscriberCounts({ db: config.db }),
-        status: await billingStatus({ db: config.db }),
+        status,
+        alerts,
+        gates: launchVerdict(gateItems),
+        events: await listOpsEvents({ db: config.db, limit: 5 }),
       },
     });
   }

@@ -63,6 +63,7 @@ export function launchVerdict(items) {
   const manual = items.filter((item) => item.state === 'MANUAL');
   return Object.freeze({
     ready: blocked.length === 0 && manual.length === 0,
+    pass: items.filter((item) => item.state === 'PASS').length,
     blocked: blocked.length,
     manual: manual.length,
   });

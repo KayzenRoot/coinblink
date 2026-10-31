@@ -17,6 +17,9 @@ const PAYLOAD = {
         d1AnalyticsAdaptiveGroups: [
           { dimensions: { databaseId: 'd47ec576-cec4-470e-966f-bc05b8cfcdc1' }, sum: { rowsRead: 1642, rowsWritten: 352 } },
         ],
+        aiInferenceAdaptiveGroups: [
+          { dimensions: { modelId: '@cf/meta/llama-3.1-8b-instruct-fp8' }, sum: { totalNeurons: 9.2484 } },
+        ],
       }],
     },
   },
@@ -29,6 +32,8 @@ test('the GraphQL envelope becomes plain measured numbers', () => {
   assert.equal(costs.workers.errors, 2);
   assert.equal(costs.d1.rowsRead, 1642);
   assert.equal(costs.d1.rowsWritten, 352);
+  assert.equal(costs.ai.neurons, 9.248);
+  assert.equal(costs.ai.models[0].model, '@cf/meta/llama-3.1-8b-instruct-fp8');
   assert.deepEqual(costs.workers.scripts.map((row) => row.script), ['coinblink-production', 'coinblink-m00-preview']);
 });
 
@@ -73,5 +78,7 @@ test('the report states the window and every measured counter', () => {
   assert.match(text, /window: 2026-10-24T12:00:00\.000Z → 2026-10-31T12:00:00\.000Z/u);
   assert.match(text, /Workers requests: 1306/u);
   assert.match(text, /D1 rows written: {2}352/u);
+  assert.match(text, /Workers AI neurons: 9\.248/u);
+  assert.match(text, /model @cf\/meta\/llama-3\.1-8b-instruct-fp8: 9\.248 neurons/u);
   assert.match(text, /script coinblink-production: 1293 requests, 0 errors/u);
 });

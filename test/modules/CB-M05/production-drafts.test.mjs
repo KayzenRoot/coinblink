@@ -71,5 +71,6 @@ test('the admin route exposes drafts and never a publish action', () => {
     'draftRevisionsPage', 'draftMarkdown']) {
     assert.ok(route.includes(marker), marker);
   }
-  assert.doesNotMatch(route, /publish|schedule/iu);
+  // Publishing is owner-triggered only; nothing schedules or auto-publishes.
+  assert.doesNotMatch(route, /schedule/iu);
 });

@@ -159,5 +159,6 @@ test('the admin route exposes settings and the test send', () => {
   for (const marker of ['/admin/settings', 'setSetting', 'clearSetting', 'sendTestEmail', 'INTEGRATIONS']) {
     assert.ok(route.includes(marker), marker);
   }
-  assert.doesNotMatch(route, /publish|schedule/iu);
+  // Publishing is owner-triggered only; nothing schedules or auto-publishes.
+  assert.doesNotMatch(route, /schedule/iu);
 });

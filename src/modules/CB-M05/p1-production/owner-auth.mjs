@@ -226,9 +226,28 @@ export async function dashboardPage({ db, expiresAt, stats = null }) {
       + '<svg viewBox="0 0 292 80" role="img" aria-label="Pageviews per day, last seven days" class="chart__svg">'
       + bars + '</svg></figure>';
   })();
+  const alerts = stats?.alerts ?? [];
+  const gates = stats?.gates ?? null;
+  const events = stats?.events ?? [];
+  const attention = alerts.length === 0
+    ? '<p class="admin__note">No alerts. Every measured signal is inside its limit.</p>'
+    : '<ul class="admin__alerts">' + alerts.map((alert) => '<li class="admin__alert admin__alert--'
+      + escapeHtml(alert.severity) + '">' + escapeHtml(alert.text) + '</li>').join('') + '</ul>';
+  const gateSummary = gates === null ? ''
+    : '<p>' + gates.pass + ' passing · ' + gates.blocked + ' blocked · ' + gates.manual
+      + ' manual. <a href="/admin/launch">Open the launch gate</a></p>';
+  const activity = events.length === 0
+    ? '<p class="admin__note">No operational events recorded.</p>'
+    : '<table class="admin__table"><thead><tr><th>When</th><th>Type</th><th>Detail</th></tr></thead><tbody>'
+      + events.map((event) => '<tr><td>' + escapeHtml(new Date(event.createdAt * 1000).toISOString())
+        + '</td><td><code>' + escapeHtml(event.type) + '</code></td><td>'
+        + escapeHtml(event.detail || '—') + '</td></tr>').join('') + '</tbody></table>';
   return page('Owner workspace',
     '<section class="kpis" aria-label="Control panel">' + cards + '</section>'
     + chart
+    + '<section class="panel"><h2>Attention</h2>' + attention + '</section>'
+    + '<section class="panel"><h2>Launch readiness</h2>' + gateSummary + '</section>'
+    + '<section class="panel"><h2>Recent activity</h2>' + activity + '</section>'
     + '<section class="panel"><h2>Session</h2>'
     + '<dl class="admin__facts"><dt>Authenticated</dt><dd>single CoinBlink owner</dd>'
     + '<dt>Session expires</dt><dd>' + escapeHtml(new Date(expiresAt * 1000).toISOString()) + '</dd>'

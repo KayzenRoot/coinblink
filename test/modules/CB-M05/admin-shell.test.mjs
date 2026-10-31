@@ -29,6 +29,9 @@ const STATS = {
   },
   counts: { confirmed: 1, pending: 0, unsubscribed: 0 },
   status: { subscription: { status: 'active' } },
+  alerts: [{ severity: 'critical', text: 'Subscription status is past_due.' }],
+  gates: { pass: 5, blocked: 2, manual: 3, ready: false },
+  events: [{ type: 'webhook_invalid_signature', detail: 'rejected by signature check', createdAt: 1_800_000_000 }],
 };
 
 test('every admin page renders inside the persistent sidebar shell', async () => {
@@ -71,10 +74,17 @@ test('the dashboard is a control panel with measured cards and a chart', async (
   assert.match(html, /class="chart__svg"/u);
   assert.equal((html.match(/chart__bar/gu) ?? []).length, 2);
   assert.match(html, /recovery/u);
+  assert.match(html, /<h2>Attention<\/h2>/u);
+  assert.match(html, /Subscription status is past_due/u);
+  assert.match(html, /5 passing · 2 blocked · 3 manual/u);
+  assert.match(html, /Recent activity/u);
+  assert.match(html, /webhook_invalid_signature/u);
 });
 
 test('the dashboard survives without stats', async () => {
   const html = await (await dashboardPage({ db: fakeDb(), expiresAt: 1_800_000_000 })).text();
   assert.match(html, /class="kpis"/u);
   assert.doesNotMatch(html, /chart__svg/u);
+  assert.match(html, /No alerts/u);
+  assert.match(html, /No operational events recorded/u);
 });

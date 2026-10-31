@@ -5,7 +5,7 @@ import { createLocalAdminRouter } from '../../modules/CB-M05/p1c-local/local-adm
 import {
   authorize, authorizeForm, bootstrapChallenge, bootstrapClaim, bootstrapPage, csrfFromRequest,
   dashboardPage, denied, enrollChallenge, enrollClaim, json, login, loginChallenge, loginPage,
-  logout, ownerExists, page, readConfig, readJson, sameOrigin,
+  logout, normalizePath, ownerExists, page, readConfig, readJson, sameOrigin,
 } from '../../modules/CB-M05/p1-production/owner-auth.mjs';
 import {
   createDraft, draftFormPage, draftMarkdown, draftRevisionsPage, draftsPage, listDrafts,
@@ -46,7 +46,7 @@ async function productionAdmin(request, env) {
   if (config === null) return denied(404);
   const url = new URL(request.url);
   const now = Math.floor(Date.now() / 1000);
-  const path = url.pathname;
+  const path = normalizePath(url.pathname);
   const method = request.method;
   // Logout is a same-origin form POST. The strict Origin/Sec-Fetch-Site pair is
   // required for credential-changing endpoints, but a logout only revokes the

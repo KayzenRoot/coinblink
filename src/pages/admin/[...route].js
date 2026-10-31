@@ -40,6 +40,9 @@ import {
   alertsSection, buildAlerts, countOpsEvents, keysNearQuota, listOpsEvents, recordOpsEvent,
 } from '../../modules/CB-M14/ops-events.mjs';
 import { notifyEvent } from '../../modules/CB-M14/alert-email.mjs';
+import {
+  adsAdminSection, createPlacement, createSponsor, listPlacements, listSponsors, pausePlacement,
+} from '../../modules/CB-M13/ads.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
 import { buildInfo } from '../../lib/build-info';
 
@@ -302,6 +305,56 @@ async function productionAdmin(request, env) {
       subscribers: await listSubscribers({ db: config.db }),
       counts: await subscriberCounts({ db: config.db }),
     }));
+  }
+  if (method === 'GET' && path === '/admin/ads') {
+    const session = await authorize(request, { db: config.db, secret: config.secret, now });
+    if (session === null) return denied(404);
+    return page('Ads', adsAdminSection({
+      placements: await listPlacements({ db: config.db }),
+      sponsors: await listSponsors({ db: config.db }),
+      csrf: csrfFromRequest(request),
+      message: url.searchParams.get('error') ?? '',
+    }));
+  }
+  if (method === 'POST' && path === '/admin/ads/sponsor') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await createSponsor({
+      db: config.db,
+      name: String(auth.form.get('name') ?? ''),
+      url: String(auth.form.get('url') ?? ''),
+      contact: String(auth.form.get('contact') ?? ''),
+      nowMs: Date.now(),
+    });
+    return redirectTo(result.status === 'created'
+      ? '/admin/ads'
+      : '/admin/ads?error=' + encodeURIComponent('Sponsor needs a name and an https URL.'));
+  }
+  if (method === 'POST' && path === '/admin/ads/placement') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await createPlacement({
+      db: config.db,
+      sponsorId: String(auth.form.get('sponsor_id') ?? ''),
+      slot: String(auth.form.get('slot') ?? ''),
+      label: String(auth.form.get('label') ?? ''),
+      body: String(auth.form.get('body') ?? ''),
+      ctaLabel: String(auth.form.get('cta_label') ?? ''),
+      ctaUrl: String(auth.form.get('cta_url') ?? ''),
+      rateCents: Number(auth.form.get('rate_cents') ?? 0),
+      startAt: Date.parse(String(auth.form.get('start_at') ?? '')),
+      endAt: Date.parse(String(auth.form.get('end_at') ?? '')),
+      nowMs: Date.now(),
+    });
+    return redirectTo(result.status === 'created'
+      ? '/admin/ads'
+      : '/admin/ads?error=' + encodeURIComponent('Check the slot, the copy, the https URLs and the window (end after start).'));
+  }
+  if (method === 'POST' && path === '/admin/ads/pause') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const done = await pausePlacement({ db: config.db, id: String(auth.form.get('id') ?? '') });
+    return redirectTo(done ? '/admin/ads' : '/admin/ads?error=' + encodeURIComponent('Could not pause that placement.'));
   }
   if (method === 'GET' && path === '/admin/editions') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });

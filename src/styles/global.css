@@ -707,3 +707,10 @@ code {
 .published__list a:hover{color:#b8f34b}
 .published__list p{margin:.4rem 0 .6rem;color:#c1d3c5;line-height:1.6;font-size:.94rem}
 .published__list small{color:#9fb6a5;font-size:.8rem}
+
+/* Sponsored slot: visually separate from editorial content. */
+.sponsored{max-width:52rem;margin:1.6rem auto;padding:.9rem 1.1rem;border:1px dashed #3a5a45;border-radius:14px;background:#0b1712}
+.sponsored__label{margin:0;color:#f5c981;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.sponsored__body{margin:.4rem 0 .6rem;color:#c1d3c5;font-size:.92rem;line-height:1.55}
+.sponsored__cta{display:inline-block;color:#b8f34b;font-weight:700;font-size:.9rem;text-decoration:none}
+.sponsored__cta:hover{text-decoration:underline}

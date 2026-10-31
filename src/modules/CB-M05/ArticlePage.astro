@@ -1,6 +1,7 @@
 ---
 // CB-M05-P1-PUBLISHING-001: public page for an owner-authored article.
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
 
 type Article = {
   title: string; summary: string; body: string; tags: readonly string[]; authorLabel: string;
@@ -28,6 +29,7 @@ const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "
       <p class="article__summary">
         {article === null ? "There is no article at this address." : "The owner unpublished this article. The address is kept so links do not silently change meaning."}
       </p>
+      <SponsoredSlot slot="article" />
       <p class="article__back"><a href={`/${locale}/news`}>{backLabel}</a></p>
     </main>
   </BaseLayout>
@@ -58,6 +60,7 @@ const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "
         <strong>{provenanceLabel}.</strong> {article.provenanceNote}
         {" "}<a href={article.sourceUrl} rel="noreferrer noopener external">Source</a>.
       </aside>
+      <SponsoredSlot slot="article" />
       <p class="article__back"><a href={`/${locale}/news`}>{backLabel}</a></p>
     </main>
   </BaseLayout>

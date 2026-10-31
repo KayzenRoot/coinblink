@@ -1,17 +1,16 @@
 ---
 // CB-M05-P1-PUBLISHING-001: public page for an owner-authored article.
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { readArticle } from "./p1-production/articles.mjs";
-import { runtimeBinding } from "../../lib/runtime-env";
 
-interface Props { locale: "en" | "pt-br" | "es"; slug: string }
-const { locale, slug } = Astro.props;
-const article = await readArticle({ db: runtimeBinding("CMS_DB"), locale, slug });
+type Article = {
+  title: string; summary: string; body: string; tags: readonly string[]; authorLabel: string;
+  sourceUrl: string; provenanceNote: string; revision: number; publishedAt: number; status: string;
+};
+
+interface Props { locale: "en" | "pt-br" | "es"; article: Article | null }
+const { locale, article } = Astro.props;
 
 export const prerender = false;
-
-if (article === null) Astro.response.status = 404;
-else if (article.status !== "published") Astro.response.status = 410;
 
 const lang = locale === "pt-br" ? "pt-BR" : locale;
 const paragraphs: string[] = article === null ? [] : article.body.split(/\n{2,}/u).map((part: string) => part.trim()).filter((part: string) => part !== "");

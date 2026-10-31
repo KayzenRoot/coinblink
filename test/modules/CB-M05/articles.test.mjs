@@ -145,9 +145,15 @@ test('the owner screen offers the publish form and the unpublish action', () => 
 });
 
 test('the public page and the API expose only metadata', () => {
-  const page = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
-  for (const marker of ['readArticle', 'Astro.response.status = 410', 'article.provenanceNote', 'article.sourceUrl']) {
-    assert.ok(page.includes(marker), marker);
+  const component = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
+  for (const marker of ['article.provenanceNote', 'article.sourceUrl', 'revision {article.revision}']) {
+    assert.ok(component.includes(marker), marker);
+  }
+  for (const locale of ['en', 'pt-br', 'es']) {
+    const route = readFileSync('src/pages/' + locale + '/article/[slug].astro', 'utf8');
+    for (const marker of ['readArticle', 'Astro.response.status = 404', 'Astro.response.status = 410']) {
+      assert.ok(route.includes(marker), locale + ' ' + marker);
+    }
   }
   const api = readFileSync('src/pages/v1/articles.ts', 'utf8');
   for (const marker of ['consumeQuota', 'QUOTA_EXCEEDED', 'redistribution', 'canonical', 'INVALID_LOCALE']) {

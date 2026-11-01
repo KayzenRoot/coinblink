@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { LIVE_PROVIDER, buildLiveSnapshot, claimProviderCall, isLiveEnabled, readLiveSnapshot } from '../../../src/modules/CB-M04/live-quotes.mjs';
 
 const NOW = Date.UTC(2026, 10, 1, 12, 0, 0);
-const PAYLOAD = { bitcoin: { usd: 68234.12 }, ethereum: { usd: 3120.4 }, solana: { usd: 142.7 } };
+const PAYLOAD = { bitcoin: { usd: 68234.12 }, ethereum: { usd: 3120.4 }, solana: { usd: 142.7 }, binancecoin: { usd: 605.21 }, ripple: { usd: 0.5243 } };
 
 test('the live path stays off unless the deployment enables it', async () => {
   assert.equal(isLiveEnabled('true'), true);
@@ -22,13 +22,14 @@ test('the snapshot carries attribution, delay and the no-order-flow guarantee', 
   assert.equal(snapshot.commercialUseAllowed, false);
   assert.equal(snapshot.attribution, LIVE_PROVIDER.attribution);
   assert.equal(snapshot.delayedUpToSeconds, LIVE_PROVIDER.cacheSeconds);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ['BTC', 'ETH', 'SOL']);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ['BTC', 'ETH', 'SOL', 'BNB', 'XRP']);
   assert.equal(snapshot.quotes[0].priceUsd, 68234.12);
 });
 
 test('a malformed payload fails closed instead of inventing a price', () => {
   assert.throws(() => buildLiveSnapshot({ bitcoin: { usd: 1 } }), /missing ethereum/u);
   assert.throws(() => buildLiveSnapshot({ ...PAYLOAD, solana: { usd: -1 } }), /no usable usd/u);
+  assert.throws(() => buildLiveSnapshot({ ...PAYLOAD, ripple: undefined }), /missing ripple/u);
   assert.throws(() => buildLiveSnapshot({ ...PAYLOAD, ethereum: { usd: 'x' } }), /no usable usd/u);
   assert.throws(() => buildLiveSnapshot([], {}), /plain object/u);
 });

@@ -11,7 +11,7 @@ export const LIVE_PROVIDER = Object.freeze({
   id: "coingecko",
   label: "CoinGecko",
   url: "https://www.coingecko.com",
-  endpoint: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd",
+  endpoint: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd",
   cacheSeconds: 60,
   attribution: "Market data by CoinGecko",
   // Demo plan: 30 calls per minute and 10,000 per month. The guard below stops
@@ -23,6 +23,8 @@ export const LIVE_ASSETS = Object.freeze([
   Object.freeze({ id: "bitcoin", symbol: "BTC" }),
   Object.freeze({ id: "ethereum", symbol: "ETH" }),
   Object.freeze({ id: "solana", symbol: "SOL" }),
+  Object.freeze({ id: "binancecoin", symbol: "BNB" }),
+  Object.freeze({ id: "ripple", symbol: "XRP" }),
 ]);
 
 const ENABLED_VALUES = new Set(["1", "true", "enabled", "on"]);

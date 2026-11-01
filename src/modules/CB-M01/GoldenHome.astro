@@ -78,6 +78,7 @@ const marketQuotes = (marketSnapshot.status === "LIVE_ATTRIBUTED"
   ? (marketSnapshot as { quotes: MarketQuote[] }).quotes
   : []) as MarketQuote[];
 const btcQuote = marketQuotes.find((quote) => quote.symbol === "BTC") ?? null;
+const quoteFor = (symbol: string): MarketQuote | null => marketQuotes.find((quote) => quote.symbol === symbol) ?? null;
 const marketPrice = (value: number) => value >= 1000
   ? "$" + value.toLocaleString("en-US", { maximumFractionDigits: 0 })
   : "$" + value.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -281,8 +282,8 @@ const editorialR26Assets = {
       </article>
 
       <aside class="market-panel" id="market-overview" aria-labelledby="market-title" data-m01-market-source-state={homeProducerBoundary.markets.status}>
-        <div class="panel-title"><div><span class="panel-eyebrow">{t("DEMONSTRATION")}</span><h2 id="market-title">{t("Market overview")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
-        <p class="panel-description">{t("Market data feed is not connected.")}</p>
+        <div class="panel-title"><div><span class="panel-eyebrow">{marketQuotes.length > 0 ? t("LIVE") : t("DEMONSTRATION")}</span><h2 id="market-title">{t("Market overview")}</h2></div><span class="offline-badge"><i></i>{marketQuotes.length > 0 ? t("Live") : t("Offline")}</span></div>
+        <p class="panel-description">{marketQuotes.length > 0 ? t("Prices from CoinGecko, delayed up to 60s.") : t("Market data feed is not connected.")}</p>
         <ul class="market-list">
           {markets.map((market) => (
             <li class="market-row">
@@ -315,7 +316,7 @@ const editorialR26Assets = {
               </span>
               <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
               <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
-              <span class="market-value" aria-label={t("Unavailable")}>—</span>
+              <span class="market-value" aria-label={t("Price in US dollars")}>{quoteFor(market.symbol)?.priceUsd !== undefined ? marketPrice(quoteFor(market.symbol)?.priceUsd ?? 0) : "—"}</span>
             </li>
           ))}
         </ul>

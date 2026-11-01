@@ -551,7 +551,7 @@ const editorialR26Assets = {
 
     <section class="data-note" id="demo-data" aria-label={t("Data and integration status")}><b aria-hidden="true">i</b><p><strong>{t("Data status:")}</strong> {liveOn ? t("Headlines are collected from public RSS feeds and attributed to the original publisher; the market ticker and blockchain lookup remain placeholders. CoinBlink does not republish article text.") : t("visual samples are placeholders. Video publishing and live feeds are unavailable. The blockchain lookup only prepares external links; CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.")}</p><strong>{liveOn ? t("LIVE HEADLINES") : t("MOCK MODE")}</strong></section>
   </main>
-  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{liveOn ? t("Attributed headlines from public feeds · no market data") : t("Demonstration only · no live market or editorial data")}</span><a href="/newsletter">{t("Newsletter")}</a><a href="#top">{t("Back to top")} ↑</a></footer>
+  <footer class="cb-footer" id="footer"><a href="#top"><strong>CoinBlink</strong> · {t("Crypto news in a blink.")}</a><span>{liveOn ? t("Attributed headlines from public feeds · no market data") : t("Demonstration only · no live market or editorial data")}</span><a href="/newsletter">{t("Newsletter")}</a><a href={l("/en/legal", "/pt-br/legal", "/es/legal")}>{t("Terms")}</a><a href="#top">{t("Back to top")} ↑</a></footer>
 </div>
 
 <script is:inline src="/home-demo.js"></script>

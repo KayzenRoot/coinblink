@@ -98,3 +98,13 @@ test('a malformed first answer is retried once and the second is used', async ()
   assert.equal((await generateArticleDraft({ ai: alwaysBad, topic: 'bitcoin etf', items: ITEMS })).status, 'invalid_output');
   assert.equal(calls, 2, 'the retry happens exactly once');
 });
+
+test('an unparseable answer carries a short detail for the owner screen', async () => {
+  const result = parseArticleDraft('I cannot help with that request.', { sources: SOURCES });
+  assert.equal(result.status, 'invalid_output');
+  assert.match(result.detail, /cannot help/u);
+  const empty = parseArticleDraft('', { sources: SOURCES });
+  assert.equal(empty.detail, 'empty answer');
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /Model said: /u);
+});

@@ -5,7 +5,7 @@
 // claim that rests on a source has to point at one of the supplied items, and
 // the owner still reviews the draft before anything is published.
 
-export const ARTICLE_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';
+export const ARTICLE_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export const DRAFT_LIMITS = Object.freeze({ title: 140, summary: 400, body: 12000, citations: 6 });
 
 const SYSTEM = [
@@ -14,6 +14,15 @@ const SYSTEM = [
   'Do not invent numbers, dates, names or quotes. If the sources do not support a claim, omit it.',
   'Reply with a single JSON object and nothing else.',
 ].join(' ');
+
+/** The system/user pair, so instruct models apply their chat template. */
+export function buildArticleMessages({ topic, items, language = 'en' }) {
+  const prompt = buildArticlePrompt({ topic, items, language });
+  return [
+    Object.freeze({ role: 'system', content: SYSTEM }),
+    Object.freeze({ role: 'user', content: prompt.slice(SYSTEM.length).trim() }),
+  ];
+}
 
 /** Builds the prompt from a topic and the collected headlines. */
 export function buildArticlePrompt({ topic, items, language = 'en' }) {
@@ -124,9 +133,9 @@ function parseJsonLoose(raw) {
 }
 
 export function parseArticleDraft(raw, { sources }) {
-  if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output' });
+  if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output', detail: 'empty answer' });
   const parsed = parseJsonLoose(raw);
-  if (parsed === null) return Object.freeze({ status: 'invalid_output' });
+  if (parsed === null) return Object.freeze({ status: 'invalid_output', detail: String(raw).slice(0, 200) });
   const title = text(parsed.title, DRAFT_LIMITS.title);
   const summary = text(parsed.summary, DRAFT_LIMITS.summary);
   const body = text(parsed.body, DRAFT_LIMITS.body);
@@ -164,17 +173,28 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     source: String(item.sourceName ?? ''), url: String(item.link ?? ''),
   }));
   if (sources.length === 0) return Object.freeze({ status: 'no_sources' });
-  const ask = async (prompt) => {
-    const answer = await ai.run(model, { prompt });
+  const ask = async (messages) => {
+    // Chat mode applies the instruct template; a plain prompt is the fallback
+    // for a model that only exposes text generation.
+    let answer;
+    try {
+      answer = await ai.run(model, { messages });
+    } catch {
+      answer = await ai.run(model, { prompt: messages.map((message) => message.content).join('\n') });
+    }
     return typeof answer === 'string' ? answer : answer?.response;
   };
   try {
-    const prompt = buildArticlePrompt({ topic: clean, items, language });
-    const first = parseArticleDraft(await ask(prompt), { sources });
+    const messages = buildArticleMessages({ topic: clean, items, language });
+    const first = parseArticleDraft(await ask(messages), { sources });
     if (first.status !== 'invalid_output') return first;
     // One retry with the same sources and an explicit reminder: a malformed
     // answer costs one call, and the owner still reviews whatever comes back.
-    const second = parseArticleDraft(await ask(prompt + "\nReturn only the JSON object, with escaped line breaks."), { sources });
+    const second = parseArticleDraft(await ask([
+      ...messages,
+      Object.freeze({ role: 'assistant', content: String(first.detail ?? '') }),
+      Object.freeze({ role: 'user', content: 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.' }),
+    ]), { sources });
     return second;
   } catch {
     return Object.freeze({ status: 'unavailable' });

@@ -34,6 +34,7 @@ export function buildArticlePrompt({ topic, items, language = 'en' }) {
     'Return JSON with exactly:',
     '{"title": string (40-120 chars), "summary": string (120-300 chars), "body": string (3-6 paragraphs separated by blank lines, each citation written as [n]), "citations": [{"n": number, "source": string, "url": string}]}',
     'Cite only numbers that exist above. At least one citation is required.',
+    'Write the JSON object as one line or use \n escapes inside the body string; never put raw line breaks inside a JSON string and never wrap the object in markdown fences.',
   ].join('\n');
 }
 
@@ -45,17 +46,87 @@ function text(value, max) {
  * Strict parse: a malformed answer becomes `invalid_output` instead of a draft.
  * A citation must point at a supplied source and carry its https URL.
  */
+/**
+ * Escapes the control characters that make a model answer invalid JSON: raw
+ * newlines and tabs inside a string literal. Everything outside strings is
+ * left untouched, so this repairs formatting without inventing content.
+ */
+export function repairJsonText(text) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (const character of String(text ?? '')) {
+    if (!inString) {
+      if (character === '"') inString = true;
+      out += character;
+      continue;
+    }
+    if (escaped) {
+      escaped = false;
+      out += character;
+      continue;
+    }
+    if (character === "\\") {
+      escaped = true;
+      out += character;
+      continue;
+    }
+    if (character === '"') {
+      inString = false;
+      out += character;
+      continue;
+    }
+    if (character === "\n") { out += "\\n"; continue; }
+    if (character === "\r") { out += "\\r"; continue; }
+    if (character === "\t") { out += "\\t"; continue; }
+    out += character;
+  }
+  return out;
+}
+
+/** The first balanced JSON object in the answer, fences and prose ignored. */
+export function extractJsonObject(raw) {
+  const text = String(raw ?? '').replace(/```[a-z]*\s*/giu, '');
+  const start = text.indexOf('{');
+  if (start === -1) return '';
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < text.length; index += 1) {
+    const character = text[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === '{') depth += 1;
+    else if (character === '}') {
+      depth -= 1;
+      if (depth === 0) return text.slice(start, index + 1);
+    }
+  }
+  return '';
+}
+
+function parseJsonLoose(raw) {
+  const slice = extractJsonObject(raw);
+  if (slice === '') return null;
+  for (const candidate of [slice, repairJsonText(slice), repairJsonText(slice).replace(/,\s*([}\]])/gu, '$1')]) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // try the next repair
+    }
+  }
+  return null;
+}
+
 export function parseArticleDraft(raw, { sources }) {
   if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output' });
-  const start = raw.indexOf('{');
-  const end = raw.lastIndexOf('}');
-  if (start === -1 || end <= start) return Object.freeze({ status: 'invalid_output' });
-  let parsed;
-  try {
-    parsed = JSON.parse(raw.slice(start, end + 1));
-  } catch {
-    return Object.freeze({ status: 'invalid_output' });
-  }
+  const parsed = parseJsonLoose(raw);
+  if (parsed === null) return Object.freeze({ status: 'invalid_output' });
   const title = text(parsed.title, DRAFT_LIMITS.title);
   const summary = text(parsed.summary, DRAFT_LIMITS.summary);
   const body = text(parsed.body, DRAFT_LIMITS.body);
@@ -93,10 +164,18 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     source: String(item.sourceName ?? ''), url: String(item.link ?? ''),
   }));
   if (sources.length === 0) return Object.freeze({ status: 'no_sources' });
+  const ask = async (prompt) => {
+    const answer = await ai.run(model, { prompt });
+    return typeof answer === 'string' ? answer : answer?.response;
+  };
   try {
-    const answer = await ai.run(model, { prompt: buildArticlePrompt({ topic: clean, items, language }) });
-    const raw = typeof answer === 'string' ? answer : answer?.response;
-    return parseArticleDraft(raw, { sources });
+    const prompt = buildArticlePrompt({ topic: clean, items, language });
+    const first = parseArticleDraft(await ask(prompt), { sources });
+    if (first.status !== 'invalid_output') return first;
+    // One retry with the same sources and an explicit reminder: a malformed
+    // answer costs one call, and the owner still reviews whatever comes back.
+    const second = parseArticleDraft(await ask(prompt + "\nReturn only the JSON object, with escaped line breaks."), { sources });
+    return second;
   } catch {
     return Object.freeze({ status: 'unavailable' });
   }

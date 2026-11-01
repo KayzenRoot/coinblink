@@ -67,3 +67,34 @@ test('the admin screen offers the topic form and never publishes on its own', ()
     assert.ok(route.includes(marker), marker);
   }
 });
+
+test('a fenced answer and raw line breaks inside the body still become a draft', async () => {
+  const { extractJsonObject, repairJsonText } = await import('../../../src/modules/CB-M08/article-draft.mjs');
+  const fenced = 'Here is the draft:\n```json\n' + JSON.stringify(GOOD) + '\n```\nDone.';
+  assert.equal(parseArticleDraft(fenced, { sources: SOURCES }).status, 'drafted');
+  // A real newline inside a JSON string is invalid JSON; the repair escapes it.
+  const rawNewline = '{"title":"' + GOOD.title + '","summary":"' + GOOD.summary + '","body":"' + GOOD.body + '","citations":[{"n":1,"source":"CoinDesk","url":"https://a.example/1"}]}';
+  assert.equal(JSON.parse.bind(JSON, rawNewline) instanceof Function, true);
+  assert.equal(repairJsonText('{"a":"x' + '\n' + 'y"}').includes('x\\ny'), true);
+  assert.equal(parseArticleDraft(rawNewline, { sources: SOURCES }).status, 'drafted');
+  assert.equal(extractJsonObject('no object here'), '');
+  assert.equal(extractJsonObject('{"a":{"b":1}} trailing'), '{"a":{"b":1}}');
+});
+
+test('a malformed first answer is retried once and the second is used', async () => {
+  let calls = 0;
+  const ai = {
+    async run() {
+      calls += 1;
+      if (calls === 1) return { response: 'I am sorry, I cannot answer in JSON.' };
+      return { response: JSON.stringify(GOOD) };
+    },
+  };
+  const result = await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS });
+  assert.equal(result.status, 'drafted');
+  assert.equal(calls, 2);
+  const alwaysBad = { async run() { calls += 1; return { response: 'still prose' }; } };
+  calls = 0;
+  assert.equal((await generateArticleDraft({ ai: alwaysBad, topic: 'bitcoin etf', items: ITEMS })).status, 'invalid_output');
+  assert.equal(calls, 2, 'the retry happens exactly once');
+});

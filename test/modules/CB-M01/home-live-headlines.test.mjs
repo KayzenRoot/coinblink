@@ -13,7 +13,9 @@ test('the home reads the real collection behind the deployment switch', () => {
 });
 
 test('live headlines are attributed and link out, never copied', () => {
-  assert.match(home, /<ul class="news-live">/u);
+  assert.match(home, /<div class="news-cards news-cards--live">/u);
+  assert.match(home, /data-news-card data-category-value=\{category\}/u);
+  assert.match(home, /<EditorialArtwork variant=\{artwork\} \/>/u);
   assert.match(home, /href=\{item\.link\} rel="noreferrer noopener external"/u);
   assert.match(home, /\{item\.sourceName\}/u);
   assert.match(home, /<time datetime=\{item\.publishedAt/u);

@@ -72,3 +72,30 @@ test('the home renders trending from the collection and keeps the placeholder fa
   assert.ok(home.includes('href={topic.link}'));
   assert.ok(home.includes('t("Trending demo")'));
 });
+
+test('collected headlines map to a canonical category and a decorative variant', async () => {
+  const { artworkForCategory, headlineCategory } = await import('../../../src/modules/CB-M01/home-signals.mjs');
+  assert.equal(headlineCategory('Bitcoin ETF inflows accelerate'), 'Bitcoin');
+  assert.equal(headlineCategory('Ethereum validators earn a windfall'), 'Ethereum');
+  assert.equal(headlineCategory('SEC opens a probe into an exchange'), 'Regulation');
+  assert.equal(headlineCategory('Solana DeFi liquidity grows'), 'DeFi');
+  assert.equal(headlineCategory('A quiet week for NFT mints'), 'NFTs');
+  assert.equal(headlineCategory('Dogecoin holders wait'), 'Altcoins');
+  assert.equal(headlineCategory('Analysts weigh the week ahead'), 'Market Analysis');
+  assert.equal(headlineCategory(null), 'Market Analysis');
+  assert.equal(artworkForCategory('Bitcoin'), 'bitcoin');
+  assert.equal(artworkForCategory('Ethereum'), 'ethereum');
+  assert.equal(artworkForCategory('Regulation'), 'policy');
+  assert.equal(artworkForCategory('Market Analysis'), 'ecosystem');
+});
+
+test('live cards carry the artwork, the category and the publisher link', () => {
+  const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
+  assert.ok(home.includes('data-news-kind={liveOn ? "headline" : "placeholder"}'));
+  assert.ok(home.includes('const category = headlineCategory(item.title)'));
+  assert.ok(home.includes('<EditorialArtwork variant={artwork} />'));
+  assert.ok(home.includes('rel="noreferrer noopener external">{item.title}</a>'));
+  const script = readFileSync('public/home-demo.js', 'utf8');
+  assert.ok(script.includes('dataset.newsKind === "headline"'));
+  assert.ok(script.includes('messages.liveCountMany'));
+});

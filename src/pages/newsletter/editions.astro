@@ -1,0 +1,59 @@
+---
+// CB-M10-P1-EDITIONS-001: public archive of the editions that were sent.
+//
+// It reads only sent editions and only articles that are still published, so
+// an unpublished article disappears from the archive with its page.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { listArchive } from "../../modules/CB-M10/archive.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
+
+export const prerender = false;
+
+const archive = await listArchive({ db: runtimeBinding("CMS_DB"), limit: 20 });
+const stamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  lang="en"
+  title="CoinBlink · newsletter editions"
+  description="Every edition CoinBlink has sent, with the articles it carried and links to their pages."
+>
+  <main id="main" class="status">
+    <nav aria-label="Newsletter navigation">
+      <a href="/en">← Home</a> · <a href="/newsletter">Subscribe</a> · <a href="/pt-br">Português</a> · <a href="/es">Español</a>
+    </nav>
+    <header>
+      <p class="status__tag">CB-M10 · EDITIONS · PUBLIC ARCHIVE</p>
+      <h1>Newsletter editions</h1>
+      <p>
+        Every edition we sent, with the articles it carried. Nothing here is a
+        preview: an edition appears only after it was delivered, and an article
+        disappears when it is unpublished.
+      </p>
+    </header>
+
+    {archive.length === 0 ? (
+      <p class="body-copy">No edition has been sent yet. The first one appears here after it goes out.</p>
+    ) : (
+      <ol class="edition-archive">
+        {archive.map((edition: { subject: string; intro: string; locale: string; sentAt: number; articles: { title: string; summary: string; href: string }[] }) => (
+          <li>
+            <article>
+              <p class="status__tag">
+                <time datetime={new Date(edition.sentAt * 1000).toISOString()}>{stamp(edition.sentAt)}</time>
+                <span> · {edition.locale}</span>
+              </p>
+              <h2>{edition.subject}</h2>
+              {edition.intro !== "" && <p class="body-copy">{edition.intro}</p>}
+              <ul>
+                {edition.articles.map((article: { title: string; summary: string; href: string }) => (
+                  <li><a href={article.href}>{article.title}</a> — {article.summary}</li>
+                ))}
+              </ul>
+            </article>
+          </li>
+        ))}
+      </ol>
+    )}
+  </main>
+</BaseLayout>

@@ -8,8 +8,9 @@ type Article = {
   sourceUrl: string; provenanceNote: string; revision: number; publishedAt: number; status: string;
 };
 
-interface Props { locale: "en" | "pt-br" | "es"; article: Article | null; robots?: string }
-const { locale, article, robots } = Astro.props;
+interface Props { locale: "en" | "pt-br" | "es"; article: Article | null; robots?: string; slug?: string }
+const { locale, article, robots, slug } = Astro.props;
+const cover = article === null || slug === undefined ? "" : "/article-cover/" + locale + "/" + slug + ".svg";
 
 export const prerender = false;
 
@@ -41,6 +42,7 @@ const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "
         <a href={`/${locale}/news`}>{navLabel}</a>
       </nav>
       <p class="article__tag">COINBLINK · ORIGINAL</p>
+      {cover !== "" && <img class="article__cover" src={cover} width="1200" height="630" alt="" loading="eager" decoding="async" />}
       <h1>{article.title}</h1>
       <p class="article__meta">
         {article.authorLabel !== "" && <span>{article.authorLabel}</span>}

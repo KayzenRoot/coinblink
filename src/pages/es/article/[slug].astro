@@ -12,4 +12,4 @@ const article = await readArticle({ db: runtimeBinding("CMS_DB"), locale: "es", 
 if (article === null) Astro.response.status = 404;
 else if (article.status !== "published") Astro.response.status = 410;
 ---
-<ArticlePage locale="es" article={article} robots={article && article.status === "published" ? "index, follow" : "noindex, nofollow"} />
+<ArticlePage locale="es" article={article} slug={slug} robots={article && article.status === "published" ? "index, follow" : "noindex, nofollow"} />

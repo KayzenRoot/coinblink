@@ -121,3 +121,21 @@ test("M09 P1 shipped layout consumes the tested model and keeps the demo boundar
   assert.doesNotMatch(layout, /noindex, nofollow, noarchive/u,
     "the robots value must come from the model, not a literal");
 });
+
+test('an article passes its own cover as the social image', async () => {
+  const { buildSeoMetadata } = await import('../../../src/modules/CB-M09/site-locales.mjs');
+  const origin = 'https://coinblink.example';
+  const article = buildSeoMetadata({
+    pathname: '/en/article/bitcoin-etf', lang: 'en', title: 'Bitcoin ETF', description: 'Summary',
+    origin, image: '/article-cover/en/bitcoin-etf.svg',
+  });
+  assert.equal(article.openGraph.image, origin + '/article-cover/en/bitcoin-etf.svg');
+  assert.equal(article.twitter.card, 'summary_large_image');
+  const home = buildSeoMetadata({ pathname: '/en', lang: 'en', title: 'Home', description: 'Home page', origin });
+  assert.equal(home.openGraph.image, origin + '/brand/og-image.jpg');
+  assert.equal(home.twitter.card, 'summary');
+  const escaped = buildSeoMetadata({
+    pathname: '/en/article/x', lang: 'en', title: 'T', description: 'D', origin, image: 'https://evil.example/x.png',
+  });
+  assert.equal(escaped.openGraph.image, origin + '/brand/og-image.jpg', 'only site-relative images are accepted');
+});

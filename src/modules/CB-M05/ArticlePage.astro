@@ -35,7 +35,7 @@ const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "
     </main>
   </BaseLayout>
 ) : (
-  <BaseLayout lang={lang} title={`CoinBlink · ${article.title}`} description={article.summary} robots={robots}>
+  <BaseLayout lang={lang} title={`CoinBlink · ${article.title}`} description={article.summary} robots={robots} image={cover}>
     <main class="article">
       <nav class="article__nav" aria-label="Article navigation">
         <a href={`/${locale}`}>← CoinBlink</a>

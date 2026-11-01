@@ -45,6 +45,7 @@ import {
 } from '../../modules/CB-M13/ads.mjs';
 import { alertsAdminSection, previewDigests, sendDigests } from '../../modules/CB-M16/alerts.mjs';
 import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
+import { generateArticleDraft } from '../../modules/CB-M08/article-draft.mjs';
 import { listPolicy, setPolicy, sourcesAdminSection } from '../../modules/CB-M03/source-policy.mjs';
 import { LIVE_NEWS_SOURCES } from '../../modules/CB-M03/rss-sources.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
@@ -243,6 +244,39 @@ async function productionAdmin(request, env) {
       csrf: csrfFromRequest(request),
       message: url.searchParams.get('error') ?? '',
     }));
+  }
+  if (method === 'POST' && path === '/admin/articles/generate') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const topic = String(auth.form.get('topic') ?? '');
+    const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+    const items = snapshot.status === 'LIVE_HEADLINES' ? snapshot.items : [];
+    const keyword = topic.trim().toLowerCase();
+    const matching = keyword === '' ? items : items.filter((item) => String(item.title).toLowerCase().includes(keyword.split(/\s+/u)[0] ?? ''));
+    const result = await generateArticleDraft({
+      ai: env.AI, topic, items: matching.length > 0 ? matching : items,
+      language: String(auth.form.get('language') ?? 'en'), model: env.M08_MODEL ?? undefined,
+    });
+    if (result.status === 'drafted') {
+      const created = await createDraft({
+        db: config.db, secret: config.secret, now: now,
+        input: {
+          title: result.draft.title, summary: result.draft.summary, body: result.draft.body,
+          sourceUrl: result.draft.primaryUrl, authorLabel: 'CoinBlink AI draft',
+        },
+      });
+      if (created?.draft?.id) return redirectTo('/admin/drafts/' + created.draft.id);
+    }
+    const reason = result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
+      : result.status === 'unavailable' ? 'Workers AI did not answer.'
+        : result.status === 'unverified_output' ? 'The model cited nothing that exists; nothing was saved.'
+          : 'The model did not return the required JSON shape; nothing was saved.';
+    return page('Articles', articlesAdminSection({
+      articles: await listArticles({ db: config.db, includeAll: true }),
+      drafts: await listDrafts(config.db),
+      csrf: csrfFromRequest(request),
+      message: reason,
+    }), 400);
   }
   if (method === 'POST' && path === '/admin/articles/publish') {
     const auth = await authorizeForm(request, config, now);

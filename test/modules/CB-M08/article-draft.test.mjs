@@ -1,0 +1,69 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { buildArticlePrompt, generateArticleDraft, parseArticleDraft } from '../../../src/modules/CB-M08/article-draft.mjs';
+
+const ITEMS = [
+  { title: 'Bitcoin ETF inflows hit a record in October', sourceName: 'CoinDesk', link: 'https://a.example/1', publishedAt: '2026-11-01T10:00:00Z' },
+  { title: 'Regulators publish exchange guidance', sourceName: 'Cointelegraph', link: 'https://b.example/2', publishedAt: null },
+];
+const SOURCES = ITEMS.map((item, index) => ({ n: index + 1, title: item.title, source: item.sourceName, url: item.link }));
+const GOOD = {
+  title: 'Bitcoin ETF inflows reach a record in October',
+  summary: 'Inflows into spot bitcoin funds reached a record in October, according to the collected reporting.',
+  body: 'First paragraph with a citation [1].\n\nSecond paragraph about guidance [2].',
+  citations: [{ n: 1, source: 'CoinDesk', url: 'https://a.example/1' }],
+};
+
+test('the prompt carries the topic, the sources and the JSON contract', () => {
+  const prompt = buildArticlePrompt({ topic: 'bitcoin etf', items: ITEMS, language: 'pt-br' });
+  assert.match(prompt, /Topic: bitcoin etf/u);
+  assert.match(prompt, /\[1\] CoinDesk/u);
+  assert.match(prompt, /\[2\] Cointelegraph/u);
+  assert.match(prompt, /Language: pt-br/u);
+  assert.match(prompt, /Never copy sentences/u);
+  assert.match(prompt, /single JSON object/u);
+});
+
+test('a valid answer becomes a draft with citations and a primary url', () => {
+  const result = parseArticleDraft(JSON.stringify(GOOD), { sources: SOURCES });
+  assert.equal(result.status, 'drafted');
+  assert.equal(result.draft.primaryUrl, 'https://a.example/1');
+  assert.match(result.draft.body, /Sources: \[1\] CoinDesk — https:\/\/a\.example\/1/u);
+  assert.equal(result.draft.citations.length, 1);
+});
+
+test('a citation that does not exist or is not https is refused', () => {
+  const unknown = parseArticleDraft(JSON.stringify({ ...GOOD, citations: [{ n: 9 }] }), { sources: SOURCES });
+  assert.equal(unknown.status, 'unverified_output');
+  const insecure = parseArticleDraft(JSON.stringify(GOOD), {
+    sources: [{ n: 1, title: 't', source: 'x', url: 'http://plain.example' }],
+  });
+  assert.equal(insecure.status, 'unverified_output');
+});
+
+test('malformed or thin answers never become drafts', () => {
+  assert.equal(parseArticleDraft('', { sources: SOURCES }).status, 'invalid_output');
+  assert.equal(parseArticleDraft('not json at all', { sources: SOURCES }).status, 'invalid_output');
+  assert.equal(parseArticleDraft(JSON.stringify({ ...GOOD, body: 'short' }), { sources: SOURCES }).status, 'invalid_output');
+  assert.equal(parseArticleDraft(JSON.stringify({ ...GOOD, title: 'tiny' }), { sources: SOURCES }).status, 'invalid_output');
+});
+
+test('generation fails closed without an AI binding or without sources', async () => {
+  assert.equal((await generateArticleDraft({ ai: null, topic: 'bitcoin', items: ITEMS })).status, 'unavailable');
+  const ai = { run: async () => ({ response: JSON.stringify(GOOD) }) };
+  assert.equal((await generateArticleDraft({ ai, topic: 'bitcoin', items: [] })).status, 'no_sources');
+  assert.equal((await generateArticleDraft({ ai, topic: 'bt', items: ITEMS })).status, 'invalid');
+  const ok = await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS });
+  assert.equal(ok.status, 'drafted');
+});
+
+test('the admin screen offers the topic form and never publishes on its own', () => {
+  const page = readFileSync('src/modules/CB-M05/p1-production/articles.mjs', 'utf8');
+  assert.ok(page.includes('action="/admin/articles/generate"'));
+  assert.ok(page.includes('the result is a draft you review, never a published article'));
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  for (const marker of ["path === '/admin/articles/generate'", 'generateArticleDraft', 'createDraft(']) {
+    assert.ok(route.includes(marker), marker);
+  }
+});

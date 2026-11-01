@@ -203,6 +203,15 @@ export function articlesAdminSection({ articles, drafts, csrf, message = '', pub
         + '</td></tr>').join('') + '</tbody></table>';
   return (message === '' ? '' : '<p class="admin__error" role="alert">' + escapeHtml(message) + '</p>')
     + notice
+    + '<form method="post" action="/admin/articles/generate" class="admin__draft-form">'
+    + '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">'
+    + '<label>Topic for the AI draft<input name="topic" required minlength="3" maxlength="200" '
+    + 'placeholder="bitcoin ETF inflows"></label>'
+    + '<label>Language<select name="language"><option value="en">English</option>'
+    + '<option value="pt-br">Português (BR)</option><option value="es">Español</option></select></label>'
+    + '<button type="submit">Draft from the collection</button></form>'
+    + '<p class="admin__note">The model writes original prose and must cite the collected headlines; '
+    + 'the result is a draft you review, never a published article.</p>'
     + '<form method="post" action="/admin/articles/publish" class="admin__draft-form">'
     + '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">'
     + '<label>Draft<select name="draft_id" required>' + draftOptions + '</select></label>'

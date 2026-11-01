@@ -38,6 +38,21 @@ const MESSAGE_ROWS = {
   searchLocale: ["en", "pt-BR", "es"],
   countOne: [" placeholder", " exemplo", " ejemplo"],
   countMany: [" placeholders", " exemplos", " ejemplos"],
+  liveCountOne: [" headline", " manchete", " titular"],
+  liveCountMany: [" headlines", " manchetes", " titulares"],
+  liveAll: [
+    "Showing all collected headlines.",
+    "Exibindo todas as manchetes coletadas.",
+    "Mostrando todos los titulares recolectados.",
+  ],
+  liveSummary: [
+    (n, category, hasQuery) => "Showing " + n + (n === 1 ? " collected headline" : " collected headlines")
+      + category + (hasQuery ? " matching your search." : "."),
+    (n, category, hasQuery) => "Exibindo " + n + (n === 1 ? " manchete coletada" : " manchetes coletadas")
+      + category + (hasQuery ? " correspondentes à busca." : "."),
+    (n, category, hasQuery) => "Mostrando " + n + (n === 1 ? " titular recolectado" : " titulares recolectados")
+      + category + (hasQuery ? " que coinciden con la búsqueda." : "."),
+  ],
   all: [
     "Showing all demo placeholders.",
     "Exibindo todos os exemplos.",
@@ -85,8 +100,12 @@ const pick = (key) => MESSAGE_ROWS[key][localeIndex];
 const messages = {
   searchLocale: pick("searchLocale"),
   count: (n) => String(n) + pick(n === 1 ? "countOne" : "countMany"),
+  liveCountOne: pick("liveCountOne"),
+  liveCountMany: pick("liveCountMany"),
   all: pick("all"),
+  liveAll: pick("liveAll"),
   summary: (...args) => pick("summary")(...args),
+  liveSummary: (...args) => pick("liveSummary")(...args),
   copyFailed: pick("copyFailed"),
   copied: pick("copied"),
   preview: pick("preview"),
@@ -101,7 +120,12 @@ const messages = {
 const isEnglish = localeIndex === 0;
 const HOME_PATHS = Object.freeze(["/en", "/pt-br", "/es"]);
 const defaultPath = HOME_PATHS[localeIndex];
-const placeholderCount = messages.count;
+// The same controls filter reviewed placeholders and collected headlines; only
+// the noun changes, so the count and the summary never call a real story a demo.
+const liveCards = document.querySelector("#latest-news")?.dataset.newsKind === "headline";
+const placeholderCount = liveCards
+  ? (n) => n + (n === 1 ? messages.liveCountOne : messages.liveCountMany)
+  : messages.count;
 
 let selected = "All";
 let searchText = "";
@@ -213,9 +237,10 @@ function restoreFilterURL() {
 
 
 function buildFilterSummary(visible, filtered, query) {
-  if (!filtered) return messages.all;
+  if (!filtered) return liveCards ? messages.liveAll : messages.all;
   const category = selected === "All" ? "" : messages.categoryPrefix + displayCategory(selected);
-  return messages.summary(visible, category, query !== "");
+  const summarize = liveCards ? messages.liveSummary : messages.summary;
+  return summarize(visible, category, query !== "");
 }
 
 function filterStories() {

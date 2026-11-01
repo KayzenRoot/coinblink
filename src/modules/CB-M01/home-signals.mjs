@@ -75,6 +75,34 @@ export function buildTrending(items, limit = 4) {
     .map((entry) => Object.freeze(entry)));
 }
 
+const CATEGORY_RULES = Object.freeze([
+  Object.freeze({ category: 'Bitcoin', pattern: /\b(bitcoin|btc)\b/iu }),
+  Object.freeze({ category: 'Ethereum', pattern: /\b(ethereum|eth|ether)\b/iu }),
+  Object.freeze({ category: 'Regulation', pattern: /\b(sec|cftc|regulat\w*|lawsuit|court|bill|policy|ban|banned)\b/iu }),
+  Object.freeze({ category: 'DeFi', pattern: /\b(defi|stablecoins?|tether|usdc|usdt|liquidity|yield)\b/iu }),
+  Object.freeze({ category: 'NFTs', pattern: /\b(nfts?|collectibles?|mint\w*)\b/iu }),
+  Object.freeze({ category: 'AI x Crypto', pattern: /\b(ai|artificial intelligence|agents?)\b/iu }),
+  Object.freeze({ category: 'Altcoins', pattern: /\b(solana|sol|xrp|ripple|bnb|cardano|dogecoin|altcoins?)\b/iu }),
+]);
+
+/**
+ * Maps a collected headline to one of the canonical home categories. The
+ * fallback is the analysis bucket, never a category the title does not support.
+ */
+export function headlineCategory(title) {
+  const text = String(title ?? '');
+  for (const rule of CATEGORY_RULES) if (rule.pattern.test(text)) return rule.category;
+  return 'Market Analysis';
+}
+
+/** The decorative artwork variant for a canonical category. */
+export function artworkForCategory(category) {
+  if (category === 'Bitcoin') return 'bitcoin';
+  if (category === 'Ethereum') return 'ethereum';
+  if (category === 'Regulation') return 'policy';
+  return 'ecosystem';
+}
+
 const BUCKETS = Object.freeze([
   Object.freeze({ id: 'extremeGreed', label: 'Extreme greed', min: 80 }),
   Object.freeze({ id: 'greed', label: 'Greed', min: 60 }),

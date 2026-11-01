@@ -1019,3 +1019,14 @@
 .cb-home .live-change { min-width:44px; font-size:9px; font-variant-numeric:tabular-nums; text-align:right; }
 .cb-home .live-change.is-up { color:#b8f34b; }
 .cb-home .live-change.is-down { color:#ff8a75; }
+
+/* Radar rows built from the collected headlines. */
+.cb-home .radar-list { display:grid; gap:2px; margin:8px 0 0; padding:0; list-style:none; }
+.cb-home .radar-row { display:grid; grid-template-columns:8px 38px minmax(0,1fr) auto; align-items:center; gap:7px; min-height:30px; border-top:1px solid rgb(157 182 162 / 9%); }
+.cb-home .radar-row a { overflow:hidden; color:#e4ece4; font-size:9px; text-decoration:none; text-overflow:ellipsis; white-space:nowrap; }
+.cb-home .radar-row a:hover { color:var(--lime); }
+.cb-home .radar-row time { color:var(--subtle); font-size:8px; font-variant-numeric:tabular-nums; }
+.cb-home .radar-row small { color:#7f9a88; font-size:7px; }
+.cb-home .radar-dot { width:6px; height:6px; border-radius:50%; background:#7f9a88; }
+.cb-home .radar-dot--up { background:var(--lime); }
+.cb-home .radar-dot--down { background:#ff8a75; }

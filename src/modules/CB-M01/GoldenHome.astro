@@ -48,6 +48,7 @@ const markets = [
 const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
 const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
 import { readLiveNews } from "../CB-M03/live-news.mjs";
+import { buildRadar, headlineMood } from "./home-signals.mjs";
 import { readLiveSnapshot } from "../CB-M04/live-quotes.mjs";
 import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
 
@@ -64,6 +65,8 @@ const lead = liveItems.length > 0 ? liveItems[0] : null;
 // A stale snapshot means the collector is serving the last good collection, so
 // the lead is real but no longer "breaking".
 const leadStale = liveNews.stale === true;
+const radarRows = buildRadar(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 5);
+const mood = headlineMood(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : []);
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
 
 // Market prices are display-only and attributed; the adapter fails closed, so
@@ -342,8 +345,19 @@ const editorialR26Assets = {
     )}
     <section class="content-grid" aria-label={t("Demonstration signals")}>
       <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
-        <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{t("Unavailable")}</span></div>
-        <p>{t("Key events appear when a verified source is connected.")}</p><div class="empty-state radar-empty">
+        <div class="section-heading"><div><small>{radarRows.length > 0 ? t("LATEST COLLECTED") : t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{radarRows.length > 0 ? radarRows.length + " " + t("headlines") : t("Unavailable")}</span></div>
+        {radarRows.length > 0 ? (
+          <ul class="radar-list">
+            {radarRows.map((row) => (
+              <li class="radar-row">
+                <span class={"radar-dot radar-dot--" + row.tone} aria-hidden="true"></span>
+                <time datetime={row.publishedAt ?? undefined}>{row.publishedAt === null ? t("undated") : liveStamp(row.publishedAt).slice(11, 16)}</time>
+                <a href={row.link} rel="noreferrer noopener external">{row.title}</a>
+                <small>{row.sourceName}</small>
+              </li>
+            ))}
+          </ul>
+        ) : (<><p>{t("Key events appear when a verified source is connected.")}</p><div class="empty-state radar-empty">
           <svg class="radar-tracks" viewBox="0 0 390 108" aria-hidden="true" focusable="false">
             <defs><linearGradient id="radar-trail-light" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#9fe75a" stop-opacity=".75"></stop><stop offset="100%" stop-color="#9fe75a" stop-opacity=".06"></stop></linearGradient></defs>
             <path class="radar-spine" d="M35 6V103"></path>
@@ -352,11 +366,11 @@ const editorialR26Assets = {
             ))}
           </svg>
           <b aria-hidden="true">⌁</b><span>{t("No verified updates are available in this demonstration.")}</span>
-        </div>
+        </div></>)}
       </article>
       <article class="content-panel sentiment-panel" aria-labelledby="sentiment-title">
-        <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="sentiment-title">◉ {t("Market sentiment")}</h2></div><span class="offline-badge"><i></i>{t("Offline")}</span></div>
-        <p>{t("Sentiment is unavailable until an approved source is connected.")}</p>
+        <div class="section-heading"><div><small>{mood.total >= 3 ? t("HEADLINE LEXICON") : t("DEMO · NO FEED")}</small><h2 id="sentiment-title">◉ {t("Market sentiment")}</h2></div><span class="offline-badge"><i></i>{mood.total >= 3 ? t("Live") : t("Offline")}</span></div>
+        <p>{mood.total >= 3 ? t("Index of positive and negative words in the collected headlines. Not a market measure and not advice.") : t("Sentiment is unavailable until an approved source is connected.")}</p>
         <div class="sentiment-content"><div class="sentiment-gauge" role="img" aria-label={t("Market sentiment unavailable")}>
             <svg class="sentiment-arc" viewBox="0 0 130 96" aria-hidden="true" focusable="false">
               <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#26362c" stroke-width="13" stroke-linecap="round"></path>
@@ -364,9 +378,9 @@ const editorialR26Assets = {
               <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#ebbb58" stroke-opacity=".43" stroke-width="12" stroke-dasharray="27 137" stroke-dashoffset="-30"></path>
               <path d="M13 82A52 52 0 0 1 117 82" fill="none" stroke="#a1ef58" stroke-opacity=".48" stroke-width="12" stroke-dasharray="66 98" stroke-dashoffset="-89"></path>
             </svg>
-            <b>—</b><small>{t("Unavailable")}</small>
+            <b>{mood.score === null ? "—" : mood.score}</b><small>{mood.bucket === null ? t("Unavailable") : t(mood.bucket.label)}</small>
           </div>
-          <ul><li>{t("Extreme greed")} <b>—</b></li><li>{t("Greed")} <b>—</b></li><li>{t("Neutral")} <b>—</b></li><li>{t("Fear")} <b>—</b></li><li>{t("Extreme fear")} <b>—</b></li></ul>
+          <ul><li>{t("Extreme greed")} <b>{mood.total === 0 ? "—" : Math.round((mood.counts.extremeGreed / mood.total) * 100) + "%"}</b></li><li>{t("Greed")} <b>{mood.total === 0 ? "—" : Math.round((mood.counts.greed / mood.total) * 100) + "%"}</b></li><li>{t("Neutral")} <b>{mood.total === 0 ? "—" : Math.round((mood.counts.neutral / mood.total) * 100) + "%"}</b></li><li>{t("Fear")} <b>{mood.total === 0 ? "—" : Math.round((mood.counts.fear / mood.total) * 100) + "%"}</b></li><li>{t("Extreme fear")} <b>{mood.total === 0 ? "—" : Math.round((mood.counts.extremeFear / mood.total) * 100) + "%"}</b></li></ul>
         </div>
       </article>
       <aside class="promo-panel" aria-label={t("CoinBlink demonstration brand panel")}><svg class="promo-scene" viewBox="0 0 360 180" focusable="false" aria-hidden="true">

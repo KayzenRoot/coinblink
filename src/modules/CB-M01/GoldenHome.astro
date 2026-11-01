@@ -286,7 +286,7 @@ const editorialR26Assets = {
         <p class="panel-description">{marketQuotes.length > 0 ? t("Prices from CoinGecko, delayed up to 60s.") : t("Market data feed is not connected.")}</p>
         <ul class="market-list">
           {markets.map((market) => (
-            <li class="market-row">
+            <li class="market-row" data-live-symbol={market.symbol}>
               <span class={"coin-mark coin-" + market.tone} aria-hidden="true">
                 {market.symbol === "BTC" && <span class="market-asset-icon market-asset-btc">₿</span>}
                 {market.symbol === "ETH" && (
@@ -316,7 +316,8 @@ const editorialR26Assets = {
               </span>
               <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
               <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
-              <span class="market-value" aria-label={quoteFor(market.symbol) === null ? t("Unavailable") : t("Price in US dollars")}>{quoteFor(market.symbol)?.priceUsd !== undefined ? marketPrice(quoteFor(market.symbol)?.priceUsd ?? 0) : "—"}</span>
+              <span class="market-value" data-live-price aria-label={quoteFor(market.symbol) === null ? t("Unavailable") : t("Price in US dollars")}>{quoteFor(market.symbol)?.priceUsd !== undefined ? marketPrice(quoteFor(market.symbol)?.priceUsd ?? 0) : "—"}</span>
+              <span class="live-change" data-live-change aria-live="off"></span>
             </li>
           ))}
         </ul>
@@ -325,7 +326,7 @@ const editorialR26Assets = {
     </section>
 
     <section class="ticker-strip" aria-label={t("Market ticker demonstration")}><strong>◉ {t("Market ticker")}</strong><div class="ticker-items" tabindex="0" role="region" aria-label={t("Scrollable market ticker demonstration")}>{marketQuotes.length > 0
-  ? marketQuotes.map((quote: MarketQuote) => <span><b>{quote.symbol}</b><i>{marketPrice(quote.priceUsd)}</i><em>{t("CoinGecko")}</em></span>)
+  ? marketQuotes.map((quote: MarketQuote) => <span data-live-symbol={quote.symbol}><b>{quote.symbol}</b><i data-live-price>{marketPrice(quote.priceUsd)}</i><em>{t("CoinGecko")}</em></span>)
   : tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
 
     <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {t("Trending demo")}</h2>
@@ -336,6 +337,7 @@ const editorialR26Assets = {
       {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category} data-category-label={t(category)}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "▣", "⌘", "◎", "✦", "◌", "⌖"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
     </nav>
 
+    <script is:inline src="/markets-live.js" defer></script>
     <section class="content-grid" aria-label={t("Demonstration signals")}>
       <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
         <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{t("Unavailable")}</span></div>

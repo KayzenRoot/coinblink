@@ -226,3 +226,17 @@ test('the hero leads with our newest published article before any collected head
   assert.match(home, /<a class="primary-action" href=\{leadArticle\.href\}>/u);
   assert.match(home, /\) : lead !== null \? \(/u, 'the collected headline stays as the second choice');
 });
+
+test('the article page offers reading time, sharing and related articles', () => {
+  const page = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
+  assert.match(page, /const minutes = Math\.max\(1, Math\.round\(words \/ 200\)\)/u);
+  assert.match(page, /https:\/\/x\.com\/intent\/post/u);
+  assert.match(page, /https:\/\/wa\.me\/\?text=/u);
+  assert.match(page, /mailto:\?subject=/u);
+  assert.match(page, /rel="noopener noreferrer"/u);
+  assert.match(page, /listArticleCards\(\{ db: runtimeBinding\("CMS_DB"\), locale, limit: 8 \}\)/u);
+  assert.match(page, /other\.slug !== slug/u, 'related never includes the current article');
+  const css = readFileSync('src/styles/global.css', 'utf8');
+  assert.match(css, /\.article__share/u);
+  assert.match(css, /\.article__related/u);
+});

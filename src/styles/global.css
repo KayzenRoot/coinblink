@@ -741,3 +741,10 @@ code {
 .legal__section{margin:0 0 1.4rem}
 .legal__section h2{margin:0 0 .35rem;font-size:1.05rem;color:#dcefdc}
 .legal__section p{margin:0;line-height:1.7;color:#c1d3c5}
+
+.article__share { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; padding:0; list-style:none; }
+.article__share a { display:inline-flex; min-height:32px; align-items:center; border:1px solid #38463d; border-radius:999px; color:#dbe4db; font-size:12px; padding:0 12px; text-decoration:none; }
+.article__share a:hover { border-color:#7a9d42; color:#fff; }
+.article__related { margin-top:22px; border-top:1px solid #26332a; padding-top:14px; }
+.article__related h2 { font-size:16px; margin:0 0 8px; }
+.article__related ul { margin:0; padding-left:18px; }

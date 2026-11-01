@@ -2,6 +2,8 @@
 // CB-M05-P1-PUBLISHING-001: public page for an owner-authored article.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
+import { listArticleCards } from "./p1-production/articles.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
 
 type Article = {
   title: string; summary: string; body: string; tags: readonly string[]; authorLabel: string;
@@ -20,6 +22,23 @@ const published = article === null ? "" : new Date(article.publishedAt * 1000).t
 const navLabel = locale === "pt-br" ? "Notícias" : locale === "es" ? "Noticias" : "News";
 const provenanceLabel = locale === "pt-br" ? "Proveniência" : locale === "es" ? "Procedencia" : "Provenance";
 const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "es" ? "Volver a los titulares" : "Back to the headlines";
+const readingLabel = locale === "pt-br" ? "min de leitura" : locale === "es" ? "min de lectura" : "min read";
+const shareLabel = locale === "pt-br" ? "Compartilhar" : locale === "es" ? "Compartir" : "Share";
+const relatedLabel = locale === "pt-br" ? "Mais do CoinBlink" : locale === "es" ? "Más de CoinBlink" : "More from CoinBlink";
+const words = article === null ? 0 : article.body.split(/\s+/u).filter((word: string) => word !== "").length;
+const minutes = Math.max(1, Math.round(words / 200));
+const siteOrigin = (typeof import.meta.env.PUBLIC_SITE_ORIGIN === "string" && import.meta.env.PUBLIC_SITE_ORIGIN.trim() !== ""
+  ? import.meta.env.PUBLIC_SITE_ORIGIN
+  : Astro.url.origin).replace(/\/$/u, "");
+const articleUrl = article === null || slug === undefined ? siteOrigin : siteOrigin + "/" + locale + "/article/" + slug;
+const shareTitle = encodeURIComponent(article?.title ?? "");
+const shareUrl = encodeURIComponent(articleUrl);
+// Related articles share a tag with this one; the list never includes itself.
+const related = article === null
+  ? []
+  : (await listArticleCards({ db: runtimeBinding("CMS_DB"), locale, limit: 8 }))
+    .filter((other: { slug: string; tags: readonly string[] }) => other.slug !== slug && other.tags.some((tag: string) => article.tags.includes(tag)))
+    .slice(0, 3);
 ---
 
 {article === null || article.status !== "published" ? (
@@ -57,6 +76,20 @@ const backLabel = locale === "pt-br" ? "Voltar para as manchetes" : locale === "
         <ul class="article__tags" aria-label="Tags">
           {article.tags.map((tag) => <li>{tag}</li>)}
         </ul>
+      )}
+      <p class="article__meta"><span>{minutes} {readingLabel}</span></p>
+      <ul class="article__share" aria-label={shareLabel}>
+        <li><a href={"https://x.com/intent/post?text=" + shareTitle + "&url=" + shareUrl} target="_blank" rel="noopener noreferrer">X</a></li>
+        <li><a href={"https://wa.me/?text=" + encodeURIComponent((article.title ?? "") + " " + articleUrl)} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+        <li><a href={"mailto:?subject=" + shareTitle + "&body=" + shareUrl}>Email</a></li>
+      </ul>
+      {related.length > 0 && (
+        <section class="article__related" aria-label={relatedLabel}>
+          <h2>{relatedLabel}</h2>
+          <ul>
+            {related.map((other: { title: string; href: string }) => <li><a href={other.href}>{other.title}</a></li>)}
+          </ul>
+        </section>
       )}
       <aside class="article__provenance">
         <strong>{provenanceLabel}.</strong> {article.provenanceNote}

@@ -184,7 +184,6 @@ const HOME_COPY_ROWS = Object.freeze({
   "One-click unsubscribe": Object.freeze({ "pt-br": "Cancelamento em um clique", es: "Baja con un clic" }),
   "No password": Object.freeze({ "pt-br": "Sem senha", es: "Sin contraseña" }),
   "undated": Object.freeze({ "pt-br": "sem data", es: "sin fecha" }),
-  "headlines": Object.freeze({ "pt-br": "manchetes", es: "titulares" }),
   "Double opt-in": Object.freeze({ "pt-br": "Confirmação dupla", es: "Doble opt-in" }),
   "Newsletter": Object.freeze({ "pt-br": "Boletim", es: "Boletín" }),
   "Demonstration only · no live market or editorial data": Object.freeze({ "pt-br": "Demonstração · sem dados financeiros ou editoriais ao vivo", es: "Solo demostración · sin datos de mercado ni editoriales en vivo" }),

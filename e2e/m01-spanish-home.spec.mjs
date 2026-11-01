@@ -29,7 +29,7 @@ for (const viewport of [
     await expect(page.getByRole("link", { name: "Switch to English" })).toHaveAttribute("href", "/en");
     await expect(page.getByRole("link", { name: "Mudar para português" })).toHaveAttribute("href", "/pt-br");
 
-    // Client interactions: category filter, learning search and newsletter preview.
+    // Client interactions: category filter, learning search and the newsletter form.
     await page.locator('[data-category="Regulation"]').click();
     await expect(page.locator("[data-result-count]")).toHaveText("1 ejemplo");
     await expect(page.locator("[data-news-filter-summary]")).toContainText("Regulación");
@@ -37,8 +37,9 @@ for (const viewport of [
     await expect(page.locator("[data-result-count]")).toHaveText("4 ejemplos");
     await page.locator("#learn [data-learning-query]").fill("frase de recuperación");
     await expect(page.locator("[data-learning-status]")).toHaveText("1 guía encontrada.");
-    await page.locator("[data-demo-preview]").click();
-    await expect(page.locator("[data-form-status]")).toHaveText("Solo vista previa. No se envió ni almacenó ningún correo.");
+    await expect(page.locator("#newsletter form")).toHaveAttribute("action", "/api/newsletter/subscribe");
+    await expect(page.locator("#newsletter input[name=locale]")).toHaveValue("es");
+    await expect(page.locator("#newsletter")).toContainText("Confirma el enlace");
 
     // Server-rendered and injected controls both use Spanish.
     await expect(page.locator(".official-sources__filter")).toHaveAttribute("aria-label", "Filtrar fuentes oficiales");

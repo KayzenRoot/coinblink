@@ -119,3 +119,23 @@ test('the call reserves a token budget large enough for the body', async () => {
   assert.equal(typeof calls[0].options.temperature, 'number');
   assert.ok(Array.isArray(calls[0].options.messages));
 });
+
+test('an empty answer from JSON mode falls through to the next call shape', async () => {
+  const seen = [];
+  const ai = {
+    async run(model, options) {
+      seen.push(Object.keys(options).sort().join(','));
+      if (options.response_format) return { response: '   ' };
+      return { response: JSON.stringify(GOOD) };
+    },
+  };
+  const result = await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS });
+  assert.equal(result.status, 'drafted');
+  assert.equal(seen.length, 2, 'the empty JSON-mode answer does not end the request');
+  assert.match(seen[0], /response_format/u);
+});
+
+test('a model that never answers becomes unavailable, not invalid', async () => {
+  const ai = { async run() { return { response: '' }; } };
+  assert.equal((await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS })).status, 'unavailable');
+});

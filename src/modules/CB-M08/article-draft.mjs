@@ -185,23 +185,28 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     // A 3-6 paragraph body does not fit the default token budget, and a
     // truncated answer is not valid JSON, so the budget is explicit.
     const options = { max_tokens: 2048, temperature: 0.3 };
-    // JSON mode constrains the answer when the model supports it; a model that
-    // rejects the field falls back to the plain chat call.
-    let answer;
-    try {
-      answer = await ai.run(model, { messages, ...options, response_format: { type: 'json_object' } });
-    } catch {
+    const textOf = (answer) => {
+      const raw = typeof answer === 'string' ? answer : answer?.response;
+      return typeof raw === 'string' && raw.trim() !== '' ? raw : null;
+    };
+    const attempt = async (payload) => {
       try {
-        answer = await ai.run(model, { messages, ...options });
+        return textOf(await ai.run(model, payload));
       } catch {
-        answer = await ai.run(model, { prompt: messages.map((message) => message.content).join('\n'), ...options });
+        return null;
       }
-    }
-    return typeof answer === 'string' ? answer : answer?.response;
+    };
+    // JSON mode first, then plain chat, then a raw prompt: a model that accepts
+    // a field but answers nothing must not end the request with an empty draft.
+    return (await attempt({ messages, ...options, response_format: { type: 'json_object' } }))
+      ?? (await attempt({ messages, ...options }))
+      ?? (await attempt({ prompt: messages.map((message) => message.content).join('\n'), ...options }));
   };
   try {
     const messages = buildArticleMessages({ topic: clean, items, language });
-    const first = parseArticleDraft(await ask(messages), { sources });
+    const firstRaw = await ask(messages);
+    if (firstRaw === null) return Object.freeze({ status: 'unavailable' });
+    const first = parseArticleDraft(firstRaw, { sources });
     if (first.status !== 'invalid_output') return first;
     // One retry with the same sources and an explicit reminder: a malformed
     // answer costs one call, and the owner still reviews whatever comes back.

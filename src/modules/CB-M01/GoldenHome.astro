@@ -337,7 +337,9 @@ const editorialR26Assets = {
       {categories.map((category, index) => <button type="button" class:list={["category-chip", index === 0 && "active"]} aria-pressed={index === 0 ? "true" : "false"} data-category={category} data-category-label={t(category)}><span aria-hidden="true">{["◉", "₿", "◆", "◈", "⬡", "▣", "⌘", "◎", "✦", "◌", "⌖"][index]}</span>{t(category)}<i aria-hidden="true">›</i></button>)}
     </nav>
 
-    <script is:inline src="/markets-live.js" defer></script>
+    {import.meta.env.PUBLIC_MARKETS_STREAM === "true" && (
+      <script is:inline src="/markets-live.js" defer></script>
+    )}
     <section class="content-grid" aria-label={t("Demonstration signals")}>
       <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">
         <div class="section-heading"><div><small>{t("DEMO · NO FEED")}</small><h2 id="radar-title">◉ {t("Radar 24h")}</h2></div><span>{t("Unavailable")}</span></div>

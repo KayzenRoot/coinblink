@@ -30,5 +30,8 @@ test('the change is computed from the 24h open, not invented', () => {
 test('the home exposes the hooks and loads the script', () => {
   assert.match(home, /data-live-symbol=\{market\.symbol\}/u);
   assert.match(home, /data-live-change/u);
+  assert.match(home, /import\.meta\.env\.PUBLIC_MARKETS_STREAM === "true"/u);
   assert.match(home, /<script is:inline src="\/markets-live\.js" defer><\/script>/u);
+  const workflow = readFileSync('.github/workflows/cloudflare-production.yml', 'utf8');
+  assert.match(workflow, /PUBLIC_MARKETS_STREAM: "true"/u);
 });

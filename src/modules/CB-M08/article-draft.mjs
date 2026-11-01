@@ -176,11 +176,14 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
   const ask = async (messages) => {
     // Chat mode applies the instruct template; a plain prompt is the fallback
     // for a model that only exposes text generation.
+    // A 3-6 paragraph body does not fit the default token budget, and a
+    // truncated answer is not valid JSON, so the budget is explicit.
+    const options = { max_tokens: 2048, temperature: 0.3 };
     let answer;
     try {
-      answer = await ai.run(model, { messages });
+      answer = await ai.run(model, { messages, ...options });
     } catch {
-      answer = await ai.run(model, { prompt: messages.map((message) => message.content).join('\n') });
+      answer = await ai.run(model, { prompt: messages.map((message) => message.content).join('\n'), ...options });
     }
     return typeof answer === 'string' ? answer : answer?.response;
   };

@@ -248,10 +248,13 @@ async function productionAdmin(request, env) {
   if (method === 'POST' && path === '/admin/articles/generate') {
     const auth = await authorizeForm(request, config, now);
     if (auth === null) return denied(404);
-    const topic = String(auth.form.get('topic') ?? '');
+    const typedTopic = String(auth.form.get('topic') ?? '').trim();
     const snapshot = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
     const items = snapshot.status === 'LIVE_HEADLINES' ? snapshot.items : [];
-    const keyword = topic.trim().toLowerCase();
+    // An empty field means "use the collection": the newest headline becomes the
+    // topic, so the button works in one click without inventing a subject.
+    const topic = typedTopic === '' ? String(items[0]?.title ?? '') : typedTopic;
+    const keyword = topic.toLowerCase();
     const matching = keyword === '' ? items : items.filter((item) => String(item.title).toLowerCase().includes(keyword.split(/\s+/u)[0] ?? ''));
     const result = await generateArticleDraft({
       ai: env.AI, topic, items: matching.length > 0 ? matching : items,
@@ -267,7 +270,8 @@ async function productionAdmin(request, env) {
       });
       if (created?.draft?.id) return redirectTo('/admin/drafts/' + created.draft.id);
     }
-    const reason = result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
+    const reason = result.status === 'invalid' ? 'Type a topic with at least 3 characters, or leave it empty to use the collection.'
+      : result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
       : result.status === 'unavailable' ? 'Workers AI did not answer.'
         : result.status === 'unverified_output' ? 'The model cited nothing that exists; nothing was saved.'
           : 'The model did not return the required JSON shape; nothing was saved.';

@@ -103,6 +103,7 @@ test('an unparseable answer carries a short detail for the owner screen', async 
   const result = parseArticleDraft('I cannot help with that request.', { sources: SOURCES });
   assert.equal(result.status, 'invalid_output');
   assert.match(result.detail, /cannot help/u);
+  assert.match(result.detail, /chars\]/u);
   const empty = parseArticleDraft('', { sources: SOURCES });
   assert.equal(empty.detail, 'empty answer');
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');

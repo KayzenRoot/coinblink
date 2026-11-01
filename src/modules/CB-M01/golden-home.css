@@ -1013,3 +1013,9 @@
 .cb-home .news-live a:hover{color:var(--lime)}
 .cb-home .news-live small{display:flex;gap:7px;color:var(--subtle);font-size:7px}
 .cb-home .news-live b{color:#b7e985;font-weight:760;letter-spacing:.04em;text-transform:uppercase}
+
+/* Real-time price change next to the snapshot value. */
+@media (min-width:761px) { .cb-home .market-row { grid-template-columns:24px minmax(65px,1fr) 45px auto auto; } }
+.cb-home .live-change { min-width:44px; font-size:9px; font-variant-numeric:tabular-nums; text-align:right; }
+.cb-home .live-change.is-up { color:#b8f34b; }
+.cb-home .live-change.is-down { color:#ff8a75; }

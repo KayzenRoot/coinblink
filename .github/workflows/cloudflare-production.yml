@@ -56,6 +56,7 @@ jobs:
           # absolute URL out of the build.
           PUBLIC_SITE_ORIGIN: ${{ vars.PUBLIC_SITE_ORIGIN }}
           PUBLIC_MARKETS_LIVE: "true"
+          PUBLIC_MARKETS_STREAM: "true"
           # Off unless the owner sets the variable; see docs/product/CB-M04-P1-LIVE-ADAPTER-001.md
           PUBLIC_MARKET_LIVE: ${{ vars.PUBLIC_MARKET_LIVE }}
           # Headlines from keyless public RSS. Off unless set; see

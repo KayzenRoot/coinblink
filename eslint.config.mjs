@@ -33,6 +33,7 @@ export default defineConfig(
     // Only browser scripts/tests without their own explicit DOM globals.
     files: [
       "public/m01-local-draft-preview.js",
+      "public/markets-live.js",
       "src/modules/**/*.client.js",
       "test/modules/CB-M07/local-week-browser.test.mjs",
       "test/modules/CB-M07/local-social-preview.test.mjs",

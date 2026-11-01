@@ -421,7 +421,7 @@ const editorialR26Assets = {
         <div class="news-heading"><div><small>{homeArticlesOn ? t("OUR ARTICLES") : liveOn ? t("LIVE · ATTRIBUTED HEADLINES") : t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{homeArticlesOn ? publishedCards.length + " " + t("articles") : liveOn ? liveItems.length + " " + t("headlines") : t("4 placeholders")}</span></div>
         {homeArticlesOn ? (
           <div class="news-cards news-cards--live">
-            {publishedCards.map((article, index) => (
+            {publishedCards.map((article: { title: string; summary: string; cover: string; href: string }, index: number) => (
               <article class="news-card" data-news-card data-category-value="Market Analysis"><div class={"news-art news-art--live art-" + (index + 1)} aria-hidden="true"><img src={article.cover} alt="" width="1200" height="630" loading="lazy" decoding="async" /></div><div><span>{t("OUR ARTICLE")}</span><small>{t("LIVE")}</small><h3><a href={article.href}>{article.title}</a></h3><p>{article.summary}</p></div></article>
             ))}
           </div>

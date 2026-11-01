@@ -7,15 +7,17 @@ interface Props {
   description: string;
   lang?: "en" | "pt-BR" | "es";
   robots?: string;
+  image?: string;
 }
 
-const { title, description, lang = "en", robots } = Astro.props;
+const { title, description, lang = "en", robots, image } = Astro.props;
 const seo = buildSeoMetadata({
   pathname: Astro.url.pathname,
   lang,
   title,
   description,
   origin: import.meta.env.PUBLIC_SITE_ORIGIN,
+  image,
 });
 ---
 

@@ -44,7 +44,11 @@ export function localeSiblings(pathname) {
 }
 
 /** Build the server-rendered metadata plan for one page. */
-export function buildSeoMetadata({ pathname, lang, title, description, origin } = {}) {
+/**
+ * @param {{pathname?: string, lang?: string, title?: string, description?: string,
+ *   origin?: string, image?: string | null}} [options]
+ */
+export function buildSeoMetadata({ pathname, lang, title, description, origin, image = null } = {}) {
   if (typeof pathname !== "string" || !pathname.startsWith("/")) {
     throw new TypeError("pathname must be an absolute site path");
   }
@@ -82,8 +86,12 @@ export function buildSeoMetadata({ pathname, lang, title, description, origin } 
       description,
       locale: OG_LOCALE[lang],
       url: canonical,
-      image: canonical === null ? null : resolvedOrigin + SOCIAL_IMAGE_PATH,
+      // An article passes its own 1200x630 cover; every other page keeps the
+      // site-wide social image.
+      image: canonical === null ? null : resolvedOrigin + (typeof image === "string" && image.startsWith("/") ? image : SOCIAL_IMAGE_PATH),
     }),
-    twitter: Object.freeze({ card: "summary" }),
+    twitter: Object.freeze({
+      card: canonical !== null && typeof image === "string" && image.startsWith("/") ? "summary_large_image" : "summary",
+    }),
   });
 }

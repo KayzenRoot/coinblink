@@ -49,6 +49,7 @@ const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
 const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
 import { readLiveNews } from "../CB-M03/live-news.mjs";
 import { artworkForCategory, buildRadar, buildTrending, headlineCategory, headlineMood } from "./home-signals.mjs";
+import { listArticleCards } from "../CB-M05/p1-production/articles.mjs";
 import { readLiveSnapshot } from "../CB-M04/live-quotes.mjs";
 import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
 
@@ -71,6 +72,11 @@ const mood = headlineMood(liveNews.status === "LIVE_HEADLINES" ? liveNews.items 
 // search trend and says so, falling back to the reviewed placeholders when the
 // collection is empty.
 const trending = buildTrending(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 4);
+// Our own published articles come first: the reader stays on CoinBlink. The
+// collected headlines and then the reviewed placeholders fill the block when
+// nothing is published yet in this locale.
+const publishedCards = await listArticleCards({ db: runtimeBinding("CMS_DB"), locale, limit: 4 });
+const homeArticlesOn = publishedCards.length > 0;
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
 
 // Market prices are display-only and attributed; the adapter fails closed, so
@@ -411,9 +417,15 @@ const editorialR26Assets = {
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>
-      <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title" data-m01-news-source-state={homeProducerBoundary.news.status} data-news-kind={liveOn ? "headline" : "placeholder"}>
-        <div class="news-heading"><div><small>{liveOn ? t("LIVE · ATTRIBUTED HEADLINES") : t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{liveOn ? liveItems.length + " " + t("headlines") : t("4 placeholders")}</span></div>
-        {liveOn ? (
+      <section class="content-panel news-panel" id="latest-news" aria-labelledby="news-title" data-m01-news-source-state={homeProducerBoundary.news.status} data-news-kind={homeArticlesOn ? "article" : liveOn ? "headline" : "placeholder"}>
+        <div class="news-heading"><div><small>{homeArticlesOn ? t("OUR ARTICLES") : liveOn ? t("LIVE · ATTRIBUTED HEADLINES") : t("DEMO · NO STORIES CONNECTED")}</small><h2 id="news-title">{t("Latest news")}</h2></div><span data-result-count aria-live="polite" aria-atomic="true">{homeArticlesOn ? publishedCards.length + " " + t("articles") : liveOn ? liveItems.length + " " + t("headlines") : t("4 placeholders")}</span></div>
+        {homeArticlesOn ? (
+          <div class="news-cards news-cards--live">
+            {publishedCards.map((article: { title: string; summary: string; cover: string; href: string }, index: number) => (
+              <article class="news-card" data-news-card data-category-value="Market Analysis"><div class={"news-art news-art--live art-" + (index + 1)} aria-hidden="true"><img src={article.cover} alt="" width="1200" height="630" loading="lazy" decoding="async" /></div><div><span>{t("OUR ARTICLE")}</span><small>{t("LIVE")}</small><h3><a href={article.href}>{article.title}</a></h3><p>{article.summary}</p></div></article>
+            ))}
+          </div>
+        ) : liveOn ? (
           <div class="news-cards news-cards--live">
             {liveItems.map((item, index) => {
               const category = headlineCategory(item.title);

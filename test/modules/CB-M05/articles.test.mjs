@@ -184,3 +184,37 @@ test('an empty topic falls back to the newest collected headline', () => {
   assert.doesNotMatch(section, /name="topic"[^>]*required/u);
   assert.match(section, /Leave empty to use the latest collected headline/u);
 });
+
+test('the home cards read published articles without their body', async () => {
+  const { listArticleCards } = await import('../../../src/modules/CB-M05/p1-production/articles.mjs');
+  const rows = [{
+    locale: 'en', slug: 'bitcoin-etf', title: 'Bitcoin ETF', summary: 'Summary here',
+    tags: 'bitcoin, etf', publishedAt: 1790000000000,
+  }];
+  const db = { prepare: (sql) => ({ bind: (...args) => ({ all: async () => {
+    assert.match(sql, /FROM cms_articles/u);
+    assert.doesNotMatch(sql, /body/u, 'the card query never reads the body');
+    assert.equal(args[0], 'en');
+    return { results: rows };
+  } }) }) };
+  const cards = await listArticleCards({ db, locale: 'en', limit: 4 });
+  assert.equal(cards.length, 1);
+  assert.equal(cards[0].href, '/en/article/bitcoin-etf');
+  assert.equal(cards[0].cover, '/article-cover/en/bitcoin-etf.svg');
+  assert.deepEqual(cards[0].tags, ['bitcoin', 'etf']);
+  assert.equal('body' in cards[0], false);
+  assert.deepEqual(await listArticleCards({ db, locale: 'fr' }), []);
+  const broken = { prepare() { throw new Error('no such table: cms_articles'); } };
+  assert.deepEqual(await listArticleCards({ db: broken, locale: 'en' }), []);
+});
+
+test('the home prefers our articles, then collected headlines, then placeholders', () => {
+  const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
+  assert.match(home, /const publishedCards = await listArticleCards/u);
+  assert.match(home, /homeArticlesOn \? \(/u);
+  assert.match(home, /data-news-kind=\{homeArticlesOn \? "article"/u);
+  assert.match(home, /href=\{article\.href\}/u);
+  assert.match(home, /src=\{article\.cover\}/u);
+  const script = readFileSync('public/home-demo.js', 'utf8');
+  assert.match(script, /newsKind === "article"/u);
+});

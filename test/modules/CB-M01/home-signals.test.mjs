@@ -91,11 +91,12 @@ test('collected headlines map to a canonical category and a decorative variant',
 
 test('live cards carry the artwork, the category and the publisher link', () => {
   const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
-  assert.ok(home.includes('data-news-kind={liveOn ? "headline" : "placeholder"}'));
+  assert.ok(home.includes('data-news-kind={homeArticlesOn ? "article" : liveOn ? "headline" : "placeholder"}'));
   assert.ok(home.includes('const category = headlineCategory(item.title)'));
   assert.ok(home.includes('<EditorialArtwork variant={artwork} />'));
   assert.ok(home.includes('rel="noreferrer noopener external">{item.title}</a>'));
   const script = readFileSync('public/home-demo.js', 'utf8');
-  assert.ok(script.includes('dataset.newsKind === "headline"'));
+  assert.ok(script.includes('dataset.newsKind'));
+  assert.ok(script.includes('newsKind === "headline"'));
   assert.ok(script.includes('messages.liveCountMany'));
 });

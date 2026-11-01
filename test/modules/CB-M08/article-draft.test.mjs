@@ -108,3 +108,13 @@ test('an unparseable answer carries a short detail for the owner screen', async 
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
   assert.match(route, /Model said: /u);
 });
+
+test('the call reserves a token budget large enough for the body', async () => {
+  const calls = [];
+  const ai = { async run(model, options) { calls.push({ model, options }); return { response: JSON.stringify(GOOD) }; } };
+  const result = await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS });
+  assert.equal(result.status, 'drafted');
+  assert.equal(calls[0].options.max_tokens, 2048);
+  assert.equal(typeof calls[0].options.temperature, 'number');
+  assert.ok(Array.isArray(calls[0].options.messages));
+});

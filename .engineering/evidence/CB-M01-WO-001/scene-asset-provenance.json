@@ -6,15 +6,15 @@
   "provenanceRecordedAt": "2026-10-13",
   "source": {
     "path": "src/modules/CB-M01/GoldenHome.astro",
-    "gitBlobSha": "00c8f19c82bf4d69ecb412473efc623bb2b833f6",
-    "sha256": "cf6a07f92203daf50c11c52bf29d01e12d5da61f6e32ada3f01ce2077246dd3b",
+    "gitBlobSha": "282b066f29a15bfcc86fd7b0ecc4f5fe87fcd02e",
+    "sha256": "019dc762f3077d4c5b54657ee26740706f8bd96dcfe83415683caa04e9dc8ffc",
     "changeSourceCommit": null,
     "creatorTool": "ChatGPT-assisted local HTML/SVG authorship via connected GitHub",
     "originalityClaim": "Original in-repository markup construction, not third-party rights clearance",
     "sourceMaster": "GoldenHome.astro work-order-owned DOM/SVG",
     "rasterDerivativeOfGoldenReference": false,
     "changeRecord": "R25 adopts an approved-pipeline ImageGen static hero master and a separately inventoried Blender motion derivative. Seven generated PNG overlays remain decorative Blender inputs packed into the portable motion project; they are not individual browser animation frames. Existing Blender still exports are retained as historical non-master assets, not used at runtime. Rights, Owner visual approval, and publication permission remain separate and blocked. R26 adds original Codex ImageGen promo and editorial masters with optimized local derivatives and retained SVG failure fallbacks; all remain local DEMO only. CB-M01-WO-001 producer-readiness seam refresh (2026-10-16): GoldenHome Astro frontmatter and nonvisual data-source status attributes changed. Hero/promo HTML source fragments and original image assets were not edited; the full parent source SHA-256 and Git blob are refreshed only. This does not grant live data admission, rights, visual release approval or publication. 2026-10-18 M01-to-M05 DEMO homepage link (English/Portuguese) adds an explicitly MOCK, first-party navigation without editing either original hero/promo scene fragment; source parent hash and Git blob re-pinned to the exact new GoldenHome.astro bytes; no production rights, credential or publication grant.",
-    "refreshNote": "2026-11-01: hero renders the lead attributed headline and the live BTC price; hero/promo fragments unchanged."
+    "refreshNote": "2026-11-01: market overview panel shows five live prices with the CoinGecko badge."
   },
   "goldenReference": {
     "path": "assets/reference/coinblink-home-master-dark-1536x864.jpg",
@@ -153,7 +153,7 @@
       "visualComparison": "R25 integrated local responsive screenshots; not Owner Golden visual acceptance.",
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "00c8f19c82bf4d69ecb412473efc623bb2b833f6",
+      "sourceGitBlobSha": "282b066f29a15bfcc86fd7b0ecc4f5fe87fcd02e",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",
@@ -199,7 +199,7 @@
       },
       "origin": "IN_REPO_SELF_CONTAINED_ORIGINAL_DEMO_MARKUP",
       "sourcePath": "src/modules/CB-M01/GoldenHome.astro",
-      "sourceGitBlobSha": "00c8f19c82bf4d69ecb412473efc623bb2b833f6",
+      "sourceGitBlobSha": "282b066f29a15bfcc86fd7b0ecc4f5fe87fcd02e",
       "goldenRelation": "GOLDEN_REFERENCE_DESIGN_GUIDANCE_ONLY",
       "licenseOrTrademarkClearance": "NOT_ESTABLISHED",
       "rightsReview": "PENDING_OWNER_OR_LEGAL",

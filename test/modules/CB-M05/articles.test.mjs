@@ -175,3 +175,12 @@ test('a database without the migration renders an empty list, not a 500', async 
   assert.deepEqual(await listArticles({ db: broken }), []);
   assert.equal(await readArticle({ db: broken, locale: 'en', slug: 'anything' }), null);
 });
+
+test('an empty topic falls back to the newest collected headline', () => {
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /const typedTopic = String\(auth\.form\.get\('topic'\) \?\? ''\)\.trim\(\)/u);
+  assert.match(route, /typedTopic === '' \? String\(items\[0\]\?\.title \?\? ''\) : typedTopic/u);
+  const section = articlesAdminSection({ articles: [], drafts: [], csrf: 'c'.repeat(64) });
+  assert.doesNotMatch(section, /name="topic"[^>]*required/u);
+  assert.match(section, /Leave empty to use the latest collected headline/u);
+});

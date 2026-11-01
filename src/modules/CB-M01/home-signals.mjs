@@ -73,3 +73,38 @@ export function headlineMood(items) {
     positive, negative,
   });
 }
+
+const TRACKED = Object.freeze([
+  Object.freeze({ id: 'bitcoin', label: 'Bitcoin', words: ['bitcoin', 'btc'] }),
+  Object.freeze({ id: 'ethereum', label: 'Ethereum', words: ['ethereum', 'ether', 'eth'] }),
+  Object.freeze({ id: 'solana', label: 'Solana', words: ['solana', 'sol'] }),
+  Object.freeze({ id: 'regulation', label: 'Regulation', words: ['regulator', 'sec', 'law', 'policy', 'court'] }),
+  Object.freeze({ id: 'etf', label: 'ETF', words: ['etf', 'fund', 'inflow', 'outflow'] }),
+  Object.freeze({ id: 'exchange', label: 'Exchanges', words: ['exchange', 'binance', 'coinbase', 'kraken'] }),
+  Object.freeze({ id: 'security', label: 'Security', words: ['hack', 'exploit', 'breach', 'stolen', 'theft'] }),
+  Object.freeze({ id: 'ai', label: 'AI', words: ['ai', 'artificial intelligence', 'agent'] }),
+]);
+
+/**
+ * Trending = the tracked topics mentioned most often in the collected titles,
+ * each with its newest matching headline. It is a count over the current
+ * collection, not a popularity measure across the market.
+ */
+export function buildTrending(items, limit = 5) {
+  const rows = (Array.isArray(items) ? items : []).filter((item) => typeof item?.title === 'string');
+  const scored = TRACKED.map((topic) => {
+    const matches = rows.filter((row) => topic.words.some((word) => row.title.toLowerCase().includes(word)));
+    return Object.freeze({
+      id: topic.id,
+      label: topic.label,
+      mentions: matches.length,
+      headline: matches.length === 0 ? null : Object.freeze({
+        title: matches[0].title, link: String(matches[0].link ?? ''),
+        sourceName: String(matches[0].sourceName ?? ''), publishedAt: matches[0].publishedAt ?? null,
+      }),
+    });
+  }).filter((topic) => topic.mentions > 0)
+    .sort((a, b) => b.mentions - a.mentions || a.label.localeCompare(b.label))
+    .slice(0, Math.min(Math.max(Number(limit) || 5, 1), 8));
+  return Object.freeze(scored);
+}

@@ -1030,3 +1030,7 @@
 .cb-home .radar-dot { width:6px; height:6px; border-radius:50%; background:#7f9a88; }
 .cb-home .radar-dot--up { background:var(--lime); }
 .cb-home .radar-dot--down { background:#ff8a75; }
+
+/* Trending items are links when the collection feeds them. */
+.cb-home a.trend-item { text-decoration:none; }
+.cb-home a.trend-item:hover span { color:var(--lime); }

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildRadar, headlineMood } from '../../../src/modules/CB-M01/home-signals.mjs';
+import { buildRadar, buildTrending, headlineMood } from '../../../src/modules/CB-M01/home-signals.mjs';
 
 const ITEMS = [
   { title: 'Bitcoin surges to a record high as inflows jump', sourceName: 'CoinDesk', publishedAt: '2026-11-01T10:00:00Z', link: 'https://a.example/1' },
@@ -46,4 +46,26 @@ test('the home renders both blocks from the collection and labels the index', ()
   assert.ok(home.includes('radarRows.length > 0 ? t("LATEST COLLECTED")'));
   const css = readFileSync('src/modules/CB-M01/golden-home.css', 'utf8');
   assert.ok(css.includes('.cb-home .radar-row'));
+});
+
+test('trending ranks tracked topics by mentions with their newest headline', () => {
+  const items = [
+    { title: 'Bitcoin ETF inflows hit a record', sourceName: 'CoinDesk', link: 'https://a.example/1', publishedAt: '2026-11-01T10:00:00Z' },
+    { title: 'Bitcoin miners sell reserves', sourceName: 'Cointelegraph', link: 'https://b.example/2', publishedAt: '2026-11-01T09:00:00Z' },
+    { title: 'Regulators open a probe into an exchange', sourceName: 'CryptoSlate', link: 'https://c.example/3', publishedAt: null },
+  ];
+  const trending = buildTrending(items, 5);
+  assert.equal(trending[0].id, 'bitcoin');
+  assert.equal(trending[0].mentions, 2);
+  assert.equal(trending[0].headline.link, 'https://a.example/1');
+  assert.ok(trending.every((topic) => topic.mentions > 0));
+  assert.deepEqual(buildTrending([], 5), []);
+});
+
+test('the home renders trending and a working newsletter form', () => {
+  const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
+  assert.ok(home.includes('buildTrending(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 5)'));
+  assert.ok(home.includes('action="/api/newsletter/subscribe"'));
+  assert.ok(home.includes('name="locale" value={locale}'));
+  assert.ok(home.includes('t("Trending now")'));
 });

@@ -44,6 +44,10 @@ export function localeSiblings(pathname) {
 }
 
 /** Build the server-rendered metadata plan for one page. */
+/**
+ * @param {{pathname?: string, lang?: string, title?: string, description?: string,
+ *   origin?: string, image?: string | null}} [options]
+ */
 export function buildSeoMetadata({ pathname, lang, title, description, origin, image = null } = {}) {
   if (typeof pathname !== "string" || !pathname.startsWith("/")) {
     throw new TypeError("pathname must be an absolute site path");

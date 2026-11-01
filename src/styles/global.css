@@ -728,3 +728,6 @@ code {
 .markets__meta a{color:#b8f34b}
 .markets__state{margin:1.4rem 0 0;padding:1rem 1.2rem;border:1px solid #22402f;border-radius:14px;background:#0b1712;color:#c1d3c5}
 .markets__note{margin:1.6rem 0 0;color:#9fb6a5;font-size:.82rem}
+
+/* Deterministic editorial cover. */
+.article__cover{display:block;width:100%;height:auto;margin:0 0 1.4rem;border:1px solid #22402f;border-radius:16px;background:#0b1712}

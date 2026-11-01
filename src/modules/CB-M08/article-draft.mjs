@@ -135,7 +135,13 @@ function parseJsonLoose(raw) {
 export function parseArticleDraft(raw, { sources }) {
   if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output', detail: 'empty answer' });
   const parsed = parseJsonLoose(raw);
-  if (parsed === null) return Object.freeze({ status: 'invalid_output', detail: String(raw).slice(0, 200) });
+  if (parsed === null) {
+    const answer = String(raw);
+    return Object.freeze({
+      status: 'invalid_output',
+      detail: answer.slice(0, 160) + ' … [' + answer.length + ' chars] … ' + answer.slice(-120),
+    });
+  }
   const title = text(parsed.title, DRAFT_LIMITS.title);
   const summary = text(parsed.summary, DRAFT_LIMITS.summary);
   const body = text(parsed.body, DRAFT_LIMITS.body);
@@ -179,11 +185,17 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     // A 3-6 paragraph body does not fit the default token budget, and a
     // truncated answer is not valid JSON, so the budget is explicit.
     const options = { max_tokens: 2048, temperature: 0.3 };
+    // JSON mode constrains the answer when the model supports it; a model that
+    // rejects the field falls back to the plain chat call.
     let answer;
     try {
-      answer = await ai.run(model, { messages, ...options });
+      answer = await ai.run(model, { messages, ...options, response_format: { type: 'json_object' } });
     } catch {
-      answer = await ai.run(model, { prompt: messages.map((message) => message.content).join('\n'), ...options });
+      try {
+        answer = await ai.run(model, { messages, ...options });
+      } catch {
+        answer = await ai.run(model, { prompt: messages.map((message) => message.content).join('\n'), ...options });
+      }
     }
     return typeof answer === 'string' ? answer : answer?.response;
   };

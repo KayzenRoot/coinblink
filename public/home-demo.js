@@ -40,6 +40,21 @@ const MESSAGE_ROWS = {
   countMany: [" placeholders", " exemplos", " ejemplos"],
   liveCountOne: [" headline", " manchete", " titular"],
   liveCountMany: [" headlines", " manchetes", " titulares"],
+  articleCountOne: [" article", " artigo", " artículo"],
+  articleCountMany: [" articles", " artigos", " artículos"],
+  articleAll: [
+    "Showing all our published articles.",
+    "Exibindo todos os nossos artigos publicados.",
+    "Mostrando todos nuestros artículos publicados.",
+  ],
+  articleSummary: [
+    (n, category, hasQuery) => "Showing " + n + (n === 1 ? " published article" : " published articles")
+      + category + (hasQuery ? " matching your search." : "."),
+    (n, category, hasQuery) => "Exibindo " + n + (n === 1 ? " artigo publicado" : " artigos publicados")
+      + category + (hasQuery ? " correspondentes à busca." : "."),
+    (n, category, hasQuery) => "Mostrando " + n + (n === 1 ? " artículo publicado" : " artículos publicados")
+      + category + (hasQuery ? " que coinciden con la búsqueda." : "."),
+  ],
   liveAll: [
     "Showing all collected headlines.",
     "Exibindo todas as manchetes coletadas.",
@@ -102,6 +117,10 @@ const messages = {
   count: (n) => String(n) + pick(n === 1 ? "countOne" : "countMany"),
   liveCountOne: pick("liveCountOne"),
   liveCountMany: pick("liveCountMany"),
+  articleCountOne: pick("articleCountOne"),
+  articleCountMany: pick("articleCountMany"),
+  articleAll: pick("articleAll"),
+  articleSummary: (...args) => pick("articleSummary")(...args),
   all: pick("all"),
   liveAll: pick("liveAll"),
   summary: (...args) => pick("summary")(...args),
@@ -122,10 +141,13 @@ const HOME_PATHS = Object.freeze(["/en", "/pt-br", "/es"]);
 const defaultPath = HOME_PATHS[localeIndex];
 // The same controls filter reviewed placeholders and collected headlines; only
 // the noun changes, so the count and the summary never call a real story a demo.
-const liveCards = document.querySelector("#latest-news")?.dataset.newsKind === "headline";
-const placeholderCount = liveCards
-  ? (n) => n + (n === 1 ? messages.liveCountOne : messages.liveCountMany)
-  : messages.count;
+const newsKind = document.querySelector("#latest-news")?.dataset.newsKind ?? "placeholder";
+const liveCards = newsKind !== "placeholder";
+const placeholderCount = newsKind === "article"
+  ? (n) => n + (n === 1 ? messages.articleCountOne : messages.articleCountMany)
+  : newsKind === "headline"
+    ? (n) => n + (n === 1 ? messages.liveCountOne : messages.liveCountMany)
+    : messages.count;
 
 let selected = "All";
 let searchText = "";
@@ -237,9 +259,14 @@ function restoreFilterURL() {
 
 
 function buildFilterSummary(visible, filtered, query) {
-  if (!filtered) return liveCards ? messages.liveAll : messages.all;
+  if (!filtered) {
+    if (newsKind === "article") return messages.articleAll;
+    return liveCards ? messages.liveAll : messages.all;
+  }
   const category = selected === "All" ? "" : messages.categoryPrefix + displayCategory(selected);
-  const summarize = liveCards ? messages.liveSummary : messages.summary;
+  const summarize = newsKind === "article"
+    ? messages.articleSummary
+    : liveCards ? messages.liveSummary : messages.summary;
   return summarize(visible, category, query !== "");
 }
 

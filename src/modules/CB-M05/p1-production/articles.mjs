@@ -161,6 +161,32 @@ export async function listArticles({ db, locale = null, limit = 50, includeAll =
   }
 }
 
+/**
+ * The published cards the home renders: no body, only what a card shows.
+ * A missing table yields an empty list, so the home keeps its own fallback.
+ */
+export async function listArticleCards({ db, locale, limit = 4 }) {
+  if (typeof locale !== 'string' || !validLocale(locale)) return Object.freeze([]);
+  const bounded = Math.min(Math.max(Number(limit) || 4, 1), 8);
+  try {
+    const rows = await db.prepare('SELECT locale,slug,title,summary,tags,published_at AS publishedAt '
+      + "FROM cms_articles WHERE status='published' AND locale=? ORDER BY published_at DESC LIMIT ?")
+      .bind(locale, bounded).all();
+    return Object.freeze((rows?.results ?? []).map((row) => Object.freeze({
+      locale: row.locale,
+      slug: row.slug,
+      title: String(row.title ?? ''),
+      summary: String(row.summary ?? ''),
+      tags: normalizeTags(row.tags),
+      publishedAt: Number(row.publishedAt),
+      cover: '/article-cover/' + row.locale + '/' + row.slug + '.svg',
+      href: '/' + row.locale + '/article/' + row.slug,
+    })));
+  } catch {
+    return Object.freeze([]);
+  }
+}
+
 export async function readArticle({ db, locale, slug }) {
   if (!validLocale(locale) || typeof slug !== 'string' || slug === '') return null;
   try {

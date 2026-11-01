@@ -18,6 +18,8 @@
 
 .cb-home .news-art--live .editorial-artwork { opacity:1; width:100%; height:54px; } .cb-home .news-card h3 a { color:inherit; text-decoration:none; } .cb-home .news-card h3 a:hover { color:var(--lime); }
 
+.cb-home .news-art--live img { width:100%; height:54px; object-fit:cover; display:block; }
+
 @media (min-width:1281px) {
   .cb-home .news-panel,.cb-home .newsletter-panel { min-height:145px; }
 }

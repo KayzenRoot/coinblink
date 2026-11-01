@@ -186,6 +186,9 @@ const HOME_COPY_ROWS = Object.freeze({
   "undated": Object.freeze({ "pt-br": "sem data", es: "sin fecha" }),
   "Double opt-in": Object.freeze({ "pt-br": "Confirmação dupla", es: "Doble opt-in" }),
   "Newsletter": Object.freeze({ "pt-br": "Boletim", es: "Boletín" }),
+  "OUR ARTICLES": Object.freeze({ "pt-br": "NOSSOS ARTIGOS", es: "NUESTROS ARTÍCULOS" }),
+  "OUR ARTICLE": Object.freeze({ "pt-br": "NOSSO ARTIGO", es: "NUESTRO ARTÍCULO" }),
+  "articles": Object.freeze({ "pt-br": "artigos", es: "artículos" }),
   "Demonstration only · no live market or editorial data": Object.freeze({ "pt-br": "Demonstração · sem dados financeiros ou editoriais ao vivo", es: "Solo demostración · sin datos de mercado ni editoriales en vivo" }),
 });
 

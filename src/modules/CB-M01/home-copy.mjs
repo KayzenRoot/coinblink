@@ -90,6 +90,7 @@ const HOME_COPY_ROWS = Object.freeze({
   "Explore the demo": Object.freeze({ "pt-br": "Explorar a demonstração", es: "Explorar la demostración" }),
   "Latest demonstration content": Object.freeze({ "pt-br": "Conteúdo demonstrativo recente", es: "Último contenido de demostración" }),
   "DEMO · NO STORIES CONNECTED": Object.freeze({ "pt-br": "DEMO · SEM NOTÍCIAS CONECTADAS", es: "DEMO · SIN NOTICIAS CONECTADAS" }),
+  "Terms": Object.freeze({ "pt-br": "Termos", es: "Términos" }),
   "LIVE · ATTRIBUTED HEADLINES": Object.freeze({ "pt-br": "AO VIVO · MANCHETES COM ATRIBUIÇÃO", es: "EN VIVO · TITULARES CON ATRIBUCIÓN" }),
   headlines: Object.freeze({ "pt-br": "manchetes", es: "titulares" }),
   "LIVE HEADLINES": Object.freeze({ "pt-br": "MANCHETES AO VIVO", es: "TITULARES EN VIVO" }),

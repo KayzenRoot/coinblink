@@ -46,6 +46,7 @@ const seo = buildSeoMetadata({
     {seo.openGraph.url && <meta property="og:url" content={seo.openGraph.url} />}
     {seo.openGraph.image && <meta property="og:image" content={seo.openGraph.image} />}
     <meta name="twitter:card" content={seo.twitter.card} />
+    <link rel="alternate" type="application/rss+xml" title="CoinBlink" href={`/${lang === "pt-BR" ? "pt-br" : lang}/feed.xml`} />
     <title>{title}</title>
   </head>
   <body>

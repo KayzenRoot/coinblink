@@ -30,7 +30,12 @@ test.describe("CoinBlink M00 local shell", () => {
       await expect(page.locator("#hero-title")).toContainText("Bitcoin market,");
       await expect(page.locator("#market-overview")).toContainText("Market data feed is not connected.");
       await expect(page.locator("#latest-news [data-news-card]")).toHaveCount(4);
-      await expect(page.locator("#newsletter")).toContainText("will not send or store your email");
+      const newsletter = page.locator("#newsletter form");
+      await expect(newsletter).toHaveAttribute("action", "/api/newsletter/subscribe");
+      await expect(newsletter).toHaveAttribute("method", "post");
+      await expect(newsletter.locator('input[name="email"]')).toHaveAttribute("type", "email");
+      await expect(newsletter.locator('input[name="locale"]')).toHaveValue("en");
+      await expect(page.locator("#newsletter")).toContainText("Confirm the link we send");
 
       const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       expect(hasHorizontalOverflow).toBe(false);
@@ -56,7 +61,7 @@ test.describe("CoinBlink M00 local shell", () => {
   }
 
 
-  test("demo categories, search and newsletter interaction are safe and functional", async ({ page }) => {
+  test("demo categories, search and the newsletter double opt-in form are safe and functional", async ({ page }) => {
     await page.goto("/en");
     const cards = page.locator("[data-news-card]");
     await expect(cards).toHaveCount(4);
@@ -68,8 +73,10 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(cards.filter({ visible: true })).toHaveCount(0);
     await page.locator("[data-news-search]").fill("");
     await expect(cards.filter({ visible: true })).toHaveCount(4);
-    await page.locator("[data-demo-preview]").click();
-    await expect(page.locator("[data-form-status]")).toContainText("No email was sent or stored.");
+    await expect(page.locator("#newsletter form")).toHaveAttribute("action", "/api/newsletter/subscribe");
+    await expect(page.locator("#newsletter input[name=email]")).toHaveAttribute("autocomplete", "email");
+    await expect(page.locator("#newsletter input[name=email]")).toHaveAttribute("required", "");
+    await expect(page.locator("#newsletter")).toContainText("Double opt-in");
   });
 
   for (const viewport of [
@@ -186,11 +193,10 @@ test.describe("CoinBlink M00 local shell", () => {
     await input.fill("solana");
     await expect(page).toHaveURL(/\/en\?q=solana$/);
     await expect(page.locator("[data-news-search]")).toHaveValue("solana");
-    await page.locator("#demo-email").fill("private@example.com");
-    await page.locator("[data-demo-preview]").click();
+    await page.locator("#newsletter-email").fill("private@example.com");
     expect(page.url()).not.toContain("private");
     expect(page.url()).not.toContain("example.com");
-    await expect(page.locator("[data-form-status]")).toContainText("No email was sent or stored.");
+    await expect(page.locator("#newsletter input[name=locale]")).toHaveValue("en");
   });
 
   for (const viewport of [
@@ -254,8 +260,9 @@ test.describe("CoinBlink M00 local shell", () => {
     await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(1);
     await expect(page.locator("[data-result-count]")).toHaveText("1 exemplo");
     await expect(page.locator("[data-news-filter-summary]")).toContainText("Regulação");
-    await page.locator("[data-demo-preview]").click();
-    await expect(page.locator("[data-form-status]")).toContainText("Nenhum e-mail foi enviado ou armazenado");
+    await expect(page.locator("#newsletter form")).toHaveAttribute("action", "/api/newsletter/subscribe");
+    await expect(page.locator("#newsletter input[name=locale]")).toHaveValue("pt-br");
+    await expect(page.locator("#newsletter")).toContainText("Confirme o link");
     await page.locator("[data-clear-filters]").click();
     await expect(page).toHaveURL(/\/pt-br$/);
     await expect(page.locator("[data-news-card]").filter({ visible: true })).toHaveCount(4);

@@ -176,6 +176,16 @@ const HOME_COPY_ROWS = Object.freeze({
   "visual samples are placeholders. Video publishing and live feeds are unavailable. The blockchain lookup only prepares external links; CoinBlink is not connected to market, news, advertising, newsletter, or social publishing services.": Object.freeze({ "pt-br": "os elementos visuais são apenas exemplos. A publicação de vídeos e os feeds ao vivo estão indisponíveis. A consulta de blockchain apenas prepara links externos; o CoinBlink não está conectado a serviços de mercado, notícias, publicidade, newsletter ou publicação em redes sociais.", es: "las muestras visuales son ejemplos. La publicación de vídeo y las fuentes en vivo no están disponibles. La consulta de blockchain solo prepara enlaces externos; CoinBlink no está conectado a servicios de mercado, noticias, publicidad, newsletter ni publicación en redes sociales." }),
   "MOCK MODE": Object.freeze({ "pt-br": "MODO DEMO", es: "MODO DEMO" }),
   "Back to top": Object.freeze({ "pt-br": "Voltar ao início", es: "Volver arriba" }),
+  "Trending in the collection": Object.freeze({ "pt-br": "Em alta na coleta", es: "En tendencia en la colección" }),
+  "DOUBLE OPT-IN": Object.freeze({ "pt-br": "CONFIRMAÇÃO DUPLA", es: "DOBLE OPT-IN" }),
+  "One confirmation email, then the daily digest. Unsubscribe in one click.": Object.freeze({ "pt-br": "Um e-mail de confirmação e depois o resumo diário. Cancele com um clique.", es: "Un correo de confirmación y luego el resumen diario. Cancela con un clic." }),
+  "Confirm the link we send before any message.": Object.freeze({ "pt-br": "Confirme o link que enviamos antes de qualquer mensagem.", es: "Confirma el enlace que enviamos antes de cualquier mensaje." }),
+  "Subscribe": Object.freeze({ "pt-br": "Inscrever", es: "Suscribirse" }),
+  "One-click unsubscribe": Object.freeze({ "pt-br": "Cancelamento em um clique", es: "Baja con un clic" }),
+  "No password": Object.freeze({ "pt-br": "Sem senha", es: "Sin contraseña" }),
+  "undated": Object.freeze({ "pt-br": "sem data", es: "sin fecha" }),
+  "Double opt-in": Object.freeze({ "pt-br": "Confirmação dupla", es: "Doble opt-in" }),
+  "Newsletter": Object.freeze({ "pt-br": "Boletim", es: "Boletín" }),
   "Demonstration only · no live market or editorial data": Object.freeze({ "pt-br": "Demonstração · sem dados financeiros ou editoriais ao vivo", es: "Solo demostración · sin datos de mercado ni editoriales en vivo" }),
 });
 

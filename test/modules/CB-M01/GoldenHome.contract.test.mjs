@@ -19,21 +19,24 @@ test("GoldenHome exposes the approved semantic page seam", () => {
 });
 
 test("all market and editorial samples remain visibly demonstration-only", () => {
-  for (const required of ["DEMO", "Not connected", "no live story connected", "MOCK MODE", "No message will be sent"]) {
+  for (const required of ["DEMO", "Not connected", "no live story connected", "MOCK MODE", "Confirm the link we send"]) {
     assert.ok(component.includes(required), "missing demo boundary: " + required);
   }
   assert.doesNotMatch(component, /<[^>]+>\s*Live\s*<\/[^>]+>/i);
 });
 
-test("the newsletter demo cannot submit an email address", () => {
+test("the newsletter form posts to the double opt-in endpoint without client-side delivery", () => {
   assert.match(component, /<script is:inline src="\/home-demo\.js"><\/script>/u);
   assert.match(component, /<script is:inline type="module" src="\/explorer-lookup\.js"><\/script>/u);
   const newsletter = component.split('class="content-panel newsletter-panel"')[1]?.split("</section>")[0];
   assert.ok(newsletter, "newsletter section is required");
-  assert.doesNotMatch(newsletter, /<form\b/u, "demo email control must have no native submission behavior");
-  assert.match(component, /<button type="button" data-demo-preview>/u);
-  assert.match(clientScript, /querySelector\("\[data-demo-preview\]"\)\?\.addEventListener\("click"/u);
-  assert.doesNotMatch(component, /action\s*=|fetch\s*\(|XMLHttpRequest|navigator\.sendBeacon/);
+  assert.match(newsletter, /<form class="newsletter-form" method="post" action="\/api\/newsletter\/subscribe">/u);
+  assert.match(newsletter, /name="email" type="email"/u);
+  assert.match(newsletter, /name="locale" value=\{locale\}/u);
+  assert.match(newsletter, /required/u);
+  assert.match(newsletter, /Double opt-in/u);
+  assert.doesNotMatch(newsletter, /fetch\s*\(|XMLHttpRequest|navigator\.sendBeacon/u);
+  assert.doesNotMatch(clientScript, /data-demo-preview/u);
 });
 
 test("visual request monitoring compares parsed origins rather than URL prefixes", () => {

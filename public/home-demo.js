@@ -318,11 +318,6 @@ shareButton?.addEventListener("click", async () => {
   }
 });
 
-document.querySelector("[data-demo-preview]")?.addEventListener("click", () => {
-  const status = document.querySelector("[data-form-status]");
-  if (status) status.textContent = messages.preview;
-});
-
 
 // M01 P2: progressive-enhancement directory search. It never imports publisher
 // content, makes network requests, stores a query or treats a publisher as a LIVE feed.

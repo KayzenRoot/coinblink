@@ -47,3 +47,28 @@ test('the home renders both blocks from the collection and labels the index', ()
   const css = readFileSync('src/modules/CB-M01/golden-home.css', 'utf8');
   assert.ok(css.includes('.cb-home .radar-row'));
 });
+
+test('trending counts only the tracked topics the titles actually mention', async () => {
+  const { buildTrending } = await import('../../../src/modules/CB-M01/home-signals.mjs');
+  const items = [
+    { title: 'Bitcoin ETF inflows accelerate', link: 'https://a.example/1' },
+    { title: 'Bitcoin and Ethereum ETFs break records', link: 'https://a.example/2' },
+    { title: 'SEC opens a probe into an exchange hack', link: 'https://a.example/3' },
+    { title: 'A quiet week for NFTs', link: 'https://a.example/4' },
+  ];
+  const rows = buildTrending(items, 3);
+  assert.deepEqual(rows.map((row) => row.id), ['bitcoin', 'etf', 'ethereum']);
+  assert.equal(rows[0].mentions, 2);
+  assert.equal(rows[0].link, 'https://a.example/1', 'the link is the newest matching headline');
+  assert.equal(buildTrending([], 4).length, 0);
+  assert.equal(buildTrending([{ title: 'no tracked topic here' }], 4).length, 0);
+  assert.equal(buildTrending(items, 99).length, 5, 'the limit never exceeds the tracked catalog');
+});
+
+test('the home renders trending from the collection and keeps the placeholder fallback', () => {
+  const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
+  assert.ok(home.includes('buildTrending(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 4)'));
+  assert.ok(home.includes('t("Trending in the collection")'));
+  assert.ok(home.includes('href={topic.link}'));
+  assert.ok(home.includes('t("Trending demo")'));
+});

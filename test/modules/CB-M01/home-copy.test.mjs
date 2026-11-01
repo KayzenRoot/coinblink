@@ -6,7 +6,7 @@ import { HOME_LOCALES, translateHome } from '../../../src/modules/CB-M01/home-co
 const component = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
 const keys = [...new Set([...component.matchAll(/t\("([^"]+)"\)/gu)].map((match) => match[1]))];
 // Protocol names and one neutral label are legitimately identical in Spanish.
-const UNCHANGED = new Set(['Bitcoin', 'Ethereum', 'Altcoins', 'DeFi', 'NFTs', 'Web3', 'Radar 24h', 'Neutral']);
+const UNCHANGED = new Set(['Bitcoin', 'Ethereum', 'Altcoins', 'DeFi', 'NFTs', 'Web3', 'Radar 24h', 'Neutral', 'CoinGecko']);
 
 test('the home copy covers every rendered string in three languages', () => {
   assert.deepEqual([...HOME_LOCALES].sort(), ['en', 'es', 'pt-br']);

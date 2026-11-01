@@ -714,3 +714,17 @@ code {
 .sponsored__body{margin:.4rem 0 .6rem;color:#c1d3c5;font-size:.92rem;line-height:1.55}
 .sponsored__cta{display:inline-block;color:#b8f34b;font-weight:700;font-size:.9rem;text-decoration:none}
 .sponsored__cta:hover{text-decoration:underline}
+
+/* Markets page: attributed third-party prices, display only. */
+.markets{max-width:46rem;margin:0 auto;padding:2.4rem clamp(1rem,4vw,2rem)}
+.markets__tag{margin:0;color:#f5c981;font-size:.72rem;font-weight:700;letter-spacing:.14em}
+.markets h1{margin:.4rem 0 .8rem;font-size:clamp(1.8rem,4vw,2.6rem)}
+.markets__list{list-style:none;margin:1.4rem 0 0;padding:0;display:grid;gap:.6rem}
+.markets__row{display:grid;grid-template-columns:5rem 6rem 1fr;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid #22402f;border-radius:14px;background:#0d1a15}
+.markets__symbol{font-weight:800;color:#b8f34b;letter-spacing:.04em}
+.markets__pair{color:#9fb6a5;font-size:.86rem}
+.markets__price{text-align:right;font-size:1.3rem;font-weight:800;font-variant-numeric:tabular-nums}
+.markets__meta{margin:1rem 0 0;color:#9fb6a5;font-size:.82rem}
+.markets__meta a{color:#b8f34b}
+.markets__state{margin:1.4rem 0 0;padding:1rem 1.2rem;border:1px solid #22402f;border-radius:14px;background:#0b1712;color:#c1d3c5}
+.markets__note{margin:1.6rem 0 0;color:#9fb6a5;font-size:.82rem}

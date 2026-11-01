@@ -48,6 +48,8 @@ const markets = [
 const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
 const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
 import { readLiveNews } from "../CB-M03/live-news.mjs";
+import { readLiveSnapshot } from "../CB-M04/live-quotes.mjs";
+import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
 
 // Real, attributed headlines. When the reader is disabled or the collection is
 // unavailable the panel keeps the reviewed placeholders instead of inventing
@@ -59,6 +61,21 @@ const liveItems: LiveHeadline[] = liveNews.status === "LIVE_HEADLINES"
   : [];
 const liveOn = liveItems.length > 0;
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
+
+// Market prices are display-only and attributed; the adapter fails closed, so
+// the ticker keeps its placeholder wording when the feed is off or unavailable.
+const marketSnapshot = await readLiveSnapshot({
+  enabled: import.meta.env.PUBLIC_MARKETS_LIVE,
+  apiKey: runtimeEnv("COINGECKO_API_KEY"),
+  db: runtimeBinding("CMS_DB"),
+});
+type MarketQuote = { symbol: string; priceUsd: number };
+const marketQuotes = (marketSnapshot.status === "LIVE_ATTRIBUTED"
+  ? (marketSnapshot as { quotes: MarketQuote[] }).quotes
+  : []) as MarketQuote[];
+const marketPrice = (value: number) => value >= 1000
+  ? "$" + value.toLocaleString("en-US", { maximumFractionDigits: 0 })
+  : "$" + value.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
 const stories = [
   { category: "Bitcoin", tag: "MARKET", artwork: "bitcoin" },
@@ -286,7 +303,9 @@ const editorialR26Assets = {
       </aside>
     </section>
 
-    <section class="ticker-strip" aria-label={t("Market ticker demonstration")}><strong>◉ {t("Market ticker")}</strong><div class="ticker-items" tabindex="0" role="region" aria-label={t("Scrollable market ticker demonstration")}>{tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
+    <section class="ticker-strip" aria-label={t("Market ticker demonstration")}><strong>◉ {t("Market ticker")}</strong><div class="ticker-items" tabindex="0" role="region" aria-label={t("Scrollable market ticker demonstration")}>{marketQuotes.length > 0
+  ? marketQuotes.map((quote: MarketQuote) => <span><b>{quote.symbol}</b><i>{marketPrice(quote.priceUsd)}</i><em>{t("CoinGecko")}</em></span>)
+  : tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
 
     <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {t("Trending demo")}</h2>
       {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item", "Verified topic feed not connected"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}

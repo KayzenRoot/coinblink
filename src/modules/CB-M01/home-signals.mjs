@@ -36,6 +36,45 @@ export function buildRadar(items, limit = 5) {
   return Object.freeze(rows);
 }
 
+const TRACKED_TOPICS = Object.freeze([
+  Object.freeze({ id: 'bitcoin', label: 'Bitcoin', pattern: /\b(bitcoin|btc)\b/iu }),
+  Object.freeze({ id: 'ethereum', label: 'Ethereum', pattern: /\b(ethereum|eth|ether)\b/iu }),
+  Object.freeze({ id: 'solana', label: 'Solana', pattern: /\b(solana|sol)\b/iu }),
+  Object.freeze({ id: 'xrp', label: 'XRP', pattern: /\b(xrp|ripple)\b/iu }),
+  Object.freeze({ id: 'etf', label: 'ETFs', pattern: /\b(etfs?|fund)\b/iu }),
+  Object.freeze({ id: 'regulation', label: 'Regulation', pattern: /\b(sec|cftc|regulat\w*|lawsuit|court|bill|policy)\b/iu }),
+  Object.freeze({ id: 'stablecoin', label: 'Stablecoins', pattern: /\b(stablecoins?|usdt|usdc|tether)\b/iu }),
+  Object.freeze({ id: 'security', label: 'Security', pattern: /\b(hack\w*|exploit\w*|breach\w*|stolen|theft|scam\w*)\b/iu }),
+]);
+
+/**
+ * Counts which tracked topics appear in the collected titles and returns the
+ * most mentioned ones, each linking to the newest headline that mentions it.
+ * Only headlines the collector actually returned are counted.
+ */
+export function buildTrending(items, limit = 4) {
+  const rows = (Array.isArray(items) ? items : [])
+    .filter((item) => typeof item?.title === 'string' && item.title !== '');
+  const counts = new Map();
+  for (const item of rows) {
+    for (const topic of TRACKED_TOPICS) {
+      if (!topic.pattern.test(item.title)) continue;
+      const entry = counts.get(topic.id);
+      if (entry === undefined) {
+        counts.set(topic.id, { id: topic.id, label: topic.label, mentions: 1, link: String(item.link ?? '') });
+      } else {
+        entry.mentions += 1;
+      }
+    }
+  }
+  const order = TRACKED_TOPICS.map((topic) => topic.id);
+  return Object.freeze([...counts.values()]
+    .sort((left, right) => right.mentions - left.mentions
+      || order.indexOf(left.id) - order.indexOf(right.id))
+    .slice(0, Math.min(Math.max(Number(limit) || 4, 1), 8))
+    .map((entry) => Object.freeze(entry)));
+}
+
 const BUCKETS = Object.freeze([
   Object.freeze({ id: 'extremeGreed', label: 'Extreme greed', min: 80 }),
   Object.freeze({ id: 'greed', label: 'Greed', min: 60 }),

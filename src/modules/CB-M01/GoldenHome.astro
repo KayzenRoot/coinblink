@@ -48,7 +48,7 @@ const markets = [
 const tickerItems = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA"];
 const categories = ["All", "Bitcoin", "Ethereum", "Altcoins", "DeFi", "NFTs", "Regulation", "Web3", "AI x Crypto", "Market Analysis", "Guides"];
 import { readLiveNews } from "../CB-M03/live-news.mjs";
-import { buildRadar, headlineMood } from "./home-signals.mjs";
+import { buildRadar, buildTrending, headlineMood } from "./home-signals.mjs";
 import { readLiveSnapshot } from "../CB-M04/live-quotes.mjs";
 import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
 
@@ -67,6 +67,10 @@ const lead = liveItems.length > 0 ? liveItems[0] : null;
 const leadStale = liveNews.stale === true;
 const radarRows = buildRadar(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 5);
 const mood = headlineMood(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : []);
+// Trending counts the topics the collector's own headlines mention; it is not a
+// search trend and says so, falling back to the reviewed placeholders when the
+// collection is empty.
+const trending = buildTrending(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 4);
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
 
 // Market prices are display-only and attributed; the adapter fails closed, so
@@ -332,8 +336,10 @@ const editorialR26Assets = {
   ? marketQuotes.map((quote: MarketQuote) => <span data-live-symbol={quote.symbol}><b>{quote.symbol}</b><i data-live-price>{marketPrice(quote.priceUsd)}</i><em>{t("CoinGecko")}</em></span>)
   : tickerItems.map((symbol) => <span><b>{symbol}</b><i>—</i><em>{t("Not connected")}</em></span>)}</div></section>
 
-    <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {t("Trending demo")}</h2>
-      {["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item", "Verified topic feed not connected"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
+    <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {trending.length > 0 ? t("Trending in the collection") : t("Trending demo")}</h2>
+      {trending.length > 0
+        ? trending.map((topic, index) => <a class="trend-item" href={topic.link} rel="noreferrer noopener external"><b>{index + 1}</b><span>{topic.label}<small>{topic.mentions} {t("headlines")}</small></span></a>)
+        : ["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item", "Verified topic feed not connected"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
     </section>
 
     <nav class="category-rail" id="categories" aria-label={t("Demonstration story categories")}>
@@ -455,9 +461,15 @@ const editorialR26Assets = {
         </div>
       </section>
       <section class="content-panel newsletter-panel" id="newsletter" aria-labelledby="newsletter-title">
-        <span class="newsletter-icon" aria-hidden="true">✉</span><small>{t("DEMO · DISABLED DELIVERY")}</small><h2 id="newsletter-title">{t("Join the CoinBlink newsletter")}</h2>
-        <p>{t("This preview will not send or store your email.")}</p><div class="newsletter-form" role="group" aria-label={t("Newsletter demo controls")}><label class="sr-only" for="demo-email">{t("Email address")}</label><input id="demo-email" name="email" type="email" placeholder={t("Email address")} autocomplete="off" /><button type="button" data-demo-preview>{t("Preview only")} →</button></div>
-        <p class="form-status" aria-live="polite" data-form-status>{t("No message will be sent.")}</p><ul class="newsletter-promises"><li>{t("No storage")}</li><li>{t("No delivery")}</li><li>{t("Demo only")}</li></ul>
+        <span class="newsletter-icon" aria-hidden="true">✉</span><small>{t("DOUBLE OPT-IN")}</small><h2 id="newsletter-title">{t("Join the CoinBlink newsletter")}</h2>
+        <p>{t("One confirmation email, then the daily digest. Unsubscribe in one click.")}</p>
+        <form class="newsletter-form" method="post" action="/api/newsletter/subscribe">
+          <label class="sr-only" for="newsletter-email">{t("Email address")}</label>
+          <input id="newsletter-email" name="email" type="email" placeholder={t("Email address")} autocomplete="email" maxlength="254" required />
+          <input type="hidden" name="locale" value={locale} />
+          <button type="submit">{t("Subscribe")} →</button>
+        </form>
+        <p class="form-status" aria-live="polite" data-form-status>{t("Confirm the link we send before any message.")}</p><ul class="newsletter-promises"><li>{t("Double opt-in")}</li><li>{t("One-click unsubscribe")}</li><li>{t("No password")}</li></ul>
       </section>
     </section>
 

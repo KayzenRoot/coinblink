@@ -6,7 +6,12 @@
 
 import { listEditions, readEdition, resolveArticles } from './editions.mjs';
 
-/** Sent editions, newest first, with the published articles they carried. */
+/**
+ * @param {{db?: any, limit?: number}} [options]
+ * @returns {Promise<ReadonlyArray<Readonly<{id: string, locale: string, subject: string,
+ *   intro: string, sentAt: number | null, articles: ReadonlyArray<Readonly<{slug: string,
+ *   title: string, summary: string, href: string}>>}>>>}
+ */
 export async function listArchive({ db, limit = 20 } = {}) {
   let editions;
   try {

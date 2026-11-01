@@ -11,6 +11,11 @@ export const prerender = false;
 
 const archive = await listArchive({ db: runtimeBinding("CMS_DB"), limit: 20 });
 const stamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 10);
+type ArchiveArticle = { title: string; summary: string; href: string };
+type ArchiveEdition = {
+  subject: string; intro: string; locale: string; sentAt: number | null;
+  articles: readonly ArchiveArticle[];
+};
 ---
 
 <BaseLayout
@@ -36,17 +41,17 @@ const stamp = (seconds: number) => new Date(seconds * 1000).toISOString().slice(
       <p class="body-copy">No edition has been sent yet. The first one appears here after it goes out.</p>
     ) : (
       <ol class="edition-archive">
-        {archive.map((edition: { subject: string; intro: string; locale: string; sentAt: number; articles: { title: string; summary: string; href: string }[] }) => (
+        {archive.map((edition: ArchiveEdition) => (
           <li>
             <article>
               <p class="status__tag">
-                <time datetime={new Date(edition.sentAt * 1000).toISOString()}>{stamp(edition.sentAt)}</time>
+                {edition.sentAt !== null && <time datetime={new Date(edition.sentAt * 1000).toISOString()}>{stamp(edition.sentAt)}</time>}
                 <span> · {edition.locale}</span>
               </p>
               <h2>{edition.subject}</h2>
               {edition.intro !== "" && <p class="body-copy">{edition.intro}</p>}
               <ul>
-                {edition.articles.map((article: { title: string; summary: string; href: string }) => (
+                {edition.articles.map((article: ArchiveArticle) => (
                   <li><a href={article.href}>{article.title}</a> — {article.summary}</li>
                 ))}
               </ul>

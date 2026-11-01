@@ -218,3 +218,11 @@ test('the home prefers our articles, then collected headlines, then placeholders
   const script = readFileSync('public/home-demo.js', 'utf8');
   assert.match(script, /newsKind === "article"/u);
 });
+
+test('the hero leads with our newest published article before any collected headline', () => {
+  const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
+  assert.match(home, /const leadArticle = publishedCards\[0\] \?\? null/u);
+  assert.match(home, /\{leadArticle !== null \? \(/u);
+  assert.match(home, /<a class="primary-action" href=\{leadArticle\.href\}>/u);
+  assert.match(home, /\) : lead !== null \? \(/u, 'the collected headline stays as the second choice');
+});

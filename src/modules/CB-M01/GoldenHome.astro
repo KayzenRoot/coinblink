@@ -77,6 +77,10 @@ const trending = buildTrending(liveNews.status === "LIVE_HEADLINES" ? liveNews.i
 // nothing is published yet in this locale.
 const publishedCards = await listArticleCards({ db: runtimeBinding("CMS_DB"), locale, limit: 4 });
 const homeArticlesOn = publishedCards.length > 0;
+// The hero leads with our newest published article when there is one, so the
+// top of the page never sends the reader away first.
+const leadArticle = publishedCards[0] ?? null;
+const publishedLabel = (seconds: number) => new Date(seconds * 1000).toISOString().slice(0, 10);
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
 
 // Market prices are display-only and attributed; the adapter fails closed, so
@@ -270,7 +274,14 @@ const editorialR26Assets = {
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
         </div>
         <div class="hero-copy">
-          {lead !== null ? (
+          {leadArticle !== null ? (
+            <>
+              <div class="eyebrow-row"><strong>⚡ {t("OUR ARTICLE")}</strong><span>{publishedLabel(leadArticle.publishedAt)}</span></div>
+              <h1 id="hero-title">{leadArticle.title}</h1>
+              <p>{leadArticle.summary}</p>
+              <div class="hero-actions"><a class="primary-action" href={leadArticle.href}>{t("Read the article")} <span aria-hidden="true">→</span></a><a class="secondary-action" href={l("/en/markets", "/pt-br/markets", "/es/markets")}>{t("See markets")}</a></div>
+            </>
+          ) : lead !== null ? (
             <>
               <div class="eyebrow-row"><strong>⚡ {leadStale ? t("LAST COLLECTED") : t("BREAKING NEWS")}</strong><span>{lead.publishedAt === null ? "" : liveStamp(lead.publishedAt) + " · "}{lead.sourceName}</span></div>
               <h1 id="hero-title">{lead.title}</h1>

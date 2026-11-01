@@ -338,7 +338,7 @@ const editorialR26Assets = {
     </nav>
 
     {import.meta.env.PUBLIC_MARKETS_STREAM === "true" && (
-      <script is:inline src="/markets-live.js" defer></script>
+      <script src="/markets-live.js" type="module"></script>
     )}
     <section class="content-grid" aria-label={t("Demonstration signals")}>
       <article class="content-panel radar-panel" id="radar-24h" aria-labelledby="radar-title">

@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ request }) => {
   for (const locale of LOCALES) {
     for (const path of STATIC_PATHS) urls.push(base + "/" + locale + path);
   }
-  urls.push(base + "/developers", base + "/status", base + "/newsletter");
+  urls.push(base + "/developers", base + "/status", base + "/newsletter", base + "/newsletter/editions");
 
   const db = runtimeBinding("CMS_DB");
   const articles = db === undefined || db === null ? [] : await listArticles({ db, limit: 200 });

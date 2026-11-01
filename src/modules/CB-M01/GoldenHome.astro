@@ -316,7 +316,7 @@ const editorialR26Assets = {
               </span>
               <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
               <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
-              <span class="market-value" aria-label={t("Price in US dollars")}>{quoteFor(market.symbol)?.priceUsd !== undefined ? marketPrice(quoteFor(market.symbol)?.priceUsd ?? 0) : "—"}</span>
+              <span class="market-value" aria-label={quoteFor(market.symbol) === null ? t("Unavailable") : t("Price in US dollars")}>{quoteFor(market.symbol)?.priceUsd !== undefined ? marketPrice(quoteFor(market.symbol)?.priceUsd ?? 0) : "—"}</span>
             </li>
           ))}
         </ul>

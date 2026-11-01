@@ -8,6 +8,8 @@ const PAYLOAD = Object.freeze({
   bitcoin: Object.freeze({ usd: 101.5 }),
   ethereum: Object.freeze({ usd: 2.25 }),
   solana: Object.freeze({ usd: 0.75 }),
+  binancecoin: Object.freeze({ usd: 605.21 }),
+  ripple: Object.freeze({ usd: 0.5243 }),
 });
 const AT = "2026-10-28T12:00:00.000Z";
 const okFetch = (payload = PAYLOAD, status = 200) => async () => ({
@@ -22,7 +24,7 @@ test("CB-M04-P1 the live path is off unless a deployment says otherwise", () => 
   }
   for (const value of ["1", "true", "ENABLED", " on "]) assert.equal(isLiveEnabled(value), true, value);
   assert.equal(LIVE_PROVIDER.cacheSeconds > 0, true);
-  assert.equal(LIVE_ASSETS.length, 3);
+  assert.equal(LIVE_ASSETS.length, 5);
 });
 
 test("CB-M04-P1 a valid provider payload becomes an attributed, order-free snapshot", () => {
@@ -35,8 +37,8 @@ test("CB-M04-P1 a valid provider payload becomes an attributed, order-free snaps
   assert.equal(snapshot.commercialUseAllowed, false);
   assert.equal(snapshot.attribution, LIVE_PROVIDER.attribution);
   assert.equal(snapshot.attributionUrl, LIVE_PROVIDER.url);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.pair), ["BTC/USD", "ETH/USD", "SOL/USD"]);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.priceUsd), [101.5, 2.25, 0.75]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.pair), ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.priceUsd), [101.5, 2.25, 0.75, 605.21, 0.5243]);
   assert.ok(Object.isFrozen(snapshot.quotes) && Object.isFrozen(snapshot.quotes[0]));
 });
 
@@ -44,13 +46,13 @@ test("CB-M04-P1 a malformed provider payload never becomes a price", () => {
   const bad = [
     null, undefined, "text", 42, [], {},
     { bitcoin: { usd: 1 } },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: {} },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: { usd: "1" } },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: { usd: 0 } },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: { usd: -2 } },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: { usd: Number.NaN } },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: { usd: Number.POSITIVE_INFINITY } },
-    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, solana: null },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: {} },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: { usd: "1" } },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: { usd: 0 } },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: { usd: -2 } },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: { usd: Number.NaN } },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: { usd: Number.POSITIVE_INFINITY } },
+    { bitcoin: { usd: 1 }, ethereum: { usd: 1 }, binancecoin: { usd: 1 }, ripple: { usd: 1 }, solana: null },
     { bitcoin: { usd: 1 }, ethereum: [], solana: { usd: 1 } },
   ];
   for (const payload of bad) {

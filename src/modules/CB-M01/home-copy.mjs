@@ -91,6 +91,7 @@ const HOME_COPY_ROWS = Object.freeze({
   "Latest demonstration content": Object.freeze({ "pt-br": "Conteúdo demonstrativo recente", es: "Último contenido de demostración" }),
   "DEMO · NO STORIES CONNECTED": Object.freeze({ "pt-br": "DEMO · SEM NOTÍCIAS CONECTADAS", es: "DEMO · SIN NOTICIAS CONECTADAS" }),
   "LIVE": Object.freeze({ "pt-br": "AO VIVO", es: "EN VIVO" }),
+  "Live": Object.freeze({ "pt-br": "Ao vivo", es: "En vivo" }),
   "Prices from CoinGecko, delayed up to 60s.": Object.freeze({ "pt-br": "Preços do CoinGecko, com atraso de até 60s.", es: "Precios de CoinGecko, con retraso de hasta 60s." }),
   "Price in US dollars": Object.freeze({ "pt-br": "Preço em dólares", es: "Precio en dólares" }),
   "BREAKING NEWS": Object.freeze({ "pt-br": "ÚLTIMA HORA", es: "ÚLTIMA HORA" }),

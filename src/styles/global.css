@@ -731,3 +731,13 @@ code {
 
 /* Deterministic editorial cover. */
 .article__cover{display:block;width:100%;height:auto;margin:0 0 1.4rem;border:1px solid #22402f;border-radius:16px;background:#0b1712}
+
+/* Legal page: plain language, no decoration. */
+.legal{max-width:44rem;margin:0 auto;padding:2.4rem clamp(1rem,4vw,2rem)}
+.legal__tag{margin:0;color:#f5c981;font-size:.72rem;font-weight:700;letter-spacing:.14em}
+.legal h1{margin:.4rem 0 .5rem;font-size:clamp(1.7rem,4vw,2.4rem)}
+.legal__updated{margin:0;color:#9fb6a5;font-size:.86rem}
+.legal__draft{margin:.6rem 0 1.8rem;padding:.7rem .9rem;border:1px dashed #3a5a45;border-radius:12px;color:#f0e0a0;font-size:.84rem}
+.legal__section{margin:0 0 1.4rem}
+.legal__section h2{margin:0 0 .35rem;font-size:1.05rem;color:#dcefdc}
+.legal__section p{margin:0;line-height:1.7;color:#c1d3c5}

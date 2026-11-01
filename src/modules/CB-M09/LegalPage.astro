@@ -1,0 +1,81 @@
+---
+// CB-M15-P1-LEGAL-001: terms, privacy and disclaimer in plain language.
+//
+// The text describes what the system actually does. It is a working draft the
+// owner must review before launch; it makes no claim of certification.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+interface Props { locale: "en" | "pt-br" | "es" }
+const { locale } = Astro.props;
+const lang = locale === "pt-br" ? "pt-BR" : locale;
+
+const copy = {
+  en: {
+    title: "Terms, privacy and disclaimer",
+    updated: "Last updated: 1 November 2026",
+    draft: "Working draft for the owner's review. Not legal advice and not a certification of compliance.",
+    sections: [
+      ["What CoinBlink is", "CoinBlink is a news reader for crypto. It collects public RSS feeds and shows each headline with the publisher name, the collection time and a link to the original article. It also publishes articles written by the owner. CoinBlink is not a broker, exchange or investment adviser, does not execute orders and does not hold funds."],
+      ["Third-party headlines", "Headlines, publisher names and links belong to their publishers. CoinBlink does not copy article text and does not license third-party content to anyone. Attribution and the link to the original are always shown."],
+      ["Market data", "Spot prices come from CoinGecko and are delayed by up to 60 seconds. They are for information only, may be inaccurate or unavailable, and are not investment advice. CoinBlink does not trade and does not route orders."],
+      ["Reader accounts", "You sign in with a link sent to your email address. There is no password. We store your email address, your chosen language, your watchlist and the sessions needed to keep you signed in. You can delete your account at any time from the reader page, which removes the account, the watchlist, the sessions and the alert records."],
+      ["Newsletter and alerts", "Subscriptions use double opt-in: nothing is sent until you open the confirmation link, and every message carries an unsubscribe link. Watchlist digests are sent at most once per day and only when a headline matches your symbols."],
+      ["Analytics", "Page views are counted without cookies and without identifying you: we store a day, a path and a language. No advertising network, fingerprinting or cross-site tracking is used."],
+      ["Advertising", "Sponsored placements are labelled as sponsored, are visually separated from editorial content and link with rel=\"sponsored\". Sponsors do not review or approve editorial content."],
+      ["API access", "Partner access uses keys issued by CoinBlink, is metered against a monthly quota and serves metadata only. It does not redistribute third-party article text."],
+      ["Payments", "Paid plans are processed by Stripe. Card data never reaches CoinBlink; we receive only the identifiers needed to confirm a subscription."],
+      ["Changes and contact", "This page may change as the product changes. Questions: founder@nexlabs.company."],
+    ],
+  },
+  "pt-br": {
+    title: "Termos, privacidade e aviso",
+    updated: "Última atualização: 1 de novembro de 2026",
+    draft: "Rascunho de trabalho para revisão do proprietário. Não é aconselhamento jurídico nem certificação de conformidade.",
+    sections: [
+      ["O que é o CoinBlink", "O CoinBlink é um leitor de notícias de cripto. Ele coleta feeds RSS públicos e mostra cada manchete com o nome do veículo, o horário da coleta e o link para o artigo original. Também publica artigos escritos pelo proprietário. O CoinBlink não é corretora, exchange nem consultor de investimentos, não executa ordens e não custodia recursos."],
+      ["Manchetes de terceiros", "Manchetes, nomes de veículos e links pertencem aos seus publicadores. O CoinBlink não copia o texto dos artigos e não licencia conteúdo de terceiros para ninguém. A atribuição e o link para o original são sempre exibidos."],
+      ["Dados de mercado", "Os preços à vista vêm do CoinGecko e têm atraso de até 60 segundos. Servem apenas para informação, podem estar imprecisos ou indisponíveis e não são recomendação de investimento. O CoinBlink não negocia e não roteia ordens."],
+      ["Conta de leitor", "Você entra com um link enviado para o seu e-mail. Não existe senha. Guardamos o endereço de e-mail, o idioma escolhido, a watchlist e as sessões necessárias para manter você conectado. Você pode excluir a conta a qualquer momento na página do leitor, o que remove a conta, a watchlist, as sessões e os registros de alerta."],
+      ["Newsletter e alertas", "As assinaturas usam confirmação dupla: nada é enviado antes de você abrir o link de confirmação, e toda mensagem tem link de descadastro. Os resumos da watchlist são enviados no máximo uma vez por dia e só quando há manchete com os seus símbolos."],
+      ["Analytics", "As visualizações são contadas sem cookies e sem identificar você: guardamos dia, caminho e idioma. Não há rede de anúncios, fingerprinting nem rastreamento entre sites."],
+      ["Publicidade", "Espaços patrocinados são rotulados como patrocinados, ficam visualmente separados do conteúdo editorial e usam rel=\"sponsored\". Patrocinadores não revisam nem aprovam conteúdo editorial."],
+      ["Acesso à API", "O acesso de parceiros usa chaves emitidas pelo CoinBlink, é medido por cota mensal e serve apenas metadados. Não redistribui texto de artigos de terceiros."],
+      ["Pagamentos", "Planos pagos são processados pelo Stripe. Dados de cartão nunca chegam ao CoinBlink; recebemos apenas os identificadores necessários para confirmar a assinatura."],
+      ["Mudanças e contato", "Esta página pode mudar conforme o produto evolui. Dúvidas: founder@nexlabs.company."],
+    ],
+  },
+  es: {
+    title: "Términos, privacidad y aviso",
+    updated: "Última actualización: 1 de noviembre de 2026",
+    draft: "Borrador de trabajo para revisión del propietario. No es asesoramiento legal ni certificación de cumplimiento. En caso de discrepancia, prevalece la versión en inglés.",
+    sections: [
+      ["Qué es CoinBlink", "CoinBlink es un lector de noticias de cripto: recoge fuentes RSS públicas y muestra cada titular con el medio, la hora de recolección y el enlace al artículo original. También publica artículos escritos por el propietario. No es un bróker ni un asesor de inversiones, no ejecuta órdenes y no custodia fondos."],
+      ["Titulares de terceros", "Los titulares y enlaces pertenecen a sus editores. CoinBlink no copia el texto de los artículos y no licencia contenido de terceros."],
+      ["Datos de mercado", "Los precios provienen de CoinGecko, con retraso de hasta 60 segundos, solo informativos y no son asesoramiento de inversión."],
+      ["Cuenta de lector", "El acceso es por enlace enviado al correo, sin contraseña. Guardamos correo, idioma, lista de seguimiento y sesiones. Puedes eliminar la cuenta en cualquier momento desde la página del lector."],
+      ["Newsletter y alertas", "Confirmación doble, enlace de baja en cada mensaje y resúmenes de la lista como máximo una vez al día."],
+      ["Analítica", "Vistas contadas sin cookies ni identificación: día, ruta e idioma."],
+      ["Publicidad", "Los espacios patrocinados están etiquetados, separados del contenido editorial y usan rel=\"sponsored\"."],
+      ["API", "Claves emitidas por CoinBlink, con cuota mensual, solo metadatos."],
+      ["Pagos", "Procesados por Stripe; los datos de tarjeta nunca llegan a CoinBlink."],
+      ["Contacto", "founder@nexlabs.company"],
+    ],
+  },
+}[locale];
+---
+
+<BaseLayout lang={lang} title={"CoinBlink · " + copy.title} description={copy.draft}>
+  <main id="main" class="legal">
+    <nav aria-label="Legal navigation"><a href={`/${locale}`}>← CoinBlink</a></nav>
+    <p class="legal__tag">CB-M15 · LEGAL</p>
+    <h1>{copy.title}</h1>
+    <p class="legal__updated">{copy.updated}</p>
+    <p class="legal__draft">{copy.draft}</p>
+    {copy.sections.map(([heading, body]) => (
+      <section class="legal__section">
+        <h2>{heading}</h2>
+        <p>{body}</p>
+      </section>
+    ))}
+  </main>
+</BaseLayout>

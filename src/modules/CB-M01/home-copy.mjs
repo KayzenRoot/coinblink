@@ -91,6 +91,7 @@ const HOME_COPY_ROWS = Object.freeze({
   "Latest demonstration content": Object.freeze({ "pt-br": "Conteúdo demonstrativo recente", es: "Último contenido de demostración" }),
   "DEMO · NO STORIES CONNECTED": Object.freeze({ "pt-br": "DEMO · SEM NOTÍCIAS CONECTADAS", es: "DEMO · SIN NOTICIAS CONECTADAS" }),
   "BREAKING NEWS": Object.freeze({ "pt-br": "ÚLTIMA HORA", es: "ÚLTIMA HORA" }),
+  "LAST COLLECTED": Object.freeze({ "pt-br": "ÚLTIMA COLETA", es: "ÚLTIMA RECOLECCIÓN" }),
   "Read the original": Object.freeze({ "pt-br": "Ler o original", es: "Leer el original" }),
   "See markets": Object.freeze({ "pt-br": "Ver mercados", es: "Ver mercados" }),
   "BITCOIN · NOW": Object.freeze({ "pt-br": "BITCOIN · AGORA", es: "BITCOIN · AHORA" }),

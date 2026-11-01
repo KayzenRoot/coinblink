@@ -61,6 +61,9 @@ const liveItems: LiveHeadline[] = liveNews.status === "LIVE_HEADLINES"
   : [];
 const liveOn = liveItems.length > 0;
 const lead = liveItems.length > 0 ? liveItems[0] : null;
+// A stale snapshot means the collector is serving the last good collection, so
+// the lead is real but no longer "breaking".
+const leadStale = liveNews.stale === true;
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
 
 // Market prices are display-only and attributed; the adapter fails closed, so
@@ -255,10 +258,10 @@ const editorialR26Assets = {
         <div class="hero-copy">
           {lead !== null ? (
             <>
-              <div class="eyebrow-row"><strong>⚡ {t("BREAKING NEWS")}</strong><span>{liveStamp(lead.publishedAt)} · {lead.sourceName}</span></div>
+              <div class="eyebrow-row"><strong>⚡ {leadStale ? t("LAST COLLECTED") : t("BREAKING NEWS")}</strong><span>{lead.publishedAt === null ? "" : liveStamp(lead.publishedAt) + " · "}{lead.sourceName}</span></div>
               <h1 id="hero-title">{lead.title}</h1>
               <p>{t("Headline collected from a public feed, attributed to the publisher. CoinBlink links to the original and does not copy article text.")}</p>
-              <div class="hero-actions"><a class="primary-action" href={lead.link} rel="noreferrer noopener external">{t("Read the original")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="/markets">{t("See markets")}</a></div>
+              <div class="hero-actions"><a class="primary-action" href={lead.link} rel="noreferrer noopener external">{t("Read the original")} <span aria-hidden="true">→</span></a><a class="secondary-action" href={l("/en/markets", "/pt-br/markets", "/es/markets")}>{t("See markets")}</a></div>
             </>
           ) : (
             <>

@@ -60,6 +60,10 @@ const liveItems: LiveHeadline[] = liveNews.status === "LIVE_HEADLINES"
   ? (liveNews.items as LiveHeadline[]).slice(0, 4)
   : [];
 const liveOn = liveItems.length > 0;
+const lead = liveItems.length > 0 ? liveItems[0] : null;
+// A stale snapshot means the collector is serving the last good collection, so
+// the lead is real but no longer "breaking".
+const leadStale = liveNews.stale === true;
 const liveStamp = (iso: string | null) => (iso === null ? "undated" : iso.slice(0, 16).replace("T", " ") + " UTC");
 
 // Market prices are display-only and attributed; the adapter fails closed, so
@@ -73,6 +77,7 @@ type MarketQuote = { symbol: string; priceUsd: number };
 const marketQuotes = (marketSnapshot.status === "LIVE_ATTRIBUTED"
   ? (marketSnapshot as { quotes: MarketQuote[] }).quotes
   : []) as MarketQuote[];
+const btcQuote = marketQuotes.find((quote) => quote.symbol === "BTC") ?? null;
 const marketPrice = (value: number) => value >= 1000
   ? "$" + value.toLocaleString("en-US", { maximumFractionDigits: 0 })
   : "$" + value.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -251,12 +256,27 @@ const editorialR26Assets = {
           <span class="scene-arrow">↗</span><span class="candle candle-one"></span><span class="candle candle-two"></span><span class="candle candle-three"></span>
         </div>
         <div class="hero-copy">
-          <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>
-          <h1 id="hero-title">{t("Bitcoin market,")}<br />{t("in")} <em>{t("focus.")}</em></h1>
-          <p>{t("This visual demo has no live market data or news connected.")}</p>
-          <div class="hero-actions"><a class="primary-action" href="#latest-news">{t("Explore demo stories")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">{t("View market panel")}</a></div>
+          {lead !== null ? (
+            <>
+              <div class="eyebrow-row"><strong>⚡ {leadStale ? t("LAST COLLECTED") : t("BREAKING NEWS")}</strong><span>{lead.publishedAt === null ? "" : liveStamp(lead.publishedAt) + " · "}{lead.sourceName}</span></div>
+              <h1 id="hero-title">{lead.title}</h1>
+              <p>{t("Headline collected from a public feed, attributed to the publisher. CoinBlink links to the original and does not copy article text.")}</p>
+              <div class="hero-actions"><a class="primary-action" href={lead.link} rel="noreferrer noopener external">{t("Read the original")} <span aria-hidden="true">→</span></a><a class="secondary-action" href={l("/en/markets", "/pt-br/markets", "/es/markets")}>{t("See markets")}</a></div>
+            </>
+          ) : (
+            <>
+              <div class="eyebrow-row"><strong>⚡ {t("DEMO FEATURE")}</strong><span>{t("Illustrative layout")}</span></div>
+              <h1 id="hero-title">{t("Bitcoin market,")}<br />{t("in")} <em>{t("focus.")}</em></h1>
+              <p>{t("This visual demo has no live market data or news connected.")}</p>
+              <div class="hero-actions"><a class="primary-action" href="#latest-news">{t("Explore demo stories")} <span aria-hidden="true">→</span></a><a class="secondary-action" href="#market-overview">{t("View market panel")}</a></div>
+            </>
+          )}
         </div>
-        <div class="hero-stat"><span>{t("DEMO · NOT LIVE")}</span><strong>—</strong><small>{t("Market data not connected")}</small></div>
+        {btcQuote !== null ? (
+          <div class="hero-stat"><span>{t("BITCOIN · NOW")}</span><strong>{marketPrice(btcQuote.priceUsd)}</strong><small>{t("CoinGecko · delayed up to 60s")}</small></div>
+        ) : (
+          <div class="hero-stat"><span>{t("DEMO · NOT LIVE")}</span><strong>—</strong><small>{t("Market data not connected")}</small></div>
+        )}
         <p class="hero-tags" aria-hidden="true">{t("MARKET")}<br />{t("ANALYSIS")}<br />{t("DIGITAL ASSETS")}</p>
       </article>
 

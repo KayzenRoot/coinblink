@@ -1,0 +1,88 @@
+---
+// CB-M04-P1-MARKETS-001: public markets page with attributed third-party prices.
+//
+// Display only: no order flow, nothing stored, and the adapter fails closed. The
+// page is enabled by PUBLIC_MARKETS_LIVE and states the delay and the source.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { LIVE_PROVIDER, readLiveSnapshot } from "./live-quotes.mjs";
+import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
+
+interface Props { locale: "en" | "pt-br" | "es" }
+const { locale } = Astro.props;
+
+export const prerender = false;
+
+const snapshot = await readLiveSnapshot({
+  enabled: import.meta.env.PUBLIC_MARKETS_LIVE,
+  apiKey: runtimeEnv("COINGECKO_API_KEY"),
+  db: runtimeBinding("CMS_DB"),
+});
+const lang = locale === "pt-br" ? "pt-BR" : locale;
+const copy = {
+  en: {
+    title: "Markets", intro: "Spot prices in US dollars from a public provider, delayed by up to {n} seconds. Display only: CoinBlink does not trade, does not route orders and does not store prices.",
+    source: "Source", asOf: "As of", disabled: "The market feed is off in this deployment.",
+    unavailable: "The provider did not answer. No price is shown rather than a stale or guessed one.",
+    note: "Not investment advice. Attribution is required and shown with every quote.",
+    back: "Back to CoinBlink",
+  },
+  "pt-br": {
+    title: "Mercados", intro: "Preços à vista em dólar de um provedor público, com atraso de até {n} segundos. Apenas exibição: o CoinBlink não negocia, não roteia ordens e não armazena preços.",
+    source: "Fonte", asOf: "Coletado em", disabled: "O feed de mercado está desligado nesta implantação.",
+    unavailable: "O provedor não respondeu. Nenhum preço é mostrado em vez de um valor velho ou inventado.",
+    note: "Não é recomendação de investimento. A atribuição é obrigatória e aparece em cada cotação.",
+    back: "Voltar ao CoinBlink",
+  },
+  es: {
+    title: "Mercados", intro: "Precios al contado en dólares de un proveedor público, con retraso de hasta {n} segundos. Solo visualización: CoinBlink no opera, no enruta órdenes y no almacena precios.",
+    source: "Fuente", asOf: "Recolectado", disabled: "El feed de mercado está apagado en este despliegue.",
+    unavailable: "El proveedor no respondió. No se muestra ningún precio en lugar de uno viejo o inventado.",
+    note: "No es asesoramiento de inversión. La atribución es obligatoria y aparece en cada cotización.",
+    back: "Volver a CoinBlink",
+  },
+}[locale];
+const intro = copy.intro.replace("{n}", String(LIVE_PROVIDER.cacheSeconds));
+const live = snapshot.status === "LIVE_ATTRIBUTED";
+type Quote = { symbol: string; pair: string; priceUsd: number };
+const quotes = (live ? (snapshot as { quotes: Quote[] }).quotes : []) as Quote[];
+const money = (value: number) => value >= 1000
+  ? "$" + value.toLocaleString("en-US", { maximumFractionDigits: 0 })
+  : "$" + value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+---
+
+<BaseLayout lang={lang} title={"CoinBlink · " + copy.title} description={intro}>
+  <main id="main" class="markets">
+    <nav aria-label="Markets navigation"><a href={`/${locale}`}>← {copy.back}</a></nav>
+    <header>
+      <p class="markets__tag">CB-M04 · {live ? "LIVE · ATTRIBUTED" : "UNAVAILABLE"}</p>
+      <h1>{copy.title}</h1>
+      <p>{intro}</p>
+    </header>
+
+    {live
+      ? (
+        <section aria-label={copy.title}>
+          <ul class="markets__list">
+            {quotes.map((quote: Quote) => (
+              <li class="markets__row">
+                <span class="markets__symbol">{quote.symbol}</span>
+                <span class="markets__pair">{quote.pair}</span>
+                <span class="markets__price">{money(quote.priceUsd)}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="markets__meta">
+            {copy.source}: <a href={LIVE_PROVIDER.url} rel="noreferrer noopener external">{LIVE_PROVIDER.attribution}</a>
+            {" · "}{copy.asOf} {snapshot.asOfUTC}
+          </p>
+        </section>
+      )
+      : (
+        <section class="markets__state" role="status">
+          <p>{snapshot.status === "DISABLED" ? copy.disabled : copy.unavailable}</p>
+        </section>
+      )}
+
+    <p class="markets__note">{copy.note}</p>
+  </main>
+</BaseLayout>

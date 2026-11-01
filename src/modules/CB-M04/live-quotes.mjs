@@ -14,6 +14,9 @@ export const LIVE_PROVIDER = Object.freeze({
   endpoint: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd",
   cacheSeconds: 60,
   attribution: "Market data by CoinGecko",
+  // Demo plan: 30 calls per minute and 10,000 per month. The guard below stops
+  // at 8,000 so a busy month cannot exhaust the account quota.
+  monthlyLimit: 8000,
 });
 
 export const LIVE_ASSETS = Object.freeze([
@@ -94,6 +97,25 @@ export const defaultLiveCache = createLiveCache();
  * Fetch one snapshot. Never throws: every failure becomes UNAVAILABLE with a
  * machine-readable reason so the page can stay honest instead of guessing.
  */
+/**
+ * Claims one call for the current UTC month. Returns false when the budget is
+ * spent, so the adapter answers UNAVAILABLE instead of spending the account.
+ */
+export async function claimProviderCall({ db, provider = LIVE_PROVIDER.id, nowMs = Date.now(), limit = LIVE_PROVIDER.monthlyLimit }) {
+  if (db === undefined || db === null) return true;
+  const period = new Date(nowMs).toISOString().slice(0, 7);
+  try {
+    const claimed = await db.prepare(
+      'INSERT INTO cms_provider_calls(provider,period,calls,updated_at) VALUES (?,?,1,?) '
+      + 'ON CONFLICT(provider,period) DO UPDATE SET calls=calls+1, updated_at=excluded.updated_at WHERE calls < ?',
+    ).bind(provider, period, Math.floor(nowMs / 1000), limit).run();
+    return claimed?.meta?.changes === 1;
+  } catch {
+    // A database without the migration must not block the feed.
+    return true;
+  }
+}
+
 export async function readLiveSnapshot(options = {}) {
   const {
     enabled,
@@ -102,6 +124,8 @@ export async function readLiveSnapshot(options = {}) {
     nowMs = () => Date.now(),
     timeoutMs = 4000,
     cache = defaultLiveCache,
+    apiKey = null,
+    db = null,
   } = options;
   if (!isLiveEnabled(enabled)) {
     return Object.freeze({ status: "DISABLED", reason: "NOT_ENABLED", quotes: Object.freeze([]) });
@@ -111,12 +135,17 @@ export async function readLiveSnapshot(options = {}) {
   if (typeof fetchImpl !== "function") {
     return Object.freeze({ status: "UNAVAILABLE", reason: "NO_FETCH", quotes: Object.freeze([]) });
   }
+  if (!(await claimProviderCall({ db, nowMs: nowMs() }))) {
+    return Object.freeze({ status: "UNAVAILABLE", reason: "QUOTA_GUARD", quotes: Object.freeze([]) });
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchImpl(LIVE_PROVIDER.endpoint, {
       signal: controller.signal,
-      headers: { accept: "application/json" },
+      headers: typeof apiKey === "string" && apiKey !== ""
+        ? { accept: "application/json", "x-cg-demo-api-key": apiKey }
+        : { accept: "application/json" },
       cache: "no-store",
     });
     if (!response.ok) {

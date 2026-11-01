@@ -274,7 +274,8 @@ async function productionAdmin(request, env) {
       : result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
       : result.status === 'unavailable' ? 'Workers AI did not answer.'
         : result.status === 'unverified_output' ? 'The model cited nothing that exists; nothing was saved.'
-          : 'The model did not return the required JSON shape; nothing was saved.';
+          : 'The model did not return the required JSON shape; nothing was saved.'
+            + (typeof result.detail === 'string' && result.detail !== '' ? ' Model said: ' + result.detail : '');
     return page('Articles', articlesAdminSection({
       articles: await listArticles({ db: config.db, includeAll: true }),
       drafts: await listDrafts(config.db),

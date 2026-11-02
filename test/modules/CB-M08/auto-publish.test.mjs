@@ -93,3 +93,46 @@ test('the owner screen and the route expose the dry run and the manual tick', ()
   const ops = readFileSync('src/modules/CB-M14/ops-events.mjs', 'utf8');
   assert.match(ops, /article_auto_published/u);
 });
+
+test('rate limits and outages stay eligible, a 404 does not', async () => {
+  const { MAX_TRANSIENT_ATTEMPTS, isEligible, isTransient } = await import('../../../src/modules/CB-M08/auto-publish.mjs');
+  assert.equal(isTransient('HTTP_429'), true);
+  assert.equal(isTransient('HTTP_503'), true);
+  assert.equal(isTransient('HTTP_500'), true);
+  assert.equal(isTransient('timeout'), true);
+  assert.equal(isTransient('network'), true);
+  assert.equal(isTransient('HTTP_404'), false);
+  assert.equal(isTransient('empty'), false);
+  assert.equal(isEligible(null), true);
+  assert.equal(isEligible({ status: 'published', attempts: 1 }), false);
+  assert.equal(isEligible({ status: 'no_source:HTTP_404', attempts: 1 }), false);
+  assert.equal(isEligible({ status: 'transient:HTTP_429', attempts: 1 }), true);
+  assert.equal(isEligible({ status: 'transient:HTTP_429', attempts: MAX_TRANSIENT_ATTEMPTS }), false);
+});
+
+test('a rate-limited publisher is recorded as transient and retried', async () => {
+  const { autoPublishTick } = await import('../../../src/modules/CB-M08/auto-publish.mjs');
+  const writes = [];
+  const database = {
+    prepare(sql) {
+      const bind = (...args) => ({
+        async first() {
+          if (sql.includes('FROM cms_articles')) return { n: 0 };
+          if (sql.includes('FROM cms_auto_publish')) return null;
+          return null;
+        },
+        async run() { writes.push({ sql, args }); return { meta: { changes: 1 } }; },
+      });
+      return { bind, first: () => bind().first(), run: () => bind().run() };
+    },
+  };
+  const result = await autoPublishTick({
+    db: database, secret: 's', env: { M08_AUTO_PUBLISH: 'on' }, items: ITEMS,
+    fetchImpl: async () => new Response('slow down', { status: 429 }),
+  });
+  assert.equal(result.status, 'no_source');
+  assert.equal(result.reason, 'HTTP_429');
+  assert.equal(result.transient, true);
+  assert.match(writes[0].args[1], /^transient:HTTP_429$/u);
+  assert.match(writes[0].sql, /ON CONFLICT\(digest\) DO UPDATE/u);
+});

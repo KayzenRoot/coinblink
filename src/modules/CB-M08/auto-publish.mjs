@@ -15,6 +15,7 @@ import { recordOpsEvent } from '../CB-M14/ops-events.mjs';
 
 export const AUTO_PUBLISH_LOCALES = Object.freeze(['en', 'pt-br', 'es']);
 export const DEFAULT_PER_HOUR = 6;
+export const MAX_TRANSIENT_ATTEMPTS = 3;
 export const AUTO_PROVENANCE = 'Automatic draft from the collected headline, checked for citations, copying and unsourced numbers before publishing.';
 
 /** A stable digest of the headline link, so the same story is attempted once. */
@@ -32,9 +33,28 @@ export function autoSettingsFrom(values) {
   return Object.freeze({ enabled, perHour, locale });
 }
 
+/** Transient reasons deserve another tick; the rest are final. */
+export function isTransient(reason) {
+  const text = String(reason ?? '');
+  if (text === 'timeout' || text === 'network') return true;
+  const http = /^HTTP_(\d{3})$/u.exec(text);
+  return http !== null && Number(http[1]) >= 500 || text === 'HTTP_429';
+}
+
 async function remember(db, digest, status, nowSeconds) {
-  await db.prepare('INSERT OR IGNORE INTO cms_auto_publish(digest,status,created_at) VALUES (?,?,?)')
-    .bind(digest, status, nowSeconds).run();
+  // Upsert keeps the attempt count: a transient failure stays eligible until
+  // MAX_TRANSIENT_ATTEMPTS, everything else is skipped from then on.
+  await db.prepare(
+    'INSERT INTO cms_auto_publish(digest,status,created_at,attempts) VALUES (?,?,?,1) '
+    + 'ON CONFLICT(digest) DO UPDATE SET status=excluded.status, attempts=attempts+1',
+  ).bind(digest, status, nowSeconds).run();
+}
+
+export function isEligible(row) {
+  if (row === null || row === undefined) return true;
+  const status = String(row.status ?? '');
+  if (!status.startsWith('transient:')) return false;
+  return Number(row.attempts ?? 1) < MAX_TRANSIENT_ATTEMPTS;
 }
 
 /**
@@ -76,8 +96,8 @@ export async function autoPublishTick({
     const link = String(item?.link ?? '');
     if (link === '') continue;
     const digest = await linkDigest(link);
-    const seen = await db.prepare('SELECT digest FROM cms_auto_publish WHERE digest=?').bind(digest).first();
-    if (seen === null || seen === undefined) { candidate = { item, digest }; break; }
+    const seen = await db.prepare('SELECT digest, status, attempts FROM cms_auto_publish WHERE digest=?').bind(digest).first();
+    if (isEligible(seen)) { candidate = { item, digest }; break; }
   }
   if (candidate === null) return Object.freeze({ status: 'nothing_new' });
 
@@ -90,8 +110,9 @@ export async function autoPublishTick({
 
   const researched = await fetchSourceText({ url: String(candidate.item.link), fetchImpl });
   if (researched.status !== 'ok') {
-    await remember(db, candidate.digest, 'no_source:' + researched.reason, nowSeconds);
-    return Object.freeze({ status: 'no_source', reason: researched.reason });
+    const transient = isTransient(researched.reason);
+    await remember(db, candidate.digest, (transient ? 'transient:' : 'no_source:') + researched.reason, nowSeconds);
+    return Object.freeze({ status: 'no_source', reason: researched.reason, transient });
   }
 
   const draft = await generateArticleDraft({

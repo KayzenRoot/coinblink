@@ -10,6 +10,7 @@ test('the policy states what the pipeline actually does', () => {
     'written by Workers AI', 'invent no numbers, dates, names or quotes',
     'Nothing reaches the public without the owner publishing it',
     'repeats eight consecutive words',
+    'a number the headlines never carried',
     'CoinBlink AI draft', 'answering 410', 'revision',
   ]) {
     assert.ok(page.includes(marker), marker);

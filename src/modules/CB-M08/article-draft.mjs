@@ -158,6 +158,28 @@ export function longestSharedSpan(bodyText, sourceTexts) {
   return longest;
 }
 
+/**
+ * Digits the draft uses that the collected headlines never contained. Citation
+ * markers such as [1] are not numbers, and a number is accepted when it appears
+ * in any supplied title.
+ */
+export function unsourcedNumbers(bodyText, sourceTexts) {
+  const allowed = new Set();
+  const collect = (value) => {
+    for (const token of String(value ?? '').match(/\d[\d.,]*/gu) ?? []) {
+      allowed.add(token.replace(/[.,]+$/u, '').replaceAll(',', ''));
+    }
+  };
+  for (const source of Array.isArray(sourceTexts) ? sourceTexts : []) collect(source);
+  const withoutCitations = String(bodyText ?? '').replace(/\[\d+\]/gu, ' ');
+  const missing = new Set();
+  for (const token of withoutCitations.match(/\d[\d.,]*/gu) ?? []) {
+    const clean = token.replace(/[.,]+$/u, '').replaceAll(',', '');
+    if (clean !== '' && !allowed.has(clean)) missing.add(clean);
+  }
+  return Object.freeze([...missing]);
+}
+
 export function parseArticleDraft(raw, { sources }) {
   if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output', detail: 'empty answer' });
   const parsed = parseJsonLoose(raw);
@@ -178,6 +200,12 @@ export function parseArticleDraft(raw, { sources }) {
   const copied = longestSharedSpan(title + "\n" + summary + "\n" + body,
     (Array.isArray(sources) ? sources : []).map((source) => source.title));
   if (copied >= 8) return Object.freeze({ status: 'copied_text', detail: copied + ' shared words' });
+  // Numbers are claims too: a figure the headlines never carried is invented.
+  const unsourced = unsourcedNumbers(title + "\n" + summary + "\n" + body,
+    (Array.isArray(sources) ? sources : []).map((source) => source.title));
+  if (unsourced.length > 0) {
+    return Object.freeze({ status: 'unsourced_number', detail: unsourced.slice(0, 3).join(', ') });
+  }
   const allowed = new Map((Array.isArray(sources) ? sources : []).map((source) => [Number(source.n), source]));
   const citations = [];
   for (const entry of Array.isArray(parsed.citations) ? parsed.citations.slice(0, DRAFT_LIMITS.citations) : []) {
@@ -237,7 +265,7 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     const firstRaw = await ask(messages);
     if (firstRaw === null) return Object.freeze({ status: 'unavailable' });
     const first = parseArticleDraft(firstRaw, { sources });
-    if (first.status !== 'invalid_output' && first.status !== 'copied_text') return first;
+    if (first.status !== 'invalid_output' && first.status !== 'copied_text' && first.status !== 'unsourced_number') return first;
     // One retry with the same sources and an explicit reminder, for the two
     // answers a retry can actually fix: malformed JSON and copied headlines.
     const second = parseArticleDraft(await ask([
@@ -247,7 +275,9 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
         role: 'user',
         content: first.status === 'copied_text'
           ? 'Do not reuse words from the headlines. Rewrite the story in your own words, keep the citations, and reply with only the JSON object.'
-          : 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.',
+          : first.status === 'unsourced_number'
+            ? 'Remove every number that does not appear in the headlines. Keep the citations and reply with only the JSON object.'
+            : 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.',
       }),
     ]), { sources });
     return second;

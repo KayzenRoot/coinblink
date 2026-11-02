@@ -274,6 +274,7 @@ async function productionAdmin(request, env) {
       : result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
       : result.status === 'unavailable' ? 'Workers AI did not answer.'
         : result.status === 'copied_text' ? 'The draft reproduced a collected headline; nothing was saved.'
+        : result.status === 'unsourced_number' ? 'The draft used an unsupported number; nothing was saved.'
         : result.status === 'unverified_output' ? 'The model cited nothing that exists; nothing was saved.'
           : 'The model did not return the required JSON shape; nothing was saved.'
             + (typeof result.detail === 'string' && result.detail !== '' ? ' Model said: ' + result.detail : '');

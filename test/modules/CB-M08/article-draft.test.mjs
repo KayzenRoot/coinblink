@@ -156,3 +156,19 @@ test('a draft that reproduces a headline is refused before it is saved', async (
   // The same body without the copied run stays a valid draft.
   assert.equal(parseArticleDraft(JSON.stringify(GOOD), { sources: SOURCES }).status, 'drafted');
 });
+
+test('a draft that uses a number the headlines never carried is refused', async () => {
+  const { unsourcedNumbers } = await import('../../../src/modules/CB-M08/article-draft.mjs');
+  const titles = ['Bitcoin ETF inflows hit a record in October', 'Scammers lost $130 million in the hack'];
+  assert.deepEqual(unsourcedNumbers('The figure was $130 million [1].', titles), []);
+  assert.deepEqual(unsourcedNumbers('Inflows grew 42% this week [1].', titles), ['42']);
+  assert.deepEqual(unsourcedNumbers('See [1] and [2].', titles), [], 'citation markers are not numbers');
+  const result = parseArticleDraft(JSON.stringify({
+    ...GOOD,
+    body: GOOD.body + ' The fund grew 42 percent, according to the report [1].',
+  }), { sources: SOURCES });
+  assert.equal(result.status, 'unsourced_number');
+  assert.match(result.detail, /42/u);
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /unsupported number/u);
+});

@@ -139,3 +139,21 @@ test('an article passes its own cover as the social image', async () => {
   });
   assert.equal(escaped.openGraph.image, origin + '/brand/og-image.jpg', 'only site-relative images are accepted');
 });
+
+test('a single-locale article advertises only the alternates that exist', async () => {
+  const { buildSeoMetadata } = await import('../../../src/modules/CB-M09/site-locales.mjs');
+  const origin = 'https://coinblink.example';
+  const page = buildSeoMetadata({
+    pathname: '/en/article/only-english', lang: 'en', title: 'Only English', description: 'D', origin,
+    alternates: [{ hreflang: 'en', path: '/en/article/only-english' }],
+  });
+  assert.deepEqual(page.alternates.map((entry) => entry.hreflang), ['en']);
+  assert.equal(page.alternates[0].href, origin + '/en/article/only-english');
+  const invalid = buildSeoMetadata({
+    pathname: '/en/article/x', lang: 'en', title: 'T', description: 'D', origin,
+    alternates: [{ hreflang: 'en', path: 'https://evil.example/x' }, { hreflang: 'es', path: '/es/article/x' }],
+  });
+  assert.deepEqual(invalid.alternates.map((entry) => entry.hreflang), ['es'], 'only site-relative paths are accepted');
+  const page2 = buildSeoMetadata({ pathname: '/en/news', lang: 'en', title: 'News', description: 'D', origin });
+  assert.ok(page2.alternates.length >= 4, 'localized routes keep every language alternate');
+});

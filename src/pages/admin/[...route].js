@@ -256,9 +256,50 @@ async function productionAdmin(request, env) {
     const topic = typedTopic === '' ? String(items[0]?.title ?? '') : typedTopic;
     const keyword = topic.toLowerCase();
     const matching = keyword === '' ? items : items.filter((item) => String(item.title).toLowerCase().includes(keyword.split(/\s+/u)[0] ?? ''));
+    const language = String(auth.form.get('language') ?? 'en');
+    const languages = String(auth.form.get('languages') ?? 'one');
+    const targets = languages === 'all' ? ['en', 'pt-br', 'es'] : [language];
+    if (targets.length > 1) {
+      // All three languages in one action: each answer goes through the same
+      // guards and creates its own draft, and a refusal never blocks the rest.
+      const created = [];
+      const refused = [];
+      for (const target of targets) {
+        const attempt = await generateArticleDraft({
+          ai: env.AI, topic, items: matching.length > 0 ? matching : items,
+          language: target, model: env.M08_MODEL ?? undefined,
+        });
+        if (attempt.status !== 'drafted') {
+          refused.push(target + ':' + attempt.status);
+          try {
+            await recordOpsEvent({ db: config.db, type: 'ai_draft_refused', detail: target + ':' + attempt.status, nowMs: now });
+          } catch {
+            // logging never blocks the owner screen
+          }
+          continue;
+        }
+        const draft = await createDraft({
+          db: config.db, secret: config.secret, now: now,
+          input: {
+            title: attempt.draft.title, summary: attempt.draft.summary, body: attempt.draft.body,
+            sourceUrl: attempt.draft.primaryUrl, authorLabel: 'CoinBlink AI draft',
+          },
+        });
+        if (draft?.draft?.id) created.push(target);
+        else refused.push(target + ':not_saved');
+      }
+      const summary = 'Drafts created: ' + (created.length === 0 ? 'none' : created.join(', '))
+        + (refused.length === 0 ? '.' : '. Refused: ' + refused.join(', ') + '.');
+      return page('Articles', articlesAdminSection({
+        articles: await listArticles({ db: config.db, includeAll: true }),
+        drafts: await listDrafts(config.db),
+        csrf: csrfFromRequest(request),
+        message: summary,
+      }), created.length === 0 ? 400 : 200);
+    }
     const result = await generateArticleDraft({
       ai: env.AI, topic, items: matching.length > 0 ? matching : items,
-      language: String(auth.form.get('language') ?? 'en'), model: env.M08_MODEL ?? undefined,
+      language, model: env.M08_MODEL ?? undefined,
     });
     if (result.status === 'drafted') {
       const created = await createDraft({

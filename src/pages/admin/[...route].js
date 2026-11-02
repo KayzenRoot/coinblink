@@ -18,7 +18,7 @@ import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage, storeManualAccount } from '../../modules/CB-M07/token-vault.mjs';
 import {
-  clearSetting, listSettings, setSetting, settingsPage,
+  clearSetting, getSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
 import { listSubscribers, subscriberCounts, subscribersSection } from '../../modules/CB-M10/newsletter.mjs';
@@ -245,6 +245,24 @@ async function productionAdmin(request, env) {
       message: url.searchParams.get('error') ?? '',
     }));
   }
+  // The external provider is read from the encrypted settings first, then the
+  // Worker env. Without a key the pipeline keeps using Workers AI.
+  async function aiProvider(config, env) {
+    // getSetting already falls back to the Worker env when nothing is stored.
+    const read = async (key) => {
+      const value = await getSetting({ db: config.db, secret: config.secret, env, key });
+      return typeof value === 'string' ? value.trim() : '';
+    };
+    const name = (await read('M08_PROVIDER')) || 'workers-ai';
+    if (name !== 'deepseek') return Object.freeze({ name: 'workers-ai' });
+    return Object.freeze({
+      name: 'deepseek',
+      baseUrl: await read('DEEPSEEK_BASE_URL'),
+      apiKey: await read('DEEPSEEK_API_KEY'),
+      model: (await read('M08_MODEL')) || 'deepseek-v4.1-flash',
+    });
+  }
+
   if (method === 'POST' && path === '/admin/articles/generate') {
     const auth = await authorizeForm(request, config, now);
     if (auth === null) return denied(404);
@@ -259,6 +277,7 @@ async function productionAdmin(request, env) {
     const language = String(auth.form.get('language') ?? 'en');
     const languages = String(auth.form.get('languages') ?? 'one');
     const targets = languages === 'all' ? ['en', 'pt-br', 'es'] : [language];
+    const externalProvider = await aiProvider(config, env);
     if (targets.length > 1) {
       // All three languages in one action: each answer goes through the same
       // guards and creates its own draft, and a refusal never blocks the rest.
@@ -268,6 +287,7 @@ async function productionAdmin(request, env) {
         const attempt = await generateArticleDraft({
           ai: env.AI, topic, items: matching.length > 0 ? matching : items,
           language: target, model: env.M08_MODEL ?? undefined,
+          provider: externalProvider,
         });
         if (attempt.status !== 'drafted') {
           refused.push(target + ':' + attempt.status);
@@ -301,6 +321,7 @@ async function productionAdmin(request, env) {
     const result = await generateArticleDraft({
       ai: env.AI, topic, items: matching.length > 0 ? matching : items,
       language, model: env.M08_MODEL ?? undefined,
+      provider: await aiProvider(config, env),
     });
     if (result.status === 'drafted') {
       const draftId = await createDraft({

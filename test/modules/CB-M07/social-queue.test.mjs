@@ -78,3 +78,33 @@ test('the owner screen exposes the quotas and the two plan actions', () => {
   assert.match(settings, /M07_TIKTOK_PER_DAY/u);
   assert.equal(utcDay(Date.UTC(2026, 10, 2, 23)), '2026-11-02');
 });
+
+test('a hot topic outranks a slightly fresher quiet one', async () => {
+  const { relevanceScore, trendingCounts } = await import('../../../src/modules/CB-M07/social-queue.mjs');
+  const nowMs = Date.UTC(2026, 10, 2, 12);
+  const trending = trendingCounts([
+    { title: 'Bitcoin ETF inflows rise' }, { title: 'Bitcoin breaks a record' },
+    { title: 'Bitcoin miners sell' }, { title: 'Solana upgrade ships' },
+  ]);
+  assert.equal(trending.Bitcoin, 3);
+  assert.equal(trending.Altcoins, 1);
+  const hot = relevanceScore({ article: { publishedAt: nowMs / 1000 - 3600, topic: 'Bitcoin' }, nowMs, trending });
+  const quiet = relevanceScore({ article: { publishedAt: nowMs / 1000 - 100, topic: 'Guides' }, nowMs, trending });
+  assert.ok(hot > quiet, 'coverage heat beats 50 minutes of recency');
+  const older = relevanceScore({ article: { publishedAt: nowMs / 1000 - 72 * 3600, topic: 'Bitcoin' }, nowMs, trending });
+  assert.ok(hot > older);
+});
+
+test('the social tick plans the day only when a quota exists', async () => {
+  const { socialTick } = await import('../../../src/modules/CB-M07/social-queue.mjs');
+  const settings = () => ({ prepare() { return { bind: () => ({ first: async () => null, all: async () => ({ results: [] }) }) }; } });
+  const off = await socialTick({ db: settings({}), secret: 's', env: {} });
+  assert.equal(off.status, 'no_quota');
+  const database = db({ articles: ARTICLES });
+  const planned = await socialTick({
+    db: database, secret: 's', env: { M07_IG_PER_DAY: '1' }, nowMs: Date.UTC(2026, 10, 2, 12),
+    origin: 'https://cb.example', items: [{ title: 'Bitcoin ETF inflows' }],
+  });
+  assert.equal(planned.status, 'planned');
+  assert.equal(planned.planned, 1);
+});

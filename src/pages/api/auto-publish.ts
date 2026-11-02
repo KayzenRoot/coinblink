@@ -9,6 +9,7 @@ import { autoPublishTick } from "../../modules/CB-M08/auto-publish.mjs";
 import { aiProviderFromSettings } from "../../modules/CB-M08/provider-config.mjs";
 import { runtimeBinding, runtimeEnv } from "../../lib/runtime-env";
 import { sameToken } from "../../modules/CB-M08/token-compare.mjs";
+import { socialTick } from "../../modules/CB-M07/social-queue.mjs";
 
 export const prerender = false;
 
@@ -41,7 +42,13 @@ export const POST: APIRoute = async ({ request }) => {
     ai: env.AI, provider: await aiProviderFromSettings({ db, secret, env }),
     dryRun,
   });
-  return reply(200, { status: "ok", result });
+  // The same tick plans the social day, so a configured quota fills itself.
+  const social = await socialTick({
+    db, secret, env, nowMs: Date.now(),
+    origin: runtimeEnv("PUBLIC_SITE_ORIGIN") ?? new URL(request.url).origin,
+    dryRun,
+  });
+  return reply(200, { status: "ok", result, social });
 };
 
 export const ALL: APIRoute = () => reply(405, { status: "method_not_allowed" });

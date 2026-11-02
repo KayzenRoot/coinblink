@@ -43,4 +43,6 @@ test('the route, the layout link and the sitemap expose the feed', () => {
   assert.match(layout, /type="application\/rss\+xml"/u);
   const sitemap = readFileSync('src/pages/sitemap.xml.ts', 'utf8');
   assert.match(sitemap, /"\/newsletter\/editions"/u);
+  assert.match(sitemap, /"\/editorial"/u);
+  assert.match(sitemap, /"\/legal"/u);
 });

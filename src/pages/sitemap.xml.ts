@@ -6,7 +6,7 @@ import { runtimeBinding } from "../lib/runtime-env";
 export const prerender = false;
 
 const LOCALES = ["en", "pt-br", "es"] as const;
-const STATIC_PATHS = ["", "/news", "/news/live", "/news/sources", "/news/coverage"];
+const STATIC_PATHS = ["", "/news", "/news/live", "/news/sources", "/news/coverage", "/legal", "/editorial"];
 
 function origin(request: Request): string {
   const configured = import.meta.env.PUBLIC_SITE_ORIGIN;

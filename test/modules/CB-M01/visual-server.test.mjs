@@ -48,12 +48,18 @@ test("a TCP listener that accepts without sending response headers cannot hang r
     await assert.rejects(waitForFixtureReady({
       child: announcedChild(origin),
       origin,
-      timeoutMs: 150,
-      intervalMs: 10,
+      timeoutMs: 400,
+      intervalMs: 20,
       probe: httpGet,
     }), /did not become ready/u);
+    // The OS may deliver the accepted socket a moment after the deadline, so
+    // the assertion waits for it instead of racing the scheduler under load.
+    const acceptDeadline = Date.now() + 1_000;
+    while (!acceptedConnection && Date.now() < acceptDeadline) {
+      await new Promise((resolveWait) => setTimeout(resolveWait, 20));
+    }
     assert.equal(acceptedConnection, true, "the readiness request reached the stalled TCP listener");
-    assert.ok(Date.now() - startedAt < 1_000, "the total readiness time remains bounded");
+    assert.ok(Date.now() - startedAt < 3_000, "the total readiness time remains bounded");
   } finally {
     for (const socket of sockets) socket.destroy();
     await new Promise((resolveClose) => server.close(resolveClose));

@@ -49,7 +49,7 @@ export async function listDrafts(db) {
 
 export async function readDraft(db, id) {
   if (!validDraftId(id)) return null;
-  return (await db.prepare('SELECT id,title,summary,body,source_url AS sourceUrl,author_label AS authorLabel,status,revision,created_at AS createdAt,updated_at AS updatedAt FROM cms_drafts WHERE id=? AND owner_id=1').bind(id).first()) ?? null;
+  return (await db.prepare('SELECT id,title,summary,body,source_url AS sourceUrl,author_label AS authorLabel,locale,status,revision,created_at AS createdAt,updated_at AS updatedAt FROM cms_drafts WHERE id=? AND owner_id=1').bind(id).first()) ?? null;
 }
 
 export async function listRevisions(db, id) {
@@ -60,12 +60,15 @@ export async function listRevisions(db, id) {
 
 export async function createDraft({ db, secret, input, now }) {
   const values = validateDraft(input);
+  // A draft remembers the language it was written in, so the publish form can
+  // propose it instead of defaulting to English.
+  const locale = ["en", "pt-br", "es"].includes(String(input?.locale)) ? String(input.locale) : "en";
   const id = crypto.randomUUID();
   const marker = crypto.randomUUID();
   const createKey = await keyedDigest(secret, 'draft:' + id);
   const results = await db.batch([
-    db.prepare("INSERT INTO cms_drafts(id,owner_id,title,summary,body,source_url,author_label,status,revision,create_key_digest,write_marker,created_at,updated_at) VALUES (?,1,?,?,?,?,?,'draft',1,?,?,?,?)")
-      .bind(id, values.title, values.summary, values.body, values.sourceUrl, values.authorLabel, createKey, marker, now, now),
+    db.prepare("INSERT INTO cms_drafts(id,owner_id,title,summary,body,source_url,author_label,locale,status,revision,create_key_digest,write_marker,created_at,updated_at) VALUES (?,1,?,?,?,?,?,?,'draft',1,?,?,?,?)")
+      .bind(id, values.title, values.summary, values.body, values.sourceUrl, values.authorLabel, locale, createKey, marker, now, now),
     db.prepare('INSERT INTO cms_draft_revisions(draft_id,revision,actor_owner_id,title,summary,body,source_url,author_label,write_marker,created_at) VALUES (?,1,1,?,?,?,?,?,?,?)')
       .bind(id, values.title, values.summary, values.body, values.sourceUrl, values.authorLabel, marker, now),
   ]);
@@ -104,7 +107,7 @@ function csrfField(csrf) {
 
 export function draftsPage({ drafts, csrf }) {
   const items = drafts.map((draft) => '<li><a href="/admin/drafts/' + escapeHtml(draft.id) + '">'
-    + escapeHtml(draft.title) + '</a> <span class="admin__note">· revision ' + escapeHtml(String(draft.revision))
+    + escapeHtml(draft.title) + '</a> <span class="admin__note">· ' + escapeHtml(String(draft.locale ?? 'en')) + ' · revision ' + escapeHtml(String(draft.revision))
     + ' · ' + escapeHtml(draft.status) + '</span></li>').join('');
   return page('Drafts', '<p><a href="/admin/drafts/new">Create a draft</a> · <a href="/admin">Owner workspace</a></p>'
     + (drafts.length === 0 ? '<p>No drafts yet.</p>' : '<ul class="admin__drafts">' + items + '</ul>')
@@ -130,8 +133,10 @@ export function draftFormPage({ draft, csrf, action, error = '' }) {
       ? '<form method="post" action="/admin/articles/publish" class="admin__draft-form">'
         + csrfField(csrf)
         + '<input type="hidden" name="draft_id" value="' + escapeHtml(String(draft.id)) + '">'
-        + '<label>Publish in<select name="locale"><option value="en">English</option>'
-        + '<option value="pt-br">Português (BR)</option><option value="es">Español</option></select></label>'
+        + '<label>Publish in<select name="locale">'
+        + '<option value="en"' + (draft.locale === 'en' ? ' selected' : '') + '>English</option>'
+        + '<option value="pt-br"' + (draft.locale === 'pt-br' ? ' selected' : '') + '>Português (BR)</option>'
+        + '<option value="es"' + (draft.locale === 'es' ? ' selected' : '') + '>Español</option></select></label>'
         + '<label>Tags<input name="tags" maxlength="200" placeholder="bitcoin, regulation"></label>'
         + '<label>Provenance note<textarea name="provenance_note" required minlength="10" maxlength="400" rows="2">'
         + 'Owner-reviewed draft from collected headlines.</textarea></label>'

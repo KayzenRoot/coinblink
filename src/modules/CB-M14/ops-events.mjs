@@ -9,6 +9,7 @@ export const EVENT_TYPES = Object.freeze([
   'webhook_invalid_event',
   'research_failed',
   'ai_draft_refused',
+  'article_auto_published',
   'email_failed',
 ]);
 

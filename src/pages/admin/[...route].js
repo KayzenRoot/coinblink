@@ -47,6 +47,7 @@ import { alertsAdminSection, previewDigests, sendDigests } from '../../modules/C
 import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
 import { generateArticleDraft } from '../../modules/CB-M08/article-draft.mjs';
 import { fetchSourceText } from '../../modules/CB-M08/source-text.mjs';
+import { autoPublishTick } from '../../modules/CB-M08/auto-publish.mjs';
 import { listPolicy, setPolicy, sourcesAdminSection } from '../../modules/CB-M03/source-policy.mjs';
 import { LIVE_NEWS_SOURCES } from '../../modules/CB-M03/rss-sources.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
@@ -365,6 +366,29 @@ async function productionAdmin(request, env) {
       csrf: csrfFromRequest(request),
       message: reason,
     }), 400);
+  }
+  if (method === 'POST' && path === '/admin/auto-publish') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const result = await autoPublishTick({
+      db: config.db, secret: config.secret, env, nowMs: Date.now(),
+      ai: env.AI, provider: await aiProvider(config, env),
+      dryRun: String(auth.form.get('mode') ?? '') === 'dry',
+    });
+    const detail = result.status === 'published' ? 'Published /' + result.locale + '/article/' + result.slug
+      : result.status === 'dry_run' ? 'Would publish: ' + result.title
+        : result.status === 'throttled' ? 'Hourly limit reached (' + result.publishedLastHour + '/' + result.perHour + ').'
+          : result.status === 'refused' ? 'The draft was refused by the guards (' + result.reason + '); the headline is remembered.'
+            : result.status === 'no_source' ? 'The publisher page could not be read (' + result.reason + '); the headline is remembered.'
+              : result.status === 'publish_failed' ? 'The draft was written but not published (' + result.reason + ').'
+                : result.status === 'off' ? 'Automatic publishing is off (M08_AUTO_PUBLISH).'
+                  : 'No new headline to attempt.';
+    return page('Articles', articlesAdminSection({
+      articles: await listArticles({ db: config.db, includeAll: true }),
+      drafts: await listDrafts(config.db),
+      csrf: csrfFromRequest(request),
+      message: detail,
+    }), result.status === 'publish_failed' ? 400 : 200);
   }
   if (method === 'POST' && path === '/admin/articles/publish') {
     const auth = await authorizeForm(request, config, now);

@@ -207,9 +207,14 @@ async function runScope(ctx, label) {
       throw new Error('Cannot inspect entire workflow: ' + filename);
     }
     const full = Buffer.from(data.content.replaceAll('\n', ''), 'base64').toString('utf8');
-    // Exactly one scheduled workflow may read a secret: the owner-authorized
-    // cost report. It must stay read-only and carry the marker comment.
-    const allowScheduledSecrets = filename === '.github/workflows/cost-report.yml'
+    // Only owner-authorized scheduled workflows may read a secret: the cost
+    // report and the auto-publish tick. Both must stay read-only and carry the
+    // marker comment.
+    const allowedScheduled = new Set([
+      '.github/workflows/cost-report.yml',
+      '.github/workflows/auto-publish.yml',
+    ]);
+    const allowScheduledSecrets = allowedScheduled.has(filename)
       && full.includes('# owner-authorized-schedule')
       && full.includes('permissions:') && full.includes('contents: read');
     return unsafeWorkflowLines(full, { allowScheduledSecrets }).map(reason => filename + ': ' + reason);

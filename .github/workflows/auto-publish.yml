@@ -1,0 +1,42 @@
+name: CoinBlink auto publish
+
+# One tick every 30 minutes. The job only calls our own endpoint with the
+# AUTO_PUBLISH_TOKEN secret; the Worker decides everything else (the switch
+# M08_AUTO_PUBLISH, the hourly limit, the guards). Nothing is printed but the
+# JSON result, which never carries a credential.
+
+# owner-authorized-schedule: the owner approved the automatic publishing loop on 2026-11-02.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coinblink-auto-publish
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    name: Auto publish tick (Ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Call the Worker
+        env:
+          AUTO_PUBLISH_TOKEN: ${{ secrets.AUTO_PUBLISH_TOKEN }}
+          COINBLINK_SITE: ${{ vars.COINBLINK_SITE || 'https://coinblink-production.kayzendev.workers.dev' }}
+        run: |
+          if [ -z "$AUTO_PUBLISH_TOKEN" ]; then
+            echo "AUTO_PUBLISH_TOKEN is not configured; nothing to do."
+            exit 0
+          fi
+          status=$(curl -sS -o tick.json -w "%{http_code}" \
+            -X POST "$COINBLINK_SITE/api/auto-publish" \
+            -H "authorization: Bearer $AUTO_PUBLISH_TOKEN" \
+            -H "content-type: application/json")
+          echo "HTTP $status"
+          cat tick.json
+          test "$status" = "200"

@@ -1,0 +1,89 @@
+---
+// CB-M02-P1-TOPICS-001: a topic page for our articles and the collected
+// headlines that share the same category. An unknown slug answers 404.
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { articlesForTopic, headlinesForTopic, topicBySlug } from "../../../modules/CB-M02/topics.mjs";
+import { listArticleCards } from "../../../modules/CB-M05/p1-production/articles.mjs";
+import { readLiveNews } from "../../../modules/CB-M03/live-news.mjs";
+import { runtimeBinding } from "../../../lib/runtime-env";
+
+export const prerender = false;
+
+const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
+const COPY = Object.freeze({
+  en: { intro: "Articles we published and attributed headlines collected about this topic.", ours: "Published by CoinBlink", theirs: "Collected headlines", empty: "Nothing collected for this topic yet.", read: "Read the article" },
+  "pt-br": { intro: "Artigos que publicamos e manchetes coletadas com atribuição sobre este tema.", ours: "Publicado pelo CoinBlink", theirs: "Manchetes coletadas", empty: "Nada coletado para este tema ainda.", read: "Ler o artigo" },
+  es: { intro: "Artículos que publicamos y titulares recolectados con atribución sobre este tema.", ours: "Publicado por CoinBlink", theirs: "Titulares recolectados", empty: "Todavía no hay nada recolectado para este tema.", read: "Leer el artículo" },
+});
+const { locale = "en", topic: topicSlug = "" } = Astro.params;
+const localeKey: "en" | "pt-br" | "es" = locale === "pt-br" || locale === "es" ? locale : "en";
+const topic = topicBySlug(topicSlug);
+if (topic === null) Astro.response.status = 404;
+const copy = COPY[localeKey];
+const lang = SITE_LANG[localeKey] as "en" | "pt-BR" | "es";
+const db = runtimeBinding("CMS_DB");
+const cards = topic === null || db === undefined || db === null
+  ? []
+  : await listArticleCards({ db, locale: localeKey, limit: 24 });
+const news = topic === null ? null : await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const articles = articlesForTopic(cards, topic);
+const headlines = headlinesForTopic(news?.status === "LIVE_HEADLINES" ? news.items : [], topic);
+const stamp = (iso: string | null) => (iso === null ? "" : iso.slice(0, 16).replace("T", " ") + " UTC");
+---
+
+{topic === null ? (
+  <BaseLayout lang={lang} title="CoinBlink · topic" description="This topic does not exist." robots="noindex, follow">
+    <main id="main" class="status">
+      <nav aria-label="Topic navigation"><a href={`/${localeKey}`}>← CoinBlink</a></nav>
+      <h1>Topic not found</h1>
+      <p class="body-copy">This topic does not exist. <a href={`/${localeKey}/search`}>Search CoinBlink</a> instead.</p>
+    </main>
+  </BaseLayout>
+) : (
+  <BaseLayout
+    lang={lang}
+    title={`CoinBlink · ${topic.label}`}
+    description={copy.intro}
+    robots="noindex, follow"
+  >
+    <main id="main" class="status">
+      <nav aria-label="Topic navigation">
+        <a href={`/${localeKey}`}>← CoinBlink</a>
+        <a href={`/${localeKey}/news`}>{copy.theirs}</a>
+        <a href={`/${localeKey}/search`}>{localeKey === "pt-br" ? "Busca" : localeKey === "es" ? "Buscar" : "Search"}</a>
+      </nav>
+      <header>
+        <p class="status__tag">CB-M02 · TOPIC</p>
+        <h1>{topic.label}</h1>
+        <p>{copy.intro}</p>
+      </header>
+
+      {articles.length === 0 && headlines.length === 0 ? (
+        <p class="body-copy" role="status">{copy.empty}</p>
+      ) : (
+        <>
+          {articles.length > 0 && (
+            <section aria-labelledby="topic-ours">
+              <h2 id="topic-ours">{copy.ours}</h2>
+              <ul class="news-cards news-cards--live">
+                {articles.map((article: { title: string; summary: string; cover: string; href: string }) => (
+                  <li class="news-card"><a href={article.href}><img src={article.cover} alt="" width="1200" height="630" loading="lazy" decoding="async" /><h3>{article.title}</h3></a><p>{article.summary}</p></li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {headlines.length > 0 && (
+            <section aria-labelledby="topic-theirs">
+              <h2 id="topic-theirs">{copy.theirs}</h2>
+              <ul>
+                {headlines.map((item: { title: string; sourceName: string; link: string; publishedAt: string | null }) => (
+                  <li><a href={item.link} rel="noreferrer noopener external">{item.title}</a> — {item.sourceName} {stamp(item.publishedAt)}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      )}
+    </main>
+  </BaseLayout>
+)}

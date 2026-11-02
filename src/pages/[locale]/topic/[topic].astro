@@ -51,6 +51,7 @@ const stamp = (iso: string | null) => (iso === null ? "" : iso.slice(0, 16).repl
         <a href={`/${localeKey}`}>← CoinBlink</a>
         <a href={`/${localeKey}/news`}>{copy.theirs}</a>
         <a href={`/${localeKey}/search`}>{localeKey === "pt-br" ? "Busca" : localeKey === "es" ? "Buscar" : "Search"}</a>
+        <a href={`/${localeKey}/topics`}>{localeKey === "pt-br" ? "Temas" : localeKey === "es" ? "Temas" : "Topics"}</a>
       </nav>
       <header>
         <p class="status__tag">CB-M02 · TOPIC</p>

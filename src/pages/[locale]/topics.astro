@@ -1,0 +1,67 @@
+---
+// CB-M02-P1-TOPICS-001: the index of canonical topics.
+//
+// Each row shows how much is on the topic right now: our published articles and
+// the collected headlines that share the category.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  TOPICS, articlesForTopic, headlinesForTopic,
+} from "../../modules/CB-M02/topics.mjs";
+import { listArticleCards } from "../../modules/CB-M05/p1-production/articles.mjs";
+import { readLiveNews } from "../../modules/CB-M03/live-news.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
+
+export const prerender = false;
+
+const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
+const COPY = Object.freeze({
+  en: { title: "Topics", intro: "Every topic CoinBlink follows, with what we published and what the collectors found.", ours: "articles", theirs: "headlines", empty: "nothing yet" },
+  "pt-br": { title: "Temas", intro: "Todos os temas que o CoinBlink acompanha, com o que publicamos e o que os coletores encontraram.", ours: "artigos", theirs: "manchetes", empty: "nada ainda" },
+  es: { title: "Temas", intro: "Todos los temas que sigue CoinBlink, con lo que publicamos y lo que encontraron los recolectores.", ours: "artículos", theirs: "titulares", empty: "nada todavía" },
+});
+const { locale = "en" } = Astro.params;
+const localeKey: "en" | "pt-br" | "es" = locale === "pt-br" || locale === "es" ? locale : "en";
+const copy = COPY[localeKey];
+const lang = SITE_LANG[localeKey] as "en" | "pt-BR" | "es";
+const db = runtimeBinding("CMS_DB");
+const cards = db === undefined || db === null ? [] : await listArticleCards({ db, locale: localeKey, limit: 48 });
+const news = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const headlines = news.status === "LIVE_HEADLINES" ? news.items : [];
+const rows = TOPICS.map((topic) => ({
+  slug: topic.slug,
+  label: topic.label,
+  articles: articlesForTopic(cards, topic).length,
+  headlines: headlinesForTopic(headlines, topic).length,
+}));
+---
+
+<BaseLayout
+  lang={lang}
+  title={`CoinBlink · ${copy.title}`}
+  description={copy.intro}
+  robots="noindex, follow"
+>
+  <main id="main" class="status">
+    <nav aria-label="Topics navigation">
+      <a href={`/${localeKey}`}>← CoinBlink</a>
+      <a href={`/${localeKey}/search`}>{localeKey === "pt-br" ? "Busca" : localeKey === "es" ? "Buscar" : "Search"}</a>
+    </nav>
+    <header>
+      <p class="status__tag">CB-M02 · TOPICS</p>
+      <h1>{copy.title}</h1>
+      <p>{copy.intro}</p>
+    </header>
+    <ul class="topic-index">
+      {rows.map((row) => (
+        <li>
+          <a href={`/${localeKey}/topic/${row.slug}`}><strong>{row.label}</strong></a>
+          <span>
+            {row.articles === 0 && row.headlines === 0
+              ? copy.empty
+              : row.articles + " " + copy.ours + " · " + row.headlines + " " + copy.theirs}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </main>
+</BaseLayout>

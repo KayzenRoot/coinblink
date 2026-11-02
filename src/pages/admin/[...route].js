@@ -270,6 +270,17 @@ async function productionAdmin(request, env) {
       });
       if (created?.draft?.id) return redirectTo('/admin/drafts/' + created.draft.id);
     }
+    // A refused draft is an operational signal, not just a message: the ops
+    // panel shows how often the model breaks a rule and which one.
+    try {
+      await recordOpsEvent({
+        db: config.db, type: 'ai_draft_refused',
+        detail: String(result.status).slice(0, 60) + (typeof result.detail === 'string' && result.detail !== '' ? ': ' + result.detail.slice(0, 80) : ''),
+        nowMs: now,
+      });
+    } catch {
+      // logging never blocks the owner screen
+    }
     const reason = result.status === 'invalid' ? 'Type a topic with at least 3 characters, or leave it empty to use the collection.'
       : result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
       : result.status === 'unavailable' ? 'Workers AI did not answer.'

@@ -748,3 +748,9 @@ code {
 .article__related { margin-top:22px; border-top:1px solid #26332a; padding-top:14px; }
 .article__related h2 { font-size:16px; margin:0 0 8px; }
 .article__related ul { margin:0; padding-left:18px; }
+
+.topic-index { display:grid; gap:10px; margin:18px 0; padding:0; list-style:none; }
+.topic-index li { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px; border:1px solid #26332a; border-radius:8px; padding:10px 12px; }
+.topic-index a { color:#e8efe8; text-decoration:none; }
+.topic-index a:hover { color:#b8f34b; }
+.topic-index span { color:#8f9c93; font-size:12px; }

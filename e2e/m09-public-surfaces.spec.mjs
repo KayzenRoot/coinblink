@@ -87,3 +87,13 @@ test("a topic page renders the category and an unknown topic answers 404", async
   expect(missing?.status()).toBe(404);
   await expect(page.locator("h1")).toHaveText("Topic not found");
 });
+
+test("the topics index lists the eight topics and links their pages", async ({ page }) => {
+  const response = await page.goto("/en/topics");
+  expect(response?.status()).toBe(200);
+  await expect(page.locator("h1")).toHaveText("Topics");
+  await expect(page.locator(".topic-index li")).toHaveCount(8);
+  await expect(page.locator('.topic-index a[href="/en/topic/bitcoin"]')).toHaveCount(1);
+  await page.goto("/pt-br/topics");
+  await expect(page.locator("h1")).toHaveText("Temas");
+});

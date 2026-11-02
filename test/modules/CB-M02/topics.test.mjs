@@ -46,3 +46,13 @@ test('the page answers 404 for an unknown topic and links the tags', () => {
   assert.match(article, /topicSlugForTag\(tag\)/u);
   assert.match(article, /\/topic\/\$\{topic\}/u);
 });
+
+test('the topics index links every topic and counts what is on it', () => {
+  const page = readFileSync('src/pages/[locale]/topics.astro', 'utf8');
+  assert.match(page, /TOPICS\.map/u);
+  assert.match(page, /\/topic\/\$\{row\.slug\}/u);
+  assert.match(page, /articlesForTopic\(cards, topic\)\.length/u);
+  assert.match(page, /headlinesForTopic\(headlines, topic\)\.length/u);
+  const search = readFileSync('src/pages/[locale]/search.astro', 'utf8');
+  assert.match(search, /\/topics`\}/u);
+});

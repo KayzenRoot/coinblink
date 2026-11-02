@@ -16,7 +16,7 @@ test('the page becomes readable text without markup or scripts', () => {
   assert.match(text, /Hong Kong expands settlement/u);
   assert.match(text, /24\/7 settlement pilot & stablecoin trials/u);
   assert.doesNotMatch(text, /__data|color:red|iframe|ad"/u);
-  assert.doesNotMatch(text, /<\/?(?:p|div|script|style|iframe|nav|footer|article)/iu, 'no real tags survive');
+  assert.doesNotMatch(text, /<\/?(?:p|div|script|style|iframe|nav|footer|article)\b/iu, 'no real tags survive');
   assert.match(text, /<three> institutions/u, 'an escaped angle bracket stays literal text');
   assert.match(text, /130 million HKD/u, 'entities and nbsp are decoded');
   assert.ok(text.length <= SOURCE_EXCERPT_CHARS);

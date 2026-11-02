@@ -286,3 +286,10 @@ test('an AI-assisted article says so on the page and links the policy', () => {
   const css = readFileSync('src/styles/global.css', 'utf8');
   assert.match(css, /\.article__ai/u);
 });
+
+test('an automatically published article says so instead of claiming a review', () => {
+  const page = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
+  assert.match(page, /provenanceNote \?\? ""\)\.startsWith\("Automatic"\)/u);
+  assert.match(page, /published automatically · checked for citations, copying and numbers/u);
+  assert.match(page, /reviewed before publishing/u);
+});

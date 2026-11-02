@@ -85,7 +85,9 @@ const related = article === null
       {cover !== "" && <img class="article__cover" src={cover} width="1200" height="630" alt="" loading="eager" decoding="async" />}
       <h1>{article.title}</h1>
       <p class="article__meta">
-        {article.authorLabel !== "" && <span>{article.authorLabel}</span>}
+        {article.authorLabel !== "" && (/ai/iu.test(article.authorLabel)
+          ? <a class="article__ai" href={`/${locale}/editorial`}>{article.authorLabel} · {locale === "pt-br" ? "revisado antes de publicar" : locale === "es" ? "revisado antes de publicar" : "reviewed before publishing"}</a>
+          : <span>{article.authorLabel}</span>)}
         <time datetime={new Date(article.publishedAt * 1000).toISOString()}>{published}</time>
         <span>revision {article.revision}</span>
       </p>

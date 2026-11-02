@@ -21,6 +21,7 @@
     "cms:smoke": "node test/modules/CB-M05/p1c-local-preview.mjs --smoke --admin",
     "studio:local": "node scripts/dev-studio.mjs",
     "studio:check": "node scripts/dev-studio.mjs --check",
+    "d1:migrate": "wrangler d1 migrations apply coinblink-cms --remote",
     "d1:backup": "node scripts/d1-backup.mjs",
     "d1:drill": "node scripts/d1-restore-drill.mjs",
     "cost:report": "node scripts/cost-report.mjs"

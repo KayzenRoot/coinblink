@@ -277,3 +277,12 @@ test('a created AI draft redirects instead of showing an error', () => {
   assert.doesNotMatch(route, /draft\?\.draft\?\.id/u);
   assert.match(route, /could not be saved/u);
 });
+
+test('an AI-assisted article says so on the page and links the policy', () => {
+  const page = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
+  assert.match(page, /\/ai\/iu\.test\(article\.authorLabel\)/u);
+  assert.match(page, /article__ai/u);
+  assert.match(page, /reviewed before publishing/u);
+  const css = readFileSync('src/styles/global.css', 'utf8');
+  assert.match(css, /\.article__ai/u);
+});

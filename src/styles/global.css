@@ -766,3 +766,7 @@ code {
 .article__ai { display:inline-flex; align-items:center; gap:6px; border:1px solid #3b4a3f; border-radius:999px; color:#c9d7c6; font-size:11px; padding:2px 9px; text-decoration:none; }
 .article__ai::before { content:"✳"; color:#b8f34b; }
 .article__ai:hover { border-color:#7a9d42; color:#fff; }
+
+.markets__change { font-size:12px; font-variant-numeric:tabular-nums; color:#8f9c93; }
+.markets__change.is-up { color:#8bf06a; }
+.markets__change.is-down { color:#ff8573; }

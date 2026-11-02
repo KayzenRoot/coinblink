@@ -90,7 +90,7 @@ const marketSnapshot = await readLiveSnapshot({
   apiKey: runtimeEnv("COINGECKO_API_KEY"),
   db: runtimeBinding("CMS_DB"),
 });
-type MarketQuote = { symbol: string; priceUsd: number };
+type MarketQuote = { symbol: string; priceUsd: number; change24h?: number | null };
 const marketQuotes = (marketSnapshot.status === "LIVE_ATTRIBUTED"
   ? (marketSnapshot as { quotes: MarketQuote[] }).quotes
   : []) as MarketQuote[];
@@ -341,7 +341,7 @@ const editorialR26Assets = {
               <span class="market-name"><strong>{market.name}</strong><small>{market.symbol}</small></span>
               <span class="spark" aria-hidden="true"><svg viewBox="0 0 64 22"><path d="M1 17 9 13 16 15 23 6 31 12 39 4 47 9 55 2 63 5"></path></svg></span>
               <span class="market-value" data-live-price aria-label={quoteFor(market.symbol) === null ? t("Unavailable") : t("Price in US dollars")}>{quoteFor(market.symbol)?.priceUsd !== undefined ? marketPrice(quoteFor(market.symbol)?.priceUsd ?? 0) : "—"}</span>
-              <span class="live-change" data-live-change aria-live="off"></span>
+              <span class="live-change" data-live-change aria-live="off">{typeof quoteFor(market.symbol)?.change24h === "number" ? ((quoteFor(market.symbol)?.change24h ?? 0) >= 0 ? "+" : "") + (quoteFor(market.symbol)?.change24h ?? 0).toFixed(2) + "%" : ""}</span>
             </li>
           ))}
         </ul>

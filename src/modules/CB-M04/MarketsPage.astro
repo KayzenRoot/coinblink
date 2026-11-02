@@ -43,7 +43,7 @@ const copy = {
 }[locale];
 const intro = copy.intro.replace("{n}", String(LIVE_PROVIDER.cacheSeconds));
 const live = snapshot.status === "LIVE_ATTRIBUTED";
-type Quote = { symbol: string; pair: string; priceUsd: number };
+type Quote = { symbol: string; pair: string; priceUsd: number; change24h?: number | null };
 const quotes = (live ? (snapshot as { quotes: Quote[] }).quotes : []) as Quote[];
 const money = (value: number) => value >= 1000
   ? "$" + value.toLocaleString("en-US", { maximumFractionDigits: 0 })
@@ -68,6 +68,9 @@ const money = (value: number) => value >= 1000
                 <span class="markets__symbol">{quote.symbol}</span>
                 <span class="markets__pair">{quote.pair}</span>
                 <span class="markets__price">{money(quote.priceUsd)}</span>
+                {typeof quote.change24h === "number"
+                  ? <span class={"markets__change " + (quote.change24h >= 0 ? "is-up" : "is-down")}>{(quote.change24h >= 0 ? "+" : "") + quote.change24h.toFixed(2)}%</span>
+                  : <span class="markets__change">—</span>}
               </li>
             ))}
           </ul>

@@ -47,7 +47,8 @@ export function buildArticlePrompt({ topic, items, language = 'en', excerpt = ''
     '{"title": string (40-120 chars), "summary": string (120-300 chars), "body": string (3-6 paragraphs separated by blank lines, each citation written as [n]), "citations": [{"n": number, "source": string, "url": string}]}',
     'Cite only numbers that exist above. At least one citation is required.',
     ...(String(excerpt ?? '').trim() === '' ? [] : [
-      'Publisher page excerpt, for facts only. Do not copy its sentences or reuse a long run of its words:',
+      'Publisher page excerpt, for facts only. Paraphrase every sentence in your own structure;',
+      'never reproduce more than six consecutive words from it, and never copy a phrase verbatim:',
       String(excerpt).slice(0, 3500),
     ]),
     'Write the JSON object as one line or use \n escapes inside the body string; never put raw line breaks inside a JSON string and never wrap the object in markdown fences.',

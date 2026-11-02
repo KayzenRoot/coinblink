@@ -180,7 +180,7 @@ function csrfField(csrf) {
   return '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">';
 }
 
-export function socialPage({ accounts, csrf, message = '' }) {
+export function socialPage({ accounts, csrf, message = '', quota = null, plan = [] }) {
   const items = accounts.map((account) => '<li><strong>@' + escapeHtml(account.username) + '</strong>'
     + ' <span class="admin__note">· ' + escapeHtml(account.provider) + ' · '
     + escapeHtml(account.scopes || 'no scopes reported') + '</span>'
@@ -205,5 +205,18 @@ export function socialPage({ accounts, csrf, message = '' }) {
     + '<button type="submit">Store token</button></form>'
     + '<p class="admin__note">Tokens are encrypted with AES-GCM at rest. Publishing is disabled: '
     + 'connecting an account does not post anything until a separate approval flow exists.</p>'
+    + (quota === null ? '' : '<h2>Daily plan</h2>'
+      + '<p class="admin__note">Instagram ' + Number(quota.instagram) + '/day · TikTok ' + Number(quota.tiktok) + '/day. '
+      + 'Set the quotas in Settings, group Social.</p>'
+      + '<form method="post" action="/admin/social/plan" class="admin__draft-form">' + csrfField(csrf)
+      + '<input type="hidden" name="mode" value="dry">'
+      + '<button type="submit">Preview today plan</button></form>'
+      + '<form method="post" action="/admin/social/plan" class="admin__draft-form">' + csrfField(csrf)
+      + '<input type="hidden" name="mode" value="plan">'
+      + '<button type="submit">Plan today</button></form>'
+      + (plan.length === 0 ? '<p>Nothing planned yet today.</p>'
+        : '<ul class="admin__drafts">' + plan.map((row) => '<li><strong>' + escapeHtml(row.network)
+          + '</strong> <span class="admin__note">· ' + escapeHtml(row.slug) + '</span><pre>'
+          + escapeHtml(row.caption) + '</pre></li>').join('') + '</ul>'))
     + '<form method="post" action="/admin/logout">' + csrfField(csrf) + '<button type="submit">Sign out</button></form>');
 }

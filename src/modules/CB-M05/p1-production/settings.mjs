@@ -40,6 +40,10 @@ export const SETTINGS = Object.freeze([
     pattern: /^[A-Za-z0-9._-]{12,200}$/u, hint: 'sk-…' },
   { key: 'M08_MODEL', label: 'DeepSeek model id', group: 'AI', secret: false,
     pattern: /^[A-Za-z0-9@._:/-]{2,120}$/u, hint: 'deepseek-v4.1-flash' },
+  { key: 'M07_IG_PER_DAY', label: 'Instagram posts per day', group: 'Social', secret: false,
+    pattern: /^(?:[0-9]|1[0-9]|20)$/u, hint: '0' },
+  { key: 'M07_TIKTOK_PER_DAY', label: 'TikTok posts per day', group: 'Social', secret: false, // gitleaks:allow
+    pattern: /^(?:[0-9]|1[0-9]|20)$/u, hint: '0' },
   { key: 'X_CLIENT_ID', label: 'X client ID', group: 'Social', secret: false,
     pattern: /^[A-Za-z0-9_-]{8,200}$/u, hint: 'OAuth 2.0 client ID' },
   { key: 'X_CLIENT_SECRET', label: 'X client secret', group: 'Social', secret: true,

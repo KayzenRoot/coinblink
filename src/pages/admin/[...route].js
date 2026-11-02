@@ -17,8 +17,9 @@ import {
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage, storeManualAccount } from '../../modules/CB-M07/token-vault.mjs';
+import { dailyQuota, listQueue, planDay } from '../../modules/CB-M07/social-queue.mjs';
 import {
-  clearSetting, listSettings, setSetting, settingsPage,
+  clearSetting, getSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
 import { listSubscribers, subscriberCounts, subscribersSection } from '../../modules/CB-M10/newsletter.mjs';
@@ -45,6 +46,7 @@ import {
 } from '../../modules/CB-M13/ads.mjs';
 import { alertsAdminSection, previewDigests, sendDigests } from '../../modules/CB-M16/alerts.mjs';
 import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
+import { runtimeEnv } from '../../lib/runtime-env';
 import { generateArticleDraft } from '../../modules/CB-M08/article-draft.mjs';
 import { fetchSourceText } from '../../modules/CB-M08/source-text.mjs';
 import { autoPublishTick } from '../../modules/CB-M08/auto-publish.mjs';
@@ -249,6 +251,17 @@ async function productionAdmin(request, env) {
     }));
   }
   const aiProvider = (config, currentEnv) => aiProviderFromSettings({ db: config.db, secret: config.secret, env: currentEnv });
+
+  async function socialQuota(config, currentEnv) {
+    const read = async (key) => {
+      const value = await getSetting({ db: config.db, secret: config.secret, env: currentEnv, key });
+      return typeof value === 'string' ? value.trim() : '';
+    };
+    return dailyQuota({
+      M07_IG_PER_DAY: await read('M07_IG_PER_DAY'),
+      M07_TIKTOK_PER_DAY: await read('M07_TIKTOK_PER_DAY'),
+    });
+  }
 
   if (method === 'POST' && path === '/admin/articles/generate') {
     const auth = await authorizeForm(request, config, now);
@@ -664,7 +677,26 @@ async function productionAdmin(request, env) {
   if (method === 'GET' && path === '/admin/social') {
     const session = await authorize(request, { db: config.db, secret: config.secret, now });
     if (session === null) return denied(404);
-    return socialPage({ accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request) });
+    const quota = await socialQuota(config, env);
+    return socialPage({
+      accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request), quota,
+      plan: await listQueue({ db: config.db }),
+    });
+  }
+  if (method === 'POST' && path === '/admin/social/plan') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const quota = await socialQuota(config, env);
+    const dryRun = String(auth.form.get('mode') ?? '') === 'dry';
+    const origin = runtimeEnv('PUBLIC_SITE_ORIGIN') ?? new URL(request.url).origin;
+    const plan = await planDay({ db: config.db, nowMs: Date.now(), quota, origin, dryRun });
+    const message = plan.length === 0
+      ? 'Nothing to plan: set the daily quotas in Settings or publish more articles.'
+      : (dryRun ? 'Would plan ' : 'Planned ') + plan.length + ' post(s).';
+    return page('Social accounts', socialPage({
+      accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request),
+      message, quota, plan: await listQueue({ db: config.db }),
+    }));
   }
   if (method === 'POST' && path === '/admin/social/manual') {
     const auth = await authorizeForm(request, config, now);

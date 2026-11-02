@@ -18,7 +18,7 @@ import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage, storeManualAccount } from '../../modules/CB-M07/token-vault.mjs';
 import {
-  clearSetting, getSetting, listSettings, setSetting, settingsPage,
+  clearSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
 import { sendTestEmail } from '../../modules/CB-M10/resend.mjs';
 import { listSubscribers, subscriberCounts, subscribersSection } from '../../modules/CB-M10/newsletter.mjs';
@@ -48,6 +48,7 @@ import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
 import { generateArticleDraft } from '../../modules/CB-M08/article-draft.mjs';
 import { fetchSourceText } from '../../modules/CB-M08/source-text.mjs';
 import { autoPublishTick } from '../../modules/CB-M08/auto-publish.mjs';
+import { aiProviderFromSettings } from '../../modules/CB-M08/provider-config.mjs';
 import { listPolicy, setPolicy, sourcesAdminSection } from '../../modules/CB-M03/source-policy.mjs';
 import { LIVE_NEWS_SOURCES } from '../../modules/CB-M03/rss-sources.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
@@ -247,23 +248,7 @@ async function productionAdmin(request, env) {
       message: url.searchParams.get('error') ?? '',
     }));
   }
-  // The external provider is read from the encrypted settings first, then the
-  // Worker env. Without a key the pipeline keeps using Workers AI.
-  async function aiProvider(config, env) {
-    // getSetting already falls back to the Worker env when nothing is stored.
-    const read = async (key) => {
-      const value = await getSetting({ db: config.db, secret: config.secret, env, key });
-      return typeof value === 'string' ? value.trim() : '';
-    };
-    const name = (await read('M08_PROVIDER')) || 'workers-ai';
-    if (name !== 'deepseek') return Object.freeze({ name: 'workers-ai' });
-    return Object.freeze({
-      name: 'deepseek',
-      baseUrl: await read('DEEPSEEK_BASE_URL'),
-      apiKey: await read('DEEPSEEK_API_KEY'),
-      model: (await read('M08_MODEL')) || 'deepseek-v4.1-flash',
-    });
-  }
+  const aiProvider = (config, currentEnv) => aiProviderFromSettings({ db: config.db, secret: config.secret, env: currentEnv });
 
   if (method === 'POST' && path === '/admin/articles/generate') {
     const auth = await authorizeForm(request, config, now);

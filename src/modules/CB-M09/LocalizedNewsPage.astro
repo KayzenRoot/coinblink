@@ -64,6 +64,12 @@ const listDescription = hasRealContent ? realDescription : copy.listDescription;
       <>
         <SponsoredSlot slot="home" />
         <PublishedArticles locale={locale} />
+        <nav class="news-explore" aria-label={locale === "pt-br" ? "Explorar notícias" : locale === "es" ? "Explorar noticias" : "Explore the news"}>
+          <a href={`/${locale}/news/live`}>{locale === "pt-br" ? "Manchetes ao vivo" : locale === "es" ? "Titulares en vivo" : "Live headlines"}</a>
+          <a href={`/${locale}/topics`}>{locale === "pt-br" ? "Temas" : locale === "es" ? "Temas" : "Topics"}</a>
+          <a href={`/${locale}/search`}>{locale === "pt-br" ? "Busca" : locale === "es" ? "Buscar" : "Search"}</a>
+          <a href={`/${locale}/news/sources`}>{locale === "pt-br" ? "Fontes" : locale === "es" ? "Fuentes" : "Sources"}</a>
+        </nav>
         <NewsWorkbench locale={locale} category={category}>
           {liveSnapshot && <LiveHeadlineStrip slot="live" snapshot={liveSnapshot} locale={locale} />}
         </NewsWorkbench>

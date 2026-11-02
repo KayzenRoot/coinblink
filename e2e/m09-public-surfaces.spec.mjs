@@ -106,3 +106,16 @@ test("the topics index lists the eight topics and links their pages", async ({ p
   await page.goto("/pt-br/topics");
   await expect(page.locator("h1")).toHaveText("Temas");
 });
+
+test("the news page points at the live reader, topics, search and sources", async ({ page }) => {
+  const response = await page.goto("/en/news");
+  expect(response?.status()).toBe(200);
+  const explore = page.locator('nav[aria-label="Explore the news"]');
+  await expect(explore).toBeVisible();
+  await expect(explore.locator('a[href="/en/news/live"]')).toHaveCount(1);
+  await expect(explore.locator('a[href="/en/topics"]')).toHaveCount(1);
+  await expect(explore.locator('a[href="/en/search"]')).toHaveCount(1);
+  await expect(explore.locator('a[href="/en/news/sources"]')).toHaveCount(1);
+  await page.goto("/pt-br/news");
+  await expect(page.locator('nav[aria-label="Explorar notícias"]')).toBeVisible();
+});

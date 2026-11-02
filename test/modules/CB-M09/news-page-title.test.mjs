@@ -12,3 +12,11 @@ test('the news page calls itself a demo only while nothing real is on it', () =>
   assert.match(page, /title=\{detail \? copy\.detailTitle : listTitle\}/u);
   assert.match(page, /description=\{detail \? copy\.detailDescription : listDescription\}/u);
 });
+
+test('the news page links the live, topics, search and sources surfaces', () => {
+  assert.match(page, /class="news-explore"/u);
+  assert.match(page, /\/news\/live`\}/u);
+  assert.match(page, /\/topics`\}/u);
+  assert.match(page, /\/search`\}/u);
+  assert.match(page, /\/news\/sources`\}/u);
+});

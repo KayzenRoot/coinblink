@@ -126,6 +126,19 @@ export function draftFormPage({ draft, csrf, action, error = '' }) {
     + '<label>Source URL<input name="sourceUrl" type="url" required value="' + value('sourceUrl') + '"></label>'
     + '<label>Author label<input name="authorLabel" maxlength="120" value="' + value('authorLabel') + '"></label>'
     + '<button type="submit">' + (editing ? 'Save revision' : 'Create draft') + '</button></form>'
+    + (editing
+      ? '<form method="post" action="/admin/articles/publish" class="admin__draft-form">'
+        + csrfField(csrf)
+        + '<input type="hidden" name="draft_id" value="' + escapeHtml(String(draft.id)) + '">'
+        + '<label>Publish in<select name="locale"><option value="en">English</option>'
+        + '<option value="pt-br">Português (BR)</option><option value="es">Español</option></select></label>'
+        + '<label>Tags<input name="tags" maxlength="200" placeholder="bitcoin, regulation"></label>'
+        + '<label>Provenance note<textarea name="provenance_note" required minlength="10" maxlength="400" rows="2">'
+        + 'Owner-reviewed draft from collected headlines.</textarea></label>'
+        + '<button type="submit">Publish now</button></form>'
+        + '<p class="admin__note">Publishing copies this draft as it is and records a revision. '
+        + 'The article appears on the home, the feed and the sitemap immediately.</p>'
+      : '')
     + (editing ? '<p class="admin__note"><a href="/admin/drafts/' + escapeHtml(draft.id) + '/revisions">Revisions</a>'
       + ' · <a href="/admin/drafts/' + escapeHtml(draft.id) + '/export">Export Markdown</a></p>' : '')
     + '<p class="admin__note"><a href="/admin/drafts">Back to drafts</a></p>');

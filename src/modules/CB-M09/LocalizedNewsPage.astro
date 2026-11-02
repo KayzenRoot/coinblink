@@ -4,6 +4,7 @@ import NewsWorkbench from "../CB-M02/NewsWorkbench.astro";
 import NewsArticle from "../CB-M02/NewsArticle.astro";
 import LiveHeadlineStrip from "../CB-M03/LiveHeadlineStrip.astro";
 import PublishedArticles from "../CB-M05/PublishedArticles.astro";
+import { listArticleCards } from "../CB-M05/p1-production/articles.mjs";
 import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
 import { readLiveNews } from "../CB-M03/live-news.mjs";
 import { filterSnapshot, hiddenSourceIds } from "../CB-M03/source-policy.mjs";
@@ -42,9 +43,17 @@ const meta = {
   },
 } as const;
 const copy = meta[locale];
+// The page title says DEMO only while nothing real is on it: a published
+// article or a live collection makes it a news page, not a workbench.
+const realArticles = detail !== null ? [] : await listArticleCards({ db: runtimeBinding("CMS_DB"), locale, limit: 1 });
+const hasRealContent = realArticles.length > 0 || liveSnapshot?.status === "LIVE_HEADLINES";
+const listTitle = hasRealContent ? "CoinBlink · News" : copy.listTitle;
+const listDescription = hasRealContent
+  ? "Attributed headlines from public feeds and articles published by CoinBlink."
+  : copy.listDescription;
 ---
-<BaseLayout lang={copy.lang} title={detail ? copy.detailTitle : copy.listTitle}
-  description={detail ? copy.detailDescription : copy.listDescription}>
+<BaseLayout lang={copy.lang} title={detail ? copy.detailTitle : listTitle}
+  description={detail ? copy.detailDescription : listDescription}>
   {detail
     ? <NewsArticle locale={locale} item={detail.item} />
     : (

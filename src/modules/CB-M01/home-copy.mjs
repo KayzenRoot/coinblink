@@ -192,6 +192,7 @@ const HOME_COPY_ROWS = Object.freeze({
   "article": Object.freeze({ "pt-br": "artigo", es: "artículo" }),
   "PUBLISHED": Object.freeze({ "pt-br": "PUBLICADO", es: "PUBLICADO" }),
   "Read the article": Object.freeze({ "pt-br": "Ler o artigo", es: "Leer el artículo" }),
+  "Editorial": Object.freeze({ "pt-br": "Como escrevemos", es: "Cómo escribimos" }),
   "Demonstration only · no live market or editorial data": Object.freeze({ "pt-br": "Demonstração · sem dados financeiros ou editoriais ao vivo", es: "Solo demostración · sin datos de mercado ni editoriales en vivo" }),
 });
 

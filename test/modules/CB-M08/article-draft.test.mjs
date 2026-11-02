@@ -200,3 +200,30 @@ test('an external provider writes the draft and a failure falls back to Workers 
   assert.equal(aiCalls, 1, 'Workers AI answered after the external failure');
   assert.equal((await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS })).provider, 'workers-ai');
 });
+
+test('research hands the publisher page to the model and reports the fetch', async () => {
+  const page = '<html><body><article><p>' + 'Hong Kong regulator said the pilot starts next month and covers three institutions. '.repeat(3) + '</p></article></body></html>';
+  let seenPrompt = '';
+  const ai = {
+    async run(model, options) {
+      seenPrompt = JSON.stringify(options.messages ?? options.prompt ?? '');
+      return { response: JSON.stringify(GOOD) };
+    },
+  };
+  const drafted = await generateArticleDraft({
+    ai, topic: 'bitcoin etf', items: ITEMS, research: true,
+    fetchImpl: async () => new Response(page, { status: 200, headers: { 'content-type': 'text/html' } }),
+  });
+  assert.equal(drafted.status, 'drafted');
+  assert.equal(drafted.research, 'source');
+  assert.match(seenPrompt, /Publisher page excerpt/u);
+  assert.match(seenPrompt, /Hong Kong regulator said the pilot/u);
+
+  const failed = await generateArticleDraft({
+    ai, topic: 'bitcoin etf', items: ITEMS, research: true,
+    fetchImpl: async () => new Response('no', { status: 500 }),
+  });
+  assert.equal(failed.status, 'drafted', 'a failed fetch does not block the draft');
+  assert.equal(failed.research, 'HTTP_500');
+  assert.equal((await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS })).research, 'off');
+});

@@ -1,0 +1,84 @@
+---
+// CB-M02-P1-SEARCH-001: server-side search over our articles and the collected
+// headlines. A plain GET form, no script and no stored query.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { searchContent, SEARCH_MAX_QUERY } from "../../modules/CB-M02/search.mjs";
+import { listArticleCards } from "../../modules/CB-M05/p1-production/articles.mjs";
+import { readLiveNews } from "../../modules/CB-M03/live-news.mjs";
+import { runtimeBinding } from "../../lib/runtime-env";
+
+export const prerender = false;
+
+const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
+const COPY = Object.freeze({
+  en: { title: "Search", heading: "Search CoinBlink", placeholder: "Bitcoin, ETF, regulation…", ours: "Published by CoinBlink", theirs: "Collected headlines", empty: "Nothing matched. Try a shorter word.", prompt: "Type a word to search our articles and the collected headlines.", count: "results" },
+  "pt-br": { title: "Busca", heading: "Buscar no CoinBlink", placeholder: "Bitcoin, ETF, regulação…", ours: "Publicado pelo CoinBlink", theirs: "Manchetes coletadas", empty: "Nada encontrado. Tente uma palavra mais curta.", prompt: "Digite uma palavra para buscar nos nossos artigos e nas manchetes coletadas.", count: "resultados" },
+  es: { title: "Buscar", heading: "Buscar en CoinBlink", placeholder: "Bitcoin, ETF, regulación…", ours: "Publicado por CoinBlink", theirs: "Titulares recolectados", empty: "No hay resultados. Prueba una palabra más corta.", prompt: "Escribe una palabra para buscar en nuestros artículos y en los titulares recolectados.", count: "resultados" },
+});
+const { locale = "en" } = Astro.params;
+const localeKey: "en" | "pt-br" | "es" = locale === "pt-br" || locale === "es" ? locale : "en";
+const copy = COPY[localeKey];
+const lang = SITE_LANG[localeKey] as "en" | "pt-BR" | "es";
+const query = Astro.url.searchParams.get("q") ?? "";
+const db = runtimeBinding("CMS_DB");
+const articles = db === undefined || db === null ? [] : await listArticleCards({ db, locale: localeKey, limit: 8 });
+const news = await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE });
+const headlines = news.status === "LIVE_HEADLINES" ? news.items : [];
+const results = searchContent({ articles, headlines, query });
+const total = results.articles.length + results.headlines.length;
+const stamp = (iso: string | null) => (iso === null ? "" : iso.slice(0, 16).replace("T", " ") + " UTC");
+---
+
+<BaseLayout
+  lang={lang}
+  title={`CoinBlink · ${copy.title}`}
+  description="Search CoinBlink articles and the collected headlines."
+  robots="noindex, follow"
+>
+  <main id="main" class="status">
+    <nav aria-label="Search navigation">
+      <a href={`/${localeKey}`}>← CoinBlink</a>
+      <a href={`/${localeKey}/news`}>{copy.theirs}</a>
+    </nav>
+    <header>
+      <p class="status__tag">CB-M02 · SEARCH</p>
+      <h1>{copy.heading}</h1>
+      <p>{copy.prompt}</p>
+    </header>
+    <form method="get" action={`/${localeKey}/search`} class="admin__draft-form" role="search">
+      <label>
+        {copy.title}
+        <input type="search" name="q" value={results.query} maxlength={SEARCH_MAX_QUERY} placeholder={copy.placeholder} autocomplete="off" />
+      </label>
+      <button type="submit">{copy.title} →</button>
+    </form>
+
+    {results.query === "" ? null : total === 0 ? (
+      <p class="body-copy" role="status">{copy.empty}</p>
+    ) : (
+      <>
+        <p class="body-copy" role="status">{total} {copy.count}</p>
+        {results.articles.length > 0 && (
+          <section aria-labelledby="search-ours">
+            <h2 id="search-ours">{copy.ours}</h2>
+            <ul>
+              {results.articles.map((article: { title: string; summary: string; href: string }) => (
+                <li><a href={article.href}>{article.title}</a> — {article.summary}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {results.headlines.length > 0 && (
+          <section aria-labelledby="search-theirs">
+            <h2 id="search-theirs">{copy.theirs}</h2>
+            <ul>
+              {results.headlines.map((item: { title: string; sourceName: string; link: string; publishedAt: string | null }) => (
+                <li><a href={item.link} rel="noreferrer noopener external">{item.title}</a> — {item.sourceName} {stamp(item.publishedAt)}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </>
+    )}
+  </main>
+</BaseLayout>

@@ -5,7 +5,8 @@
 // its words may appear in the article. One fetch, one timeout, fail closed.
 
 export const SOURCE_TIMEOUT_MS = 8_000;
-export const SOURCE_MAX_BYTES = 300_000;
+export const SOURCE_MAX_BYTES = 800_000;
+export const SOURCE_DOWNLOAD_LIMIT = 3_000_000;
 export const SOURCE_EXCERPT_CHARS = 3_500;
 export const SOURCE_USER_AGENT = 'CoinBlinkBot/1.0 (+https://coinblink-production.kayzendev.workers.dev/editorial)';
 
@@ -60,9 +61,12 @@ export async function fetchSourceText({ url, fetchImpl = globalThis.fetch, timeo
     const type = String(response.headers?.get?.('content-type') ?? '');
     if (type !== '' && !/text\/html|application\/xhtml/iu.test(type)) return Object.freeze({ status: 'error', reason: 'not_html' });
     const declared = Number(response.headers?.get?.('content-length') ?? '0');
-    if (Number.isFinite(declared) && declared > SOURCE_MAX_BYTES) return Object.freeze({ status: 'error', reason: 'too_large' });
-    const body = await response.text();
-    if (body.length > SOURCE_MAX_BYTES) return Object.freeze({ status: 'error', reason: 'too_large' });
+    // Only an absurd page is refused; a normal news page is read and truncated,
+    // because the evidence budget is 3.500 characters anyway.
+    if (Number.isFinite(declared) && declared > SOURCE_DOWNLOAD_LIMIT) {
+      return Object.freeze({ status: 'error', reason: 'too_large' });
+    }
+    const body = (await response.text()).slice(0, SOURCE_MAX_BYTES);
     const text = htmlToText(body);
     if (text.length < 200) return Object.freeze({ status: 'error', reason: 'empty' });
     return Object.freeze({ status: 'ok', text });

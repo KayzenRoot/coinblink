@@ -47,3 +47,17 @@ test('the fetch fails closed on every bad path', async () => {
     url: 'https://x.test', fetchImpl: async () => new Response(PAGE, { status: 200, headers: { 'content-type': 'text/html' } }),
   })).status, 'ok');
 });
+
+test('a big page is truncated instead of refused', async () => {
+  const big = '<html><body><article><p>' + 'Hong Kong settlement news '.repeat(40_000) + '</p></article></body></html>';
+  const result = await fetchSourceText({
+    url: 'https://x.test/big', fetchImpl: async () => new Response(big, { status: 200, headers: { 'content-type': 'text/html' } }),
+  });
+  assert.equal(result.status, 'ok');
+  assert.ok(result.text.length <= SOURCE_EXCERPT_CHARS);
+  const absurd = await fetchSourceText({
+    url: 'https://x.test/absurd',
+    fetchImpl: async () => new Response('x', { status: 200, headers: { 'content-type': 'text/html', 'content-length': '9000000' } }),
+  });
+  assert.equal(absurd.reason, 'too_large');
+});

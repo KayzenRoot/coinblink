@@ -30,3 +30,8 @@ test('the scheduled workflow is read-only and carries the owner marker', () => {
   const guard = readFileSync('scripts/pr-assurance.mjs', 'utf8');
   assert.match(guard, /'\.github\/workflows\/auto-publish\.yml'/u);
 });
+
+test('the browser job runs when the AI pipeline changes', () => {
+  const workflow = readFileSync('.github/workflows/m01-m05-browser.yml', 'utf8');
+  assert.match(workflow, /- "src\/modules\/CB-M08\/\*\*"/u);
+});

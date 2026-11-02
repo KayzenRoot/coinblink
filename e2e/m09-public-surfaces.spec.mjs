@@ -83,6 +83,11 @@ test("a topic page renders the category and an unknown topic answers 404", async
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow");
   await expect(page.locator("main")).not.toContainText("Topic not found");
 
+  const scan = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(scan.violations).toEqual([]);
+
   const missing = await page.goto("/en/topic/not-a-topic");
   expect(missing?.status()).toBe(404);
   await expect(page.locator("h1")).toHaveText("Topic not found");
@@ -94,6 +99,10 @@ test("the topics index lists the eight topics and links their pages", async ({ p
   await expect(page.locator("h1")).toHaveText("Topics");
   await expect(page.locator(".topic-index li")).toHaveCount(8);
   await expect(page.locator('.topic-index a[href="/en/topic/bitcoin"]')).toHaveCount(1);
+  const scan = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(scan.violations).toEqual([]);
   await page.goto("/pt-br/topics");
   await expect(page.locator("h1")).toHaveText("Temas");
 });

@@ -47,10 +47,14 @@ const copy = meta[locale];
 // article or a live collection makes it a news page, not a workbench.
 const realArticles = detail !== null ? [] : await listArticleCards({ db: runtimeBinding("CMS_DB"), locale, limit: 1 });
 const hasRealContent = realArticles.length > 0 || liveSnapshot?.status === "LIVE_HEADLINES";
-const listTitle = hasRealContent ? "CoinBlink · News" : copy.listTitle;
-const listDescription = hasRealContent
-  ? "Attributed headlines from public feeds and articles published by CoinBlink."
-  : copy.listDescription;
+const realMeta = {
+  en: ["CoinBlink · News", "Attributed headlines from public feeds and articles published by CoinBlink."],
+  "pt-br": ["CoinBlink · Notícias", "Manchetes atribuídas de feeds públicos e artigos publicados pelo CoinBlink."],
+  es: ["CoinBlink · Noticias", "Titulares atribuidos de fuentes públicas y artículos publicados por CoinBlink."],
+} as const;
+const [realTitle, realDescription] = realMeta[locale];
+const listTitle = hasRealContent ? realTitle : copy.listTitle;
+const listDescription = hasRealContent ? realDescription : copy.listDescription;
 ---
 <BaseLayout lang={copy.lang} title={detail ? copy.detailTitle : listTitle}
   description={detail ? copy.detailDescription : listDescription}>

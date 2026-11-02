@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  createDraft, draftMarkdown, draftsPage, updateDraft, validateDraft,
+  createDraft, draftFormPage, draftMarkdown, draftsPage, updateDraft, validateDraft,
 } from '../../../src/modules/CB-M05/p1-production/drafts.mjs';
 
 const VALID = Object.freeze({
@@ -73,4 +73,18 @@ test('the admin route exposes drafts and never a publish action', () => {
   }
   // Publishing is owner-triggered only; nothing schedules or auto-publishes.
   assert.doesNotMatch(route, /schedule/iu);
+});
+
+test('an existing draft offers the publish form with the review note', async () => {
+  const draft = { id: UUID, revision: 2, title: 'A valid headline for the draft',
+    summary: 'A summary that is long enough to pass the contract.', body: 'The body of a private draft.',
+    sourceUrl: 'https://example.test/story', authorLabel: 'CoinBlink AI draft' };
+  const html = await draftFormPage({ draft, csrf: 'c'.repeat(64), action: '/admin/drafts/' + UUID }).text();
+  assert.match(html, /action="\/admin\/articles\/publish"/u);
+  assert.ok(html.includes('name="draft_id" value="' + UUID + '"'));
+  assert.match(html, /name="locale"/u);
+  assert.match(html, /name="provenance_note" required minlength="10"/u);
+  assert.match(html, /Publish now/u);
+  const creating = await draftFormPage({ draft: null, csrf: 'c'.repeat(64), action: '/admin/drafts/new' }).text();
+  assert.doesNotMatch(creating, /action="\/admin\/articles\/publish"/u);
 });

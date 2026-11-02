@@ -141,7 +141,7 @@ function words(value) {
  * The model never needs eight words in a row from a headline, so a match means
  * it copied instead of writing.
  */
-export function longestSharedSpan(bodyText, sourceTexts, size = 8) {
+export function longestSharedSpan(bodyText, sourceTexts) {
   const body = words(bodyText);
   let longest = 0;
   for (const source of Array.isArray(sourceTexts) ? sourceTexts : []) {

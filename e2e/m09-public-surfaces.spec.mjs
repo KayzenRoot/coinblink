@@ -75,3 +75,15 @@ test("the layout advertises the feed and the home links the policy", async ({ pa
   await expect(page.locator('link[type="application/rss+xml"]')).toHaveAttribute("href", "/en/feed.xml");
   await expect(page.locator('footer a[href="/en/editorial"]')).toHaveCount(1);
 });
+
+test("a topic page renders the category and an unknown topic answers 404", async ({ page }) => {
+  const response = await page.goto("/en/topic/bitcoin");
+  expect(response?.status()).toBe(200);
+  await expect(page.locator("h1")).toHaveText("Bitcoin");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow");
+  await expect(page.locator("main")).not.toContainText("Topic not found");
+
+  const missing = await page.goto("/en/topic/not-a-topic");
+  expect(missing?.status()).toBe(404);
+  await expect(page.locator("h1")).toHaveText("Topic not found");
+});

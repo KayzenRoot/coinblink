@@ -3,6 +3,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
 import { listArticleCards, readArticle } from "./p1-production/articles.mjs";
+import { topicSlugForTag } from "../CB-M02/topics.mjs";
 import { runtimeBinding } from "../../lib/runtime-env";
 
 type Article = {
@@ -86,7 +87,10 @@ const related = article === null
       </div>
       {article.tags.length > 0 && (
         <ul class="article__tags" aria-label="Tags">
-          {article.tags.map((tag) => <li>{tag}</li>)}
+          {article.tags.map((tag: string) => {
+            const topic = topicSlugForTag(tag);
+            return <li>{topic === null ? tag : <a href={`/${locale}/topic/${topic}`}>{tag}</a>}</li>;
+          })}
         </ul>
       )}
       <p class="article__meta"><span>{minutes} {readingLabel}</span></p>

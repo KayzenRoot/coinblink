@@ -70,6 +70,7 @@ const related = article === null
       <nav class="article__nav" aria-label="Article navigation">
         <a href={`/${locale}`}>← CoinBlink</a>
         <a href={`/${locale}/news`}>{navLabel}</a>
+        <a href={`/${locale}/search`}>{locale === "pt-br" ? "Busca" : locale === "es" ? "Buscar" : "Search"}</a>
       </nav>
       <p class="article__tag">COINBLINK · ORIGINAL</p>
       {cover !== "" && <img class="article__cover" src={cover} width="1200" height="630" alt="" loading="eager" decoding="async" />}

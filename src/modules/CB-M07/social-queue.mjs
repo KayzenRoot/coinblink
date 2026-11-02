@@ -5,6 +5,9 @@
 // a short caption from our own summary and keeps the article link. Nothing is
 // sent here: this is the reviewed plan.
 
+import { headlineCategory } from '../CB-M01/home-signals.mjs';
+import { getSetting } from '../CB-M05/p1-production/settings.mjs';
+
 export const SOCIAL_NETWORKS = Object.freeze(['instagram', 'tiktok']);
 export const MAX_PER_DAY = 20;
 export const CAPTION_LIMIT = 220;
@@ -16,6 +19,29 @@ export function dailyQuota(values) {
     return Math.min(Math.floor(value), MAX_PER_DAY);
   };
   return Object.freeze({ instagram: read('M07_IG_PER_DAY'), tiktok: read('M07_TIKTOK_PER_DAY') });
+}
+
+/**
+ * Deterministic relevance: a recent article that belongs to a topic the
+ * collectors are covering right now scores higher. No model call, no guess.
+ */
+export function relevanceScore({ article, nowMs = Date.now(), trending = {} }) {
+  const publishedAt = Number(article?.publishedAt ?? 0) * 1000;
+  const ageHours = publishedAt === 0 ? 999 : Math.max((nowMs - publishedAt) / 3_600_000, 0);
+  const recency = Math.max(0, 48 - ageHours) / 48;
+  const mentions = Number(trending[article?.topic] ?? 0);
+  const heat = Math.min(mentions, 20) / 20;
+  return Number((recency * 0.7 + heat * 0.3).toFixed(4));
+}
+
+/** How many collected headlines each category has right now. */
+export function trendingCounts(items) {
+  const counts = {};
+  for (const item of Array.isArray(items) ? items : []) {
+    const topic = headlineCategory(String(item?.title ?? ''));
+    counts[topic] = (counts[topic] ?? 0) + 1;
+  }
+  return Object.freeze(counts);
 }
 
 export function utcDay(nowMs = Date.now()) {
@@ -36,10 +62,13 @@ export function buildCaption({ summary, title, href }) {
  * @param {{db: any, nowMs?: number, quota?: {instagram: number, tiktok: number},
  *   origin?: string, dryRun?: boolean}} options
  */
-export async function planDay({ db, nowMs = Date.now(), quota, origin = '', dryRun = false }) {
+export async function planDay({
+  db, nowMs = Date.now(), quota, origin = '', dryRun = false, trending = {},
+}) {
   const limits = quota ?? Object.freeze({ instagram: 0, tiktok: 0 });
   const day = utcDay(nowMs);
   const base = String(origin ?? '').replace(/\/$/u, '');
+  const trendingCounts = trending ?? {};
   const planned = [];
   for (const network of SOCIAL_NETWORKS) {
     const wanted = Math.min(Math.max(Number(limits[network]) || 0, 0), MAX_PER_DAY);
@@ -48,12 +77,22 @@ export async function planDay({ db, nowMs = Date.now(), quota, origin = '', dryR
       .bind(network, day).first();
     const remaining = wanted - Number(existing?.n ?? 0);
     if (remaining <= 0) continue;
+    // Candidates come newest first, then the deterministic score decides; the
+    // extra rows let a hot topic outrank a slightly fresher quiet one.
     const articles = await db.prepare(
-      'SELECT id, locale, slug, title, summary FROM cms_articles WHERE status=\'published\' '
+      'SELECT id, locale, slug, title, summary, published_at AS publishedAt FROM cms_articles WHERE status=\'published\' '
       + 'AND id NOT IN (SELECT article_id FROM cms_social_queue WHERE network=?) '
       + 'ORDER BY published_at DESC LIMIT ?',
-    ).bind(network, remaining).all();
-    for (const article of articles?.results ?? []) {
+    ).bind(network, Math.min(remaining * 3, 60)).all();
+    const ranked = (articles?.results ?? [])
+      .map((article) => ({
+        article,
+        score: relevanceScore({ article: { ...article, topic: headlineCategory(article.title) }, nowMs, trending: trendingCounts }),
+      }))
+      .sort((left, right) => right.score - left.score
+        || Number(right.article.publishedAt ?? 0) - Number(left.article.publishedAt ?? 0))
+      .slice(0, remaining);
+    for (const { article } of ranked) {
       const href = base + '/' + article.locale + '/article/' + article.slug;
       const row = Object.freeze({
         network,
@@ -87,4 +126,27 @@ export async function listQueue({ db, day = utcDay(), limit = 40 }) {
   } catch {
     return Object.freeze([]);
   }
+}
+
+/**
+ * One social tick: read the quotas and plan the day. It runs on the scheduler
+ * alongside the article tick, so "10 posts a day" needs no button press.
+ * @param {{db: any, secret: string, env?: object, nowMs?: number, origin?: string,
+ *   dryRun?: boolean, items?: unknown[] | null}} options
+ */
+export async function socialTick({
+  db, secret, env = {}, nowMs = Date.now(), origin = '', dryRun = false, items = null,
+}) {
+  const read = async (key) => {
+    const value = await getSetting({ db, secret, env, key });
+    return typeof value === 'string' ? value.trim() : '';
+  };
+  const quota = dailyQuota({
+    M07_IG_PER_DAY: await read('M07_IG_PER_DAY'),
+    M07_TIKTOK_PER_DAY: await read('M07_TIKTOK_PER_DAY'),
+  });
+  if (quota.instagram === 0 && quota.tiktok === 0) return Object.freeze({ status: 'no_quota' });
+  const trending = trendingCounts(Array.isArray(items) ? items : []);
+  const plan = await planDay({ db, nowMs, quota, origin, dryRun, trending });
+  return Object.freeze({ status: dryRun ? 'dry_run' : 'planned', planned: plan.length, plan });
 }

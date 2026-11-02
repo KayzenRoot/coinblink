@@ -46,9 +46,10 @@ export function localeSiblings(pathname) {
 /** Build the server-rendered metadata plan for one page. */
 /**
  * @param {{pathname?: string, lang?: string, title?: string, description?: string,
- *   origin?: string, image?: string | null}} [options]
+ *   origin?: string, image?: string | null,
+ *   alternates?: ReadonlyArray<{hreflang: string, path: string}> | null}} [options]
  */
-export function buildSeoMetadata({ pathname, lang, title, description, origin, image = null } = {}) {
+export function buildSeoMetadata({ pathname, lang, title, description, origin, image = null, alternates: alternatesOverride = null } = {}) {
   if (typeof pathname !== "string" || !pathname.startsWith("/")) {
     throw new TypeError("pathname must be an absolute site path");
   }
@@ -63,10 +64,19 @@ export function buildSeoMetadata({ pathname, lang, title, description, origin, i
   const resolvedOrigin = resolveSiteOrigin(origin);
   const siblings = localeSiblings(pathname);
   // A canonical identifies this page whenever a real origin exists. Language
-  // alternates only exist for routes that are actually localized.
+  // alternates only exist for routes that are actually localized, and a page
+  // that exists in a single locale (an article) passes its own list so the
+  // markup never points at a 404.
   const canonical = resolvedOrigin ? resolvedOrigin + pathname : null;
   const alternates = [];
-  if (resolvedOrigin && siblings) {
+  const custom = Array.isArray(alternatesOverride) ? alternatesOverride : null;
+  if (resolvedOrigin && custom !== null) {
+    for (const entry of custom) {
+      if (typeof entry?.hreflang !== "string" || typeof entry?.path !== "string") continue;
+      if (!entry.path.startsWith("/")) continue;
+      alternates.push(Object.freeze({ hreflang: entry.hreflang, href: resolvedOrigin + entry.path }));
+    }
+  } else if (resolvedOrigin && siblings) {
     for (const locale of SITE_LOCALES) {
       alternates.push(Object.freeze({ hreflang: BCP47_BY_LOCALE[locale],
         href: resolvedOrigin + siblings[locale] }));

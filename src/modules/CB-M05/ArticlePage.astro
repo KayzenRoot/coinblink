@@ -2,7 +2,7 @@
 // CB-M05-P1-PUBLISHING-001: public page for an owner-authored article.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
-import { listArticleCards } from "./p1-production/articles.mjs";
+import { listArticleCards, readArticle } from "./p1-production/articles.mjs";
 import { runtimeBinding } from "../../lib/runtime-env";
 
 type Article = {
@@ -33,6 +33,17 @@ const siteOrigin = (typeof import.meta.env.PUBLIC_SITE_ORIGIN === "string" && im
 const articleUrl = article === null || slug === undefined ? siteOrigin : siteOrigin + "/" + locale + "/article/" + slug;
 const shareTitle = encodeURIComponent(article?.title ?? "");
 const shareUrl = encodeURIComponent(articleUrl);
+// A language alternate exists only where the same article is published, so the
+// hreflang markup never points at a 404.
+const siblings: { hreflang: string; path: string }[] = [];
+if (article !== null && article.status === "published" && slug !== undefined) {
+  for (const [otherLocale, hreflang] of [["en", "en"], ["pt-br", "pt-BR"], ["es", "es"]] as const) {
+    const sibling = otherLocale === locale ? article : await readArticle({ db: runtimeBinding("CMS_DB"), locale: otherLocale, slug });
+    if (sibling !== null && sibling.status === "published") {
+      siblings.push({ hreflang, path: "/" + otherLocale + "/article/" + slug });
+    }
+  }
+}
 // Related articles share a tag with this one; the list never includes itself.
 const related = article === null
   ? []
@@ -54,7 +65,7 @@ const related = article === null
     </main>
   </BaseLayout>
 ) : (
-  <BaseLayout lang={lang} title={`CoinBlink · ${article.title}`} description={article.summary} robots={robots} image={cover}>
+  <BaseLayout lang={lang} title={`CoinBlink · ${article.title}`} description={article.summary} robots={robots} image={cover} alternates={siblings}>
     <main class="article">
       <nav class="article__nav" aria-label="Article navigation">
         <a href={`/${locale}`}>← CoinBlink</a>

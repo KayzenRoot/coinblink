@@ -240,3 +240,10 @@ test('the article page offers reading time, sharing and related articles', () =>
   assert.match(css, /\.article__share/u);
   assert.match(css, /\.article__related/u);
 });
+
+test('the article page builds hreflang from the locales where it is published', () => {
+  const page = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
+  assert.match(page, /const siblings: \{ hreflang: string; path: string \}\[\] = \[\]/u);
+  assert.match(page, /await readArticle\(\{ db: runtimeBinding\("CMS_DB"\), locale: otherLocale, slug \}\)/u);
+  assert.match(page, /alternates=\{siblings\}/u);
+});

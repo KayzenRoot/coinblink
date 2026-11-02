@@ -1,0 +1,81 @@
+---
+// CB-M05-P1-PUBLISHING-001: how CoinBlink writes, cites and corrects.
+//
+// The page states what the pipeline actually does: original prose, citations
+// from collected headlines, owner review before publishing, revisions kept and
+// unpublishing that leaves the URL answering 410.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+interface Props { locale: "en" | "pt-br" | "es" }
+const { locale } = Astro.props;
+const lang = locale === "pt-br" ? "pt-BR" : locale;
+
+const copy = {
+  en: {
+    title: "How CoinBlink writes",
+    updated: "Last updated: 1 November 2026",
+    intro: "This page explains how an article gets from a collected headline to a published page, so a reader can judge the result.",
+    sections: [
+      ["What we publish", "CoinBlink publishes original articles about the crypto stories its collectors find. Each article has a title, a summary and a body written for CoinBlink. We do not republish third-party articles and we do not copy their paragraphs."],
+      ["Where the facts come from", "Every article is written from headlines the collectors returned, and each claim that rests on a source carries a citation to that source with its https link. The list of publishers is public at /news/sources, and the owner can hide a source from the collection."],
+      ["AI-assisted drafts", "A draft can be written by Workers AI from the collected headlines. The model is instructed to write original prose, to invent no numbers, dates, names or quotes, and to cite only sources that exist. Its output is a draft, never a published article."],
+      ["Review before publishing", "Nothing reaches the public without the owner publishing it. The review step is the editorial gate: the owner reads the draft, sets the locale, the tags and the provenance note, and only then publishes. An article written this way carries the author label \"CoinBlink AI draft\"."],
+      ["Revisions and corrections", "Publishing copies the draft as it is at that moment and records an immutable revision. A later edit creates a new revision instead of overwriting history. If an article should not be public, it is unpublished: the address keeps answering 410 so a link never silently changes meaning."],
+      ["What we do not do", "We do not give investment advice, price targets or trading signals. Market prices are attributed and delayed, and the headline index is a word count over collected titles, not a market measure."],
+      ["Questions and complaints", "Write to founder@nexlabs.company. A correction request is answered by fixing the article or unpublishing it, and the revision record shows what changed."],
+    ],
+  },
+  "pt-br": {
+    title: "Como o CoinBlink escreve",
+    updated: "Última atualização: 1 de novembro de 2026",
+    intro: "Esta página explica como um artigo vai de uma manchete coletada até a página publicada, para que o leitor possa julgar o resultado.",
+    sections: [
+      ["O que publicamos", "O CoinBlink publica artigos originais sobre as notícias de cripto que os coletores encontram. Cada artigo tem título, resumo e corpo escritos para o CoinBlink. Não republicamos artigos de terceiros e não copiamos seus parágrafos."],
+      ["De onde vêm os fatos", "Todo artigo é escrito a partir das manchetes que os coletores retornaram, e cada afirmação apoiada em uma fonte traz a citação com o link https dessa fonte. A lista de veículos é pública em /news/sources, e o proprietário pode esconder uma fonte da coleta."],
+      ["Rascunhos assistidos por IA", "Um rascunho pode ser escrito pelo Workers AI a partir das manchetes coletadas. O modelo é instruído a escrever texto original, não inventar números, datas, nomes ou citações, e citar apenas fontes que existem. A saída é um rascunho, nunca um artigo publicado."],
+      ["Revisão antes de publicar", "Nada chega ao público sem o proprietário publicar. A revisão é o portão editorial: ele lê o rascunho, define o idioma, as tags e a nota de proveniência, e só então publica. Um artigo escrito assim leva o rótulo de autor \"CoinBlink AI draft\"."],
+      ["Revisões e correções", "Publicar copia o rascunho como ele está naquele momento e registra uma revisão imutável. Uma edição posterior cria uma nova revisão em vez de sobrescrever o histórico. Se um artigo não deve ser público, ele é despublicado: o endereço continua respondendo 410 para que um link nunca mude de sentido em silêncio."],
+      ["O que não fazemos", "Não damos recomendação de investimento, preço-alvo ou sinal de negociação. Os preços de mercado são atribuídos e atrasados, e o índice de manchetes é uma contagem de palavras nos títulos coletados, não uma medida de mercado."],
+      ["Dúvidas e reclamações", "Escreva para founder@nexlabs.company. Um pedido de correção é atendido corrigindo o artigo ou despublicando-o, e o registro de revisões mostra o que mudou."],
+    ],
+  },
+  es: {
+    title: "Cómo escribe CoinBlink",
+    updated: "Última actualización: 1 de noviembre de 2026",
+    intro: "Esta página explica cómo un artículo pasa de un titular recolectado a la página publicada, para que el lector pueda juzgar el resultado. Prevalece la versión en inglés.",
+    sections: [
+      ["Qué publicamos", "CoinBlink publica artículos originales sobre las noticias cripto que encuentran sus recolectores. Cada artículo tiene título, resumen y cuerpo escritos para CoinBlink. No republicamos artículos de terceros ni copiamos sus párrafos."],
+      ["De dónde vienen los hechos", "Cada artículo se escribe a partir de los titulares que devolvieron los recolectores, y cada afirmación apoyada en una fuente lleva la cita con su enlace https. La lista de medios es pública en /news/sources."],
+      ["Borradores asistidos por IA", "Un borrador puede escribirse con Workers AI a partir de los titulares recolectados. El modelo recibe la instrucción de escribir texto original, no inventar cifras, fechas, nombres ni citas, y citar solo fuentes que existen. El resultado es un borrador, nunca un artículo publicado."],
+      ["Revisión antes de publicar", "Nada llega al público sin que el propietario lo publique. La revisión es la puerta editorial: lee el borrador, define el idioma, las etiquetas y la nota de procedencia, y solo entonces publica. Un artículo escrito así lleva la etiqueta \"CoinBlink AI draft\"."],
+      ["Revisiones y correcciones", "Publicar copia el borrador tal como está y registra una revisión inmutable. Una edición posterior crea una revisión nueva en lugar de sobrescribir el historial. Si un artículo no debe ser público, se despublica: la dirección sigue respondiendo 410."],
+      ["Lo que no hacemos", "No damos asesoramiento de inversión, precios objetivo ni señales de negociación. Los precios de mercado están atribuidos y retrasados, y el índice de titulares es un conteo de palabras, no una medida de mercado."],
+      ["Dudas y reclamaciones", "Escribe a founder@nexlabs.company. Una solicitud de corrección se atiende corrigiendo el artículo o despublicándolo, y el registro de revisiones muestra qué cambió."],
+    ],
+  },
+} as const;
+
+const text = copy[locale];
+---
+
+<BaseLayout lang={lang} title={`CoinBlink · ${text.title}`} description={text.intro} robots="index, follow">
+  <main id="main" class="status">
+    <nav aria-label="Editorial navigation">
+      <a href={`/${locale}`}>← CoinBlink</a>
+      <a href={`/${locale}/legal`}>{locale === "pt-br" ? "Termos" : locale === "es" ? "Términos" : "Terms"}</a>
+      <a href={`/${locale}/news`}>{locale === "pt-br" ? "Notícias" : locale === "es" ? "Noticias" : "News"}</a>
+    </nav>
+    <header>
+      <p class="status__tag">CB-M05 · EDITORIAL POLICY</p>
+      <h1>{text.title}</h1>
+      <p>{text.intro}</p>
+      <p><small>{text.updated}</small></p>
+    </header>
+    {text.sections.map(([heading, body]: readonly [string, string]) => (
+      <section>
+        <h2>{heading}</h2>
+        <p class="body-copy">{body}</p>
+      </section>
+    ))}
+  </main>
+</BaseLayout>

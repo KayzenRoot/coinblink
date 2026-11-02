@@ -88,3 +88,16 @@ test('an existing draft offers the publish form with the review note', async () 
   const creating = await draftFormPage({ draft: null, csrf: 'c'.repeat(64), action: '/admin/drafts/new' }).text();
   assert.doesNotMatch(creating, /action="\/admin\/articles\/publish"/u);
 });
+
+test('a draft keeps the language it was written in', async () => {
+  const { draftFormPage, readDraft } = await import('../../../src/modules/CB-M05/p1-production/drafts.mjs');
+  const draft = { id: UUID, revision: 1, locale: 'pt-br', title: 'Um título válido', summary: 'Resumo suficientemente longo para o contrato.',
+    body: 'Corpo do rascunho privado.', sourceUrl: 'https://example.test/story', authorLabel: 'CoinBlink AI draft' };
+  const html = await draftFormPage({ draft, csrf: 'c'.repeat(64), action: '/admin/drafts/' + UUID }).text();
+  assert.match(html, /<option value="pt-br" selected>Português/u);
+  assert.doesNotMatch(html, /<option value="en" selected>/u);
+  const sql = [];
+  const db = { prepare(sqlText) { sql.push(sqlText); return { bind: () => ({ first: async () => draft }) }; } };
+  await readDraft(db, UUID);
+  assert.match(sql[0], /locale/u, 'readDraft loads the locale');
+});

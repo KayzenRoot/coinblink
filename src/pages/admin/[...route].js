@@ -282,7 +282,7 @@ async function productionAdmin(request, env) {
           db: config.db, secret: config.secret, now: now,
           input: {
             title: attempt.draft.title, summary: attempt.draft.summary, body: attempt.draft.body,
-            sourceUrl: attempt.draft.primaryUrl, authorLabel: 'CoinBlink AI draft',
+            sourceUrl: attempt.draft.primaryUrl, authorLabel: 'CoinBlink AI draft', locale: target,
           },
         });
         // createDraft answers with the new id, or null when the write failed.
@@ -307,7 +307,7 @@ async function productionAdmin(request, env) {
         db: config.db, secret: config.secret, now: now,
         input: {
           title: result.draft.title, summary: result.draft.summary, body: result.draft.body,
-          sourceUrl: result.draft.primaryUrl, authorLabel: 'CoinBlink AI draft',
+          sourceUrl: result.draft.primaryUrl, authorLabel: 'CoinBlink AI draft', locale: language,
         },
       });
       // The id is the success signal: a string means the draft exists.

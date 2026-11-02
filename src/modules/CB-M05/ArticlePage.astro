@@ -86,7 +86,9 @@ const related = article === null
       <h1>{article.title}</h1>
       <p class="article__meta">
         {article.authorLabel !== "" && (/ai/iu.test(article.authorLabel)
-          ? <a class="article__ai" href={`/${locale}/editorial`}>{article.authorLabel} · {locale === "pt-br" ? "revisado antes de publicar" : locale === "es" ? "revisado antes de publicar" : "reviewed before publishing"}</a>
+          ? <a class="article__ai" href={`/${locale}/editorial`}>{article.authorLabel} · {(article.provenanceNote ?? "").startsWith("Automatic")
+            ? (locale === "pt-br" ? "publicação automática · verificada por citações, cópia e números" : locale === "es" ? "publicación automática · verificada por citas, copia y cifras" : "published automatically · checked for citations, copying and numbers")
+            : (locale === "pt-br" ? "revisado antes de publicar" : locale === "es" ? "revisado antes de publicar" : "reviewed before publishing")}</a>
           : <span>{article.authorLabel}</span>)}
         <time datetime={new Date(article.publishedAt * 1000).toISOString()}>{published}</time>
         <span>revision {article.revision}</span>

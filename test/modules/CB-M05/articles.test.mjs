@@ -249,3 +249,13 @@ test('the article page builds hreflang from the locales where it is published', 
   assert.match(page, /await readArticle\(\{ db: runtimeBinding\("CMS_DB"\), locale: otherLocale, slug \}\)/u);
   assert.match(page, /alternates=\{siblings\}/u);
 });
+
+test('an article published in more than one locale links its siblings', () => {
+  const page = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
+  assert.match(page, /siblings\.length > 1 && \(/u);
+  assert.match(page, /sibling\.hreflang !== \(locale === "pt-br" \? "pt-BR" : locale\)/u);
+  assert.match(page, /hreflang=\{sibling\.hreflang\}/u);
+  assert.match(page, /Também em:/u);
+  const css = readFileSync('src/styles/global.css', 'utf8');
+  assert.match(css, /\.article__languages/u);
+});

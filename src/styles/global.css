@@ -754,3 +754,7 @@ code {
 .topic-index a { color:#e8efe8; text-decoration:none; }
 .topic-index a:hover { color:#b8f34b; }
 .topic-index span { color:#8f9c93; font-size:12px; }
+
+.article__languages { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin:10px 0; color:#8f9c93; font-size:12px; }
+.article__languages a { color:#b8f34b; text-decoration:none; }
+.article__languages a:hover { text-decoration:underline; }

@@ -15,9 +15,9 @@ export const prerender = false;
 
 const SITE_LANG = Object.freeze({ en: "en", "pt-br": "pt-BR", es: "es" });
 const COPY = Object.freeze({
-  en: { title: "Topics", intro: "Every topic CoinBlink follows, with what we published and what the collectors found.", ours: "articles", theirs: "headlines", empty: "nothing yet" },
-  "pt-br": { title: "Temas", intro: "Todos os temas que o CoinBlink acompanha, com o que publicamos e o que os coletores encontraram.", ours: "artigos", theirs: "manchetes", empty: "nada ainda" },
-  es: { title: "Temas", intro: "Todos los temas que sigue CoinBlink, con lo que publicamos y lo que encontraron los recolectores.", ours: "artículos", theirs: "titulares", empty: "nada todavía" },
+  en: { title: "Topics", intro: "Every topic CoinBlink follows, with what we published and what the collectors found.", ours: "article", oursMany: "articles", theirs: "headline", theirsMany: "headlines", empty: "nothing yet" },
+  "pt-br": { title: "Temas", intro: "Todos os temas que o CoinBlink acompanha, com o que publicamos e o que os coletores encontraram.", ours: "artigo", oursMany: "artigos", theirs: "manchete", theirsMany: "manchetes", empty: "nada ainda" },
+  es: { title: "Temas", intro: "Todos los temas que sigue CoinBlink, con lo que publicamos y lo que encontraron los recolectores.", ours: "artículo", oursMany: "artículos", theirs: "titular", theirsMany: "titulares", empty: "nada todavía" },
 });
 const { locale = "en" } = Astro.params;
 const localeKey: "en" | "pt-br" | "es" = locale === "pt-br" || locale === "es" ? locale : "en";
@@ -58,7 +58,8 @@ const rows = TOPICS.map((topic) => ({
           <span>
             {row.articles === 0 && row.headlines === 0
               ? copy.empty
-              : row.articles + " " + copy.ours + " · " + row.headlines + " " + copy.theirs}
+              : row.articles + " " + (row.articles === 1 ? copy.ours : copy.oursMany) + " · "
+                + row.headlines + " " + (row.headlines === 1 ? copy.theirs : copy.theirsMany)}
           </span>
         </li>
       ))}

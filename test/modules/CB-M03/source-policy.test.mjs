@@ -120,3 +120,9 @@ test('the admin wires the source policy and the manual social token', () => {
   const panel = readFileSync('src/modules/CB-M03/LiveNewsPanel.astro', 'utf8');
   assert.match(panel, /filterSnapshot\(/u);
 });
+
+test('the live reader links the news index, topics and search', () => {
+  const panel = readFileSync('src/modules/CB-M03/LiveNewsPanel.astro', 'utf8');
+  assert.match(panel, /\+ locale \+ "\/topics"/u);
+  assert.match(panel, /\+ locale \+ "\/search"/u);
+});

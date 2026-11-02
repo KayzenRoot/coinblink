@@ -273,6 +273,7 @@ async function productionAdmin(request, env) {
     const reason = result.status === 'invalid' ? 'Type a topic with at least 3 characters, or leave it empty to use the collection.'
       : result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
       : result.status === 'unavailable' ? 'Workers AI did not answer.'
+        : result.status === 'copied_text' ? 'The draft reproduced a collected headline; nothing was saved.'
         : result.status === 'unverified_output' ? 'The model cited nothing that exists; nothing was saved.'
           : 'The model did not return the required JSON shape; nothing was saved.'
             + (typeof result.detail === 'string' && result.detail !== '' ? ' Model said: ' + result.detail : '');

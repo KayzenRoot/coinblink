@@ -213,7 +213,9 @@ test('the home prefers our articles, then collected headlines, then placeholders
   assert.match(home, /const publishedCards = await listArticleCards/u);
   assert.match(home, /homeArticlesOn \? \(/u);
   assert.match(home, /data-news-kind=\{homeArticlesOn \? "article"/u);
-  assert.match(home, /href=\{article\.href\}/u);
+  assert.match(home, /data-category-value=\{headlineCategory\(article\.title\)\}/u);
+    assert.match(home, /data-category-value=\{headlineCategory\(article\.title\)\}/u);
+assert.match(home, /href=\{article\.href\}/u);
   assert.match(home, /src=\{article\.cover\}/u);
   const script = readFileSync('public/home-demo.js', 'utf8');
   assert.match(script, /newsKind === "article"/u);

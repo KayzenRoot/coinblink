@@ -80,7 +80,11 @@ const unavailableBody = snapshot.status === "UNAVAILABLE"
   : "";
 ---
 <main id="main" class="m03-live">
-  <nav aria-label={copy.navigation}><a href={"/" + locale + "/news"}>{copy.back}</a></nav>
+  <nav aria-label={copy.navigation}>
+    <a href={"/" + locale + "/news"}>{copy.back}</a>
+    {" · "}<a href={"/" + locale + "/topics"}>{locale === "pt-br" || locale === "es" ? "Temas" : "Topics"}</a>
+    {" · "}<a href={"/" + locale + "/search"}>{locale === "pt-br" ? "Busca" : locale === "es" ? "Buscar" : "Search"}</a>
+  </nav>
   <ReaderLocaleSwitch locale={locale} />
   <header>
     <p class="m03-live__tag">CB-M03 · LIVE RSS · KEYLESS · DEMO ONLY</p>

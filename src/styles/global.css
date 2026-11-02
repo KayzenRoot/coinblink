@@ -762,3 +762,7 @@ code {
 .news-explore { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
 .news-explore a { display:inline-flex; min-height:32px; align-items:center; border:1px solid #38463d; border-radius:999px; color:#dbe4db; font-size:12px; padding:0 12px; text-decoration:none; }
 .news-explore a:hover { border-color:#7a9d42; color:#fff; }
+
+.article__ai { display:inline-flex; align-items:center; gap:6px; border:1px solid #3b4a3f; border-radius:999px; color:#c9d7c6; font-size:11px; padding:2px 9px; text-decoration:none; }
+.article__ai::before { content:"✳"; color:#b8f34b; }
+.article__ai:hover { border-color:#7a9d42; color:#fff; }

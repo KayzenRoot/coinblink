@@ -132,6 +132,32 @@ function parseJsonLoose(raw) {
   return null;
 }
 
+function words(value) {
+  return String(value ?? '').toLowerCase().split(/[^a-z0-9]+/u).filter((word) => word !== '');
+}
+
+/**
+ * The longest run of consecutive words the draft shares with a source title.
+ * The model never needs eight words in a row from a headline, so a match means
+ * it copied instead of writing.
+ */
+export function longestSharedSpan(bodyText, sourceTexts, size = 8) {
+  const body = words(bodyText);
+  let longest = 0;
+  for (const source of Array.isArray(sourceTexts) ? sourceTexts : []) {
+    const origin = words(source);
+    for (let start = 0; start < origin.length; start += 1) {
+      for (let at = 0; at < body.length; at += 1) {
+        let run = 0;
+        while (start + run < origin.length && at + run < body.length
+          && origin[start + run] === body[at + run]) run += 1;
+        if (run > longest) longest = run;
+      }
+    }
+  }
+  return longest;
+}
+
 export function parseArticleDraft(raw, { sources }) {
   if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output', detail: 'empty answer' });
   const parsed = parseJsonLoose(raw);
@@ -148,6 +174,10 @@ export function parseArticleDraft(raw, { sources }) {
   if (title.length < 8 || summary.length < 20 || body.length < 60) {
     return Object.freeze({ status: 'invalid_output' });
   }
+  // Copying is a hard stop: the article must be written, not reproduced.
+  const copied = longestSharedSpan(title + "\n" + summary + "\n" + body,
+    (Array.isArray(sources) ? sources : []).map((source) => source.title));
+  if (copied >= 8) return Object.freeze({ status: 'copied_text', detail: copied + ' shared words' });
   const allowed = new Map((Array.isArray(sources) ? sources : []).map((source) => [Number(source.n), source]));
   const citations = [];
   for (const entry of Array.isArray(parsed.citations) ? parsed.citations.slice(0, DRAFT_LIMITS.citations) : []) {
@@ -207,13 +237,18 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     const firstRaw = await ask(messages);
     if (firstRaw === null) return Object.freeze({ status: 'unavailable' });
     const first = parseArticleDraft(firstRaw, { sources });
-    if (first.status !== 'invalid_output') return first;
-    // One retry with the same sources and an explicit reminder: a malformed
-    // answer costs one call, and the owner still reviews whatever comes back.
+    if (first.status !== 'invalid_output' && first.status !== 'copied_text') return first;
+    // One retry with the same sources and an explicit reminder, for the two
+    // answers a retry can actually fix: malformed JSON and copied headlines.
     const second = parseArticleDraft(await ask([
       ...messages,
       Object.freeze({ role: 'assistant', content: String(first.detail ?? '') }),
-      Object.freeze({ role: 'user', content: 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.' }),
+      Object.freeze({
+        role: 'user',
+        content: first.status === 'copied_text'
+          ? 'Do not reuse words from the headlines. Rewrite the story in your own words, keep the citations, and reply with only the JSON object.'
+          : 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.',
+      }),
     ]), { sources });
     return second;
   } catch {

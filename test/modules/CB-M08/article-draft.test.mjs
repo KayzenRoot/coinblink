@@ -97,6 +97,8 @@ test('a malformed first answer is retried once and the second is used', async ()
   calls = 0;
   assert.equal((await generateArticleDraft({ ai: alwaysBad, topic: 'bitcoin etf', items: ITEMS })).status, 'invalid_output');
   assert.equal(calls, 2, 'the retry happens exactly once');
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /reproduced a collected headline/u);
 });
 
 test('an unparseable answer carries a short detail for the owner screen', async () => {
@@ -138,4 +140,19 @@ test('an empty answer from JSON mode falls through to the next call shape', asyn
 test('a model that never answers becomes unavailable, not invalid', async () => {
   const ai = { async run() { return { response: '' }; } };
   assert.equal((await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS })).status, 'unavailable');
+});
+
+test('a draft that reproduces a headline is refused before it is saved', async () => {
+  const { longestSharedSpan } = await import('../../../src/modules/CB-M08/article-draft.mjs');
+  const title = 'Bitcoin ETF inflows hit a record in October';
+  assert.equal(longestSharedSpan('Inflows hit a record', [title]), 4, 'short overlap is allowed');
+  assert.equal(longestSharedSpan('Bitcoin ETF inflows hit a record in October', [title]), 8);
+  const copied = parseArticleDraft(JSON.stringify({
+    ...GOOD,
+    body: 'Bitcoin ETF inflows hit a record in October and the story continues with more original words to pass the length check easily.',
+  }), { sources: SOURCES });
+  assert.equal(copied.status, 'copied_text');
+  assert.match(copied.detail, /shared words/u);
+  // The same body without the copied run stays a valid draft.
+  assert.equal(parseArticleDraft(JSON.stringify(GOOD), { sources: SOURCES }).status, 'drafted');
 });

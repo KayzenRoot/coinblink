@@ -6,6 +6,7 @@
 // the owner still reviews the draft before anything is published.
 
 import { chatCompletion } from './provider.mjs';
+import { fetchSourceText } from './source-text.mjs';
 
 export const ARTICLE_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export const DRAFT_LIMITS = Object.freeze({ title: 140, summary: 400, body: 12000, citations: 6 });
@@ -18,8 +19,8 @@ const SYSTEM = [
 ].join(' ');
 
 /** The system/user pair, so instruct models apply their chat template. */
-export function buildArticleMessages({ topic, items, language = 'en' }) {
-  const prompt = buildArticlePrompt({ topic, items, language });
+export function buildArticleMessages({ topic, items, language = 'en', excerpt = '' }) {
+  const prompt = buildArticlePrompt({ topic, items, language, excerpt });
   return [
     Object.freeze({ role: 'system', content: SYSTEM }),
     Object.freeze({ role: 'user', content: prompt.slice(SYSTEM.length).trim() }),
@@ -27,7 +28,7 @@ export function buildArticleMessages({ topic, items, language = 'en' }) {
 }
 
 /** Builds the prompt from a topic and the collected headlines. */
-export function buildArticlePrompt({ topic, items, language = 'en' }) {
+export function buildArticlePrompt({ topic, items, language = 'en', excerpt = '' }) {
   const clean = String(topic ?? '').trim().slice(0, 200);
   const sources = (Array.isArray(items) ? items : []).slice(0, 5).map((item, index) => ({
     n: index + 1,
@@ -45,6 +46,10 @@ export function buildArticlePrompt({ topic, items, language = 'en' }) {
     'Return JSON with exactly:',
     '{"title": string (40-120 chars), "summary": string (120-300 chars), "body": string (3-6 paragraphs separated by blank lines, each citation written as [n]), "citations": [{"n": number, "source": string, "url": string}]}',
     'Cite only numbers that exist above. At least one citation is required.',
+    ...(String(excerpt ?? '').trim() === '' ? [] : [
+      'Publisher page excerpt, for facts only. Do not copy its sentences or reuse a long run of its words:',
+      String(excerpt).slice(0, 3500),
+    ]),
     'Write the JSON object as one line or use \n escapes inside the body string; never put raw line breaks inside a JSON string and never wrap the object in markdown fences.',
   ].join('\n');
 }
@@ -182,7 +187,7 @@ export function unsourcedNumbers(bodyText, sourceTexts) {
   return Object.freeze([...missing]);
 }
 
-export function parseArticleDraft(raw, { sources }) {
+export function parseArticleDraft(raw, { sources, excerpt = '' }) {
   if (typeof raw !== 'string' || raw.trim() === '') return Object.freeze({ status: 'invalid_output', detail: 'empty answer' });
   const parsed = parseJsonLoose(raw);
   if (parsed === null) {
@@ -202,6 +207,10 @@ export function parseArticleDraft(raw, { sources }) {
   const copied = longestSharedSpan(title + "\n" + summary + "\n" + body,
     (Array.isArray(sources) ? sources : []).map((source) => source.title));
   if (copied >= 8) return Object.freeze({ status: 'copied_text', detail: copied + ' shared words' });
+  // Against the publisher page the bar is higher: a dozen words in a row is
+  // copying even if no headline was reused.
+  const copiedFromPage = String(excerpt ?? '').trim() === '' ? 0 : longestSharedSpan(title + "\n" + summary + "\n" + body, [excerpt]);
+  if (copiedFromPage >= 12) return Object.freeze({ status: 'copied_text', detail: copiedFromPage + ' words from the source page' });
   // Numbers are claims too: a figure the headlines never carried is invented.
   const unsourced = unsourcedNumbers(title + "\n" + summary + "\n" + body,
     (Array.isArray(sources) ? sources : []).map((source) => source.title));
@@ -236,6 +245,7 @@ export function parseArticleDraft(raw, { sources }) {
  */
 export async function generateArticleDraft({
   ai, topic, items, language = 'en', model = ARTICLE_MODEL, provider = null,
+  research = false, researchExcerpt = '', fetchImpl = null,
 }) {
   // The external provider can stand alone; Workers AI is only required when no
   // external provider is configured.
@@ -287,11 +297,20 @@ export async function generateArticleDraft({
       ?? (await attempt({ messages, ...options }))
       ?? (await attempt({ prompt: messages.map((message) => message.content).join('\n'), ...options }));
   };
+  // Research reads the publisher page of the first source and hands the model
+  // an excerpt as evidence. A failed fetch never blocks the draft.
+  let excerpt = String(researchExcerpt ?? '').trim();
+  let researchStatus = excerpt === '' ? 'off' : 'source';
+  if (excerpt === '' && research === true && sources.length > 0) {
+    const fetched = await fetchSourceText({ url: sources[0].url, fetchImpl: fetchImpl ?? undefined });
+    if (fetched.status === 'ok') { excerpt = fetched.text; researchStatus = 'source'; }
+    else researchStatus = fetched.reason;
+  }
   try {
-    const messages = buildArticleMessages({ topic: clean, items, language });
+    const messages = buildArticleMessages({ topic: clean, items, language, excerpt });
     const firstRaw = await ask(messages);
     if (firstRaw === null) return Object.freeze({ status: 'unavailable' });
-    const first = parseArticleDraft(firstRaw, { sources });
+    const first = parseArticleDraft(firstRaw, { sources, excerpt });
     if (first.status !== 'invalid_output' && first.status !== 'copied_text' && first.status !== 'unsourced_number') return withMeta(first);
     // One retry with the same sources and an explicit reminder, for the two
     // answers a retry can actually fix: malformed JSON and copied headlines.
@@ -306,7 +325,7 @@ export async function generateArticleDraft({
             ? 'Remove every number that does not appear in the headlines. Keep the citations and reply with only the JSON object.'
             : 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.',
       }),
-    ]), { sources });
+    ]), { sources, excerpt });
     return withMeta(second);
   } catch {
     return Object.freeze({ status: 'unavailable', fallback: fallbackReason });
@@ -317,6 +336,7 @@ export async function generateArticleDraft({
       ...result,
       provider: external === null ? 'workers-ai' : 'deepseek',
       fallback: external === null ? null : fallbackReason,
+      research: researchStatus,
     });
   }
 }

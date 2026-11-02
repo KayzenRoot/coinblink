@@ -46,6 +46,7 @@ import {
 import { alertsAdminSection, previewDigests, sendDigests } from '../../modules/CB-M16/alerts.mjs';
 import { readLiveNews } from '../../modules/CB-M03/live-news.mjs';
 import { generateArticleDraft } from '../../modules/CB-M08/article-draft.mjs';
+import { fetchSourceText } from '../../modules/CB-M08/source-text.mjs';
 import { listPolicy, setPolicy, sourcesAdminSection } from '../../modules/CB-M03/source-policy.mjs';
 import { LIVE_NEWS_SOURCES } from '../../modules/CB-M03/rss-sources.mjs';
 import { evaluateLaunch, launchSection, launchVerdict } from '../../modules/CB-M15/launch.mjs';
@@ -283,11 +284,15 @@ async function productionAdmin(request, env) {
       // guards and creates its own draft, and a refusal never blocks the rest.
       const created = [];
       const refused = [];
+      // One fetch feeds all three languages; a failed fetch just skips research.
+      const firstUrl = (matching.length > 0 ? matching : items)[0]?.link;
+      const researched = firstUrl === undefined ? { status: 'error', reason: 'no_source' } : await fetchSourceText({ url: String(firstUrl) });
+      const researchExcerpt = researched.status === 'ok' ? researched.text : '';
       for (const target of targets) {
         const attempt = await generateArticleDraft({
           ai: env.AI, topic, items: matching.length > 0 ? matching : items,
           language: target, model: env.M08_MODEL ?? undefined,
-          provider: externalProvider,
+          provider: externalProvider, researchExcerpt,
         });
         if (attempt.status !== 'drafted') {
           refused.push(target + ':' + attempt.status);
@@ -321,7 +326,7 @@ async function productionAdmin(request, env) {
     const result = await generateArticleDraft({
       ai: env.AI, topic, items: matching.length > 0 ? matching : items,
       language, model: env.M08_MODEL ?? undefined,
-      provider: await aiProvider(config, env),
+      provider: await aiProvider(config, env), research: true,
     });
     if (result.status === 'drafted') {
       const draftId = await createDraft({

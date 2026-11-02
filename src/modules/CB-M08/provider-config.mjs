@@ -16,10 +16,14 @@ export async function aiProviderFromSettings({ db, secret, env = {} }) {
   };
   const name = (await read('M08_PROVIDER')) || 'workers-ai';
   if (name !== 'deepseek') return Object.freeze({ name: 'workers-ai' });
+  // M08_MODEL is shared with Workers AI, so a @cf/ value is never used as the
+  // external model id; the DeepSeek default applies instead.
+  const configured = await read('M08_MODEL');
+  const model = configured !== '' && !configured.startsWith('@cf/') ? configured : DEFAULT_DEEPSEEK_MODEL;
   return Object.freeze({
     name: 'deepseek',
     baseUrl: await read('DEEPSEEK_BASE_URL'),
     apiKey: await read('DEEPSEEK_API_KEY'),
-    model: (await read('M08_MODEL')) || DEFAULT_DEEPSEEK_MODEL,
+    model,
   });
 }

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { chatCompletion, chatEndpoint, providerName } from '../../../src/modules/CB-M08/provider.mjs';
 
 const MESSAGES = [{ role: 'user', content: 'write it' }];
@@ -66,4 +67,19 @@ test('a stalled gateway is cut by the timeout', async () => {
   });
   assert.equal(result.status, 'error');
   assert.equal(result.reason, 'timeout');
+});
+
+test('the DeepSeek model never leaks into the Workers AI model id', async () => {
+  const { aiProviderFromSettings } = await import('../../../src/modules/CB-M08/provider-config.mjs');
+  const settingsDb = () => ({
+    prepare() { return { bind: () => ({ first: async () => null }) }; },
+  });
+  const env = { M08_PROVIDER: 'deepseek', DEEPSEEK_BASE_URL: 'https://g.example/v1', DEEPSEEK_API_KEY: 'sk-x', M08_MODEL: 'deepseek-flash' };
+  const chosen = await aiProviderFromSettings({ db: settingsDb(), secret: 's', env });
+  assert.equal(chosen.name, 'deepseek');
+  assert.equal(chosen.model, 'deepseek-flash');
+  const workers = await aiProviderFromSettings({ db: settingsDb(), secret: 's', env: { ...env, M08_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast' } });
+  assert.equal(workers.model, 'deepseek-v4.1-flash', 'a Workers AI id is not sent to DeepSeek');
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /value\.startsWith\('@cf\/'\) \? value : undefined/u);
 });

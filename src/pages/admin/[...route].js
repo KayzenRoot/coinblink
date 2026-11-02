@@ -252,6 +252,13 @@ async function productionAdmin(request, env) {
   }
   const aiProvider = (config, currentEnv) => aiProviderFromSettings({ db: config.db, secret: config.secret, env: currentEnv });
 
+  // Workers AI only accepts its own model ids; a DeepSeek id falls back to the
+  // adapter default instead of failing the fallback path.
+  function workersModel(currentEnv) {
+    const value = String(currentEnv?.M08_MODEL ?? '');
+    return value.startsWith('@cf/') ? value : undefined;
+  }
+
   async function socialQuota(config, currentEnv) {
     const read = async (key) => {
       const value = await getSetting({ db: config.db, secret: config.secret, env: currentEnv, key });
@@ -290,7 +297,7 @@ async function productionAdmin(request, env) {
       for (const target of targets) {
         const attempt = await generateArticleDraft({
           ai: env.AI, topic, items: matching.length > 0 ? matching : items,
-          language: target, model: env.M08_MODEL ?? undefined,
+          language: target, model: workersModel(env),
           provider: externalProvider, researchExcerpt,
         });
         if (attempt.status !== 'drafted') {
@@ -324,8 +331,7 @@ async function productionAdmin(request, env) {
     }
     const result = await generateArticleDraft({
       ai: env.AI, topic, items: matching.length > 0 ? matching : items,
-      language, model: env.M08_MODEL ?? undefined,
-      provider: await aiProvider(config, env), research: true,
+      language, model: workersModel(env), provider: await aiProvider(config, env), research: true,
     });
     if (result.status === 'drafted') {
       const draftId = await createDraft({

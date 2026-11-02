@@ -259,3 +259,13 @@ test('an article published in more than one locale links its siblings', () => {
   const css = readFileSync('src/styles/global.css', 'utf8');
   assert.match(css, /\.article__languages/u);
 });
+
+test('one action can draft the same story in all three languages', () => {
+  const section = articlesAdminSection({ articles: [], drafts: [], csrf: 'c'.repeat(64) });
+  assert.match(section, /name="languages"/u);
+  assert.match(section, /All three \(en, pt-br, es\)/u);
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /const targets = languages === 'all' \? \['en', 'pt-br', 'es'\] : \[language\]/u);
+  assert.match(route, /for \(const target of targets\)/u);
+  assert.match(route, /Drafts created: /u);
+});

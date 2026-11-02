@@ -433,7 +433,7 @@ const editorialR26Assets = {
         {homeArticlesOn ? (
           <div class="news-cards news-cards--live">
             {publishedCards.map((article: { title: string; summary: string; cover: string; href: string }, index: number) => (
-              <article class="news-card" data-news-card data-category-value="Market Analysis"><div class={"news-art news-art--live art-" + (index + 1)} aria-hidden="true"><img src={article.cover} alt="" width="1200" height="630" loading="lazy" decoding="async" /></div><div><span>{t("OUR ARTICLE")}</span><small>{t("PUBLISHED")}</small><h3><a href={article.href}>{article.title}</a></h3><p>{article.summary}</p></div></article>
+              <article class="news-card" data-news-card data-category-value={headlineCategory(article.title)}><div class={"news-art news-art--live art-" + (index + 1)} aria-hidden="true"><img src={article.cover} alt="" width="1200" height="630" loading="lazy" decoding="async" /></div><div><span>{t("OUR ARTICLE")}</span><small>{t("PUBLISHED")}</small><h3><a href={article.href}>{article.title}</a></h3><p>{article.summary}</p></div></article>
             ))}
           </div>
         ) : liveOn ? (

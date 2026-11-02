@@ -5,6 +5,8 @@
 // claim that rests on a source has to point at one of the supplied items, and
 // the owner still reviews the draft before anything is published.
 
+import { chatCompletion } from './provider.mjs';
+
 export const ARTICLE_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export const DRAFT_LIMITS = Object.freeze({ title: 140, summary: 400, body: 12000, citations: 6 });
 
@@ -228,8 +230,20 @@ export function parseArticleDraft(raw, { sources }) {
 }
 
 /** Calls Workers AI and parses the answer. Never throws. */
-export async function generateArticleDraft({ ai, topic, items, language = 'en', model = ARTICLE_MODEL }) {
-  if (ai === undefined || ai === null || typeof ai.run !== 'function') return Object.freeze({ status: 'unavailable' });
+/**
+ * @param {{ai?: any, topic?: string, items?: unknown[], language?: string, model?: string,
+ *   provider?: {name?: string, baseUrl?: string, apiKey?: string, model?: string} | null}} options
+ */
+export async function generateArticleDraft({
+  ai, topic, items, language = 'en', model = ARTICLE_MODEL, provider = null,
+}) {
+  // The external provider can stand alone; Workers AI is only required when no
+  // external provider is configured.
+  const configured = provider !== null && typeof provider === 'object'
+    && provider.name === 'deepseek' && typeof provider.apiKey === 'string' && provider.apiKey !== '';
+  if (!configured && (ai === undefined || ai === null || typeof ai.run !== 'function')) {
+    return Object.freeze({ status: 'unavailable' });
+  }
   const clean = String(topic ?? '').trim();
   if (clean.length < 3) return Object.freeze({ status: 'invalid' });
   const sources = (Array.isArray(items) ? items : []).slice(0, 5).map((item, index) => ({
@@ -237,7 +251,20 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     source: String(item.sourceName ?? ''), url: String(item.link ?? ''),
   }));
   if (sources.length === 0) return Object.freeze({ status: 'no_sources' });
+  // An external provider is tried first; any failure falls back to Workers AI
+  // and the reason is reported with the draft.
+  const external = configured ? provider : null;
+  let fallbackReason = null;
   const ask = async (messages) => {
+    if (external !== null) {
+      const answer = await chatCompletion({
+        baseUrl: external.baseUrl, apiKey: external.apiKey, model: external.model,
+        messages, maxTokens: 2048, temperature: 0.3,
+        fetchImpl: external.fetchImpl, timeoutMs: external.timeoutMs,
+      });
+      if (answer.status === 'ok') return answer.text;
+      fallbackReason = answer.reason;
+    }
     // Chat mode applies the instruct template; a plain prompt is the fallback
     // for a model that only exposes text generation.
     // A 3-6 paragraph body does not fit the default token budget, and a
@@ -265,7 +292,7 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
     const firstRaw = await ask(messages);
     if (firstRaw === null) return Object.freeze({ status: 'unavailable' });
     const first = parseArticleDraft(firstRaw, { sources });
-    if (first.status !== 'invalid_output' && first.status !== 'copied_text' && first.status !== 'unsourced_number') return first;
+    if (first.status !== 'invalid_output' && first.status !== 'copied_text' && first.status !== 'unsourced_number') return withMeta(first);
     // One retry with the same sources and an explicit reminder, for the two
     // answers a retry can actually fix: malformed JSON and copied headlines.
     const second = parseArticleDraft(await ask([
@@ -280,8 +307,16 @@ export async function generateArticleDraft({ ai, topic, items, language = 'en', 
             : 'That was not valid JSON. Reply with only the JSON object, with escaped line breaks.',
       }),
     ]), { sources });
-    return second;
+    return withMeta(second);
   } catch {
-    return Object.freeze({ status: 'unavailable' });
+    return Object.freeze({ status: 'unavailable', fallback: fallbackReason });
+  }
+
+  function withMeta(result) {
+    return Object.freeze({
+      ...result,
+      provider: external === null ? 'workers-ai' : 'deepseek',
+      fallback: external === null ? null : fallbackReason,
+    });
   }
 }

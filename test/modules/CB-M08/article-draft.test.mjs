@@ -172,3 +172,31 @@ test('a draft that uses a number the headlines never carried is refused', async 
   const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
   assert.match(route, /unsupported number/u);
 });
+
+test('an external provider writes the draft and a failure falls back to Workers AI', async () => {
+  const providerOk = (text) => ({
+    name: 'deepseek', baseUrl: 'https://gateway.example/v1', apiKey: 'sk-test-123456', model: 'deepseek-v4.1-flash',
+    fetchImpl: async () => new Response(JSON.stringify({ choices: [{ message: { content: text } }] }), { status: 200 }),
+  });
+  const drafted = await generateArticleDraft({
+    ai: null, topic: 'bitcoin etf', items: ITEMS, provider: providerOk(JSON.stringify(GOOD)),
+  });
+  assert.equal(drafted.status, 'drafted');
+  assert.equal(drafted.provider, 'deepseek');
+  assert.equal(drafted.fallback, null);
+
+  const providerDown = {
+    ...providerOk(''),
+    fetchImpl: async () => new Response('down', { status: 503 }),
+  };
+  let aiCalls = 0;
+  const ai = { async run() { aiCalls += 1; return { response: JSON.stringify(GOOD) }; } };
+  const fellBack = await generateArticleDraft({
+    ai, topic: 'bitcoin etf', items: ITEMS, provider: providerDown,
+  });
+  assert.equal(fellBack.status, 'drafted');
+  assert.equal(fellBack.provider, 'deepseek');
+  assert.equal(fellBack.fallback, 'HTTP_503');
+  assert.equal(aiCalls, 1, 'Workers AI answered after the external failure');
+  assert.equal((await generateArticleDraft({ ai, topic: 'bitcoin etf', items: ITEMS })).provider, 'workers-ai');
+});

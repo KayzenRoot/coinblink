@@ -111,3 +111,12 @@ test('the webhook records the failures it already rejects', () => {
     assert.ok(route.includes(marker), marker);
   }
 });
+
+test('a refused AI draft is recorded as an ops event', async () => {
+  const { EVENT_TYPES } = await import('../../../src/modules/CB-M14/ops-events.mjs');
+  assert.ok(EVENT_TYPES.includes('ai_draft_refused'));
+  const { readFileSync } = await import('node:fs');
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /type: 'ai_draft_refused'/u);
+  assert.match(route, /result\.status\)\.slice\(0, 60\)/u);
+});

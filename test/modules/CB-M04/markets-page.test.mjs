@@ -97,3 +97,21 @@ test('the demo key travels in the documented header and never in the URL', async
   assert.equal(seen.headers['x-cg-demo-api-key'], 'CG-test-key');
   assert.equal(seen.url.includes('CG-test-key'), false);
 });
+
+test('the 24h change travels when present and is dropped when unusable', () => {
+  const withChange = buildLiveSnapshot({
+    ...PAYLOAD,
+    bitcoin: { usd: 68234.12, usd_24h_change: 1.2345 },
+    ethereum: { usd: 3120.4, usd_24h_change: -2.5 },
+    solana: { usd: 142.7, usd_24h_change: 'nope' },
+    binancecoin: { usd: 605.21 },
+    ripple: { usd: 0.5243, usd_24h_change: null },
+  }, { asOfUTC: '2026-11-01T12:00:00.000Z' });
+  assert.equal(withChange.quotes[0].change24h, 1.2345);
+  assert.equal(withChange.quotes[1].change24h, -2.5);
+  assert.equal(withChange.quotes[2].change24h, null, 'a string is not a number');
+  assert.equal(withChange.quotes[3].change24h, null, 'a missing change keeps the price');
+  assert.equal(withChange.quotes[4].change24h, null);
+  const page = readFileSync('src/modules/CB-M04/MarketsPage.astro', 'utf8');
+  assert.match(page, /quote\.change24h\.toFixed\(2\)/u);
+});

@@ -11,7 +11,7 @@ export const LIVE_PROVIDER = Object.freeze({
   id: "coingecko",
   label: "CoinGecko",
   url: "https://www.coingecko.com",
-  endpoint: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd",
+  endpoint: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd&include_24hr_change=true",
   cacheSeconds: 60,
   attribution: "Market data by CoinGecko",
   // Demo plan: 30 calls per minute and 10,000 per month. The guard below stops
@@ -58,9 +58,13 @@ export function buildLiveSnapshot(payload, { asOfUTC = new Date().toISOString() 
     if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) {
       throw new TypeError(`provider payload has no usable usd price for ${asset.id}`);
     }
+    // The 24h change is optional: a payload without it still serves the price,
+    // and a value that is not a finite number is dropped instead of guessed.
+    const rawChange = quote.usd_24h_change;
+    const change24h = typeof rawChange === "number" && Number.isFinite(rawChange) ? rawChange : null;
     quotes.push(Object.freeze({
       id: asset.id, symbol: asset.symbol, pair: asset.symbol + "/USD",
-      priceUsd: price, source: LIVE_PROVIDER.id,
+      priceUsd: price, change24h, source: LIVE_PROVIDER.id,
     }));
   }
   return Object.freeze({

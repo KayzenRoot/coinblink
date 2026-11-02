@@ -9,6 +9,7 @@ test('the policy states what the pipeline actually does', () => {
     'do not copy their paragraphs', 'citation to that source with its https link',
     'written by Workers AI', 'invent no numbers, dates, names or quotes',
     'Nothing reaches the public without the owner publishing it',
+    'repeats eight consecutive words',
     'CoinBlink AI draft', 'answering 410', 'revision',
   ]) {
     assert.ok(page.includes(marker), marker);

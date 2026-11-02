@@ -150,3 +150,18 @@ export async function socialTick({
   const plan = await planDay({ db, nowMs, quota, origin, dryRun, trending });
   return Object.freeze({ status: dryRun ? 'dry_run' : 'planned', planned: plan.length, plan });
 }
+
+/** Takes a planned post out of the day without touching the article. */
+export async function dismissQueued({ db, network, slug }) {
+  const cleanNetwork = SOCIAL_NETWORKS.includes(String(network)) ? String(network) : null;
+  const cleanSlug = String(slug ?? '').trim();
+  if (cleanNetwork === null || cleanSlug === '') return Object.freeze({ status: 'invalid' });
+  try {
+    const result = await db.prepare(
+      "UPDATE cms_social_queue SET status='dismissed', detail=? WHERE network=? AND slug=? AND status='planned'",
+    ).bind('dismissed by the owner', cleanNetwork, cleanSlug).run();
+    return Object.freeze({ status: Number(result?.meta?.changes ?? 0) > 0 ? 'dismissed' : 'missing' });
+  } catch {
+    return Object.freeze({ status: 'unavailable' });
+  }
+}

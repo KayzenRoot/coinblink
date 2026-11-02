@@ -17,7 +17,7 @@ import {
 import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-M05/p1-production/security.mjs';
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage, storeManualAccount } from '../../modules/CB-M07/token-vault.mjs';
-import { dailyQuota, listQueue, planDay } from '../../modules/CB-M07/social-queue.mjs';
+import { dailyQuota, dismissQueued, listQueue, planDay } from '../../modules/CB-M07/social-queue.mjs';
 import {
   clearSetting, getSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
@@ -682,6 +682,15 @@ async function productionAdmin(request, env) {
       accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request), quota,
       plan: await listQueue({ db: config.db }),
     });
+  }
+  if (method === 'POST' && path === '/admin/social/queue/dismiss') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    await dismissQueued({
+      db: config.db, network: String(auth.form.get('network') ?? ''),
+      slug: String(auth.form.get('slug') ?? ''),
+    });
+    return redirectTo('/admin/social');
   }
   if (method === 'POST' && path === '/admin/social/plan') {
     const auth = await authorizeForm(request, config, now);

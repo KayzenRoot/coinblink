@@ -217,6 +217,10 @@ export function socialPage({ accounts, csrf, message = '', quota = null, plan = 
       + (plan.length === 0 ? '<p>Nothing planned yet today.</p>'
         : '<ul class="admin__drafts">' + plan.map((row) => '<li><strong>' + escapeHtml(row.network)
           + '</strong> <span class="admin__note">· ' + escapeHtml(row.slug) + '</span><pre>'
-          + escapeHtml(row.caption) + '</pre></li>').join('') + '</ul>'))
+          + escapeHtml(row.caption) + '</pre>'
+          + '<form method="post" action="/admin/social/queue/dismiss">' + csrfField(csrf)
+          + '<input type="hidden" name="network" value="' + escapeHtml(row.network) + '">'
+          + '<input type="hidden" name="slug" value="' + escapeHtml(row.slug) + '">'
+          + '<button type="submit">Remove from plan</button></form></li>').join('') + '</ul>'))
     + '<form method="post" action="/admin/logout">' + csrfField(csrf) + '<button type="submit">Sign out</button></form>');
 }

@@ -108,3 +108,18 @@ test('the social tick plans the day only when a quota exists', async () => {
   assert.equal(planned.status, 'planned');
   assert.equal(planned.planned, 1);
 });
+
+test('the owner can take a planned post out of the day', async () => {
+  const { dismissQueued } = await import('../../../src/modules/CB-M07/social-queue.mjs');
+  const db = { prepare(sql) { return { bind: (...args) => ({ run: async () => {
+    assert.match(sql, /UPDATE cms_social_queue SET status='dismissed'/u);
+    assert.deepEqual(args.slice(1), ['instagram', 'hong-kong']);
+    return { meta: { changes: 1 } };
+  } }) }; } };
+  assert.equal((await dismissQueued({ db, network: 'instagram', slug: 'hong-kong' })).status, 'dismissed');
+  assert.equal((await dismissQueued({ db, network: 'myspace', slug: 'x' })).status, 'invalid');
+  assert.equal((await dismissQueued({ db, network: 'tiktok', slug: '' })).status, 'invalid');
+  const page = readFileSync('src/modules/CB-M07/token-vault.mjs', 'utf8');
+  assert.match(page, /Remove from plan/u);
+  assert.match(page, /action="\/admin\/social\/queue\/dismiss"/u);
+});

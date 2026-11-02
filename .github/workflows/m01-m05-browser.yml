@@ -54,7 +54,7 @@ jobs:
         run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: Build
         run: npm run build
-      - name: M01 local acceptance and M01-M05 draft safety (EN/PT, desktop/tablet/mobile, accessibility)
+      - name: M01 local acceptance, M01-M05 draft safety and M09 public surfaces (EN/PT, desktop/tablet/mobile, accessibility)
         run: |
           ./node_modules/.bin/playwright test \
             e2e/m00-shell.spec.mjs \
@@ -64,4 +64,5 @@ jobs:
             e2e/m01-spanish-home.spec.mjs \
             e2e/m01-m05-local-draft-preview.spec.mjs \
             e2e/m05-editorial-demo.spec.mjs \
-            e2e/m05-admin-prod-guard.spec.mjs
+            e2e/m05-admin-prod-guard.spec.mjs \
+            e2e/m09-public-surfaces.spec.mjs

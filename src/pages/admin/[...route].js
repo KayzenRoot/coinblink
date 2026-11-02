@@ -383,7 +383,8 @@ async function productionAdmin(request, env) {
       : result.status === 'dry_run' ? 'Would publish: ' + result.title
         : result.status === 'throttled' ? 'Hourly limit reached (' + result.publishedLastHour + '/' + result.perHour + ').'
           : result.status === 'refused' ? 'The draft was refused by the guards (' + result.reason + '); the headline is remembered.'
-            : result.status === 'no_source' ? 'The publisher page could not be read (' + result.reason + '); the headline is remembered.'
+            : result.status === 'no_source' ? 'The publisher page could not be read (' + result.reason + ')'
+              + (result.transient === true ? '; the headline will be retried.' : '; the headline is remembered.')
               : result.status === 'publish_failed' ? 'The draft was written but not published (' + result.reason + ').'
                 : result.status === 'off' ? 'Automatic publishing is off (M08_AUTO_PUBLISH).'
                   : 'No new headline to attempt.';

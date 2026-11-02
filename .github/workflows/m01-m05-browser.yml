@@ -15,6 +15,7 @@ on:
       - "src/pages/demo/editorial/**"
       - "src/layouts/**"
       - "src/modules/CB-M05/**"
+      - "src/modules/CB-M08/**"
       - "src/modules/CB-M02/**"
       - "src/modules/CB-M03/**"
       - "src/modules/CB-M04/**"

@@ -217,6 +217,7 @@ test('research hands the publisher page to the model and reports the fetch', asy
   assert.equal(drafted.status, 'drafted');
   assert.equal(drafted.research, 'source');
   assert.match(seenPrompt, /Publisher page excerpt/u);
+  assert.match(seenPrompt, /never reproduce more than six consecutive words/u);
   assert.match(seenPrompt, /Hong Kong regulator said the pilot/u);
 
   const failed = await generateArticleDraft({

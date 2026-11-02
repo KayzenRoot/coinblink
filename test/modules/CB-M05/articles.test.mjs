@@ -269,3 +269,11 @@ test('one action can draft the same story in all three languages', () => {
   assert.match(route, /for \(const target of targets\)/u);
   assert.match(route, /Drafts created: /u);
 });
+
+test('a created AI draft redirects instead of showing an error', () => {
+  const route = readFileSync('src/pages/admin/[...route].js', 'utf8');
+  assert.match(route, /if \(typeof draftId === 'string' && draftId !== ''\) return redirectTo\('\/admin\/drafts\/' \+ draftId\)/u);
+  assert.doesNotMatch(route, /created\?\.draft\?\.id/u);
+  assert.doesNotMatch(route, /draft\?\.draft\?\.id/u);
+  assert.match(route, /could not be saved/u);
+});

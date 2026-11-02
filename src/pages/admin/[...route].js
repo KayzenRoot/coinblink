@@ -278,14 +278,15 @@ async function productionAdmin(request, env) {
           }
           continue;
         }
-        const draft = await createDraft({
+        const draftId = await createDraft({
           db: config.db, secret: config.secret, now: now,
           input: {
             title: attempt.draft.title, summary: attempt.draft.summary, body: attempt.draft.body,
             sourceUrl: attempt.draft.primaryUrl, authorLabel: 'CoinBlink AI draft',
           },
         });
-        if (draft?.draft?.id) created.push(target);
+        // createDraft answers with the new id, or null when the write failed.
+        if (typeof draftId === 'string' && draftId !== '') created.push(target);
         else refused.push(target + ':not_saved');
       }
       const summary = 'Drafts created: ' + (created.length === 0 ? 'none' : created.join(', '))
@@ -302,14 +303,15 @@ async function productionAdmin(request, env) {
       language, model: env.M08_MODEL ?? undefined,
     });
     if (result.status === 'drafted') {
-      const created = await createDraft({
+      const draftId = await createDraft({
         db: config.db, secret: config.secret, now: now,
         input: {
           title: result.draft.title, summary: result.draft.summary, body: result.draft.body,
           sourceUrl: result.draft.primaryUrl, authorLabel: 'CoinBlink AI draft',
         },
       });
-      if (created?.draft?.id) return redirectTo('/admin/drafts/' + created.draft.id);
+      // The id is the success signal: a string means the draft exists.
+      if (typeof draftId === 'string' && draftId !== '') return redirectTo('/admin/drafts/' + draftId);
     }
     // A refused draft is an operational signal, not just a message: the ops
     // panel shows how often the model breaks a rule and which one.
@@ -322,7 +324,8 @@ async function productionAdmin(request, env) {
     } catch {
       // logging never blocks the owner screen
     }
-    const reason = result.status === 'invalid' ? 'Type a topic with at least 3 characters, or leave it empty to use the collection.'
+    const reason = result.status === 'drafted' ? 'The model wrote the draft but it could not be saved; nothing was saved.'
+      : result.status === 'invalid' ? 'Type a topic with at least 3 characters, or leave it empty to use the collection.'
       : result.status === 'no_sources' ? 'The collection has no headline to cite yet.'
       : result.status === 'unavailable' ? 'Workers AI did not answer.'
         : result.status === 'copied_text' ? 'The draft reproduced a collected headline; nothing was saved.'

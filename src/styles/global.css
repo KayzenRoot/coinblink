@@ -758,3 +758,7 @@ code {
 .article__languages { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin:10px 0; color:#8f9c93; font-size:12px; }
 .article__languages a { color:#b8f34b; text-decoration:none; }
 .article__languages a:hover { text-decoration:underline; }
+
+.news-explore { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+.news-explore a { display:inline-flex; min-height:32px; align-items:center; border:1px solid #38463d; border-radius:999px; color:#dbe4db; font-size:12px; padding:0 12px; text-decoration:none; }
+.news-explore a:hover { border-color:#7a9d42; color:#fff; }

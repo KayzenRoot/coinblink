@@ -426,7 +426,7 @@ const editorialR26Assets = {
         <path d="M257 145l-2-17 4-6 3 6-2 17 6 18-6-2-3-11-4 11-6 2Z" fill="#d5ffac" fill-opacity=".72"></path>
         <circle cx="258" cy="116" r="5" fill="#d5ffac" fill-opacity=".75"></circle>
         <path d="M0 178H360" stroke="url(#promo-horizon)" stroke-opacity=".55" stroke-width="1.5"></path>
-      </svg><picture class="promo-image" data-preview-region="promo"><source type="image/webp" srcset={promoR26Webp.src} /><img src={promoR26Png.src} width="1200" height="600" alt="" loading="lazy" decoding="async" /></picture><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href="#demo-data">{t("Explore the demo")} →</a></aside>
+      </svg><picture class="promo-image" data-preview-region="promo"><source type="image/webp" srcset={promoR26Webp.src} /><img src={promoR26Png.src} width="1200" height="600" alt="" loading="lazy" decoding="async" /></picture><img src={approvedLogo.src} width={90} height={80} alt="" loading="lazy" /><div><small>{liveOn || homeArticlesOn ? t("COINBLINK") : t("DEMONSTRATION")}</small><h2>{t("Stay ahead")}<br />{t("of the next move.")}</h2><p>{t("Crypto news in a blink.")}</p></div><a href={liveOn || homeArticlesOn ? l("/en/news", "/pt-br/news", "/es/news") : "#demo-data"}>{liveOn || homeArticlesOn ? l("Read our articles", "Ler nossos artigos", "Leer nuestros artículos") : t("Explore the demo")} →</a></aside>
     </section>
 
     <section class="lower-grid" aria-label={t("Latest demonstration content")}>

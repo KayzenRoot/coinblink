@@ -195,6 +195,7 @@ const HOME_COPY_ROWS = Object.freeze({
   "Editorial": Object.freeze({ "pt-br": "Como escrevemos", es: "Cómo escribimos" }),
   "Topics": Object.freeze({ "pt-br": "Temas", es: "Temas" }),
   "Prices are delayed by up to 60 seconds and attributed; headlines are attributed to the publisher.": Object.freeze({ "pt-br": "Preços com atraso de até 60 segundos e atribuídos; manchetes atribuídas ao veículo.", es: "Precios con hasta 60 segundos de retraso y atribuidos; titulares atribuidos al medio." }),
+  "COINBLINK": Object.freeze({ "pt-br": "COINBLINK", es: "COINBLINK" }),
   "Demonstration only · no live market or editorial data": Object.freeze({ "pt-br": "Demonstração · sem dados financeiros ou editoriais ao vivo", es: "Solo demostración · sin datos de mercado ni editoriales en vivo" }),
 });
 

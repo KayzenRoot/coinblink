@@ -1089,3 +1089,7 @@
 .cb-home .news-card > div:last-child { align-items: flex-start; }
 .cb-home .news-card > div:last-child > small { align-self: flex-end; margin-top: -14px; }
 .cb-home .newsletter-panel { align-content: flex-start; }
+
+/* The lower row shares one rhythm: equal heading scale and panel padding. */
+.cb-home .radar-panel, .cb-home .sentiment-panel, .cb-home .promo-panel { padding: 14px 15px; }
+.cb-home .section-heading h2, .cb-home .news-heading h2 { font-size: 15px; }

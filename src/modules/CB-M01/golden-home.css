@@ -1093,3 +1093,9 @@
 /* The lower row shares one rhythm: equal heading scale and panel padding. */
 .cb-home .radar-panel, .cb-home .sentiment-panel, .cb-home .promo-panel { padding: 14px 15px; }
 .cb-home .section-heading h2, .cb-home .news-heading h2 { font-size: 15px; }
+
+/* S1: card typography was 9px, unreadable next to the 15px panel headings. */
+.cb-home .news-card h3 { margin: 5px 0 3px; font-size: 13px; line-height: 1.25; letter-spacing: -.01em; }
+.cb-home .news-card p { font-size: 11px; line-height: 1.4; }
+.cb-home .news-card > div:last-child > span { font-size: 8px; padding: 3px 6px; }
+.cb-home .news-card > div:last-child > small { font-size: 8px; }

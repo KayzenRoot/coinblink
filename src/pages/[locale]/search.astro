@@ -74,7 +74,7 @@ const stamp = (iso: string | null) => (iso === null ? "" : iso.slice(0, 16).repl
             <h2 id="search-theirs">{copy.theirs}</h2>
             <ul>
               {results.headlines.map((item: { title: string; sourceName: string; link: string; publishedAt: string | null }) => (
-                <li><a href={item.link} rel="noreferrer noopener external">{item.title}</a> — {item.sourceName} {stamp(item.publishedAt)}</li>
+                <li>{item.title} — {item.sourceName} {stamp(item.publishedAt)}</li>
               ))}
             </ul>
           </section>

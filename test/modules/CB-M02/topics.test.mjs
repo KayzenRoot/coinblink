@@ -41,7 +41,7 @@ test('articles and headlines are filtered by the topic category', () => {
 test('the page answers 404 for an unknown topic and links the tags', () => {
   const page = readFileSync('src/pages/[locale]/topic/[topic].astro', 'utf8');
   assert.match(page, /if \(topic === null\) Astro\.response\.status = 404/u);
-  assert.match(page, /rel="noreferrer noopener external"/u);
+  assert.doesNotMatch(page, /rel="noreferrer noopener external"/u, "the topic page never links out");
   const article = readFileSync('src/modules/CB-M05/ArticlePage.astro', 'utf8');
   assert.match(article, /topicSlugForTag\(tag\)/u);
   assert.match(article, /\/topic\/\$\{topic\}/u);

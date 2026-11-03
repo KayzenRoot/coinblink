@@ -121,7 +121,7 @@ const related = article === null
       )}
       <aside class="article__provenance">
         <strong>{provenanceLabel}.</strong> {article.provenanceNote}
-        {" "}<a href={article.sourceUrl} rel="noreferrer noopener external">Source</a>.
+        {" "}<span>Source: {article.sourceUrl}</span>.
       </aside>
       <SponsoredSlot slot="article" />
       <p class="article__back"><a href={`/${locale}/news`}>{backLabel}</a></p>

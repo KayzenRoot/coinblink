@@ -116,8 +116,10 @@ const editorialR26Assets = {
 
 <div class="cb-home" id="top" data-locale={locale}>
   <aside class="demo-banner" aria-label={t("Demonstration data notice")}>
-    <strong>DEMO</strong>
-    <span>{t("Illustrative only — no live prices, headlines, or external feeds are connected.")}</span>
+    <strong>{liveOn || marketQuotes.length > 0 ? t("LIVE") : "DEMO"}</strong>
+    <span>{liveOn || marketQuotes.length > 0
+      ? t("Prices are delayed by up to 60 seconds and attributed; headlines are attributed to the publisher.")
+      : t("Illustrative only — no live prices, headlines, or external feeds are connected.")}</span>
   </aside>
 
   <header class="cb-header">
@@ -298,7 +300,7 @@ const editorialR26Assets = {
           )}
         </div>
         {btcQuote !== null ? (
-          <div class="hero-stat"><span>{t("BITCOIN · NOW")}</span><strong>{marketPrice(btcQuote.priceUsd)}</strong><small>{t("CoinGecko · delayed up to 60s")}</small></div>
+          <div class="hero-stat" data-live-symbol="BTC"><span>{t("BITCOIN · NOW")}</span><strong data-live-price>{marketPrice(btcQuote.priceUsd)}</strong><small>{t("CoinGecko · delayed up to 60s")}</small></div>
         ) : (
           <div class="hero-stat"><span>{t("DEMO · NOT LIVE")}</span><strong>—</strong><small>{t("Market data not connected")}</small></div>
         )}

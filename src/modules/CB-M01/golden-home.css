@@ -20,6 +20,16 @@
 
 .cb-home .news-art--live img { width:100%; height:54px; object-fit:cover; display:block; }
 
+/* Visual pass 2026-11-03: the hero copy must not crawl over the artwork and the
+   live price stays legible on the scene. */
+.cb-home .hero-copy { max-width: 54%; padding-right: 6px; }
+.cb-home .hero-copy h1 { max-width: 17ch; font-size: clamp(27px, 2.35vw, 38px); line-height: 1.04; letter-spacing: -.05em; text-wrap: balance; text-shadow: 0 2px 22px rgb(0 0 0 / .62); }
+.cb-home .hero-copy p { max-width: 42ch; text-shadow: 0 1px 14px rgb(0 0 0 / .55); }
+.cb-home .hero-stat strong { font-size: clamp(22px, 2.3vw, 33px); text-shadow: 0 2px 20px rgb(0 0 0 / .7); }
+.cb-home .hero-stat small { text-shadow: 0 1px 10px rgb(0 0 0 / .6); }
+.cb-home .hero-stat { padding: 9px 13px; border: 1px solid rgb(184 243 75 / .28); border-radius: 11px; background: rgb(6 14 10 / .62); backdrop-filter: blur(3px); }
+.cb-home .hero-stat strong { color: #f2fff0; letter-spacing: -.02em; }
+
 @media (min-width:1281px) {
   .cb-home .news-panel,.cb-home .newsletter-panel { min-height:145px; }
 }

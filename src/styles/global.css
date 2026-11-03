@@ -781,3 +781,5 @@ code {
 .article__summary { max-width: 62ch; margin: 18px 0; padding: 14px 16px; border-left: 3px solid #b8f34b; border-radius: 0 8px 8px 0; background: #0d1812; color: #d7e2d6; font-size: 15px; line-height: 1.55; }
 .article__body { max-width: 70ch; font-size: 15px; line-height: 1.7; }
 .article__body p { margin: 0 0 1em; }
+.article__cover { max-height: 320px; object-fit: cover; }
+.article__tag { margin: 0 0 6px; }

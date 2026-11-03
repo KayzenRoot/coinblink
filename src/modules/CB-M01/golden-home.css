@@ -1099,3 +1099,9 @@
 .cb-home .news-card p { font-size: 11px; line-height: 1.4; }
 .cb-home .news-card > div:last-child > span { font-size: 8px; padding: 3px 6px; }
 .cb-home .news-card > div:last-child > small { font-size: 8px; }
+
+/* S1 (2/3): the radar rows had a ragged title column and the source drifted.
+   A fixed grid keeps time, headline and publisher on the same rails. */
+.cb-home .radar-row { display: grid; grid-template-columns: 8px 44px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
+.cb-home .radar-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cb-home .radar-row small { text-align: right; }

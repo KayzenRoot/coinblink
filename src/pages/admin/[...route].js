@@ -18,6 +18,7 @@ import { revokeCredential, revokeSession, securityPage } from '../../modules/CB-
 import { analyticsPage, readAnalytics } from '../../modules/CB-M06/pageview.mjs';
 import { listSocialAccounts, revokeSocialAccount, socialPage, storeManualAccount } from '../../modules/CB-M07/token-vault.mjs';
 import { dailyQuota, dismissQueued, listQueue, planDay } from '../../modules/CB-M07/social-queue.mjs';
+import { sendDay } from '../../modules/CB-M07/social-publish.mjs';
 import {
   clearSetting, getSetting, listSettings, setSetting, settingsPage,
 } from '../../modules/CB-M05/p1-production/settings.mjs';
@@ -709,6 +710,22 @@ async function productionAdmin(request, env) {
     const message = plan.length === 0
       ? 'Nothing to plan: set the daily quotas in Settings or publish more articles.'
       : (dryRun ? 'Would plan ' : 'Planned ') + plan.length + ' post(s).';
+    return page('Social accounts', socialPage({
+      accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request),
+      message, quota, plan: await listQueue({ db: config.db }),
+    }));
+  }
+  if (method === 'POST' && path === '/admin/social/send') {
+    const auth = await authorizeForm(request, config, now);
+    if (auth === null) return denied(404);
+    const quota = await socialQuota(config, env);
+    const origin = runtimeEnv('PUBLIC_SITE_ORIGIN') ?? new URL(request.url).origin;
+    const results = await sendDay({
+      db: config.db, secret: config.secret, env, nowMs: Date.now(), origin, quota,
+    });
+    const message = results.map((row) => row.network + ': ' + row.status
+      + (row.sent > 0 ? ' · ' + row.sent + ' sent' : '')
+      + (row.failed > 0 ? ' · ' + row.failed + ' failed' : '')).join(' · ');
     return page('Social accounts', socialPage({
       accounts: await listSocialAccounts(config.db), csrf: csrfFromRequest(request),
       message, quota, plan: await listQueue({ db: config.db }),

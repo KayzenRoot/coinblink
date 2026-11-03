@@ -22,13 +22,22 @@ compactação do painel de mercado.
 Pronto quando: os três blocos baterem com a foto master e o e2e `m00-shell` e
 `m01-spanish-home` estiverem verdes.
 
-## S2 · Apps sociais (bloqueada no Owner)
+## S2 · Apps sociais (código pronto; falta criar os apps)
 
-> Leia `docs/STATUS.md`. Vamos criar os apps Meta e TikTok. Abra as páginas de
-> desenvolvedor no meu Chrome, espere meu login e siga do `Create app`.
+O código da #467 está implementado e no ar: OAuth do Instagram e do TikTok com
+vault AES-GCM, envio do plano por `POST /admin/social/send` e as guardas
+`not_configured`/`no_media`. O que falta é só o lado do Owner:
+
+> Leia `docs/STATUS.md`. Abra o Meta for Developers e o TikTok for Developers no
+> meu Chrome e espere meu login. Crie os dois apps com os redirect URIs
+> `https://coinblink-production.kayzendev.workers.dev/api/oauth/instagram/callback`
+> e `https://coinblink-production.kayzendev.workers.dev/api/oauth/tiktok/callback`,
+> capture ID e segredo sem exibir os valores e cole em `/admin/settings`
+> (grupo Social).
 
 Pronto quando: `META_APP_ID`, `META_APP_SECRET`, `TIKTOK_CLIENT_KEY` e
-`TIKTOK_CLIENT_SECRET` salvos e a fila social com envio real funcionando.
+`TIKTOK_CLIENT_SECRET` salvos, as duas contas aparecendo em `/admin/social` e a
+fila social com envio real funcionando.
 
 ## S3 · Billing live (decisão do Owner)
 

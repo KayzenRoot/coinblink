@@ -121,6 +121,15 @@ jobs:
                 throw new Error(`${path} answered ${response.status}, expected 200`);
               }
             }
+            // The Instagram and TikTok callbacks are registered in the developer
+            // apps before those apps exist, so each route must answer from the
+            // deployment (503 or a redirect) and never a 404.
+            for (const path of ["/api/oauth/instagram/start", "/api/oauth/instagram/callback", "/api/oauth/tiktok/start", "/api/oauth/tiktok/callback"]) {
+              const response = await fetch(base + path, { redirect: "manual" });
+              if (response.status === 404) {
+                throw new Error(`${path} answered 404: the route is missing from the deployment`);
+              }
+            }
             const statusPage = await (await fetch(base + "/status", { cache: "no-store" })).text();
             if (!statusPage.includes(expectedSha)) {
               throw new Error("/status does not report the deployed commit " + expectedSha);

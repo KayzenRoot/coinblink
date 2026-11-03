@@ -69,7 +69,8 @@ test('the home renders trending from the collection and keeps the placeholder fa
   const home = readFileSync('src/modules/CB-M01/GoldenHome.astro', 'utf8');
   assert.ok(home.includes('buildTrending(liveNews.status === "LIVE_HEADLINES" ? liveNews.items : [], 4)'));
   assert.ok(home.includes('t("Trending in the collection")'));
-  assert.ok(home.includes('href={topic.link}'));
+  assert.ok(home.includes('<div class="trend-item">'));
+  assert.ok(!home.includes('href={topic.link}'), 'trending no longer links out');
   assert.ok(home.includes('t("Trending demo")'));
 });
 
@@ -94,7 +95,7 @@ test('live cards carry the artwork, the category and the publisher link', () => 
   assert.ok(home.includes('data-news-kind={homeArticlesOn ? "article" : liveOn ? "headline" : "placeholder"}'));
   assert.ok(home.includes('const category = headlineCategory(item.title)'));
   assert.ok(home.includes('<EditorialArtwork variant={artwork} />'));
-  assert.ok(home.includes('rel="noreferrer noopener external">{item.title}</a>'));
+  assert.ok(home.includes('<h3>{item.title}</h3>'));
   const script = readFileSync('public/home-demo.js', 'utf8');
   assert.ok(script.includes('dataset.newsKind'));
   assert.ok(script.includes('newsKind === "headline"'));

@@ -16,7 +16,8 @@ test('live headlines are attributed and link out, never copied', () => {
   assert.match(home, /<div class="news-cards news-cards--live">/u);
   assert.match(home, /data-news-card data-category-value=\{category\}/u);
   assert.match(home, /<EditorialArtwork variant=\{artwork\} \/>/u);
-  assert.match(home, /href=\{item\.link\} rel="noreferrer noopener external"/u);
+  assert.doesNotMatch(home, /href=\{item\.link\}/u, "a collected headline never sends the reader away");
+  assert.match(home, /<h3>\{item\.title\}<\/h3>/u);
   assert.match(home, /\{item\.sourceName\}/u);
   assert.match(home, /<time datetime=\{item\.publishedAt/u);
   assert.doesNotMatch(home, /item\.description|item\.content/u);

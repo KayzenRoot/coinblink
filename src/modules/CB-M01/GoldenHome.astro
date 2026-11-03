@@ -357,7 +357,7 @@ const editorialR26Assets = {
 
     <section class="trending-strip" aria-labelledby="trending-title" tabindex="0"><h2 id="trending-title">✦ {trending.length > 0 ? t("Trending in the collection") : t("Trending demo")}</h2>
       {trending.length > 0
-        ? trending.map((topic, index) => <a class="trend-item" href={topic.link} rel="noreferrer noopener external"><b>{index + 1}</b><span>{topic.label}<small>{topic.mentions} {t("headlines")}</small></span></a>)
+        ? trending.map((topic, index) => <div class="trend-item"><b>{index + 1}</b><span>{topic.label}<small>{topic.mentions} {t("headlines")}</small></span></div>)
         : ["Editorial placeholder", "Market feed not connected", "No live story available", "Demonstration item", "Verified topic feed not connected"].map((label, index) => <div class="trend-item"><b>{index + 1}</b><span>{t(label)}<small>{t("Demo placeholder")}</small></span></div>)}
     </section>
 
@@ -377,7 +377,7 @@ const editorialR26Assets = {
               <li class="radar-row">
                 <span class={"radar-dot radar-dot--" + row.tone} aria-hidden="true"></span>
                 <time datetime={row.publishedAt ?? undefined}>{row.publishedAt === null ? t("undated") : liveStamp(row.publishedAt).slice(11, 16)}</time>
-                <a href={row.link} rel="noreferrer noopener external">{row.title}</a>
+                <span class="radar-title">{row.title}</span>
                 <small>{row.sourceName}</small>
               </li>
             ))}
@@ -443,7 +443,7 @@ const editorialR26Assets = {
             {liveItems.map((item, index) => {
               const category = headlineCategory(item.title);
               const artwork = artworkForCategory(category);
-              return <article class="news-card" data-news-card data-category-value={category}><div class={"news-art news-art--live art-" + (index + 1)} aria-hidden="true"><EditorialArtwork variant={artwork} /></div><div><span>{t(category)}</span><small>{t("LIVE")}</small><h3><a href={item.link} rel="noreferrer noopener external">{item.title}</a></h3><p><b>{item.sourceName}</b> · <time datetime={item.publishedAt ?? undefined}>{liveStamp(item.publishedAt)}</time></p></div></article>;
+              return <article class="news-card" data-news-card data-category-value={category}><div class={"news-art news-art--live art-" + (index + 1)} aria-hidden="true"><EditorialArtwork variant={artwork} /></div><div><span>{t(category)}</span><small>{t("LIVE")}</small><h3>{item.title}</h3><p><b>{item.sourceName}</b> · <time datetime={item.publishedAt ?? undefined}>{liveStamp(item.publishedAt)}</time></p></div></article>;
             })}
           </div>
         ) : (
@@ -460,7 +460,7 @@ const editorialR26Assets = {
           <button type="button" data-reset-filters>{t("Show all placeholders")}</button>
         </div>
         <p class="news-official-discovery" data-m02-news-link>
-          <a href={liveOn ? l("/en/news/live", "/pt-br/news/live", "/es/news/live") : l("/en/news", "/pt-br/news", "/es/news")}>{liveOn ? l("See all live headlines", "Ver todas as manchetes ao vivo", "Ver todos los titulares en vivo") : l("Explore fictional stories", "Explorar histórias fictícias", "Explorar noticias ficticias")} <span aria-hidden="true">→</span></a>
+          <a href={l("/en/news", "/pt-br/news", "/es/news")}>{l("Read our articles", "Ler nossos artigos", "Leer nuestros artículos")} <span aria-hidden="true">→</span></a>
           <small>{liveOn ? l("Attributed to the original publishers.", "Atribuídas aos veículos originais.", "Atribuidos a los medios originales.") : l("Offline demo. No published news.", "DEMO offline. Não são notícias publicadas.", "DEMO sin conexión. No son noticias publicadas.")}</small>
         </p>
         <LocalJourneyNav locale={locale} current="home" />

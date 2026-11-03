@@ -1046,3 +1046,19 @@
 .cb-home .radar-dot { width:6px; height:6px; border-radius:50%; background:#7f9a88; }
 .cb-home .radar-dot--up { background:var(--lime); }
 .cb-home .radar-dot--down { background:#ff8a75; }
+
+/* Alignment pass 2026-11-03: the headline fits its column at every width and
+   the story cards stack vertically instead of squeezing the cover. */
+@media (min-width: 861px) {
+  .cb-home .hero-copy { max-width: 58%; }
+  .cb-home .hero-copy h1 { max-width: 100%; font-size: clamp(26px, 3.1vw, 40px); line-height: 1.05; letter-spacing: -.045em; overflow-wrap: break-word; }
+}
+.cb-home .news-card { display: flex; flex-direction: column; }
+.cb-home .news-art { flex: 0 0 auto; height: 96px; }
+.cb-home .news-art--live img { height: 96px; }
+.cb-home .news-card > div:last-child { display: flex; flex-direction: column; gap: 4px; }
+.cb-home .news-card > div:last-child > span { align-self: flex-start; }
+.cb-home .news-card h3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cb-home .news-card p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cb-home .market-panel { justify-content: flex-start; }
+.cb-home .market-panel > .panel-link { margin-top: 8px; }

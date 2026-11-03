@@ -14,6 +14,8 @@ Atualizado em 2026-11-03.
 
 ## Regras de produto já decididas
 
+- `/news` mostra só os nossos artigos quando existe publicado; sem artigo, mantém o demo rotulado. A faixa de veículos saiu da página.
+
 - Nenhuma notícia encaminha para o site da fonte; toda notícia abrível é publicada pelo CoinBlink.
 - Artigos de IA levam o selo "published automatically · checked for citations, copying and numbers".
 - Guardas: JSON, citação obrigatória, 8 palavras copiadas da manchete / 12 da página, número sem fonte.
@@ -21,7 +23,7 @@ Atualizado em 2026-11-03.
 
 ## Pendências, em ordem
 
-1. **Design (3 pontos)**: proporção radar/lexicon/promo, escala das manchetes dos cards, compactação do painel de mercado. Sempre medir geometria antes de mexer (foi o que funcionou).
+1. **Design**: S1 concluído (cards 9px→13px, radar em grid, painel de mercado colado ao conteúdo). Resta um S5 opcional para a home em telas largas. Sempre medir geometria antes de mexer.
 2. **#437/#14**: apps Meta e TikTok — o Owner cria, depois preencher `META_APP_ID/SECRET` e `TIKTOK_CLIENT_KEY/SECRET`.
 3. **#19**: Stripe live (decisão do Owner).
 4. **#27**: mídia própria/vídeo (M17).

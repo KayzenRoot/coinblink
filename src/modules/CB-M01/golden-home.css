@@ -1075,3 +1075,17 @@
   .cb-home .hero-stat { position: static; justify-self: start; align-self: flex-start; margin: 16px 0 0; text-align: left; }
   .cb-home .hero-panel { justify-content: flex-start; }
 }
+
+/* Master-photo pass 2026-11-03: text stays in the dark column and the cover
+   fills the card width. */
+@media (min-width: 861px) {
+  .cb-home .hero-scene { inset: 0 0 0 44%; }
+  .cb-home .hero-copy { max-width: 44%; z-index: 4; }
+  .cb-home .hero-copy h1 { max-width: 100%; font-size: clamp(24px, 2.05vw, 34px); line-height: 1.06; }
+  .cb-home .hero-copy p { max-width: 38ch; }
+}
+.cb-home .news-art { display: block; width: 100%; overflow: hidden; }
+.cb-home .news-art img { display: block; width: 100%; height: 96px; object-fit: cover; }
+.cb-home .news-card > div:last-child { align-items: flex-start; }
+.cb-home .news-card > div:last-child > small { align-self: flex-end; margin-top: -14px; }
+.cb-home .newsletter-panel { align-content: flex-start; }

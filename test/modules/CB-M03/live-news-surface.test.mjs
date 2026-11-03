@@ -69,8 +69,9 @@ test('the news index shows a compact, attributed strip only when live', () => {
   const workbench = readFileSync('src/modules/CB-M02/NewsWorkbench.astro', 'utf8');
   assert.ok(workbench.includes('<slot name="live" />'));
   const page = readFileSync('src/modules/CB-M09/LocalizedNewsPage.astro', 'utf8');
-  assert.ok(page.includes('readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE })'));
-  assert.ok(page.includes('<LiveHeadlineStrip slot="live"'));
+  // The news index is our own articles only: no publisher strip, no outbound link.
+  assert.doesNotMatch(page, /LiveHeadlineStrip/u);
+  assert.doesNotMatch(page, /readLiveNews\(/u);
 });
 
 test('cross-coverage is computed locally and annotated per headline', () => {

@@ -2,12 +2,9 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import NewsWorkbench from "../CB-M02/NewsWorkbench.astro";
 import NewsArticle from "../CB-M02/NewsArticle.astro";
-import LiveHeadlineStrip from "../CB-M03/LiveHeadlineStrip.astro";
 import PublishedArticles from "../CB-M05/PublishedArticles.astro";
 import { listArticleCards } from "../CB-M05/p1-production/articles.mjs";
 import SponsoredSlot from "../CB-M13/SponsoredSlot.astro";
-import { readLiveNews } from "../CB-M03/live-news.mjs";
-import { filterSnapshot, hiddenSourceIds } from "../CB-M03/source-policy.mjs";
 import { runtimeBinding } from "../../lib/runtime-env";
 import { resolveMockNews } from "../CB-M02/news-workbench.mjs";
 
@@ -16,12 +13,6 @@ const { locale, slug, category } = Astro.props;
 const detail = slug === undefined ? null : resolveMockNews(slug);
 // The strip is opt-in and off by default, so a disabled build performs no
 // request even though the news index is the busiest surface in the section.
-const liveSnapshot = detail === null
-  ? filterSnapshot(
-    await readLiveNews({ enabled: import.meta.env.PUBLIC_NEWS_LIVE }),
-    await hiddenSourceIds({ db: runtimeBinding("CMS_DB") }),
-  )
-  : null;
 const meta = {
   en: {
     lang: "en", listTitle: "CoinBlink · News discovery (DEMO)",
@@ -46,7 +37,7 @@ const copy = meta[locale];
 // The page title says DEMO only while nothing real is on it: a published
 // article or a live collection makes it a news page, not a workbench.
 const realArticles = detail !== null ? [] : await listArticleCards({ db: runtimeBinding("CMS_DB"), locale, limit: 1 });
-const hasRealContent = realArticles.length > 0 || liveSnapshot?.status === "LIVE_HEADLINES";
+const hasRealContent = realArticles.length > 0;
 const realMeta = {
   en: ["CoinBlink · News", "Attributed headlines from public feeds and articles published by CoinBlink."],
   "pt-br": ["CoinBlink · Notícias", "Manchetes atribuídas de feeds públicos e artigos publicados pelo CoinBlink."],
@@ -70,9 +61,9 @@ const listDescription = hasRealContent ? realDescription : copy.listDescription;
           <a href={`/${locale}/search`}>{locale === "pt-br" ? "Busca" : locale === "es" ? "Buscar" : "Search"}</a>
           <a href={`/${locale}/news/sources`}>{locale === "pt-br" ? "Fontes" : locale === "es" ? "Fuentes" : "Sources"}</a>
         </nav>
-        <NewsWorkbench locale={locale} category={category}>
-          {liveSnapshot && <LiveHeadlineStrip slot="live" snapshot={liveSnapshot} locale={locale} />}
-        </NewsWorkbench>
+        {!hasRealContent && (
+          <NewsWorkbench locale={locale} category={category} />
+        )}
       </>
     )}
 </BaseLayout>

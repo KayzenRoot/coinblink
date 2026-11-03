@@ -1105,3 +1105,8 @@
 .cb-home .radar-row { display: grid; grid-template-columns: 8px 44px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
 .cb-home .radar-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .cb-home .radar-row small { text-align: right; }
+
+/* S1 (3/3): the market panel stretched to the hero height and spaced its five
+   rows apart. It now hugs its content and keeps the rows at their own rhythm. */
+.cb-home .lead-grid { align-items: start; }
+.cb-home .market-list { flex: 0 0 auto; align-content: start; }

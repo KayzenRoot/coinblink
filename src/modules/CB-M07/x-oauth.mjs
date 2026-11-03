@@ -59,16 +59,7 @@ export function buildAuthorizeUrl({ clientId, redirectUri, state, challenge }) {
 }
 
 /** Normalize the callback query without trusting any value. */
-export function readCallback(searchParams) {
-  const value = (name) => (typeof searchParams?.get === "function" ? searchParams.get(name) : null);
-  const error = value("error");
-  return Object.freeze({
-    code: value("code"),
-    state: value("state"),
-    error: typeof error === "string" && error !== "" ? error : null,
-    errorDescription: value("error_description"),
-  });
-}
+export { readCallback } from "./oauth-query.mjs";
 
 /** Exchange the code. Errors never include the code, verifier or token. */
 export async function exchangeCode({

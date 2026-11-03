@@ -6,7 +6,12 @@
 import { escapeHtml, page } from '../CB-M05/p1-production/owner-auth.mjs';
 
 const SECRET = /^[0-9a-f]{64}$/iu;
-const PROVIDERS = new Set(['x']);
+const PROVIDERS = new Set(['x', 'instagram', 'tiktok']);
+
+/** The vault only derives keys from a 64-hex owner secret. */
+export function isVaultSecret(secret) {
+  return typeof secret === 'string' && SECRET.test(secret);
+}
 const STATE_TTL_SECONDS = 600;
 const STATE = /^[A-Za-z0-9_-]{16,128}$/u;
 const IV_BYTES = 12;
@@ -98,18 +103,24 @@ export async function consumeOauthState({ db, state, nowMs }) {
   }
 }
 
+/** Seals the access token and, when present, the refresh token. */
+async function sealTokenPair({ secret, token }) {
+  const access = await encryptToken({ secret, plaintext: token.accessToken });
+  const refresh = typeof token.refreshToken === 'string' && token.refreshToken !== ''
+    ? await encryptToken({ secret, plaintext: token.refreshToken })
+    : null;
+  return { access, refresh };
+}
+
 export async function storeSocialAccount({ db, secret, provider, account, token, nowMs }) {
   if (!PROVIDERS.has(provider)) return { status: 'invalid' };
   if (typeof account?.id !== 'string' || account.id === ''
     || typeof account?.username !== 'string' || account.username === '') return { status: 'invalid' };
   if (typeof token?.accessToken !== 'string' || token.accessToken === '') return { status: 'invalid' };
   let access;
-  let refresh = null;
+  let refresh;
   try {
-    access = await encryptToken({ secret, plaintext: token.accessToken });
-    if (typeof token.refreshToken === 'string' && token.refreshToken !== '') {
-      refresh = await encryptToken({ secret, plaintext: token.refreshToken });
-    }
+    ({ access, refresh } = await sealTokenPair({ secret, token }));
   } catch {
     return { status: 'unavailable' };
   }
@@ -176,6 +187,76 @@ export async function revokeSocialAccount({ db, provider, accountId }) {
   return result?.meta?.changes === 1 ? { status: 'revoked' } : { status: 'missing' };
 }
 
+/**
+ * Replaces the ciphertexts of an already connected account after a refresh. It
+ * never touches the public profile, so a refresh cannot rename the row.
+ */
+export async function updateSocialToken({ db, secret, provider, accountId, token, nowMs = Date.now() }) {
+  if (!PROVIDERS.has(provider) || typeof accountId !== 'string' || accountId === '') return { status: 'invalid' };
+  if (typeof token?.accessToken !== 'string' || token.accessToken === '') return { status: 'invalid' };
+  let access;
+  let refresh;
+  try {
+    ({ access, refresh } = await sealTokenPair({ secret, token }));
+  } catch {
+    return { status: 'unavailable' };
+  }
+  const now = Math.floor(nowMs / 1000);
+  const expiresAt = Number.isFinite(token.expiresIn) ? now + Number(token.expiresIn) : null;
+  try {
+    const result = await db.prepare(
+      'UPDATE cms_social_accounts SET access_token_ciphertext=?,access_token_iv=?,'
+      + 'refresh_token_ciphertext=COALESCE(?,refresh_token_ciphertext),'
+      + 'refresh_token_iv=COALESCE(?,refresh_token_iv),expires_at=?,updated_at=? '
+      + 'WHERE provider=? AND account_id=? AND owner_id=1',
+    ).bind(
+      access.ciphertext, access.iv, refresh?.ciphertext ?? null, refresh?.iv ?? null,
+      expiresAt, now, provider, accountId,
+    ).run();
+    return result?.meta?.changes === 1 ? { status: 'updated' } : { status: 'missing' };
+  } catch {
+    return { status: 'unavailable' };
+  }
+}
+
+/**
+ * Decrypts the stored token for a provider. The publisher is the only caller:
+ * the plaintext lives inside one request and is never returned to a page.
+ */
+export async function readSocialToken({ db, secret, provider }) {
+  if (!PROVIDERS.has(provider)) return Object.freeze({ status: 'invalid' });
+  let row;
+  try {
+    row = await db.prepare(
+      'SELECT account_id AS accountId,username,access_token_ciphertext AS accessCiphertext,'
+      + 'access_token_iv AS accessIv,refresh_token_ciphertext AS refreshCiphertext,'
+      + 'refresh_token_iv AS refreshIv,expires_at AS expiresAt FROM cms_social_accounts '
+      + "WHERE provider=? AND owner_id=1 AND account_id NOT LIKE 'manual:%' ORDER BY updated_at DESC LIMIT 1",
+    ).bind(provider).first();
+  } catch {
+    return Object.freeze({ status: 'unavailable' });
+  }
+  if (row === null || row === undefined) return Object.freeze({ status: 'missing' });
+  try {
+    const accessToken = await decryptToken({
+      secret, ciphertext: row.accessCiphertext, iv: row.accessIv,
+    });
+    const refreshToken = typeof row.refreshCiphertext === 'string' && typeof row.refreshIv === 'string'
+      ? await decryptToken({ secret, ciphertext: row.refreshCiphertext, iv: row.refreshIv })
+      : null;
+    return Object.freeze({
+      status: 'ok',
+      accountId: String(row.accountId ?? ''),
+      username: String(row.username ?? ''),
+      accessToken,
+      refreshToken,
+      expiresAt: row.expiresAt === null || row.expiresAt === undefined ? null : Number(row.expiresAt),
+    });
+  } catch {
+    return Object.freeze({ status: 'unavailable' });
+  }
+}
+
 function csrfField(csrf) {
   return '<input type="hidden" name="csrf" value="' + escapeHtml(csrf) + '">';
 }
@@ -192,7 +273,9 @@ export function socialPage({ accounts, csrf, message = '', quota = null, plan = 
     + ' · <a href="/admin/research">Research desk</a> · <a href="/admin/security">Security and audit</a></p>'
     + (accounts.length === 0 ? '<p>No social account is connected.</p>'
       : '<ul class="admin__drafts">' + items + '</ul>')
-    + '<p><a class="admin__button" href="/api/oauth/x/start">Connect X</a></p>'
+    + '<p><a class="admin__button" href="/api/oauth/x/start">Connect X</a>'
+    + ' <a class="admin__button" href="/api/oauth/instagram/start">Connect Instagram</a>'
+    + ' <a class="admin__button" href="/api/oauth/tiktok/start">Connect TikTok</a></p>'
     + (message === '' ? '' : '<p class="admin__error" role="alert">' + escapeHtml(message) + '</p>')
     + '<h2>Manual token</h2>'
     + '<p class="admin__note">For Instagram and TikTok while their developer apps are not connected. '
@@ -203,8 +286,8 @@ export function socialPage({ accounts, csrf, message = '', quota = null, plan = 
     + '<label>Handle<input name="username" required maxlength="40" placeholder="coinblink"></label>'
     + '<label>Access token<input name="token" type="password" required autocomplete="off"></label>'
     + '<button type="submit">Store token</button></form>'
-    + '<p class="admin__note">Tokens are encrypted with AES-GCM at rest. Publishing is disabled: '
-    + 'connecting an account does not post anything until a separate approval flow exists.</p>'
+    + '<p class="admin__note">Tokens are encrypted with AES-GCM at rest. Connecting an account stores '
+    + 'the token only; nothing is posted until you send the reviewed plan.</p>'
     + (quota === null ? '' : '<h2>Daily plan</h2>'
       + '<p class="admin__note">Instagram ' + Number(quota.instagram) + '/day · TikTok ' + Number(quota.tiktok) + '/day. '
       + 'Set the quotas in Settings, group Social.</p>'
@@ -214,10 +297,13 @@ export function socialPage({ accounts, csrf, message = '', quota = null, plan = 
       + '<form method="post" action="/admin/social/plan" class="admin__draft-form">' + csrfField(csrf)
       + '<input type="hidden" name="mode" value="plan">'
       + '<button type="submit">Plan today</button></form>'
+      + '<form method="post" action="/admin/social/send" class="admin__draft-form">' + csrfField(csrf)
+      + '<button type="submit">Send today plan</button></form>'
       + (plan.length === 0 ? '<p>Nothing planned yet today.</p>'
         : '<ul class="admin__drafts">' + plan.map((row) => '<li><strong>' + escapeHtml(row.network)
-          + '</strong> <span class="admin__note">· ' + escapeHtml(row.slug) + '</span><pre>'
-          + escapeHtml(row.caption) + '</pre>'
+          + '</strong> <span class="admin__note">· ' + escapeHtml(row.slug) + ' · ' + escapeHtml(row.status)
+          + (row.detail === undefined || row.detail === '' ? '' : ' · ' + escapeHtml(row.detail))
+          + '</span><pre>' + escapeHtml(row.caption) + '</pre>'
           + '<form method="post" action="/admin/social/queue/dismiss">' + csrfField(csrf)
           + '<input type="hidden" name="network" value="' + escapeHtml(row.network) + '">'
           + '<input type="hidden" name="slug" value="' + escapeHtml(row.slug) + '">'

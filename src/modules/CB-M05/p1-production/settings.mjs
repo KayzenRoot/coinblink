@@ -56,6 +56,11 @@ export const SETTINGS = Object.freeze([
     pattern: /^[A-Za-z0-9_-]{8,200}$/u, hint: 'TikTok client key' },
   { key: 'TIKTOK_CLIENT_SECRET', label: 'TikTok client secret', group: 'Social', secret: true,
     pattern: /^[A-Za-z0-9_-]{8,200}$/u, hint: 'TikTok client secret' },
+  { key: 'M07_IG_MEDIA_URL', label: 'Instagram media URL', group: 'Social', secret: false,
+    pattern: /^https:\/\/[^\s<>"]{4,400}$/u,
+    hint: 'https://…/og-image.jpg (empty uses the brand card)' },
+  { key: 'M07_TIKTOK_VIDEO_URL', label: 'TikTok video URL', group: 'Social', secret: false,
+    pattern: /^https:\/\/[^\s<>"]{4,400}$/u, hint: 'https://…/clip.mp4' },
   { key: 'M08_MODEL', label: 'Workers AI model', group: 'AI', secret: false,
     pattern: /^@cf\/[a-z0-9][a-z0-9./-]{2,120}$/u, hint: '@cf/meta/llama-3.1-8b-instruct-fp8' },
 ]);

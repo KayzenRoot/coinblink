@@ -6,9 +6,13 @@ on:
     paths:
       - ".github/workflows/m07-local-social-studio.yml"
       - "src/modules/CB-M07/**"
+      - "src/modules/CB-M05/p1-production/settings.mjs"
       - "src/pages/api/oauth/x/**"
+      - "src/pages/api/oauth/instagram/**"
+      - "src/pages/api/oauth/tiktok/**"
       - "src/lib/runtime-env.ts"
       - "e2e/m07-x-oauth.spec.mjs"
+      - "e2e/m07-social-oauth.spec.mjs"
       - "src/modules/CB-M05/p1c-local/local-cms-ui.mjs"
       - "test/modules/CB-M07/**"
       - "package.json"
@@ -47,4 +51,4 @@ jobs:
       - name: Local D1 WebAuthn sandbox and revocation
         run: node --test test/modules/CB-M07/local-social-preview.test.mjs
       - name: Public admin remains inaccessible
-        run: ./node_modules/.bin/playwright test e2e/m05-admin-prod-guard.spec.mjs e2e/m07-x-oauth.spec.mjs
+        run: ./node_modules/.bin/playwright test e2e/m05-admin-prod-guard.spec.mjs e2e/m07-x-oauth.spec.mjs e2e/m07-social-oauth.spec.mjs

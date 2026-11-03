@@ -117,11 +117,12 @@ export async function planDay({
 export async function listQueue({ db, day = utcDay(), limit = 40 }) {
   try {
     const rows = await db.prepare(
-      'SELECT network, slug, locale, caption, status, day FROM cms_social_queue WHERE day=? ORDER BY network, created_at DESC LIMIT ?',
+      'SELECT network, slug, locale, caption, status, day, detail FROM cms_social_queue WHERE day=? ORDER BY network, created_at DESC LIMIT ?',
     ).bind(day, Math.min(Math.max(Number(limit) || 40, 1), 100)).all();
     return Object.freeze((rows?.results ?? []).map((row) => Object.freeze({
       network: row.network, slug: row.slug, locale: row.locale,
       caption: row.caption, status: row.status, day: row.day,
+      detail: typeof row.detail === 'string' ? row.detail : '',
     })));
   } catch {
     return Object.freeze([]);

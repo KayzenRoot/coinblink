@@ -10,7 +10,10 @@ Atualizado em 2026-11-03.
 - Publicação automática **ligada**: `M08_AUTO_PUBLISH=on`, 3/hora, locale `en`
 - Provedor: DeepSeek `deepseek-flash` (`https://api.deepseek.com/v1`), fallback Workers AI
 - Agendador: `.github/workflows/auto-publish.yml` a cada 30 min → `POST /api/auto-publish`
-- Fila social: `M07_IG_PER_DAY=10`, `M07_TIKTOK_PER_DAY=10`; envio real bloqueado (#437)
+- Fila social: `M07_IG_PER_DAY=10`, `M07_TIKTOK_PER_DAY=10`; OAuth e envio
+  implementados (#467), apps Meta/TikTok ainda não criados — as quatro rotas
+  `/api/oauth/{instagram,tiktok}/{start,callback}` respondem 503 até as
+  credenciais existirem
 
 ## Regras de produto já decididas
 
@@ -24,7 +27,12 @@ Atualizado em 2026-11-03.
 ## Pendências, em ordem
 
 1. **Design**: S1 concluído (cards 9px→13px, radar em grid, painel de mercado colado ao conteúdo). Resta um S5 opcional para a home em telas largas. Sempre medir geometria antes de mexer.
-2. **#437/#14**: apps Meta e TikTok — o Owner cria, depois preencher `META_APP_ID/SECRET` e `TIKTOK_CLIENT_KEY/SECRET`.
+2. **#467/#437/#14**: apps Meta e TikTok. O código está no ar (OAuth + envio
+   `POST /admin/social/send`); o Owner cria os apps apontando para
+   `https://coinblink-production.kayzendev.workers.dev/api/oauth/{instagram,tiktok}/callback`
+   e cola `META_APP_ID/SECRET` e `TIKTOK_CLIENT_KEY/SECRET` em `/admin/settings`
+   (grupo Social). Para publicar vídeo o TikTok também precisa de
+   `M07_TIKTOK_VIDEO_URL`; o Instagram usa `/brand/og-image.jpg` por padrão.
 3. **#19**: Stripe live (decisão do Owner).
 4. **#27**: mídia própria/vídeo (M17).
 

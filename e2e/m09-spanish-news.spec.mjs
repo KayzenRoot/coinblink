@@ -84,13 +84,13 @@ test("M09 Spanish DEMO entry is safe, accessible and returns from the existing n
     await expect(skip).toHaveAttribute("href", "#main");
     await expect(page.getByRole("main")).toHaveAttribute("id", "main");
     await expect(page.locator(".demo-banner")).toContainText("DEMO");
-    await expect(page.getByRole("link", { name: "Explorar noticias ficticias" })).toHaveAttribute("href", "/es/news");
+    await expect(page.getByRole("link", { name: "Leer nuestros artículos" })).toHaveAttribute("href", "/es/news");
     await expect(page.getByRole("link", { name: "Switch to English" })).toHaveAttribute("href", "/en");
     await expect(page.getByRole("link", { name: "Mudar para português" })).toHaveAttribute("href", "/pt-br");
     const axe = await new AxeBuilder({ page }).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa"]).analyze();
     expect(axe.violations).toEqual([]);
   }
-  await page.getByRole("link", { name: "Explorar noticias ficticias" }).click();
+  await page.getByRole("link", { name: "Leer nuestros artículos" }).click();
   await expect(page).toHaveURL(/\/es\/news$/u);
   await page.getByRole("link", { name: "Volver al inicio" }).click();
   await expect(page).toHaveURL(/\/es$/u);

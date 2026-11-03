@@ -190,6 +190,126 @@ function emptyResult(network) {
   return { network, status: 'idle', sent: 0, failed: 0, skipped: 0 };
 }
 
+/** A network that cannot send returns an explained status and never calls out. */
+function blocked(network, status) {
+  return Object.freeze({ ...emptyResult(network), status });
+}
+
+async function mediaFor({ db, secret, env, network, origin }) {
+  return network === 'instagram'
+    ? instagramMediaUrl({ db, secret, env, origin })
+    : tiktokVideoUrl({ db, secret, env });
+}
+
+/** The access token to send with, or null when the account must reconnect. */
+async function accessTokenFor({ db, secret, env, network, token, nowMs, fetchImpl }) {
+  const expiring = token.expiresAt !== null && token.expiresAt <= Math.floor(nowMs / 1000) + 120;
+  if (network !== 'tiktok' || !expiring) return token.accessToken;
+  return refreshTiktokAccess({ db, secret, env, token, fetchImpl, nowMs });
+}
+
+function failureDetail(network, error, slug) {
+  const reason = /status (\d{3})/u.exec(error?.message ?? '');
+  return network + ':error:' + (reason?.[1] ?? 'network') + ':' + slug;
+}
+
+async function sendInstagramRow({ db, row, accountId, accessToken, mediaUrl, nowMs, fetchImpl }) {
+  try {
+    const mediaId = await publishInstagramPhoto({
+      fetchImpl, igUserId: accountId, accessToken, imageUrl: mediaUrl, caption: row.caption,
+    });
+    const sent = await markSent({ db, id: row.id, nowMs, detail: 'instagram:media:' + mediaId });
+    return sent ? 'sent' : 'skipped';
+  } catch (error) {
+    await markDetail({ db, id: row.id, detail: failureDetail('instagram', error, row.slug) });
+    return 'failed';
+  }
+}
+
+/** Keeps an in-flight TikTok publish resumable instead of uploading twice. */
+async function settleTiktokPublish({ db, row, publishId, accessToken, nowMs, fetchImpl }) {
+  const status = await readTiktokPublish({ fetchImpl, accessToken, publishId });
+  if (status === 'PUBLISH_COMPLETE') {
+    const sent = await markSent({ db, id: row.id, nowMs, detail: 'tiktok:sent:' + publishId });
+    return sent ? 'sent' : 'skipped';
+  }
+  if (status === 'FAILED') {
+    await markDetail({ db, id: row.id, detail: 'tiktok:failed:' + publishId });
+    return 'failed';
+  }
+  await markDetail({ db, id: row.id, detail: 'tiktok:publish:' + publishId + ':' + clip(status) });
+  return 'pending';
+}
+
+async function sendTiktokRow({ db, row, accessToken, mediaUrl, nowMs, fetchImpl }) {
+  const inFlight = parseInFlight(row.detail);
+  try {
+    if (inFlight !== null) {
+      return await settleTiktokPublish({ db, row, publishId: inFlight, accessToken, nowMs, fetchImpl });
+    }
+    const started = await startTiktokPublish({
+      fetchImpl, accessToken, videoUrl: mediaUrl, caption: row.caption,
+    });
+    await markDetail({ db, id: row.id, detail: 'tiktok:publish:' + started.publishId + ':' + started.status });
+    return 'pending';
+  } catch (error) {
+    await markDetail({ db, id: row.id, detail: failureDetail('tiktok', error, row.slug) });
+    return 'failed';
+  }
+}
+
+/** One row, one outcome: sent, failed, pending (provider still working) or skipped. */
+async function sendRow({ db, network, row, accountId, accessToken, mediaUrl, nowMs, fetchImpl }) {
+  if (isTerminalDetail(row.detail)) return 'skipped';
+  if (network === 'instagram') {
+    return sendInstagramRow({ db, row, accountId, accessToken, mediaUrl, nowMs, fetchImpl });
+  }
+  return sendTiktokRow({ db, row, accessToken, mediaUrl, nowMs, fetchImpl });
+}
+
+/**
+ * Posts are sent one at a time on purpose: a provider rate limit or a retry
+ * must not turn into parallel writes against the same account.
+ */
+function sendSequentially(rows, limit, send) {
+  return rows.reduce(async (previous, row) => {
+    const tally = await previous;
+    if (tally.sent >= limit) return tally;
+    const outcome = await send(row);
+    tally[outcome] += 1;
+    return tally;
+  }, Promise.resolve({ sent: 0, failed: 0, skipped: 0, pending: 0 }));
+}
+
+function tallyStatus(tally) {
+  if (tally.sent > 0) return 'sent';
+  if (tally.failed > 0) return 'failed';
+  if (tally.pending > 0) return 'pending';
+  return 'idle';
+}
+
+async function readPlannedRows({ db, network, day, limit }) {
+  try {
+    const result = await db.prepare(
+      "SELECT id,slug,caption,detail FROM cms_social_queue WHERE network=? AND day=? AND status='planned' "
+      + 'ORDER BY created_at LIMIT ?',
+    ).bind(network, day, limit).all();
+    return result?.results ?? [];
+  } catch {
+    return null;
+  }
+}
+
+async function sentToday({ db, network, day }) {
+  try {
+    const row = await db.prepare("SELECT count(*) AS n FROM cms_social_queue WHERE network=? AND day=? AND status='sent'")
+      .bind(network, day).first();
+    return Number(row?.n ?? 0);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Sends today's planned posts for one network. `idle` means there was nothing
  * to send, `not_configured`/`no_media` mean no external call was made.
@@ -197,101 +317,44 @@ function emptyResult(network) {
 async function sendNetwork({
   db, secret, env, network, quota, nowMs, origin, fetchImpl,
 }) {
-  const day = utcDay(nowMs);
   const wanted = Math.max(Number(quota?.[network]) || 0, 0);
-  if (wanted === 0) return Object.freeze({ ...emptyResult(network), status: 'no_quota' });
+  if (wanted === 0) return blocked(network, 'no_quota');
   const token = await readSocialToken({ db, secret, provider: network });
-  if (token.status === 'missing') return Object.freeze({ ...emptyResult(network), status: 'not_configured' });
-  if (token.status !== 'ok') return Object.freeze({ ...emptyResult(network), status: 'unavailable' });
-  const mediaUrl = network === 'instagram'
-    ? await instagramMediaUrl({ db, secret, env, origin })
-    : await tiktokVideoUrl({ db, secret, env });
-  if (mediaUrl === '') return Object.freeze({ ...emptyResult(network), status: 'no_media' });
-  let sentToday;
-  try {
-    sentToday = await db.prepare("SELECT count(*) AS n FROM cms_social_queue WHERE network=? AND day=? AND status='sent'")
-      .bind(network, day).first();
-  } catch {
-    return Object.freeze({ ...emptyResult(network), status: 'unavailable' });
-  }
-  const remaining = wanted - Number(sentToday?.n ?? 0);
-  if (remaining <= 0) return Object.freeze({ ...emptyResult(network), status: 'quota_reached' });
-  const nowSeconds = Math.floor(nowMs / 1000);
-  let accessToken = token.accessToken;
-  if (network === 'tiktok' && token.expiresAt !== null && token.expiresAt <= nowSeconds + 120) {
-    const refreshed = await refreshTiktokAccess({ db, secret, env, token, fetchImpl, nowMs });
-    if (refreshed === null) return Object.freeze({ ...emptyResult(network), status: 'expired' });
-    accessToken = refreshed;
-  }
-  let rows;
-  try {
-    const result = await db.prepare(
-      "SELECT id,slug,caption,detail FROM cms_social_queue WHERE network=? AND day=? AND status='planned' "
-      + 'ORDER BY created_at LIMIT ?',
-    ).bind(network, day, remaining * 3).all();
-    rows = result?.results ?? [];
-  } catch {
-    return Object.freeze({ ...emptyResult(network), status: 'unavailable' });
-  }
-  const summary = emptyResult(network);
-  let sent = 0;
-  for (const row of rows) {
-    if (sent >= remaining) break;
-    if (isTerminalDetail(row.detail)) {
-      summary.skipped += 1;
-      continue;
-    }
-    if (network === 'instagram') {
-      try {
-        const mediaId = await publishInstagramPhoto({
-          fetchImpl, igUserId: token.accountId, accessToken,
-          imageUrl: mediaUrl, caption: row.caption,
-        });
-        if (await markSent({ db, id: row.id, nowMs, detail: 'instagram:media:' + mediaId })) {
-          sent += 1;
-          summary.sent += 1;
-        }
-      } catch (error) {
-        const reason = /status (\d{3})/u.exec(error?.message ?? '');
-        await markDetail({ db, id: row.id, detail: 'instagram:error:' + (reason?.[1] ?? 'network') + ':' + row.slug });
-        summary.failed += 1;
-      }
-      continue;
-    }
-    const inFlight = parseInFlight(row.detail);
-    try {
-      if (inFlight !== null) {
-        const status = await readTiktokPublish({ fetchImpl, accessToken, publishId: inFlight });
-        if (status === 'PUBLISH_COMPLETE') {
-          if (await markSent({ db, id: row.id, nowMs, detail: 'tiktok:sent:' + inFlight })) {
-            sent += 1;
-            summary.sent += 1;
-          }
-        } else if (status === 'FAILED') {
-          await markDetail({ db, id: row.id, detail: 'tiktok:failed:' + inFlight });
-          summary.failed += 1;
-        } else {
-          await markDetail({ db, id: row.id, detail: 'tiktok:publish:' + inFlight + ':' + clip(status) });
-          summary.skipped += 1;
-        }
-        continue;
-      }
-      const started = await startTiktokPublish({
-        fetchImpl, accessToken, videoUrl: mediaUrl, caption: row.caption,
-      });
-      await markDetail({ db, id: row.id, detail: 'tiktok:publish:' + started.publishId + ':' + clip(started.status) });
-      summary.skipped += 1;
-    } catch (error) {
-      const reason = /status (\d{3})/u.exec(error?.message ?? '');
-      await markDetail({ db, id: row.id, detail: 'tiktok:error:' + (reason?.[1] ?? 'network') + ':' + row.slug });
-      summary.failed += 1;
-    }
-  }
-  if (summary.sent > 0) summary.status = 'sent';
-  else if (summary.failed > 0) summary.status = 'failed';
-  else if (summary.skipped > 0) summary.status = 'pending';
-  else summary.status = 'idle';
-  return Object.freeze(summary);
+  if (token.status === 'missing') return blocked(network, 'not_configured');
+  if (token.status !== 'ok') return blocked(network, 'unavailable');
+  const mediaUrl = await mediaFor({ db, secret, env, network, origin });
+  if (mediaUrl === '') return blocked(network, 'no_media');
+  const day = utcDay(nowMs);
+  const alreadySent = await sentToday({ db, network, day });
+  if (alreadySent === null) return blocked(network, 'unavailable');
+  const remaining = wanted - alreadySent;
+  if (remaining <= 0) return blocked(network, 'quota_reached');
+  const accessToken = await accessTokenFor({ db, secret, env, network, token, nowMs, fetchImpl });
+  if (accessToken === null) return blocked(network, 'expired');
+  const rows = await readPlannedRows({ db, network, day, limit: remaining * 3 });
+  if (rows === null) return blocked(network, 'unavailable');
+  const tally = await sendSequentially(rows, remaining, (row) => sendRow({
+    db, network, row, accountId: token.accountId, accessToken, mediaUrl, nowMs, fetchImpl,
+  }));
+  return Object.freeze({
+    network,
+    status: tallyStatus(tally),
+    sent: tally.sent,
+    failed: tally.failed,
+    skipped: tally.skipped + tally.pending,
+  });
+}
+
+/**
+ * Runs the task one item at a time. `reduce` keeps the call site free of a loop
+ * that awaits, which reads as parallel work when it never is.
+ */
+function runSequentially(items, task) {
+  return items.reduce(async (previous, item) => {
+    const done = await previous;
+    done.push(await task(item));
+    return done;
+  }, Promise.resolve([]));
 }
 
 /**
@@ -301,13 +364,12 @@ async function sendNetwork({
 export async function sendDay({
   db, secret, env = {}, nowMs = Date.now(), origin = '', quota, fetchImpl,
 }) {
-  const results = [];
-  for (const network of SOCIAL_NETWORKS) {
+  const results = await runSequentially(SOCIAL_NETWORKS, async (network) => {
     try {
-      results.push(await sendNetwork({ db, secret, env, network, quota, nowMs, origin, fetchImpl }));
+      return await sendNetwork({ db, secret, env, network, quota, nowMs, origin, fetchImpl });
     } catch {
-      results.push(Object.freeze({ ...emptyResult(network), status: 'unavailable' }));
+      return blocked(network, 'unavailable');
     }
-  }
+  });
   return Object.freeze(results);
 }

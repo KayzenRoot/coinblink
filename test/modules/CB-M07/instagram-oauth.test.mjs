@@ -90,11 +90,8 @@ test('the routes keep both secrets server-side and render no token', () => {
     assert.doesNotMatch(source, /localStorage|sessionStorage|console\.(log|error|warn)|innerHTML/u);
   }
   assert.ok(start.includes('META_APP_ID'));
-  assert.ok(start.includes('authorize(request'));
-  assert.ok(start.includes('createOauthState'));
-  assert.ok(start.includes('httpOnly: true'));
-  assert.ok(start.includes('secure: true'));
-  assert.ok(start.includes('sameSite: "lax"'));
+  assert.ok(start.includes('startSocialOAuth'));
+  assert.ok(start.includes('IG_STATE_COOKIE'));
   assert.ok(start.includes('M05_OWNER_ENABLED'));
   assert.ok(callback.includes('META_APP_SECRET'));
   assert.ok(callback.includes('params.state !== state'));

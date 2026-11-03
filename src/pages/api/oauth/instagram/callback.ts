@@ -12,7 +12,7 @@ import {
   oauthCancelled, oauthConnected, oauthInvalidState, oauthNotConfigured, oauthPage,
   oauthStorageUnavailable, oauthStoreFailed,
 } from "../../../../modules/CB-M07/oauth-page.mjs";
-import { consumeOauthState, storeSocialAccount } from "../../../../modules/CB-M07/token-vault.mjs";
+import { consumeOauthState, isVaultSecret, storeSocialAccount } from "../../../../modules/CB-M07/token-vault.mjs";
 import { runtimeBinding, runtimeEnv } from "../../../../lib/runtime-env";
 
 export const prerender = false;
@@ -22,13 +22,13 @@ export const GET: APIRoute = async ({ cookies, url }) => {
   const secret = runtimeEnv("M05_SESSION_SECRET");
   const ownerEnabled = runtimeEnv("M05_OWNER_ENABLED");
   const env = { META_APP_ID: runtimeEnv("META_APP_ID"), META_APP_SECRET: runtimeEnv("META_APP_SECRET") };
-  const readable = typeof db === "object" && db !== null && typeof secret === "string";
+  const readable = typeof db === "object" && db !== null && isVaultSecret(secret);
   const appId = readable ? await getSetting({ db, secret, env, key: "META_APP_ID" }) : undefined;
   const appSecret = readable ? await getSetting({ db, secret, env, key: "META_APP_SECRET" }) : undefined;
   if (typeof appId !== "string" || typeof appSecret !== "string" || ownerEnabled !== "true") {
     return oauthNotConfigured("Instagram", "Meta app credentials");
   }
-  if (db === undefined || db === null || typeof secret !== "string") return oauthStorageUnavailable();
+  if (db === undefined || db === null || !isVaultSecret(secret)) return oauthStorageUnavailable();
   const params = readCallback(url.searchParams);
   const state = cookies.get(IG_STATE_COOKIE)?.value ?? "";
   cookies.delete(IG_STATE_COOKIE, { path: IG_COOKIE_PATH });

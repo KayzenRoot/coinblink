@@ -7,6 +7,11 @@ import { escapeHtml, page } from '../CB-M05/p1-production/owner-auth.mjs';
 
 const SECRET = /^[0-9a-f]{64}$/iu;
 const PROVIDERS = new Set(['x', 'instagram', 'tiktok']);
+
+/** The vault only derives keys from a 64-hex owner secret. */
+export function isVaultSecret(secret) {
+  return typeof secret === 'string' && SECRET.test(secret);
+}
 const STATE_TTL_SECONDS = 600;
 const STATE = /^[A-Za-z0-9_-]{16,128}$/u;
 const IV_BYTES = 12;
@@ -98,18 +103,24 @@ export async function consumeOauthState({ db, state, nowMs }) {
   }
 }
 
+/** Seals the access token and, when present, the refresh token. */
+async function sealTokenPair({ secret, token }) {
+  const access = await encryptToken({ secret, plaintext: token.accessToken });
+  const refresh = typeof token.refreshToken === 'string' && token.refreshToken !== ''
+    ? await encryptToken({ secret, plaintext: token.refreshToken })
+    : null;
+  return { access, refresh };
+}
+
 export async function storeSocialAccount({ db, secret, provider, account, token, nowMs }) {
   if (!PROVIDERS.has(provider)) return { status: 'invalid' };
   if (typeof account?.id !== 'string' || account.id === ''
     || typeof account?.username !== 'string' || account.username === '') return { status: 'invalid' };
   if (typeof token?.accessToken !== 'string' || token.accessToken === '') return { status: 'invalid' };
   let access;
-  let refresh = null;
+  let refresh;
   try {
-    access = await encryptToken({ secret, plaintext: token.accessToken });
-    if (typeof token.refreshToken === 'string' && token.refreshToken !== '') {
-      refresh = await encryptToken({ secret, plaintext: token.refreshToken });
-    }
+    ({ access, refresh } = await sealTokenPair({ secret, token }));
   } catch {
     return { status: 'unavailable' };
   }
@@ -184,12 +195,9 @@ export async function updateSocialToken({ db, secret, provider, accountId, token
   if (!PROVIDERS.has(provider) || typeof accountId !== 'string' || accountId === '') return { status: 'invalid' };
   if (typeof token?.accessToken !== 'string' || token.accessToken === '') return { status: 'invalid' };
   let access;
-  let refresh = null;
+  let refresh;
   try {
-    access = await encryptToken({ secret, plaintext: token.accessToken });
-    if (typeof token.refreshToken === 'string' && token.refreshToken !== '') {
-      refresh = await encryptToken({ secret, plaintext: token.refreshToken });
-    }
+    ({ access, refresh } = await sealTokenPair({ secret, token }));
   } catch {
     return { status: 'unavailable' };
   }

@@ -11,7 +11,6 @@ export const IG_SCOPES = Object.freeze([
 ]);
 export const IG_STATE_COOKIE = 'cb_ig_state';
 export const IG_COOKIE_PATH = '/api/oauth/instagram';
-export const IG_COOKIE_MAX_AGE = 600;
 
 /** The Meta consent URL with the three publishing scopes. */
 export function buildAuthorizeUrl({ appId, redirectUri, state }) {
@@ -100,9 +99,9 @@ export async function fetchAccount({ fetchImpl = globalThis.fetch, accessToken }
     throw new Error('Instagram found no professional account linked to a Page');
   }
   const igUser = page.instagram_business_account;
-  const handle = typeof igUser.username === 'string' && igUser.username !== ''
-    ? igUser.username
-    : (typeof page.name === 'string' && page.name !== '' ? page.name : 'instagram:' + igUser.id);
+  let handle = 'instagram:' + igUser.id;
+  if (typeof igUser.username === 'string' && igUser.username !== '') handle = igUser.username;
+  else if (typeof page.name === 'string' && page.name !== '') handle = page.name;
   return Object.freeze({
     id: igUser.id,
     username: handle,

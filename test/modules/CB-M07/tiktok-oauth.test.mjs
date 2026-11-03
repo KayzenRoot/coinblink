@@ -117,10 +117,8 @@ test('the routes keep both secrets server-side and render no token', () => {
     assert.doesNotMatch(source, /localStorage|sessionStorage|console\.(log|error|warn)|innerHTML/u);
   }
   assert.ok(start.includes('TIKTOK_CLIENT_KEY'));
-  assert.ok(start.includes('authorize(request'));
-  assert.ok(start.includes('createOauthState'));
-  assert.ok(start.includes('httpOnly: true'));
-  assert.ok(start.includes('sameSite: "lax"'));
+  assert.ok(start.includes('startSocialOAuth'));
+  assert.ok(start.includes('TT_STATE_COOKIE'));
   assert.ok(start.includes('M05_OWNER_ENABLED'));
   assert.ok(callback.includes('TIKTOK_CLIENT_SECRET'));
   assert.ok(callback.includes('params.state !== state'));

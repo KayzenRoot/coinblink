@@ -9,7 +9,6 @@ export const TT_USER_URL = 'https://open.tiktokapis.com/v2/user/info/';
 export const TT_SCOPES = Object.freeze(['video.publish', 'video.upload', 'user.info.basic']);
 export const TT_STATE_COOKIE = 'cb_tt_state';
 export const TT_COOKIE_PATH = '/api/oauth/tiktok';
-export const TT_COOKIE_MAX_AGE = 600;
 
 /** The TikTok consent URL. Scopes are comma separated, as TikTok requires. */
 export function buildAuthorizeUrl({ clientKey, redirectUri, state }) {
@@ -125,13 +124,12 @@ export async function fetchAccount({ fetchImpl = globalThis.fetch, accessToken, 
   if (user === null || typeof user !== 'object') {
     throw new Error('TikTok profile response had no user');
   }
-  const id = typeof user.open_id === 'string' && user.open_id !== ''
-    ? user.open_id
-    : (typeof openId === 'string' ? openId : '');
+  let id = typeof openId === 'string' ? openId : '';
+  if (typeof user.open_id === 'string' && user.open_id !== '') id = user.open_id;
   if (id === '') throw new Error('TikTok profile response had no open id');
-  const handle = (typeof user.username === 'string' && user.username !== '' && user.username)
-    || (typeof user.display_name === 'string' && user.display_name !== '' && user.display_name)
-    || 'tiktok:' + id.slice(0, 12);
+  let handle = 'tiktok:' + id.slice(0, 12);
+  if (typeof user.username === 'string' && user.username !== '') handle = user.username;
+  else if (typeof user.display_name === 'string' && user.display_name !== '') handle = user.display_name;
   return Object.freeze({
     id,
     username: String(handle),

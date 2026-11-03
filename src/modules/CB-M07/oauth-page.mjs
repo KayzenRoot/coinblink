@@ -22,6 +22,14 @@ export function oauthPage(status, title, body) {
   return new Response(html, { status, headers: HEADERS });
 }
 
+/** The anonymous request must not learn that the route exists. */
+export function oauthNotFound() {
+  return new Response('Not found', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' },
+  });
+}
+
 /** The app or the vault is absent: nothing was exchanged. */
 export function oauthNotConfigured(provider, missing) {
   return oauthPage(503, provider + ' OAuth is not configured',

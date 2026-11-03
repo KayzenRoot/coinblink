@@ -463,7 +463,7 @@ const editorialR26Assets = {
           <a href={l("/en/news", "/pt-br/news", "/es/news")}>{l("Read our articles", "Ler nossos artigos", "Leer nuestros artículos")} <span aria-hidden="true">→</span></a>
           <small>{liveOn ? l("Attributed to the original publishers.", "Atribuídas aos veículos originais.", "Atribuidos a los medios originales.") : l("Offline demo. No published news.", "DEMO offline. Não são notícias publicadas.", "DEMO sin conexión. No son noticias publicadas.")}</small>
         </p>
-        <LocalJourneyNav locale={locale} current="home" />
+        {!liveOn && marketQuotes.length === 0 && !homeArticlesOn && <LocalJourneyNav locale={locale} current="home" />}
         <p class="news-official-discovery">{t("Prefer original announcements?")} <a href="#official-sources">{t("Browse official sources")} <span aria-hidden="true">↗</span></a></p>
         <p class="news-official-discovery" data-editorial-workspace-handoff>
           <span>{t("Want to try the article editor?")}</span>

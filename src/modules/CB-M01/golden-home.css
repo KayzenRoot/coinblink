@@ -1062,3 +1062,16 @@
 .cb-home .news-card p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .cb-home .market-panel { justify-content: flex-start; }
 .cb-home .market-panel > .panel-link { margin-top: 8px; }
+
+/* Second alignment pass: measured, not guessed (1152px and 692px). */
+.cb-home .market-panel { justify-content: space-between; }
+.cb-home .market-list { flex: 1; align-content: space-between; }
+.cb-home .market-panel > .panel-link { margin-top: 10px; }
+@media (max-width: 1280px) {
+  .cb-home .news-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .cb-home .news-cards { grid-template-columns: minmax(0, 1fr); }
+  .cb-home .hero-stat { position: static; justify-self: start; align-self: flex-start; margin: 16px 0 0; text-align: left; }
+  .cb-home .hero-panel { justify-content: flex-start; }
+}

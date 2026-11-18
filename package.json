@@ -4,9 +4,9 @@
   "private": true,
   "description": "CoinBlink modular web application, development-first",
   "engines": {
-    "node": ">=22.19.0 <23"
+    "node": ">=22.23.4 <23"
   },
-  "packageManager": "npm@10.9.3",
+  "packageManager": "npm@10.9.9",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && node scripts/assert-no-session-binding.mjs",

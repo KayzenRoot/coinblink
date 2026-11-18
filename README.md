@@ -4,7 +4,7 @@ Crypto information and editorial experiences, built module by module. **Developm
 
 ## Run locally
 
-Requirements: Node.js 22.19.0+, npm 10.x, and optionally Docker.
+Requirements: Node.js 22.23.4 (see .node-version), npm 10.9.9, and optionally Docker.
 
 ```bash
 npm ci

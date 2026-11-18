@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - ".node-version"
       - ".github/workflows/brand-demo-qa.yml"
       - "public/brand/**"
       - "test/brand/**"
@@ -11,6 +12,7 @@ on:
   push:
     branches: [main]
     paths:
+      - ".node-version"
       - ".github/workflows/brand-demo-qa.yml"
       - "public/brand/**"
       - "test/brand/**"
@@ -36,10 +38,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Node.js 22.19.0
+      - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 22.19.0
+          node-version-file: .node-version
       - name: Run eight brand contracts on exact commit
         shell: bash
         run: |
@@ -75,10 +77,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Node.js 22.19.0
+      - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 22.19.0
+          node-version-file: .node-version
           cache: npm
       - name: Locked dependency installation
         run: npm ci --ignore-scripts

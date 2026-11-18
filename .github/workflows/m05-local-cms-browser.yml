@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - ".node-version"
       - ".github/workflows/m05-local-cms-browser.yml"
       - "src/modules/CB-M05/**"
       - "src/pages/admin/**"
@@ -36,7 +37,7 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 22.19.0
+          node-version-file: .node-version
           cache: npm
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
@@ -58,7 +59,7 @@ jobs:
   # CB-P0-EDITORIAL-BRIDGE-001: evidence-only regression job, no production credentials.
   # Keep the existing browser job unchanged. Do not mute HTTP 500 failures or relax invariants.
   bootstrap-proof:
-    name: M05 BOOT-10 Node 22.19.0 concurrency audit (Ubuntu)
+    name: M05 BOOT-10 concurrency audit (Ubuntu)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -66,14 +67,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Node.js 22.19.0
+      - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 22.19.0
+          node-version-file: .node-version
           cache: npm
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
-      - name: M05-to-M02 bridge contracts, D1 and router under Node 22.19.0
+      - name: M05-to-M02 bridge contracts, D1 and router
         run: |
           node --test \
             test/modules/CB-M05/p0-editorial-bridge-contract.test.mjs \

@@ -1,4 +1,9 @@
-FROM node:22.19.0-bookworm-slim AS build
+FROM node:22.23.4-bookworm-slim AS node-base
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM node-base AS build
 
 WORKDIR /app
 
@@ -14,7 +19,7 @@ ENV PUBLIC_BUILD_ENV=${PUBLIC_BUILD_ENV}
 
 RUN npm run build
 
-FROM node:22.19.0-bookworm-slim AS runtime
+FROM node-base AS runtime
 
 ENV NODE_ENV=production
 ENV WRANGLER_SEND_METRICS=false

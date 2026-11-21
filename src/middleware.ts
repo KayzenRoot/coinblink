@@ -1,4 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
+import { resolveRobotsDirective } from "./modules/CB-M09/seo-policy.mjs";
+import { seoIndexingConfig } from "./lib/seo-indexing";
 
 const securityHeaders: ReadonlyArray<readonly [string, string]> = [
   // form-action also governs the redirect target of a form POST, so the Stripe
@@ -11,16 +13,22 @@ const securityHeaders: ReadonlyArray<readonly [string, string]> = [
   ["Strict-Transport-Security", "max-age=31536000; includeSubDomains"],
   ["X-Content-Type-Options", "nosniff"],
   ["X-Frame-Options", "DENY"],
-  ["X-Robots-Tag", "noindex, nofollow, noarchive"],
 ];
 
-export const onRequest = defineMiddleware(async (_context, next) => {
+export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
   const headers = new Headers(response.headers);
 
   for (const [name, value] of securityHeaders) {
     headers.set(name, value);
   }
+
+  headers.set("X-Robots-Tag", resolveRobotsDirective({
+    ...seoIndexingConfig(context.request),
+    pathname: new URL(context.request.url).pathname,
+    requested: context.locals.seoRobotsRequested,
+    status: response.status,
+  }));
 
   return new Response(response.body, {
     status: response.status,

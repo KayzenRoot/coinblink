@@ -45,7 +45,10 @@ function safeEnvironment() {
 }
 
 function stateFor(caseName) {
-  const safeName = caseName.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+  // Workerd appends its own long D1 SQLite filenames. Keep the ignored LOCAL
+  // persistence path short enough for Windows SQLite -wal and -shm files.
+  const prefix = caseName.replace(/[^a-z0-9-]/gi, '-').toLowerCase().slice(0, 12);
+  const safeName = prefix + '-' + createHash('sha256').update(caseName).digest('hex').slice(0, 10);
   const stateRelative = ignoredStateRoot + '/' + runId + '/' + safeName;
   const absolute = path.resolve(repositoryRoot, stateRelative);
   const relative = path.relative(repositoryRoot, absolute);

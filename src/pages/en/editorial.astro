@@ -1,5 +1,8 @@
 ---
 import EditorialPolicy from "../../modules/CB-M09/EditorialPolicy.astro";
+import { INDEX_DIRECTIVE } from "../../modules/CB-M09/seo-policy.mjs";
+
 export const prerender = false;
+Astro.locals.seoRobotsRequested = INDEX_DIRECTIVE;
 ---
 <EditorialPolicy locale="en" />

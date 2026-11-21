@@ -7,6 +7,24 @@ const viewports = [
   { width: 390, height: 844 },
 ];
 
+test("the Home keeps its desktop panels and trending cards on their own rows", async ({ page }) => {
+  await page.setViewportSize({ width: 1536, height: 864 });
+  await page.goto("/en");
+  const promo = await page.locator(".promo-panel").boundingBox();
+  const newsletter = await page.locator(".newsletter-panel").boundingBox();
+  const thumbnail = await page.locator(".news-card").first().locator(".news-art").boundingBox();
+  const headline = await page.locator(".news-card h3").first().boundingBox();
+  expect(Math.abs(promo.x - newsletter.x)).toBeLessThan(1);
+  expect(Math.abs(promo.width - newsletter.width)).toBeLessThan(1);
+  expect(thumbnail.x + thumbnail.width).toBeLessThan(headline.x);
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const trendRowTops = await page.locator(".trend-item").evaluateAll(items =>
+    items.map(item => Math.round(item.getBoundingClientRect().top)));
+  expect(trendRowTops).toHaveLength(5);
+  expect(new Set(trendRowTops).size).toBe(1);
+});
+
 for (const locale of ["en", "pt-br"]) {
   const pt = locale === "pt-br";
   const navigationLabel = pt ? "Jornada demonstrativa CoinBlink" : "CoinBlink demo journey";

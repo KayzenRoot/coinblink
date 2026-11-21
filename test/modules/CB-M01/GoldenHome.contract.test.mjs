@@ -199,7 +199,7 @@ test("R18 promo atmosphere stays decorative, local and subordinate to DEMO copy"
   assert.match(promo, /<svg class="promo-scene"[^>]*aria-hidden="true"/u);
   assert.match(promo, /: "#demo-data"/u, "the demo build keeps the in-page anchor");
   assert.match(promo, /l\("\/en\/news", "\/pt-br\/news", "\/es\/news"\)/u, "a live home sends the CTA to our own news index");
-  assert.match(promo, /DEMONSTRATION/u);
+  assert.match(promo, /t\("Explore the demo"\)/u);
   assert.doesNotMatch(promo, /<script|<image|https?:\/\//iu);
   assert.match(stylesheet, /CB-M01 R18: visual-only Golden promotional atmosphere/u);
   assert.match(stylesheet, /\.cb-home \.promo-panel::before \{[\s\S]*?pointer-events: none;/u);

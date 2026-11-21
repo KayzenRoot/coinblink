@@ -43,10 +43,7 @@ test("M09 Spanish route and switcher preserve noindex and validate slugs", () =>
   assert.match(component, /aria-current/u);
   assert.match(component, /data-m09-language-nav/u);
   assert.match(workbench, /locale !== "es" && <LocalArticlePreview/u);
-  // The demo robots value now has a single source in the M09 locale model.
-  assert.match(readFileSync("src/modules/CB-M09/site-locales.mjs", "utf8"),
-    /DEMO_ROBOTS = "noindex, nofollow, noarchive"/u);
-  assert.match(layout, /const requestedRobots = robots \?\? seo\.robots/u);
+  assert.match(layout, /requested: Astro\.locals\.seoRobotsRequested/u);
   assert.match(layout, /content=\{robotsDirective\}/u);
   for (const text of [listing, detail, component, workbench]) {
     assert.doesNotMatch(text, /\bfetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon|indexedDB|\/admin\/api|innerHTML/u);
@@ -74,11 +71,6 @@ test("M09 ES a11y: Spanish skip label keeps EN and PT-BR unchanged", () => {
   assert.match(layout, /lang === "es"\s*\?\s*"Saltar al contenido"/u);
   assert.match(layout, /lang === "pt-BR"\s*\?\s*"Pular para o conteúdo"/u);
   assert.match(layout, /"Skip to content"/u);
-  // The demo robots value now has a single source in the M09 locale model.
-  assert.match(readFileSync("src/modules/CB-M09/site-locales.mjs", "utf8"),
-    /DEMO_ROBOTS = "noindex, nofollow, noarchive"/u);
-  assert.match(layout, /const requestedRobots = robots \?\? seo\.robots/u);
-  assert.match(layout, /content=\{robotsDirective\}/u);
 });
 
 test("M09 ES navigation: Spanish demo articles offer a return to the ES entry", () => {

@@ -7,7 +7,7 @@ const viewports = [
   { width: 390, height: 844 },
 ];
 
-test("the Home keeps its desktop panels and trending cards on their own rows", async ({ page }) => {
+test("the Home keeps its panels, trends and localized wordmark aligned", async ({ page }) => {
   await page.setViewportSize({ width: 1536, height: 864 });
   await page.goto("/en");
   const promo = await page.locator(".promo-panel").boundingBox();
@@ -23,6 +23,15 @@ test("the Home keeps its desktop panels and trending cards on their own rows", a
     items.map(item => Math.round(item.getBoundingClientRect().top)));
   expect(trendRowTops).toHaveLength(5);
   expect(new Set(trendRowTops).size).toBe(1);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/pt-br");
+  const wordmarkGap = await page.locator(".brand-name > span").evaluateAll(([coin, blink]) => {
+    const coinText = document.createRange();
+    coinText.selectNodeContents(coin);
+    return blink.getBoundingClientRect().left - coinText.getBoundingClientRect().right;
+  });
+  expect(Math.abs(wordmarkGap)).toBeLessThan(1);
 });
 
 for (const locale of ["en", "pt-br"]) {

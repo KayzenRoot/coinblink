@@ -28,15 +28,17 @@ test("the built Worker must serve all four OAuth handlers in an unconfigured pre
 });
 
 test("the deployed smoke accepts the application's configured anonymous refusals", async () => {
-  await verifySocialOAuthSmoke(base, {
+  await assert.doesNotReject(() => verifySocialOAuthSmoke(base, {
     fetchImpl: async (url) => url.pathname.endsWith("/start")
       ? oauthNotFound()
       : oauthInvalidState("No authorization state"),
-  });
+  }));
 });
 
 test("the deployed smoke also accepts apps that are not configured", async () => {
-  await verifySocialOAuthSmoke(base, { fetchImpl: async (url) => unconfigured(url.pathname) });
+  await assert.doesNotReject(() => verifySocialOAuthSmoke(base, {
+    fetchImpl: async (url) => unconfigured(url.pathname),
+  }));
 });
 
 test("the preview rejects even a bare 404 because every handler must be observed", async () => {

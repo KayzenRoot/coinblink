@@ -3,7 +3,6 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - ".node-version"
       - ".github/workflows/m17-local-storyboard.yml"
       - "src/modules/CB-M17/**"
       - "src/pages/demo/storyboard.astro"
@@ -23,10 +22,10 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Set up Node.js
+      - name: Pin Node 22.19.0
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version-file: .node-version
+          node-version: 22.19.0
           cache: npm
       - name: Install locked dependencies without install scripts
         run: npm ci --ignore-scripts

@@ -4,7 +4,6 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - ".node-version"
       - ".github/workflows/m04-market-browser.yml"
       - "src/modules/CB-M04/**"
       - "src/pages/demo/markets.astro"
@@ -34,7 +33,7 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version-file: .node-version
+          node-version: 22.19.0
           cache: npm
       - name: Install
         run: npm ci --ignore-scripts

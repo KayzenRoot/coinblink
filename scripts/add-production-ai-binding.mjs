@@ -12,7 +12,9 @@ const SOURCE = "dist/server/wrangler.json";
 const TARGET = "dist/server/wrangler.deploy.json";
 
 export function withProductionAiBinding(config, { generated = true } = {}) {
-  const next = { ...config, ai: { binding: "AI" } };
+  // Dashboard runtime vars survive a production deploy. The source and local
+  // preview configs remain unchanged and carry no production opt-in.
+  const next = { ...config, ai: { binding: "AI" }, ...(generated ? { keep_vars: true } : {}) };
   assertWorkerPreviewConfig(next, "production deploy config", { generated });
   return next;
 }
@@ -20,5 +22,5 @@ export function withProductionAiBinding(config, { generated = true } = {}) {
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const config = JSON.parse(readFileSync(SOURCE, "utf8"));
   writeFileSync(TARGET, JSON.stringify(withProductionAiBinding(config), null, 2) + "\n");
-  process.stdout.write("Production deploy config adds the reviewed AI binding\n");
+  process.stdout.write("Production deploy config adds AI and preserves dashboard runtime vars\n");
 }

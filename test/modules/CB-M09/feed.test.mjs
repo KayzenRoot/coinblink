@@ -35,14 +35,13 @@ test('locales and dates are bounded', () => {
   assert.match(rfc822('nonsense'), /1970/u);
 });
 
-test('the route, the layout link and the sitemap expose the feed', () => {
+test('the route and layout expose the feed while the sitemap remains restricted', () => {
   const route = readFileSync('src/pages/[locale]/feed.xml.ts', 'utf8');
   assert.match(route, /buildFeed\(\{ locale, origin, articles \}\)/u);
   assert.match(route, /application\/rss\+xml/u);
   const layout = readFileSync('src/layouts/BaseLayout.astro', 'utf8');
   assert.match(layout, /type="application\/rss\+xml"/u);
   const sitemap = readFileSync('src/pages/sitemap.xml.ts', 'utf8');
-  assert.match(sitemap, /"\/newsletter\/editions"/u);
   assert.match(sitemap, /"\/editorial"/u);
-  assert.match(sitemap, /"\/legal"/u);
+  assert.doesNotMatch(sitemap, /"\/newsletter\/editions"|"\/legal"|feed\.xml/u);
 });

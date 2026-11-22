@@ -11,6 +11,7 @@ import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { chromium } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 import { splitLocalSchemaStatements, startLocalCmsPreview } from './p1c-local-preview.mjs';
+import { installLocalOwnerReviewSchema } from './p1c-fixtures/owner-review-schema.mjs';
 import { CMS_TEST_ORIGIN, CMS_TEST_RP_ID, createLocalCmsHandler, issueBootstrapTicket, issueEmergencyAuthorization, webauthnChallengeFromHex } from '../../../src/modules/CB-M05/p1c-local/local-cms.mjs';
 import { makeSyntheticAuthenticator, makeRegistrationResponse, makeAuthenticationResponse, tamperBase64Url } from '../../../src/modules/CB-M05/p1b-local/webauthn-fixtures.mjs';
 import { build } from 'esbuild';
@@ -51,7 +52,7 @@ test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupp
       "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
     ).all();
     assert.deepEqual(before.results.map(row => row.name),
-      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
+      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_owner_review_no_delete', 'cms_owner_review_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
     await assert.rejects(
       ctx.db.prepare(`CREATE OR REPLACE TRIGGER cms_revision_no_update BEFORE UPDATE ON cms_draft_revisions
         BEGIN SELECT RAISE(ABORT, 'local CMS revisions are immutable'); END`).run(),
@@ -61,7 +62,7 @@ test('M05 LOCAL CMS 13: local D1 preserves immutable triggers and rejects unsupp
       "SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name"
     ).all();
     assert.deepEqual(after.results.map(row => row.name),
-      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
+      ['cms_audit_no_delete', 'cms_audit_no_update', 'cms_owner_review_no_delete', 'cms_owner_review_no_update', 'cms_revision_no_delete', 'cms_revision_no_update']);
   } finally {
     await ctx.mf.dispose();
   }
@@ -102,6 +103,7 @@ async function setup() {
     const statements = splitLocalSchemaStatements(schema);
     assert.ok(statements.length >= 8, 'all local schema statements must be applied');
     for (const statement of statements) await db.prepare(statement).run();
+    await installLocalOwnerReviewSchema(db);
     const primary = makeSyntheticAuthenticator('primary');
     const recovery = makeSyntheticAuthenticator('recovery');
     await db.prepare('INSERT INTO cms_owner(owner_id,created_at) VALUES (1,1)').run();
@@ -758,6 +760,7 @@ async function openEmptySyntheticD1(options = {}) {
     const db = await mf.getD1Database('CMS_D1_LOCAL');
     if (options.applySchema !== false) {
       for (const statement of splitLocalSchemaStatements(schema)) await db.prepare(statement).run();
+      await installLocalOwnerReviewSchema(db);
     }
     const secret = options.secret ?? key();
     const clock = { ms: options.nowMs ?? Date.now() };
@@ -1659,6 +1662,7 @@ test('M05 LOCAL CMS B3: offline emergency authorization is single-use, expiring 
 // --- Part D · D1 LOCAL schema, CAS, failure injection and restore ---
 
 const DUMP_TABLES = ['cms_owner', 'cms_credentials', 'cms_drafts', 'cms_draft_revisions',
+  'cms_owner_reviews',
   'cms_challenges', 'cms_sessions', 'cms_bootstrap_tickets', 'cms_bootstrap_challenges',
   'cms_enroll_challenges', 'cms_recovery_authorizations', 'cms_emergency_authorizations', 'cms_audit_events'];
 

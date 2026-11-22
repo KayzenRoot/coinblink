@@ -109,8 +109,8 @@ test("M09 P1 shipped layout consumes the tested model and keeps the demo boundar
   assert.match(layout, /buildSeoMetadata\(/u);
   assert.match(layout, /Astro\.url\.pathname/u);
   assert.match(layout, /import\.meta\.env\.PUBLIC_SITE_ORIGIN/u);
-  // The layout keeps noindex as the default and lets a page opt into indexing.
-  assert.match(layout, /content=\{robots \?\? seo\.robots\}/u);
+  assert.match(layout, /requested: Astro\.locals\.seoRobotsRequested/u);
+  assert.match(layout, /content=\{robotsDirective\}/u);
   assert.match(layout, /property="og:title"/u);
   assert.match(layout, /property="og:locale" content=\{seo\.openGraph\.locale\}/u);
   assert.match(layout, /name="twitter:card"/u);

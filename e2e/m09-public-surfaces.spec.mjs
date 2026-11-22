@@ -34,11 +34,12 @@ test("search answers a GET form in three locales and keeps the empty state", asy
   expect(errors).toEqual([]);
 });
 
-test("the editorial policy is indexable and states the review gate", async ({ page }) => {
+test("the editorial policy stays non-indexable without production opt-in", async ({ page }) => {
   const response = await page.goto("/en/editorial");
   expect(response?.status()).toBe(200);
   await expect(page.locator("h1")).toHaveText("How CoinBlink writes");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
+  expect(response?.headers()["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
   await expect(page.locator("main")).toContainText("CoinBlink AI draft");
   await expect(page.locator("main")).toContainText("410");
 
@@ -80,7 +81,8 @@ test("a topic page renders the category and an unknown topic answers 404", async
   const response = await page.goto("/en/topic/bitcoin");
   expect(response?.status()).toBe(200);
   await expect(page.locator("h1")).toHaveText("Bitcoin");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
+  expect(response?.headers()["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
   await expect(page.locator("main")).not.toContainText("Topic not found");
 
   const scan = await new AxeBuilder({ page })
@@ -91,6 +93,24 @@ test("a topic page renders the category and an unknown topic answers 404", async
   const missing = await page.goto("/en/topic/not-a-topic");
   expect(missing?.status()).toBe(404);
   await expect(page.locator("h1")).toHaveText("Topic not found");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
+  expect(missing?.headers()["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
+});
+
+test("crawler endpoints remain closed in local preview and errors are non-indexable", async ({ request }) => {
+  const robots = await request.get("/robots.txt");
+  expect(robots.status()).toBe(200);
+  expect(await robots.text()).toBe("User-agent: *\nDisallow: /\n");
+
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  expect(sitemap.headers()["content-type"]).toContain("application/xml");
+  expect(await sitemap.text()).not.toContain("<loc>");
+
+  const article = await request.get("/en/article/does-not-exist");
+  expect(article.status()).toBe(404);
+  expect(article.headers()["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
+  expect(await article.text()).toContain('content="noindex, nofollow, noarchive"');
 });
 
 test("the topics index lists the eight topics and links their pages", async ({ page }) => {

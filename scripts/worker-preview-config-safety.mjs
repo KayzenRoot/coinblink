@@ -15,6 +15,7 @@ const sourceRootKeys = new Set([
 ]);
 
 const generatedRootKeys = new Set([
+  "keep_vars",
   "configPath",
   "userConfigPath",
   "topLevelName",
@@ -200,6 +201,11 @@ export function assertWorkerPreviewConfig(config, source = "Worker config", { ge
   const allowedRootKeys = generated ? generatedRootKeys : sourceRootKeys;
   const unexpectedKeys = Object.keys(config).filter((key) => !allowedRootKeys.has(key));
   assert.deepEqual(unexpectedKeys, [], `${source} contains unreviewed top-level settings`);
+  if (Object.hasOwn(config, "keep_vars")) {
+    assert.equal(generated, true, `${source} keep_vars is only allowed in generated deploy config`);
+    assert.equal(config.keep_vars, true, `${source} keep_vars must be the literal true`);
+    assert.deepEqual(config.ai, { binding: "AI" }, `${source} keep_vars requires the reviewed production AI binding`);
+  }
 
   const sessionBindings = findSessionBindings(config);
   assert.deepEqual(sessionBindings, [], `${source} must not contain an unrequested SESSION binding`);

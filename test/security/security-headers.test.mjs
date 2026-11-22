@@ -13,11 +13,12 @@ test('every response carries the reviewed security header set', () => {
     ['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
     ['X-Content-Type-Options', '"nosniff"'],
     ['X-Frame-Options', '"DENY"'],
-    ['X-Robots-Tag', 'noindex, nofollow, noarchive'],
   ]) {
     assert.ok(source.includes(name), name);
     assert.ok(source.includes(value), name + ' value');
   }
+  assert.match(source, /headers\.set\("X-Robots-Tag", resolveRobotsDirective\(/u,
+    'X-Robots-Tag must use the shared fail-closed route policy');
 });
 
 test('the CSP stays self-only and forbids framing, plugins, workers and inline code', () => {

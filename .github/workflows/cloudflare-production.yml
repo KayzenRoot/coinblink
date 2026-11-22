@@ -202,8 +202,39 @@ jobs:
               throw new Error("/v1/openapi.json must describe the real endpoints");
             }
             const home = await fetch(base + "/en");
-            if (!/noindex, nofollow, noarchive/u.test(await home.text())) {
-              throw new Error("/en is missing the demo robots policy");
+            if (home.status !== 200 || home.headers.get("x-robots-tag") !== "noindex, nofollow, noarchive"
+              || !/<meta name="robots" content="noindex, nofollow, noarchive"/u.test(await home.text())) {
+              throw new Error("/en must retain identical meta and HTTP noindex directives");
+            }
+            const robotsResponse = await fetch(base + "/robots.txt", { cache: "no-store" });
+            const robotsText = await robotsResponse.text();
+            if (robotsResponse.status !== 200 || !robotsText.startsWith("User-agent: *\n")) {
+              throw new Error("/robots.txt must respond with an explicit crawler policy");
+            }
+            const publicIndexing = robotsText.includes("\nAllow: /\n");
+            if (!publicIndexing && !robotsText.includes("\nDisallow: /\n")) {
+              throw new Error("/robots.txt must deny crawling until production indexing is enabled");
+            }
+            const sitemapResponse = await fetch(base + "/sitemap.xml", { cache: "no-store" });
+            const sitemapText = await sitemapResponse.text();
+            if (sitemapResponse.status !== 200 || !sitemapText.includes("<urlset")) {
+              throw new Error("/sitemap.xml must return a complete XML document");
+            }
+            if (publicIndexing) {
+              if (!robotsText.includes("\nSitemap: " + base + "/sitemap.xml\n")
+                || !sitemapText.includes(base + "/en/editorial")) {
+                throw new Error("activated sitemap must reference the matching canonical origin and editorial route");
+              }
+            } else if (sitemapText.includes("<loc>")) {
+              throw new Error("sitemap must contain no indexed URLs while production indexing is disabled");
+            }
+            const editorial = await fetch(base + "/en/editorial", { cache: "no-store" });
+            const editorialDirective = publicIndexing ? "index, follow" : "noindex, nofollow, noarchive";
+            if (editorial.status !== 200 || editorial.headers.get("x-robots-tag") !== editorialDirective) {
+              throw new Error("editorial must return the expected HTTP indexing directive");
+            }
+            if (!(await editorial.text()).includes("content=\"" + editorialDirective + "\"")) {
+              throw new Error("editorial meta robots and HTTP indexing directives must agree");
             }
             const admin = await fetch(base + "/admin", { redirect: "manual" });
             if (admin.status < 400) throw new Error("/admin must stay unreachable in production");

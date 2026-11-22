@@ -32,7 +32,7 @@ const stamp = (iso: string | null) => (iso === null ? "" : iso.slice(0, 16).repl
 ---
 
 {topic === null ? (
-  <BaseLayout lang={lang} title="CoinBlink · topic" description="This topic does not exist." robots="noindex, follow">
+  <BaseLayout lang={lang} title="CoinBlink · topic" description="This topic does not exist.">
     <main id="main" class="status">
       <nav aria-label="Topic navigation"><a href={`/${localeKey}`}>← CoinBlink</a></nav>
       <h1>Topic not found</h1>
@@ -44,7 +44,6 @@ const stamp = (iso: string | null) => (iso === null ? "" : iso.slice(0, 16).repl
     lang={lang}
     title={`CoinBlink · ${topic.label}`}
     description={copy.intro}
-    robots="noindex, follow"
   >
     <main id="main" class="status">
       <nav aria-label="Topic navigation">

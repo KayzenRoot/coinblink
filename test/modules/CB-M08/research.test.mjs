@@ -184,6 +184,7 @@ test('local previews stay credential-free and only the deploy config adds AI', (
   assert.equal(Object.hasOwn(config, 'ai'), false, 'wrangler dev must not proxy AI without a token');
   const deployed = withProductionAiBinding(config, { generated: false });
   assert.deepEqual(deployed.ai, { binding: 'AI' });
+  assert.equal(Object.hasOwn(deployed, 'keep_vars'), false, 'local preview must not preserve dashboard vars');
   for (const changed of [
     { ...deployed, ai: { binding: 'AI', remote: true } },
     { ...deployed, ai: { binding: 'OTHER' } },

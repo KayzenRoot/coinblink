@@ -2,6 +2,7 @@
 import ArticlePage from "../../../modules/CB-M05/ArticlePage.astro";
 import { readArticle } from "../../../modules/CB-M05/p1-production/articles.mjs";
 import { runtimeBinding } from "../../../lib/runtime-env";
+import { INDEX_DIRECTIVE } from "../../../modules/CB-M09/seo-policy.mjs";
 
 export const prerender = false;
 
@@ -11,5 +12,6 @@ const article = await readArticle({ db: runtimeBinding("CMS_DB"), locale: "en", 
 // change the response status of the page it renders into.
 if (article === null) Astro.response.status = 404;
 else if (article.status !== "published") Astro.response.status = 410;
+else Astro.locals.seoRobotsRequested = INDEX_DIRECTIVE;
 ---
-<ArticlePage locale="en" article={article} slug={slug} robots={article && article.status === "published" ? "index, follow" : "noindex, nofollow"} />
+<ArticlePage locale="en" article={article} slug={slug} />
